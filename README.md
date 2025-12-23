@@ -1,6 +1,11 @@
 # Continuous Section Field (CSF)
 
 **CSF** is a Python library for the geometric and mechanical modeling of **single non-prismatic structural members** (slender beams with variable cross-sections).
+### Arbitrary Cross-Section Support
+Unlike many structural tools limited to predefined shapes, **CSF** supports **fully generic cross-sections**.
+* **Any Geometry**: Sections are defined as algebraic polygons via vertex coordinates. You can model anything from standard I-beams to complex, custom-designed architectural profiles.
+* **No Predefined Templates**: You are not restricted to "Circle" or "Rectangle" classes. If you can define the vertices, CSF can compute the mechanics.
+* **Topological Freedom**: Through the "Algebraic Polygon" logic (weights), you can easily create hollow sections, multi-cellular shapes, or composite sections with multiple materials.
 
 > [!IMPORTANT]
 > **Not a FEM Solver**: This library is **not** a Finite Element Method (FEM) software. It is a geometric and constitutive "engine" designed to model the continuous variation of a single member. It provides the stiffness matrices and sectional properties required for structural analysis, acting as a high-accuracy pre-processor or a kernel for beam theory applications.
