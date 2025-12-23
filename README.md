@@ -169,4 +169,16 @@ This project was developed and validated using the following official engineerin
 ### How to Cite this Library
 If you use **CSF** in your research, academic work, or professional projects, please cite it as follows:
 
+##  Documentation & Code Comments
+
+The library is designed with a **"self-documenting code"** approach. For developers and engineers who wish to dive deeper into the mathematical implementations or extend the library's functionality:
+
+* **Well-Commented Source**: The main file `section_field.py` is extensively documented with internal comments, docstrings, and explicit assumptions.
+* **Inline Instructions**: Every core function (from the Sutherland-Hodgman clipping to the Gaussian quadrature integrals) includes a description of its input parameters and expected physical units.
+* **Developer Friendly**: You can find detailed explanations of the vertex-mapping logic and the stiffness matrix assembly directly above the respective function definitions.
+
+
+### How to Cite
+If you use **CSF** in your research, academic work, or professional projects, please cite it as follows:
+
 > Boscu, G. (2025). **Continuous Section Field (CSF)**: A geometric and mechanical engine for non-prismatic structural members. Available at: https://github.com/giovanniboscu/
