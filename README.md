@@ -118,6 +118,8 @@ The following table reports the full output of the validation script, comparing 
   
 ## 7. Advanced Validation: NREL 5-MW Reference Wind Turbine Tower
 
+* **NREL Wind Research**: Official portal for wind energy data, software, and reference models. [https://www.nrel.gov/wind/](https://www.nrel.gov/wind/)
+
 <img width="424" height="630" alt="5-MW" src="https://github.com/user-attachments/assets/73fe46a0-b778-489c-9f49-980ea3d0a20e" />
 
 
@@ -171,11 +173,6 @@ This project was developed and validated using the following official engineerin
   * [**Download Official PDF (NREL)**](https://www.nrel.gov/docs/fy09osti/38060.pdf)
   * [**Project Page at NREL.gov**](https://www.nrel.gov/wind/data-models.html)
 
-### Key Structural Concepts
-* **Ruled Surfaces in Architecture/Engineering**: The geometric engine uses linear interpolation between sections, a principle used in hyperbolic cooling towers and tapered bridge piers.
-* **Sutherland-Hodgman Algorithm**: Used for the exact calculation of the Statical Moment ($Q$) via polygon clipping.
-  * [Reference on Computer Graphics and Geometric Modeling](https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm)
-
 ### How to Cite this Library
 If you use **CSF** in your research, academic work, or professional projects, please cite it as follows:
 
@@ -186,6 +183,139 @@ The library is designed with a **"self-documenting code"** approach. For develop
 * **Well-Commented Source**: The main file `section_field.py` is extensively documented with internal comments, docstrings, and explicit assumptions.
 * **Inline Instructions**: Every core function (from the Sutherland-Hodgman clipping to the Gaussian quadrature integrals) includes a description of its input parameters and expected physical units.
 * **Developer Friendly**: You can find detailed explanations of the vertex-mapping logic and the stiffness matrix assembly directly above the respective function definitions.
+
+```
+
+    # --------------------------------------------------------
+    # 1. DEFINE START SECTION (Z = 0)
+    # --------------------------------------------------------
+    # The start section is a T-shape composed of two polygons:
+    # - flange (horizontal plate)
+    # - web (vertical plate)
+
+
+    # Define start polygons (T-Section at Z=0)
+    poly0_start = Polygon(
+        vertices=(Pt(-1, -0.2), Pt(1, -0.2), Pt(1, 0.2), Pt(-1, 0.2)),
+        weight=1.0,
+        name="flange",
+    )
+    poly1_start = Polygon(
+        vertices=(Pt(-0.2, -1.0), Pt(0.2, -1.0), Pt(0.2, 0.2), Pt(-0.2, 0.2)),
+        weight=1.0,
+        name="web",
+    )
+
+    # --------------------------------------------------------
+    # 2. DEFINE END SECTION (Z = 10)
+    # --------------------------------------------------------
+    # The flange remains unchanged.
+    # The web depth increases linearly from 1.0 to 2.5,
+    # producing a tapered T-section along the Z-axis.
+
+    poly0_end = Polygon(
+        vertices=(Pt(-1, -0.2), Pt(1, -0.2), Pt(1, 0.2), Pt(-1, 0.2)),
+        weight=1.0,
+        name="flange",
+    )
+    poly1_end = Polygon(
+        vertices=(Pt(-0.2, -2.5), Pt(0.2, -2.5), Pt(0.2, 0.2), Pt(-0.2, 0.2)),
+        weight=1.0,
+        name="web",
+    )
+
+    # --------------------------------------------------------
+    # 3. CREATE SECTIONS WITH Z-COORDINATES
+    # --------------------------------------------------------
+    # Each Section groups polygons and assigns a Z position.
+
+    s0 = Section(polygons=(poly0_start, poly1_start), z=0.0)
+    s1 = Section(polygons=(poly0_end, poly1_end), z=10.0)
+
+    # --------------------------------------------------------
+    # 4. INITIALIZE CONTINUOUS SECTION FIELD
+    # --------------------------------------------------------
+    # A linear interpolator is used to generate intermediate
+    # sections between Z = 0 and Z = 10.
+    field = ContinuousSectionField(section0=s0, section1=s1)
+
+
+    # --------------------------------------------------------
+    # 5. PRIMARY SECTION PROPERTIES (Z = 5.0)
+    # --------------------------------------------------------
+    # Properties are computed at mid-span.
+    sec_mid = field.section(5.0)
+    props = section_properties(sec_mid)
+    
+    print("\n" + "="*40)
+    print("PRIMARY PROPERTIES AT Z=5.0 (Centroidal)")
+    print("="*40)
+    print(f"A:   {props['A']:.4f}      # Net Cross-Sectional Area")
+    print(f"Cx:  {props['Cx']:.4f}     # Horizontal Centroid location (Global X)")
+    print(f"Cy:  {props['Cy']:.4f}     # Vertical Centroid location (Global Y)")
+    print(f"Ix:  {props['Ix']:.4f}     # Second Moment of Area about Centroidal X-axis")
+    print(f"Iy:  {props['Iy']:.4f}     # Second Moment of Area about Centroidal Y-axis")
+    print(f"Ixy: {props['Ixy']:.4f}    # Product of Inertia (Measure of asymmetry)")
+    print(f"J:   {props['J']:.4f}      # Polar Moment of Area (Ix + Iy)")
+
+    # 2. DERIVED PROPERTIES (Radius of Gyration, Principal Axes)
+    derived = section_derived_properties(props)
+    print("\n" + "-"*40)
+    print("DERIVED GEOMETRIC PROPERTIES")
+    print("-"*40)
+    print(f"rx:  {derived['rx']:.4f}     # Radius of Gyration about X (sqrt(Ix/A))")
+    print(f"ry:  {derived['ry']:.4f}     # Radius of Gyration about Y (sqrt(Iy/A))")
+    print(f"I1:  {derived['I1']:.4f}     # Maximum Principal Moment of Area")
+    print(f"I2:  {derived['I2']:.4f}     # Minimum Principal Moment of Area")
+    print(f"Deg: {derived['theta_deg']:.2f}°   # Principal Axis Rotation Angle")
+
+    # --------------------------------------------------------
+    # 7. STATICAL MOMENT OF AREA (Q)
+    # --------------------------------------------------------
+    # Computed at the neutral axis (y = Cy).
+    # Used in shear stress calculations.)
+    Q_na = section_statical_moment_partial(sec_mid, y_cut=props['Cy'])
+    print("\n" + "-"*40)
+    print("SHEAR ANALYSIS PROPERTIES")
+    print("-"*40)
+    print(f"Q_na: {Q_na:.4f}    # Statical Moment of Area above Neutral Axis (for Shear Stress)")
+
+    # 8. VOLUMETRIC PROPERTIES
+    total_vol = integrate_volume(field, n=200)
+    print("\n" + "="*40)
+    print("GLOBAL FIELD PROPERTIES (3D)")
+    print("="*40)
+    print(f"Total Volume: {total_vol:.4f} # Total material volume of the ruled solid")
+    # Technical Explanation for the negative Cy
+    print("\n" + "-"*50)
+    print("TECHNICAL NOTE ON COORDINATES:")
+    print("-"*50)
+    print("The negative value for 'Cy' is physically correct.")
+    print("In this model, the flange is centered at y=0, while the web")
+    print("extends downwards (from y=0.2 to y=-1.0 at Z=0, and y=-2.5 at Z=10).")
+    print("Since the majority of the T-section's mass is located below the")
+    print("global X-axis (y=0), the centroid MUST have a negative Y-coordinate.")
+    print("This indicates the geometric center is below the drawing origin.")
+    print("-"*50)
+
+
+    # --------------------------------------------------------
+    # 9. VISUALIZATION
+    # --------------------------------------------------------
+    # - 2D section plot at Z = 5.0
+    # - 3D ruled solid visualization
+    viz = Visualizer(field)
+    
+    # Generate 2D plot for the specified slice
+    viz.plot_section_2d(z=5.0)
+    
+    # Generate 3D plot of the interpolated solid
+    # line_percent determines the density of the longitudinal ruled lines
+    viz.plot_volume_3d(line_percent=100.0, seed=1)
+
+    import matplotlib.pyplot as plt
+    plt.show()
+```
 
 
 ### How to Cite
