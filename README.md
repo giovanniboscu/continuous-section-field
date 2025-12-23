@@ -84,6 +84,21 @@ Properties used for stress verification at specific fibers.
 * **Extreme Fiber Distances:** The maximum distances from the neutral axis to the outer vertices of the polygons.
 * **Partial Statical Moment ($Q$):** Calculated for the portion above a cut $y_{cut}$ using the **Sutherland-Hodgman clipping algorithm**; required for Jourawski shear stress ($\tau = VQ/It$).
 
+## Target Applications & Use Cases
+
+**CSF** is designed for specialist engineering scenarios where standard "piecewise-prismatic" approximations are insufficient or inefficient.
+
+### 🌬️ Wind Energy (Offshore & Onshore)
+High-fidelity modeling of tapered steel or concrete towers. Since CSF captures the continuous variation of the section, it provides more accurate natural frequency (eigenvalue) analysis and mass distribution, which are critical for aero-elastic stability.
+* **Benefit**: Reduces the number of elements needed for a full tower model while increasing precision.
+
+### 🌉 Complex Infrastructure & Bridges
+Ideal for bridge piers with non-standard geometries (e.g., transitioning from a rectangular base to a circular or elliptical top) or bridge decks with variable depth.
+* **Benefit**: Exact stiffness matrix generation for "Organic" or non-catalog shapes.
+
+### 🎓 Academic Research & Software Development
+A "plug-and-play" mechanical engine for researchers developing new FEM codes, non-linear solvers, or optimization algorithms.
+* **Benefit**: Avoids rewriting the complex geometric integration and statical moment logic from scratch.
 ---
 ## 6. Model Validation: Circular Hollow Section
 <br>
