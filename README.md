@@ -1,4 +1,5 @@
 # Continuous Section Field (CSF)
+## An Analytical Engine for Non-Prismatic Structural Members
 
 **CSF** is a Python library for the geometric and mechanical modeling of **single non-prismatic structural members** (slender beams with variable cross-sections).
 ### **Arbitrary Cross-Section Support**
