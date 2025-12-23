@@ -174,7 +174,7 @@ This project was developed and validated using the following official engineerin
   * [**Project Page at NREL.gov**](https://www.nrel.gov/wind/data-models.html)
 
 
-##  Documentation & Code Comments
+## 8. Documentation & Code Comments
 
 The library is designed with a **"self-documenting code"** approach. For developers and engineers who wish to dive deeper into the mathematical implementations or extend the library's functionality:
 
