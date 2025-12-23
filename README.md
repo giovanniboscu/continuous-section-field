@@ -173,8 +173,6 @@ This project was developed and validated using the following official engineerin
   * [**Download Official PDF (NREL)**](https://www.nrel.gov/docs/fy09osti/38060.pdf)
   * [**Project Page at NREL.gov**](https://www.nrel.gov/wind/data-models.html)
 
-### How to Cite this Library
-If you use **CSF** in your research, academic work, or professional projects, please cite it as follows:
 
 ##  Documentation & Code Comments
 
@@ -318,7 +316,7 @@ The library is designed with a **"self-documenting code"** approach. For develop
 ```
 
 
-### How to Cite
+### How to Cite this Library
 If you use **CSF** in your research, academic work, or professional projects, please cite it as follows:
 
 > Boscu, G. (2025). **Continuous Section Field (CSF)**: A geometric and mechanical engine for non-prismatic structural members. Available at: https://github.com/giovanniboscu/continuous-section-field
