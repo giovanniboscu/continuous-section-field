@@ -21,6 +21,16 @@ The common practice of modeling non-prismatic members as a concatenation of equi
 
 ### Ruled Surface Geometry (Vertex Mapping)
 The library generates the 3D volume by connecting a "Start" polygon ($z_0$) and an "End" polygon ($z_1$).
+The 3D volume is generated using the geometric principle of **Ruled Surfaces**. The algorithm establishes a linear mapping between $n$ polygons at the base ($z_{start}$) and $n$ polygons at the top ($z_{end}$).
+
+* **Linear Interpolation**: Each vertex $P_i$ of a cross-section is defined by a straight line (generator) connecting the corresponding vertices of the boundary sections:
+  $$P_i(z) = P_{i, start} + \frac{z - z_{start}}{z_{end} - z_{start}} \cdot (P_{i, end} - P_{i, start})$$
+* **Continuous Tapering**: This mathematical approach ensures that the transition between different shapes (e.g., a large circle to a smaller circle, or a thick T-beam to a slender one) is perfectly smooth and continuous.
+* **Geometric Fidelity**: Unlike FEA models that "step" the geometry, CSF's ruled surface approach captures the exact slope of the member's face, which is critical for accurate buckling and second-order effect analysis.
+
+
+
+---
 
 * **Linear Interpolation**: Each vertex of the cross-section is described as a linear function of the longitudinal coordinate.
 * **Continuous Transition**: This mapping creates ruled surfaces that define a smooth variation of the section, making vertex coordinates polynomial functions of known degree.
