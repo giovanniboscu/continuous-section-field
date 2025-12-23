@@ -163,7 +163,7 @@ The following tables provide a side-by-side comparison between the **Numerical r
 ### Scientific Observation
 The alignment between the CSF results and the NREL data is nearly perfect. Small discrepancies (e.g., in mass or inertia) are due to the fact that NREL data is often rounded for publication, while CSF maintains double-precision accuracy throughout its internal integration of the ruled surface. This comparison confirms the library's ability to accurately handle **continuously varying tapered sections** in high-stakes engineering applications.
 
-## 8. References & Official Documentation
+## References & Official Documentation
 
 This project was developed and validated using the following official engineering standards and technical references:
 
