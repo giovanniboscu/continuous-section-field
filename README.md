@@ -202,6 +202,9 @@ The library is designed with a **"self-documenting code"** approach. For develop
 * **Inline Instructions**: Every core function (from the Sutherland-Hodgman clipping to the Gaussian quadrature integrals) includes a description of its input parameters and expected physical units.
 * **Developer Friendly**: You can find detailed explanations of the vertex-mapping logic and the stiffness matrix assembly directly above the respective function definitions.
 
+<details>
+<summary>Click to expand the full T-Beam Python example</summary>
+
 ```
 
     # --------------------------------------------------------
@@ -334,7 +337,7 @@ The library is designed with a **"self-documenting code"** approach. For develop
     import matplotlib.pyplot as plt
     plt.show()
 ```
-
+</details>
 
 ### How to Cite this Library
 If you use **CSF** in your research, academic work, or professional projects, please cite it as follows:
