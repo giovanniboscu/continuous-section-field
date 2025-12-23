@@ -181,4 +181,4 @@ The library is designed with a **"self-documenting code"** approach. For develop
 ### How to Cite
 If you use **CSF** in your research, academic work, or professional projects, please cite it as follows:
 
-> Boscu, G. (2025). **Continuous Section Field (CSF)**: A geometric and mechanical engine for non-prismatic structural members. Available at: https://github.com/giovanniboscu/
+> Boscu, G. (2025). **Continuous Section Field (CSF)**: A geometric and mechanical engine for non-prismatic structural members. Available at: https://github.com/giovanniboscu/continuous-section-field
