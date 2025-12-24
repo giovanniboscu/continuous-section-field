@@ -15,6 +15,7 @@
 | Bending stiffness about X/Y   | EIxx   | 2.24786286e+11  | 2.24797570e+11 | 0.0050 %   |
 | Torsional stiffness (GJ)      | GJ     | 1.72978399e+11  | 1.72987083e+11 | 0.0050 %   |
 
+[See full NREL 5‑MW validation ](#4-advanced-validation-nrel-5-mw-reference-wind-turbine-tower)
 
 ### **Arbitrary Cross-Section Support**
 Unlike traditional structural tools limited to predefined geometric templates, this library treats the cross-section as a **fully generic topological entity**.
