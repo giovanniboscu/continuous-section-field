@@ -6,6 +6,15 @@
 
 **CSF** is a Python library for the geometric and mechanical modeling of **single non-prismatic structural members** (slender beams with variable cross-sections).
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
+### NREL 5-MW Tower – Key Section Properties (z = 0 m)
+
+| Property                      | Symbol | CSF Value       | NREL Value     | Error      |
+|-------------------------------|:------:|-----------------|----------------|-----------:|
+| Net cross-sectional area      | A      | 3.54915663e-01  | 3.54924572e-01 | 0.0025 %   |
+| Axial stiffness               | EA     | 7.45322893e+10  | 7.45341600e+10 | 0.0025 %   |
+| Bending stiffness about X/Y   | EIxx   | 2.24786286e+11  | 2.24797570e+11 | 0.0050 %   |
+| Torsional stiffness (GJ)      | GJ     | 1.72978399e+11  | 1.72987083e+11 | 0.0050 %   |
+
 
 ### **Arbitrary Cross-Section Support**
 Unlike traditional structural tools limited to predefined geometric templates, this library treats the cross-section as a **fully generic topological entity**.
