@@ -88,8 +88,8 @@ Primary & Centroidal Properties
 | ID | Parameter | Symbol | Technical Description |
 | :--- | :--- | :---: | :--- |
 | 1 | **Area** | $A$ | Total net cross-sectional area |
-| 2 | **Centroid Cx** | $C_x$ | Horizontal CG (Section is symmetric about Y) |
-| 3 | **Centroid Cy** | $C_y$ | Vertical CG (Shifted down due to web depth) |
+| 2 | **Centroid Cx** | $C_x$ | Horizontal coordinate of the geometric centroid) |
+| 3 | **Centroid Cy** | $C_y$ | Vertical coordinate of the geometric centroid) |
 | 4 | **Inertia Ix** | $I_x$ | Second moment of area about centroidal X-axis |
 | 5 | **Inertia Iy** | $I_y$ | Second moment of area about centroidal Y-axis |
 | 6 | **Inertia Ixy** | $I_{xy}$ | Product of inertia (Zero indicates symmetry) |
