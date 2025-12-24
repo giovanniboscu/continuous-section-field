@@ -59,6 +59,20 @@ Polygons in CSF are the fundamental units for both geometry and mechanics:
 * **Multi-material sections**: Each polygon carries a `weight` attribute ($n = E_i / E_{ref}$). This allows the modeling of composite sections (e.g., steel-reinforced timber) by calculating the **Elastic Centroid**.
 * **Hole Modeling (Algebraic Voids)**: By assigning a **weight of -1.0**, a polygon acts as a hole. The library automatically subtracts its area and inertia from the total, allowing for effortless modeling of hollow tubes or cellular beams without complex boolean operations.
 
+## 🚀 OpenSees Integration
+
+This library bridges the gap between complex geometric modeling (Ruled Surfaces) and structural analysis. It provides built-in functions to export your models directly to **OpenSees**.
+
+### 1. Global Stiffness Matrix (12x12)
+Instead of approximating a tapered beam with several small elements, CSF calculates the **exact global stiffness matrix** for a single non-prismatic element. It uses a 5-point Gaussian quadrature to integrate the varying sectional properties ($EA, EI_x, EI_y$) along the longitudinal axis.
+
+```python
+# Generate the 12x12 matrix for a 10m tapered beam
+K_element = assemble_element_stiffness_matrix(field, E_ref)
+
+# Export to a ready-to-use OpenSees .tcl file
+export_to_opensees_tcl(field, K_element, "bridge_pier.tcl")
+
 ### Advanced Property Digestor
 For any point $z$ along the axis, the library calculates:
 * **Sectional Stiffness Matrix ($3 \times 3$)**: Rigorous coupling of axial and flexural stiffness ($EA, EI_x, EI_y, EI_{xy}$) via Gaussian Quadrature over triangulated domains.
