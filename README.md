@@ -59,51 +59,84 @@ For any point $z$ along the axis, the library calculates:
 * **Volumetric Analysis**: Exact material volume calculation via integration of the area function $A(z)$.
 ---
 
-## 3. Comprehensive Mechanical Property Digest
+## 3. Sectional Analysis Engine
 
-The library performs a multi-pass integration to extract every relevant structural parameter. All values are calculated at any coordinate $z$ and account for homogenization (weights) and voids (negative weights).
+The library is designed for the analysis of tapered, non-homogeneous members (such as wind turbine towers or complex bridge girders) where properties vary along the longitudinal axis.
 
-### A. Geometric & Mass Properties (Zeroth & First Moments)
-These define the "quantity" and "position" of the section.
-* **Weighted Area ($A$):** The homogenized net area $\sum A_i \cdot w_i$.
-* **Elastic Centroid ($C_x, C_y$):** The center of stiffness relative to the global origin.
-* **Total Volume ($V$):** The 3D integral of the area function $A(z)$ along the longitudinal axis.
-* **Section Perimeter ($P$):** Total length of all polygon boundaries, used for surface-related calculations.
+## Technical Methodology & Integration Schemes
 
-### B. Stiffness & Inertia (Second Moments)
-Calculated relative to the **Centroidal Axes** via the Parallel Axis Theorem.
-* **Centroidal Moments of Inertia ($I_{xx}, I_{yy}$):** Resistance to bending about horizontal and vertical axes.
-* **Product of Inertia ($I_{xy}$):** Measure of sectional asymmetry; essential for unsymmetrical bending.
-* **Polar Moment of Area ($J$):** Resistance to torsional deformation, calculated as $I_{xx} + I_{yy}$.
-* **Sectional Stiffness Matrix ($[K]$):** A $3 \times 3$ constitutive matrix relating generalized strains ($\epsilon, \kappa_x, \kappa_y$) to internal actions ($N, M_x, M_y$).
+The engine employs a **multi-pass analysis** combined with **Gaussian integration schemes** to extract structural parameters with high numerical fidelity. Specifically engineered for **tapered and non-homogeneous members**, it is ideal for applications where sectional properties vary continuously along the longitudinal axis (e.g., wind turbine towers, bridge girders, or aerospace components).
+
+####  Multi-Pass Analysis Workflow
+To ensure accuracy, the library processes geometry in distinct logical stages:
+* **Geometric Pass**: Uses the **Shoelace algorithm** (Surveyor's formula) to determine net area and first moments, applying **Steiner’s Parallel Axis Theorem** to translate results to the centroid.
+* **Principal Axis Pass**: Performs eigen-decomposition of the inertia tensor (Mohr's Circle logic) to identify principal moments ($I_1, I_2$) and the rotation angle ($\theta$).
+
+####  Gaussian Integration Schemes (Numerical Quadrature)
+For complex constitutive properties, the library moves beyond simple boundary integration:
+* **Stiffness Matrix Calculation**: To compute the exact sectional stiffness matrix $[K]$, the engine performs **Gaussian quadrature** on triangulated sub-domains. 
+* **Sub-domain Triangulation**: Each polygon is decomposed into triangles where integration points and weights are applied, allowing the model to handle variations in Elastic Moduli ($E$) across the section.
+
+####  Continuous Longitudinal Mapping
+Unlike traditional frame analysis software that treats members as prismatic, this library treats the member as a **Continuous Section Field**:
+* **Dynamic Computation**: Every property is calculated "on-the-fly" at any longitudinal coordinate $z$ via linear vertex-mapping.
+* **Homogenization & Voids**: Full support for material homogenization through **positive weights** and internal voids or cut-outs through **negative weights**.
+
+#### The CSF library natively provides
+
+Primary & Centroidal Properties
+| ID | Parameter | Symbol | Technical Description |
+| :--- | :--- | :---: | :--- |
+| 1 | **Area** | $A$ | Total net cross-sectional area |
+| 2 | **Centroid Cx** | $C_x$ | Horizontal CG (Section is symmetric about Y) |
+| 3 | **Centroid Cy** | $C_y$ | Vertical CG (Shifted down due to web depth) |
+| 4 | **Inertia Ix** | $I_x$ | Second moment of area about centroidal X-axis |
+| 5 | **Inertia Iy** | $I_y$ | Second moment of area about centroidal Y-axis |
+| 6 | **Inertia Ixy** | $I_{xy}$ | Product of inertia (Zero indicates symmetry) |
+| 7 | **Polar Moment** | $J$ | Polar moment of area ($I_x + I_y$) |
 
 
 
-### C. Derived & Principal Properties
-Calculated via Mohr's Circle analysis for structural stability and orientation.
-* **Principal Moments of Inertia ($I_1, I_2$):** The maximum and minimum possible second moments of area.
-* **Principal Rotation Angle ($\theta$):** The inclination of the principal axes relative to the global system.
-* **Radii of Gyration ($r_x, r_y$):** Measure of efficiency for buckling analysis, defined as $\sqrt{I/A}$.
+Derived Geometric Properties
+| ID | Parameter | Symbol | Technical Description |
+| :--- | :--- | :---: | :--- |
+| 8 | **Principal I1** | $I_1$ | Maximum Principal Moment of Area |
+| 9 | **Principal I2** | $I_2$ | Minimum Principal Moment of Area |
+| 10 | **Radius rx** | $r_x$ | Radius of gyration about X: $\sqrt{I_x/A}$ |
+| 11 | **Radius ry** | $r_y$ | Radius of gyration about Y: $\sqrt{I_y/A}$ |
 
-### D. Strength & Shear Analysis
-Properties used for stress verification at specific fibers.
-* **Elastic Section Moduli ($W_x, W_y$):** Calculated using the extreme fiber distances ($y_{max}, y_{min}$) to find the maximum bending stress $\sigma = M/W$.
-* **Extreme Fiber Distances:** The maximum distances from the neutral axis to the outer vertices of the polygons.
-* **Partial Statical Moment ($Q$):** Calculated for the portion above a cut $y_{cut}$ using the **Sutherland-Hodgman clipping algorithm**; required for Jourawski shear stress ($\tau = VQ/It$).
+Structural Analysis (Strength & Rigidity)
+| ID | Parameter | Symbol | Technical Description |
+| :--- | :--- | :---: | :--- |
+| 12 | **Elastic Modulus Wx** | $W_x$ | Section modulus for bending about X ($I_x / y_{max}$) |
+| 13 | **Elastic Modulus Wy** | $W_y$ | Section modulus for bending about Y ($I_y / x_{max}$) |
+| 14 | **Torsional Rigidity** | $K$ | Saint-Venant Torsional Constant (Open Section) |
+
+
+Shear & Verification Data
+| ID | Parameter | Symbol | Technical Description |
+| :--- | :--- | :---: | :--- |
+| 15 | **Poly 0 Ix (Origin)** | $I_{x0}$ | Polygon 0 inertia relative to global origin |
+| 16 | **Poly 0 Q_local** | $Q_{p0}$ | Statical moment of Poly 0 relative to centroid |
+| 17 | **Section Q_na** | $Q_{na}$ | Total Statical Moment at Neutral Axis (for $\tau$ shear) |
+| 18 | **Stiffness Shape** | Matrix | Dimensionality of the Sectional Stiffness Matrix $[K]$ |
+
+---
+
 
 ## Target Applications & Use Cases
 
 **CSF** is designed for specialist engineering scenarios where standard "piecewise-prismatic" approximations are insufficient or inefficient.
 
-### 🌬️ Wind Energy (Offshore & Onshore)
+### Wind Energy (Offshore & Onshore)
 High-fidelity modeling of tapered steel or concrete towers. Since CSF captures the continuous variation of the section, it provides more accurate natural frequency (eigenvalue) analysis and mass distribution, which are critical for aero-elastic stability.
 * **Benefit**: Reduces the number of elements needed for a full tower model while increasing precision.
 
-### 🌉 Complex Infrastructure & Bridges
+### Complex Infrastructure & Bridges
 Ideal for bridge piers with non-standard geometries (e.g., transitioning from a rectangular base to a circular or elliptical top) or bridge decks with variable depth.
 * **Benefit**: Exact stiffness matrix generation for "Organic" or non-catalog shapes.
 
-### 🎓 Academic Research & Software Development
+### Academic Research & Software Development
 A "plug-and-play" mechanical engine for researchers developing new FEM codes, non-linear solvers, or optimization algorithms.
 * **Benefit**: Avoids rewriting the complex geometric integration and statical moment logic from scratch.
 ---
@@ -113,37 +146,43 @@ A "plug-and-play" mechanical engine for researchers developing new FEM codes, no
 
 To verify the accuracy of the numerical engine, a validation test was performed using a **non-tapered hollow cylinder** (Steel Pipe). This allows for a direct comparison between the library's results (based on weighted polygons) and exact analytical formulas.
 
-The test script `cilinder_withcheck.py` models a tower with a diameter of 4.935m and a thickness of 23mm using a 128-sided polygon. The results demonstrate that the polygonal approximation converges to the analytical solution with exceptional precision.
+The test script `cilinder_withcheck.py` models a tower with a diameter of 4.935m and a thickness of 23mm using a 512-sided polygon. The results demonstrate that the polygonal approximation converges to the analytical solution with exceptional precision.
 
 ### Extended Validation Report
 The following table reports the full output of the validation script, comparing **Theoretical (Analytical)** values with the **Numerical** results generated by the library.
 
-| Structural Property | Sym | Theoretical | Numerical | Error % | Unit |
-| :--- | :---: | :--- | :--- | :--- | :--- |
-| **Net material cross-section** | A | 3.54924572e-01 | 3.54782053e-01 | 0.0402% | m^2 |
-| **Horizontal center of mass** | Cx | 0.00000000e+00 | 8.24051633e-15 | 8.24e-15 (abs) | m |
-| **Vertical center of mass** | Cy | 0.00000000e+00 | 1.30616095e-14 | 1.31e-14 (abs) | m |
-| **Axial stiffness** | EA | 7.45341600e+10 | 7.45042311e+10 | 0.0402% | N |
-| **Bending stiffness about X** | EIxx | 2.24797570e+11 | 2.24617080e+11 | 0.0803% | N*m^2 |
-| **Bending stiffness about Y** | EIyy | 2.24797570e+11 | 2.24617080e+11 | 0.0803% | N*m^2 |
-| **Symmetry check (Ixy)** | Ixy | 0.00000000e+00 | 4.83640905e-15 | 4.84e-15 (abs) | m^4 |
-| **Torsional stiffness constant** | J | 2.14092924e+00 | 2.13921029e+00 | 0.0803% | m^4 |
-| **Torsional stiffness (GJ)** | GJ | 1.72987083e+11 | 1.72848191e+11 | 0.0803% | N*m^2 |
-| **Maximum bending stiffness** | EI_max | 2.24797570e+11 | 2.24617080e+11 | 0.0803% | N*m^2 |
-| **Minimum bending stiffness** | EI_min | 2.24797570e+11 | 2.24617080e+11 | 0.0803% | N*m^2 |
-| **Principal axis rotation** | Alpha | 0.00000000e+00 | 0.00000000e+00 | 0.0000% (Iso) | deg |
-| **Buckling radius about X** | rx | 1.73667329e+00 | 1.73632461e+00 | 0.0201% | m |
-| **Buckling radius about Y** | ry | 1.73667329e+00 | 1.73632461e+00 | 0.0201% | m |
-| **First moment of area (Shear)** | Q | 2.77471084e-01 | 2.77303971e-01 | 0.0602% | m^3 |
-| **Elastic Section Modulus** | W | 4.33825580e-01 | 4.33477262e-01 | 0.0803% | m^3 |
-| **Mass per unit length** | m_lin | 2.78615789e+03 | 2.78503911e+03 | 0.0402% | kg/m |
+| Structural Property                  | Sym    | Theoretical        | Numerical          | Error             | Unit |
+|-------------------------------------|--------|--------------------|--------------------|-------------------|------|
+| Net material cross-section          | A      | 3.54924572e-01     | 3.54915663e-01     | 0.0025%           | m²   |
+| Horizontal center of mass           | Cx     | 0.00000000e+00     | 5.44816314e-15     | 5.45e-15 (abs)    | m    |
+| Vertical center of mass             | Cy     | 0.00000000e+00     | -4.12383916e-14    | 4.12e-14 (abs)    | m    |
+| Axial stiffness                     | EA     | 7.45341600e+10     | 7.45322893e+10     | 0.0025%           | N    |
+| Bending stiffness about X           | EIxx   | 2.24797570e+11     | 2.24786286e+11     | 0.0050%           | N·m² |
+| Bending stiffness about Y           | EIyy   | 2.24797570e+11     | 2.24786286e+11     | 0.0050%           | N·m² |
+| Symmetry check (Ixy)                | Ixy    | 0.00000000e+00     | 3.45889405e-15     | 3.46e-15 (abs)    | m⁴   |
+| Torsional stiffness constant        | J      | 2.14092924e+00     | 2.14082177e+00     | 0.0050%           | m⁴   |
+| Torsional stiffness (GJ)            | GJ     | 1.72987083e+11     | 1.72978399e+11     | 0.0050%           | N·m² |
+| Maximum bending stiffness           | EI_max | 2.24797570e+11     | 2.24786286e+11     | 0.0050%           | N·m² |
+| Minimum bending stiffness           | EI_min | 2.24797570e+11     | 2.24786286e+11     | 0.0050%           | N·m² |
+| Principal axis rotation             | Alpha  | 0.00000000e+00     | 0.00000000e+00     | 0.0000% (Iso)     | deg  |
+| Buckling radius about X             | rx     | 1.73667329e+00     | 1.73665150e+00     | 0.0013%           | m    |
+| Buckling radius about Y             | ry     | 1.73667329e+00     | 1.73665150e+00     | 0.0013%           | m    |
+| First moment of area (Shear)        | Q      | 2.77471084e-01     | 2.77460637e-01     | 0.0038%           | m³   |
+| Elastic Section Modulus             | W      | 4.33825580e-01     | 4.33803803e-01     | 0.0050%           | m³   |
+| Mass per unit length                | m_lin  | 2.78615789e+03     | 2.78608796e+03     | 0.0025%           | kg/m |
 
-### Global Mass & Volume Summary
-* **Total Calculated Tower Volume:** 31.078908 m³
-* **Total Calculated Tower Mass:** 243.969426 t
-* **Analytical vs Numerical Mass Error:** **0.0402%**
+---
+
+**Total Calculated Tower Volume:** 31.090612 m³  
+
+**Total Calculated Tower Mass:** 244.061305 t  
+
+| Description          | Theoretical | Numerical | Error   | Unit |
+|----------------------|-------------|-----------|---------|------|
+| Total Tower Mass     | 244.067     | 244.061   | 0.0025% | t    |
+
   
-## 7. Advanced Validation: NREL 5-MW Reference Wind Turbine Tower
+## 4. Advanced Validation: NREL 5-MW Reference Wind Turbine Tower
 
 * **NREL Wind Research**: Official portal for wind energy data, software, and reference models. [https://www.nrel.gov/wind/](https://www.nrel.gov/wind/)
 
@@ -210,7 +249,7 @@ The library is designed with a **"self-documenting code"** approach. For develop
 * **Developer Friendly**: You can find detailed explanations of the vertex-mapping logic and the stiffness matrix assembly directly above the respective function definitions.
 
 
-## 9. Practical Example: Continuously Tapered T-Beam
+## 5. Practical Example: Continuously Tapered T-Beam
 This section demonstrates how to model a structural member where the geometry transitions smoothly between two different T-profiles.
 
 ### The Engineering Challenge
