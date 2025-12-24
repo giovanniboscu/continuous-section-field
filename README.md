@@ -5,6 +5,10 @@
 ![Integration](https://img.shields.io/badge/Integration-Gaussian_Quadrature-green.svg)
 
 **CSF** is a Python library for the geometric and mechanical modeling of **single non-prismatic structural members** (slender beams with variable cross-sections).
+
+
+<img width="578" height="578" alt="Tapered-Pi-Section" src="https://github.com/user-attachments/assets/60dc9530-89dc-4df4-a222-8c87c5ee19c2" />
+
 ### **Arbitrary Cross-Section Support**
 Unlike traditional structural tools limited to predefined geometric templates, this library treats the cross-section as a **fully generic topological entity**.
 
