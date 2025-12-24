@@ -59,10 +59,9 @@ Polygons in CSF are the fundamental units for both geometry and mechanics:
 * **Multi-material sections**: Each polygon carries a `weight` attribute ($n = E_i / E_{ref}$). This allows the modeling of composite sections (e.g., steel-reinforced timber) by calculating the **Elastic Centroid**.
 * **Hole Modeling (Algebraic Voids)**: By assigning a **weight of -1.0**, a polygon acts as a hole. The library automatically subtracts its area and inertia from the total, allowing for effortless modeling of hollow tubes or cellular beams without complex boolean operations.
 
-## 🚀 OpenSees Integration
+##  OpenSees Integration
 
 This library bridges the gap between complex geometric modeling (Ruled Surfaces) and structural analysis. It provides built-in functions to export your models directly to **OpenSees**.
-
 
 ### Advanced Property Digestor
 For any point $z$ along the axis, the library calculates:
