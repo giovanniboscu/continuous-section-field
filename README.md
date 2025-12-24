@@ -201,7 +201,7 @@ This project was developed and validated using the following official engineerin
   * [**Project Page at NREL.gov**](https://www.nrel.gov/wind/data-models.html)
 
 
-## 8. Documentation & Code Comments
+## Documentation & Code Comments
 
 The library is designed with a **"self-documenting code"** approach. For developers and engineers who wish to dive deeper into the mathematical implementations or extend the library's functionality:
 
@@ -210,7 +210,11 @@ The library is designed with a **"self-documenting code"** approach. For develop
 * **Developer Friendly**: You can find detailed explanations of the vertex-mapping logic and the stiffness matrix assembly directly above the respective function definitions.
 
 
-## T-Beam CSF example
+## 9. Practical Example: Continuously Tapered T-Beam
+This section demonstrates how to model a structural member where the geometry transitions smoothly between two different T-profiles.
+
+### The Engineering Challenge
+In standard FEM, a tapered beam is often approximated as a series of stepped prismatic segments. **CSF** instead treats the member as a **continuous ruled solid**, capturing the exact cubic variation of the moment of inertia $I(z)$ and the shift of the elastic centroid $C_y(z)$ without discretization errors.
 
 <img width="493" height="420" alt="ruledvolumeT" src="https://github.com/user-attachments/assets/705b296c-ddb4-4ea3-b3f1-8af44a1ba7d5" />
 
