@@ -4,8 +4,11 @@
 ![Math](https://img.shields.io/badge/Engine-Analytical_Mechanics-red.svg)
 ![Integration](https://img.shields.io/badge/Integration-Gaussian_Quadrature-green.svg)
 
-**CSF** is a Python library for the geometric and mechanical modeling of **single non-prismatic structural members** (slender beams with variable cross-sections).
+**CSF** is a Python library for the geometric and mechanical modeling of **single non-prismatic structural members** (slender beams with variable cross-sections). Here below the CSF model of  NREL 5-MW Tower 
+
+
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
+
 ### NREL 5-MW Tower – Key Section Properties (z = 0 m)
 
 | Property                      | Symbol | CSF Value       | NREL Value     | Error      |
