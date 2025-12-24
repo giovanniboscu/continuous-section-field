@@ -6,12 +6,12 @@
 Unlike traditional structural tools limited to predefined geometric templates, this library treats the cross-section as a **fully generic topological entity**.
 
 * **Algebraic Polygon Logic:** Sections are defined as a collection of vertices in a 2D plane. By utilizing **weighted vertex logic**, the engine can compute properties for any shape, from standard circular towers to complex, custom-engineered architectural profiles.
-* ** Curvature:** While the model uses discrete segments, it supports an arbitrary number of sides. You can approximate curved surfaces (like the NREL tower) by increasing the vertex count, effectively reducing the segment length to reach any desired level of precision.
+* **Curvature:** While the model uses discrete segments, it supports an arbitrary number of sides. You can approximate curved surfaces (like the NREL tower) by increasing the vertex count, effectively reducing the segment length to reach any desired level of precision.
 * **No Predefined Templates:** You are not restricted to "Circle" or "Rectangle" classes. If a geometry can be described by coordinates, the library can compute its structural mechanics ($A, I, J, Q$).
 * **Topological Freedom:** The algebraic approach allows for seamless modeling of:
     * **Hollow Sections:** (e.g., the NREL tapered shell).
     * **Multi-cellular Shapes:** Complex internal stiffeners or multi-chamber profiles.
-    * **Composite Logic:** Potential for multi-material sections by applying modular ratio weights to different polygons.
+    * **Composite Logic:** Multi-material sections by applying modular ratio weights to different polygons.
 
 > [!IMPORTANT]
 > **Not a FEM Solver**: This library is **not** a Finite Element Method (FEM) software. It is a geometric and constitutive "engine" designed to model the continuous variation of a single member. It provides the stiffness matrices and sectional properties required for structural analysis, acting as a high-accuracy pre-processor or a kernel for beam theory applications.
