@@ -196,6 +196,7 @@ The following table reports the full output of the validation script, comparing 
 ## 4. Advanced Validation: NREL 5-MW Reference Wind Turbine Tower
 
 * **NREL Wind Research**: Official portal for wind energy data, software, and reference models. [https://www.nrel.gov/wind/](https://www.nrel.gov/wind/)
+<img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/9f73f6eb-96d0-4d0c-a819-1bb9b86337c9" />
 
 <img width="424" height="630" alt="5-MW" src="https://github.com/user-attachments/assets/73fe46a0-b778-489c-9f49-980ea3d0a20e" />
 
