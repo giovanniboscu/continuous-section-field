@@ -3,6 +3,8 @@
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![Math](https://img.shields.io/badge/Engine-Analytical_Mechanics-red.svg)
 ![Integration](https://img.shields.io/badge/Integration-Gaussian_Quadrature-green.svg)
+![License](https://img.shields.io/github/license/giovanniboscu/continuous-section-field)
+![Repo Size](https://img.shields.io/github/repo-size/giovanniboscu/continuous-section-field)
 
 **CSF** is a Python library for the geometric and mechanical modeling of **single non-prismatic structural members** (slender beams with variable cross-sections). Here below the CSF model of  NREL 5-MW Tower 
 
@@ -341,7 +343,7 @@ In standard FEM, a tapered beam is often approximated as a series of stepped pri
 <img width="503" height="445" alt="T-sectionat5" src="https://github.com/user-attachments/assets/e1950742-1bc0-4999-82dc-f68e6f903c22" />
 
 
-<details>
+<details>python
 <summary>Click to expand the full T-Beam Python example</summary>
 
 ```
