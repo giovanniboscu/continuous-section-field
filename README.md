@@ -10,7 +10,7 @@
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
 
 
-[See full NREL 5‑MW validation ](#4-advanced-validation-nrel-5-mw-reference-wind-turbine-tower)
+[See full NREL 5‑MW validation ](#5-advanced-validation-nrel-5-mw-reference-wind-turbine-tower)
 
 ### **Arbitrary Cross-Section Support**
 Unlike traditional structural tools limited to predefined geometric templates, this library treats the cross-section as a **fully generic topological entity**.
