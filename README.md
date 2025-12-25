@@ -133,7 +133,7 @@ Shear & Verification Data
 | 18 | **Stiffness Shape** | Matrix | Dimensionality of the Sectional Stiffness Matrix $[K]$ |
 
 ---
-## 6. Model Validation: Circular Hollow Section
+## 4. Model Validation: Circular Hollow Section
 <br>
 <img width="513" height="675" alt="cilinder_withcheck" src="https://github.com/user-attachments/assets/6ea0c8e5-4cc9-4d9a-8773-c9318cbe9ddb" />
 
@@ -175,7 +175,7 @@ The following table reports the full output of the validation script, comparing 
 | Total Tower Mass     | 244.067     | 244.061   | 0.0025% | t    |
 
   
-## 4. Advanced Validation: NREL 5-MW Reference Wind Turbine Tower
+## 5. Advanced Validation: NREL 5-MW Reference Wind Turbine Tower
 
 * **NREL Wind Research**: Official portal for wind energy data, software, and reference models. [https://www.nrel.gov/wind/](https://www.nrel.gov/wind/)
 
@@ -302,7 +302,7 @@ This project was developed and validated using the following official engineerin
   * [**Project Page at NREL.gov**](https://www.nrel.gov/wind/data-models.html)
 
 
-## CSF Documentation and In-Depth Code Commentary
+## 6. CSF Documentation and In-Depth Code Commentary
 
 The library is designed with a **"self-documenting code"** approach. For developers and engineers who wish to dive deeper into the mathematical implementations or extend the library's functionality:
 
@@ -311,7 +311,7 @@ The library is designed with a **"self-documenting code"** approach. For develop
 * **Developer Friendly**: You can find detailed explanations of the vertex-mapping logic and the stiffness matrix assembly directly above the respective function definitions.
 
 
-## 5. Practical Example: Continuously Tapered T-Beam
+## 7. Practical Example: Continuously Tapered T-Beam
 This section demonstrates how to model a structural member where the geometry transitions smoothly between two different T-profiles.
 
 ### The Engineering Challenge
