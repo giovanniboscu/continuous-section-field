@@ -181,7 +181,8 @@ Official research portal of the National Renewable Energy Laboratory providing a
 
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
 
-**CSF** computes continuous sectional properties (A(z), EI(z), GJ(z), etc.) for arbitrary polygonal cross‑sections, compatible with OpenFAST ElastoDyn/SubDyn distributed property requirements and validated against NREL 5‑MW reference data.
+**CSF** computes continuous sectional properties along the tower height \(z\) — \(A(z)\), \(EI(z)\), \(GJ(z)\), etc. — compatible with OpenFAST ElastoDyn/SubDyn distributed property requirements and validated against NREL 5‑MW reference data.
+
 
 example/nrel_5mw_tower.py is to demonstrate the library's performance on complex, real-world structural members, a full-scale model of the **NREL 5-MW Reference Wind Turbine Tower** was implemented. The geometry and material properties strictly follow the technical report *"Definition of a 5-MW Reference Wind Turbine for Offshore System Development"* (NREL/TP-500-38060).
 
