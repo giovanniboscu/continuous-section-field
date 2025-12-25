@@ -9,14 +9,6 @@
 
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
 
-### NREL 5-MW Tower – Key Section Properties (z = 0 m)
-
-| Property                      | Symbol | CSF Value       | NREL Value     | Error      |
-|-------------------------------|:------:|-----------------|----------------|-----------:|
-| Net cross-sectional area      | A      | 3.54915663e-01  | 3.54924572e-01 | 0.0025 %   |
-| Axial stiffness               | EA     | 7.45322893e+10  | 7.45341600e+10 | 0.0025 %   |
-| Bending stiffness about X/Y   | EIxx   | 2.24786286e+11  | 2.24797570e+11 | 0.0050 %   |
-| Torsional stiffness (GJ)      | GJ     | 1.72978399e+11  | 1.72987083e+11 | 0.0050 %   |
 
 [See full NREL 5‑MW validation ](#4-advanced-validation-nrel-5-mw-reference-wind-turbine-tower)
 
@@ -143,24 +135,6 @@ Shear & Verification Data
 | 17 | **Section Q_na** | $Q_{na}$ | Total Statical Moment at Neutral Axis (for $\tau$ shear) |
 | 18 | **Stiffness Shape** | Matrix | Dimensionality of the Sectional Stiffness Matrix $[K]$ |
 
----
-
-
-## Target Applications & Use Cases
-
-**CSF** is designed for specialist engineering scenarios where standard "piecewise-prismatic" approximations are insufficient or inefficient.
-
-### Wind Energy (Offshore & Onshore)
-High-fidelity modeling of tapered steel or concrete towers. Since CSF captures the continuous variation of the section, it provides more accurate natural frequency (eigenvalue) analysis and mass distribution, which are critical for aero-elastic stability.
-* **Benefit**: Reduces the number of elements needed for a full tower model while increasing precision.
-
-### Complex Infrastructure & Bridges
-Ideal for bridge piers with non-standard geometries (e.g., transitioning from a rectangular base to a circular or elliptical top) or bridge decks with variable depth.
-* **Benefit**: Exact stiffness matrix generation for "Organic" or non-catalog shapes.
-
-### Academic Research & Software Development
-A "plug-and-play" mechanical engine for researchers developing new FEM codes, non-linear solvers, or optimization algorithms.
-* **Benefit**: Avoids rewriting the complex geometric integration and statical moment logic from scratch.
 ---
 ## 6. Model Validation: Circular Hollow Section
 <br>
