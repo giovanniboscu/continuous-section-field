@@ -82,71 +82,73 @@ def export_to_opensees_tcl(field, K_12x12, filename="csf_model.tcl"):
 
     print(f"File TCL generato con successo: {filename}")
 
-def assemble_element_stiffness_matrix(field: ContinuousSectionField, E_ref: float = 1.0) -> np.ndarray:
-    """
-    Assembles the 12x12 global stiffness matrix by integrating EA, EIx, and EIy 
-    along the Z-axis using Euler-Bernoulli beam theory and Gaussian quadrature.
-    """
-    L = abs(field.z1 - field.z0)
-    
-    # 5-point Gaussian quadrature for high precision on cubic variations
-    gauss_points = [
-        (-0.9061798459, 0.2369268851),
-        (-0.5384693101, 0.4786286705),
-        ( 0.0,           0.5688888889),
-        ( 0.5384693101, 0.4786286705),
-        ( 0.9061798459, 0.2369268851)
-    ]
+    def assemble_element_stiffness_matrix(field: ContinuousSectionField, E_ref: float = 1.0) -> np.ndarray:
+        """
+        Assembles the 12x12 global stiffness matrix using 10-point Gaussian quadrature.
+        This provides near-exact integration for highly non-prismatic members.
+        """
+        L = abs(field.z1 - field.z0)
+        
+        # 10-point Gaussian quadrature (higher precision for extreme tapering)
+        # Weights and points for the interval [-1, 1]
+        gauss_points = [
+            (-0.9739065285, 0.0666713443),
+            (-0.8650633667, 0.1494513492),
+            (-0.6794095683, 0.2190863625),
+            (-0.4333953941, 0.2692667193),
+            (-0.1488743390, 0.2955242247),
+            ( 0.1488743390, 0.2955242247),
+            ( 0.4333953941, 0.2692667193),
+            ( 0.6794095683, 0.2190863625),
+            ( 0.8650633667, 0.1494513492),
+            ( 0.9739065285, 0.0666713443)
+        ]
 
-    K = np.zeros((12, 12))
+        K = np.zeros((12, 12))
 
-    for xi, weight in gauss_points:
-        # Map Gauss point from [-1, 1] to physical [z0, z1]
-        z_phys = ((field.z1 - field.z0) * xi + (field.z1 + field.z0)) / 2.0
-        detJ = L / 2.0
-        
-        # Get local sectional properties (EA, EIx, EIy)
-        K_sec = section_stiffness_matrix(field.section(z_phys), E_ref=E_ref)
-        EA  = K_sec[0, 0]
-        EIx = K_sec[1, 1]
-        EIy = K_sec[2, 2]
-        
-        # Integration weight
-        W = weight * detJ
+        for xi, weight in gauss_points:
+            # Mapping Gauss point from [-1, 1] to [z0, z1]
+            z_phys = ((field.z1 - field.z0) * xi + (field.z1 + field.z0)) / 2.0
+            detJ = L / 2.0 # Jacobian for 1D integration
+            
+            # Get sectional properties at the Gauss point
+            # section_stiffness_matrix returns the 3x3 [EA, ESx, ESy...]
+            K_sec = section_stiffness_matrix(field.section(z_phys), E_ref=E_ref)
+            EA  = K_sec[0, 0]
+            EIx = K_sec[1, 1]
+            EIy = K_sec[2, 2]
+            
+            # Combined weight
+            W = weight * detJ
 
-        # --- 1. AXIAL STIFFNESS (Degrees of Freedom: 1, 7) ---
-        axial = (EA / L**2) * W 
-        K[0, 0] += axial; K[6, 6] += axial
-        K[0, 6] -= axial; K[6, 0] -= axial
+            # --- Integration of Shape Function Derivatives ---
+            # Note: For non-prismatic beams, the standard EB shape functions 
+            # are integrated with local varying EI(z)
+            
+            # Axial Stiffness
+            axial = (EA / L**2) * W 
+            K[0, 0] += axial; K[6, 6] += axial
+            K[0, 6] -= axial; K[6, 0] -= axial
 
-        # --- 2. BENDING Y-Z PLANE (About X-axis: DoF 2, 6, 8, 12) ---
-        # Matrix terms for non-prismatic beam (variable EIx)
-        K[1, 1] += (12 * EIx / L**3) * W;  K[1, 5] += (6 * EIx / L**2) * W
-        K[5, 1] += (6 * EIx / L**2) * W;   K[5, 5] += (4 * EIx / L) * W
-        
-        K[7, 7] += (12 * EIx / L**3) * W;  K[7, 11] -= (6 * EIx / L**2) * W
-        K[11, 7] -= (6 * EIx / L**2) * W;  K[11, 11] += (4 * EIx / L) * W
-        
-        K[1, 7] -= (12 * EIx / L**3) * W;  K[1, 11] += (6 * EIx / L**2) * W
-        K[5, 7] -= (6 * EIx / L**2) * W;   K[5, 11] += (2 * EIx / L) * W
-        
-        # Symmetric counterparts
-        K[7, 1] = K[1, 7]; K[11, 1] = K[1, 11]; K[7, 5] = K[5, 7]; K[11, 5] = K[5, 11]
+            # Bending Y-Z (Rotation about X)
+            K[1, 1] += (12 * EIx / L**3) * W;  K[1, 5] += (6 * EIx / L**2) * W
+            K[5, 1] += (6 * EIx / L**2) * W;   K[5, 5] += (4 * EIx / L) * W
+            K[7, 7] += (12 * EIx / L**3) * W;  K[7, 11] -= (6 * EIx / L**2) * W
+            K[11, 7] -= (6 * EIx / L**2) * W;  K[11, 11] += (4 * EIx / L) * W
+            K[1, 7] -= (12 * EIx / L**3) * W;  K[1, 11] += (6 * EIx / L**2) * W
+            K[5, 7] -= (6 * EIx / L**2) * W;   K[5, 11] += (2 * EIx / L) * W
+            
+            # Bending X-Z (Rotation about Y)
+            K[2, 2] += (12 * EIy / L**3) * W;  K[2, 4] -= (6 * EIy / L**2) * W
+            K[4, 2] -= (6 * EIy / L**2) * W;   K[4, 4] += (4 * EIy / L) * W
+            K[8, 8] += (12 * EIy / L**3) * W;  K[8, 10] += (6 * EIy / L**2) * W
+            K[10, 8] += (6 * EIy / L**2) * W;  K[10, 10] += (4 * EIy / L) * W
+            K[2, 8] -= (12 * EIy / L**3) * W;  K[2, 10] -= (6 * EIy / L**2) * W
+            K[4, 8] += (6 * EIy / L**2) * W;   K[4, 10] += (2 * EIy / L) * W
 
-        # --- 3. BENDING X-Z PLANE (About Y-axis: DoF 3, 5, 9, 11) ---
-        K[2, 2] += (12 * EIy / L**3) * W;  K[2, 4] -= (6 * EIy / L**2) * W
-        K[4, 2] -= (6 * EIy / L**2) * W;   K[4, 4] += (4 * EIy / L) * W
-        
-        K[8, 8] += (12 * EIy / L**3) * W;  K[8, 10] += (6 * EIy / L**2) * W
-        K[10, 8] += (6 * EIy / L**2) * W;  K[10, 10] += (4 * EIy / L) * W
-        
-        K[2, 8] -= (12 * EIy / L**3) * W;  K[2, 10] -= (6 * EIy / L**2) * W
-        K[4, 8] += (6 * EIy / L**2) * W;   K[4, 10] += (2 * EIy / L) * W
-        
-        # Symmetric counterparts
-        K[8, 2] = K[2, 8]; K[10, 2] = K[2, 10]; K[8, 4] = K[4, 8]; K[10, 4] = K[4, 10]
-
-    return K
+        # Final Symmetry Enforcement
+        K = (K + K.T) / 2.0
+        return K
 
 def polygon_inertia_about_origin(poly: Polygon) -> Tuple[float, float, float]:
     """
