@@ -2,7 +2,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-from section_field import (
+from csf import (
     Pt, Polygon, Section, ContinuousSectionField, Visualizer,
     section_data, section_derived_properties, 
     section_statical_moment_partial, integrate_volume,section_stiffness_matrix
