@@ -1,7 +1,5 @@
 import numpy as np
 import math
-import matplotlib.pyplot as plt
-from .section_field import *
 from .section_field import (
     Pt, Polygon, Section, ContinuousSectionField, Visualizer,
     section_data, section_derived_properties, 
