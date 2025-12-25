@@ -176,12 +176,14 @@ The following table reports the full output of the validation script, comparing 
 
   
 ## 6. Advanced Validation: NREL 5-MW Reference Wind Turbine Tower
-Official research portal of the National Renewable Energy Laboratory providing authoritative wind energy data, reference turbine models, technical reports, and validated simulation tools. It serves as a primary source for benchmark wind turbine definitions, including the NREL 5-MW reference model.
+Official research portal of the National Renewable Energy Laboratory providing authoritative wind energy data, reference turbine models, technical reports, and validated simulation tools. It serves as a primary source for benchmark wind turbine definitions, including the NREL 5-MW reference model.  
+
+
+<img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
+
+**CSF** computes continuous sectional properties (A(z), EI(z), GJ(z), etc.) for arbitrary polygonal cross-sections-compatible with OpenFAST ElastoDyn/SubDyn distributed property requirements and validated against NREL 5-MW reference data.
 
 * **NREL Wind Research**: Official portal for wind energy data, software, and reference models. [https://www.nrel.gov/wind/](https://www.nrel.gov/wind/)
-
-  
-<img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/9f73f6eb-96d0-4d0c-a819-1bb9b86337c9" />
 
 example/nrel_5mw_tower.py is to demonstrate the library's performance on complex, real-world structural members, a full-scale model of the **NREL 5-MW Reference Wind Turbine Tower** was implemented. The geometry and material properties strictly follow the technical report *"Definition of a 5-MW Reference Wind Turbine for Offshore System Development"* (NREL/TP-500-38060).
 
@@ -292,7 +294,7 @@ This project was developed and validated using the following official engineerin
 * **NREL 5-MW Reference Wind Turbine**: The tower validation is based on the official technical report:
   > *Jonkman, J., Butterfield, S., Musial, W., and Scott, G., "Definition of a 5-MW Reference Wind Turbine for Offshore System Development," NREL Technical Report NREL/TP-500-38060, February 2009.*
   * [**Download Official PDF (NREL)**](https://www.nrel.gov/docs/fy09osti/38060.pdf)
-  * [**Project Page at NREL.gov**](https://www.nrel.gov/wind/data-models.html)
+  * [**OpenFAST Documentation**](https://openfast.readthedocs.io/en/main/)
     
 ---
 
