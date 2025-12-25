@@ -304,8 +304,9 @@ The library is designed with a **"self-documenting code"** approach. For develop
 * **Inline Instructions**: Every core function (from the Sutherland-Hodgman clipping to the Gaussian quadrature integrals) includes a description of its input parameters and expected physical units.
 * **Developer Friendly**: You can find detailed explanations of the vertex-mapping logic and the stiffness matrix assembly directly above the respective function definitions.
 
+---
 
-## 7. Practical Example: Continuously Tapered T-Beam
+## 8. Practical Example: Continuously Tapered T-Beam
 This section demonstrates how to model a structural member where the geometry transitions smoothly between two different T-profiles.
 
 ### The Engineering Challenge
