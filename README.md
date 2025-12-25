@@ -10,7 +10,7 @@
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
 
 
-[See full NREL 5‑MW validation ](#5-advanced-validation-nrel-5-mw-reference-wind-turbine-tower)
+[See full NREL 5‑MW validation ](#6-advanced-validation-nrel-5-mw-reference-wind-turbine-tower)
 
 ### **Arbitrary Cross-Section Support**
 Unlike traditional structural tools limited to predefined geometric templates, this library treats the cross-section as a **fully generic topological entity**.
@@ -59,16 +59,7 @@ Polygons in CSF are the fundamental units for both geometry and mechanics:
 * **Multi-material sections**: Each polygon carries a `weight` attribute ($n = E_i / E_{ref}$). This allows the modeling of composite sections (e.g., steel-reinforced timber) by calculating the **Elastic Centroid**.
 * **Hole Modeling (Algebraic Voids)**: By assigning a **weight of -1.0**, a polygon acts as a hole. The library automatically subtracts its area and inertia from the total, allowing for effortless modeling of hollow tubes or cellular beams without complex boolean operations.
 
-##  OpenSees Integration
-
-This library bridges the gap between complex geometric modeling (Ruled Surfaces) and structural analysis. It provides built-in functions to export your models directly to **OpenSees**.
-
-### Advanced Property Digestor
-For any point $z$ along the axis, the library calculates:
-* **Sectional Stiffness Matrix ($3 \times 3$)**: Rigorous coupling of axial and flexural stiffness ($EA, EI_x, EI_y, EI_{xy}$) via Gaussian Quadrature over triangulated domains.
-* **Shear Analysis (Jourawski)**: Calculation of the **Partial Statical Moment ($Q$)** using a polygon clipping algorithm, enabling shear stress analysis on variable sections.
-* **Volumetric Analysis**: Exact material volume calculation via integration of the area function $A(z)$.
----
+--
 
 ## 3. Sectional Analysis Engine
 
@@ -132,8 +123,19 @@ Shear & Verification Data
 | 17 | **Section Q_na** | $Q_{na}$ | Total Statical Moment at Neutral Axis (for $\tau$ shear) |
 | 18 | **Stiffness Shape** | Matrix | Dimensionality of the Sectional Stiffness Matrix $[K]$ |
 
+--
+## 4. OpenSees Integration
+
+This library bridges the gap between complex geometric modeling (Ruled Surfaces) and structural analysis. It provides built-in functions to export your models directly to **OpenSees**.
+
+### Advanced Property Digestor
+For any point $z$ along the axis, the library calculates:
+* **Sectional Stiffness Matrix ($3 \times 3$)**: Rigorous coupling of axial and flexural stiffness ($EA, EI_x, EI_y, EI_{xy}$) via Gaussian Quadrature over triangulated domains.
+* **Shear Analysis (Jourawski)**: Calculation of the **Partial Statical Moment ($Q$)** using a polygon clipping algorithm, enabling shear stress analysis on variable sections.
+* **Volumetric Analysis**: Exact material volume calculation via integration of the area function $A(z)$.
 ---
-## 4. Model Validation: Circular Hollow Section
+
+## 5. Model Validation: Circular Hollow Section
 <br>
 <img width="513" height="675" alt="cilinder_withcheck" src="https://github.com/user-attachments/assets/6ea0c8e5-4cc9-4d9a-8773-c9318cbe9ddb" />
 
@@ -175,7 +177,7 @@ The following table reports the full output of the validation script, comparing 
 | Total Tower Mass     | 244.067     | 244.061   | 0.0025% | t    |
 
   
-## 5. Advanced Validation: NREL 5-MW Reference Wind Turbine Tower
+## 6. Advanced Validation: NREL 5-MW Reference Wind Turbine Tower
 
 * **NREL Wind Research**: Official portal for wind energy data, software, and reference models. [https://www.nrel.gov/wind/](https://www.nrel.gov/wind/)
 
@@ -302,7 +304,7 @@ This project was developed and validated using the following official engineerin
   * [**Project Page at NREL.gov**](https://www.nrel.gov/wind/data-models.html)
 
 
-## 6. CSF Documentation and In-Depth Code Commentary
+## 7. CSF Documentation and In-Depth Code Commentary
 
 The library is designed with a **"self-documenting code"** approach. For developers and engineers who wish to dive deeper into the mathematical implementations or extend the library's functionality:
 
