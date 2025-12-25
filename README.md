@@ -167,8 +167,6 @@ The following table reports the full output of the validation script, comparing 
 | Elastic Section Modulus             | W      | 4.33825580e-01     | 4.33803803e-01     | 0.0050%           | m³   |
 | Mass per unit length                | m_lin  | 2.78615789e+03     | 2.78608796e+03     | 0.0025%           | kg/m |
 
----
-
 **Total Calculated Tower Volume:** 31.090612 m³  
 
 **Total Calculated Tower Mass:** 244.061305 t  
@@ -230,8 +228,6 @@ The following tables provide a side-by-side comparison between the **Numerical r
 - **Δ (Absolute Error)** = Generated − Reference  
 - **% Error** = (Generated − Reference) / Reference × 100  
 
----
-
 ## Mass and Axial Properties
 
 | Elevation [m] | Δ TMassDen [kg/m] | % Error | Δ TwEAStif [N] | % Error |
@@ -247,8 +243,6 @@ The following tables provide a side-by-side comparison between the **Numerical r
 | 70.08 | +0.03 | +0.0013% | −1.0e+06 | −0.0017% |
 | 78.84 | +0.02 | +0.0009% | +1.0e+06 | +0.0019% |
 | 87.60 | −0.03 | −0.0015% | −3.0e+06 | −0.0062% |
-
----
 
 ## Bending and Torsional Stiffness
 
@@ -266,8 +260,6 @@ The following tables provide a side-by-side comparison between the **Numerical r
 | 78.84 | +1.0e+07 | +0.009% | +4.0e+07 | +0.047% |
 | 87.60 | 0 | 0.000% | −1.0e+07 | −0.015% |
 
----
-
 ## Section Inertia
 
 | Elevation [m] | Δ TwFAIner [kg·m] | % Error | Δ TwSSIner [kg·m] | % Error |
@@ -283,8 +275,6 @@ The following tables provide a side-by-side comparison between the **Numerical r
 | 70.08 | +10 | +0.19% | +10 | +0.19% |
 | 78.84 | +10 | +0.23% | +10 | +0.23% |
 | 87.60 | +10 | +0.28% | +10 | +0.28% |
-
----
 
 ## Summary
 
@@ -303,7 +293,8 @@ This project was developed and validated using the following official engineerin
   > *Jonkman, J., Butterfield, S., Musial, W., and Scott, G., "Definition of a 5-MW Reference Wind Turbine for Offshore System Development," NREL Technical Report NREL/TP-500-38060, February 2009.*
   * [**Download Official PDF (NREL)**](https://www.nrel.gov/docs/fy09osti/38060.pdf)
   * [**Project Page at NREL.gov**](https://www.nrel.gov/wind/data-models.html)
-
+    
+---
 
 ## 7. CSF Documentation and In-Depth Code Commentary
 
@@ -461,7 +452,7 @@ In standard FEM, a tapered beam is often approximated as a series of stepped pri
     plt.show()
 ```
 </details>
-
+---
 ### How to Cite this Library
 If you use **CSF** in your research, academic work, or professional projects, please cite it as follows:
 
