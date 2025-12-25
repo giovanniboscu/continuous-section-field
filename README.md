@@ -291,7 +291,7 @@ The following tables provide a side-by-side comparison between the **Numerical r
 
 This comparison confirms the library's ability to accurately handle **continuously varying tapered sections** in high-stakes engineering applications.
 
-## References & Official Documentation
+## NREL 5-MW References & Official Documentation
 
 This project was developed and validated using the following official engineering standards and technical references:
 
@@ -302,7 +302,7 @@ This project was developed and validated using the following official engineerin
   * [**Project Page at NREL.gov**](https://www.nrel.gov/wind/data-models.html)
 
 
-## Documentation & Code Comments
+## CSF Documentation and In-Depth Code Commentary
 
 The library is designed with a **"self-documenting code"** approach. For developers and engineers who wish to dive deeper into the mathematical implementations or extend the library's functionality:
 
