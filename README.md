@@ -25,8 +25,29 @@ Unlike traditional structural tools limited to predefined geometric templates, t
 
 > [!IMPORTANT]
 > **Not a FEM Solver**: This library is **not** a Finite Element Method (FEM) software. It is a geometric and constitutive "engine" designed to model the continuous variation of a single member. It provides the stiffness matrices and sectional properties required for structural analysis, acting as a high-accuracy pre-processor or a kernel for beam theory applications.
-
 ---
+
+## 🛠 Installation & Quick Start
+
+To use the **CSF** engine, it is recommended to use a virtual environment to keep dependencies isolated.
+
+### 0. Setup Environment
+```bash
+# Clone the repository
+git clone git@github.com:giovanniboscu/continuous-section-field.git
+cd continuous-section-field
+
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install in editable mode
+pip install -e .
+python3 example/nrel_5mw_tower.py 
+python3 example/cilinder_withcheck.py
+
+```
+
 
 ## 1. Theoretical Framework: Overcoming Discretization Dependence
 The common practice of modeling non-prismatic members as a concatenation of equivalent prismatic elements (**piecewise-prismatic approach**) introduces a non-neutral methodological choice. The numerical solution varies with the number of subdivisions and the location of sampling points.
