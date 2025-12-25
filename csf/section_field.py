@@ -1031,7 +1031,86 @@ class Visualizer:
     def __init__(self, field: ContinuousSectionField):
         self.field = field
 
+
+
+
     def plot_section_2d(self, z: float, show_ids: bool = True, show_weights: bool = True,
+                        title: Optional[str] = None, ax=None):
+        """
+        Disegna la sezione 2D con descrizioni negli angoli:
+        - Poligono 0: In alto a destra
+        - Poligono 1: In basso a sinistra
+        """
+        import matplotlib.pyplot as plt
+
+        sec = self.field.section(z)
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        for idx, poly in enumerate(sec.polygons):
+            xs = [p.x for p in poly.vertices] + [poly.vertices[0].x]
+            ys = [p.y for p in poly.vertices] + [poly.vertices[0].y]
+            
+            # Disegno del poligono e recupero colore
+            line, = ax.plot(xs, ys, linewidth=1.5, zorder=2)
+            color = line.get_color()
+
+            if show_ids or show_weights:
+                # Costruzione stringa info
+                parts = []
+                if show_ids: parts.append(f"#{idx}")
+                if show_weights: parts.append(f"w={poly.weight:g}")
+                if poly.name: parts.append(poly.name)
+                label_text = "\n".join(parts)
+
+                # Logica di posizionamento negli angoli
+                if idx == 0:
+                    # ALTO A DESTRA (Coordinate 0.95, 0.95 relative agli assi)
+                    x_pos, y_pos = 0.95, 0.95
+                    ha, va = 'right', 'top'
+                elif idx == 1:
+                    # BASSO A SINISTRA (Coordinate 0.05, 0.05 relative agli assi)
+                    x_pos, y_pos = 0.05, 0.05
+                    ha, va = 'left', 'bottom'
+                else:
+                    # Eventuali altri poligoni rimangono al centroide per default
+                    _, (cx, cy) = polygon_area_centroid(poly)
+                    ax.text(cx, cy, label_text, color=color, ha='center', va='center',
+                            bbox=dict(facecolor='white', alpha=0.7, edgecolor=color))
+                    continue
+
+                # Stampa l'etichetta nell'angolo usando transform=ax.transAxes
+                ax.text(
+                    x_pos, y_pos, label_text,
+                    transform=ax.transAxes, # Coordinate relative al riquadro (0-1)
+                    fontsize=10,
+                    fontweight='bold',
+                    color=color,
+                    ha=ha, va=va,
+                    zorder=3,
+                    bbox=dict(
+                        facecolor='white', 
+                        alpha=0.85, 
+                        edgecolor=color, 
+                        boxstyle='round,pad=0.4'
+                    )
+                )
+
+        ax.set_aspect("equal", adjustable="box")
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.grid(True, linestyle=':', alpha=0.5, zorder=1)
+
+        if title is None:
+            title = f"Section at z={z:g}"
+        ax.set_title(title)
+
+        return ax
+
+
+
+
+    def plot_section_2d2remove(self, z: float, show_ids: bool = True, show_weights: bool = True,
                         title: Optional[str] = None, ax=None):
         """
         Draw 2D section at z in perfect scale (equal aspect).
@@ -1303,3 +1382,4 @@ if __name__ == "__main__":
     viz.plot_volume_3d(line_percent=100.0, seed=1)
     import matplotlib.pyplot as plt
     plt.show()
+
