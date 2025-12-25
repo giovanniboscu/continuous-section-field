@@ -31,10 +31,7 @@ Unlike traditional structural tools limited to predefined geometric templates, t
 ## 1. Theoretical Framework: Overcoming Discretization Dependence
 The common practice of modeling non-prismatic members as a concatenation of equivalent prismatic elements (**piecewise-prismatic approach**) introduces a non-neutral methodological choice. The numerical solution varies with the number of subdivisions and the location of sampling points.
 
-**CSF** treats the single member as a **continuous manifold** using **ruled surfaces**. By defining the member’s geometry through explicit analytical functions (linear interpolation of vertices), the library ensures that:
-* The structural response is an intrinsic property of the geometry.
-* Physical properties (Area, Inertia) are defined at every infinitesimal coordinate $z$.
-* Arbitrariness is confined exclusively to the solver level, ensuring reproducibility.
+**CSF** treats the single member as a **continuous manifold** using **ruled surfaces**.
 
 ---
 
@@ -75,7 +72,7 @@ For any point $z$ along the axis, the library calculates:
 
 ## 3. Sectional Analysis Engine
 
-The library is designed for the analysis of tapered, non-homogeneous members (such as wind turbine towers or complex bridge girders) where properties vary along the longitudinal axis.
+The library is designed for the analysis of tapered, non-homogeneous members where properties vary along the longitudinal axis.
 
 ## Technical Methodology & Integration Schemes
 
