@@ -464,3 +464,5 @@ If you use **CSF** in your research, academic work, or professional projects, pl
 
 > Boscu, G. (2025). **Continuous Section Field (CSF)**: A geometric and mechanical engine for non-prismatic structural members. Available at: https://github.com/giovanniboscu/continuous-section-field
 ---
+## License
+This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
