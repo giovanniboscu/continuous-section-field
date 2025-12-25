@@ -181,7 +181,7 @@ Official research portal of the National Renewable Energy Laboratory providing a
 
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
 
-**CSF** computes continuous sectional properties (A(z), EI(z), GJ(z), etc.) for arbitrary polygonal cross-sections-compatible with OpenFAST ElastoDyn/SubDyn distributed property requirements and validated against NREL 5-MW reference data.
+**CSF** computes continuous sectional properties (A(z), EI(z), GJ(z), etc.) for arbitrary polygonal cross‑sections, compatible with OpenFAST ElastoDyn/SubDyn distributed property requirements and validated against NREL 5‑MW reference data
 
 * **NREL Wind Research**: Official portal for wind energy data, software, and reference models. [https://www.nrel.gov/wind/](https://www.nrel.gov/wind/)
 
