@@ -47,6 +47,7 @@ source venv/bin/activate
 pip install -e .
 python3 example/nrel_5mw_tower.py 
 python3 example/cilinder_withcheck.py
+python3 example/csf_rotated_validation_benchmark.py
 
 ```
 
