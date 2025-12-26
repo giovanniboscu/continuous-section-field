@@ -1118,50 +1118,7 @@ class Visualizer:
 
         return ax
 
-
-
-
-    def plot_section_2d2remove(self, z: float, show_ids: bool = True, show_weights: bool = True,
-                        title: Optional[str] = None, ax=None):
-        """
-        Draw 2D section at z in perfect scale (equal aspect).
-        Annotates polygon index and weight at each polygon centroid.
-        """
-        import matplotlib.pyplot as plt
-
-        sec = self.field.section(z)
-
-        if ax is None:
-            fig, ax = plt.subplots()
-
-        for idx, poly in enumerate(sec.polygons):
-            xs = [p.x for p in poly.vertices] + [poly.vertices[0].x]
-            ys = [p.y for p in poly.vertices] + [poly.vertices[0].y]
-            ax.plot(xs, ys)
-
-            # annotate at centroid
-            if show_ids or show_weights:
-                _, (cx, cy) = polygon_area_centroid(poly)
-                parts = []
-                if show_ids:
-                    parts.append(f"#{idx}")
-                if show_weights:
-                    parts.append(f"w={poly.weight:g}")
-                if poly.name:
-                    parts.append(poly.name)
-                ax.text(cx, cy, "  ".join(parts), fontsize=9)
-
-        ax.set_aspect("equal", adjustable="box")
-        ax.set_xlabel("X")
-        ax.set_ylabel("Y")
-        ax.grid(True, linewidth=0.3)
-
-        if title is None:
-            title = f"Section at z={z:g}"
-        ax.set_title(title)
-
-        return ax
-    
+  
 
     def plot_volume_3d(self, show_end_sections: bool = True, line_percent: float = 100.0,
                        seed: int = 0, title: str = "Ruled volume (vertex-connection lines)", ax=None):
