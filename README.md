@@ -136,7 +136,7 @@ Structural Analysis (Strength & Rigidity)
 | :--- | :--- | :---: | :--- |
 | 12 | **Elastic Modulus Wx** | $W_x$ | Section modulus for bending about X ($I_x / y_{max}$) |
 | 13 | **Elastic Modulus Wy** | $W_y$ | Section modulus for bending about Y ($I_y / x_{max}$) |
-| 14 | **Torsional Rigidity** | $K$ | Torsional Rigidity (K) The Saint-Venant torsional constant </br> is currently not evaluated. For general polygonal sections, </br>  torsional rigidity is shape-dependent and cannot</br>  be reliably inferred from area and polar noment alone. </br> To avoid unsafe or misleading results, K is intentionally set to 0.0. |
+| 14 | **Torsional Rigidity** | $K$ | Torsional Rigidity (K) The Saint-Venant torsional constant ($J$) is notoriously complex for non-circular sections. In this Beta version:</br> Core Engine: Implements a semi-empirical approximation ($J \approx A^4 / 40I_p$). </br> Purpose: This estimation is designed to provide numerical stability for 3D Finite Element models (e.g., OpenSees) where a null torsional stiffness would lead to singular matrices.</br> Accuracy: While reliable for solid, compact sections, it is a simplified model. For thin-walled or open profiles, users should treat this value as a preliminary estimate|
 
 
 Shear & Verification Data
@@ -149,15 +149,21 @@ Shear & Verification Data
 
 ---
 
-## 4. OpenSees Integration
+## 4. OpenSees Analysis Integration (BETA)
 
-This library bridges the gap between complex geometric modeling (Ruled Surfaces) and structural analysis. It provides built-in functions to export your models directly to **OpenSees**.
+> ** Beta Phase Notice**: This module is in active development. While geometric and stiffness calculations are verified for tapered beam configurations, users should validate results for complex thin-walled or open sections.
+
+This library bridges the gap between complex geometric modeling and structural simulation by providing a high-level API for **OpenSees** model generation.
+
+### Automated FEM Discretization
+* **Midpoint Integration**: Sectional properties are automatically sampled at the center of each finite element to accurately capture non-prismatic (tapering) effects.
+* **Full Model Generation**: The exporter generates complete `.tcl` environments, including nodal coordinates, element connectivity, and basic analysis patterns.
 
 ### Advanced Property Digestor
-For any point $z$ along the axis, the library calculates:
-* **Sectional Stiffness Matrix ($3 \times 3$)**: Rigorous coupling of axial and flexural stiffness ($EA, EI_x, EI_y, EI_{xy}$) via Gaussian Quadrature over triangulated domains.
-* **Shear Analysis (Jourawski)**: Calculation of the **Partial Statical Moment ($Q$)** using a polygon clipping algorithm, enabling shear stress analysis on variable sections.
-* **Volumetric Analysis**: Exact material volume calculation via integration of the area function $A(z)$.
+For any point $z$ along the axis, the library computes:
+* **Sectional Stiffness Matrix**: Rigorous derivation of $EA, EI_x, EI_y, EI_{xy}$ using Gaussian Quadrature over triangulated domains.
+* **Torsional Estimation**: Implements a robust semi-empirical approximation for the torsional constant ($J \approx A^4 / 40I_p$) to ensure numerical stability in 3D analysis for solid sections.
+* **Shear Analysis (Jourawski)**: Calculates the **Statical Moment ($Q$)** via a custom polygon clipping algorithm, enabling shear stress evaluation on variable cross-sections.
 ---
 
 ## 5. Model Validation: Circular Hollow Section
