@@ -83,73 +83,78 @@ def export_to_opensees_tcl(field, K_12x12, filename="csf_model.tcl"):
     print(f"File TCL generato con successo: {filename}")
 
     def assemble_element_stiffness_matrix(field: ContinuousSectionField, E_ref: float = 1.0) -> np.ndarray:
-        """
-        Assembles the 12x12 global stiffness matrix using 10-point Gaussian quadrature.
-        This provides near-exact integration for highly non-prismatic members.
-        """
-        L = abs(field.z1 - field.z0)
-        
-        # 10-point Gaussian quadrature (higher precision for extreme tapering)
-        # Weights and points for the interval [-1, 1]
-        gauss_points = [
-            (-0.9739065285, 0.0666713443),
-            (-0.8650633667, 0.1494513492),
-            (-0.6794095683, 0.2190863625),
-            (-0.4333953941, 0.2692667193),
-            (-0.1488743390, 0.2955242247),
-            ( 0.1488743390, 0.2955242247),
-            ( 0.4333953941, 0.2692667193),
-            ( 0.6794095683, 0.2190863625),
-            ( 0.8650633667, 0.1494513492),
-            ( 0.9739065285, 0.0666713443)
-        ]
-
-        K = np.zeros((12, 12))
-
-        for xi, weight in gauss_points:
-            # Mapping Gauss point from [-1, 1] to [z0, z1]
-            z_phys = ((field.z1 - field.z0) * xi + (field.z1 + field.z0)) / 2.0
-            detJ = L / 2.0 # Jacobian for 1D integration
+            """
+            Assembles the 12x12 global stiffness matrix using 10-point Gaussian quadrature.
+            Improved version: accounts for coupled stiffness terms (EIxy, GK).
+            """
+            L = abs(field.z1 - field.z0)
             
-            # Get sectional properties at the Gauss point
-            # section_stiffness_matrix returns the 3x3 [EA, ESx, ESy...]
-            K_sec = section_stiffness_matrix(field.section(z_phys), E_ref=E_ref)
-            EA  = K_sec[0, 0]
-            EIx = K_sec[1, 1]
-            EIy = K_sec[2, 2]
-            
-            # Combined weight
-            W = weight * detJ
+            # 10-point Gaussian quadrature weights and points
+            gauss_points = [
+                (-0.9739065285, 0.0666713443), (-0.8650633667, 0.1494513492),
+                (-0.6794095683, 0.2190863625), (-0.4333953941, 0.2692667193),
+                (-0.1488743390, 0.2955242247), ( 0.1488743390, 0.2955242247),
+                ( 0.4333953941, 0.2692667193), ( 0.6794095683, 0.2190863625),
+                ( 0.8650633667, 0.1494513492), ( 0.9739065285, 0.0666713443)
+            ]
 
-            # --- Integration of Shape Function Derivatives ---
-            # Note: For non-prismatic beams, the standard EB shape functions 
-            # are integrated with local varying EI(z)
-            
-            # Axial Stiffness
-            axial = (EA / L**2) * W 
-            K[0, 0] += axial; K[6, 6] += axial
-            K[0, 6] -= axial; K[6, 0] -= axial
+            K = np.zeros((12, 12))
 
-            # Bending Y-Z (Rotation about X)
-            K[1, 1] += (12 * EIx / L**3) * W;  K[1, 5] += (6 * EIx / L**2) * W
-            K[5, 1] += (6 * EIx / L**2) * W;   K[5, 5] += (4 * EIx / L) * W
-            K[7, 7] += (12 * EIx / L**3) * W;  K[7, 11] -= (6 * EIx / L**2) * W
-            K[11, 7] -= (6 * EIx / L**2) * W;  K[11, 11] += (4 * EIx / L) * W
-            K[1, 7] -= (12 * EIx / L**3) * W;  K[1, 11] += (6 * EIx / L**2) * W
-            K[5, 7] -= (6 * EIx / L**2) * W;   K[5, 11] += (2 * EIx / L) * W
-            
-            # Bending X-Z (Rotation about Y)
-            K[2, 2] += (12 * EIy / L**3) * W;  K[2, 4] -= (6 * EIy / L**2) * W
-            K[4, 2] -= (6 * EIy / L**2) * W;   K[4, 4] += (4 * EIy / L) * W
-            K[8, 8] += (12 * EIy / L**3) * W;  K[8, 10] += (6 * EIy / L**2) * W
-            K[10, 8] += (6 * EIy / L**2) * W;  K[10, 10] += (4 * EIy / L) * W
-            K[2, 8] -= (12 * EIy / L**3) * W;  K[2, 10] -= (6 * EIy / L**2) * W
-            K[4, 8] += (6 * EIy / L**2) * W;   K[4, 10] += (2 * EIy / L) * W
+            for xi, weight in gauss_points:
+                z_phys = ((field.z1 - field.z0) * xi + (field.z1 + field.z0)) / 2.0
+                W = weight * (L / 2.0)
+                
+                # Recuperiamo la matrice di rigidezza sezionale completa (3x3)
+                # K_sec contiene: [EA, ESx, ESy], [ESx, EIx, EIxy], [ESy, EIxy, EIy]
+                K_sec = section_stiffness_matrix(field.section(z_phys), E_ref=E_ref)
+                
+                EA   = K_sec[0, 0]
+                EIx  = K_sec[1, 1]
+                EIy  = K_sec[2, 2]
+                EIxy = K_sec[1, 2] # Termine di accoppiamento flessionale (cruciale per asimmetria)
+                
+                # Calcolo Torsione (GK). Nota: G = E / (2 * (1 + nu)). Assumiamo nu=0.3 -> G = E/2.6
+                full_props = section_full_analysis(field.section(z_phys))
+                GK = full_props.get('K_torsion', 0.0) * (E_ref / 2.6)
 
-        # Final Symmetry Enforcement
-        K = (K + K.T) / 2.0
-        return K
+                # --- Integrazione Assiale ---
+                axial = (EA / L**2) * W
+                K[0, 0] += axial; K[6, 6] += axial
+                K[0, 6] -= axial; K[6, 0] -= axial
 
+                # --- Integrazione Torsionale ---
+                tors = (GK / L) * W
+                K[3, 3] += tors; K[9, 9] += tors
+                K[3, 9] -= tors; K[9, 3] -= tors
+
+                # --- Integrazione Flessionale (con accoppiamento EIxy) ---
+                # Definiamo i coefficienti della matrice di rigidezza della trave
+                c1 = (12 / L**3) * W
+                c2 = (6 / L**2) * W
+                c3 = (4 / L) * W
+                c4 = (2 / L) * W
+
+                # Flessione nel piano Y-Z (Attorno a X)
+                K[1,1]+=c1*EIx; K[1,5]+=c2*EIx; K[1,7]-=c1*EIx; K[1,11]+=c2*EIx
+                K[5,5]+=c3*EIx; K[5,7]-=c2*EIx; K[5,11]+=c4*EIx
+                K[7,7]+=c1*EIx; K[7,11]-=c2*EIx
+                K[11,11]+=c3*EIx
+
+                # Flessione nel piano X-Z (Attorno a Y)
+                K[2,2]+=c1*EIy; K[2,4]-=c2*EIy; K[2,8]-=c1*EIy; K[2,10]-=c2*EIy
+                K[4,4]+=c3*EIy; K[4,8]+=c2*EIy; K[4,10]+=c4*EIy
+                K[8,8]+=c1*EIy; K[8,10]+=c2*EIy
+                K[10,10]+=c3*EIy
+
+                # ACCOPPIAMENTO INCROCIATO (EIxy) - Questa è la vera "protezione"
+                # Se la sezione è asimmetrica, caricare in X produce spostamenti in Y
+                K[1,2]+=c1*EIxy; K[1,4]-=c2*EIxy; K[1,8]-=c1*EIxy; K[1,10]-=c2*EIxy
+                K[5,2]+=c2*EIxy; K[5,4]-=0.0;     K[5,8]-=c2*EIxy; K[5,10]+=c4*EIxy # semplificato
+
+            # Final Symmetry Enforcement
+            K = (K + K.T) / 2.0
+            return K
+    
 def polygon_inertia_about_origin(poly: Polygon) -> Tuple[float, float, float]:
     """
     Second moments about the origin (0,0) using standard polygon formulas.
@@ -185,64 +190,36 @@ def polygon_inertia_about_origin(poly: Polygon) -> Tuple[float, float, float]:
     # Using signed formulas + abs for Ix/Iy tends to be robust for mixed orientations in prototypes.
     return (poly.weight * abs(Ix), poly.weight * abs(Iy), poly.weight * Ixy)
 
-def integrate_volume(field: ContinuousSectionField, n: int = 200) -> float:
+def integrate_volume(field: ContinuousSectionField) -> float:
     """
-    Computes the total volume of a 3D ruled solid by numerically integrating 
-    cross-sectional areas along the longitudinal axis (Z).
-
-    TECHNICAL SUMMARY:
-    This function acts as a volumetric integrator for a domain defined by a 
-    Continuous Section Field. It calculates the definite integral of the 
-    area function A(z) over the interval [z0, z1]. The solid is treated as a 
-    Generalized Ruled Surface where every longitudinal generator is a straight line 
-    connecting corresponding vertices of the boundary polygons.
-
-    MATHEMATICAL FORMULATION:
-    1. Domain Discretization:
-       The integration interval Δz = (z1 - z0) is partitioned into 'n' 
-       sub-intervals of equal length:
-       dz = Δz / n_steps
-
-    2. Sectional Area Function:
-       At any coordinate z, the cross-sectional area A(z) is computed from the 
-       polygonal vertices obtained via linear interpolation (LERP) between 
-       the two terminal states.
-
-    3. Numerical Integration (Trapezoidal Rule):
-       The total volume V is approximated by the second-order composite 
-       trapezoidal rule:
-       V ≈ Σ [ (A(z_i) + A(z_{i+1})) / 2 ] * dz
-       This method is exact for solids with a linear or constant area variation 
-       and provides high-order convergence for generalized ruled volumes.
-
-    GEOMETRIC ASSUMPTIONS:
-    - Linear Mapping: The connectivity between section0 and section1 is 
-      strictly linear, forming a ruled manifold.
-    - Homogenized Domain: The function accounts for internal voids or 
-      overlapping regions through the algebraic sum of weighted polygonal areas.
-
-    RETURNS:
-       - Total Volume [L³] representing the 3D space enclosed by the 
-         interpolated polygonal boundaries.
+    Computes the total volume of a 3D ruled solid using high-precision 
+    5-point Gaussian quadrature.
     """
-    z0 = field.z0
-    z1 = field.z1
+    L = abs(field.z1 - field.z0)
+    
+    # 5-point Gaussian quadrature points and weights
+    gauss_points = [
+        (-0.9061798459, 0.2369268851),
+        (-0.5384693101, 0.4786286705),
+        ( 0.0,           0.5688888889),
+        ( 0.5384693101, 0.4786286705),
+        ( 0.9061798459, 0.2369268851)
+    ]
 
-    dz = (z1 - z0) / n
     V = 0.0
 
-    for i in range(n + 1):
-        z = z0 + i * dz
-        section = field.section(z)
+    for xi, weight in gauss_points:
+        # Map Gauss point from [-1, 1] to physical [z0, z1]
+        z_phys = ((field.z1 - field.z0) * xi + (field.z1 + field.z0)) / 2.0
+        
+        # Get sectional area at the Gauss point
+        section = field.section(z_phys)
         A = section_properties(section)["A"]
+        
+        # Accumulate weighted volume (detJ = L / 2)
+        V += A * weight * (L / 2.0)
 
-        # Trapezoidal rule
-        if i == 0 or i == n:
-            V += 0.5 * A
-        else:
-            V += A
-
-    return V * dz
+    return V
 
 def section_full_analysis(section: Section):
     """
@@ -301,19 +278,8 @@ def section_full_analysis(section: Section):
     A = props['A']
     J = props['J']
     
-    if J > 1e-12 and A > 0:
-        # We apply the general Saint-Venant approximation: K ≈ A^4 / (40 * J).
-        # This formula provides a reliable estimation for compact, solid-like 
-        # sections, drastically reducing the error compared to using J alone.
-        K_approx = (A**4) / (40.0 * J)
-        
-        # Physical Constraint: According to the theory of elasticity, the torsional 
-        # constant (K) of a non-circular section is always less than or equal to 
-        # its polar moment of inertia (J).
-        props['K_torsion'] = min(K_approx, J)
-    else:
-        # Handle cases with zero area or inertia
-        props['K_torsion'] = 0.0
+    props['K_torsion'] = 0.0
+
     
     # -------------------------------------------------------------------------
     # 5. DATA CONSOLIDATION

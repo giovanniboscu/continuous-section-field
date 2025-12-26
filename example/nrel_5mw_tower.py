@@ -12,7 +12,7 @@ from csf import (
 # INPUT PARAMETERS
 # =========================
 H = 87.6        # TOTAL HEIGHT(m)
-N_LATI =256     # Number of edges
+N_LATI =512     # Number of edges
 DENSITY = 8500  # kg/m^3
 
 # BAS
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     num_wx = p['Ix'] / y_max_dist
 
     # Proprietà globali 3D (Volume e Massa totale torre)
-    num_vol = integrate_volume(field, n=200)
+    num_vol = integrate_volume(field)
     num_mass = (num_vol * DENSITY) / 1000
 
     header = f"{'STRUCTURAL PROPERTY':<32} | {'SYM':<8} | {'VALUE':<18} | {'UNIT'}"

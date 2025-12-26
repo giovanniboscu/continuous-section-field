@@ -75,7 +75,7 @@ if __name__ == "__main__":
     ex_mass_den = ex_a * DENSITY
 
     # Global 3D properties (Volume and total tower mass)
-    num_vol = integrate_volume(field, n=200)
+    num_vol = integrate_volume(field)
     ex_vol = ex_a * H
     num_mass = (num_vol * DENSITY) / 1000
     ex_mass_total = (ex_vol * DENSITY) / 1000
