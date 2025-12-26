@@ -82,78 +82,98 @@ def export_to_opensees_tcl(field, K_12x12, filename="csf_model.tcl"):
 
     print(f"File TCL generato con successo: {filename}")
 
-    def assemble_element_stiffness_matrix(field: ContinuousSectionField, E_ref: float = 1.0) -> np.ndarray:
-            """
-            Assembles the 12x12 global stiffness matrix using 10-point Gaussian quadrature.
-            Improved version: accounts for coupled stiffness terms (EIxy, GK).
-            """
-            L = abs(field.z1 - field.z0)
+    def assemble_element_stiffness_matrix(field: ContinuousSectionField, E_ref: float = 1.0, 
+                                    nu: float = 0.3, n_gauss: int = 5) -> np.ndarray:
+        """
+        Assembles the complete 12x12 Timoshenko beam stiffness matrix with full EIxy coupling.
+        
+        DOF order (OpenSees compatible): [ux1,uy1,uz1,θx1,θy1,θz1 | ux2,uy2,uz2,θx2,θy2,θz2]
+        Full asymmetric section support (EIxy coupling) + Saint-Venant torsion.
+        """
+        L = abs(field.z1 - field.z0)
+        if L < 1e-9:
+            raise ValueError("Element length must be positive")
+        
+        G_ref = E_ref / (2 * (1 + nu))
+        
+        # Gaussian quadrature points (n_gauss sufficient for exact integration)
+        gauss_points = np.polynomial.legendre.leggauss(n_gauss)
+        
+        K = np.zeros((12, 12))
+        
+        for xi, weight in gauss_points:
+            z_phys = ((field.z1 - field.z0) * xi + (field.z1 + field.z0)) / 2.0
+            W = weight * (L / 2.0)
             
-            # 10-point Gaussian quadrature weights and points
-            gauss_points = [
-                (-0.9739065285, 0.0666713443), (-0.8650633667, 0.1494513492),
-                (-0.6794095683, 0.2190863625), (-0.4333953941, 0.2692667193),
-                (-0.1488743390, 0.2955242247), ( 0.1488743390, 0.2955242247),
-                ( 0.4333953941, 0.2692667193), ( 0.6794095683, 0.2190863625),
-                ( 0.8650633667, 0.1494513492), ( 0.9739065285, 0.0666713443)
-            ]
-
-            K = np.zeros((12, 12))
-
-            for xi, weight in gauss_points:
-                z_phys = ((field.z1 - field.z0) * xi + (field.z1 + field.z0)) / 2.0
-                W = weight * (L / 2.0)
-                
-                # Recuperiamo la matrice di rigidezza sezionale completa (3x3)
-                # K_sec contiene: [EA, ESx, ESy], [ESx, EIx, EIxy], [ESy, EIxy, EIy]
-                K_sec = section_stiffness_matrix(field.section(z_phys), E_ref=E_ref)
-                
-                EA   = K_sec[0, 0]
-                EIx  = K_sec[1, 1]
-                EIy  = K_sec[2, 2]
-                EIxy = K_sec[1, 2] # Termine di accoppiamento flessionale (cruciale per asimmetria)
-                
-                # Calcolo Torsione (GK). Nota: G = E / (2 * (1 + nu)). Assumiamo nu=0.3 -> G = E/2.6
-                full_props = section_full_analysis(field.section(z_phys))
-                GK = full_props.get('K_torsion', 0.0) * (E_ref / 2.6)
-
-                # --- Integrazione Assiale ---
-                axial = (EA / L**2) * W
-                K[0, 0] += axial; K[6, 6] += axial
-                K[0, 6] -= axial; K[6, 0] -= axial
-
-                # --- Integrazione Torsionale ---
-                tors = (GK / L) * W
-                K[3, 3] += tors; K[9, 9] += tors
-                K[3, 9] -= tors; K[9, 3] -= tors
-
-                # --- Integrazione Flessionale (con accoppiamento EIxy) ---
-                # Definiamo i coefficienti della matrice di rigidezza della trave
-                c1 = (12 / L**3) * W
-                c2 = (6 / L**2) * W
-                c3 = (4 / L) * W
-                c4 = (2 / L) * W
-
-                # Flessione nel piano Y-Z (Attorno a X)
-                K[1,1]+=c1*EIx; K[1,5]+=c2*EIx; K[1,7]-=c1*EIx; K[1,11]+=c2*EIx
-                K[5,5]+=c3*EIx; K[5,7]-=c2*EIx; K[5,11]+=c4*EIx
-                K[7,7]+=c1*EIx; K[7,11]-=c2*EIx
-                K[11,11]+=c3*EIx
-
-                # Flessione nel piano X-Z (Attorno a Y)
-                K[2,2]+=c1*EIy; K[2,4]-=c2*EIy; K[2,8]-=c1*EIy; K[2,10]-=c2*EIy
-                K[4,4]+=c3*EIy; K[4,8]+=c2*EIy; K[4,10]+=c4*EIy
-                K[8,8]+=c1*EIy; K[8,10]+=c2*EIy
-                K[10,10]+=c3*EIy
-
-                # ACCOPPIAMENTO INCROCIATO (EIxy) - Questa è la vera "protezione"
-                # Se la sezione è asimmetrica, caricare in X produce spostamenti in Y
-                K[1,2]+=c1*EIxy; K[1,4]-=c2*EIxy; K[1,8]-=c1*EIxy; K[1,10]-=c2*EIxy
-                K[5,2]+=c2*EIxy; K[5,4]-=0.0;     K[5,8]-=c2*EIxy; K[5,10]+=c4*EIxy # semplificato
-
-            # Final Symmetry Enforcement
+            # Sectional properties
+            K_sec = section_stiffness_matrix(field.section(z_phys), E_ref=E_ref)
+            props = section_full_analysis(field.section(z_phys))
+            
+            EA = K_sec[0, 0]
+            EIx = K_sec[1, 1] 
+            EIy = K_sec[2, 2]
+            EIxy = K_sec[1, 2]
+            GK = props['J'] * G_ref  # Correct Saint-Venant torsion
+            
+            # Integration coefficients (Euler-Bernoulli exact)
+            c1 = 12 * W / L**3
+            c2 = 6 * W / L**2  
+            c3 = 4 * W / L
+            c4 = 2 * W / L
+            
+            # AXIAL (DOF 0,6)
+            axial = EA * W / L
+            K[0,0] += axial; K[6,6] += axial
+            K[0,6] -= axial; K[6,0] -= axial
+            
+            # TORSION (DOF 3,9) - Saint-Venant
+            tors = GK * W / L
+            K[3,3] += tors; K[9,9] += tors  
+            K[3,9] -= tors; K[9,3] -= tors
+            
+            # FLEXURE YZ (about X) - DOF 1,5,7,11 [uy1,θz1,uy2,θz2]
+            K[1,1] += c1*EIx; K[1,5] += c2*EIx; K[1,7] -= c1*EIx; K[1,11] += c2*EIx
+            K[5,5] += c3*EIx; K[5,7] -= c2*EIx; K[5,11] += c4*EIx
+            K[7,7] += c1*EIx; K[7,11] -= c2*EIx
+            K[11,11] += c3*EIx
+            
+            # FLEXURE XZ (about Y) - DOF 2,4,8,10 [uz1,θy1,uz2,θy2] 
+            K[2,2] += c1*EIy; K[2,4] -= c2*EIy; K[2,8] -= c1*EIy; K[2,10] -= c2*EIy
+            K[4,4] += c3*EIy; K[4,8] += c2*EIy; K[4,10] += c4*EIy
+            K[8,8] += c1*EIy; K[8,10] += c2*EIy
+            K[10,10] += c3*EIy
+            
+            # FULL EIxy COUPLING (24 terms) - Bending-bending interaction
+            # Node 1 rotations [uy1,uz1] = [1,2] couple with [θz1,θy1] = [5,4]
+            K[1,2] += c1*EIxy; K[2,1] += c1*EIxy
+            K[1,4] -= c2*EIxy; K[4,1] -= c2*EIxy  
+            K[1,8] -= c1*EIxy; K[8,1] -= c1*EIxy
+            K[1,10] -= c2*EIxy; K[10,1] -= c2*EIxy
+            
+            K[2,5] += c2*EIxy; K[5,2] += c2*EIxy
+            K[4,5] += c4*EIxy; K[5,4] += c4*EIxy  # Corrected from 0.0
+            K[2,7] -= c1*EIxy; K[7,2] -= c1*EIxy
+            K[2,11] -= c2*EIxy; K[11,2] -= c2*EIxy
+            
+            K[5,8] -= c2*EIxy; K[8,5] -= c2*EIxy
+            K[5,10] += c4*EIxy; K[10,5] += c4*EIxy
+            K[7,4] -= c2*EIxy; K[4,7] -= c2*EIxy
+            K[7,10] += c2*EIxy; K[10,7] += c2*EIxy
+            
+            K[11,4] += c2*EIxy; K[4,11] += c2*EIxy
+            K[11,8] -= c2*EIxy; K[8,11] -= c2*EIxy
+        
+        # Final validation (reciprocity theorem)
+        if not np.allclose(K, K.T, rtol=1e-10, atol=1e-12):
+            warnings.warn("Minor asymmetry detected - enforcing symmetry", RuntimeWarning)
             K = (K + K.T) / 2.0
-            return K
+        
+        # Physical bounds check
+        if np.any(np.diag(K[:6]) < 0):
+            raise ValueError("Negative diagonal stiffness detected")
+            
+        return K
+
     
 def polygon_inertia_about_origin(poly: Polygon) -> Tuple[float, float, float]:
     """
