@@ -430,18 +430,21 @@ def section_full_analysis(section: Section):
     props['Wx'] = props['Ix'] / y_dist_max if y_dist_max > 1e-12 else 0.0
     props['Wy'] = props['Iy'] / x_dist_max if x_dist_max > 1e-12 else 0.0
     
+# -------------------------------------------------------------------------
+    # 4. TORSIONAL RIGIDITY (K) - BETA ESTIMATION
     # -------------------------------------------------------------------------
-    # 4. TORSIONAL RIGIDITY (K) - SAINT-VENANT APPROXIMATION
-    # -------------------------------------------------------------------------
-    # For non-circular sections, the Polar Moment (J) significantly overestimates 
-    # torsional stiffness because it fails to account for "warping" (axial 
-    # deformation of the cross-section).
+    # J (props['J']) is the Polar Moment of Inertia (computed via Green's theorem).
+    # For non-circular sections, J overestimates torsional stiffness.
+    # We add 'K_torsion' as a semi-empirical approximation: J_eff ≈ A^4 / (40 * Ip)
     
     A = props['A']
-    J = props['J']
+    Ip = props['Ix'] + props['Iy'] # Polar moment about centroid (Ip = J for centroidal axes)
     
-    props['K_torsion'] = 0.0
-
+    # Manteniamo props['J'] così come calcolato originariamente da section_properties
+    if Ip > 1e-12:
+        props['K_torsion'] = (A**4) / (40.0 * Ip)
+    else:
+        props['K_torsion'] = 0.0
     
     # -------------------------------------------------------------------------
     # 5. DATA CONSOLIDATION
