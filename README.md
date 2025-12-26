@@ -34,10 +34,10 @@ Unlike traditional structural tools limited to predefined geometric templates, t
 
 To use the **CSF** engine, it is recommended to use a virtual environment to keep dependencies isolated.
 
-### 0. Setup Environment
+### 0. Setup Environment linux
 ```bash
 # Clone the repository
-git clone git@github.com:giovanniboscu/continuous-section-field.git
+git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 
 # Create and activate virtual environment
