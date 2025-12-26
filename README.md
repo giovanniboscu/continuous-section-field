@@ -1,5 +1,6 @@
 # Continuous Section Field (CSF)
 ## An Analytical Engine for Non-Prismatic Structural Members
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18063427.svg)](https://doi.org/10.5281/zenodo.18063427)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![Math](https://img.shields.io/badge/Engine-Analytical_Mechanics-red.svg)
 ![Integration](https://img.shields.io/badge/Integration-Gaussian_Quadrature-green.svg)
