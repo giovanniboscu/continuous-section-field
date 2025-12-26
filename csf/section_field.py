@@ -652,13 +652,36 @@ class Pt:
 @dataclass(frozen=True)
 class Polygon:
     vertices: Tuple[Pt, ...]
-    weight: float = 1.0   # homogenization coefficient, can be negative
-    name: str = ""        # optional label / id
+    weight: float = 1.0   # Homogenization coefficient, can be negative for holes
+    name: str = ""        # Optional label / ID
 
     def __post_init__(self) -> None:
+        """
+        Validation steps executed automatically after object initialization.
+        """
+        # 1. Check for minimum number of vertices
         if len(self.vertices) < 3:
-            raise ValueError("Polygon must have at least 3 vertices.")
+            raise ValueError(f"Polygon '{self.name}' must have at least 3 vertices.")
 
+        # 2. Check for Counter-Clockwise (CCW) orientation
+        # We use the Shoelace formula to calculate the signed area (a2).
+        # A positive result indicates CCW, a negative result indicates CW.
+        verts = self.vertices
+        n = len(verts)
+        a2 = 0.0
+        for i in range(n):
+            x0, y0 = verts[i].x, verts[i].y
+            x1, y1 = verts[(i + 1) % n].x, verts[(i + 1) % n].y
+            a2 += (x0 * y1 - x1 * y0)
+        
+        # If a2 is negative, the winding order is Clockwise (CW).
+        if a2 < 0:
+            raise ValueError(
+                f"GEOMETRIC ERROR: Polygon '{self.name}' is defined in Clockwise (CW) order. "
+                f"All polygons must be defined in Counter-Clockwise (CCW) order to ensure "
+                f"consistency in first and second-order moments. "
+                f"Please use 'weight={self.weight}' to represent voids instead of flipping the vertices."
+            )
 
 @dataclass(frozen=True)
 class Section:
@@ -781,7 +804,7 @@ def _polygon_signed_area_and_centroid(poly: Polygon) -> Tuple[float, Tuple[float
 
 def polygon_area_centroid(poly: Polygon) -> Tuple[float, Tuple[float, float]]:
     """
-Computes the signed area and geometric centroid of a non-self-intersecting polygon.
+    Computes the signed area and geometric centroid of a non-self-intersecting polygon.
 
     TECHNICAL SUMMARY:
     This function implements the Surveyor's Formula (Shoelace Algorithm), 

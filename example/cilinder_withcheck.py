@@ -12,7 +12,7 @@ from csf import (
 # 1. INPUT PARAMETERS
 # =================================================================
 H = 87.6            
-N_SIDES = 256       
+N_SIDES = 64       
 D_EXT = 4.9350
 THICKNESS = 0.0230
 DENSITY = 7850  # kg/m^3ls -l 
