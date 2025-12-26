@@ -51,6 +51,22 @@ python3 example/cilinder_withcheck.py
 python3 example/csf_rotated_validation_benchmark.py
 
 ```
+```windows
+# Clone the repository
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
+
+# Create and activate virtual environment
+python3 -m venv venv
+.\venv\Scripts\activate
+
+# Install in editable mode
+pip install -e .
+python3 example\nrel_5mw_tower.py 
+python3 example\cilinder_withcheck.py
+python3 example\csf_rotated_validation_benchmark.py
+python3 .\example\tsection_opensees.py
+
 
 
 ## 1. Theoretical Framework: Overcoming Discretization Dependence
