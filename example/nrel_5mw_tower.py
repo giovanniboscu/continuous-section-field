@@ -2,17 +2,19 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
+
+import csf  # <--- Add this line
 from csf import (
     Pt, Polygon, Section, ContinuousSectionField, Visualizer,
     section_data, section_derived_properties, 
     section_statical_moment_partial, integrate_volume,section_stiffness_matrix
 )
-
+print(">>>>>>>>>>>>>>>>>>>>" + csf.__file__)
 # =========================
 # INPUT PARAMETERS
 # =========================
 H = 87.6        # TOTAL HEIGHT(m)
-N_LATI =512     # Number of edges
+N_LATI = 128     # Number of edges
 DENSITY = 8500  # kg/m^3
 
 # BAS
