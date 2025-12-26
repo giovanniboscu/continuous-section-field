@@ -185,7 +185,10 @@ For any point $z$ along the axis, the library computes:
 ---
 
 ## 5. Model Validation: Circular Hollow Section
-examples/cylinder_withcheck.py
+examples/cilinder_withcheck.py
+
+
+<img width="520" height="509" alt="circeltest" src="https://github.com/user-attachments/assets/b3384be1-0a35-4654-b39b-aae614703ad0" />
 
 To verify the accuracy of the numerical engine, a validation test was performed using a **non-tapered hollow cylinder** (Steel Pipe). This allows for a direct comparison between the library's results (based on weighted polygons) and exact analytical formulas.
 
