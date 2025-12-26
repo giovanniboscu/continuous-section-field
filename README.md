@@ -34,8 +34,9 @@ Unlike traditional structural tools limited to predefined geometric templates, t
 
 To use the **CSF** engine, it is recommended to use a virtual environment to keep dependencies isolated.
 
-### 0. Setup Environment linux
+### 0. Setup Environment linux & windows
 ```bash
+LINUX
 # Clone the repository
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
@@ -50,8 +51,8 @@ python3 example/nrel_5mw_tower.py
 python3 example/cilinder_withcheck.py
 python3 example/csf_rotated_validation_benchmark.py
 
-```
-```windows
+WINDOWS
+
 # Clone the repository
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
@@ -66,7 +67,7 @@ python3 example\nrel_5mw_tower.py
 python3 example\cilinder_withcheck.py
 python3 example\csf_rotated_validation_benchmark.py
 python3 .\example\tsection_opensees.py
-
+```
 
 
 ## 1. Theoretical Framework: Overcoming Discretization Dependence
