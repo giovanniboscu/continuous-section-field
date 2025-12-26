@@ -17,7 +17,8 @@ from .section_field import (
     integrate_volume,
     Visualizer,
     export_opensees_discretized_sections,
-    section_data
+    section_data,
+    export_full_opensees_model
 )
 
 # Questa è la lista fondamentale per "from csf import *"

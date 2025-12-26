@@ -20,6 +20,131 @@ import random
 import warnings
 
 import numpy as np
+
+def export_full_opensees_model(field: ContinuousSectionField, num_elements: int, E_val: float, filename: str = "main_beam_model.tcl"):
+    # -----------------------------------------------------------------------------
+    # BETA VERSION NOTICE: 
+    # This OpenSees integration module is in a Beta testing phase.
+    # Accuracy has been tested for standard tapered T-beam geometries.
+    # Please verify the "Tip Displacement" output against theoretical 
+    # approximations to ensure unit consistency (Meters vs Millimeters).
+    # -----------------------------------------------------------------------------
+    """
+    Generates a complete OpenSees Master Script (.tcl) for a non-prismatic (tapered) beam.
+    
+    FEM STRATEGY:
+    This function discretizes the continuous geometry into 'n' finite elements. 
+    To accurately capture the stiffness of a tapered member, it employs the 
+    'Midpoint Integration Rule': sectional properties are sampled at the exact 
+    center of each element rather than at the nodes. This provides a much more 
+    representative stiffness matrix for the segment.
+    
+    COORDINATE SYSTEM & UNITS:
+    The consistency of the model depends entirely on E_val and the input Pt(x,y).
+    - If Pt is in meters: Use E_val in Pascals (e.g., 2.1e11).
+    - If Pt is in millimeters: Use E_val in MPa (e.g., 210000.0).
+    
+    OUTPUTS:
+    1. 'sections_library.tcl': A library containing 'section Elastic' commands for each segment.
+    2. Master File (e.g., 'main_beam_model.tcl'): The orchestrator script containing:
+       - Node definitions along the Z-axis.
+       - Boundary conditions (Full fixity at Node 1).
+       - Element connectivity linking nodes to the sampled sections.
+    """
+    
+    # Boundary extraction from the Continuous Section Field
+    z0 = field.z0
+    z1 = field.z1
+    total_length = abs(z1 - z0)
+    dz = total_length / num_elements
+    
+    # -------------------------------------------------------------------------
+    # STEP 1: DISCRETIZATION LOGIC (Mid-point Sampling)
+    # -------------------------------------------------------------------------
+    # We calculate the Z-coordinate for the center of each finite element.
+    # Sampling at the center (z_mid) is a standard FEM technique to approximate 
+    # the varying integral properties of a tapered beam segment.
+    z_mid_points = [z0 + (i + 0.5) * dz for i in range(num_elements)]
+    
+    # Export the geometric/mechanical properties for these specific locations
+    sections_file = "sections_library.tcl"
+    export_opensees_discretized_sections(field, z_mid_points, E_val, sections_file)
+    
+    # -------------------------------------------------------------------------
+    # STEP 2: MASTER TCL SCRIPT CONSTRUCTION
+    # -------------------------------------------------------------------------
+    with open(filename, "w") as f:
+        f.write("# " + "="*75 + "\n")
+        f.write("# OPENSEES COMPLETE FINITE ELEMENT MODEL\n")
+        f.write(f"# Discretized Tapered Beam: {num_elements} Elements\n")
+        f.write("# " + "="*75 + "\n\n")
+        
+        # Reset OpenSees workspace
+        f.write("wipe\n")
+        # Define 3D model: 3 dimensions, 6 degrees of freedom per node (ux,uy,uz,rx,ry,rz)
+        f.write("model BasicBuilder -ndm 3 -ndf 6\n\n")
+        
+        # Source the library generated in Step 1
+        f.write(f"# Loading sectional stiffness properties\n")
+        f.write(f"source {sections_file}\n\n")
+        
+        # ---------------------------------------------------------------------
+        # STEP 3: NODE DEFINITION
+        # ---------------------------------------------------------------------
+        # Nodes are created at the boundaries of each element.
+        f.write("# --- NODAL COORDINATES (Z-axis) ---\n")
+        for i in range(num_elements + 1):
+            z_node = z0 + i * dz
+            # node $tag $x $y $z
+            f.write(f"node {i+1} 0.0 0.0 {z_node:.6f}\n")
+        
+        # ---------------------------------------------------------------------
+        # STEP 4: BOUNDARY CONDITIONS
+        # ---------------------------------------------------------------------
+        # We assume a cantilever setup by default (fixed at the start).
+        f.write("\n# --- BOUNDARY CONDITIONS (Fixity) ---\n")
+        f.write("fix 1 1 1 1 1 1 1\n\n")
+        
+        # ---------------------------------------------------------------------
+        # STEP 5: GEOMETRIC TRANSFORMATION
+        # ---------------------------------------------------------------------
+        # Essential for 3D beam elements to define the orientation of the local axes.
+        f.write("# --- GEOMETRIC TRANSFORMATION ---\n")
+        f.write("# Linear transformation with local Y vector pointing towards global Y\n")
+        f.write("geomTransf Linear 1 0 1 0\n\n")
+        
+        # ---------------------------------------------------------------------
+        # STEP 6: ELEMENT CONNECTIVITY
+        # ---------------------------------------------------------------------
+        # Assigning each element to its corresponding mid-point section.
+        f.write("# --- ELEMENT DEFINITIONS ---\n")
+        for i in range(num_elements):
+            node_start = i + 1
+            node_end = i + 2
+            section_tag = i + 1  # Matches the tag in sections_library.tcl
+            # element elasticBeamColumn $eleTag $nodeI $nodeJ $secTag $transfTag
+            f.write(f"element elasticBeamColumn {i+1} {node_start} {node_end} {section_tag} 1\n")
+            
+        f.write("\nputs \"[time] >> OpenSees model built successfully.\"\n")
+        f.write("puts \"[time] >> Ready for loading patterns and analysis.\"\n")
+
+        # --- STEP 7: ANALYSIS & LOADING (Added for direct testing) ---
+        f.write("\n# --- LOAD PATTERN ---\n")
+        f.write("timeSeries Linear 1\n")
+        f.write("pattern Plain 1 1 {\n")
+        f.write(f"    # Apply a vertical load at the tip (last node)\n")
+        f.write(f"    load {num_elements + 1} 0.0 -1000.0 0.0 0.0 0.0 0.0\n")
+        f.write("}\n\n")
+        
+        f.write("# --- ANALYSIS SETUP ---\n")
+        f.write("system BandGeneral; constraints Transformation; numberer RCM; test NormDispIncr 1.0e-8 10; algorithm Linear; integrator LoadControl 1.0; analysis Static\n")
+        f.write("analyze 1\n")
+        f.write(f"puts \"\\n[time] >> ANALYSIS COMPLETE\"\n")
+        f.write(f"puts \"Tip Displacement: [nodeDisp {num_elements + 1} 2]\"\n")
+
+
+    print(f"Master script '{filename}' and library '{sections_file}' generated.")
+
 def export_opensees_discretized_sections(field: ContinuousSectionField, z_coords: list, E_val: float, filename: str = "opensees_sections.tcl"):
     """
     Exports a series of elastic sections to a .tcl file for OpenSees.
@@ -1303,14 +1428,7 @@ if __name__ == "__main__":
         name="web",
     )
 
-    '''
-    poly1_end = Polygon(
-        vertices=(Pt(-0.2, -2.5), Pt(0.2, -2.5), Pt(0.2, 0.2), Pt(-0.2, 0.2)),
-        weight=1.0,
-        name="web",
-    )
-    '''
-    # --------------------------------------------------------
+      # --------------------------------------------------------
     # 3. CREATE SECTIONS WITH Z-COORDINATES
     # --------------------------------------------------------
     # Each Section groups polygons and assigns a Z position.
@@ -1324,63 +1442,6 @@ if __name__ == "__main__":
     # A linear interpolator is used to generate intermediate
     # sections between Z = 0 and Z = 10.
     field = ContinuousSectionField(section0=s0, section1=s1)
-
-
-    # --------------------------------------------------------
-    # 5. PRIMARY SECTION PROPERTIES (Z = 5.0)
-    # --------------------------------------------------------
-    # Properties are computed at mid-span.
-    sec_mid = field.section(5.0)
-    props = section_properties(sec_mid)
-
-
-    # ============================================================
-    # COMPLETE MODEL CAPABILITIES VERIFICATION (18 POINTS)
-    # ============================================================
-    print("\n" + "="*60)
-    print("FULL MODEL ANALYSIS REPORT - SECTION AT Z=5.0")
-    print("="*60)
-
-    # Run the full analysis using Saint-Venant theory
-    full_analysis = section_full_analysis(sec_mid)
-    
-    # 1-7) Proprietà Primarie
-    print(f"1) Area (A):               {full_analysis['A']:.4f}      # Net area")
-    print(f"2) Centroid Cx:            {full_analysis['Cx']:.4f}     # Horizontal CG")
-    print(f"3) Centroid Cy:            {full_analysis['Cy']:.4f}     # Vertical CG")
-    print(f"4) Inertia Ix:             {full_analysis['Ix']:.4f}     # Centroidal X Inertia")
-    print(f"5) Inertia Iy:             {full_analysis['Iy']:.4f}     # Centroidal Y Inertia")
-    print(f"6) Inertia Ixy:            {full_analysis['Ixy']:.4f}    # Product of Inertia")
-    print(f"7) Polar Moment (J):       {full_analysis['J']:.4f}      # Ix + Iy")
-
-    # 8-11) Derived Properties and Principal Axes
-    print(f"8) Principal Inertia I1:   {full_analysis['I1']:.4f}     # Max Principal Moment")
-    print(f"9) Principal Inertia I2:   {full_analysis['I2']:.4f}     # Min Principal Moment")
-    print(f"10) Radius of Gyration rx: {full_analysis['rx']:.4f}     # sqrt(Ix/A)")
-    print(f"11) Radius of Gyration ry: {full_analysis['ry']:.4f}     # sqrt(Iy/A)")
-
-    # 12-14) Strength and Torsional Properties
-    print(f"12) Elastic Modulus Wx:    {full_analysis['Wx']:.4f}     # Ix / y_max")
-    print(f"13) Elastic Modulus Wy:    {full_analysis['Wy']:.4f}     # Iy / x_max")
-    print(f"14) Torsional Rigidity K:  {full_analysis['K_torsion']:.4f} # Saint-Venant K")
-
-    # 15-16) Direct checks on individual polygons (Polygon 0: Flange)
-    poly0 = sec_mid.polygons[0]
-    ix_orig, _, _ = polygon_inertia_about_origin(poly0)
-    q_poly0 = polygon_statical_moment(poly0, y_axis=full_analysis['Cy'])
-
-    print(f"15) Polygon 0 Ix (Origin): {ix_orig:.4f}     # Direct call verification")
-    print(f"16) Polygon 0 Q_local:     {q_poly0:.4f}     # Direct call verification")
-
-    # 17) Static moment for shear (partial section)
-    q_na = section_statical_moment_partial(sec_mid, y_cut=full_analysis['Cy'])
-    print(f"17) Section Q_na:          {q_na:.4f}     # Statical moment for shear (at Neutral Axis)")
-
-    # 18) Stiffness matrix (constitutive analysis)
-    k_matrix = section_stiffness_matrix(sec_mid, E_ref=210000) # Esempio Acciaio
-    print(f"18) Stiffness Matrix Shape: {k_matrix.shape}       # Direct call verification (3x3 Matrix)")
-    
-    print("="*60)
     # --------------------------------------------------------
     # 9. VISUALIZATION
     # --------------------------------------------------------
