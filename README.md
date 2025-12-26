@@ -77,7 +77,7 @@ The common practice of modeling non-prismatic members as a concatenation of equi
 
 ---
 
-## 2. Key Features
+##  Key Features
 
 ### Ruled Surfaces and Vertex Interpolation
 
@@ -103,7 +103,7 @@ Polygons in CSF are the fundamental units for both geometry and mechanics:
 
 ---
 
-## 3. Sectional Analysis Engine
+## 2. Sectional Analysis Engine
 
 The library is designed for the analysis of tapered, non-homogeneous members where properties vary along the longitudinal axis.
 
@@ -167,7 +167,7 @@ Shear & Verification Data
 
 ---
 
-## 4. OpenSees Analysis Integration (BETA)
+## 3. OpenSees Analysis Integration (BETA)
 
 > ** Beta Phase Notice**: This module is in active development. While geometric and stiffness calculations are verified for tapered beam configurations, users should validate results for complex thin-walled or open sections.
 
@@ -184,7 +184,7 @@ For any point $z$ along the axis, the library computes:
 * **Shear Analysis (Jourawski)**: Calculates the **Statical Moment ($Q$)** via a custom polygon clipping algorithm, enabling shear stress evaluation on variable cross-sections.
 ---
 
-## 5. Model Validation: Circular Hollow Section
+## 4. Model Validation: Circular Hollow Section
 examples/cilinder_withcheck.py
 
 
@@ -226,7 +226,7 @@ The following table reports the full output of the validation script, comparing 
 | Total Tower Mass     | 244.067     | 244.061   | 0.0025% | t    |
 
   
-## 6. Advanced Validation: NREL 5-MW Reference Wind Turbine Tower
+## 5. Advanced Validation: NREL 5-MW Reference Wind Turbine Tower
 Official research portal of the National Renewable Energy Laboratory providing authoritative wind energy data, reference turbine models, technical reports, and validated simulation tools. It serves as a primary source for benchmark wind turbine definitions, including the NREL 5-MW reference model.  
 
 
