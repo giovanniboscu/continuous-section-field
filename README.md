@@ -135,7 +135,7 @@ Structural Analysis (Strength & Rigidity)
 | :--- | :--- | :---: | :--- |
 | 12 | **Elastic Modulus Wx** | $W_x$ | Section modulus for bending about X ($I_x / y_{max}$) |
 | 13 | **Elastic Modulus Wy** | $W_y$ | Section modulus for bending about Y ($I_y / x_{max}$) |
-| 14 | **Torsional Rigidity** | $K$ | Saint-Venant Torsional Constant (Open Section) |
+| 14 | **Torsional Rigidity** | $K$ | Torsional Rigidity (K) The Saint-Venant torsional constant </br> is currently not evaluated. For general polygonal sections, </br>  torsional rigidity is shape-dependent and cannot</br>  be reliably inferred from area and polar noment alone. </br> To avoid unsafe or misleading results, K is intentionally set to 0.0. |
 
 
 Shear & Verification Data
