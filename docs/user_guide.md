@@ -37,7 +37,7 @@ To create a tapered member (where the section grows or shrinks along the Z axis)
 
 Geometric Consistency Rule:
 The end section must have the same number of polygons as the start section.
-Polygons must share the same names as those in the start section to be correctly linked for interpolation.
+
 
 ```python
     # Flange Definition: Rectangle from (-1, -0.2) to (1, 0.2)
