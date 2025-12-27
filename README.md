@@ -43,7 +43,7 @@ Two section planes are defined:
 - start section at $z = 0$
 - end section at $z = L$
 
-Both sections are defined in the **same local \( x\text{–}y \) coordinate system**.
+Both sections are defined in the **same local $x$ – $y$ coordinate system**.
 
 - The two section planes are **parallel and not rotated** with respect to each other.
 - The beam axis is aligned with the **\( z \)-axis**, normal to the section planes.
