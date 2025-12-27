@@ -342,8 +342,9 @@ In standard FEM, a tapered beam is often approximated as a series of stepped pri
 <summary>Click to expand the full T-Beam Python example</summary>
 
 ```
-
+    
     # --------------------------------------------------------
+    # COUNTER-CLOCKWISE POLYGON
     # 1. DEFINE START SECTION (Z = 0)
     # --------------------------------------------------------
     # The start section is a T-shape composed of two polygons:
