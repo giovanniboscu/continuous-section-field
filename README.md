@@ -27,6 +27,120 @@ Unlike traditional structural tools limited to predefined geometric templates, t
     * **Multi-cellular Shapes:** Complex internal stiffeners or multi-chamber profiles.
     * **Composite Logic:** Multi-material sections by applying modular ratio weights to different polygons.
 
+
+# Section Definition and Interpolation — User Guide
+
+This document describes how to define beam sections and how they are interpolated
+along the beam axis.  
+The intended audience is structural and mechanical engineers.
+
+---
+
+## 1. Reference System
+
+Two section planes are defined:
+
+- start section at $z = 0$
+- end section at $z = L$
+
+Both sections are defined in the **same local \( x\text{–}y \) coordinate system**.
+
+- The two section planes are **parallel and not rotated** with respect to each other.
+- The beam axis is aligned with the **\( z \)-axis**, normal to the section planes.
+
+All section geometries must be provided in this local reference system.
+
+---
+
+## 2. Section Geometry
+
+### 2.1 Polylines
+
+A section is defined by a **set of closed polylines**.
+
+- Each polyline represents a **material region**.
+- All polylines must be:
+  - closed
+  - non self-intersecting
+  - oriented **counter-clockwise (CCW)**
+
+Polylines must **not intersect or overlap** each other.  
+Geometric consistency is the responsibility of the user.
+
+---
+
+### 2.2 Polyline Weight (Material Coefficient)
+
+Each polyline is assigned a **scalar weight** \( w \), defined as:
+
+$w$, $E_{\text{ref}}$, $z = 0$
+
+where:
+- \( E \) is the Young’s modulus of the region
+- \( E_{\text{ref}} \) is the reference Young’s modulus
+
+Typical values:
+
+- \( w = +1 \): reference material  
+- \( 0 < w < 1 \): softer material  
+- \( w > 1 \): stiffer material  
+- \( w = -1 \): void (geometric hole)
+
+All polylines use the same orientation; **material addition or removal is controlled
+exclusively by the sign of \( w \)**.
+
+---
+
+## 3. Extreme Sections
+
+Two sections must be provided:
+
+- one at \( z = 0 \)
+- one at \( z = L \)
+
+Both sections must contain:
+
+- the **same number of polylines**
+- the **same polyline IDs**
+- the **same weights \( w \)**
+
+This ensures **geometric and material continuity** along the beam axis.
+
+---
+
+## 4. Geometric Interpolation
+
+- Corresponding polylines at \( z = 0 \) and \( z = L \) are interpolated along the beam axis.
+- Interpolation is performed **point-wise between matching vertices**.
+- No topological changes are allowed:
+  - no creation of new polylines
+  - no removal of existing polylines
+
+---
+
+## 5. Section Properties
+
+Section properties (area, inertia) are computed from geometry as:
+
+$$
+\text{Property}(z) = \sum_k w_k \, \text{Property}_k(z)
+$$
+
+
+- Geometry is the primary input.
+- Section properties are automatically derived.
+
+---
+
+## 6. Notes and Limitations
+
+- Polylines must not self-intersect or overlap.
+- Topological changes along the beam are not supported.
+- Material weighting is valid for geometric section properties.
+- Advanced material effects (e.g. torsion with multiple materials) may require
+  two-dimensional numerical analysis.
+
+
 > [!IMPORTANT]
 > **Not a FEM Solver**: This library is **not** a Finite Element Method (FEM) software. It is a geometric and constitutive "engine" designed to model the continuous variation of a single member. It provides the stiffness matrices and sectional properties required for structural analysis, acting as a high-accuracy pre-processor or a kernel for beam theory applications.
 ---
