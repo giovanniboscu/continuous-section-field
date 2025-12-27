@@ -110,3 +110,22 @@ print(f"Deg: {derived['theta_deg']:.2f}°   # Rotation Angle")
 # Compute Statical Moment (Q) at the Neutral Axis (y = Cy)
 Q_na = section_statical_moment_partial(sec_mid, y_cut=props['Cy'])
 ```
+
+Step 7: Volumetric Integration (3D)
+
+Since CSF treats the member as a 3D ruled solid, it can integrate the area along the Z axis to find the total volume of the component.
+
+```python
+total_vol = integrate_volume(field)
+print(f"Total Volume: {total_vol:.4f}")
+```
+
+4. Technical Note on Coordinate Systems
+
+When analyzing results , you might encounter negative values for the centroid (Cy​).
+
+This is physically correct: If your polygons (like the web of a T-section) extend mostly below the global origin (y=0), the centroid must result in a negative Y coordinate. This indicates that the geometric center of mass is located below your drawing's reference origin.
+Property	Description
+Cx, Cy	Centroid coordinates relative to the global origin.
+I1, I2	Principal moments of area.
+Q_na	Statical moment above the neutral axis (for τ=VQ/It)
