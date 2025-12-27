@@ -342,50 +342,68 @@ In standard FEM, a tapered beam is often approximated as a series of stepped pri
 <summary>Click to expand the full T-Beam Python example</summary>
 
 ```
-    
-    # --------------------------------------------------------
-    # COUNTER-CLOCKWISE POLYGON
+    # ----------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
     # 1. DEFINE START SECTION (Z = 0)
-    # --------------------------------------------------------
-    # The start section is a T-shape composed of two polygons:
-    # - flange (horizontal plate)
-    # - web (vertical plate)
+    # ----------------------------------------------------------------------------------
+    #   GUIDELINES FOR POLYGON CONSTRUCTION:
+    # - COUNTER-CLOCKWISE POLYGON
+    # - VERTICES ORDER: You MUST define vertices in COUNTER-CLOCKWISE (CCW) order.
+    #   This is MANDATORY for the Shoelace/Green's Theorem algorithm to compute a 
+    #   POSITIVE Area and correct Moments of Inertia. Clockwise order will result 
+    #   in negative area values and mathematically incorrect results.
+    # - WEIGHT: Use 1.0 for solid parts and -1.0 to define voids/holes.
+    # - The start section here is a T-shape composed of two overlapping polygons:
+    #   a "flange" (top horizontal) and a "web" (vertical stem).
+    # ----------------------------------------------------------------------------------
 
-
-    # Define start polygons (T-Section at Z=0)
+    # Flange Definition: Rectangle from (-1, -0.2) to (1, 0.2)
+    # Order: Bottom-Left -> Bottom-Right -> Top-Right -> Top-Left (CCW)
     poly0_start = Polygon(
         vertices=(Pt(-1, -0.2), Pt(1, -0.2), Pt(1, 0.2), Pt(-1, 0.2)),
         weight=1.0,
         name="flange",
     )
+    
+    # Web Definition: Rectangle from (-0.2, -1.0) to (0.2, 0.2)
+    # Order: Bottom-Left -> Bottom-Right -> Top-Right -> Top-Left (CCW)
     poly1_start = Polygon(
-        vertices=(Pt(-0.2, -1.0), Pt(0.2, -1.0), Pt(0.2, 0.2), Pt(-0.2, 0.2)),
+        vertices=(Pt(-0.2, -1.0), Pt(0.2, -1.0),  Pt(0.2, -0.2), Pt(-0.2, -0.2)),
         weight=1.0,
         name="web",
     )
 
-    # --------------------------------------------------------
+    # ----------------------------------------------------------------------------------
     # 2. DEFINE END SECTION (Z = 10)
-    # --------------------------------------------------------
-    # The flange remains unchanged.
-    # The web depth increases linearly from 1.0 to 2.5,
-    # producing a tapered T-section along the Z-axis.
+    # ----------------------------------------------------------------------------------
+    # GEOMETRIC CONSISTENCY:
+    # - To enable linear interpolation (tapering), the end section must contain the 
+    #   same number of polygons with the same names as the start section.
+    # - The web depth here increases linearly from 1.0 down to 2.5 (negative Y direction),
+    #   creating a tapered profile along the longitudinal Z-axis.
+    # ----------------------------------------------------------------------------------
 
+    # Flange remains unchanged for this prismatic top part
     poly0_end = Polygon(
         vertices=(Pt(-1, -0.2), Pt(1, -0.2), Pt(1, 0.2), Pt(-1, 0.2)),
         weight=1.0,
         name="flange",
     )
+    
+    # Web becomes deeper: Y-bottom moves from -1.0 to -2.5
+    # MAINTAIN CCW ORDER: Bottom-Left -> Bottom-Right -> Top-Right -> Top-Left
     poly1_end = Polygon(
-        vertices=(Pt(-0.2, -2.5), Pt(0.2, -2.5), Pt(0.2, 0.2), Pt(-0.2, 0.2)),
+        vertices=(Pt(-0.2, -2.5), Pt(0.2, -2.5), Pt(0.2, -0.2), Pt(-0.2, -0.2)),
         weight=1.0,
         name="web",
     )
-
-    # --------------------------------------------------------
+    
+    # ----------------------------------------------------------------------------------
     # 3. CREATE SECTIONS WITH Z-COORDINATES
-    # --------------------------------------------------------
-    # Each Section groups polygons and assigns a Z position.
+    # ----------------------------------------------------------------------------------
+    # Sections act as containers for polygons at a specific coordinate along the beam axis.
+    # All polygons defined at Z=0.0 are grouped into s0, and those at Z=10.0 into s1.
+    # ----------------------------------------------------------------------------------
 
     s0 = Section(polygons=(poly0_start, poly1_start), z=0.0)
     s1 = Section(polygons=(poly0_end, poly1_end), z=10.0)
