@@ -96,3 +96,17 @@ print(f"Ix:  {props['Ix']:.4f}     # Moment of Inertia (Centroidal X)")
 print(f"Iy:  {props['Iy']:.4f}     # Moment of Inertia (Centroidal Y)")
 print(f"J:   {props['J']:.4f}      # Torsional Rigidity Estimate")
 ```
+
+Step 6: Derived Properties & Shear Analysis
+
+The library also computes advanced engineering properties such as principal moments and statical moments of area (Q) for shear stress analysis.
+
+```python
+# Compute Principal Axes and Radii of Gyration
+derived = section_derived_properties(props)
+print(f"I1:  {derived['I1']:.4f}     # Max Principal Moment")
+print(f"Deg: {derived['theta_deg']:.2f}°   # Rotation Angle")
+
+# Compute Statical Moment (Q) at the Neutral Axis (y = Cy)
+Q_na = section_statical_moment_partial(sec_mid, y_cut=props['Cy'])
+```
