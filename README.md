@@ -135,8 +135,6 @@ $$
 - **Continuous taper**: smooth transition between different shapes (e.g. tapered T-beams, conical tubes)
 - **Continuous properties**: $A(z)$, $I(z)$, $EA(z)$, $EI(z)$, $GJ(z)$ defined analytically along the entire axis
 
----
-
 ## 2.5 Section Properties
 
 Section properties (area, inertia) are computed from geometry as:
