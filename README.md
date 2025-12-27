@@ -70,7 +70,6 @@ A section is defined by a **set of closed polylines**.
 - Advanced material effects (e.g. torsion with multiple materials) may require
   two-dimensional numerical analysis.
 - Geometric consistency is the responsibility of the user.
----
 
 ### 2.2 Polyline Weight (Material Coefficient)
 
@@ -123,10 +122,6 @@ Polygons in CSF are the fundamental units for both geometry and mechanics:
 
 - Corresponding polylines at $z = 0$ and $z = L$ are interpolated along the beam axis.
 - Interpolation is performed **point-wise between matching vertices**.
-- No topological changes are allowed:
-  - no creation of new polylines
-  - no removal of existing polylines
-
 
 ### Ruled Surfaces and Vertex Interpolation
 
