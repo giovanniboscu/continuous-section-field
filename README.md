@@ -438,7 +438,7 @@ In standard FEM, a tapered beam is often approximated as a series of stepped pri
     print(f"Q_na: {Q_na:.4f}    # Statical Moment of Area above Neutral Axis (for Shear Stress)")
 
     # 8. VOLUMETRIC PROPERTIES
-    total_vol = integrate_volume(field, n=200)
+    total_vol = integrate_volume(field)
     print("\n" + "="*40)
     print("GLOBAL FIELD PROPERTIES (3D)")
     print("="*40)
