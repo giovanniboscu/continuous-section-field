@@ -31,7 +31,7 @@ Unlike traditional structural tools limited to predefined geometric templates, t
 > **Not a FEM Solver**: This library is **not** a Finite Element Method (FEM) software. It is a geometric and constitutive "engine" designed to model the continuous variation of a single member. It provides the stiffness matrices and sectional properties required for structural analysis, acting as a high-accuracy pre-processor or a kernel for beam theory applications.
 ---
 
-## 1. Theoretical Framework: Overcoming Discretization Dependence
+## Theoretical Framework: Overcoming Discretization Dependence
 The common practice of modeling non-prismatic members as a concatenation of equivalent prismatic elements (**piecewise-prismatic approach**) introduces a non-neutral methodological choice. The numerical solution varies with the number of subdivisions and the location of sampling points.
 
 ## **CSF** treats the single member as a **continuous manifold** using **ruled surfaces**.
@@ -94,9 +94,7 @@ Typical values:
 All polylines use the same orientation; material addition or removal is controlled
 exclusively by the sign of **$w$**
 
----
-
-## 3. Extreme Sections
+## 2.3 Extreme Sections
 
 Two sections must be provided:
 
@@ -116,9 +114,7 @@ Polygons in CSF are the fundamental units for both geometry and mechanics:
 * **Multi-material sections**: Each polygon carries a `weight` attribute ($n = E_i / E_{ref}$). This allows the modeling of composite sections (e.g., steel-reinforced timber) by calculating the **Elastic Centroid**.
 * **Hole Modeling (Algebraic Voids)**: By assigning a **weight of -1.0**, a polygon acts as a hole. The library automatically subtracts its area and inertia from the total, allowing for effortless modeling of hollow tubes or cellular beams without complex boolean operations.
 
----
-
-## 4. Geometric Interpolation
+## 2.4 Geometric Interpolation
 
 - Corresponding polylines at $z = 0$ and $z = L$ are interpolated along the beam axis.
 - Interpolation is performed **point-wise between matching vertices**.
@@ -141,7 +137,7 @@ $$
 
 ---
 
-## 5. Section Properties
+## 2.5 Section Properties
 
 Section properties (area, inertia) are computed from geometry as:
 
