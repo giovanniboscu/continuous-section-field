@@ -279,7 +279,7 @@ Density = 8.500 kg/m3
 
 **Total CNREL 5-MW ref Mass:**  347,460 t
 
-#  Relative error (Generated − Reference) / Reference × 100
+### Relative error (Generated − Reference) / Reference × 100
 
 | Elevation [m] | HtFract | TMassDen [kg/m] | TwFAStif [N·m²] | TwSSStif [N·m²] | TwGJStif [N·m²] | TwEAStif [N] | TwFAIner [kg·m] | TwSSIner [kg·m] |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
