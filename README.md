@@ -261,7 +261,7 @@ Density = 8.500 kg/m3
 **Total Calculated Tower Mass:**   347.339 t  
 &nbsp;
 
-### Official NREL 5-MW Tower Data (Reference Table 6-1)
+### Official NREL 5-MW Tower Data (Reference Table 6-1) pag. 15 [**Download Official PDF (NREL)**](https://www.nrel.gov/docs/fy09osti/38060.pdf)
 
 | Elevation [m] | HtFract | TMassDen [kg/m] | TwFAStif [N·m²] | TwSSStif [N·m²] | TwGJStif [N·m²] | TwEAStif [N] | TwFAIner [kg·m] | TwSSIner [kg·m] |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
