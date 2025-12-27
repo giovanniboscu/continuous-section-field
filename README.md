@@ -30,7 +30,6 @@ Unlike traditional structural tools limited to predefined geometric templates, t
 > [!IMPORTANT]
 > **Not a FEM Solver**: This library is **not** a Finite Element Method (FEM) software. It is a geometric and constitutive "engine" designed to model the continuous variation of a single member. It provides the stiffness matrices and sectional properties required for structural analysis, acting as a high-accuracy pre-processor or a kernel for beam theory applications.
 ---
----
 ## 🛠 Installation & Quick Start
 
 To use the **CSF** engine, it is recommended to use a virtual environment to keep dependencies isolated.
@@ -190,7 +189,8 @@ $$
 
 ## 3. Sectional Analysis Engine
 
-The library is designed for the analysis of tapered, non-homogeneous members where properties vary along the longitudinal axis.
+The library is designed for the analysis of non-prismatic and non-homogeneous members,
+with section properties varying continuously along the longitudinal axis.
 
 ## Technical Methodology & Integration Schemes
 
