@@ -27,7 +27,7 @@ if __name__ == "__main__":
     #   POSITIVE Area and correct Moments of Inertia. Clockwise order will result 
     #   in negative area values and mathematically incorrect results.
     # - WEIGHT: Use 1.0 for solid parts and -1.0 to define voids/holes.
-    # - The start section here is a T-shape composed of two overlapping polygons:
+    # - The start section here is a T-shape composed of two not overlapping polygons:
     #   a "flange" (top horizontal) and a "web" (vertical stem).
     # ----------------------------------------------------------------------------------
 
