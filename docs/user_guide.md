@@ -2,7 +2,7 @@
 
 This guide explains how to use **Continuous Section Field (CSF)** to model structural members with variable cross-sections. CSF uses a "start-to-end" interpolation logic based on ruled surfaces.
 
-## 1. Core Logic: The "Anchor" Sections
+## Core Logic: The "Anchor" Sections
 The library works by defining two anchor sections at different longitudinal coordinates ($Z$):
 1. **Start Section** ($Z_{start}$)
 2. **End Section** ($Z_{end}$)
@@ -11,7 +11,7 @@ The engine automatically calculates all intermediate geometric and structural pr
 
 ---
 
-## 2. Step-by-Step Construction
+## Step-by-Step Construction
 
 ### Step 1: Define Polygons
 A section is made of one or more polygons. 
