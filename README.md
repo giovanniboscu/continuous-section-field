@@ -333,10 +333,9 @@ This section demonstrates how to model a structural member where the geometry tr
 ### The Engineering Challenge
 In standard FEM, a tapered beam is often approximated as a series of stepped prismatic segments. **CSF** instead treats the member as a **continuous ruled solid**, capturing the exact cubic variation of the moment of inertia $I(z)$ and the shift of the elastic centroid $C_y(z)$ without discretization errors.
 
-<img width="493" height="420" alt="ruledvolumeT" src="https://github.com/user-attachments/assets/705b296c-ddb4-4ea3-b3f1-8af44a1ba7d5" />
+<img width="456" height="469" alt="tsec3d" src="https://github.com/user-attachments/assets/03884190-0e15-43b4-a45d-b0ba9cacbbb7" />
 
-<img width="503" height="445" alt="T-sectionat5" src="https://github.com/user-attachments/assets/e1950742-1bc0-4999-82dc-f68e6f903c22" />
-
+<img width="503" height="464" alt="tsec2d" src="https://github.com/user-attachments/assets/a39e6e6e-afd1-43dd-b755-7299d211cd55" />
 
 <details>python
 <summary>Click to expand the full T-Beam Python example</summary>
