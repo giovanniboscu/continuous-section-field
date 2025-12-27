@@ -31,7 +31,7 @@ poly_flange_start = Polygon(
 )
 ```
 
-Define the Star Section (Tapering)
+Define the Start Section (Tapering)
 
 To create a tapered member (where the section grows or shrinks along the Z axis), you must define the polygons for the end coordinate.
 
