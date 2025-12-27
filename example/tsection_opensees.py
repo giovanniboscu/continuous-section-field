@@ -20,7 +20,8 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------------------
     # 1. DEFINE START SECTION (Z = 0)
     # ----------------------------------------------------------------------------------
-    # GUIDELINES FOR POLYGON CONSTRUCTION:
+    #   GUIDELINES FOR POLYGON CONSTRUCTION:
+    # - COUNTER-CLOCKWISE POLYGON
     # - VERTICES ORDER: You MUST define vertices in COUNTER-CLOCKWISE (CCW) order.
     #   This is MANDATORY for the Shoelace/Green's Theorem algorithm to compute a 
     #   POSITIVE Area and correct Moments of Inertia. Clockwise order will result 
@@ -41,7 +42,7 @@ if __name__ == "__main__":
     # Web Definition: Rectangle from (-0.2, -1.0) to (0.2, 0.2)
     # Order: Bottom-Left -> Bottom-Right -> Top-Right -> Top-Left (CCW)
     poly1_start = Polygon(
-        vertices=(Pt(-0.2, -1.0), Pt(0.2, -1.0), Pt(0.2, 0.2), Pt(-0.2, 0.2)),
+        vertices=(Pt(-0.2, -1.0), Pt(0.2, -1.0),  Pt(0.2, -0.2), Pt(-0.2, -0.2)),
         weight=1.0,
         name="web",
     )
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     # Web becomes deeper: Y-bottom moves from -1.0 to -2.5
     # MAINTAIN CCW ORDER: Bottom-Left -> Bottom-Right -> Top-Right -> Top-Left
     poly1_end = Polygon(
-        vertices=(Pt(-0.2, -2.5), Pt(0.2, -2.5), Pt(0.2, 0.2), Pt(-0.2, 0.2)),
+        vertices=(Pt(-0.2, -2.5), Pt(0.2, -2.5), Pt(0.2, -0.2), Pt(-0.2, -0.2)),
         weight=1.0,
         name="web",
     )
