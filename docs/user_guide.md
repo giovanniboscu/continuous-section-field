@@ -31,7 +31,7 @@ poly_flange_start = Polygon(
 )
 ```
 
-Step 2: Define the End Section (Tapering)
+Step 2: Define the Star Section (Tapering)
 
 To create a tapered member (where the section grows or shrinks along the Z axis), you must define the polygons for the end coordinate.
 
@@ -39,13 +39,51 @@ Geometric Consistency Rule:
 The end section must have the same number of polygons as the start section.
 Polygons must share the same names as those in the start section to be correctly linked for interpolation.
 
-```# The web grows from depth 1.0 (at Z=0) to 2.5 (at Z=10)
-# We define poly_web_end with the same name "web" but different coordinates
-poly_web_end = Polygon(
-    vertices=(Pt(-0.2, -2.5), Pt(0.2, -2.5), Pt(0.2, -0.2), Pt(-0.2, -0.2)),
-    weight=1.0,
-    name="web"
-)
+```python
+    # Flange Definition: Rectangle from (-1, -0.2) to (1, 0.2)
+    # Order: Bottom-Left -> Bottom-Right -> Top-Right -> Top-Left (CCW)
+    poly0_start = Polygon(
+        vertices=(Pt(-1, -0.2), Pt(1, -0.2), Pt(1, 0.2), Pt(-1, 0.2)),
+        weight=1.0,
+        name="flange",
+    )
+
+    # Web Definition: Rectangle from (-0.2, -1.0) to (0.2, 0.2)
+    # Order: Bottom-Left -> Bottom-Right -> Top-Right -> Top-Left (CCW)
+    poly1_start = Polygon(
+        vertices=(Pt(-0.2, -1.0), Pt(0.2, -1.0),  Pt(0.2, -0.2), Pt(-0.2, -0.2)),
+        weight=1.0,
+        name="web",
+    
+```
+
+Step 2: Define the End Section (Tapering)
+```python
+
+    # ----------------------------------------------------------------------------------
+    # 2. DEFINE END SECTION (Z = 10)
+    # ----------------------------------------------------------------------------------
+    # GEOMETRIC CONSISTENCY:
+    # - To enable linear interpolation (tapering), the end section must contain the 
+    #   same number of polygons with the same names as the start section.
+    # - The web depth here increases linearly from 1.0 down to 2.5 (negative Y direction),
+    #   creating a tapered profile along the longitudinal Z-axis.
+    # ----------------------------------------------------------------------------------
+
+    # Flange remains unchanged for this prismatic top part
+    poly0_end = Polygon(
+        vertices=(Pt(-1, -0.2), Pt(1, -0.2), Pt(1, 0.2), Pt(-1, 0.2)),
+        weight=1.0,
+        name="flange",
+    )
+    
+    # Web becomes deeper: Y-bottom moves from -1.0 to -2.5
+    # MAINTAIN CCW ORDER: Bottom-Left -> Bottom-Right -> Top-Right -> Top-Left
+    poly1_end = Polygon(
+        vertices=(Pt(-0.2, -2.5), Pt(0.2, -2.5), Pt(0.2, -0.2), Pt(-0.2, -0.2)),
+        weight=1.0,
+        name="web",
+    )
 ```
 
 Step 3: Create the Section Containers
@@ -54,13 +92,25 @@ Group your polygons into Section objects and assign them a position along the lo
 
 
 ```python
-from csf.core import Section
+    # ----------------------------------------------------------------------------------
+    # 3. CREATE SECTIONS WITH Z-COORDINATES
+    # ----------------------------------------------------------------------------------
+    # Sections act as containers for polygons at a specific coordinate along the beam axis.
+    # All polygons defined at Z=0.0 are grouped into s0, and those at Z=10.0 into s1.
+    # ----------------------------------------------------------------------------------
 
-# All polygons grouped at Z=0.0
-s0 = Section(polygons=(poly_flange_start, poly_web_start), z=0.0)
-
-# All polygons grouped at Z=10.0
-s1 = Section(polygons=(poly_flange_end, poly_web_end), z=10.0)
+    s0 = Section(polygons=(poly0_start, poly1_start), z=0.0)
+    s1 = Section(polygons=(poly0_end, poly1_end), z=10.0)
+```
+```python
+    # ----------------------------------------------------------------------------------
+    # 4. INITIALIZE CONTINUOUS SECTION FIELD (CSF)
+    # ----------------------------------------------------------------------------------
+    # The 'field' object manages the mathematical mapping between s0 and s1.
+    # It allows the retrieval of section properties at any arbitrary Z-coordinate
+    # (e.g., field.section(5.33)) via linear interpolation of vertex coordinates.
+    # ----------------------------------------------------------------------------------
+    field = ContinuousSectionField(section0=s0, section1=s1)
 ```
 3. Structural Properties & Torsion
 
