@@ -31,7 +31,7 @@ poly_flange_start = Polygon(
 )
 ```
 
-Step 2: Define the Star Section (Tapering)
+Define the Star Section (Tapering)
 
 To create a tapered member (where the section grows or shrinks along the Z axis), you must define the polygons for the end coordinate.
 
@@ -57,7 +57,7 @@ Polygons must share the same names as those in the start section to be correctly
     
 ```
 
-Step 2: Define the End Section (Tapering)
+Define the End Section (Tapering)
 ```python
 
     # ----------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ Step 2: Define the End Section (Tapering)
     )
 ```
 
-Step 3: Create the Section Containers
+### Step 2: Create the Section Containers
 
 Group your polygons into Section objects and assign them a position along the longitudinal axis (Z).
 
@@ -112,7 +112,7 @@ Group your polygons into Section objects and assign them a position along the lo
     # ----------------------------------------------------------------------------------
     field = ContinuousSectionField(section0=s0, section1=s1)
 ```
-3. Structural Properties & Torsion
+### Step  3. Structural Properties & Torsion
 
 Once initialized, you can extract properties for any point Z. For torsional rigidity (J), the library uses the following 
 
@@ -252,7 +252,7 @@ Once initialized, you can extract properties for any point Z. For torsional rigi
     print("Files 'main_beam_model.tcl' and 'sections_library.tcl' are ready.")
 ```
 
-ISUALIZATION AND PLOTTING
+### Step 4 ISUALIZATION AND PLOTTING
 
 ```python
 
