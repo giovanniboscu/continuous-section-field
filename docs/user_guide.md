@@ -36,10 +36,8 @@ Step 2: Define the End Section (Tapering)
 To create a tapered member (where the section grows or shrinks along the Z axis), you must define the polygons for the end coordinate.
 
 Geometric Consistency Rule:
-
-    The end section must have the same number of polygons as the start section.
-
-    Polygons must share the same names as those in the start section to be correctly linked for interpolation.
+The end section must have the same number of polygons as the start section.
+Polygons must share the same names as those in the start section to be correctly linked for interpolation.
 
 ```# The web grows from depth 1.0 (at Z=0) to 2.5 (at Z=10)
 # We define poly_web_end with the same name "web" but different coordinates
