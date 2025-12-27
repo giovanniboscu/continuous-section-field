@@ -252,7 +252,7 @@ Once initialized, you can extract properties for any point Z. For torsional rigi
     print("Files 'main_beam_model.tcl' and 'sections_library.tcl' are ready.")
 ```
 
-### Step 4 ISUALIZATION AND PLOTTING
+### Step 4 Visualization and plotting
 
 ```python
 
