@@ -251,3 +251,22 @@ Once initialized, you can extract properties for any point Z. For torsional rigi
     print("="*60)
     print("Files 'main_beam_model.tcl' and 'sections_library.tcl' are ready.")
 ```
+
+ISUALIZATION AND PLOTTING
+
+```python
+
+  # ----------------------------------------------------------------------------------
+    # 9. VISUALIZATION AND PLOTTING
+    # ----------------------------------------------------------------------------------
+    # - plot_section_2d: Renders the cross-section slice at the requested Z.
+    # - plot_volume_3d: Renders the longitudinal ruled solid. 
+    #   'line_percent' controls the density of the mesh wires.
+    # ----------------------------------------------------------------------------------
+    viz = Visualizer(field)
+    viz.plot_section_2d(z=5.0)    
+    viz.plot_volume_3d(line_percent=100.0, seed=1)
+    
+    import matplotlib.pyplot as plt
+    plt.show()
+```
