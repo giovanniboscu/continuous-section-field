@@ -114,66 +114,140 @@ Group your polygons into Section objects and assign them a position along the lo
 ```
 3. Structural Properties & Torsion
 
-Once initialized, you can extract properties for any point Z. For torsional rigidity (J), the library uses the following semi-empirical estimation:
-
-4. Summary of Constraints
-Feature	Requirement
-Vertex Order	Must be Counter-Clockwise (CCW).
-Holes/Voids	Use weight=-1.0.
-Tapering	Polygon name must match between Start and End sections.
-Coordinate System	Local X,Y for the section; Z for the longitudinal axis.
-
-## 3. Calculating Sectional & Volumetric Properties
-
-Once the `ContinuousSectionField` is initialized, you can extract structural data at any longitudinal coordinate ($Z$).
-
-### Step 5: Querying Properties at a Specific Point
-You can retrieve a section at any point (e.g., mid-span at $Z=5.0$) to compute its primary and derived geometric properties.
+Once initialized, you can extract properties for any point Z. For torsional rigidity (J), the library uses the following 
 
 ```python
-# 1. Retrieve the interpolated section at Z = 5.0
-sec_mid = field.section(5.0)
 
-# 2. Compute Primary Properties (Centroidal)
-props = section_properties(sec_mid)
+    # ----------------------------------------------------------------------------------
+    # 5. PRIMARY SECTION PROPERTIES (EVALUATED AT Z = 5.0)
+    # ----------------------------------------------------------------------------------
+    # Generating an intermediate section exactly at mid-span.
+    sec_mid = field.section(5.0)
+    props = section_properties(sec_mid)
 
-print(f"A:   {props['A']:.4f}      # Net Cross-Sectional Area")
-print(f"Cx:  {props['Cx']:.4f}     # Horizontal Centroid (Global X)")
-print(f"Cy:  {props['Cy']:.4f}     # Vertical Centroid (Global Y)")
-print(f"Ix:  {props['Ix']:.4f}     # Moment of Inertia (Centroidal X)")
-print(f"Iy:  {props['Iy']:.4f}     # Moment of Inertia (Centroidal Y)")
-print(f"J:   {props['J']:.4f}      # Torsional Rigidity Estimate")
+    # ==================================================================================
+    # COMPLETE MODEL CAPABILITIES VERIFICATION (18 POINTS)
+    # ==================================================================================
+    # This block verifies the cross-validation between the library's outputs and 
+    # analytical expectations. 
+    # IMPORTANT: Principal Moments (I1, I2) will reveal the "true" stiffness even
+    # if the section were rotated, while Ixy monitors the axis coupling.
+    # ==================================================================================
+    print("\n" + "="*60)
+    print("FULL MODEL ANALYSIS REPORT - SECTION AT Z=10.0")
+    print("="*60)
+
+    # Run full integrated analysis including Saint-Venant torsional constants
+    full_analysis = section_full_analysis(sec_mid)
+    
+    # 1-7) Primary Integrated Geometric Properties
+    # Area must be positive (CCW vertex check). Centroids define the Neutral Axis.
+    print(f"1) Area (A):               {full_analysis['A']:.4f}      # Net area")
+    print(f"2) Centroid Cx:            {full_analysis['Cx']:.4f}     # Horizontal CG")
+    print(f"3) Centroid Cy:            {full_analysis['Cy']:.4f}     # Vertical CG")
+    print(f"4) Inertia Ix:             {full_analysis['Ix']:.4f}     # Centroidal X Inertia")
+    print(f"5) Inertia Iy:             {full_analysis['Iy']:.4f}     # Centroidal Y Inertia")
+    print(f"6) Inertia Ixy:            {full_analysis['Ixy']:.4f}    # Product of Inertia")
+    print(f"7) Polar Moment (J):       {full_analysis['J']:.4f}      # Ix + Iy")
+
+    # 8-11) Derived Principal Properties
+    # Principal axes represent the orientation where Ixy is zero.
+    print(f"8) Principal Inertia I1:   {full_analysis['I1']:.4f}     # Max Principal Moment")
+    print(f"9) Principal Inertia I2:   {full_analysis['I2']:.4f}     # Min Principal Moment")
+    print(f"10) Radius of Gyration rx: {full_analysis['rx']:.4f}     # sqrt(Ix/A)")
+    print(f"11) Radius of Gyration ry: {full_analysis['ry']:.4f}     # sqrt(Iy/A)")
+
+    # 12-14) Strength and Torsion
+    # Wx and Wy are critical for stress calculation (Sigma = M/W).
+    print(f"12) Elastic Modulus Wx:    {full_analysis['Wx']:.4f}     # Ix / y_max")
+    print(f"13) Elastic Modulus Wy:    {full_analysis['Wy']:.4f}     # Iy / x_max")
+    print(f"14) Torsional Rigidity K:  {full_analysis['K_torsion']:.4f} # Saint-Venant K")
+
+    # 15-16) Individual Polygon Verification
+    # These calls verify the internal mathematical engine for single components.
+    poly0 = sec_mid.polygons[0] # Selecting the interpolated flange
+    ix_orig, _, _ = polygon_inertia_about_origin(poly0)
+    q_poly0 = polygon_statical_moment(poly0, y_axis=full_analysis['Cy'])
+
+    print(f"15) Polygon 0 Ix (Origin): {ix_orig:.4f}     # Direct call verification")
+    print(f"16) Polygon 0 Q_local:     {q_poly0:.4f}     # Direct call verification")
+
+    # 17) Static moment for Shear Analysis
+    # Q_na represents the statical moment of the area above or below the Neutral Axis.
+    q_na = section_statical_moment_partial(sec_mid, y_cut=full_analysis['Cy'])
+    print(f"17) Section Q_na:          {q_na:.4f}     # Statical moment for shear (at Neutral Axis)")
+
+    # 18) Stiffness matrix (Constitutive Relation)
+    # Generates the [EA, EIy, EIx] diagonal matrix (if axes are principal).
+    k_matrix = section_stiffness_matrix(sec_mid, E_ref=210000) # Example for Steel in MPa/m^2
+    print(f"18) Stiffness Matrix Shape: {k_matrix.shape}       # Direct call verification (3x3 Matrix)")
+    
+    print("="*60)
+    
+    # --------------------------------------------------------
+    # 10. OPENSEES EXPORT
+    # --------------------------------------------------------
+
+    # --------------------------------------------------------
+    # 10. OPENSEES Tcl EXPORT
+    # --------------------------------------------------------
+    # IMPORTANT: This function exports ONLY the 'section Elastic' 
+    # definitions to a .tcl file.
+    #
+    # REQUIRED ACTIONS FOR THE USER:
+    # 1. This is not a complete OpenSees model. You must create a 
+    #    Master Tcl script to 'source' this file.
+    # 2. In your Master script, you must define:
+    #    - Nodes (using the same z_points used here).
+    #    - Boundary conditions (fixities).
+    #    - Elements (linking nodes to these sections).
+    #    - Loading patterns and Analysis commands.
+    # 3. UNIT CONSISTENCY: Ensure your Master script uses units 
+    #    consistent with E_val and the Pt(x,y) coordinates 
+    #    (e.g., Meters/Newtons if E_val=2.1e11).
+    
+    # Define Z-coordinates for sampling (segment centers are recommended)   
+    # We define the Z coordinates at which we want to "sample" the beam.
+    # For example, we divide the 10 m beam into 5 segments (6 points)
+    # -------------------------------------------------------------------------
+    # 10. FULL OPENSEES MODEL GENERATION
+    # -------------------------------------------------------------------------
+    # We choose the number of elements (divisions) for the beam.
+    # More elements = better approximation of the tapering effect.
+
+    n_elements = 10 
+
+    # Define Young's Modulus based on your units:
+    # Use 210000.0 if your Pt() coordinates are in MILLIMETERS
+    # Use 2.1e11    if your Pt() coordinates are in METERS
+    E_steel = 210000.0 
+
+    print(f"\nGenerating full OpenSees model with {n_elements} elements...")
+    
+  # 10. FULL OPENSEES MODEL GENERATION
+    # --------------------------------------------------------
+    # IMPORTANT: Your Pt coordinates are [-1, 1], which implies METERS.
+    # Therefore, we MUST use Pascals (2.1e11) for the analysis to be physically correct.
+    n_elements = 10 
+    E_reference = 2.1e11 # N/m^2 (Pascals) for Steel
+
+    print(f"\nGenerating full OpenSees model with {n_elements} elements...")
+    
+    # Generate the whole thing
+    export_full_opensees_model(
+        field=field, 
+        num_elements=n_elements, 
+        E_val=E_reference, 
+        filename="main_beam_model.tcl"
+    )
+
+    print("\n" + "!"*60)
+    print("CAUTION: OpenSees Export is currently in BETA PHASE.")
+    print("Verify displacement results and unit consistency (E_val vs Pt).")
+    print("!"*60 + "\n")
+
+    print("="*60)
+    print("DONE. To run: OpenSees.exe main_beam_model.tcl")
+    print("="*60)
+    print("Files 'main_beam_model.tcl' and 'sections_library.tcl' are ready.")
 ```
-
-Step 6: Derived Properties & Shear Analysis
-
-The library also computes advanced engineering properties such as principal moments and statical moments of area (Q) for shear stress analysis.
-
-```python
-# Compute Principal Axes and Radii of Gyration
-derived = section_derived_properties(props)
-print(f"I1:  {derived['I1']:.4f}     # Max Principal Moment")
-print(f"Deg: {derived['theta_deg']:.2f}°   # Rotation Angle")
-
-# Compute Statical Moment (Q) at the Neutral Axis (y = Cy)
-Q_na = section_statical_moment_partial(sec_mid, y_cut=props['Cy'])
-```
-
-Step 7: Volumetric Integration (3D)
-
-Since CSF treats the member as a 3D ruled solid, it can integrate the area along the Z axis to find the total volume of the component.
-
-```python
-total_vol = integrate_volume(field)
-print(f"Total Volume: {total_vol:.4f}")
-```
-
-4. Technical Note on Coordinate Systems
-
-When analyzing results , you might encounter negative values for the centroid (Cy​).
-
-This is physically correct: If your polygons (like the web of a T-section) extend mostly below the global origin (y=0), the centroid must result in a negative Y coordinate. This indicates that the geometric center of mass is located below your drawing's reference origin.
-Property	Description
-Cx, Cy	Centroid coordinates relative to the global origin.
-I1, I2	Principal moments of area.
-Q_na	Statical moment above the neutral axis (for τ=VQ/It)
