@@ -34,8 +34,7 @@ Unlike traditional structural tools limited to predefined geometric templates, t
 ## 🛠 Installation & Quick Start
 
 To use the **CSF** engine, it is recommended to use a virtual environment to keep dependencies isolated.
-
-### 0. Setup Environment linux & windows
+###  Setup Environment linux & windows
 ```bash
 LINUX
 # Clone the repository
