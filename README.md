@@ -19,28 +19,27 @@ Calculate exact section properties (A(z), I(z), centroid, torsion, etc.) for non
 
 ### **Arbitrary Cross-Section Support**
 Unlike traditional structural tools limited to predefined geometric templates, this library treats the cross-section as a **fully generic topological entity**.
+Python tool for accurate, continuous calculation of cross-section properties for complex non-prismatic members (tapered beams, wind turbine towers, piles, variable columns, FGM materials).
 
-* **Algebraic Polygon Logic:** Sections are defined as a collection of vertices in a 2D plane. By utilizing **weighted vertex logic**, the engine can compute properties for any shape, from standard circular towers to complex, custom-engineered architectural profiles.
-* **Curvature:** While the model uses discrete segments, it supports an arbitrary number of sides. You can approximate curved surfaces (like the NREL tower) by increasing the vertex count, effectively reducing the segment length to reach any desired level of precision.
-* **No Predefined Templates:** You are not restricted to "Circle" or "Rectangle" classes. If a geometry can be described by coordinates, the library can compute its structural mechanics ($A, I, J, Q$).
-* **Topological Freedom:** The algebraic approach allows for seamless modeling of:
-    * **Hollow Sections:** (e.g., the NREL tapered shell).
-    * **Multi-cellular Shapes:** Complex internal stiffeners or multi-chamber profiles.
-    * **Composite Logic:** Multi-material sections by applying modular ratio weights to different polygons.
+Sections are modeled as ruled surfaces linearly interpolated between two arbitrary end sections.
 
 > [!IMPORTANT]
 > **Not a FEM Solver**: This library is **not** a Finite Element Method (FEM) software. It is a geometric and constitutive "engine" designed to model the continuous variation of a single member. It provides the stiffness matrices and sectional properties required for structural analysis, acting as a high-accuracy pre-processor or a kernel for beam theory applications.
 ---
 ## Key Features
 
-- Arbitrary polygon-based sections (supports voids and multiple materials)
-- Linear ruled-surface interpolation
-- Section properties (A(z), I_x(z), I_y(z), J(z), centroids, etc.) at any z
-- Version 2: fully arbitrary w(z) per polygon  
-  → non-linear variation of thickness, modulus, reinforcement  
-  → access to w₀, w₁, current distances d(i,j), initial di(i,j), end de(i,j), and all `math` functions
-- Algebraic void handling (w < 0)
-- export to OpenSees (midpoint integration)
+- **Algebraic Polygon Logic**: Sections defined as collections of 2D vertices with weights. Handles any shape — from standard profiles to fully custom architectural sections.
+- **Curvature Handling**: Discrete segments with arbitrary vertex count → approximate curved surfaces (e.g., circular towers) to any desired precision.
+- **No Predefined Templates**: No restricted "Circle" or "Rectangle" classes — any geometry describable by coordinates is supported (A, I, J, Q, etc.).
+- **Topological Freedom**:
+  - Hollow sections (e.g., NREL tapered shell)
+  - Multi-cellular shapes with internal stiffeners
+  - Composite/multi-material sections via modular ratio weights
+- Version 2: fully arbitrary `w(z)` per polygon  
+  → non-linear thickness, modulus, or reinforcement variation  
+  → access to `w₀`, `w₁`, current/initial/end distances `d(i,j)`, `di(i,j)`, `de(i,j)`, and all `math` functions
+- Algebraic void handling (`w < 0`)
+- Beta OpenSees export (midpoint integration)
 - Lightweight, no GUI, no built-in FEM: pure Python for custom scripts or integration with PyNite/OpenSeesPy
 ---
 ## 🛠 Installation & Quick Start
