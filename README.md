@@ -1,4 +1,4 @@
-# Continuous Section Field (CSF) Analysis for Tapered Structural Generic Members
+# Continuous Section Field (CSF) Python Tool for Analyzing Tapered Generic Structural Members
 
 ## An Analytical Engine for Non-Prismatic Structural Members
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18063427.svg)](https://doi.org/10.5281/zenodo.18063427)
