@@ -31,6 +31,18 @@ Unlike traditional structural tools limited to predefined geometric templates, t
 > [!IMPORTANT]
 > **Not a FEM Solver**: This library is **not** a Finite Element Method (FEM) software. It is a geometric and constitutive "engine" designed to model the continuous variation of a single member. It provides the stiffness matrices and sectional properties required for structural analysis, acting as a high-accuracy pre-processor or a kernel for beam theory applications.
 ---
+## Key Features
+
+- Arbitrary polygon-based sections (supports voids and multiple materials)
+- Linear ruled-surface interpolation
+- Section properties (A(z), I_x(z), I_y(z), J(z), centroids, etc.) at any z
+- Version 2: fully arbitrary w(z) per polygon  
+  → non-linear variation of thickness, modulus, reinforcement  
+  → access to w₀, w₁, current distances d(i,j), initial di(i,j), end de(i,j), and all `math` functions
+- Algebraic void handling (w < 0)
+- export to OpenSees (midpoint integration)
+- Lightweight, no GUI, no built-in FEM: pure Python for custom scripts or integration with PyNite/OpenSeesPy
+---
 ## 🛠 Installation & Quick Start
 
 To use the **CSF** engine, it is recommended to use a virtual environment to keep dependencies isolated.
