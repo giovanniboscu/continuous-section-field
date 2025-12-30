@@ -1,5 +1,5 @@
 # Continuous Section Field (CSF) Python Tool for Analyzing Tapered Generic Structural Members
-
+Calculate exact section properties (A(z), I(z), centroid, torsion, etc.) for non-prismatic beams with arbitrary geometry and material variation w(z) along the length
 ## An Analytical Engine for Non-Prismatic Structural Members
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18063427.svg)](https://doi.org/10.5281/zenodo.18063427)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
@@ -7,6 +7,7 @@
 ![Integration](https://img.shields.io/badge/Integration-Gaussian_Quadrature-green.svg)
 ![License](https://img.shields.io/github/license/giovanniboscu/continuous-section-field)
 ![Repo Size](https://img.shields.io/github/repo-size/giovanniboscu/continuous-section-field)
+
 
 **CSF** is a Python library for the geometric and mechanical modeling of **single non-prismatic structural members** (slender beams with variable cross-sections). Here below the CSF model of  NREL 5-MW Tower 
 
