@@ -9,6 +9,7 @@ Calculate exact section properties (A(z), I(z), centroid, torsion, etc.) for non
 ![Repo Size](https://img.shields.io/github/repo-size/giovanniboscu/continuous-section-field)
 
 
+
 **CSF** is a Python library for the geometric and mechanical modeling of **single non-prismatic structural members** (slender beams with variable cross-sections). Here below the CSF model of  NREL 5-MW Tower 
 
 
