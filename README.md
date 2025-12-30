@@ -1,4 +1,4 @@
-**[Quick Example](#quick-example)** • **[Key Features](#key-features)** • **[Installation](#installation)** • **[Related Links](#related-links)**
+**[Quick Example](## 8. Practical Example: Continuously Tapered T-Beam)** • **[Key Features](#key-features)** • **[Installation](#installation)** • **[Related Links](#related-links)**
 
 # Continuous Section Field (CSF) Python Tool for Analyzing Tapered Generic Structural Members
 Calculate exact section properties (A(z), I(z), centroid, torsion, etc.) for non-prismatic beams with arbitrary geometry and material variation w(z) along the length
