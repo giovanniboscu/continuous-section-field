@@ -79,9 +79,6 @@ python3 example\csf_rotated_validation_benchmark.py
 python3 .\example\tsection_opensees.py
 ```
 
-
-[See full NREL 5‑MW validation ](## 8. Practical Example: Continuously Tapered T-Beam)
-
 ---
 ## Theoretical Framework: Overcoming Discretization Dependence
 The common practice of modeling non-prismatic members as a concatenation of equivalent prismatic elements (**piecewise-prismatic approach**) introduces a non-neutral methodological choice. The numerical solution varies with the number of subdivisions and the location of sampling points.
