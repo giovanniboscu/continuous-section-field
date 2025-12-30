@@ -79,7 +79,8 @@ python3 example\csf_rotated_validation_benchmark.py
 python3 .\example\tsection_opensees.py
 ```
 
-[See full working example](## Theoretical Framework: Overcoming Discretization Dependence)
+
+[See full NREL 5‑MW validation ](## 8. Practical Example: Continuously Tapered T-Beam)
 
 ---
 ## Theoretical Framework: Overcoming Discretization Dependence
