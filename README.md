@@ -1,4 +1,4 @@
-**[Key Features](#key-features)** • **[Installation & Quick Start](## 🛠 Installation & Quick Start)** • **[Practical Example](#8-practical-example-continuously-tapered-t-beam)** • **[Model Validation (Cylinder)](#5-model-validation-circular-hollow-section)** • **[NREL 5-MW Validation](#6-advanced-validation-nrel-5-mw-reference-wind-turbine-tower)** • **[References](#nrel-5-mw-references--official-documentation)**
+**[Key Features](#key-features)** • **[Installation & Quick Start](## Installation & Quick Start)** • **[Practical Example](#8-practical-example-continuously-tapered-t-beam)** • **[Model Validation (Cylinder)](#5-model-validation-circular-hollow-section)** • **[NREL 5-MW Validation](#6-advanced-validation-nrel-5-mw-reference-wind-turbine-tower)** • **[References](#nrel-5-mw-references--official-documentation)**
 
 # Continuous Section Field (CSF) Python Tool for Analyzing Tapered Generic Structural Members
 Calculate exact section properties (A(z), I(z), centroid, torsion, etc.) for non-prismatic beams with arbitrary geometry and material variation w(z) along the length
