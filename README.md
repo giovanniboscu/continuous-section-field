@@ -80,7 +80,8 @@ python3 example\cilinder_withcheck.py
 python3 example\csf_rotated_validation_benchmark.py
 python3 .\example\tsection_opensees.py
 ```
-
+---
+ **[Practical Example](#8-practical-example-continuously-tapered-t-beam)** 
 ---
 ## Theoretical Framework: Overcoming Discretization Dependence
 The common practice of modeling non-prismatic members as a concatenation of equivalent prismatic elements (**piecewise-prismatic approach**) introduces a non-neutral methodological choice. The numerical solution varies with the number of subdivisions and the location of sampling points.
