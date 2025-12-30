@@ -21,8 +21,6 @@ Calculate exact section properties (A(z), I(z), centroid, torsion, etc.) for non
 Unlike traditional structural tools limited to predefined geometric templates, this library treats the cross-section as a **fully generic topological entity**.
 Python tool for accurate, continuous calculation of cross-section properties for complex non-prismatic members (tapered beams, wind turbine towers, piles, variable columns, FGM materials).
 
-Sections are modeled as ruled surfaces linearly interpolated between two arbitrary end sections.
-
 > [!IMPORTANT]
 > **Not a FEM Solver**: This library is **not** a Finite Element Method (FEM) software. It is a geometric and constitutive "engine" designed to model the continuous variation of a single member. It provides the stiffness matrices and sectional properties required for structural analysis, acting as a high-accuracy pre-processor or a kernel for beam theory applications.
 ---
@@ -89,6 +87,8 @@ The common practice of modeling non-prismatic members as a concatenation of equi
 ## **CSF** treats the single member as a **continuous manifold** using **ruled surfaces**.
 
 ## 1. Reference System
+
+Sections are modeled as ruled surfaces linearly interpolated between two arbitrary end sections
 
 Two section planes are defined:
 
