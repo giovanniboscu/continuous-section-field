@@ -606,5 +606,7 @@ In standard FEM, a tapered beam is often approximated as a series of stepped pri
   doi = {10.5281/zenodo.18063427},
   url = {https://doi.org/10.5281/zenodo.18063427}
 }
+```
+---
 ## License
 This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
