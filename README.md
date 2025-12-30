@@ -593,9 +593,18 @@ In standard FEM, a tapered beam is often approximated as a series of stepped pri
 ---
 
 ### How to Cite this Library
-If you use **CSF** in your research, academic work, or professional projects, please cite it as follows:
+<details>
+<summary>Click for BibTeX citation</summary>
 
-> Boscu, G. (2025). **Continuous Section Field (CSF)**: A geometric and mechanical engine for non-prismatic structural members. Available at: https://github.com/giovanniboscu/continuous-section-field
----
+```bibtex
+@software{boscu_continuous_2025,
+  author = {Boscu, Giovanni},
+  title = {Continuous Section Field (CSF): A geometric and mechanical engine for non-prismatic structural members},
+  year = {2025},
+  publisher = {Zenodo},
+  version = {v1.0.0},
+  doi = {10.5281/zenodo.18063427},
+  url = {https://doi.org/10.5281/zenodo.18063427}
+}
 ## License
 This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
