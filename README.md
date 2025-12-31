@@ -14,7 +14,8 @@ It computes sectional and stiffness properties without resorting to piecewise-pr
 
 
 
-**CSF** is a Python library for the geometric and mechanical modeling of **single non-prismatic structural members** (slender beams with variable cross-sections). Here below the CSF model of  NREL 5-MW Tower 
+**CSF** is a Python library for the geometric and mechanical modeling of **single non-prismatic structural members** (slender beams with variable cross-sections).
+</br> Here below the CSF model of  NREL 5-MW Tower 
 
 
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
