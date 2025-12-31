@@ -213,12 +213,12 @@ with section properties varying continuously along the longitudinal axis.
 
 The engine employs a **multi-pass analysis** combined with **Gaussian integration schemes** to extract structural parameters with high numerical fidelity. Specifically engineered for **tapered and non-homogeneous members**, it is ideal for applications where sectional properties vary continuously along the longitudinal axis (e.g., wind turbine towers, bridge girders, or aerospace components).
 
-####  Multi-Pass Analysis Procedure
+###  Multi-Pass Analysis Procedure
 To ensure accuracy, the library processes geometry in distinct logical stages:
 * **Geometric Pass**: Uses the **Shoelace algorithm** (Surveyor's formula) to determine net area and first moments, applying **Steiner’s Parallel Axis Theorem** to translate results to the centroid.
 * **Principal Axis Pass**: Performs eigen-decomposition of the inertia tensor (Mohr's Circle logic) to identify principal moments ($I_1, I_2$) and the rotation angle ($\theta$).
 
-####  Gaussian Integration Schemes (Numerical Quadrature)
+###  Gaussian Integration Schemes (Numerical Quadrature)
 For complex constitutive properties, the library moves beyond simple boundary integration:
 * **Stiffness Matrix Calculation**: To compute the exact sectional stiffness matrix $[K]$, the engine performs **Gaussian quadrature** on triangulated sub-domains. 
 * **Sub-domain Triangulation**: Each polygon is decomposed into triangles where integration points and weights are applied, allowing the model to handle variations in Elastic Moduli ($E$) across the section.
@@ -259,7 +259,7 @@ Structural Analysis (Strength & Rigidity)
 | 14 | **Torsional Rigidity** | $K$ | Torsional Rigidity (K) The Saint-Venant torsional constant ($J$) is notoriously complex for non-circular sections. In this Beta version:</br> Core Engine: Implements a semi-empirical approximation ($J \approx A^4 / 40I_p$). </br> Purpose: This estimation is designed to provide numerical stability for 3D Finite Element models (e.g., OpenSees) where a null torsional stiffness would lead to singular matrices.</br> Accuracy: While reliable for solid, compact sections, it is a simplified model. For thin-walled or open profiles, users should treat this value as a preliminary estimate|
 
 
-Shear & Verification Data
+Shear-Related Quantities and Auxiliary Outputs
 | ID | Parameter | Symbol | Technical Description |
 | :--- | :--- | :---: | :--- |
 | 15 | **Poly 0 Ix (Origin)** | $I_{x0}$ | Polygon 0 inertia relative to global origin |
@@ -286,7 +286,7 @@ For any point $z$ along the axis, the library computes:
 * **Shear Analysis (Jourawski)**: Calculates the **Statical Moment ($Q$)** via a custom polygon clipping algorithm, enabling shear stress evaluation on variable cross-sections.
 ---
 
-##  Model Validation: Circular Hollow Section
+##  Numerical Validation: Circular Hollow Section
 examples/cilinder_withcheck.py
 
 <img width="520" height="509" alt="circeltest" src="https://github.com/user-attachments/assets/b3384be1-0a35-4654-b39b-aae614703ad0" />
@@ -326,7 +326,7 @@ The following table reports the full output of the validation script, comparing 
 | Total Tower Mass     | 244.067     | 244.061   | 0.0025% | t    |
 
   
-## 6. Advanced Validation: NREL 5-MW Reference Wind Turbine Tower
+## Numerical Case Study: NREL 5-MW Reference Wind Turbine Tower
 Official research portal of the National Renewable Energy Laboratory providing authoritative wind energy data, reference turbine models, technical reports, and validated simulation tools. It serves as a primary source for benchmark wind turbine definitions, including the NREL 5-MW reference model.
 
 ## 512-sided polygons
@@ -396,7 +396,7 @@ Density = 8.500 kg/m3
 | 0.00% | 0.00% | 0.0043% | 0.0212% | 0.0212% | 0.0092% | 0.0044% | 0.00% | 0.00% |
 | 0.00% | 0.00% | 0.0035% | 0.0086% | 0.0086% | 0.0090% | 0.0016% | 0.00% | 0.00% |
 
-## Summary
+## Validation Summary
 
 - All discrepancies are **well below 0.05%**.
 - Differences are attributable to **rounding and numerical precision**.
@@ -404,7 +404,7 @@ Density = 8.500 kg/m3
 
 This comparison confirms the library's ability to accurately handle **continuously varying tapered sections** in high-stakes engineering applications.
 
-## NREL 5-MW References & Official Documentation
+## NREL 5-MW Reference Source
 
 This project was developed and validated using the following official engineering standards and technical references:
 
@@ -418,7 +418,8 @@ This project was developed and validated using the following official engineerin
     
 ---
 
-## CSF Documentation and In-Depth Code Commentary
+## Code Structure and Internal Documentation
+
 
 The library is designed with a **"self-documenting code"** approach. For developers and engineers who wish to dive deeper into the mathematical implementations or extend the library's functionality:
 
@@ -428,7 +429,7 @@ The library is designed with a **"self-documenting code"** approach. For develop
 
 ---
 
-##  Practical Example: Continuously Tapered T-Beam
+##  Worked Example: Continuously Tapered T-Beam
 This section demonstrates how to model a structural member where the geometry transitions smoothly between two different T-profiles.
 
 ### The Engineering Challenge
