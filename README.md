@@ -279,7 +279,7 @@ This library bridges the gap between complex geometric modeling and structural s
 * **Midpoint Integration**: Sectional properties are automatically sampled at the center of each finite element to accurately capture non-prismatic (tapering) effects.
 * **Full Model Generation**: The exporter generates complete `.tcl` environments, including nodal coordinates, element connectivity, and basic analysis patterns.
 
-### Advanced Property Digestor
+### Sectional Property Evaluation
 For any point $z$ along the axis, the library computes:
 * **Sectional Stiffness Matrix**: Rigorous derivation of $EA, EI_x, EI_y, EI_{xy}$ using Gaussian Quadrature over triangulated domains.
 * **Torsional Estimation**: Implements a robust semi-empirical approximation for the torsional constant ($J \approx A^4 / 40I_p$) to ensure numerical stability in 3D analysis for solid sections.
