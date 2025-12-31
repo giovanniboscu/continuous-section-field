@@ -92,7 +92,7 @@ The common practice of modeling non-prismatic members as a concatenation of equi
 
 ## **CSF** treats the single member as a **continuous manifold** using **ruled surfaces**.
 
-## 1. Reference System
+## Reference System
 
 Sections are modeled as ruled surfaces linearly interpolated between two arbitrary end sections
 
@@ -108,9 +108,9 @@ Both sections are defined in the **same local $x$ – $y$ coordinate system**.
 
 All section geometries must be provided in this local reference system.
 
-## 2. Section Geometry
+## Section Geometry
 
-### 2.1 Polylines
+### Polylines
 
 A section is defined by a **set of closed polylines**.
 
@@ -129,7 +129,7 @@ A section is defined by a **set of closed polylines**.
   two-dimensional numerical analysis.
 - Geometric consistency is the responsibility of the user.
 
-### 2.2 Polyline Weight (Material Coefficient)
+### Polyline Weight (Material Coefficient)
 
 Each polyline is assigned a **scalar weight** \( w \), defined as:
 
@@ -152,7 +152,7 @@ Typical values:
 All polylines use the same orientation; material addition or removal is controlled
 exclusively by the sign of **$w$**
 
-## 2.3 Extreme Sections
+## Extreme Sections
 
 Two sections must be provided:
 
@@ -172,7 +172,7 @@ Polygons in CSF are the fundamental units for both geometry and mechanics:
 * **Multi-material sections**: Each polygon carries a `weight` attribute ($n = E_i / E_{ref}$). This allows the modeling of composite sections (e.g., steel-reinforced timber) by calculating the **Elastic Centroid**.
 * **Hole Modeling (Algebraic Voids)**: By assigning a **weight of -1.0**, a polygon acts as a hole. The library automatically subtracts its area and inertia from the total, allowing for effortless modeling of hollow tubes or cellular beams without complex boolean operations.
 
-## 2.4 Geometric Interpolation
+##  Geometric Interpolation
 
 - Corresponding polylines at $z = 0$ and $z = L$ are interpolated along the beam axis.
 - Interpolation is performed **point-wise between matching vertices**.
@@ -193,7 +193,7 @@ $$
 - **Continuous taper**: smooth transition between different shapes (e.g. tapered T-beams, conical tubes)
 - **Continuous properties**: $A(z)$, $I(z)$, $EA(z)$, $EI(z)$, $GJ(z)$ defined analytically along the entire axis
 
-## 2.5 Section Properties
+## Section Properties
 
 Section properties (area, inertia) are computed from geometry as:
 
@@ -204,7 +204,7 @@ $$
 - Geometry is the primary input.
 - Section properties are automatically derived.
 
-## 3. Sectional Analysis Engine
+## Sectional Analysis Engine
 
 The library is designed for the analysis of non-prismatic and non-homogeneous members,
 with section properties varying continuously along the longitudinal axis.
@@ -269,7 +269,7 @@ Shear & Verification Data
 
 ---
 
-## 4. OpenSees Analysis Integration (BETA)
+##  OpenSees Analysis Integration (BETA)
 
 > ** Beta Phase Notice**: This module is in active development. While geometric and stiffness calculations are verified for tapered beam configurations, users should validate results for complex thin-walled or open sections.
 
@@ -286,7 +286,7 @@ For any point $z$ along the axis, the library computes:
 * **Shear Analysis (Jourawski)**: Calculates the **Statical Moment ($Q$)** via a custom polygon clipping algorithm, enabling shear stress evaluation on variable cross-sections.
 ---
 
-## 5. Model Validation: Circular Hollow Section
+##  Model Validation: Circular Hollow Section
 examples/cilinder_withcheck.py
 
 <img width="520" height="509" alt="circeltest" src="https://github.com/user-attachments/assets/b3384be1-0a35-4654-b39b-aae614703ad0" />
@@ -418,7 +418,7 @@ This project was developed and validated using the following official engineerin
     
 ---
 
-## 7. CSF Documentation and In-Depth Code Commentary
+## CSF Documentation and In-Depth Code Commentary
 
 The library is designed with a **"self-documenting code"** approach. For developers and engineers who wish to dive deeper into the mathematical implementations or extend the library's functionality:
 
@@ -428,7 +428,7 @@ The library is designed with a **"self-documenting code"** approach. For develop
 
 ---
 
-## 8. Practical Example: Continuously Tapered T-Beam
+##  Practical Example: Continuously Tapered T-Beam
 This section demonstrates how to model a structural member where the geometry transitions smoothly between two different T-profiles.
 
 ### The Engineering Challenge
