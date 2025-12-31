@@ -22,8 +22,7 @@ It computes sectional and stiffness properties without resorting to piecewise-pr
 [See full NREL 5‑MW validation ](#6-advanced-validation-nrel-5-mw-reference-wind-turbine-tower)
 
 ### **Arbitrary Cross-Section Support**
-Unlike traditional structural tools limited to predefined geometric templates, this library treats the cross-section as a **fully generic topological entity**.
-Python tool for accurate, continuous calculation of cross-section properties for complex non-prismatic members (tapered beams, wind turbine towers, piles, variable columns, FGM materials).
+The common practice of modeling non-prismatic members as a concatenation of equivalent prismatic elements (piecewise-prismatic approach) introduces a non-neutral methodological choice. The numerical solution varies with the number of subdivisions and the location of sampling points. Unlike traditional structural tools limited to predefined geometric templates, this library treats the cross-section as a fully generic topological entity, providing accurate, continuous calculation of cross-section properties for complex non-prismatic members (tapered beams, wind turbine towers, piles, variable columns, FGM materials).
 
 > [!IMPORTANT]
 > **Not a FEM Solver**: This library is **not** a Finite Element Method (FEM) software. It is a geometric and constitutive "engine" designed to model the continuous variation of a single member. It provides the stiffness matrices and sectional properties required for structural analysis, acting as a high-accuracy pre-processor or a kernel for beam theory applications.
