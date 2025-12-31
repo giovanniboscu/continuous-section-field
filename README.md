@@ -43,9 +43,9 @@ The common practice of modeling non-prismatic members as a concatenation of equi
 - Version 2: fully arbitrary `w(z)` per polygon  
   → non-linear thickness, modulus, or reinforcement variation  
   → access to `w₀`, `w₁`, current/initial/end distances `d(i,j)`, `di(i,j)`, `de(i,j)`, and all `math` functions
-- Algebraic void handling (`w < 0`)
-- Beta OpenSees export (midpoint integration)
-- Lightweight, no GUI, no built-in FEM: pure Python for custom scripts or integration with PyNite/OpenSeesPy
+- **Arbitrary Longitudinal Weight Functions**: Each polygon can be assigned a fully arbitrary longitudinal weight function `w(z)`. This enables:
+  - non-linear variation of thickness, elastic modulus, or reinforcement along the member
+  - access to initial and final weights (`w₀`, `w₁`) and to geometric distances (`d(i,j)`, `di(i,j)`, `de(i,j)`), with full support for standard `math` functions
 ---
 ## 🛠 Installation & Quick Start
 
