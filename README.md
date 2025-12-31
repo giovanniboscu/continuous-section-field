@@ -1,4 +1,4 @@
-**[Key Features](#key-features)** • **[Setup Environment (Linux & Windows)](#setup-environment-linux--windows)** • **[Practical Example](#8-practical-example-continuously-tapered-t-beam)** • **[Model Validation (Cylinder)](#5-model-validation-circular-hollow-section)** • **[NREL 5-MW Validation](#6-advanced-validation-nrel-5-mw-reference-wind-turbine-tower)**
+**[Key Features](#key-features)** • **[Installation & setup)](#setup-environment-linux--windows)** • **[Practical Example](#8-practical-example-continuously-tapered-t-beam)** • **[Validation](#5-model-validation-circular-hollow-section)** • **[NREL 5-MW Case Study ](#6-advanced-validation-nrel-5-mw-reference-wind-turbine-tower)**
 
 # Continuous Section Field (CSF) Python Tool for Analyzing Tapered Generic Structural Members
 Continuous Section Field (CSF) is a Python library for the continuous modeling of non-prismatic structural members.
