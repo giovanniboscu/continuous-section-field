@@ -49,7 +49,8 @@ The common practice of modeling non-prismatic members as a concatenation of equi
 ---
 ## 🛠 Installation & Quick Start
 
-To use the **CSF** engine, it is recommended to use a virtual environment to keep dependencies isolated.
+To use the **CSF** engine, it is recommended to work inside a virtual environment.
+
 ###  Setup Environment linux & windows
 ```bash
 LINUX
