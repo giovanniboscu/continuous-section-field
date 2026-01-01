@@ -1,8 +1,8 @@
 **[Key Features](#key-features)** • **[Installation & setup](#setup-environment-linux--windows)** • **[Continuously Tapered Beam Example](#worked-example-continuously-tapered-t-beam)** •**[Validation](#numerical-validation-circular-hollow-section)** • **[NREL 5-MW Case Study ](#numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
 
 # Continuous Section Field (CSF) Python Tool for Analyzing Tapered Generic Structural Members
-Continuous Section Field (CSF) is a Python library for the continuous modeling of non-prismatic structural members.
-It computes sectional and stiffness properties without resorting to piecewise-prismatic discretization.
+CSF generates continuous stiffness and mass properties for tapered, multi-material beam members, eliminating piecewise-prismatic discretization
+
 
 ## An Analytical Engine for Non-Prismatic Structural Members
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18063427.svg)](https://doi.org/10.5281/zenodo.18063427)
