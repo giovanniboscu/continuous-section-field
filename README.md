@@ -21,7 +21,7 @@ CSF generates continuous stiffness and mass properties for tapered, multi-materi
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
 
 
-[See full NREL 5‑MW validation ](## Numerical Case Study: NREL 5-MW Reference Wind Turbine Tower)
+**[NREL 5-MW Case Study ](#numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
 
 ### **Motivation and Arbitrary Cross-Section Representation**
 
