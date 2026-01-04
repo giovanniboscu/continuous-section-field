@@ -1,13 +1,59 @@
-# CSF User Guide: Modeling and Sectional Analysis
+# CSF User Guide — Modeling and Sectional Analysis
 
-This guide explains how to use **Continuous Section Field (CSF)** to model structural members with variable cross-sections. CSF uses a "start-to-end" interpolation logic based on ruled surfaces.
+Continuous Section Field (CSF) models structural members whose cross-section **varies along the longitudinal axis `Z`** (e.g., tapered beams, haunched girders, variable plates).
 
-## Core Logic: The "Anchor" Sections
-The library works by defining two anchor sections at different longitudinal coordinates ($Z$):
-1. **Start Section** ($Z_{start}$)
-2. **End Section** ($Z_{end}$)
+CSF is built around a simple idea:
 
-The engine automatically calculates all intermediate geometric and structural properties through linear interpolation of the vertices.
+- you define the cross-section at **two known stations** along `Z`
+- CSF generates any intermediate section by **linearly interpolating polygon vertices**
+- from the interpolated section, you can compute **geometric and structural properties** (area, centroid, inertia, etc.)
+
+---
+
+## Core Concept — Anchor Sections
+
+CSF needs two *anchor* sections:
+
+- **Start Section** at `Z_start`
+- **End Section** at `Z_end`
+
+These two sections act as boundary conditions. Every section at an intermediate coordinate `Z` is obtained by interpolating between them.
+
+> Think of CSF as a *continuous mapping* from `Z` → `Section`.
+
+---
+
+## What “interpolation” means in practice
+
+A section is defined by one or more **named polygons** (e.g., `"flange"`, `"web"`).  
+For a given polygon name, CSF matches the polygon at `Z_start` with the polygon at `Z_end` and interpolates:
+
+- vertex coordinates `(x, y)` **point-by-point**
+- producing a new polygon at the requested `Z`
+
+This is equivalent to generating a ruled surface between corresponding polygon edges along the member length.
+
+---
+
+## Minimum requirements to use CSF correctly
+
+To ensure the start/end sections can be interpolated:
+
+- The start and end sections must contain the **same set of polygons**
+- Matching polygons must have the **same `name`**
+- Matching polygons must have the **same number of vertices**
+- Vertex ordering must be **consistent** (same CCW walk and same starting vertex)
+
+If these constraints are not respected, interpolation may fail or produce distorted geometry.
+
+---
+
+## What CSF gives you
+
+Once the field is defined, you can:
+- retrieve a section at any coordinate: `field.section(Z)`
+- compute section properties on that slice (area, centroid, inertias, principal axes, etc.)
+- sample the member along `Z` for analysis, export, or visualization
 
 ---
 
