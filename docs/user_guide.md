@@ -131,6 +131,39 @@ Define the End Section (Tapering)
 ```
 
 
+### `weight` — material/void scaling factor
+
+Each `Polygon` includes a scalar attribute `weight` that scales its contribution to the section properties.
+
+In CSF, `weight` represents the **ratio between the Young’s modulus of that region and a reference modulus**:
+
+- `weight = w = E / E_ref`
+
+where:
+- `E` is the Young’s modulus assigned to the polygon region
+- `E_ref` is the reference Young’s modulus used for normalization
+
+Practical meaning:
+- `weight = 1.0` → region has `E = E_ref` (reference material)
+- `weight = 0.5` → region is half as stiff (`E = 0.5 * E_ref`)
+- `weight = 2.0` → region is twice as stiff (`E = 2.0 * E_ref`)
+- `weight = -1.0` → **void/hole** (the region is subtracted from the section)
+
+> Note: `weight` is dimensionless. Make sure `E` and `E_ref` use the same units.
+
+Example:
+
+```python
+poly_flange_start = Polygon(
+    vertices=(Pt(-1, -0.2), Pt(1, -0.2), Pt(1, 0.2), Pt(-1, 0.2)),
+    weight=1.0,   # w = E/E_ref (1.0 = reference material, -1.0 = hole)
+    name="flange"
+)
+```
+
+
+
+
 ## Step 2 — Create the Section Containers
 
 In CSF, a `Section` is a **container** that groups the polygons defining the cross-section at a specific longitudinal coordinate `z`.
