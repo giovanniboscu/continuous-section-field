@@ -132,7 +132,33 @@ Define the End Section (Tapering)
     )
 ```
 
-### Step 2: Create the Section Containers
+
+## Step 2 — Create the Section Containers
+
+In CSF, a `Section` is a **container** that groups the polygons defining the cross-section at a specific longitudinal coordinate `z`.
+
+You will typically build two sections:
+
+- `section0` at `Z_start`
+- `section1` at `Z_end`
+
+These are the **anchor sections** used by `ContinuousSectionField` to interpolate any intermediate section.
+
+---
+
+### What a `Section` contains
+
+A `Section` is defined by:
+
+- `polygons`: a tuple/list of `Polygon` objects describing the cross-section at that station
+- `z`: the longitudinal coordinate where that cross-section is defined
+
+```python
+s0 = Section(polygons=(poly0_start, poly1_start), z=0.0)
+s1 = Section(polygons=(poly0_end,   poly1_end),   z=10.0)
+```
+
+
 ## Step 3 — Section properties as a function of `Z`
 
 Once the `ContinuousSectionField` is created, the cross-section becomes a **function of the longitudinal coordinate**:
