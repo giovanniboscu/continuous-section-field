@@ -161,6 +161,8 @@ s1 = Section(polygons=(poly0_end,   poly1_end),   z=10.0)
 
 ## Step 3 — Section properties as a function of `Z`
 
+
+
 Once the `ContinuousSectionField` is created, the cross-section becomes a **function of the longitudinal coordinate**:
 
 - `Section(Z)` is obtained by interpolating polygon vertices between the two anchor sections.
@@ -279,6 +281,8 @@ Minimal pattern:
     field = ContinuousSectionField(section0=s0, section1=s1)
 ```
 ### Step  3. Structural Properties & Torsion
+
+
 
 Once initialized, you can extract properties for any point Z. For torsional rigidity (J), the library uses the following 
 
