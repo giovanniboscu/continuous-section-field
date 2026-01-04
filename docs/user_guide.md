@@ -157,9 +157,6 @@ s1 = Section(polygons=(poly0_end,   poly1_end),   z=10.0)
 ```
 
 
-
-
-
 ## `ContinuousSectionField`
 
 `ContinuousSectionField` is the core CSF object that turns two **anchor sections** into a **continuous cross-section definition** along the member axis `Z`.
