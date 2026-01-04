@@ -1,7 +1,6 @@
 # CSF User Guide — Modeling and Sectional Analysis
 
-Continuous Section Field (CSF) models structural members whose cross-section **varies along the longitudinal axis `Z`** (e.g., tapered beams, haunched girders, variable plates).
-
+Continuous Section Field (CSF) models structural members whose cross-section **varies along the longitudinal axis `Z`.
 CSF is built around a simple idea:
 
 - you define the cross-section at **two known stations** along `Z`
@@ -40,7 +39,6 @@ This is equivalent to generating a ruled surface between corresponding polygon e
 To ensure the start/end sections can be interpolated:
 
 - The start and end sections must contain the **same set of polygons**
-- Matching polygons must have the **same `name`**
 - Matching polygons must have the **same number of vertices**
 - Vertex ordering must be **consistent** (same CCW walk and same starting vertex)
 
