@@ -133,8 +133,102 @@ Define the End Section (Tapering)
 ```
 
 ### Step 2: Create the Section Containers
+## Step 3 — Section properties as a function of `Z`
 
-Group your polygons into Section objects and assign them a position along the longitudinal axis (Z).
+Once the `ContinuousSectionField` is created, the cross-section becomes a **function of the longitudinal coordinate**:
+
+- `Section(Z)` is obtained by interpolating polygon vertices between the two anchor sections.
+- Any geometric/structural property you compute from that section is therefore also a **function of `Z`**:
+  - `A(Z), Cx(Z), Cy(Z), Ix(Z), Iy(Z), ...`
+
+In practice, the workflow is always:
+
+1. **Choose a coordinate** `Z`
+2. **Generate the section slice** at that coordinate  
+   `sec = field.section(Z)`
+3. **Compute properties** from that slice  
+   `props = section_properties(sec)` *(basic)* or `full = section_full_analysis(sec)` *(extended)*
+
+---
+
+### What can be evaluated at any `Z`
+
+#### A) Basic section properties (`section_properties`)
+Use this when you only need core geometric values (fast).
+
+Typical outputs include:
+- `A` — net area (holes subtract area)
+- `Cx`, `Cy` — centroid coordinates (neutral axis location)
+- `Ix`, `Iy` — centroidal second moments of area about global axes
+- `Ixy` — centroidal product of inertia
+
+> Tip: if you are unsure about what the function returns in your version, print:
+> `print(props.keys())`
+
+#### B) Extended analysis (`section_full_analysis`)
+Use this when you need a complete report (includes derived and torsional quantities).
+
+The example below prints these keys (all evaluated at the requested `Z`):
+
+1. **Primary integrated geometric properties**
+- `A` — net area  
+- `Cx`, `Cy` — centroid coordinates  
+- `Ix`, `Iy` — centroidal second moments of area  
+- `Ixy` — centroidal product of inertia  
+- `J` — **polar second moment about the centroidal axes** (by definition `J = Ix + Iy`)  
+  > Note: `J` is a geometric polar moment, **not** the Saint-Venant torsional constant for non-circular sections.
+
+2. **Principal properties**
+- `I1`, `I2` — principal second moments (`I1 ≥ I2`)  
+  (principal axes are the orientation where the product of inertia is zero)
+- `rx`, `ry` — radii of gyration  
+  `rx = sqrt(Ix / A)`, `ry = sqrt(Iy / A)`
+
+3. **Strength and torsion**
+- `Wx`, `Wy` — elastic section moduli (used for bending stress `σ = M / W`)  
+  Typically computed as:
+  - `Wx = Ix / y_max`
+  - `Wy = Iy / x_max`  
+  where `x_max`, `y_max` are the extreme distances from centroid to the furthest fiber.
+- `K_torsion` — Saint-Venant torsional constant (used for torsional stiffness)
+
+> Tip: to see every available quantity in your build:
+> `print(sorted(full_analysis.keys()))`
+
+---
+
+### Verification utilities (optional, but useful for debugging)
+
+These functions are helpful to cross-check results on a single interpolated slice:
+
+- `polygon_inertia_about_origin(poly)`  
+  returns polygon inertia terms about the **global origin** (not centroidal)
+- `polygon_statical_moment(poly, y_axis=...)`  
+  returns first moment (useful for shear flow checks)
+- `section_statical_moment_partial(sec, y_cut=...)`  
+  returns first moment of the portion above/below a cut line (e.g., at the neutral axis)
+
+---
+
+### Stiffness quantities (require material input)
+
+`section_stiffness_matrix(sec, E_ref=...)` computes stiffness terms that depend on the reference modulus `E_ref`.
+
+- Output is a matrix (commonly containing terms like `EA`, `EIx`, `EIy` depending on the chosen formulation).
+- **Unit consistency is mandatory**:
+  - If `Pt(x, y)` is in **mm** → use `E_ref` in **N/mm² (MPa)**
+  - If `Pt(x, y)` is in **m**  → use `E_ref` in **N/m² (Pa)**
+
+---
+
+### Sampling along `Z` (turn “properties at one Z” into “properties vs Z”)
+
+To study how properties vary along the member, evaluate at multiple stations:
+
+- use element **centers** for beam discretizations (recommended), or
+- use a uniform grid of `Z` points for plotting/reporting.
+
+Minimal pattern:
 
 
 ```python
