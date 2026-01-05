@@ -51,7 +51,7 @@ If these constraints are not respected, interpolation may fail or produce distor
 Once the field is defined, you can:
 - retrieve a section at any coordinate: `field.section(Z)`
 - compute section properties on that slice (area, centroid, inertias, principal axes, etc.)
-- sample the member along `Z` for analysis, export, or visualization
+- sample the member along `Z` for analysis, or visualization
 
 ---
 
@@ -75,7 +75,7 @@ poly_flange_start = Polygon(
 )
 ```
 
-Define the Start Section (Tapering)
+Define the Start Section 
 
 To create a tapered member (where the section grows or shrinks along the Z axis), you must define the polygons for the end coordinate.
 
