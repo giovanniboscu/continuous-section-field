@@ -131,16 +131,8 @@ A section is defined by a **set of closed polylines**.
   - oriented **counter-clockwise (CCW)**
   - Polylines are closed implicitly; do not repeat the first vertex at the end of the list.
 
-
-### Notes and Limitations
-
-- Polylines must not self-intersect or overlap.
-- Topological changes along the beam are not supported.
-- Advanced material effects (e.g. torsion with multiple materials) may require
-  two-dimensional numerical analysis.
-- Geometric consistency is the responsibility of the user.
-
 ### Polyline Weight (Material Coefficient)
+* [** Longitudinally varying homogenization factors **]([https://www.nrel.gov/wind/](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md))
 
 Each polyline is assigned a **scalar weight** \( w \), defined as:
 
