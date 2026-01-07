@@ -224,16 +224,6 @@ with section properties varying continuously along the longitudinal axis.
 
 The engine employs a **multi-pass analysis** combined with **Gaussian integration schemes** to extract structural parameters with high numerical fidelity. Specifically engineered for **tapered and non-homogeneous members**, it is ideal for applications where sectional properties vary continuously along the longitudinal axis (e.g., wind turbine towers, bridge girders, or aerospace components).
 
-###  Multi-Pass Analysis Procedure
-To ensure accuracy, the library processes geometry in distinct logical stages:
-* **Geometric Pass**: Uses the **Shoelace algorithm** (Surveyor's formula) to determine net area and first moments, applying **Steiner’s Parallel Axis Theorem** to translate results to the centroid.
-* **Principal Axis Pass**: Performs eigen-decomposition of the inertia tensor (Mohr's Circle logic) to identify principal moments ($I_1, I_2$) and the rotation angle ($\theta$).
-
-###  Gaussian Integration Schemes (Numerical Quadrature)
-For complex constitutive properties, the library moves beyond simple boundary integration:
-* **Stiffness Matrix Calculation**: To compute the exact sectional stiffness matrix $[K]$, the engine performs **Gaussian quadrature** on triangulated sub-domains. 
-* **Sub-domain Triangulation**: Each polygon is decomposed into triangles where integration points and weights are applied, allowing the model to handle variations in Elastic Moduli ($E$) across the section.
-
 ####   Continuous Longitudinal Formulation
 Unlike traditional frame analysis software that treats members as prismatic, this library treats the member as a **Continuous Section Field**:
 * **Dynamic Computation**: Every property is calculated "on-the-fly" at any longitudinal coordinate $z$ via linear vertex-mapping.
