@@ -132,7 +132,7 @@ A section is defined by a **set of closed polylines**.
   - Polylines are closed implicitly; do not repeat the first vertex at the end of the list.
 
 ### Polyline Weight (Material Coefficient)
-* [** Longitudinally varying homogenization factors **]([https://www.nrel.gov/wind/](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md))
+[Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)
 
 Each polyline is assigned a **scalar weight** \( w \), defined as:
 
