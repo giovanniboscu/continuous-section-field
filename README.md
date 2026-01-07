@@ -273,7 +273,7 @@ Shear-Related Quantities and Auxiliary Outputs
 ## OpenSees & CSF Integration
 
 
-The library bridges the gap between continuous geometric modeling and structural analysis using an optimized **Force-Based** approach.
+The library bridges the gap between continuous geometric modeling and structural analysis using a **Force-Based** approach.
 
 * **Element Formulation:** Uses the `forceBeamColumn` element. This integrates the **section flexibility** along the member, allowing a single element to accurately represent a tapered beam without manual subdivision.
 * **Numerical Integration:** Employs the **Gauss-Lobatto rule** via the `beamIntegration` command. This ensures the section properties are sampled exactly at the beam ends (nodes), which is critical for support reactions and tip displacement accuracy.
