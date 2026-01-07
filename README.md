@@ -272,6 +272,7 @@ Shear-Related Quantities and Auxiliary Outputs
  
 ## Technical Details: OpenSees & CSF Integration
 
+
 The library bridges the gap between continuous geometric modeling and structural analysis using an optimized **Force-Based** approach.
 
 * **Element Formulation:** Uses the `forceBeamColumn` element. This integrates the **section flexibility** along the member, allowing a single element to accurately represent a tapered beam without manual subdivision.
