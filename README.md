@@ -42,7 +42,7 @@ CSF models members defined by polygonal end sections connected by straight gener
 ---
 ## Key Features
 
-- **Algebraic Polygon Logic**: Sections defined as collections of 2D vertices with weights. Handles any shape — from standard profiles to fully custom architectural sections.
+- **Algebraic Polygon Logic**: Sections defined as collections of 2D vertices with weights. Handles any shape - from standard profiles to fully custom architectural sections.
 - **Curvature Handling**: Discrete segments with arbitrary vertex count → approximate curved surfaces (e.g., circular towers) to any desired precision.
 - **No Predefined Templates**: No restricted "Circle" or "Rectangle" classes — any geometry describable by coordinates is supported (A, I, J, Q, etc.).
 - **Topological Freedom**:
