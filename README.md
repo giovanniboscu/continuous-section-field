@@ -279,6 +279,8 @@ The library bridges the gap between continuous geometric modeling and structural
 * **Numerical Integration:** Employs the **Gauss-Lobatto rule** via the `beamIntegration` command. This ensures the section properties are sampled exactly at the beam ends (nodes), which is critical for support reactions and tip displacement accuracy.
 * **Torsional Stability (Beta):** Implements a semi-empirical approximation for the torsional constant () to ensure numerical stability and prevent singular matrices in 3D FEA models.
 * **Centroidal Alignment:** Automatically tracks the section centroid () and performs a linear regression to align OpenSees nodes along the physical neutral axis, preventing unintended axial-bending coupling.
+* [OpenSees Integration & Numerical Strategy](/continuous-section-field/blob/main/docs/OpenSeesIntegrationNumericalStrategy.md)
+* [OpenSees Integration Technical Details](/continuous-section-field/blob/main/docs/openseesIntegration.md)
 
 ---
 
