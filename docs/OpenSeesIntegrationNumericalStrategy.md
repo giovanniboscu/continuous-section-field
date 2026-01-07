@@ -37,6 +37,3 @@ When the section height or shape varies asymmetrically, the neutral axis might s
 * **Integration Scheme:** `beamIntegration Lobatto`
 * **Flexibility:** Topology-agnostic (automatically adapts to any number of integration points).
 
----
-
-Spero che questo formato sia perfetto per il tuo repo! Ti serve aiuto per aggiungere una sezione sugli "Esempi di Utilizzo" o preferisci procedere con il caricamento?
