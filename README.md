@@ -3,7 +3,10 @@
 # Continuous Section Field (CSF) Python Tool for Analyzing Tapered Generic Structural Members
 The Continuous Section Field (CSF) framework provides the description of non-homogeneous structural members, generating continuous stiffness and mass properties for tapered, multi-material beams. By formulating the element's properties as a continuous field, the model eliminates the numerical approximations inherent in piecewise-prismatic discretization.
 
-The geometry is defined by ruled surfaces generated between arbitrary end-section polygons, enabling the modeling of complex, varying topologies. Internally, each cross-section is treated as a multi-material composite layout where the mechanical response is governed by continuous longitudinal variation of homogenization ratios (E-modulus ratios).
+The geometry is defined by ruled surfaces generated between arbitrary end-section polygons, enabling the modeling of complex, varying topologies. Homogenization factors may vary along the beam axis and can be applied independently to different portions of the same cross-section.
+
+The framework is intended for elastic beam modeling and preprocessing, enabling visualization and export of section properties and solver-ready models (e.g. OpenSees). CSF does not model damage, cracking, or nonlinear material behavior.
+
 
 
 ## An Analytical Engine for Non-Prismatic Structural Members
