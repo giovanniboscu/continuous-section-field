@@ -9,10 +9,10 @@ CSF is **not** a Finite Element Method (FEM) solver. It is a **geometric + const
 ## Modeling Assumptions
 
 - **Slender-member (beam) idealization**  
-  The member is treated as a 1D structural element whose behavior is represented through sectional resultants (e.g., \(EA\), \(EI\), \(GJ\)).
+  The member is treated as a 1D member model with 2D cross-sectional integration structural element whose behavior is represented through sectional resultants (e.g., \(EA\), \(EI\), \(GJ\)).
 
 - **Linear elastic behavior**  
-  Material response is assumed linear elastic. No cracking, yielding, plasticity, damage, or other nonlinear constitutive effects are modeled.
+  Material response is assumed linear elastic. No cracking, yielding, plasticity, or other nonlinear constitutive effects are modeled.
 
 - **Small deformations (linear geometry)**  
   Geometric nonlinearities (large rotations/large displacements, P–Δ/P–δ, follower loads) are outside CSF’s scope.
@@ -92,7 +92,7 @@ These constraints are essential for valid geometry and continuous mapping:
 ## Numerical Considerations
 
 - **Geometry mapping is exact; integrals may be numerical**  
-  While the geometric interpolation is defined by explicit mapping rules (ruled surfaces), many sectional quantities may be obtained via numerical integration (e.g., Gaussian quadrature over triangulated domains). Accuracy depends on integration settings and polygon resolution.
+  While the geometric interpolation is defined by explicit mapping rules (ruled surfaces), many sectional quantities may be obtained via numerical integration. Accuracy depends on integration settings and polygon resolution.
 
 - **Polygon resolution controls fidelity for curved boundaries**  
   For curvilinear shapes approximated by polygons, accuracy improves with more sides/vertices. Users should verify convergence when high fidelity is required.
