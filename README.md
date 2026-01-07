@@ -269,22 +269,20 @@ Shear-Related Quantities and Auxiliary Outputs
 | 18 | **Stiffness Shape** | Matrix | Dimensionality of the Sectional Stiffness Matrix $[K]$ |
 
 ---
+ 
+## Technical Details: OpenSees & CSF Integration
 
-##  OpenSees Interface (Beta)
+The library bridges the gap between continuous geometric modeling and structural analysis using an optimized **Force-Based** approach.
 
-> ** Beta Phase Notice**: This module is in active development. While geometric and stiffness calculations are verified for tapered beam configurations, users should validate results for complex thin-walled or open sections.
+* **Element Formulation:** Uses the `forceBeamColumn` element. This integrates the **section flexibility** along the member, allowing a single element to accurately represent a tapered beam without manual subdivision.
+* **Numerical Integration:** Employs the **Gauss-Lobatto rule** via the `beamIntegration` command. This ensures the section properties are sampled exactly at the beam ends (nodes), which is critical for support reactions and tip displacement accuracy.
+* **Torsional Stability (Beta):** Implements a semi-empirical approximation for the torsional constant () to ensure numerical stability and prevent singular matrices in 3D FEA models.
+* **Centroidal Alignment:** Automatically tracks the section centroid () and performs a linear regression to align OpenSees nodes along the physical neutral axis, preventing unintended axial-bending coupling.
 
-This library bridges the gap between complex geometric modeling and structural simulation by providing a high-level API for **OpenSees** model generation.
+---
 
 ### Member Discretization and Property Sampling
-* **Midpoint Integration**: Sectional properties are automatically sampled at the center of each finite element to accurately capture non-prismatic (tapering) effects.
 * **Full Model Generation**: The exporter generates complete `.tcl` environments, including nodal coordinates, element connectivity, and basic analysis patterns.
-
-### Sectional Property Evaluation
-For any point $z$ along the axis, the library computes:
-* **Sectional Stiffness Matrix**: Rigorous derivation of $EA, EI_x, EI_y, EI_{xy}$ using Gaussian Quadrature over triangulated domains.
-* **Torsional Estimation**: Implements a robust semi-empirical approximation for the torsional constant ($J \approx A^4 / 40I_p$) to ensure numerical stability in 3D analysis for solid sections.
-* **Shear Analysis (Jourawski)**: Calculates the **Statical Moment ($Q$)** via a custom polygon clipping algorithm, enabling shear stress evaluation on variable cross-sections.
 ---
 
 ##  Numerical Validation: Circular Hollow Section
