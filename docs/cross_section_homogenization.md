@@ -1,22 +1,6 @@
-# Continuous Section Field (CSF)
+# Continuous Section Field (CSF) - Longitudinally varying homogenization factors
 
 The **Continuous Section Field (CSF)** framework provides a continuous description of non-prismatic and multi-material beam members by generating longitudinally varying cross-section properties without using piecewise-prismatic discretization.
-
-CSF represents stiffness and mass properties as continuous fields derived directly from geometry and material layout.  
-This makes it possible to model tapered beams, composite sections, and gradual changes in material participation along the beam axis in a consistent and mesh-independent way.
-
----
-
-## Key Features
-
-- Continuous cross-section properties along the beam axis
-- Support for non-prismatic and multi-material sections
-- Geometry defined by ruled surfaces between arbitrary end sections
-- Section-level elastic homogenization
-- Longitudinally varying homogenization factors
-- Native Python library and file-based workflow
-- Graphical inspection of geometry and properties
-- Export to OpenSees for structural analysis
 
 ---
 
@@ -28,7 +12,7 @@ In CSF, a beam is described through:
 2. A cross-section layout composed of multiple material sub-domains  
 3. A continuous homogenization process that produces equivalent linear-elastic section properties along the beam axis  
 
-The beam is not discretized into prismatic finite elements.  
+The beam is not discretized into prismatic elements.  
 Instead, cross-section properties are evaluated continuously as functions of the longitudinal coordinate.
 
 ---
