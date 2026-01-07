@@ -1,3 +1,12 @@
+
+## An Analytical Engine for Non-Prismatic Structural Members
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18063427.svg)](https://doi.org/10.5281/zenodo.18063427)
+![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+![Math](https://img.shields.io/badge/Engine-Analytical_Mechanics-red.svg)
+![Integration](https://img.shields.io/badge/Integration-Gaussian_Quadrature-green.svg)
+![License](https://img.shields.io/github/license/giovanniboscu/continuous-section-field)
+![Repo Size](https://img.shields.io/github/repo-size/giovanniboscu/continuous-section-field)
+
 **[Key Features](#key-features)** • **[Installation & setup](#setup-environment-linux--windows)** • **[Continuously Tapered Beam Example](#worked-example-continuously-tapered-t-beam)** •**[Validation](#numerical-validation-circular-hollow-section)** • **[NREL 5-MW Case Study ](#numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
 
 # Continuous Section Field (CSF) Python Tool for Analyzing Tapered Generic Structural Members
@@ -9,14 +18,6 @@ The geometry is defined by ruled surfaces generated between arbitrary end-sectio
 The framework is intended for elastic beam modeling and preprocessing, enabling visualization and export of section properties and solver-ready models (e.g. OpenSees). CSF does not model damage, cracking, or nonlinear material behavior.
 
 
-
-## An Analytical Engine for Non-Prismatic Structural Members
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18063427.svg)](https://doi.org/10.5281/zenodo.18063427)
-![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
-![Math](https://img.shields.io/badge/Engine-Analytical_Mechanics-red.svg)
-![Integration](https://img.shields.io/badge/Integration-Gaussian_Quadrature-green.svg)
-![License](https://img.shields.io/github/license/giovanniboscu/continuous-section-field)
-![Repo Size](https://img.shields.io/github/repo-size/giovanniboscu/continuous-section-field)
 
 
 
