@@ -1,143 +1,56 @@
-# Continuous Cross-Section Homogenization
+# Continuous Section Field (CSF)
 
-## Overview
+The **Continuous Section Field (CSF)** framework provides a continuous description of non-prismatic and multi-material beam members by generating longitudinally varying cross-section properties without resorting to piecewise-prismatic discretization.
 
-The Continuous Section Field (CSF) framework models non-prismatic and multi-material beam members through a continuous homogenization of cross-sectional properties along the beam axis.  
-The approach is based on the definition of *equivalent linear-elastic cross-sections*, whose mechanical properties vary continuously as a function of the longitudinal coordinate.
-
-CSF does not discretize the member into piecewise-prismatic elements.  
-Instead, stiffness and mass properties are treated as continuous fields derived from the geometry and material layout of the cross-section.
+CSF models stiffness and mass properties as continuous fields derived from geometry and material layout, enabling accurate representation of tapered sections, composite layouts, and gradual material participation along the beam axis.
 
 ---
 
-## Homogenization Concept
+## Key Features
 
-Within CSF, each cross-section is treated as a composite layout composed of one or more material sub-domains (patches).  
-The mechanical response of the section is obtained through elastic homogenization, performed under the assumptions of classical beam theory.
-
-A reference elastic modulus is defined for each material domain.  
-The effective elastic response is obtained by applying *homogenization factors* that may vary continuously along the beam axis.
+- Continuous cross-section properties along the beam axis
+- Support for non-prismatic and multi-material sections
+- Geometry defined by ruled surfaces between arbitrary end sections
+- Section-level homogenization based on elastic equivalence
+- Longitudinally varying homogenization factors
+- Direct export of sectional properties and structural models
+- Native Python library with optional file-based wrapper
+- OpenSees-ready output
 
 ---
 
-## Longitudinal Homogenization Factors
+## Conceptual Overview
 
-The homogenization process is governed by a set of longitudinally varying factors:
+In CSF, a beam is described by:
+1. A **geometric definition** (axis, end sections, ruled surfaces)
+2. A **cross-section layout** composed of multiple material sub-domains (patches)
+3. A **continuous homogenization process** that produces equivalent linear-elastic section properties as functions of the longitudinal coordinate
 
-\[
-w_i(z)
-\]
+The beam is *not* discretized into prismatic elements.  
+Instead, sectional properties such as area, inertia, and stiffness are evaluated continuously.
 
+---
+
+## Cross-Section Homogenization
+
+Each cross-section may contain multiple material patches.  
+For each patch, a reference elastic modulus is defined.
+
+The effective elastic modulus of each patch is obtained through a **homogenization factor**:
+
+```text
+E_i(z) = w_i(z) * E_ref,i
 where:
 
-- \(z\) is the longitudinal coordinate along the beam axis,
-- \(i\) identifies a specific material sub-domain (patch) of the cross-section,
-- \(w_i(z)\) is a dimensionless homogenization factor associated with that sub-domain.
+z is the longitudinal coordinate along the beam axis
 
-Each homogenization factor modifies the reference elastic modulus of its corresponding patch according to:
+i identifies a specific cross-section patch
 
-\[
-E_i(z) = w_i(z)\,E_{\text{ref},i}
-\]
+w_i(z) is a dimensionless homogenization factor
 
-The factors \(w_i(z)\) are **not required to be linear** and may vary independently for different sub-domains within the same cross-section.
+E_ref,i is the reference elastic modulus of the patch
 
----
+Multiple homogenization factors may coexist within the same section:
 
-## Definition of \(w_i(z)\)
 
-The homogenization factors \(w_i(z)\) can be defined by the user in different ways:
 
-- **Tabulated definition**  
-  Discrete data relating the longitudinal coordinate \(z\) to the value of \(w_i(z)\).
-
-- **Analytical definition**  
-  Continuous user-defined functions (e.g. polynomial, exponential, or generic callable functions), within the numerical limits of the Python environment.
-
-CSF evaluates the homogenization factors continuously along the beam axis and applies them locally, section by section, during the computation of cross-sectional properties and internal integrations.
-
----
-
-## Application at the Cross-Section Level
-
-The homogenization factors are applied **locally** to the corresponding sub-domains of the cross-section.  
-A single beam element may therefore include multiple homogenization factors:
-
-\[
-w_1(z),\; w_2(z),\; \dots,\; w_n(z)
-\]
-
-acting simultaneously on different portions of the same section.
-
-The equivalent sectional stiffness is obtained through integral homogenization, for example:
-
-\[
-EI(z) = \sum_i \int_{A_i} E_i(z)\,y^2\,\mathrm{d}A
-\]
-
-where \(A_i\) denotes the area of the \(i\)-th sub-domain.
-
----
-
-## Interpretation and Scope
-
-The homogenization factors \(w_i(z)\):
-
-- represent **elastic equivalence coefficients**,
-- describe changes in effective material participation or composition,
-- are intended for **linear-elastic analysis only**.
-
-They **do not** represent:
-- cracking models,
-- damage mechanics,
-- plasticity,
-- temperature-dependent material degradation,
-- nonlinear constitutive behavior.
-
-The CSF framework remains fully within the assumptions of:
-- small deformations,
-- linear elasticity,
-- classical beam kinematics (Bernoulli / Saint-Venant).
-
----
-
-## Relation to Structural Analysis
-
-The output of the homogenization process consists of continuous sectional properties such as:
-
-- area \(A(z)\),
-- second moments of area \(I_x(z)\), \(I_y(z)\),
-- torsional constant \(J(z)\),
-- stiffness quantities \(EA(z)\), \(EI(z)\), \(GJ(z)\).
-
-These properties may be:
-- visualized for verification,
-- exported as tabulated data,
-- mapped onto standard beam-based finite element formulations.
-
-In this sense, CSF provides a continuous and mesh-independent description of sectional properties that can be used as input for conventional structural solvers (e.g. OpenSees).
-
----
-
-## Design Philosophy
-
-CSF formalizes, in a continuous and explicit manner, concepts that are commonly approximated in practice through:
-- stiffness modifiers,
-- fiber discretization,
-- piecewise-prismatic segmentation.
-
-By removing arbitrary discretization choices, CSF enables a clearer separation between:
-- geometric and material modeling,
-- numerical approximation,
-- structural analysis.
-
----
-
-## Limitations
-
-CSF does not aim to replace:
-- solid or shell finite element models,
-- localized damage or fracture simulations,
-- contact or instability-driven analyses.
-
-Its purpose is to provide a robust and physically consistent description of *equivalent elastic beam behavior* in the presence of continuous geometric and material variability.
