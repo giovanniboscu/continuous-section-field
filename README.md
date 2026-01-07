@@ -201,7 +201,7 @@ $$
 - **Linear Interpolation**: Each vertex of the cross-section is described as a linear function of the longitudinal coordinate.
 - **Ruled Surfaces**: This mapping creates ruled surfaces that define a smooth variation of the section, making vertex coordinates polynomial functions of known degree.
 - **Continuous taper**: smooth transition between different shapes (e.g. tapered T-beams, conical tubes)
-- **Continuous properties**: $A(z)$, $I(z)$, $EA(z)$, $EI(z)$, $GJ(z)$ defined analytically along the entire axis
+- **Continuous properties**: $A(z)$, $I(z)$, $EA(z)$, $EI(z)$, $GJ(z)$ evaluated at any z (geometry from ruled-surface mapping)
 
 ## Section Properties
 
