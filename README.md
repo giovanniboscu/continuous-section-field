@@ -158,8 +158,6 @@ Two sections must be provided:
 Both sections must contain:
 
 - the **same number of polylines**
-- the **same polyline IDs**
-- the **same weights \( w \)**
 
 This ensures **geometric and material continuity** along the beam axis.
 
