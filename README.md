@@ -17,11 +17,6 @@ The geometry is defined by ruled surfaces generated between arbitrary end-sectio
 
 The framework is intended for elastic beam modeling and preprocessing, enabling visualization and export of section properties and solver-ready models (e.g. OpenSees). CSF does not model damage, cracking, or nonlinear material behavior.
 
-
-
-
-
-**CSF** is a Python library for the geometric and mechanical modeling of **single non-prismatic structural members** (slender beams with variable cross-sections).
 </br> Here below the CSF model of  NREL 5-MW Tower 
 
 
