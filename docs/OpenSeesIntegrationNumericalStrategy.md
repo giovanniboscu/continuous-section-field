@@ -1,7 +1,3 @@
-Ecco il testo pronto per il tuo file `README.md` su GitHub, formattato con la sintassi Markdown corretta.
-
----
-
 ## OpenSees Integration & Numerical Strategy
 
 The CSF library bridges the gap between continuous geometric modeling and structural analysis by generating optimized OpenSees models.
