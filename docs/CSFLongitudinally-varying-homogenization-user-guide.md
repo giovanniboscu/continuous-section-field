@@ -43,7 +43,7 @@ To override the default behavior, use the `set_weight_laws()` method. This metho
 section_field = ContinuousSectionField(section0=s0, section1=s1)
 
 section_field.set_weight_laws([
-    "lowerpart,lowerpart : w0 * np.exp(-z)" # Exponential decay
+    "lowerpart,lowerpart : w0 * np.exp(-z)", # Exponential decay
     "otherpart,otherpart : w0 /100"
 ])
 ```
