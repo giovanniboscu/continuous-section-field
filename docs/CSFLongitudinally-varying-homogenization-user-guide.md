@@ -119,7 +119,7 @@ section_field.set_weight_laws([
 
 | Variable | Meaning | Example Law Expression |
 | :--- | :--- | :--- |
-| **`z`** | Real position from start to end   | `w0 * (1 + z)` |
+| **`z`** | Real position from start to end   | `w0 * (1 + 0.2 * z / L)` |
 | **`w0`** | Weight (stiffness) at the start section ($z=0$) | `w0 * 1.5` |
 | **`w1`** | Weight (stiffness) at the end section ($z=L$) | `w1 / 2` |
 | **`L`** | Total physical length of the member | `w0 + (z * L * 0.01)` |
