@@ -1,7 +1,14 @@
 #  🛠  ContinuousSectionField (CSF) | Custom Weight Laws User Guide
 
-This document provides the technical specifications for implementing and using **Custom Weight Laws** to define the variation of the Elastic Modulus (`weight`) along a structural member.
+This document provides the technical specifications for implementing and using **Custom Weight Laws** to define the variation of the Elastic Modulus ratio (`weight`) along a structural member.
 
+
+> **Important — what is `weight`?**  
+> In CSF, `weight` is a **scalar field** used to scale section properties (a generalized multiplier of the geometric area).  
+> It can represent an **E-modulus ratio** (dimensionless) *or* the **Young’s modulus E** (e.g., MPa).  
+> The only requirement is that your formulas and lookup data follow a **consistent convention**.
+
+---
 
 
 ### Identify your Polygons (Naming is Key)
