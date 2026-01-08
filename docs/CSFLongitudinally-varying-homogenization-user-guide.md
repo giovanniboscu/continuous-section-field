@@ -30,6 +30,67 @@ poly_bottom_end = Polygon(
 By default, the variation of weight between the start and end sections is linear. If you do not specify a custom law, the software automatically interpolates the value based on the longitudinal position z.
 
 ---
+# 📑 Deep Dive: The Logic of "Weight" (W) and Voids
+**File: variation.txt**
+
+In CSF, the parameter `weight` (W) is a generalized multiplier of the geometric area. Understanding its sign and scale is fundamental to obtaining correct structural results.
+
+---
+
+### 1. Normalized Logic: The Unitary Material (W = 1.0)
+When working with a single material, we use **1.0** to represent "Full Material".
+* **Solid:** `weight = 1.0`
+* **Void (Hole):** `weight = -1.0`
+
+**The Superposition Principle:**
+If you place a hole (W = -1.0) over a solid (W = 1.0), the sum in the overlap area is exactly **0.0**. This area will contribute zero to the Area, First Moment of Area (Statics), and Moment of Inertia.
+
+---
+
+### 2. Multi-Material Logic: Scaled Weights (W = 0.5)
+If your section has materials with different stiffnesses, you choose a "Reference Material" (usually the one with the highest E) and scale the others accordingly.
+
+**Example: Concrete (Reference) and Timber**
+* **Concrete (Ref):** `weight = 1.0` | **Hole in Concrete:** `weight = -1.0`
+* **Timber (Softer):** `weight = 0.5` | **Hole in Timber:** `weight = -0.5`
+
+**Crucial Rule on Signs:**
+A hole MUST always have the **negative sign of the material it is subtracting from**. 
+* If you subtract a hole from the Timber part using `-1.0` instead of `-0.5`, you are not just making a hole; you are creating a "negative stiffness" zone that will pull the center of gravity towards the opposite side incorrectly.
+
+---
+
+### 3. Real Values Logic: Using Young's Modulus (E)
+You can skip normalization and enter the real Elastic Modulus (e.g., in MPa).
+* **Steel:** `weight = 210000`
+* **Steel Hole:** `weight = -210000`
+
+**Advanced Technique: Material Substitution**
+If you have a steel reinforcement (E=210k) inside concrete (E=30k), you don't need to cut a hole in the concrete coordinates. You can simply overlay the steel polygon with:
+`W_effective = E_steel - E_concrete = 180000`
+The system sums 30k (concrete) + 180k (delta) and correctly obtains 210k in that region.
+
+---
+
+### 4. Why "Weight" and not "E"?
+You might wonder: *"If it represents the Elastic Modulus, why not call it E?"*
+
+The name **`weight`** was chosen for two scientific reasons:
+1.  **Generality:** CSF is a geometric-mathematical engine. The "weight" doesn't have to be Elastic Modulus. It could represent **density** (for mass/center of gravity calculations), **thermal conductivity**, or any physical property that scales with area.
+2.  **Homogenization:** In structural mechanics, we "weight" the geometry based on its relative stiffness. The term `weight` correctly describes the process of creating an **Equivalent Homogenized Section**. Calling it `E` would limit the tool to only linear-elastic structural analysis, whereas `weight` allows for broader physical applications.
+
+---
+
+### ⚠️ Final Summary for Voids
+| Context | Solid Value | Void Value | Result in Overlap |
+| :--- | :--- | :--- | :--- |
+| **Normalized** | `1.0` | `-1.0` | `0.0` (Absolute Void) |
+| **Half-Stiffness** | `0.5` | `-0.5` | `0.0` (Absolute Void) |
+| **Real E (Concrete)** | `30000` | `-30000` | `0.0` (Absolute Void) |
+
+**Warning:** If the sum of weights in an area is not zero, that area still possesses residual stiffness. Always verify that $W_{solid} + W_{void} = 0$.
+---
+
 
 ###  Custom Law Syntax
 To override the default behavior, use the `set_weight_laws()` method. This method accepts a list of strings where each string maps a start-section polygon to its corresponding end-section polygon using a specific formula.
@@ -72,6 +133,11 @@ section_field.set_weight_laws([
 | **`d1(i, j)`** | Distance between vertex $i$ and $j$ at **end** ($z=L$) | `w1 * (d(1,2) / d1(1,2))` |
 | **`E_lookup(file)`** | Interpolated value from an external text file | `E_lookup('stiffness.txt')` |
 
+### ⚠️ Vertex Indexing Rule
+When using the distance function `d(i, j)` in your weight laws:
+* **1-Based Numbering**: Vertex indices start at **1**, not 0.
+* **The first point** is `1`, the **second point** is `2`, etc.
+* **Pro Tip**: If you use `0` as an index, the calculation will fail.
 
 ### Data-Driven Modeling: E_lookup data from external text file 
 
