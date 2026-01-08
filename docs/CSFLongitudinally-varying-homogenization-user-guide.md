@@ -1,10 +1,6 @@
-# ContinuousSectionField (CSF) User Guide
+#  🛠  ContinuousSectionField (CSF) | Custom Weight Laws User Guide
 
-The **Continuous Section Field (CSF)** framework provides a continuous description of non-prismatic and multi-material beam members by generating longitudinally varying cross-section properties without using piecewise-prismatic discretization.
-
----
-
-## Advanced Material Variation: Custom Weight Laws
+This document provides the technical specifications for implementing and using **Custom Weight Laws** to define the variation of the Elastic Modulus (`weight`) along a structural member.
 
 ### Identify your Polygons (Naming is Key)
 
@@ -28,12 +24,12 @@ poly_bottom_end = Polygon(
 )
 ```
 
-### The set_weight_laws Syntax
+###  Custom Law Syntax
+To override the default behavior, use the `set_weight_laws()` method. This method accepts a list of strings where each string maps a start-section polygon to its corresponding end-section polygon using a specific formula.
 
-The law is a string that connects the start polygon to the end polygon and defines the math.
+**Format:**
+`"StartPolygonName, EndPolygonName : <Python_Formula_Expression>"`
 
-
-- Syntax: "Polygon StartName, Polygon  EndName : Formula"
 
 #### Example
 ```
@@ -77,6 +73,34 @@ If you have experimental data (e.g., from a sensor or a thermal analysis), put i
 0.0         210000
 0.5         195000
 1.0         150000
+```
+
+
+
+---
+
+### 1. The Default Behavior: Linear Variation
+If no custom law is provided, the system defaults to a **linear interpolation** between the start and end sections.
+
+---
+### 3. Mathematical Operations with `E_lookup`
+The `E_lookup('file.txt')` function is designed to return a **numeric value** (float) based on an external data file. Because it returns a number, you can perform any standard NumPy mathematical operation on it.
+
+#### **Common Use Cases:**
+* **Scaling:** Adjust external data by the initial section weight (`w0`).
+* **Non-linear mapping:** Apply power laws or trigonometric functions to the lookup value.
+* **Geometric Coupling:** Multiply lookup data by section properties like distance `d(i,j)`.
+
+**Example Implementation:**
+```python
+field.set_weight_laws([
+    # Example 1: Quadratic transition for the upper part
+    "upperpart,upperpart : w0 + (w1 - w0) * np.power(z, 2)",
+    
+    # Example 2: External data scaled by the initial weight (w0)
+    # Useful for applying degradation factors from experimental data
+    "lowerpart,lowerpart : E_lookup('material_data.txt') * w0"
+])
 ```
 
 ## The Default Behavior: Linear Variation
