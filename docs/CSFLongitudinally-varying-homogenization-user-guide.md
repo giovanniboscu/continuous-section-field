@@ -176,6 +176,20 @@ When defining a custom law string, the mathematical engine enforces strict valid
 | **Physical Validity** | For solid materials, the resulting stiffness $E(z)$ must be **greater than 0**. |
 | **Safety Handling** | Any law producing `NaN` (Not a Number) or `inf` (Infinity) will trigger an immediate error. |
 
+
+### 🛡️ Numerical Robustness & Validation Rules
+
+The mathematical engine strictly validates every law string to ensure structural integrity.
+
+| Requirement | Description |
+| :--- | :--- |
+| **Return Type** | Must be a **float**. Strings or complex numbers will trigger an error. |
+| **Physical Validity** | For solids, $E(z) > 0$. Use `np.maximum(min_val, ...)` to avoid $0$ or negative results. |
+| **Safety Handling** | Any law producing `NaN` or `inf` (e.g., division by zero) triggers an immediate traceback. |
+
+> **Warning on Holes:** If your law is for a hole, the result must be **negative**. 
+> Example for a dynamic hole: `"void,void : -1.0 * E_lookup('degradation.txt')"`
+
 #### 🛠️ Best Practice: Clamping and Safety
 To prevent unphysical results (like a stiffness dropping to zero or becoming negative due to extreme inputs), it is highly recommended to use a **clamping** logic. This ensures a minimum residual stiffness ($E_{min}$).
 
