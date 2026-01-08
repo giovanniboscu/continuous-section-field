@@ -147,7 +147,7 @@ When using the distance function `d(i, j)` in your weight laws:
 ### Data-Driven Modeling: E_lookup data from external text file 
 
 If you have experimental data (e.g., from a sensor or a thermal analysis), put it in a text file ,example stiffness.txt:
-z belong to (0..L)
+The first column in the lookup file is the physical coordinate z (same units as the model, from 0 to L).
 ```
 # Z-coord   Value
 0.0  210000
@@ -192,7 +192,7 @@ section_field.set_weight_laws([
 ```python
 field.set_weight_laws([
     # Example 1: Quadratic transition for the upper part
-    "upperpart,upperpart : w0 + (w1 - w0) * np.power(-alphe* z / L, 2)", # -alpha  user defined to prevent error
+    "upperpart,upperpart : w0 + (w1 - w0) * np.power(-alpha* z / L, 2)", # -alpha  user defined to prevent error
     
     # Example 2: External data scaled by the initial weight (w0)
     # Useful for applying degradation factors from experimental data
