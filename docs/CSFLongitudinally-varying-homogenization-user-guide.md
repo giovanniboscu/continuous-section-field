@@ -8,6 +8,11 @@ This document provides the technical specifications for implementing and using *
 
 To apply a law, your polygons must have a name. This name acts as a "link" between the start and end sections.
 
+#### The Same-Element Requirement
+* **Correspondence:** The name must belong to the **same sub-element**. You are describing the evolution of one physical component (e.g., the "Web") as it travels from $z=0$ to $z=L$.
+* **Continuity:** If a name exists at the start but not at the end, the "interpolation bridge" is broken. The engine cannot calculate intermediate properties because the **chain of continuity** is interrupted.
+* **Case Sensitivity:** `Web` is not the same as `web`. A naming mismatch will cause the element to "vanish," leading to calculation errors.
+
 Example: Defining a Composite Beam
 
 ```
