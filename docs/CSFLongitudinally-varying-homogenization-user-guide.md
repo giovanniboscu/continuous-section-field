@@ -156,6 +156,24 @@ E_lookup(file) returns the value interpolated at the current longitudinal coordi
 ### 3. Mathematical Operations with `E_lookup`
 The `E_lookup('file.txt')` function is designed to return a **numeric value** (float) based on an external data file. Because it returns a number, you can perform any standard NumPy mathematical operation on it.
 
+### 🛡️ Numerical Robustness & Validation Rules
+
+When defining a custom law string, the mathematical engine enforces strict validation to ensure the integrity of the structural model. Your formulas must adhere to the following constraints:
+
+| Requirement | Description |
+| :--- | :--- |
+| **Return Type** | The formula must evaluate to a **float** (a decimal number). |
+| **Physical Validity** | For solid materials, the resulting stiffness $E(z)$ must be **greater than 0**. |
+| **Safety Handling** | Any law producing `NaN` (Not a Number) or `inf` (Infinity) will trigger an immediate error. |
+
+#### 🛠️ Best Practice: Clamping and Safety
+To prevent unphysical results (like a stiffness dropping to zero or becoming negative due to extreme inputs), it is highly recommended to use a **clamping** logic. This ensures a minimum residual stiffness ($E_{min}$).
+
+**Example of a robust law with clamping:**
+```python
+# Ensures the weight never drops below 1% of the initial value (w0)
+"web,web : max(w0 * 0.01, E_lookup('experimental_data.txt'))"
+
 #### **Common Use Cases:**
 * **Scaling:** Adjust external data by the initial section weight (`w0`).
 * **Non-linear mapping:** Apply power laws or trigonometric functions to the lookup value.
@@ -165,7 +183,7 @@ The `E_lookup('file.txt')` function is designed to return a **numeric value** (f
 ```python
 field.set_weight_laws([
     # Example 1: Quadratic transition for the upper part
-    "upperpart,upperpart : w0 + (w1 - w0) * np.power(z, 2)",
+    "upperpart,upperpart : w0 + (w1 - w0) * np.power(-alpha z, 2)", # -alpha  user defined to prevent error
     
     # Example 2: External data scaled by the initial weight (w0)
     # Useful for applying degradation factors from experimental data
