@@ -77,9 +77,7 @@ CSF can be used in two complementary ways:
 
 Additional documentation is available in the `docs/` directory:
 
-- `homogenization.md` — homogenization concepts and assumptions
-- `geometry.md` — geometric modeling
-- `opensees_export.md` — solver integration
+- [Custom Weight Laws User Guide](https://www.google.com](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md) — homogenization concepts and assumptions
 
 ---
 
