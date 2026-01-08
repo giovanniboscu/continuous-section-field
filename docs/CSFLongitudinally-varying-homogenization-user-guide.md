@@ -177,7 +177,6 @@ To prevent unphysical results (like a stiffness dropping to zero or becoming neg
 ```python
 # Ensures the weight never drops below 1% of the initial value (w0)
 section_field.set_weight_laws([
-    # Ensures the weight never drops below 1% of the initial value (w0)
     "web,web : np.maximum(w0 * 0.01, E_lookup('experimental_data.txt'))",
 ])
 
