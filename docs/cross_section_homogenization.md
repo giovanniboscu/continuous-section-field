@@ -57,24 +57,6 @@ All properties can be visualized, exported as tables, or used as input for struc
 
 ---
 
-## What CSF Is — and Is Not
-
-### CSF is
-- a continuous elastic homogenization framework
-- a geometry-driven section property generator
-- compatible with classical beam theory
-- intended for linear structural analysis
-
-### CSF is not
-- a damage or cracking model
-- a nonlinear material model
-- a plasticity formulation
-- a replacement for solid or shell finite element models
-
-Homogenization factors describe elastic equivalence only and do not represent material degradation or state-dependent behavior.
-
----
-
 ## Workflow
 
 CSF can be used in two complementary ways:
@@ -88,16 +70,6 @@ CSF can be used in two complementary ways:
 - Full control over geometry and homogenization
 - User-defined functions for longitudinal variation
 - Advanced scripting and customization
-
----
-
-## Structural Analysis Integration
-
-CSF does not perform structural analysis directly.
-
-Instead, it provides continuous section properties that can be mapped to standard beam-based finite element formulations, such as those used in OpenSees.
-
-In this sense, CSF acts as a pre-processing and modeling layer.
 
 ---
 
