@@ -172,17 +172,6 @@ When defining a custom law string, the mathematical engine enforces strict valid
 
 | Requirement | Description |
 | :--- | :--- |
-| **Return Type** | The formula must evaluate to a **float** (a decimal number). |
-| **Physical Validity** | For solid materials, the resulting stiffness $E(z)$ must be **greater than 0**. |
-| **Safety Handling** | Any law producing `NaN` (Not a Number) or `inf` (Infinity) will trigger an immediate error. |
-
-
-### 🛡️ Numerical Robustness & Validation Rules
-
-The mathematical engine strictly validates every law string to ensure structural integrity.
-
-| Requirement | Description |
-| :--- | :--- |
 | **Return Type** | Must be a **float**. Strings or complex numbers will trigger an error. |
 | **Physical Validity** | For solids, $E(z) > 0$. Use `np.maximum(min_val, ...)` to avoid $0$ or negative results. |
 | **Safety Handling** | Any law producing `NaN` or `inf` (e.g., division by zero) triggers an immediate traceback. |
