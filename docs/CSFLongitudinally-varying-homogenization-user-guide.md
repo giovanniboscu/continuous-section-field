@@ -72,7 +72,7 @@ section_field.set_weight_laws([
 | **`E_lookup(file)`** | Interpolated value from an external text file | `E_lookup('stiffness.txt')` |
 
 
-### Data-Driven Modeling: E_lookup
+### Data-Driven Modeling: E_lookup data from external text file 
 
 If you have experimental data (e.g., from a sensor or a thermal analysis), put it in a text file ,example stiffness.txt:
 
