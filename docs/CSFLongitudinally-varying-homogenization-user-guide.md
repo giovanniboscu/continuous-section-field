@@ -190,7 +190,7 @@ section_field.set_weight_laws([
 
 **Example Implementation:**
 ```python
-field.set_weight_laws([
+section_field.set_weight_laws([
     # Example 1: Quadratic transition for the upper part
     "upperpart,upperpart : w0 + (w1 - w0) * np.power(z / L, 2)",
     
