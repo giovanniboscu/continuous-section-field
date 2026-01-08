@@ -188,7 +188,7 @@ To prevent unphysical results (like a stiffness dropping to zero or becoming neg
 ```python
 field.set_weight_laws([
     # Example 1: Quadratic transition for the upper part
-    "upperpart,upperpart : w0 + (w1 - w0) * np.power(-alpha z, 2)", # -alpha  user defined to prevent error
+    "upperpart,upperpart : w0 + (w1 - w0) * np.power(z / L, 2)", # -alpha  user defined to prevent error
     
     # Example 2: External data scaled by the initial weight (w0)
     # Useful for applying degradation factors from experimental data
