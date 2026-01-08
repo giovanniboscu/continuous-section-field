@@ -39,7 +39,7 @@ By default, the variation of weight between the start and end sections is linear
 **File: variation.txt**
 
 In CSF, the parameter `weight` (W) is a generalized multiplier of the geometric area. Understanding its sign and scale is fundamental to obtaining correct structural results.
-
+In this guide we use weight primarily as E-modulus (or E-ratio), but the same mechanism can represent other per-area properties.
 ---
 
 ### 1. Normalized Logic: The Unitary Material (W = 1.0)
