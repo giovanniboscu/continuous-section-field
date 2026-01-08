@@ -146,7 +146,7 @@ For closed thin-walled sections (tubes, hollow boxes), the SV_Jv2 (Roark) index 
 - **Sub-optimal:** Modeling a T-section as a single 8-vertex concave polygon. (Result: Lower Fidelity, generic correction).
 - **Optimal:** Modeling a T-section as two 4-vertex rectangles (Flange + Web). (Result: Higher Fidelity, precise Roark-Young correction for each part).
 
---
+---
 
 ## Coupling to External Solvers
 
