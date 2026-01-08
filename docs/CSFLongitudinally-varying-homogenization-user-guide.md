@@ -67,6 +67,18 @@ section_field.set_weight_laws([
 | **`d1(i, j)`** | Distance between vertex $i$ and $j$ at **end** ($z=L$) | `w1 * (d(1,2) / d1(1,2))` |
 | **`E_lookup(file)`** | Interpolated value from an external text file | `E_lookup('stiffness.txt')` |
 
+
+### Data-Driven Modeling: E_lookup
+
+If you have experimental data (e.g., from a sensor or a thermal analysis), put it in a text file ,example stiffness.txt:
+
+```
+# Z-coord   Value
+0.0         210000
+0.5         195000
+1.0         150000
+```
+
 ## The Default Behavior: Linear Variation
 
 By default, the variation of weight between the start and end sections is linear. If you do not specify a custom law, the software automatically interpolates the value based on the longitudinal position z.
