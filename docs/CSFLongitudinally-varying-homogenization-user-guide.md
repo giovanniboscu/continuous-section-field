@@ -177,7 +177,7 @@ To prevent unphysical results (like a stiffness dropping to zero or becoming neg
 **Example of a robust law with clamping:**
 ```python
 # Ensures the weight never drops below 1% of the initial value (w0)
-"web,web : max(w0 * 0.01, E_lookup('experimental_data.txt'))"
+"web,web : np.maximum(w0 * 0.01, E_lookup('experimental_data.txt'))
 ```
 #### **Common Use Cases:**
 * **Scaling:** Adjust external data by the initial section weight (`w0`).
