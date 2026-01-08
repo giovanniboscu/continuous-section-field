@@ -150,6 +150,7 @@ If you have experimental data (e.g., from a sensor or a thermal analysis), put i
 5.0         150000
 ```
 
+E_lookup(file) returns the value interpolated at the current longitudinal coordinate (z) for the active integration point.
 
 ---
 ### 3. Mathematical Operations with `E_lookup`
