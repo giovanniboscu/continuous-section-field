@@ -1,19 +1,75 @@
-# Continuous Section Field (CSF) - Longitudinally varying homogenization factors
+# ContinuousSectionField (CSF) User Guide
 
 The **Continuous Section Field (CSF)** framework provides a continuous description of non-prismatic and multi-material beam members by generating longitudinally varying cross-section properties without using piecewise-prismatic discretization.
 
 ---
 
-## Conceptual Overview
+## Advanced Material Variation: Custom Weight Laws
 
-In CSF, a beam is described through:
+### Identify your Polygons (Naming is Key)
 
-1. A geometric definition of the beam axis and end sections  
-2. A cross-section layout composed of multiple material sub-domains  
-3. A continuous homogenization process that produces equivalent linear-elastic section properties along the beam axis  
+To apply a law, your polygons must have a name. This name acts as a "link" between the start and end sections.
 
-The beam is not discretized into prismatic elements.  
-Instead, cross-section properties are evaluated continuously as functions of the longitudinal coordinate.
+Example: Defining a Composite Beam
+
+```
+# Start Section (z=0)
+poly_bottom_start = Polygon(
+    vertices=(Pt(-10,-10), Pt(10,-10), Pt(10,0), Pt(-10,0)),
+    weight=210000, # Initial E-modulus
+    name="lowerpart"  # <--- THIS IS THE ID
+)
+
+# End Section (z=L)
+poly_bottom_end = Polygon(
+    vertices=(Pt(-15,-15), Pt(15,-15), Pt(15,0), Pt(-15,0)),
+    weight=180000, # Final E-modulus
+    name="lowerpart"  # <--- MUST MATCH
+)
+```
+
+### The set_weight_laws Syntax
+
+The law is a string that connects the start polygon to the end polygon and defines the math.
+
+
+- Syntax: "Polygon StartName, Polygon  EndName : Formula"
+
+#### Example
+```
+section_field = ContinuousSectionField(section0=s0, section1=s1)
+
+section_field.set_weight_laws([
+    "lowerpart,lowerpart : w0 * np.exp(-z)" # Exponential decay
+])
+```
+
+## Available Variables (What you can use in formulas)
+
+### 📊 Weight Law Variables Reference
+
+| Variable | Meaning | Example Law Expression |
+| :--- | :--- | :--- |
+| **`z`** | Real position from start to end   | `w0 * (1 + z)` |
+| **`w0`** | Weight (stiffness) at the start section ($z=0$) | `w0 * 1.5` |
+| **`w1`** | Weight (stiffness) at the end section ($z=L$) | `w1 / 2` |
+| **`L`** | Total physical length of the member | `w0 + (z * L * 0.01)` |
+| **`t`** | Alias for `z` (interpolation parameter) | `w0 + (w1 - w0) * t` |
+
+---
+
+### 📏 Geometric & Data Functions
+
+| Function | Meaning | Example Law Expression |
+| :--- | :--- | :--- |
+| **`d(i, j)`** | Distance between vertex $i$ and $j$ at **current** $z$ | `w0 * d(1, 2)` |
+| **`d0(i, j)`** | Distance between vertex $i$ and $j$ at **start** ($z=0$) | `w0 * (d(1,2) / d0(1,2))` |
+| **`d1(i, j)`** | Distance between vertex $i$ and $j$ at **end** ($z=L$) | `w1 * (d(1,2) / d1(1,2))` |
+| **`E_lookup(file)`** | Interpolated value from an external text file | `E_lookup('stiffness.txt')` |
+
+## The Default Behavior: Linear Variation
+
+By default, the variation of weight between the start and end sections is linear. If you do not specify a custom law, the software automatically interpolates the value based on the longitudinal position z.
 
 ---
 
