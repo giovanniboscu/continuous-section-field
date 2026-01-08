@@ -34,11 +34,6 @@ The common practice of modeling non-prismatic members as a concatenation of equi
 CSF models members defined by polygonal end sections connected by straight generator lines (ruled surfaces), with consistent polyline topology between the two ends. Curved outlines are handled via polygonal approximation: increasing the number of polygon sides allows accurate representation of practically curvilinear sections.
  See: **[docs/assumptions_limitations.md](docs/assumptions_limitations.md)**
 
-
-
-
-
-
 ---
 ## Key Features
 
@@ -125,7 +120,9 @@ A section is defined by a **set of closed polylines**.
   - Polylines are closed implicitly; do not repeat the first vertex at the end of the list.
 
 ### Polyline Weight (Material Coefficient)
-[Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)
+- [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)
+- [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
+
 
 Each polyline is assigned a **scalar weight** \( w \), defined as:
 
