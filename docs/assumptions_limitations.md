@@ -134,6 +134,9 @@ The "Stress-Test" protocols (Green’s Theorem validation) have identified the f
 
 The accuracy of the **SV_Jv2** algorithm and its **Fidelity Index** depends on how the cross-section is decomposed into polygons. To maximize reliability, follow these guidelines:
 
+For closed thin-walled sections (tubes, hollow boxes), the SV_Jv2 (Roark) index will report low fidelity. In these cases, the Polar Moment (Point 7) or Bredt’s formula should be preferred over the corrected rectangular mapping."
+
+
 * **Decompose into Rectangular Primitives:** Whenever possible, break complex shapes (L, T, I, C) into clear rectangular sub-polygons. The Roark-Young correction is optimized for 4-vertex rectangular mapping.
 * **Avoid "Massive" Polygons:** If a section has a very thick junction, consider isolating the junction as a separate polygon. This allows the Fidelity Index to correctly identify "stout" regions vs. "slender" regions.
 * **Consistency in Mapping:** Ensure that the vertex-to-vertex mapping between the start and end sections does not create "twisted" generator lines, as this will introduce artificial shear stiffness errors.
