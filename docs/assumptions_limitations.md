@@ -76,12 +76,31 @@ These constraints are essential for valid geometry and continuous mapping:
 
 ---
 
+
+
 ## Torsion and Shear (Critical Engineering Warnings)
 
 - **Approximation for Saint-Venant Torsion (K/Jsv)** The current implementation of the Torsional Constant ($K$) follows a simplified "sum-of-thin-parts" approach ($K \approx \sum \frac{1}{3}bt^3$). This leads to specific engineering implications:
   - **Overestimation in Thick Sections:** For solid/stout sections (e.g., rectangles where $b/h < 10$), the algorithm may overestimate torsional stiffness by **5% to 10%** due to the lack of warping correction factors (e.g., Roark’s coefficients).
   - **Intersections (The "Bulb" Effect):** The model treats the section as a collection of independent polygons. It does not account for the additional stiffness provided by material intersections (bulbs) in shapes like L, T, or I beams.
   - **Pathological Geometries:** Torsional results for self-intersecting or highly concave polygons are numerically unstable and physically meaningless.
+
+
+
+- **Thin-Walled vs. Solid Sections** CSF is optimized for thin-walled open profiles where the sum-of-parts approximation is standard. For solid, high-precision mechanical components, results must be considered **preliminary** and should be validated against 2D FEM or BEM solvers.
+
+- **Shear Center and Warping Constant ($Cw$)** Advanced torsional properties such as the warping constant ($C_w$) and the exact coordinates of the shear center are currently outside the primary geometric engine's scope.
+
+---
+
+## Numerical Stability and Pathological Cases
+
+The "Stress-Test" protocols (Green’s Theorem validation) have identified the following behaviors:
+
+- **Numerical Precision (Inertia):** Sectional properties ($A, I_x, I_y$) are computed with high fidelity (absolute errors near $10^{-14}$ for standard polygons), matching state-of-the-art commercial solvers.
+- **Degenerate Polygons:** - **Collinear vertices:** May trigger area-zero warnings or numerical instability.
+    - **Self-Intersections:** Will trigger `RuntimeWarning`. The resulting inertia might be calculated correctly via the Shoelace formula (signed area), but torsional constants will diverge.
+- **Floating Point Limits:** Large coordinate offsets (e.g., $> 10^{10}$) may lead to precision loss in secondary properties ($I_{xy}$, $K$).
 
 
 
