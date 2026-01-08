@@ -79,9 +79,9 @@ If you have experimental data (e.g., from a sensor or a thermal analysis), put i
 
 ```
 # Z-coord   Value
-0.0         210000
-0.5         195000
-1.0         150000
+00.0        210000
+1.0         195000
+5.0         150000
 ```
 
 
