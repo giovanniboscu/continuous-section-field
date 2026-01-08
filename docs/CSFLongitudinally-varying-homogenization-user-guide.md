@@ -123,7 +123,6 @@ section_field.set_weight_laws([
 | **`w0`** | Weight (stiffness) at the start section ($z=0$) | `w0 * 1.5` |
 | **`w1`** | Weight (stiffness) at the end section ($z=L$) | `w1 / 2` |
 | **`L`** | Total physical length of the member | `w0 + (z * L * 0.01)` |
-| **`z`** |  z [0..L] | `w0 + (w1 - w0) * z` |
 | **`np`** | Access to NumPy | `e.g., np.sin, np.exp, np.sqrt.` |
 
 ---
