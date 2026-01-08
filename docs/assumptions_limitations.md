@@ -130,6 +130,20 @@ The "Stress-Test" protocols (Green’s Theorem validation) have identified the f
   For curvilinear shapes approximated by polygons, accuracy improves with more sides/vertices. Users should verify convergence when high fidelity is required.
 
 ---
+###  Best Practices for Section Decomposition
+
+The accuracy of the **SV_Jv2** algorithm and its **Fidelity Index** depends on how the cross-section is decomposed into polygons. To maximize reliability, follow these guidelines:
+
+* **Decompose into Rectangular Primitives:** Whenever possible, break complex shapes (L, T, I, C) into clear rectangular sub-polygons. The Roark-Young correction is optimized for 4-vertex rectangular mapping.
+* **Avoid "Massive" Polygons:** If a section has a very thick junction, consider isolating the junction as a separate polygon. This allows the Fidelity Index to correctly identify "stout" regions vs. "slender" regions.
+* **Consistency in Mapping:** Ensure that the vertex-to-vertex mapping between the start and end sections does not create "twisted" generator lines, as this will introduce artificial shear stiffness errors.
+* **Overlap Handling:** Avoid overlapping polygons. If two regions share the same space, the area-weighted fidelity will be skewed, and the torsional constant may be over-counted.
+
+#### Example of Optimal vs. Sub-optimal Decomposition:
+- **Sub-optimal:** Modeling a T-section as a single 8-vertex concave polygon. (Result: Lower Fidelity, generic correction).
+- **Optimal:** Modeling a T-section as two 4-vertex rectangles (Flange + Web). (Result: Higher Fidelity, precise Roark-Young correction for each part).
+
+--
 
 ## Coupling to External Solvers
 
