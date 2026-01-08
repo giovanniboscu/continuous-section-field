@@ -85,12 +85,6 @@ If you have experimental data (e.g., from a sensor or a thermal analysis), put i
 ```
 
 
-
----
-
-### 1. The Default Behavior: Linear Variation
-If no custom law is provided, the system defaults to a **linear interpolation** between the start and end sections.
-
 ---
 ### 3. Mathematical Operations with `E_lookup`
 The `E_lookup('file.txt')` function is designed to return a **numeric value** (float) based on an external data file. Because it returns a number, you can perform any standard NumPy mathematical operation on it.
