@@ -2,6 +2,8 @@
 
 This document provides the technical specifications for implementing and using **Custom Weight Laws** to define the variation of the Elastic Modulus (`weight`) along a structural member.
 
+
+
 ### Identify your Polygons (Naming is Key)
 
 To apply a law, your polygons must have a name. This name acts as a "link" between the start and end sections.
@@ -23,6 +25,11 @@ poly_bottom_end = Polygon(
     name="lowerpart"  # <--- MUST MATCH
 )
 ```
+## The Default Behavior: Linear Variation
+
+By default, the variation of weight between the start and end sections is linear. If you do not specify a custom law, the software automatically interpolates the value based on the longitudinal position z.
+
+---
 
 ###  Custom Law Syntax
 To override the default behavior, use the `set_weight_laws()` method. This method accepts a list of strings where each string maps a start-section polygon to its corresponding end-section polygon using a specific formula.
@@ -51,6 +58,7 @@ section_field.set_weight_laws([
 | **`w1`** | Weight (stiffness) at the end section ($z=L$) | `w1 / 2` |
 | **`L`** | Total physical length of the member | `w0 + (z * L * 0.01)` |
 | **`t`** | Alias for `z` (interpolation parameter) | `w0 + (w1 - w0) * t` |
+| **`np`** | Access to NumPy | `e.g., np.sin, np.exp, np.sqrt.` |
 
 ---
 
@@ -102,10 +110,6 @@ field.set_weight_laws([
     "lowerpart,lowerpart : E_lookup('material_data.txt') * w0"
 ])
 ```
-
-## The Default Behavior: Linear Variation
-
-By default, the variation of weight between the start and end sections is linear. If you do not specify a custom law, the software automatically interpolates the value based on the longitudinal position z.
 
 ---
 
