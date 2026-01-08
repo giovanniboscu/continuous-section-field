@@ -240,7 +240,7 @@ Structural Analysis (Strength & Rigidity)
 | :--- | :--- | :---: | :--- |
 | 12 | **Elastic Modulus Wx** | $W_x$ | Section modulus for bending about X ($I_x / y_{max}$) |
 | 13 | **Elastic Modulus Wy** | $W_y$ | Section modulus for bending about Y ($I_y / x_{max}$) |
-| 14 | **Torsional Rigidity** | $K$ | Torsional Rigidity (K) The Saint-Venant torsional constant ($J$) is notoriously complex for non-circular sections. In this Beta version:</br> Core Engine: Implements a semi-empirical approximation ($J \approx A^4 / 40I_p$). </br> Purpose: This estimation is designed to provide numerical stability for 3D Finite Element models (e.g., OpenSees) where a null torsional stiffness would lead to singular matrices.</br> Accuracy: While reliable for solid, compact sections, it is a simplified model. For thin-walled or open profiles, users should treat this value as a preliminary estimate|
+| 14 | **Torsional Rigidity** | $K$ | Torsional Rigidity (K) The Saint-Venant torsional constant ($J$) is notoriously complex for non-circular sections. In this version:</br> Core Engine: Implements a semi-empirical approximation ($J \approx A^4 / 40I_p$). </br> Purpose: This estimation is designed to provide numerical stability for 3D Finite Element models (e.g., OpenSees) where a null torsional stiffness would lead to singular matrices.</br> Accuracy: While reliable for solid, compact sections, it is a simplified model. For thin-walled or open profiles, users should treat this value as a preliminary estimate|
 
 
 Shear-Related Quantities and Auxiliary Outputs
