@@ -150,9 +150,9 @@ If you have experimental data (e.g., from a sensor or a thermal analysis), put i
 
 ```
 # Z-coord   Value
-00.0        210000
-1.0         195000
-5.0         150000
+0.0  210000
+1.0  195000
+5.0  150000
 ```
 
 E_lookup(file) returns the value interpolated at the current longitudinal coordinate (z) for the active integration point.
@@ -178,7 +178,7 @@ To prevent unphysical results (like a stiffness dropping to zero or becoming neg
 ```python
 # Ensures the weight never drops below 1% of the initial value (w0)
 "web,web : max(w0 * 0.01, E_lookup('experimental_data.txt'))"
-
+```
 #### **Common Use Cases:**
 * **Scaling:** Adjust external data by the initial section weight (`w0`).
 * **Non-linear mapping:** Apply power laws or trigonometric functions to the lookup value.
