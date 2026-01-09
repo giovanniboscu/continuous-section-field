@@ -250,7 +250,13 @@ Simply pass your formulas as strings. Whether you are using basic math, NumPy fu
 
 ```python
 # Example: Using a mix of native variables and external data
-laws = [
-    "lower_part : w0 * 1.5",
-    "upper_part : np.maximum(0.1, E_lookup('material_data.txt'))"
-]
+# Mock data for demonstration
+
+formula_test = "np.maximum(w0 * 0.01, E_lookup('experimental_data.txt'))"
+
+# Instead of printing the raw tuple, we use the printer:
+weight_value, report_data = safe_evaluate_weight(formula_test, p_start, p_end, 10.0, 0.5)
+
+# CALL THE PRINTER HERE
+print_evaluation_report(weight_value, report_data)
+
