@@ -119,16 +119,19 @@ if __name__ == "__main__":
     # We combine a Python variable (safety_margin) with the lookup function
     formula = f"{safety_margin} * E_lookup('{mock_file}')"
 
-    section_field.set_weight_laws([
-        f"startsection,endsection : {formula}", # <--You can define any polygon.
-    ])
-
     z = 2 # this is the point where the function is evaluated 
     w = safe_evaluate_weight(formula, p0=poly_start,p1=poly_end, l_total=L , t=z,print=True)
-
-    sec_z = section_field.section(z)
-
-    # CALL THE TEST HERE
-    viz = Visualizer(section_field)
-    viz.plot_properties(plot_w=True)
-    plt.show()
+    
+    # when you are sure you want go ahead 
+    #sec_z = section_field.section(z)
+    #
+    #
+    #section_field.set_weight_laws([
+    #    f"startsection,endsection : {formula}", # <--You can define any polygon.
+    #])
+    #
+    #
+    ## CALL THE TEST HERE
+    #viz = Visualizer(section_field)
+    #viz.plot_properties(plot_w=True)
+    #plt.show()

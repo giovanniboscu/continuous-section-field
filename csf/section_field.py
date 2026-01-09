@@ -19,7 +19,10 @@ import math
 import random
 import warnings
 import os
-import openseespy.opensees as ops
+try:
+    import opensees as ops  # Windows (pip install opensees)
+except ImportError:
+    import openseespy.opensees as ops  # Linux/Mac
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D 

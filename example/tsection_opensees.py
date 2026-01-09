@@ -1,11 +1,10 @@
-from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Tuple, Dict, Optional, List
 import math
 import random
 import warnings
-
+import csf  #
 # Importing core CSF (Continuous Section Field) components for structural analysis
 from csf import (
     Pt, Polygon, Section, ContinuousSectionField, 
@@ -14,6 +13,7 @@ from csf import (
     section_statical_moment_partial, section_stiffness_matrix,
     polygon_inertia_about_origin,export_opensees_discretized_sections,polygon_statical_moment,export_full_opensees_model
 )
+
 
 if __name__ == "__main__":
     # ----------------------------------------------------------------------------------

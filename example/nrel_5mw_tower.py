@@ -9,7 +9,7 @@ from csf import (
     section_data, section_derived_properties, 
     section_statical_moment_partial, integrate_volume,section_stiffness_matrix,section_full_analysis,section_print_analysis
 )
-print (csf.__file__)
+
 # =========================
 # INPUT PARAMETERS
 # =========================

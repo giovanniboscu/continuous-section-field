@@ -1,8 +1,14 @@
 # __init__.py insde the folder csf
 import numpy as np
 import math
-import openseespy.opensees as ops
 
+import numpy as np
+import math
+
+try:
+    import opensees.openseespy as ops   # compat layer (opensees/xara)
+except ImportError:
+    import openseespy.opensees as ops  # Linux/Mac
 
 
 from .section_field import (
@@ -28,7 +34,7 @@ from .section_field import (
     section_full_analysis_keys,
     section_print_analysis,
     evaluate_weight_formula,
-    safe_evaluate_weight
+    safe_evaluate_weight,
 )
 
 # this is the list "from csf import *"
@@ -56,6 +62,6 @@ __all__ = [
     "section_full_analysis_keys",
     "section_print_analysis",
     "evaluate_weight_formula",
-    "safe_evaluate_weight"    
+    "safe_evaluate_weight", 
 ]
 

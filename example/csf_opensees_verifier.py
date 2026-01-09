@@ -1,5 +1,12 @@
-import openseespy.opensees as ops
+from __future__ import annotations
 import os
+from dataclasses import dataclass
+from typing import Tuple, Dict, Optional, List
+import math
+import random
+import warnings
+import numpy as np
+import matplotlib.pyplot as plt
 
 def run_verification():
     """
@@ -55,7 +62,13 @@ def run_verification():
 
     # 3. OPENSEES MODEL INITIALIZATION
     # wipe: Clears any existing OpenSees model from memory to start fresh.
-    ops.wipe()
+    try:
+        import openseespy.opensees as ops
+        ops.wipe()
+    except Exception as e:
+        print("I'm sorry your system doesn't seem able to use openseespy")
+        print(e)
+        exit(1)
     # model: Defines the model space. 
     # '-ndm' 3: Three-dimensional space.
     # '-ndf' 6: Six degrees of freedom per node (3 translations, 3 rotations).
