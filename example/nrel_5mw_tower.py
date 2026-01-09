@@ -7,7 +7,7 @@ import csf  # <--- Add this line
 from csf import (
     Pt, Polygon, Section, ContinuousSectionField, Visualizer,
     section_data, section_derived_properties, 
-    section_statical_moment_partial, integrate_volume,section_stiffness_matrix
+    section_statical_moment_partial, integrate_volume,section_stiffness_matrix,section_full_analysis,section_print_analysis
 )
 print (csf.__file__)
 # =========================
@@ -151,6 +151,7 @@ if __name__ == "__main__":
         p = data['properties']
         K_z = section_stiffness_matrix(data['section'], E_ref=E_mod)
         
+       
         # 2. varible mapping for pdf
         HtFract  = z / tower_height       # Height Fraction [0-1]
         TMassDen = p['A'] * DENSITY       # Mass per unit length [kg/m]
@@ -165,7 +166,7 @@ if __name__ == "__main__":
         TwSSIner = p['Iy'] * DENSITY      # Side-to-Side mass inertia
 
         # 3. Stampa riga formattata
-        print(f"{z:9.2f} | {HtFract:8.3f} | {TMassDen:10.2f} | {TwFAStif:13.4e} | "
+        print(f"{z:9.2f} | {HtFract:8.2f} | {TMassDen:10.2f} | {TwFAStif:13.4e} | "
               f"{TwSSStif:13.4e} | {TwGJStif:13.4e} | {TwEAStif:12.4e} | {TwFAIner:10.2e} | {TwSSIner:10.2e}")
 
     #print("="*130)
@@ -234,3 +235,8 @@ if __name__ == "__main__":
     ax = viz.plot_volume_3d(line_percent=30.0, seed=42)
     ax.set_title(f"NREL 5-MW Reference Tower Height {H}m")
     plt.show()
+
+
+
+    
+  

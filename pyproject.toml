@@ -21,7 +21,8 @@ classifiers = [
 # Qui dichiariamo le librerie esterne che Python installerà automaticamente
 dependencies = [
     "numpy",
-    "matplotlib"
+    "matplotlib",
+    "openseespy"   
 ]
 
 [tool.setuptools.packages.find]

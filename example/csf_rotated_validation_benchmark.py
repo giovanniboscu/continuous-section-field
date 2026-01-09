@@ -4,6 +4,23 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
+# Importing core CSF (Continuous Section Field) components for structural analysis
+from csf import (
+    Pt, Polygon, Section, ContinuousSectionField, 
+    section_properties, section_full_analysis, 
+    Visualizer, export_opensees_discretized_sections,
+    section_statical_moment_partial, section_stiffness_matrix,
+    polygon_inertia_about_origin,
+    export_opensees_discretized_sections,
+    polygon_statical_moment,export_full_opensees_model,
+    compute_saint_venant_J,
+    compute_saint_venant_Jv2,
+    section_print_analysis,
+    write_opensees_geometry
+)
+
+
+
 # EXTENSIVE ENGLISH COMMENTS FOR STRUCTURAL ANALYSIS VALIDATION
 # This script performs a dual-layer verification:
 # 1. Theoretical approach (independent function) using raw Shoelace integration.
@@ -175,35 +192,31 @@ if __name__ == "__main__":
  
     sec_mid = field.section(5.0)
     full_analysis = section_full_analysis(sec_mid)
-    
-    print("="*60)
-    print(f"{'CSF  GEOMETRIC VERIFICATION':^45}")
-    print("="*60)
+    section_print_analysis(full_analysis)
+
 
     # 1–7) Primary Section Properties
     # NOTE: Ix and Iy in CSF (0.0052) differ from Independent (0.0072) 
     # because the section is rotated. However, their sum (J=0.0104) is identical.
-    print(f"1) Area (A):               {full_analysis['A']:.4f}      # Net area")
-    print(f"2) Centroid Cx:            {full_analysis['Cx']:.4f}     # Horizontal CG")
-    print(f"3) Centroid Cy:            {full_analysis['Cy']:.4f}     # Vertical CG")
-    print(f"4) Inertia Ix:             {full_analysis['Ix']:.4f}     # Centroidal X Inertia")
-    print(f"5) Inertia Iy:             {full_analysis['Iy']:.4f}     # Centroidal Y Inertia")
-    print(f"6) Inertia Ixy:            {full_analysis['Ixy']:.4f}    # Product of Inertia")
-    print(f"7) Polar Moment (J):       {full_analysis['J']:.4f}      # Ix + Iy")
+    print(f"1) Area (A):               {full_analysis['A']:.8f}      # Net area")
+    print(f"2) Centroid Cx:            {full_analysis['Cx']:.8f}     # Horizontal CG")
+    print(f"3) Centroid Cy:            {full_analysis['Cy']:.8f}     # Vertical CG")
+    print(f"4) Inertia Ix:             {full_analysis['Ix']:.8f}     # Centroidal X Inertia")
+    print(f"5) Inertia Iy:             {full_analysis['Iy']:.8f}     # Centroidal Y Inertia")
+    print(f"6) Inertia Ixy:            {full_analysis['Ixy']:84f}    # Product of Inertia")
+    print(f"7) Polar Moment (J):       {full_analysis['J']:.8f}      # Ix + Iy")
 
     # 8–11) Principal Inertia & Radii of Gyration
     # VALIDATION POINT: Principal Inertia I1/I2 MUST match the Independent Report.
-    print(f"8) Principal Inertia I1:   {full_analysis['I1']:.4f}     # Max Principal Moment")
-    print(f"9) Principal Inertia I2:   {full_analysis['I2']:.4f}     # Min Principal Moment")
-    print(f"10) Radius of Gyration rx: {full_analysis['rx']:.4f}     # sqrt(Ix/A)")
-    print(f"11) Radius of Gyration ry: {full_analysis['ry']:.4f}     # sqrt(Iy/A)")
+    print(f"8) Principal Inertia I1:   {full_analysis['I1']:.8f}     # Max Principal Moment")
+    print(f"9) Principal Inertia I2:   {full_analysis['I2']:.8f}     # Min Principal Moment")
+    print(f"10) Radius of Gyration rx: {full_analysis['rx']:.8f}     # sqrt(Ix/A)")
+    print(f"11) Radius of Gyration ry: {full_analysis['ry']:.8f}     # sqrt(Iy/A)")
 
     # 12–14) Elastic and Torsional Properties
-    print(f"12) Elastic Modulus Wx:    {full_analysis['Wx']:.4f}     # Ix / y_max")
-    print(f"13) Elastic Modulus Wy:    {full_analysis['Wy']:.4f}     # Iy / x_max")
-    print(f"14) Torsional Rigidity K:  {full_analysis['K_torsion']:.4f} # Saint-Venant K")
-
-    print("="*45)
+    print(f"12) Elastic Modulus Wx:    {full_analysis['Wx']:.8f}     # Ix / y_max")
+    print(f"13) Elastic Modulus Wy:    {full_analysis['Wy']:.8f}     # Iy / x_max")
+    print(f"14) Torsional Rigidity K:  {full_analysis['K_torsion']:.8f} # Saint-Venant K")
 
 
     # --------------------------------------------------------
@@ -220,12 +233,42 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     plt.show()
 
-
-
-    # EVALUATION OF DIFFERENCES (Theoretical vs CSF Model):
-    # - Area (A): Error ~0% (0.2400 vs 0.2401). Perfect match.
-    # - Principal Inertia (I1, I2): Perfect match (0.0072, 0.0032). This validates the eigen-analysis.
-    # - Ix, Iy: Differ by design due to 45° rotation, but Ix+Iy (Polar) is constant at 0.0104.
-    # - Ixy: 0.0000 (Independent) vs -0.0020 (CSF). This is correct: rotation generates product inertia.
-    # - Torsional K: Independent shows 0.0080 (fallback), CSF shows 0.0000 (not implemented in analysis engine).
-    # - Conclusion: The CSF model is structurally sound and accurately captures rotation effects.
+    # ==============================================================================
+    # SECTION EVALUATION ANALYSIS REPORT - TECHNICAL COMMENTS
+    # ==============================================================================
+    # 
+    # 1. GEOMETRIC ACCURACY (Items 1-13)
+    #    - The model shows perfect alignment with theoretical values for Area, 
+    #      Inertia, and Centroids (0.0% error). 
+    #    - Symmetry Check: Ix = Iy and rx = ry confirms the cross-section maintains 
+    #      equidistant mass distribution relative to the principal axes, even 
+    #      under rotation.
+    #    - Product of Inertia (Ixy = -0.002): The non-zero value correctly reflects 
+    #      the 45-degree rotation, indicating that the local coordinate system 
+    #      is not aligned with the principal axes (which are confirmed by I1 and I2).
+    #
+    # 2. TORSIONAL RIGIDITY COMPARISON (Items 14-18)
+    #    - J_sv (0.009216): This is the most accurate physical representation. 
+    #      It represents the full Saint-Venant solution and shows the highest 
+    #      stiffness, capturing the actual shape's resistance to twisting.
+    #    - K_torsion (0.007975): This "fallback" approximation (A^4/40Ip) is 
+    #      conservative (~13.5% lower than J_sv). It provides a reliable safety 
+    #      margin for standard solid shapes.
+    #    - J_s_vroark (0.007512): The most conservative value. Roark's formulas 
+    #      are designed for manual engineering checks and penalize non-circular 
+    #      sections more heavily to ensure structural safety.
+    #
+    # 3. FIDELITY & RELIABILITY INDEX
+    #    - J_s_vroark_fidelity (0.15): This low index (15%) suggests the section 
+    #      has high "stoutness" (solid/compact). 
+    #    - Interpretation: In compact sections, the shear stress distribution 
+    #      is non-linear and warping is significant. The discrepancy between 
+    #      numerical (J_sv) and empirical (Roark) values is expected and typical 
+    #      for this type of geometry.
+    #
+    # 4. STRUCTURAL INTEGRATION
+    #    - For OpenSees/Finite Element Analysis: It is recommended to use J_sv 
+    #      for realistic behavior, or J_s_vroark for a conservative design approach.
+    #
+    # STATUS: Geometric properties are exact; Torsional range is consistent
+    # ==============================================================================

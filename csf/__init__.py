@@ -1,6 +1,9 @@
+# __init__.py insde the folder csf
 import numpy as np
 import math
-# __init__.py interno alla cartella csf
+import openseespy.opensees as ops
+
+
 
 from .section_field import (
     Pt,
@@ -18,11 +21,19 @@ from .section_field import (
     Visualizer,
     export_opensees_discretized_sections,
     section_data,
-    export_full_opensees_model
+    export_full_opensees_model,
+    compute_saint_venant_J,
+    compute_saint_venant_Jv2,
+    write_opensees_geometry,
+    section_full_analysis_keys,
+    section_print_analysis,
+    evaluate_weight_formula,
+    safe_evaluate_weight
 )
 
-# Questa è la lista fondamentale per "from csf import *"
+# this is the list "from csf import *"
 __all__ = [
+    "ops",
     "Pt",
     "Polygon",
     "Section",
@@ -38,4 +49,13 @@ __all__ = [
     "Visualizer",
     "export_opensees_discretized_sections",
     "section_data",
+    "polygon_statical_moment",
+    "compute_saint_venant_J",
+    "compute_saint_venant_Jv2",
+    "write_opensees_geometry",
+    "section_full_analysis_keys",
+    "section_print_analysis",
+    "evaluate_weight_formula",
+    "safe_evaluate_weight"    
 ]
+

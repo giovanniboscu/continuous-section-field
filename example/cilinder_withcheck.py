@@ -20,25 +20,45 @@ DENSITY = 7850  # kg/m^3ls -l
 R_EXT = D_EXT / 2
 R_INT = R_EXT - THICKNESS
 
-def create_circular_polygon(radius: float, n_sides: int, weight: float) -> Polygon:
+def create_circular_polygon(radius: float, n_sides: int, weight: float, name: str) -> Polygon:
+    """
+    Creates a circular polygon with a specified number of sides and a unique name.
+    """
     vertices = []
     for i in range(n_sides):
+        # Calculate vertex positions using polar coordinates
         angle = 2 * np.pi * i / n_sides
         vertices.append(Pt(radius * np.cos(angle), radius * np.sin(angle)))
-    return Polygon(vertices=tuple(vertices), weight=weight)
+    
+    # We now pass the 'name' parameter to ensure uniqueness in the Section
+    return Polygon(vertices=tuple(vertices), weight=weight, name=name)
 
-# =================================================================
-# 2. MODEL CONSTRUCTION
-# =================================================================
-s0 = Section(polygons=(create_circular_polygon(R_EXT, N_SIDES, 1.0), 
-                       create_circular_polygon(R_INT, N_SIDES, -1.0)), z=0.0)
-s1 = Section(polygons=(create_circular_polygon(R_EXT, N_SIDES, 1.0), 
-                       create_circular_polygon(R_INT, N_SIDES, -1.0)), z=H)
-
-field = ContinuousSectionField(section0=s0, section1=s1)
 
 
 if __name__ == "__main__":
+
+
+    # =================================================================
+    # 2. MODEL CONSTRUCTION (CORRECTED)
+    # =================================================================
+
+    # Define names once to ensure consistency
+    OUTER_NAME = "outer_hull"
+    INNER_NAME = "inner_void"
+
+    s0 = Section(polygons=(
+        create_circular_polygon(R_EXT, N_SIDES, 1.0, name=OUTER_NAME), 
+        create_circular_polygon(R_INT, N_SIDES, -1.0, name=INNER_NAME)
+    ), z=0.0)
+
+    s1 = Section(polygons=(
+        create_circular_polygon(R_EXT, N_SIDES, 1.0, name=OUTER_NAME), 
+        create_circular_polygon(R_INT, N_SIDES, -1.0, name=INNER_NAME)
+    ), z=H)
+
+    field = ContinuousSectionField(section0=s0, section1=s1)
+
+
     # --- 1. DATA EXTRACTION AND MECHANICAL PARAMETERS ---
     # Data extraction at mid-height for validation
     z_mid = H / 2
