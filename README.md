@@ -38,6 +38,9 @@ CSF models members defined by polygonal end sections connected by straight gener
 ## Key Features
 
 - **Algebraic Polygon Logic**: Sections defined as collections of 2D vertices with weights. Handles any shape - from standard profiles to fully custom architectural sections.
+- ***Custom Weight Laws*** (Advanced Material Modeling) Define property variations w(z) independent from geometry. Model thermal degradation, concrete maturation, soil confinement, localized damage, or variable reinforcement density using custom formulas or external data files. **[See Full Documentation** ]
+ [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)
+ [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
 - **Curvature Handling**: Discrete segments with arbitrary vertex count → approximate curved surfaces (e.g., circular towers) to any desired precision.
 - **No Predefined Templates**: No restricted "Circle" or "Rectangle" classes — any geometry describable by coordinates is supported (A, I, J, Q, etc.).
 - **Topological Freedom**:
