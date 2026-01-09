@@ -210,7 +210,7 @@ section_field.set_weight_laws([
 
 Defining mathematical laws for structural members shouldn't feel like "guessing and hoping." To make your workflow smoother and error-free, we've introduced the **Safe Evaluation Engine**.
 
-### 🚀 Why you'll love it
+### 🚀 Why it is important to use it
 Let’s be honest: writing Python formulas inside strings can be tricky. A missing bracket or a typo in a filename usually results in a scary, 50-line Python crash. **Not anymore.**
 
 Our new **Inspector** acts as a professional co-pilot that talks back to you:
