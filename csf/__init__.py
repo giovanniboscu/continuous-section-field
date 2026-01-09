@@ -2,9 +2,6 @@
 import numpy as np
 import math
 
-import numpy as np
-import math
-
 try:
     import opensees.openseespy as ops   # compat layer (opensees/xara)
 except ImportError:

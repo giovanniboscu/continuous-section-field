@@ -18,11 +18,11 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 
-# Qui dichiariamo le librerie esterne che Python installerà automaticamente
 dependencies = [
     "numpy",
     "matplotlib",
-    "openseespy"   
+    "opensees; sys_platform == 'win32'",
+    "openseespy; sys_platform != 'win32'"
 ]
 
 [tool.setuptools.packages.find]
