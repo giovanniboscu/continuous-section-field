@@ -241,4 +241,16 @@ When something goes wrong, you don't get a crash. You get this:
 ════════════════════════════════════════════════════════════════════════
 ```
 ---
+### 🛠 How to Use It
 
+The beauty of the **CSF Weight Law Inspector** is its simplicity: you don't need to change how you work.
+
+**1. Define your laws as usual**
+Simply pass your formulas as strings. Whether you are using basic math, NumPy functions, or external data lookups, the system is ready:
+
+```python
+# Example: Using a mix of native variables and external data
+laws = [
+    "lower_part : w0 * 1.5",
+    "upper_part : np.maximum(0.1, E_lookup('material_data.txt'))"
+]
