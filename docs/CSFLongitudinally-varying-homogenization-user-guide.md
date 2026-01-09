@@ -260,39 +260,5 @@ weight_value, report_data = safe_evaluate_weight(formula_test, p_start, p_end, 1
 # CALL THE PRINTER HERE
 print_evaluation_report(weight_value, report_data)
 ```
-``.
-
-# 🏗️ Case Study: Reinforcement Curtailment (Discontinuous CSF)
-## Modeling Steel Bar Interruptions in RC Beams
-
-# 📏 Parametric Reinforcement Modeling
-## Dynamic Steel Curtailment based on Beam Span (L)
-
-In modern structural optimization, stiffness distribution must be independent of the absolute dimensions. By using **Parametric Formulas**, the reinforcement layout automatically scales when the beam length ($L$) changes.
-
-### 1. The Logic of Dimensionless Positioning
-Instead of hard-coding the cutoff points in meters, we define them as ratios of the total span. This approach is essential for:
-* **Batch Processing**: Testing 100 different beam lengths using a single formula.
-* **Optimization**: Allowing a genetic algorithm to move the "cutoff" points to find the minimum weight.
-
-### 2. Mathematical Definition
-The weight field $W(z)$ is defined using a conditional logical gate:
-
-$$W(z) = w_0 \cdot (1 + \text{Condition}(z, L) \cdot 14)$$
-
-Where the condition is:
-$$\text{Condition} = \begin{cases} 1 & \text{if } \alpha L < z < \beta L \\ 0 & \text{otherwise} \end{cases}$$
-$(\alpha, \beta)$ are the percentage start/end points (e.g., $0.2, 0.8$).
 
 
-
-### 3. Implementation in CSF
-The formula uses the internal variable `L` provided by the solver:
-$W(z) = w_0 \cdot (1 + \text{Condition} \cdot 14)$
-
-### 4. Inspector Insight
-When the **CSF Inspector** runs, it evaluates the truth table of the `np.where` function. 
-* It confirms that at $z = 0.1L$, the reinforcement is inactive.
-* It flags the "Step" increase as soon as $z$ crosses the threshold.
-* It ensures the transition is mathematically clean, preventing convergence issues in the global stiffness matrix.
-``.
