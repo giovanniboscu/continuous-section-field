@@ -206,6 +206,39 @@ section_field.set_weight_laws([
     "lowerpart,lowerpart : E_lookup('material_data.txt') * w0"
 ])
 ```
+## 🟢 Meet the "CSF Weight Law Inspector" 
 
+Defining mathematical laws for structural members shouldn't feel like "guessing and hoping." To make your workflow smoother and error-free, we've introduced the **Safe Evaluation Engine**.
+
+### 🚀 Why you'll love it
+Let’s be honest: writing Python formulas inside strings can be tricky. A missing bracket or a typo in a filename usually results in a scary, 50-line Python crash. **Not anymore.**
+
+Our new **Inspector** acts as a professional co-pilot that talks back to you:
+
+* **Proactive File Checks**: If you use `E_lookup('data.txt')`, the engine checks if the file exists *before* running the calculation. If it’s missing, it tells you exactly where it should be.
+* **Beautiful Diagnostics**: Instead of messy code errors, you get a clean, high-contrast terminal report showing exactly what’s happening.
+* **Physics-Aware**: It doesn't just check math; it checks reality. If your formula results in negative weight or stiffness, it flags a `WARNING` so you can verify your logic.
+* **Friendly Advice**: Every error comes with an **ACTION** suggestion. It tells you how to fix the problem (e.g., "Add a small epsilon to avoid division by zero").
+
+### 📊 How it looks in your terminal
+
+When something goes wrong, you don't get a crash. You get this:
+
+```text
+════════════════════════════════════════════════════════════════════════
+                🔴  CSF WEIGHT LAW INSPECTOR  |  ERROR
+════════════════════════════════════════════════════════════════════════
+  FORMULA:     np.maximum(w0 * 0.01, E_lookup('experimental_data.txt'))
+  POSITION Z:  50.0000
+------------------------------------------------------------------------
+  RESULT W:    ❌ [ABORTED]
+------------------------------------------------------------------------
+  CATEGORY:    File System Error
+  DETAIL:      Required lookup file 'experimental_data.txt' is missing.
+  ADVICE:      Ensure the file exists in your current working directory.
+------------------------------------------------------------------------
+                                          Validated on: 2026-01-09 10:45
+════════════════════════════════════════════════════════════════════════
+```
 ---
 
