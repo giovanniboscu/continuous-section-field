@@ -1,4 +1,4 @@
-(CSF export) — detailed, block-by-block explanation
+# (CSF export) — detailed, block-by-block explanation
 
 This file is not meant to be sourced directly as a complete OpenSees model.
 It is a CSF “data file”: it contains station-by-station section properties (and the measured centroid offsets) that a builder script (OpenSeesPy or Tcl builder) reads and then turns into an actual OpenSees model.
@@ -59,3 +59,9 @@ Pure comments (they start with #).
     override E and G from the user’s unit system (override mode).
   
 
+
+## Legacy/template” nodes (not used for CSF precision
+```
+node 1 0.000000 -0.034768 0.000000
+node 2 0.000000 -0.001734 10.000000
+```
