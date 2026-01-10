@@ -8,6 +8,143 @@ This document provides the technical specifications for implementing and using *
 > It can represent an **E-modulus ratio** (dimensionless) *or* the **Young’s modulus E** (e.g., MPa).  
 > The only requirement is that your formulas and lookup data follow a **consistent convention**.
 
+ **Important — what is `weight` in CSF?**
+
+ In CSF, `weight` is a **scalar field W(z)** attached to each polygonal region.
+ CSF uses it as a **multiplier inside area integrals**, i.e. it “weights” geometry to produce
+ an **equivalent homogenized section**.
+
+ **This tool is unit-system agnostic.**  
+ OpenSees is also unitless: you may use mm–N–MPa or m–N–Pa, etc.  
+ The only hard rule is: **all inputs must follow one consistent unit convention**.
+
+ ### Two valid conventions for `weight`
+
+ CSF supports two different (but equally valid) interpretations. You must pick one and
+ keep it consistent across your workflow and exports:
+
+ #### Convention A — `weight` as a dimensionless stiffness ratio (recommended)
+ - `weight = E / E_ref`  (dimensionless)
+ - Choose one reference modulus `E_ref` (e.g., steel, concrete, etc.)
+ - Softer regions have `0 < weight < 1`, stiffer have `weight  1`.
+ - Voids are represented by negative weights (see "Voids" below).
+
+ In this convention, CSF computes **modular (weighted) section properties**:
+
+ \[
+ A^*(z) = \sum_i w_i(z)\,A_i(z), \qquad
+ I^*(z) = \sum_i w_i(z)\,I_i(z)
+ \]
+
+ so that the stiffness products match:
+
+ \[
+ E_{ref} A^*(z) = \sum_i E_i(z) A_i(z), \qquad
+ E_{ref} I^*(z) = \sum_i E_i(z) I_i(z)
+ \]
+
+ #### Convention B — `weight` as a real-valued field (e.g. Young’s modulus)
+ - `weight = E` in your chosen units (MPa, Pa, etc.)
+ - This allows data-driven modeling directly in physical units (e.g., from `E_lookup()`).
+
+ With this convention, the section integrals become stiffness-like quantities directly
+ (e.g., \(\int E\,dA\)). This is valid, but you must then export to OpenSees using a
+ stiffness-encoded contract (see OpenSees mapping below).
+
+ ### Voids: the sign rule
+ A void must always subtract the same “material measure” that the solid contributes.
+ If a solid region uses `+w`, the matching void must use `-w`.
+ This guarantees that the overlap sum is zero and contributes no stiffness:
+
+ \[
+ w_{solid} + w_{void} = 0
+ \]
+
+---
+
+## OpenSees integration: how CSF stiffness samples are consumed
+
+CSF exports a **sequence of station snapshots** along the member:
+each station carries the local section state (A, Iy, Iz, J, and centroid offsets Cx,Cy).
+OpenSees must integrate these samples along the length of the member.
+
+### 1) Why `beamIntegration Lobatto` alone is ambiguous for CSF
+OpenSees’ standard `beamIntegration Lobatto` is typically used with **one section tag**
+and a number of integration points.
+If you need the solver to read **multiple different section tags** (one per CSF station),
+you must use:
+
+- `beamIntegration UserDefined`
+
+This is the only unambiguous bridge that allows OpenSees to consume the full CSF station list.
+
+### 2) Gauss–Lobatto stations: end conditions are exact
+CSF places stations using the **Gauss–Lobatto rule**, which includes the endpoints of the domain.
+Therefore:
+- the first CSF station coincides with the real member start,
+- the last CSF station coincides with the real member end.
+
+This guarantees that boundary conditions and tip loads are applied at the **true ends**
+of the physical member.
+
+### 3) Real centroid axis: curvature / eccentricity is preserved (variable Cy)
+The physical axis of a non-prismatic member is not always the straight line between two endpoints.
+CSF explicitly tracks the centroid offsets `(Cx(z), Cy(z))`.
+
+In the OpenSees builder:
+- a **reference axis** is created for clean application of constraints and loads,
+- a **centroid axis** is created using the CSF offsets `(Cx_i, Cy_i)` at each station,
+- each reference node is tied to its centroid node using `rigidLink beam`.
+
+This ensures:
+- the model represents the **real eccentricity field** (variable Cy),
+- the correct eccentric-load coupling appears automatically as additional moments.
+
+> Implementation note: `rigidLink` requires `constraints Transformation` in OpenSees.
+
+### 4) “Not fake piecewise”: stiffness is sampled at CSF stations
+The goal is NOT to create arbitrary prismatic segments with invented constant properties.
+The goal is to force the solver to read the **CSF station stiffness samples** at their true locations.
+
+A robust, standard strategy is:
+- build elements between consecutive centroid stations (station i → station i+1),
+- for each element use `beamIntegration UserDefined` with two endpoints:
+  - at `loc=0`: section = station i
+  - at `loc=1`: section = station i+1
+  - weights = (0.5, 0.5)
+
+This guarantees that the longitudinal and flexural stiffness is sampled exactly as in CSF
+(at the station points), while the centroid axis geometry is also preserved.
+
+---
+
+## OpenSees export mapping (choose one and document it)
+
+OpenSees `section Elastic` requires parameters (E, A, Iz, Iy, G, J).
+CSF can export station data in two consistent ways:
+
+### Mapping A (recommended): reference modulus + modular properties
+- Use Convention A for `weight` (dimensionless ratio).
+- Export:
+  - `E = E_ref` (constant reference modulus)
+  - `A, Iz, Iy, J` as **modular (weighted) properties** computed by CSF
+  - `Cx, Cy` appended for centroid offsets
+
+This keeps `E` physically meaningful (a real reference modulus) and stores heterogeneity
+inside the modular section integrals.
+
+### Mapping B: stiffness-encoded fields (E is just a carrier)
+- Use Convention B for `weight` in physical units (e.g., E(z) directly).
+- Export a stiffness-encoded contract, e.g.:
+  - set `E = 1` and store `A = EA`, `Iz = EIz`, `Iy = EIy`
+  - set `G = 1` and store `J = GJ`
+- Document clearly that `A, I, J` fields are stiffness-like, not geometric areas/inertias.
+
+Both mappings are valid. The only requirement is that your exporter and your OpenSees builder
+use the same mapping consistently.
+
+
+
 ---
 
 
