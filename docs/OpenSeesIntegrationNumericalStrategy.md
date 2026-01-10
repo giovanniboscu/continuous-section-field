@@ -1,3 +1,7 @@
+
+---
+---
+---
 ## OpenSees Integration & Numerical Strategy
 
 The CSF library bridges the gap between continuous geometric modeling and structural analysis by generating optimized OpenSees models.
