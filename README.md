@@ -269,7 +269,24 @@ The library bridges the gap between continuous geometric modeling and structural
 ---
 
 ### Member Discretization and Property Sampling
-* **Full Model Generation**: The exporter generates complete `.tcl` environments, including nodal coordinates, element connectivity, and basic analysis patterns.
+
+CSF exports a **set of stations** along the member and the corresponding section properties at each station.
+
+**Two distinct concepts are used:**
+
+1) **Geometric discretization (centroid axis):**  
+   The real centroid line is represented as a polyline through the station points `(xc_i, yc_i, z_i)`.  
+   This preserves the physical eccentricity (tilt) field computed by CSF.
+
+2) **Mechanical sampling (stiffness field):**  
+   The stiffness is not approximated by arbitrary constant segments.  
+   Instead, OpenSees reads the CSF station stiffness values using `beamIntegration UserDefined` so that each segment uses station `i` and `i+1` stiffness at its endpoints.
+
+Increasing the number of CSF stations improves resolution of both:
+- centroid-axis curvature (geometric fidelity),
+- and stiffness-field sampling (mechanical fidelity),
+without introducing the methodological ambiguity typical of “piecewise-prismatic” modeling.
+
 ---
 
 ##  Numerical Validation: Circular Hollow Section
