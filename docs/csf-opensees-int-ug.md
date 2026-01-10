@@ -58,4 +58,8 @@ Pure comments (they start with #).
   
     override E and G from the user’s unit system (override mode).
   
-
+## Legacy/template” nodes (not used for CSF precision
+```
+node 1 0.000000 -0.034768 0.000000
+node 2 0.000000 -0.001734 10.000000
+```
