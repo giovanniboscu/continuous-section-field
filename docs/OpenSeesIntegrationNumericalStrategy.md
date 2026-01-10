@@ -166,7 +166,7 @@ Each station connects:
 
 This ensures:
 - loads and boundary conditions can be applied to a clean reference axis,
-- the beam stiffness “lives” on the physical centroid axis,
+- the beam stiffness “lives” on the physical centroid axis,rigidLink
 - the model captures the **real eccentricity** that varies along the member.
 
 **Important OpenSees note:**  
@@ -177,6 +177,21 @@ constraints Transformation
 ```
 
 (not `Plain`).
+
+## Important OpenSees note: `rigidLink` and the Constraints Handler (`Transformation` vs `Plain`)
+
+### Why this matters
+In the CSF→OpenSees strategy we use:
+
+- a **reference axis** (clean line where we apply BCs/loads), and  
+- a **centroid axis** (offset by the CSF `(xc, yc)` at each station),
+
+and we connect them station-by-station with:
+
+```tcl
+rigidLink beam $refNode $cenNode
+
+
 
 ---
 
