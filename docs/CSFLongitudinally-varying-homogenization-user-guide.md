@@ -398,4 +398,41 @@ weight_value, report_data = safe_evaluate_weight(formula_test, p_start, p_end, 1
 print_evaluation_report(weight_value, report_data)
 ```
 
+## FAQ — “Is CSF + OpenSees just a piecewise-prismatic discretization?”
+
+**Short answer:** it uses multiple OpenSees elements, but it is **not** the traditional *piecewise-prismatic* approximation.
+
+### What “piecewise-prismatic” means (the classical approximation)
+In a classical stepped model you:
+- choose **how many segments** to use,
+- choose **where** to sample properties,
+- assign each segment a **constant** (or arbitrarily averaged) section,
+- obtain results that can change significantly with the user’s discretization choices.
+
+That *user-dependent sampling and averaging* is the key weakness of piecewise-prismatic modeling.
+
+### What CSF actually does
+CSF defines a **continuous stiffness/geometry field** along the member (ruled surfaces + weight laws).  
+The exported `geometry.tcl` is a **list of station snapshots**, each one computed from the continuous field (no “invented” prismatic properties).
+
+In the OpenSees builder:
+- stations are placed using **Gauss–Lobatto** locations (endpoints included),
+- each station has its own section state (A, I, centroid offsets, …),
+- OpenSees is forced to read these station states **at the correct locations**.
+
+So the OpenSees model is best described as:
+> **numerical quadrature / collocation of a continuous stiffness field**, not user-chosen stepped prismatic segments.
+
+### Why do we still create multiple OpenSees elements?
+Because of a practical OpenSees limitation: the standard integration commands are not designed to consume an arbitrary list of different section tags inside a single element without ambiguity.  
+Using a chain of elements + `beamIntegration UserDefined` is the **enforcement mechanism** that makes OpenSees sample the CSF stations correctly.
+
+### The key difference (what makes it “not piecewise”)
+- **No arbitrary averaging:** section properties are not collapsed into equivalent prismatic blocks.
+- **Controlled sampling:** the sampling locations are prescribed by the Gauss–Lobatto rule.
+- **Exact end conditions:** Lobatto stations include the endpoints, so support and tip conditions coincide with the real member ends.
+- **Field fidelity:** increasing the number of stations refines the **quadrature of the same continuous field**, rather than changing a user-defined stepped approximation.
+
+### One-sentence reply (for discussions)
+> “Yes, the OpenSees realization uses multiple elements, but it is not a piecewise-prismatic approximation: the element chain is only a numerical device to enforce Gauss–Lobatto sampling of the continuous CSF stiffness field (including endpoints), avoiding user-dependent averaging choices.”
 
