@@ -36,7 +36,7 @@ section Elastic 10 2.100000e+11 1.200000e-01 1.600000e-03 9.000000e-04 8.076923e
 
 
 
-Below is the exact example you provided, explained line by line / block by block.
+Below is explained line by line / block by block.
 
 ---
 
