@@ -65,3 +65,11 @@ Pure comments (they start with #).
 node 1 0.000000 -0.034768 0.000000
 node 2 0.000000 -0.001734 10.000000
 ```
+
+- These two nodes are not the CSF station nodes.
+-- In CSF, the real geometry/neutral-axis shift is contained inside each section line (xc, yc fields at the end).
+- human readability (“beam goes from z=0 to z=L”),
+
+-backward compatibility with simpler scripts,
+
+-giving a rough “regression line” idea of the centroid drift.
