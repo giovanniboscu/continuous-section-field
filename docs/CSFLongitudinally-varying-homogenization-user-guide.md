@@ -136,9 +136,10 @@ $$
  If a solid region uses `+w`, the matching void must use `-w`.
  This guarantees that the overlap sum is zero and contributes no stiffness:
 
- \[
- w_{solid} + w_{void} = 0
- \]
+
+```math
+w_{solid} + w_{void} = 0
+```
 
 # 📑 Deep Dive: The Logic of "Weight" (W) and Voids
 
