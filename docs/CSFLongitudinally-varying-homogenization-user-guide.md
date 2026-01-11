@@ -17,26 +17,63 @@ While using the same name for both is not a technical requirement for the geomet
 Example: Defining a Composite Beam
 
 ```
-# Start Section (z=0)
-poly_bottom_start = Polygon(
-    vertices=(Pt(-10,-10), Pt(10,-10), Pt(10,0), Pt(-10,0)),
-    weight=210000, # Initial E-modulus
-    name="lowerpart"  # <--- THIS IS THE NAME 
-)
+    poly_top_start = Polygon(
+        vertices=(
+            Pt(-b/2,  0.0), 
+            Pt( b/2,  0.0),
+            Pt( b/2,  h/2),
+            Pt(-b/2,  h/2),
+        ),
+        weight=1, # 
+        name="upperpart",
+    )
 
-# End Section (z=L)
-poly_bottom_end = Polygon(
-    vertices=(Pt(-15,-15), Pt(15,-15), Pt(15,0), Pt(-15,0)),
-    weight=180000, # Final E-modulus
-    name="lowerpart"  # <---THIS IS THE NAME 
-)
 
-#The engine connects sections based on their **creation order**. The first polygon defined at the start automatically matches the first polygon defined at the end. 
+    poly_bottom_start = Polygon(
+        vertices=(
+            Pt(-b/2, -h/2), 
+            Pt( b/2, -h/2),
+            Pt( b/2,  0.0),
+            Pt(-b/2,  0.0),
+        ),
+        weight=1,
+        name="lowerpart",
+    )
+
+
+    poly_top_end = Polygon(
+        vertices=(
+            Pt(-b/2,  0.0), 
+            Pt( b/2,  0.0),
+            Pt( b/2,  h/2),
+            Pt(-b/2,  h/2),
+        ),
+        weight=1, # 
+        name="upperpart",
+    )
+
+    poly_bottom_end = Polygon(
+        vertices=(
+            Pt(-b/2, -h/2), 
+            Pt( b/2, -h/2),
+            Pt( b/2,  0.0),
+            Pt(-b/2,  0.0),
+        ),
+        weight=1,
+        name="lowerpart",
+    )
+
+
+```
+
+The engine connects sections based on their **creation order**. The first polygon defined at the start automatically matches the first polygon defined at the end. 
 
 Example
 ```
-    s0 = Section(polygons=(poly1_start,poly2_start),z=0.0)
-    s1 = Section(polygons=(poly1_end, poly2_end),z=L)
+    # --- SECTION AND FIELD DEFINITION ---
+    L = 10.0
+    s0 = Section(polygons=(poly_bottom_start,poly_top_start),z=0.0)
+    s1 = Section(polygons=(poly_bottom_end, poly_top_end),z=L)
 ```
 ---
 
