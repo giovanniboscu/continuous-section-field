@@ -148,14 +148,15 @@ use the same mapping consistently.
 ---
 
 
-### Identify your Polygons (Naming is Key)
+## Identify your Polygons (Naming is Key)
+### Identifying the Target Component
 
-To apply a law, your polygons must have a name. This name acts as a "link" between the start and end sections.
+To ensure the engine correctly calculates the transition along the height, **you must identify the structural component to which the material property variation law $W(z)$ will be applied.**
+### Unique Identification
+To avoid using confusing numerical indices for the connections (like "Pair #227"), each polygon must have a **unique name** within its section. This name acts as a human-readable label for the entire component's evolution. It makes it much easier to assign physical laws $w(z)$ to a specific structural member, such as a "Web" or "Flange," as it spans from the start to the end of the section field.
 
-#### The Same-Element Requirement
-* **Correspondence:** The name must belong to the **same sub-element**. You are describing the evolution of one physical component (e.g., the "Web") as it travels from $z=0$ to $z=L$.
-* **Continuity:** If a name exists at the start but not at the end, the "interpolation bridge" is broken. The engine cannot calculate intermediate properties because the **chain of continuity** is interrupted.
-* **Case Sensitivity:** `Web` is not the same as `web`. A naming mismatch will cause the element to "vanish," leading to calculation errors.
+
+### Automatic Mapping
 
 Example: Defining a Composite Beam
 
@@ -173,6 +174,17 @@ poly_bottom_end = Polygon(
     weight=180000, # Final E-modulus
     name="lowerpart"  # <--- MUST MATCH
 )
+
+#The engine connects sections based on their **creation order**. The first polygon defined at the start automatically matches the first polygon defined at the end. 
+
+Example
+```
+    s0 = Section(polygons=(poly1_start,poly2_start),z=0.0)
+    s1 = Section(polygons=(poly1_end, poly2_end),z=L)
+```
+
+While using the same name for both is not a technical requirement for the geometry, it is highly recommended for clarity and to ensure the correct physical properties are tracked along the height.
+
 ```
 ## The Default Behavior: Linear Variation
 
