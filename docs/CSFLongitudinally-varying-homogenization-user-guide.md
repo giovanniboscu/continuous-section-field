@@ -73,7 +73,7 @@ Example
     # --- SECTION AND FIELD DEFINITION ---
     L = 10.0
     s0 = Section(polygons=(poly_bottom_start,poly_top_start),z=0.0)
-    s1 = Section(polygons=(poly_bottom_end, poly_top_end),z=L)
+    s1 = Section(polygons=(poly_bottom_end, c),z=L)
 ```
 ---
 
@@ -82,9 +82,27 @@ Example
 By default, the variation of weight between the start and end sections is linear. If you do not specify a custom law, the software automatically interpolates the value based on the longitudinal position z.
 
 
+###  Custom Law Syntax
+To override the default behavior, use the `set_weight_laws()` method. This method accepts a list of strings where each string maps a start-section polygon to its corresponding end-section polygon using a specific formula.
+
+**Format:**
+`"StartPolygonName, EndPolygonName : <Python_Formula_Expression>"`
 
 
-> **Important — what is `weight`?**  
+#### Example
+```
+section_field = ContinuousSectionField(section0=s0, section1=s1)
+
+section_field.set_weight_laws([
+    "poly_bottom_start,poly_bottom_end : w0 * np.exp(-z / L)",  # Exponential decay over the member length
+    "poly_top_start,poly_top_start : w0 / 100",
+])
+```
+
+
+# Important — what is `weight`?
+
+
 > In CSF, `weight` is a **scalar field** used to scale section properties (a generalized multiplier of the geometric area).  
 > It can represent an **E-modulus ratio** (dimensionless) *or* the **Young’s modulus E** (e.g., MPa).  
 > The only requirement is that your formulas and lookup data follow a **consistent convention**.
