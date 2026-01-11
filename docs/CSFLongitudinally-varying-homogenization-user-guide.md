@@ -3,6 +3,51 @@
 This document provides the technical specifications for implementing and using **Custom Weight Laws** to define the variation of the Elastic Modulus ratio (`weight`) along a structural member.
 
 
+## Identify your Polygons (Naming is Key)
+### Identifying the Target Component
+
+To ensure the engine correctly calculates the transition along the height, **you must identify the structural component to which the material property variation law $W(z)$ will be applied.**
+### Unique Identification
+To avoid using confusing numerical indices for the connections (like "Pair #227"), each polygon must have a **unique name** within its section. This name acts as a human-readable label for the entire component's evolution. It makes it much easier to assign physical laws $w(z)$ to a specific structural member, such as a "Web" or "Flange," as it spans from the start to the end of the section field.
+While using the same name for both is not a technical requirement for the geometry, it is highly recommended for clarity and to ensure the correct physical properties are tracked along the height.
+
+
+### Automatic Mapping
+
+Example: Defining a Composite Beam
+
+```
+# Start Section (z=0)
+poly_bottom_start = Polygon(
+    vertices=(Pt(-10,-10), Pt(10,-10), Pt(10,0), Pt(-10,0)),
+    weight=210000, # Initial E-modulus
+    name="lowerpart"  # <--- THIS IS THE ID
+)
+
+# End Section (z=L)
+poly_bottom_end = Polygon(
+    vertices=(Pt(-15,-15), Pt(15,-15), Pt(15,0), Pt(-15,0)),
+    weight=180000, # Final E-modulus
+    name="lowerpart"  # <--- MUST MATCH
+)
+
+#The engine connects sections based on their **creation order**. The first polygon defined at the start automatically matches the first polygon defined at the end. 
+
+Example
+```
+    s0 = Section(polygons=(poly1_start,poly2_start),z=0.0)
+    s1 = Section(polygons=(poly1_end, poly2_end),z=L)
+```
+---
+
+```
+## The Default Behavior: Linear Variation
+
+By default, the variation of weight between the start and end sections is linear. If you do not specify a custom law, the software automatically interpolates the value based on the longitudinal position z.
+
+
+
+
 > **Important — what is `weight`?**  
 > In CSF, `weight` is a **scalar field** used to scale section properties (a generalized multiplier of the geometric area).  
 > It can represent an **E-modulus ratio** (dimensionless) *or* the **Young’s modulus E** (e.g., MPa).  
@@ -142,53 +187,6 @@ inside the modular section integrals.
 
 Both mappings are valid. The only requirement is that your exporter and your OpenSees builder
 use the same mapping consistently.
-
-
-
----
-
-
-## Identify your Polygons (Naming is Key)
-### Identifying the Target Component
-
-To ensure the engine correctly calculates the transition along the height, **you must identify the structural component to which the material property variation law $W(z)$ will be applied.**
-### Unique Identification
-To avoid using confusing numerical indices for the connections (like "Pair #227"), each polygon must have a **unique name** within its section. This name acts as a human-readable label for the entire component's evolution. It makes it much easier to assign physical laws $w(z)$ to a specific structural member, such as a "Web" or "Flange," as it spans from the start to the end of the section field.
-
-
-### Automatic Mapping
-
-Example: Defining a Composite Beam
-
-```
-# Start Section (z=0)
-poly_bottom_start = Polygon(
-    vertices=(Pt(-10,-10), Pt(10,-10), Pt(10,0), Pt(-10,0)),
-    weight=210000, # Initial E-modulus
-    name="lowerpart"  # <--- THIS IS THE ID
-)
-
-# End Section (z=L)
-poly_bottom_end = Polygon(
-    vertices=(Pt(-15,-15), Pt(15,-15), Pt(15,0), Pt(-15,0)),
-    weight=180000, # Final E-modulus
-    name="lowerpart"  # <--- MUST MATCH
-)
-
-#The engine connects sections based on their **creation order**. The first polygon defined at the start automatically matches the first polygon defined at the end. 
-
-Example
-```
-    s0 = Section(polygons=(poly1_start,poly2_start),z=0.0)
-    s1 = Section(polygons=(poly1_end, poly2_end),z=L)
-```
-
-While using the same name for both is not a technical requirement for the geometry, it is highly recommended for clarity and to ensure the correct physical properties are tracked along the height.
-
-```
-## The Default Behavior: Linear Variation
-
-By default, the variation of weight between the start and end sections is linear. If you do not specify a custom law, the software automatically interpolates the value based on the longitudinal position z.
 
 ---
 # 📑 Deep Dive: The Logic of "Weight" (W) and Voids
