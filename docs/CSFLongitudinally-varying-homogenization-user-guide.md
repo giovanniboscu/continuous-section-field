@@ -365,7 +365,7 @@ print_evaluation_report(weight_value, report_data)
 
 ---
 
-## OpenSees integration: how CSF stiffness samples are consumed
+# OpenSees integration: how CSF stiffness samples are consumed
 
 CSF exports a **sequence of station snapshots** along the member:
 each station carries the local section state (A, Iy, Iz, J, and centroid offsets Cx,Cy).
@@ -514,7 +514,3 @@ Using a chain of elements + `beamIntegration UserDefined` is the **enforcement m
 - **Controlled sampling:** the sampling locations are prescribed by the Gauss–Lobatto rule.
 - **Exact end conditions:** Lobatto stations include the endpoints, so support and tip conditions coincide with the real member ends.
 - **Field fidelity:** increasing the number of stations refines the **quadrature of the same continuous field**, rather than changing a user-defined stepped approximation.
-
-### One-sentence reply (for discussions)
-> “Yes, the OpenSees realization uses multiple elements, but it is not a piecewise-prismatic approximation: the element chain is only a numerical device to enforce Gauss–Lobatto sampling of the continuous CSF stiffness field (including endpoints), avoiding user-dependent averaging choices.”
-
