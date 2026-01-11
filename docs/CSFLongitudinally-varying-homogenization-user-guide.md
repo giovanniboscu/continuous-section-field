@@ -21,14 +21,14 @@ Example: Defining a Composite Beam
 poly_bottom_start = Polygon(
     vertices=(Pt(-10,-10), Pt(10,-10), Pt(10,0), Pt(-10,0)),
     weight=210000, # Initial E-modulus
-    name="lowerpart"  # <--- THIS IS THE ID
+    name="lowerpart"  # <--- THIS IS THE NAME 
 )
 
 # End Section (z=L)
 poly_bottom_end = Polygon(
     vertices=(Pt(-15,-15), Pt(15,-15), Pt(15,0), Pt(-15,0)),
     weight=180000, # Final E-modulus
-    name="lowerpart"  # <--- MUST MATCH
+    name="lowerpart"  # <---THIS IS THE NAME 
 )
 
 #The engine connects sections based on their **creation order**. The first polygon defined at the start automatically matches the first polygon defined at the end. 
