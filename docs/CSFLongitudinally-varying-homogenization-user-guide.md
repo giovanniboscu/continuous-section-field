@@ -121,7 +121,7 @@ section_field.set_weight_laws([
 
  CSF supports two different (but equally valid) interpretations. You must pick one and
  keep it consistent across your workflow and exports:
-
+ 
 ## Convention A — `weight` as a dimensionless stiffness ratio (recommended)
 
 - `weight = E / E_ref` (dimensionless)
@@ -132,17 +132,16 @@ section_field.set_weight_laws([
 In this convention, CSF computes **modular (weighted) section properties**:
 
 $$
-A^{*}(z) = \sum_i w_i(z)\,A_i(z), \qquad
-I^{*}(z) = \sum_i w_i(z)\,I_i(z)
+A^{\ast}(z) = \sum_{i} w_{i}(z)\,A_{i}(z), \qquad
+I^{\ast}(z) = \sum_{i} w_{i}(z)\,I_{i}(z)
 $$
 
 so that the stiffness products match:
 
 $$
-E_{\mathrm{ref}}\,A^{*}(z) = \sum_i E_i(z)\,A_i(z), \qquad
-E_{\mathrm{ref}}\,I^{*}(z) = \sum_i E_i(z)\,I_i(z)
+E_{ref}\,A^{\ast}(z) = \sum_{i} E_{i}(z)\,A_{i}(z), \qquad
+E_{ref}\,I^{\ast}(z) = \sum_{i} E_{i}(z)\,I_{i}(z)
 $$
-
  #### Convention B — `weight` as a real-valued field (e.g. Young’s modulus)
  - `weight = E` in your chosen units (MPa, Pa, etc.)
  - This allows data-driven modeling directly in physical units (e.g., from `E_lookup()`).
