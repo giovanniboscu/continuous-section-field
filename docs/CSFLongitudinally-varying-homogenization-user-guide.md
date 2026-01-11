@@ -77,7 +77,6 @@ Example
 ```
 ---
 
-```
 ## The Default Behavior: Linear Variation
 
 By default, the variation of weight between the start and end sections is linear. If you do not specify a custom law, the software automatically interpolates the value based on the longitudinal position z.
