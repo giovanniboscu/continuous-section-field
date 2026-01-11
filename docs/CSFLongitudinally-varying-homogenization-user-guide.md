@@ -122,25 +122,26 @@ section_field.set_weight_laws([
  CSF supports two different (but equally valid) interpretations. You must pick one and
  keep it consistent across your workflow and exports:
 
- #### Convention A — `weight` as a dimensionless stiffness ratio (recommended)
- - `weight = E / E_ref`  (dimensionless)
- - Choose one reference modulus `E_ref` (e.g., steel, concrete, etc.)
- - Softer regions have `0 < weight < 1`, stiffer have `weight  1`.
- - Voids are represented by negative weights (see "Voids" below).
+## Convention A — `weight` as a dimensionless stiffness ratio (recommended)
 
- In this convention, CSF computes **modular (weighted) section properties**:
+- `weight = E / E_ref` (dimensionless)
+- Choose one reference modulus `E_ref` (e.g., steel, concrete, etc.)
+- Softer regions have `0 < weight < 1`, stiffer have `weight > 1`.
+- Voids are represented by negative weights (see "Voids" below).
 
- \[
- A^*(z) = \sum_i w_i(z)\,A_i(z), \qquad
- I^*(z) = \sum_i w_i(z)\,I_i(z)
- \]
+In this convention, CSF computes **modular (weighted) section properties**:
 
- so that the stiffness products match:
+$$
+A^{*}(z) = \sum_i w_i(z)\,A_i(z), \qquad
+I^{*}(z) = \sum_i w_i(z)\,I_i(z)
+$$
 
- \[
- E_{ref} A^*(z) = \sum_i E_i(z) A_i(z), \qquad
- E_{ref} I^*(z) = \sum_i E_i(z) I_i(z)
- \]
+so that the stiffness products match:
+
+$$
+E_{\mathrm{ref}}\,A^{*}(z) = \sum_i E_i(z)\,A_i(z), \qquad
+E_{\mathrm{ref}}\,I^{*}(z) = \sum_i E_i(z)\,I_i(z)
+$$
 
  #### Convention B — `weight` as a real-valued field (e.g. Young’s modulus)
  - `weight = E` in your chosen units (MPa, Pa, etc.)
