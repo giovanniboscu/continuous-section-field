@@ -190,7 +190,7 @@ and we connect them station-by-station with:
 
 ```tcl
 rigidLink beam $refNode $cenNode
-
+```
 
 
 ---
