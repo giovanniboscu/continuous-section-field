@@ -1,547 +1,434 @@
-# CSF → DXF (and FreeCAD → CSF) Instructions
+# FreeCAD Authoring Guide for CSF-Compatible Models
 
-> **Required FreeCAD version:** **FreeCAD 1.0.0** (tested workflow).  
-> The steps below are written for FreeCAD 1.0.0 on Linux. The UI names may differ slightly on other versions.
+> **Required FreeCAD version:** **FreeCAD 1.0.0**  
+> This guide is written for **FreeCAD 1.0.0 on Linux**. Menu labels may vary slightly on other platforms or versions.
 
-This document describes, step by step, how to:
+This document is a **step-by-step, beginner-friendly** guide to create a FreeCAD model that can later be **automatically exported** (by a separate tool) into a CSF-style YAML structure.
 
-1. **Author the CSF data in FreeCAD** (geometry + metadata).
-2. **Export a CSF YAML file** from FreeCAD.
-3. **Generate a DXF** that encodes the CSF information (2 sections, any number of polygons per section, any number of vertices per polygon).
-4. **Validate** the DXF and round-trip it back to YAML.
-
-The goal is a DXF that is:
-- **Viewable** in CAD tools (FreeCAD, LibreCAD, etc.).
-- **Machine-readable** by a tolerant DXF-to-YAML parser (pair-based parsing, no strict DXF object model required).
-- **Deterministic** (same input → same output ordering when possible).
+**Important:** The person modeling in FreeCAD **does not need to see or write any YAML**.  
+They only need to **draw**, **fill a few properties**, and **save** the `.FCStd` file.
 
 ---
 
-## Table of Contents
+## What You Are Building (Conceptually)
 
-- [1. Concepts and Data Model](#1-concepts-and-data-model)
-- [2. Repository Files](#2-repository-files)
-- [3. Prerequisites on Linux](#3-prerequisites-on-linux)
-- [4. Authoring the Data in FreeCAD](#4-authoring-the-data-in-freecad)
-  - [4.1 Create (or import) polygon geometry](#41-create-or-import-polygon-geometry)
-  - [4.2 Create the two section groups (S0 and S1)](#42-create-the-two-section-groups-s0-and-s1)
-  - [4.3 Assign polygon names (formal keys)](#43-assign-polygon-names-formal-keys)
-  - [4.4 Assign metadata (z and weight) inside FreeCAD](#44-assign-metadata-z-and-weight-inside-freecad)
-- [5. Export CSF YAML from FreeCAD (Macro)](#5-export-csf-yaml-from-freecad-macro)
-  - [5.1 Install the macro](#51-install-the-macro)
-  - [5.2 Run the macro and set metadata](#52-run-the-macro-and-set-metadata)
-  - [5.3 Unit conversion (mm ↔ m)](#53-unit-conversion-mm--m)
-- [6. Generate a DXF from CSF YAML](#6-generate-a-dxf-from-csf-yaml)
-  - [6.1 DXF encoding rules used](#61-dxf-encoding-rules-used)
-  - [6.2 YAML → DXF generator script (copy/paste)](#62-yaml--dxf-generator-script-copypaste)
-  - [6.3 Run the generator](#63-run-the-generator)
-- [7. Validate and Round-trip](#7-validate-and-round-trip)
-  - [7.1 Convert DXF back to YAML](#71-convert-dxf-back-to-yaml)
-  - [7.2 Inspect raw DXF metadata](#72-inspect-raw-dxf-metadata)
-- [8. Visualize the DXF in Linux](#8-visualize-the-dxf-in-linux)
-- [9. Troubleshooting](#9-troubleshooting)
-- [10. Notes on DXF Conformance](#10-notes-on-dxf-conformance)
+Your FreeCAD file must contain:
+
+1. **Exactly two section groups** in the model tree:
+   - `S0`
+   - `S1`
+
+2. Inside each group, **one or more polygon objects** (closed 2D wires).
+
+3. Each section group has a numeric property:
+   - `CSF_z` (float)
+
+4. Each polygon object has a numeric property:
+   - `CSF_weight` (float)
+
+5. Each polygon object has a **name** (its **Label**) that will be used as the polygon identifier later:
+   - Example polygon labels: `lowerpart`, `upperpart`, `web`, `flange_left`, etc.
+
+6. Each polygon must be a **closed polygon** with **straight segments** (recommended):
+   - Any number of vertices (≥ 3).
+   - Vertices should be in **counter-clockwise (CCW)** order if possible.
 
 ---
 
-## 1. Concepts and Data Model
+## Quick Checklist (Read This First)
 
-Your CSF YAML is assumed to have this *fixed key structure*:
+Before you deliver the `.FCStd` file, confirm:
 
-```yaml
-CSF:
-  sections:
-    S0:
-      z: 0.0
-      polygons:
-        lowerpart:
-          weight: 1.0
-          vertices:
-            - [x0, y0]
-            - [x1, y1]
-            - ...
-        upperpart:
-          weight: 1.0
-          vertices:
-            - [x0, y0]
-            - [x1, y1]
-            - ...
-    S1:
-      z: 10.0
-      polygons:
-        lowerpart:
-          weight: 1.0
-          vertices:
-            - [x0, y0]
-            - [x1, y1]
-            - ...
-        upperpart:
-          weight: 1.0
-          vertices:
-            - [x0, y0]
-            - [x1, y1]
-            - ...
-  weight_laws:
-    - "..."
-```
-
-**Rules you should follow:**
-- There are **exactly two sections**: `S0` and `S1`.
-- Each section contains **any number of polygons**.
-- Each polygon has **any number of vertices (>= 3)**.
-- Vertex lists should be **counter-clockwise (CCW)** for consistency (recommended).
-- Vertex lists **should not repeat** the first vertex as the last vertex (recommended). Closed-ness is implied by the polygon concept.
+- [ ] The model tree contains **two groups** named exactly `S0` and `S1`.
+- [ ] Every polygon belongs to either `S0` or `S1` (no polygons left outside).
+- [ ] Every polygon is a **closed wire** (not open).
+- [ ] Every polygon has a unique **Label** within its section.
+- [ ] Group `S0` has `CSF_z` set (example: `0.0`).
+- [ ] Group `S1` has `CSF_z` set (example: `10.0`).
+- [ ] Every polygon has `CSF_weight` set (example: `1.0`).
+- [ ] You saved the document as `.FCStd`.
 
 ---
 
-## 2. Repository Files
+## 1) Install and Start FreeCAD
 
-Typical files involved in this workflow:
+1. Install **FreeCAD 1.0.0**.
+2. Launch FreeCAD.
+3. Create a new document:
+   - **File → New**
+4. Save immediately:
+   - **File → Save As…**
+   - Choose a project folder
+   - Save as: `my_csf_model.FCStd`
 
-- `csf_freecad_export_yaml.FCMacro`  
-  A FreeCAD macro that exports the active document to CSF YAML by reading:
-  - Group names `S0` and `S1`
-  - Group property `CSF_z`
-  - Polygon property `CSF_weight`
-  - Polygon vertex coordinates (and enforces CCW orientation)
-
-- `csf_dxf_converter.py`  
-  A tolerant DXF → CSF YAML converter that reads ASCII DXF as raw group code/value pairs.
-  It groups polygons by:
-  - **Layer** (`8`) for the section name (`S0`, `S1`)
-  and reads:
-  - **Elevation** (`38`) as `z`
-  - **Thickness** (`39`) as `weight`
-  - Vertices from `(10,20)` pairs
-
-- Example DXF:
-  - `csf_2sections_4polygons.dxf`
+Saving early prevents losing work and ensures the file remains in the right location.
 
 ---
 
-## 3. Prerequisites on Linux
+## 2) Switch to the Draft Workbench (Recommended)
 
-### 3.1 Install FreeCAD 1.0.0
-Install FreeCAD **1.0.0** (matching the required version at the top of this document).  
-Use your distribution packages or an official package format you prefer.
+For polygonal 2D geometry, the **Draft** workbench is typically the simplest.
 
-### 3.2 Install Python (recommended: 3.10+)
-You will need Python to run conversion scripts.
+1. Find the **Workbench selector** (a dropdown, usually near the top toolbar).
+2. Select **Draft**.
 
-Verify:
-```bash
-python3 --version
-```
-
-### 3.3 Create and activate a virtual environment (recommended)
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-```
-
-### 3.4 Optional: install PyYAML
-If you want to parse YAML natively in the generator script (recommended):
-
-```bash
-python -m pip install pyyaml
-```
+If you do not see Draft tools, ensure FreeCAD is fully installed with standard workbenches.
 
 ---
 
-## 4. Authoring the Data in FreeCAD
+## 3) Create the Two Required Section Groups: S0 and S1
 
-### 4.1 Create (or import) polygon geometry
+You must create **two** groups in the model tree. They are the “containers” for polygons.
 
-You need **closed 2D polygon wires**, one FreeCAD object per polygon.
+### 3.1 Create the group `S0`
 
-#### Option A — Create polygons in Draft workbench
-1. Start FreeCAD.
-2. Switch workbench (top dropdown): **Draft**.
-3. Create a polygon wire:
-   - Use **Draft Polyline** (or **Draft Wire**).
-4. Click points to define vertices.
-5. **Close the wire**:
-   - Some tools have a “Close” option.
-   - Otherwise, ensure the last point coincides with the first, then use “Close” if available.
-6. Repeat for all polygons.
+1. In the left panel (**Model** tree), right-click in an empty area.
+2. Click **Create group**.
+3. A new group appears (e.g., “Group”).
+4. Rename it to `S0`:
+   - Select the group
+   - Press **F2** (or right-click → Rename)
+   - Type: `S0`
+   - Press Enter
 
-#### Option B — Import from DXF
-1. `File → Open...` and select your `.dxf`  
-2. Verify each polygon becomes a separate closed wire object in the tree.
+### 3.2 Create the group `S1`
 
-> Important: If an imported shape becomes a sketch, face, or compound, you may need to convert it to a wire suitable for vertex extraction.
+Repeat the same steps:
+1. Right-click in empty space → **Create group**
+2. Rename the new group to `S1`
 
----
+### 3.3 Verify group names
 
-### 4.2 Create the two section groups (S0 and S1)
-
-You must have **exactly two groups** in the Model tree:
+Your model tree should now show (at minimum):
 
 - `S0`
 - `S1`
 
-Steps:
-1. In the Model tree, right-click in empty space.
-2. Choose **Create group**.
-3. Rename the group:
-   - Select it → press **F2** (or right-click → Rename).
-   - Name it **S0**.
-4. Repeat to create **S1**.
-
-Now assign polygon objects to groups:
-- Drag each polygon object onto `S0` or `S1` in the tree.
-- Or right-click object → “Move to group” (if available).
+**Spelling matters.** Use exactly `S0` and `S1` (uppercase S, digit 0/1).
 
 ---
 
-### 4.3 Assign polygon names (formal keys)
+## 4) Draw Polygons (Closed 2D Wires)
 
-The polygon name in YAML will come from the object **Label** (preferred).
+You can create any number of polygons in each section.
 
-Example required names:
-- `lowerpart`
-- `upperpart`
+### 4.1 Create a polygon wire (generic steps)
 
-Steps:
-1. Select a polygon object in the Model tree.
-2. Rename its **Label** to the desired YAML key:
-   - Press **F2** and type `lowerpart` / `upperpart`, etc.
-3. Repeat for all polygons.
+1. With Draft workbench active, choose the tool:
+   - **Draft Polyline** or **Draft Wire** (name may vary)
+2. Click in the 3D view to place vertices.
+3. Add as many vertices as needed.
+4. Close the polygon:
+   - Many Draft polyline tools allow closing the wire:
+     - Either by a “Close” option in the task panel
+     - Or by clicking the first point again
+   - If the tool does not close automatically, do not proceed until you have a closed wire (see “Troubleshooting”).
 
-**Naming recommendations:**
-- Use only letters, digits, underscore.
-- Avoid spaces and colons in keys.
+### 4.2 Best practices for polygons
 
----
+- Use **straight segments** (line edges).
+- Avoid splines/arcs unless you are sure your downstream pipeline supports them.
+- Avoid self-intersecting shapes (no “bow-tie” polygons).
+- Keep polygons planar (2D). Ideally draw them in the **XY plane**.
 
-### 4.4 Assign metadata (z and weight) inside FreeCAD
+### 4.3 Verify the polygon is closed
 
-FreeCAD does not provide “CSF z” and “CSF weight” as standard properties for imported polylines, so we store them as **custom properties**.
-
-The macro will create these if missing:
-
-- On group (`S0` / `S1`): `CSF_z` (float)
-- On polygon objects: `CSF_weight` (float)
-
-After the macro runs once, edit them here:
-
-#### Edit `CSF_z` (group z)
-1. Select group `S0`.
-2. Property editor (usually bottom-left): **Data** tab.
-3. Find category **CSF**.
-4. Set `CSF_z` (example: `0.0`).
-5. Repeat for group `S1` (example: `10.0`).
-
-#### Edit `CSF_weight` (polygon weight)
-1. Select a polygon object.
-2. Property editor → **Data** tab → **CSF**.
-3. Set `CSF_weight` (example: `1.0`).
-4. Repeat for all polygons.
+After creating a wire:
+1. Select the polygon object in the Model tree.
+2. Check its properties in the **Property editor** (usually bottom-left):
+   - Look for a boolean property like `Closed` (common for Draft wires).
+   - It should be **True**.
+3. If you cannot confirm closed status via a property:
+   - Zoom in and visually confirm the first and last vertex are connected.
+   - If in doubt, remake the wire and ensure it is closed.
 
 ---
 
-## 5. Export CSF YAML from FreeCAD (Macro)
+## 5) Put Each Polygon Into the Correct Section Group
 
-### 5.1 Install the macro
+Each polygon must belong to exactly one group:
 
-1. Download/copy `csf_freecad_export_yaml.FCMacro` into your FreeCAD macros folder:
-   - `Macro → Macros...`
-   - Note the “Macros folder” path shown in that dialog.
-2. Put the `.FCMacro` file in that folder.
+- Polygons for section `S0` must be inside group `S0`
+- Polygons for section `S1` must be inside group `S1`
 
-Alternative (manual creation):
-1. `Macro → Macros...`
-2. Click **Create**.
-3. Name it: `csf_freecad_export_yaml`
-4. Paste the macro content.
-5. Save.
+### 5.1 Move a polygon into a group
 
-### 5.2 Run the macro and set metadata
+1. In the Model tree, find the polygon object you created.
+2. Drag it onto the group `S0` or `S1`.
+3. Confirm it now appears “under” that group in the tree.
 
-1. Open your FreeCAD document that contains groups `S0` and `S1`.
-2. Run:
-   - `Macro → Macros...`
-   - Select `csf_freecad_export_yaml`
-   - Click **Execute**
-3. First run behavior:
-   - The macro ensures `CSF_z` exists on `S0` and `S1`.
-   - The macro ensures `CSF_weight` exists on each polygon object.
-4. Set the values (see section 4.4).
-5. Run the macro again.
-6. Choose where to save the YAML (`.yaml`).
-
-### 5.3 Unit conversion (mm ↔ m)
-
-FreeCAD often models in **mm**.
-If you need YAML in **meters**, set `SCALE = 0.001` inside the macro.
-
-- `SCALE = 1.0`  → export in FreeCAD units (commonly mm)
-- `SCALE = 0.001` → mm → m
+Repeat for all polygons.
 
 ---
 
-## 6. Generate a DXF from CSF YAML
+## 6) Name Polygons Using Labels (Formal Keys)
 
-### 6.1 DXF encoding rules used
+The polygon name used later is taken from the object’s **Label** (human-friendly name).
 
-Each CSF polygon becomes a DXF `LWPOLYLINE` entity with:
+### 6.1 Rename a polygon
 
-- **Section name** stored as:
-  - Layer name (`group code 8`) = `S0` or `S1`
-- **z** stored as:
-  - Elevation (`group code 38`)
-- **weight** stored as:
-  - Thickness (`group code 39`)
-- **vertices** stored as:
-  - Repeated coordinate pairs:
-    - `10` = x
-    - `20` = y
-- `70 = 1` to mark the polyline as **closed**
-- Optional `999` comment line storing a redundant key-value record:
-  - `CSF; section: ...; z: ...; name: ...; weight: ...`
+1. Select the polygon object in the Model tree.
+2. Press **F2** (or right-click → Rename).
+3. Set the label to a formal name, for example:
+   - `lowerpart`
+   - `upperpart`
+4. Press Enter.
 
-This is intentionally simple and readable.
+### 6.2 Naming rules (strongly recommended)
+
+- Use only: `a-z`, `A-Z`, `0-9`, `_`
+- No spaces
+- No colon `:`
+- Keep names unique **within the same section**:
+  - In `S0`, you can have `lowerpart` once.
+  - In `S1`, you can also have `lowerpart` once (that is OK).
 
 ---
 
-### 6.2 YAML → DXF generator script (copy/paste)
+## 7) Add Required CSF Metadata Properties in FreeCAD
 
-Create a file named `csf_yaml2dxf.py` (in your project folder) with the following content:
+You must store numeric metadata in the FreeCAD document so that later export can reconstruct the CSF structure.
+
+### Required properties
+
+- On group objects `S0` and `S1`:
+  - `CSF_z` (float) → the z-coordinate of the section
+
+- On each polygon object:
+  - `CSF_weight` (float) → the polygon weight
+
+### How to add these properties
+
+FreeCAD does not always provide a purely GUI-based “Add custom property” flow that is easy for beginners.  
+The most reliable beginner workflow is:
+
+1) **Run a small macro inside FreeCAD** once to add the properties.  
+2) Then edit the values normally in the Property editor.
+
+This macro **does not export YAML** and does not require any scripting knowledge beyond copy/paste.
+
+---
+
+## 8) Create a Simple “CSF Initialize” Macro (Beginner-Friendly)
+
+### 8.1 Open the Macro editor
+
+1. Go to **Macro → Macros…**
+2. Click **Create**
+3. Name the macro:
+   - `CSF_Initialize_Properties`
+4. Click OK (an editor opens)
+
+### 8.2 Copy/paste this macro code
+
+Copy everything below into the macro editor:
 
 ```python
-#!/usr/bin/env python3
-from __future__ import annotations
+import FreeCAD as App
 
-from pathlib import Path
-from typing import Any, Dict, List, Tuple, Optional
+doc = App.ActiveDocument
+if doc is None:
+    raise RuntimeError("No active document. Open your .FCStd file first.")
 
-try:
-    import yaml  # pip install pyyaml
-except Exception as e:
-    raise SystemExit("PyYAML is required: pip install pyyaml") from e
+def ensure_float_prop(obj, prop_name, group, default, docstring):
+    if hasattr(obj, prop_name):
+        return
+    obj.addProperty("App::PropertyFloat", prop_name, group, docstring)
+    setattr(obj, prop_name, float(default))
 
-Point = Tuple[float, float]
+# Find groups S0 and S1
+groups = {o.Name: o for o in doc.Objects if hasattr(o, "Group")}
+for sec in ["S0", "S1"]:
+    grp = None
+    for o in doc.Objects:
+        if hasattr(o, "Group") and (o.Name == sec or o.Label == sec):
+            grp = o
+            break
+    if grp is None:
+        raise RuntimeError(f"Group {sec} not found. Create groups named {sec} first.")
 
-def lwpolyline_entity(handle_hex: str, section: str, z: float, name: str, weight: float, pts: List[Point]) -> str:
-    # pts should be CCW; the generator does not reorder them.
-    lines: List[str] = []
-    lines += ["0", "LWPOLYLINE"]
-    lines += ["5", handle_hex]
-    lines += ["999", f"CSF; section: {section}; z: {z}; name: {name}; weight: {weight}"]
-    lines += ["100", "AcDbEntity"]
-    lines += ["8", section]            # layer = section (S0/S1)
-    lines += ["39", str(weight)]       # thickness = weight
-    lines += ["100", "AcDbPolyline"]
-    lines += ["38", str(z)]            # elevation = z
-    lines += ["90", str(len(pts))]     # vertex count
-    lines += ["70", "1"]               # closed polyline
-    for x, y in pts:
-        lines += ["10", str(x), "20", str(y)]
-    return "\n".join(lines) + "\n"
+    # Add CSF_z to the group
+    ensure_float_prop(grp, "CSF_z", "CSF", 0.0, "Section z value for CSF export.")
 
-def build_dxf_from_csf(csf: Dict[str, Any]) -> str:
-    sections = csf["CSF"]["sections"]
-    # The spec says these always exist:
-    s0 = sections["S0"]
-    s1 = sections["S1"]
+    # Add CSF_weight to every object inside the group
+    for child in list(grp.Group):
+        ensure_float_prop(child, "CSF_weight", "CSF", 1.0, "Polygon weight for CSF export.")
 
-    # Layer table declares S0 and S1 (helps some viewers).
-    layer_table = (
-        "0\nTABLE\n2\nLAYER\n70\n2\n"
-        "0\nLAYER\n5\n10\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n2\nS0\n70\n0\n62\n7\n6\nCONTINUOUS\n"
-        "0\nLAYER\n5\n11\n100\nAcDbSymbolTableRecord\n100\nAcDbLayerTableRecord\n2\nS1\n70\n0\n62\n7\n6\nCONTINUOUS\n"
-        "0\nENDTAB\n"
-    )
-
-    entities = ""
-    handle = 1
-
-    for sec_name in ["S0", "S1"]:
-        z = float(sections[sec_name].get("z", 0.0))
-        polys = sections[sec_name].get("polygons", {})
-        for poly_name, poly in polys.items():
-            w = float(poly.get("weight", 1.0))
-            verts = poly.get("vertices", [])
-            pts: List[Point] = [(float(x), float(y)) for x, y in verts]
-            entities += lwpolyline_entity(f"{handle:X}", sec_name, z, poly_name, w, pts)
-            handle += 1
-
-    dxf = (
-        "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1015\n0\nENDSEC\n"
-        "0\nSECTION\n2\nTABLES\n"
-        + layer_table +
-        "0\nENDSEC\n"
-        "0\nSECTION\n2\nBLOCKS\n0\nENDSEC\n"
-        "0\nSECTION\n2\nENTITIES\n"
-        + entities +
-        "0\nENDSEC\n0\nEOF\n"
-    )
-    return dxf
-
-def main() -> int:
-    import argparse
-    p = argparse.ArgumentParser()
-    p.add_argument("input_yaml", help="Input CSF YAML")
-    p.add_argument("output_dxf", help="Output DXF (ASCII)")
-    args = p.parse_args()
-
-    csf = yaml.safe_load(Path(args.input_yaml).read_text(encoding="utf-8"))
-    dxf = build_dxf_from_csf(csf)
-    Path(args.output_dxf).write_text(dxf, encoding="ascii")
-    print(f"Wrote DXF: {args.output_dxf}")
-    return 0
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+App.Console.PrintMessage("CSF properties initialized: CSF_z on S0/S1, CSF_weight on polygons.\n")
 ```
+
+### 8.3 Save and run the macro
+
+1. Save the macro (disk icon in the macro editor).
+2. Close the editor.
+3. Go to **Macro → Macros…**
+4. Select `CSF_Initialize_Properties`
+5. Click **Execute**
+
+If everything is correct, FreeCAD prints a message in the report/console area:
+- `CSF properties initialized...`
 
 ---
 
-### 6.3 Run the generator
+## 9) Set Section z Values (CSF_z)
 
-With venv activated and PyYAML installed:
+Now you must set `CSF_z` for each section group.
 
-```bash
-python csf_yaml2dxf.py your_csf.yaml out.dxf
-```
+### 9.1 Set z for S0
 
-You can now open `out.dxf` in FreeCAD / LibreCAD.
+1. Select group `S0` in the Model tree.
+2. In the Property editor, open the **Data** tab.
+3. Find the section/group called **CSF**.
+4. Set:
+   - `CSF_z = 0.0` (example)
 
----
+### 9.2 Set z for S1
 
-## 7. Validate and Round-trip
+Repeat:
+1. Select group `S1`
+2. Data tab → CSF
+3. Set:
+   - `CSF_z = 10.0` (example)
 
-### 7.1 Convert DXF back to YAML
-
-Use the tolerant converter:
-
-```bash
-python csf_dxf_converter.py out.dxf
-```
-
-Write to file:
-
-```bash
-python csf_dxf_converter.py out.dxf -o roundtrip.yaml
-```
-
-Compare `your_csf.yaml` and `roundtrip.yaml` to ensure the encoding is correct.
+**You can use any floats you need**. The important part is that `S0` and `S1` both have a numeric `CSF_z`.
 
 ---
 
-### 7.2 Inspect raw DXF metadata
+## 10) Set Polygon Weights (CSF_weight)
 
-To print all `999` comment lines (where section/z/name/weight are redundantly stored):
+Each polygon object must have a `CSF_weight` float.
 
-```bash
-python - <<'PY'
-from pathlib import Path
-lines = Path("out.dxf").read_text(errors="ignore").splitlines()
-for i in range(0, len(lines)-1, 2):
-    if lines[i].strip() == "999":
-        print(lines[i+1])
-PY
-```
+### 10.1 Set polygon weight
 
-To print per-entity key group codes (`8`, `38`, `39`, `10`, `20`, `999`):
+1. Select a polygon object (e.g., `lowerpart`) under `S0`.
+2. Property editor → **Data** tab.
+3. Find category **CSF**.
+4. Set `CSF_weight` (example: `1.0`).
 
-```bash
-python - <<'PY'
-from pathlib import Path
-
-def pairs(path):
-    L = Path(path).read_text(errors="ignore").splitlines()
-    out=[]
-    for i in range(0, len(L)-1, 2):
-        out.append((int(L[i].strip()), L[i+1].rstrip("\n")))
-    return out
-
-p = pairs("out.dxf")
-
-# find ENTITIES section
-i=0
-while i+1 < len(p):
-    if p[i]==(0,"SECTION") and p[i+1]==(2,"ENTITIES"):
-        i += 2
-        break
-    i += 1
-
-k=0
-while i < len(p) and p[i]!=(0,"ENDSEC"):
-    if p[i]==(0,"LWPOLYLINE"):
-        k += 1
-        i += 1
-        keep=[]
-        while i < len(p) and p[i][0] != 0:
-            c,v = p[i]
-            if c in (5,8,38,39,70,90,999,10,20):
-                keep.append((c,v))
-            i += 1
-        print(f"\n=== ENTITY {k} ===")
-        for c,v in keep:
-            print(f"{c:>3} : {v}")
-        continue
-    i += 1
-PY
-```
+Repeat for every polygon under `S0` and `S1`.
 
 ---
 
-## 8. Visualize the DXF in Linux
+## 11) Orientation Rule (CCW) — What You Should Do
 
-### Option A — FreeCAD
-- `File → Open...` and select the DXF.
-- You can usually see section grouping by **layers** (`S0` and `S1`).
+The downstream pipeline expects polygon vertices in a stable order.  
+The recommended convention is **Counter-Clockwise (CCW)**.
 
-### Option B — LibreCAD (2D)
-Install and open the DXF for a fast 2D view.
+### Practical advice for beginners
+- When you click points to create the polygon, click them in a CCW order.
+- Example: to draw a rectangle CCW:
+  1. bottom-left
+  2. bottom-right
+  3. top-right
+  4. top-left
+  5. close
 
-### Option C — QCAD (2D)
-Another reliable DXF viewer/editor.
-
----
-
-## 9. Troubleshooting
-
-### 9.1 “I can’t see the CSF metadata inside FreeCAD”
-FreeCAD generally **does not show DXF comment (group code 999) metadata** after import.
-That is expected.
-
-What you *can* see:
-- Layer/group separation (`S0`, `S1`) often survives as layers/groups.
-
-What you should do to reconstruct CSF:
-- Use `csf_dxf_converter.py` to extract the metadata and geometry.
-
-### 9.2 Wrong polygon orientation (CW instead of CCW)
-- The FreeCAD macro enforces CCW at export time (it reverses vertices if needed).
-- If you generate DXF from YAML, make sure your YAML vertices are already CCW.
-
-### 9.3 Duplicate polygon names inside the same section
-- The exporter will suffix names: `lowerpart`, `lowerpart_2`, etc.
-- Best practice: ensure unique labels per group.
-
-### 9.4 Imported geometry contains arcs/splines
-This pipeline exports **vertices only**.
-If you need arc sampling (bulge discretization), you must implement a discretizer.
-
-### 9.5 Units are wrong (too big / too small)
-- Decide one standard (mm or meters).
-- Use `SCALE` in the FreeCAD macro to convert.
-- Keep the same unit convention across YAML ↔ DXF.
+If you accidentally draw clockwise, **do not panic**—export tools can often correct orientation.  
+But the safest approach is to draw CCW from the beginning.
 
 ---
 
-## 10. Notes on DXF Conformance
+## 12) Example: Build the Exact Structure (S0 + S1, 2 Polygons Each)
 
-The generated DXF is intentionally minimal but follows standard section layout:
+This example shows what your **FreeCAD tree and properties** should look like for a common case.
 
-- `SECTION HEADER` with `$ACADVER = AC1015` (R2000)
-- `SECTION TABLES` containing a minimal `LAYER` table with `S0` and `S1`
-- `SECTION BLOCKS` (empty but present)
-- `SECTION ENTITIES` containing `LWPOLYLINE` entities with required subclass markers:
-  - `100 AcDbEntity`
-  - `100 AcDbPolyline`
+### Target structure in the Model tree
 
-This structure is compatible with many DXF viewers and avoids common “strict parser” failures.
+- `S0` (Group)
+  - `lowerpart` (Polygon object)
+  - `upperpart` (Polygon object)
+- `S1` (Group)
+  - `lowerpart` (Polygon object)
+  - `upperpart` (Polygon object)
+
+### Required property values
+
+- Select `S0`:
+  - `CSF_z = 0.0`
+- Select `S1`:
+  - `CSF_z = 10.0`
+
+- Select each polygon:
+  - `CSF_weight = 1.0`
+
+### Suggested beginner geometry (simple rectangles)
+
+In `S0`:
+- `lowerpart`: rectangle at the bottom
+- `upperpart`: rectangle above it
+
+In `S1`:
+- similar rectangles (can be the same XY shape or different)
+
+**Important:** The exact dimensions do not matter for the workflow.  
+What matters is:
+- Closed polygons
+- Correct grouping
+- Correct labels
+- Required properties filled
+
+---
+
+## 13) Final Step: Save and Deliver the File
+
+When everything is ready:
+
+1. **File → Save**
+2. Deliver the `.FCStd` file to the person/system that will run the export pipeline.
+
+Recommended filename format:
+- `projectname_csf.FCStd`
+- `beam_section_csf.FCStd`
+
+---
+
+## 14) Common Mistakes and How to Fix Them
+
+### Mistake A: “I forgot to put polygons into S0/S1”
+Fix:
+- Drag the polygon objects into the correct group in the Model tree.
+
+### Mistake B: “My polygon is open (not closed)”
+Fix:
+- Edit the wire and close it, or remake it carefully and ensure closure.
+
+### Mistake C: “I used spaces or weird characters in names”
+Fix:
+- Rename polygon labels to safe keys like `upperpart`, `lower_part`, etc.
+
+### Mistake D: “I can’t find CSF_z or CSF_weight”
+Fix:
+- Run the macro **CSF_Initialize_Properties** again.
+- Then re-check the Data tab.
+
+### Mistake E: “I renamed S0/S1 incorrectly”
+Fix:
+- Ensure groups are named exactly `S0` and `S1`.
+- Do not use `s0`, `Section0`, or `S-0`.
+
+---
+
+## 15) What to Do If You Imported From DXF
+
+If you import DXF and objects come in grouped or as compounds:
+
+- Make sure you end up with **one object per polygon** (each one closed).
+- Put them into `S0` / `S1`.
+- Rename labels.
+- Initialize properties (macro).
+- Set `CSF_z` and `CSF_weight`.
+- Save.
+
+---
+
+## Summary
+
+To create a CSF-compatible FreeCAD model:
+
+1. Create groups `S0` and `S1`.
+2. Create closed polygon wires and move them into the correct group.
+3. Rename polygon **Labels** to formal names.
+4. Add/set `CSF_z` on each group and `CSF_weight` on each polygon.
+5. Save the `.FCStd`.
+
+That’s all the modeler needs to do—no YAML required.
