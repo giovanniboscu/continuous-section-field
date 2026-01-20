@@ -24,7 +24,7 @@ A design function satisfies all of the following:
 
 ## Design Function Evaluation — CSF (Detailed Criteria)
 
-This document expands criteria **3–5** of the Design Function definition,
+criteria **3–5** of the Design Function definition,
 showing how they are satisfied by CSF in a concrete and inspectable way.
 
 ---
