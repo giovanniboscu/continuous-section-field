@@ -1,4 +1,4 @@
-## Design Function (Core Assumption)
+# Design Function (Core Assumption)
 
 In CSF, longitudinal variation is treated as a *design function*.
 A design function satisfies all of the following:
@@ -20,3 +20,75 @@ A design function satisfies all of the following:
    - analytical calculations,
    - comparison between alternative designs,
    - documentation and traceability of design assumptions.
+---
+
+## Design Function Evaluation — CSF (Detailed Criteria)
+
+This document expands criteria **3–5** of the Design Function definition,
+showing how they are satisfied by CSF in a concrete and inspectable way.
+
+---
+
+## 3. Has Explicit Parameters
+
+**Question:**  
+Are the parameters explicit and inspectable?
+
+### In CSF, the parameters are explicit:
+
+- Vertex coordinates (polygonal section geometry)
+- Longitudinal axis *z*
+- Interpolation parameters (e.g. ruled / piecewise rules)
+- Longitudinal functions *w(z)* (material, stiffness, weights)
+
+### As a result, everything is:
+
+- **Readable**
+- **Serializable**
+- **Documentable**
+
+No parameter is implicit, hidden, or solver-generated.
+
+---
+
+## 4. Independent of the Solver
+
+**Question:**  
+Does the function exist independently of the solver?
+
+### In CSF:
+
+- Section properties *(A(z), I(z), J(z))* can be computed **without any solver**
+- The same definition can be exported to **multiple solvers**
+- The model does **not** depend on:
+  - solver discretization
+  - numerical integration schemes
+  - internal solver implementations
+
+The solver is a consumer, not the owner, of the function.
+
+---
+
+## 5. Reusable
+
+**Question:**  
+Is the function reusable?
+
+### The same function can be reused consistently for:
+
+- Preliminary sizing (predimensioning)
+- Comparison between alternative designs
+- Validation and cross-checking
+- Technical documentation and traceability
+- Repeated export to different structural solvers
+
+Reuse does not require redefining or reinterpreting the model.
+
+---
+
+## Summary
+
+Criteria **3–5** confirm that CSF treats longitudinal variation
+as a **true design function**, not as a numerical side effect.
+
+The function is explicit, solver-independent, and reusable by construction.
