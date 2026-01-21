@@ -150,3 +150,87 @@ Again:
 > SAP2000 approximates it.**
 
 This separation is intentional and fundamental.
+
+
+$ =============================================================
+$ EXAMPLE SAP2000 INPUT FILE (TEXT)
+$ Generated as an example export from CSF
+$ Purpose: illustrate how a continuous Section(z) is approximated
+$          in SAP2000 using nonprismatic frame sections.
+$
+$ IMPORTANT:
+$ - SAP2000 does NOT support Section(z) as a function.
+$ - All data below are a DISCRETIZED APPROXIMATION of a CSF model.
+$ - Changing the number of segments changes only the approximation,
+$   NOT the original CSF definition.
+$ =============================================================
+
+$ -------------------------------------------------------------
+$ LOCAL SECTION PROPERTIES (computed by CSF)
+$ -------------------------------------------------------------
+TABLE: "FRAME SECTION PROPERTIES 01 - GENERAL"
+
+  SectionName=SEC_GL1  Material=STEEL  Area=0.25
+    I22=0.0052  I33=0.0052  I23=0.0   J=0.008
+
+  SectionName=SEC_GL2  Material=STEEL  Area=0.20
+    I22=0.0038  I33=0.0045  I23=0.001 J=0.006
+
+  SectionName=SEC_GL3  Material=STEEL  Area=0.18
+    I22=0.0032  I33=0.0040  I23=0.0015 J=0.005
+
+
+$ NOTES:
+$ - Each section corresponds to a single evaluation of Section(z).
+$ - The locations (e.g. Gauss–Lobatto points) are chosen by CSF.
+$ - SAP2000 does not use these as integration points.
+$ - I23 is the product of inertia (non-principal axes), NOT twist.
+
+$ -------------------------------------------------------------
+$ NONPRISMATIC FRAME SECTION
+$ -------------------------------------------------------------
+TABLE: "FRAME SECTION PROPERTIES 05 - NONPRISMATIC"
+
+  Name=TRAVE_VAR
+  NumberSegs=2
+
+  Line=1  StartSec=SEC_GL1  EndSec=SEC_GL2
+          Length=1.7267
+          Type=Parabolic
+          VarArea=Linear
+
+  Line=2  StartSec=SEC_GL2  EndSec=SEC_GL3
+          Length=3.2733
+          Type=Parabolic
+          VarArea=Linear
+
+$ NOTES:
+$ - Each segment approximates the continuous laws A(z), I(z), J(z).
+$ - 'Parabolic' improves interpolation of bending inertias.
+$ - Increasing segments improves accuracy but does not change the model.
+
+$ -------------------------------------------------------------
+$ FRAME ASSIGNMENT
+$ -------------------------------------------------------------
+TABLE: "FRAME SECTION ASSIGNMENTS"
+
+  Frame=1  Section=TRAVE_VAR
+
+
+$ -------------------------------------------------------------
+$ FRAME END OFFSETS (CENTROID DRIFT APPROXIMATION)
+$ -------------------------------------------------------------
+TABLE: "FRAME END OFFSETS"
+
+  Frame=1  End=I  Offset2=0.00  Offset3=0.00
+  Frame=1  End=J  Offset2=0.05  Offset3=0.02
+
+$ NOTES:
+$ - SAP2000 does not support continuous centroid drift xc(z), yc(z).
+$ - Offsets are assigned discretely at frame ends or per segment.
+$ - The centroid law is defined in CSF, approximated here.
+
+$ =============================================================
+$ END OF EXAMPLE FILE
+$ =============================================================
+
