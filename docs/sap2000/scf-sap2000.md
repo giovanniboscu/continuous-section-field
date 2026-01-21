@@ -1,5 +1,5 @@
 # CSF → SAP2000  
-## Explained Example (Well-Commented)
+## Explained Example 
 
 This document explains **how a Section(z) defined in CSF** is exported and approximated
 inside **SAP2000**, which does **not** natively support Section(z) as a continuous function.
