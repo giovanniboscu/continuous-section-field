@@ -11,6 +11,7 @@ The key idea is:
 Everything below is intentionally **verbose and explicit**, to avoid conceptual confusion.
 
 ---
+```
 
 ## Conceptual Overview
 
@@ -36,7 +37,7 @@ Therefore:
 ## 1. Local Section Definitions  
 ### (Computed by CSF)
 
-```text
+```
 TABLE: "FRAME SECTION PROPERTIES 01 - GENERAL"
 ```
 
@@ -149,9 +150,9 @@ Again:
 > **CSF defines the model.  
 > SAP2000 approximates it.**
 
-This separation is intentional and fundamental.
+SAP200 example
 
-
+```
 $ =============================================================
 $ EXAMPLE SAP2000 INPUT FILE (TEXT)
 $ Generated as an example export from CSF
@@ -233,4 +234,4 @@ $ - The centroid law is defined in CSF, approximated here.
 $ =============================================================
 $ END OF EXAMPLE FILE
 $ =============================================================
-
+```
