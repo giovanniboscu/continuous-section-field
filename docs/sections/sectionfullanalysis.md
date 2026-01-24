@@ -2,7 +2,7 @@
 
 This document explains **all quantities reported by the CSF _Section Full Analysis_**.
 
-It is intended as a **clear, engineering‑oriented reference** for users who want to:
+It is intended as a **clear, engineering-oriented reference** for users who want to:
 - understand what each value represents,
 - know how it is computed in CSF,
 - understand **the validity domain and limitations** of each quantity.
@@ -25,17 +25,19 @@ Whenever a quantity depends on **a specific modelling choice or policy** defined
 **Key:** `A`
 
 **Definition**  
-Total **net cross‑sectional area**, including the effect of polygon weights.
+Total **net cross-sectional area**, including the effect of polygon weights.
 
-\[ A = \sum_i w_i A_i \]
+Plain-text formula:
+
+A = sum( w_i * A_i )
 
 where:
-- \(A_i\) is the signed area of polygon *i*,
-- \(w_i\) is its weight.
+- A_i = signed area of polygon i
+- w_i = polygon weight
 
 **Notes**
-- Can be reduced or increased by weighted sub‑domains.
-- Must be non‑zero for a valid section.
+- Can be reduced or increased by weighted sub-domains.
+- Must be non-zero for a valid section.
 
 ---
 
@@ -45,7 +47,9 @@ where:
 
 Horizontal coordinate of the **geometric centroid**.
 
-\[ C_x = \frac{\sum w_i A_i x_i}{\sum w_i A_i} \]
+Plain-text formula:
+
+Cx = sum( w_i * A_i * x_i ) / sum( w_i * A_i )
 
 ---
 
@@ -55,7 +59,9 @@ Horizontal coordinate of the **geometric centroid**.
 
 Vertical coordinate of the **geometric centroid**.
 
-\[ C_y = \frac{\sum w_i A_i y_i}{\sum w_i A_i} \]
+Plain-text formula:
+
+Cy = sum( w_i * A_i * y_i ) / sum( w_i * A_i )
 
 ---
 
@@ -63,9 +69,9 @@ Vertical coordinate of the **geometric centroid**.
 
 **Key:** `Ix`
 
-Second moment of area about the **centroidal X‑axis**.
+Second moment of area about the **centroidal X-axis**.
 
-Computed using Green’s theorem and parallel‑axis correction.
+Computed using Green’s theorem with parallel-axis correction.
 
 ---
 
@@ -73,7 +79,7 @@ Computed using Green’s theorem and parallel‑axis correction.
 
 **Key:** `Iy`
 
-Second moment of area about the **centroidal Y‑axis**.
+Second moment of area about the **centroidal Y-axis**.
 
 ---
 
@@ -94,11 +100,11 @@ Product of inertia about centroidal axes.
 
 Polar second moment of area:
 
-\[ J = I_x + I_y \]
+J = Ix + Iy
 
 **Notes**
 - Purely geometric.
-- **Not** a torsional stiffness for non‑circular sections.
+- **Not** a torsional stiffness for non-circular sections.
 
 ---
 
@@ -122,9 +128,11 @@ Minor principal second moment of area.
 
 **Key:** `rx`
 
-\[ r_x = \sqrt{\frac{I_x}{A}} \]
+Plain-text formula:
 
-Represents the distribution of area relative to the X‑axis.
+rx = sqrt( Ix / A )
+
+Represents the distribution of area relative to the X-axis.
 
 ---
 
@@ -132,7 +140,9 @@ Represents the distribution of area relative to the X‑axis.
 
 **Key:** `ry`
 
-\[ r_y = \sqrt{\frac{I_y}{A}} \]
+Plain-text formula:
+
+ry = sqrt( Iy / A )
 
 ---
 
@@ -140,11 +150,13 @@ Represents the distribution of area relative to the X‑axis.
 
 **Key:** `Wx`
 
-Elastic section modulus for bending about the **X‑axis**:
+Elastic section modulus for bending about the **X-axis**.
 
-\[ W_x = \frac{I_x}{c_{y,\max}} \]
+Plain-text formula:
 
-where \(c_{y,\max}\) is the maximum distance from the centroid to extreme fibers.
+Wx = Ix / c_y,max
+
+where c_y,max is the maximum distance from the centroid to the extreme fibers.
 
 ---
 
@@ -152,7 +164,11 @@ where \(c_{y,\max}\) is the maximum distance from the centroid to extreme fibers
 
 **Key:** `Wy`
 
-Elastic section modulus for bending about the **Y‑axis**.
+Elastic section modulus for bending about the **Y-axis**.
+
+Plain-text formula:
+
+Wy = Iy / c_x,max
 
 ---
 
@@ -160,11 +176,13 @@ Elastic section modulus for bending about the **Y‑axis**.
 
 **Key:** `K_torsion`
 
-Semi‑empirical torsional stiffness approximation:
+Semi-empirical torsional stiffness approximation.
 
-\[ K \approx \frac{A^4}{40\,I_p} \]
+Plain-text formula:
 
-where \(I_p = I_x + I_y\).
+K ≈ A^4 / (40 * Ip)
+
+where Ip = Ix + Iy.
 
 **Notes**
 - Always defined.
@@ -181,28 +199,27 @@ First moment of area about the **neutral axis**.
 
 Used in shear stress estimation:
 
-\[ \tau = \frac{VQ}{Ib} \]
+Q = integral( y * dA ) about the neutral axis
 
 ---
 
-## 16. Torsional Constant (Saint‑Venant)
+## 16. Torsional Constant (Saint-Venant)
 
 **Key:** `J_sv`
 
-Effective Saint‑Venant torsional constant.
+Effective Saint-Venant torsional constant.
 
-**Definition**
-- For **open thin‑walled sections**:
+**Definition (open thin-walled sections)**:
 
-\[ J \approx \sum_i \frac{b_i t_i^3}{3} \]
+J ≈ sum( b_i * t_i^3 / 3 )
 
 where:
-- \(t_i\) is an equivalent strip thickness,
-- \(b_i\) is the strip midline length.
+- t_i = equivalent strip thickness
+- b_i = strip midline length
 
 **Notes**
-- Valid only when polygons represent **thin laminae**.
-- Used as the **reference torsional constant for open sections**.
+- Valid primarily for **open thin-walled sections**.
+- Used as the **reference torsional constant** when no closed cell is detected.
 
 ---
 
@@ -210,14 +227,20 @@ where:
 
 **Key:** `J_s_vroark`
 
-Closed‑cell torsional constant based on Bredt–Batho / Roark thin‑walled theory.
+Closed-cell torsional constant based on Bredt–Batho / Roark thin-walled theory.
 
-\[ J \approx \frac{4 A_{cell}^2 t}{P} \]
+Plain-text formula:
+
+J ≈ 4 * A_cell^2 * t / P
+
+where:
+- A_cell = area enclosed by the wall midline
+- t = wall thickness
+- P = cell perimeter
 
 **Notes**
-- Applicable **only to closed thin‑walled cells**.
-- Automatically ignored for open sections.
-- **Selected only if fidelity is sufficient** **
+- Applicable **only to closed thin-walled cells**.
+- Automatically ignored for open sections **
 
 ---
 
@@ -225,15 +248,13 @@ Closed‑cell torsional constant based on Bredt–Batho / Roark thin‑walled th
 
 **Key:** `J_s_vroark_fidelity`
 
-Dimensionless reliability index in \([0,1]\).
+Dimensionless reliability index in the range [0, 1].
 
-**Interpretation**:
+Interpretation:
 
-| Value | Meaning |
-|------:|--------|
-| > 0.6 | Model applicable |
-| 0.3–0.6 | Borderline |
-| < 0.3 | Outside validity |
+- > 0.6 : model applicable
+- 0.3 – 0.6 : borderline validity
+- < 0.3 : outside validity domain
 
 **Notes**
 - Used to gate the use of `J_s_vroark` **
@@ -243,9 +264,9 @@ Dimensionless reliability index in \([0,1]\).
 ## Final Remarks
 
 - CSF deliberately exposes **multiple torsional indicators**.
-- **Selection is policy‑driven**, not profile‑driven **
-- This ensures transparency, robustness, and solver independence.
+- **Selection is policy-driven**, not profile-driven **
+- This guarantees transparency, robustness, and solver independence.
 
 For the formal torsional selection rules, see:
 
-> **README‑P.md — CSF Torsional Constant Policy**
+**README-P.md – CSF Torsional Constant Policy**
