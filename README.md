@@ -218,6 +218,8 @@ Unlike traditional frame analysis software that treats members as prismatic, thi
 
 #### The CSF library natively provides
 
+ [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
+ 
 Primary & Centroidal Properties
 | ID | Parameter | Symbol | Technical Description |
 | :--- | :--- | :---: | :--- |
