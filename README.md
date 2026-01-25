@@ -226,6 +226,10 @@ Unlike traditional frame analysis software that treats members as prismatic, thi
  
 ## OpenSees & CSF Integration
 
+
+
+ [ OpenSees Integration and Numerical Strategy](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/OpenSeesIntegrationNumericalStrategy.md)
+ 
 CSF bridges continuous geometric modeling and structural analysis by exporting a **solver-ready stiffness field** that OpenSees can integrate using a **force-based beam formulation**.
 
 > **Key idea:** CSF does not approximate a tapered member by arbitrary piecewise-prismatic segments with constant properties.  
