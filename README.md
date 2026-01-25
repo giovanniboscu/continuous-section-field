@@ -238,7 +238,7 @@ CSF bridges continuous geometric modeling and structural analysis by exporting a
  
 ---
 
-#  Numerical Validation: Circular Hollow Section
+#  CSF Numerical Validation: Circular Hollow Section
 examples/cilinder_withcheck.py
 
 <img width="520" height="509" alt="circeltest" src="https://github.com/user-attachments/assets/b3384be1-0a35-4654-b39b-aae614703ad0" />
@@ -278,7 +278,7 @@ The following table reports the full output of the validation script, comparing 
 | Total Tower Mass     | 244.067     | 244.061   | 0.0025% | t    |
 
   
-## Numerical Case Study: NREL 5-MW Reference Wind Turbine Tower
+## CSF Validation : Numerical Case Study: NREL 5-MW Reference Wind Turbine Tower
 Official research portal of the National Renewable Energy Laboratory providing authoritative wind energy data, reference turbine models, technical reports, and validated simulation tools. It serves as a primary source for benchmark wind turbine definitions, including the NREL 5-MW reference model.
 
 ## 512-sided polygons
