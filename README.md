@@ -209,7 +209,7 @@ with section properties varying continuously along the longitudinal axis.
 
 ## CSF Technical Methodology & Integration Schemes
 
-The engine employs a **multi-pass analysis** combined with **Gaussian integration schemes** to extract structural parameters with high numerical fidelity. Specifically engineered for **tapered and non-homogeneous members**, it is ideal for applications where sectional properties vary continuously along the longitudinal axis (e.g., wind turbine towers, bridge girders, or aerospace components).
+The engine employs a **multi-pass analysis** combined with **Gaussian integration schemes** to extract structural parameters. Specifically engineered for **tapered and non-homogeneous members**, it is ideal for applications where sectional properties vary continuously along the longitudinal axis (e.g., wind turbine towers, bridge girders, or aerospace components).
 
 ####   Continuous Longitudinal Formulation
 Unlike traditional frame analysis software that treats members as prismatic, this library treats the member as a **Continuous Section Field**:
