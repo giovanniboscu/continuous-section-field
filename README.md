@@ -233,7 +233,7 @@ CSF bridges continuous geometric modeling and structural analysis by exporting a
 
 * [OpenSees Integration Technical Details](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/openseesIntegration.md)
 * [OpenSees Integration and Numerical Strategy](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/OpenSeesIntegrationNumericalStrategy.md)
-* [Detailed, block-by-block explanatio](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf-opensees-int-ug.md)
+* [Detailed, block-by-block explanation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf-opensees-int-ug.md)
 
  
 ---
