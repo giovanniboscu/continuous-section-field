@@ -1,5 +1,44 @@
 # CSF YAML Tutorial (CSFActions.py)
 
+
+## Use CSF without writing Python
+
+Although CSF is implemented as a Python engine, it can be used **without programming** through the **CSFReader** tool.
+
+With CSFReader, you run the full CSF workflow by providing **two input YAML files**:
+
+1. **`geometry.yaml`** — defines the member geometry as a continuous field along the axis `z`  
+   - end (or intermediate) sections as **arbitrary polygons**  
+   - optional multi-polygon sections (multi-cell shapes)  
+   - per-polygon metadata (e.g., weights for multi-material / void logic)
+
+2. **`actions.yaml`** — declares *what CSF must do* (no code required)  
+   - compute section properties and derived stiffness/mass fields  
+   - produce plots/visualizations and reports  
+   - export solver-ready station data (e.g., for force-based beam formulations)
+
+In other words:
+
+> **`geometry.yaml` describes the “what it is”** (continuous geometry + optional longitudinal material/stiffness laws),  
+> **`actions.yaml` describes the “what to do with it”** (analysis, validation, plotting, exporting).
+
+## Core model (unchanged)
+
+CSF treats a member as a continuous field along `z`, combining two independent (but coupled) descriptions:
+
+- **Continuous geometry** via ruled-surface interpolation between polygonal sections  
+  (tapering, topology changes, multi-cell sections).
+
+- **Continuous material/stiffness laws** via user-defined longitudinal functions `w(z)`,  
+  optionally applied per polygon (multi-material, degradation laws, staged stiffness, void logic through negative weights).
+
+From this continuous description, CSF evaluates section properties and stiffness/mass fields (e.g., `A(z)`, `I(z)`, `C(z)`, `EA(z)`, `EI(z)`, `GJ(z)`) and can export station data for structural solvers (including Gauss–Lobatto stationing so member ends are sampled exactly, where required).
+
+## Scope
+
+CSF targets **linear-elastic beam modeling and preprocessing** (visualization, export, validation).  
+It does **not** model cracking, damage, or nonlinear material behavior.
+
 This guide explains how to run **CSF (Continuous Section Field)** workflows using **YAML only**.  
 You do **not** need to write Python to use CSF actions.
 
