@@ -227,111 +227,18 @@ Unlike traditional frame analysis software that treats members as prismatic, thi
 ## OpenSees & CSF Integration
 
 
-
- [ OpenSees Integration and Numerical Strategy](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/OpenSeesIntegrationNumericalStrategy.md)
- 
-CSF bridges continuous geometric modeling and structural analysis by exporting a **solver-ready stiffness field** that OpenSees can integrate using a **force-based beam formulation**.
-
-> **Key idea:** CSF does not approximate a tapered member by arbitrary piecewise-prismatic segments with constant properties.  
-> Instead, CSF provides a *set of stiffness samples* (one per integration station) and OpenSees is forced to read those samples at the correct locations.
-
 ### 1) Force-Based Formulation (OpenSees `forceBeamColumn`)
 The OpenSees model uses the `forceBeamColumn` element family, which integrates section flexibility along the member length and is suitable for non-prismatic members when section properties vary longitudinally.
+CSF bridges continuous geometric modeling and structural analysis by exporting a **solver-ready stiffness field** that OpenSees can integrate using a **force-based beam formulation**.
 
-### 2) Real Centroid Axis (variable eccentricity / tilt)
-In CSF, the physical beam axis is not necessarily a straight line between two endpoints.  
-The real centroid offsets `(xc_i, yc_i)` are computed at each CSF station and represent the **measured eccentricity** of the section (tilt).
-
-To preserve this in OpenSees, the exported model uses a two-axis representation:
-
-- **Reference axis (connection axis):** nodes placed on the ideal straight member line.  
-  Boundary conditions and loads are applied here.
-- **Centroid axis (physical axis):** nodes placed at `(xc_i, yc_i, z_i)` using the CSF offsets.  
-  Beam elements are defined along this axis.
-
-A rigid kinematic coupling is enforced at each station:
-
-- `rigidLink beam` ties each reference node to its corresponding centroid node.
-
-This strategy ensures the OpenSees model reproduces:
-- the **real curvature / eccentricity** of the centroid line (`yc` varying along the member),
-- and the correct eccentric-load coupling (additional moments arise naturally from the offset).
-
-> **Implementation note:** `rigidLink` requires `constraints Transformation` in OpenSees (Plain constraints may ignore the MPCs).
-
-### 3) Stiffness Sampling Exactly as in CSF (no artificial averaging)
-CSF outputs a sequence of station properties (A, Iy, Iz, J, and optionally E/G), one per station.  
-Those station values represent the continuous stiffness field sampled at prescribed points.
-
-To force OpenSees to read **multiple different sections** (not a single section repeated), the integration is defined using `beamIntegration UserDefined`.
-
-In the current CSF–OpenSees strategy, the member is represented as a **chain of elements** between consecutive stations (station i → station i+1).  
-For each element, the section integration is defined as a **two-point endpoint sampling**:
-
-- at `loc=0`: section = station `i`
-- at `loc=1`: section = station `i+1`
-- weights: `0.5, 0.5`
-
-This guarantees that the solver consumes the exact CSF station stiffness values at the correct locations without collapsing them into a single prismatic equivalent.
-
-> This is not a “fake piecewise-prismatic” model: each segment is not assigned an arbitrary constant section.  
-> Instead, the element reads stiffness at the **CSF sampling points** (endpoints of each segment) via UserDefined integration.
-
-### 4) End Conditions Match the Physical Member Ends (Gauss–Lobatto stations)
-CSF stations are typically placed according to the Gauss–Lobatto rule, which includes the endpoints of the domain.  
-Therefore:
-- station 1 coincides with the real start of the member,
-- station N coincides with the real end of the member.
-
-This is critical for:
-- correct support reactions,
-- correct tip displacements,
-- and unambiguous boundary-condition application at the true physical ends.
-
-### 5) Geometry file contract (`geometry.tcl`)
-A CSF OpenSees geometry file is treated as **data**, not as a Tcl script to be sourced verbatim.
-The integration workflow relies on these fields:
-
-- Header: `Beam Length` and number of stations (`Int. Points`)
-- `geomTransf Linear ...` orientation vector
-- `section Elastic ... xc yc` lines:
-  - `A, Iz, Iy, J` define geometry-derived section properties
-  - `xc, yc` define centroid offsets (the “tilt” field)
-
-Material parameters can be provided either:
-- inside the file (E, G columns), **or**
-- overridden by the Python builder (forcing E/G from code), if the project requires a purely geometric/stiffness-field input file.
-
-
-
+* [OpenSees Integration and Numerical Strategy](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/OpenSeesIntegrationNumericalStrategy.md)
 * [OpenSees Integration Technical Details](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/openseesIntegration.md)
-* [OpenSees Integration & Numerical Strategy](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/OpenSeesIntegrationNumericalStrategy.md)
+* [Detailed, block-by-block explanatio](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf-opensees-int-ug.md)
 
-
+ 
 ---
 
-### Member Discretization and Property Sampling
-
-CSF exports a **set of stations** along the member and the corresponding section properties at each station.
-
-**Two distinct concepts are used:**
-
-1) **Geometric discretization (centroid axis):**  
-   The real centroid line is represented as a polyline through the station points `(xc_i, yc_i, z_i)`.  
-   This preserves the physical eccentricity (tilt) field computed by CSF.
-
-2) **Mechanical sampling (stiffness field):**  
-   The stiffness is not approximated by arbitrary constant segments.  
-   Instead, OpenSees reads the CSF station stiffness values using `beamIntegration UserDefined` so that each segment uses station `i` and `i+1` stiffness at its endpoints.
-
-Increasing the number of CSF stations improves resolution of both:
-- centroid-axis curvature (geometric fidelity),
-- and stiffness-field sampling (mechanical fidelity),
-without introducing the methodological ambiguity typical of “piecewise-prismatic” modeling.
-
----
-
-##  Numerical Validation: Circular Hollow Section
+#  Numerical Validation: Circular Hollow Section
 examples/cilinder_withcheck.py
 
 <img width="520" height="509" alt="circeltest" src="https://github.com/user-attachments/assets/b3384be1-0a35-4654-b39b-aae614703ad0" />
