@@ -221,42 +221,6 @@ Unlike traditional frame analysis software that treats members as prismatic, thi
  
  [CSF – Section Full Analysis Output](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md)
  
-Primary & Centroidal Properties
-| ID | Parameter | Symbol | Technical Description |
-| :--- | :--- | :---: | :--- |
-| 1 | **Area** | $A$ | Total net cross-sectional area |
-| 2 | **Centroid Cx** | $C_x$ | Horizontal coordinate of the geometric centroid |
-| 3 | **Centroid Cy** | $C_y$ | Vertical coordinate of the geometric centroid |
-| 4 | **Inertia Ix** | $I_x$ | Second moment of area about centroidal X-axis |
-| 5 | **Inertia Iy** | $I_y$ | Second moment of area about centroidal Y-axis |
-| 6 | **Inertia Ixy** | $I_{xy}$ | Product of inertia (Zero indicates symmetry) |
-| 7 | **Polar Moment** | $J$ | Polar moment of area ($I_x + I_y$) |
-
-
-
-Derived Geometric Properties
-| ID | Parameter | Symbol | Technical Description |
-| :--- | :--- | :---: | :--- |
-| 8 | **Principal I1** | $I_1$ | Maximum Principal Moment of Area |
-| 9 | **Principal I2** | $I_2$ | Minimum Principal Moment of Area |
-| 10 | **Radius rx** | $r_x$ | Radius of gyration about X: $\sqrt{I_x/A}$ |
-| 11 | **Radius ry** | $r_y$ | Radius of gyration about Y: $\sqrt{I_y/A}$ |
-
-Structural Analysis (Strength & Rigidity)
-| ID | Parameter | Symbol | Technical Description |
-| :--- | :--- | :---: | :--- |
-| 12 | **Elastic Modulus Wx** | $W_x$ | Section modulus for bending about X ($I_x / y_{max}$) |
-| 13 | **Elastic Modulus Wy** | $W_y$ | Section modulus for bending about Y ($I_y / x_{max}$) |
-| 14 | **Torsional Rigidity** | $K$ | Torsional Rigidity (K) The Saint-Venant torsional constant ($J$) is notoriously complex for non-circular sections. In this version:</br> Core Engine: Implements a semi-empirical approximation ($J \approx A^4 / 40I_p$). </br> Purpose: This estimation is designed to provide numerical stability for 3D Finite Element models (e.g., OpenSees) where a null torsional stiffness would lead to singular matrices.</br> Accuracy: While reliable for solid, compact sections, it is a simplified model. For thin-walled or open profiles, users should treat this value as a preliminary estimate|
-
-
-Shear-Related Quantities and Auxiliary Outputs
-| ID | Parameter | Symbol | Technical Description |
-| :--- | :--- | :---: | :--- |
-| 15 | **Poly 0 Ix (Origin)** | $I_{x0}$ | Polygon 0 inertia relative to global origin |
-| 16 | **Poly 0 Q_local** | $Q_{p0}$ | Statical moment of Poly 0 relative to centroid |
-| 17 | **Section Q_na** | $Q_{na}$ | Total Statical Moment at Neutral Axis (for $\tau$ shear) |
-| 18 | **Stiffness Shape** | Matrix | Dimensionality of the Sectional Stiffness Matrix $[K]$ |
 
 ---
  
