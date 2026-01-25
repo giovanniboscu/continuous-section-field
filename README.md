@@ -216,7 +216,7 @@ Unlike traditional frame analysis software that treats members as prismatic, thi
 * **Dynamic Computation**: Every property is calculated "on-the-fly" at any longitudinal coordinate $z$ via linear vertex-mapping.
 * **Homogenization & Voids**: Full support for material homogenization through **positive weights** and internal voids or cut-outs through **negative weights**.
 
-#### The CSF library natively provides
+# The CSF library natively provides
 
  
  [CSF – Section Full Analysis Output](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md)
