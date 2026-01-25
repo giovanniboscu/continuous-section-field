@@ -7,7 +7,7 @@
 ![License](https://img.shields.io/github/license/giovanniboscu/continuous-section-field)
 ![Repo Size](https://img.shields.io/github/repo-size/giovanniboscu/continuous-section-field)
 
-**[Key Features](#key-features)** • **[Installation & setup](#setup-environment-linux--windows)** • **[Continuously Tapered Beam Example](#worked-example-continuously-tapered-t-beam)** •**[Validation](#CSF-Numerical-Validation:-Circular-Hollow-Section)** • **[NREL 5-MW Case Study ](#numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
+**[Key Features](#key-features)** • **[Installation & setup](#setup-environment-linux--windows)** • **[Continuously Tapered Beam Example](#worked-example-continuously-tapered-t-beam)** •**[Validation](#-CSF-Numerical-Validation:-Circular-Hollow-Section)** • **[NREL 5-MW Case Study ](#numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
 
 ## Continuous Section Field (CSF): Non-Prismatic, Multi-Material Members - Programmable via Python API, Usable Without Coding via CSFReader (YAML)
 
