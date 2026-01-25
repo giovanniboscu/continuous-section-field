@@ -26,7 +26,7 @@ CSF targets **linear-elastic beam modeling and preprocessing** (visualization, e
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
 
 
-**[NREL 5-MW Case Study ](#numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
+**[NREL 5-MW Case Study ](##-CSF-Validation-:-Numerical-Case-Study:-NREL-5-MW-Reference-Wind-Turbine-Tower)**
 
 ### **Motivation and Arbitrary Cross-Section Representation**
 
