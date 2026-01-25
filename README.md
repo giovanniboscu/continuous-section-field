@@ -236,7 +236,7 @@ CSF bridges continuous geometric modeling and structural analysis by exporting a
  
 ---
 
-#  CSF Numerical Validation: Circular Hollow Section
+# CSF Numerical Validation: Circular Hollow Section
 examples/cilinder_withcheck.py
 
 <img width="520" height="509" alt="circeltest" src="https://github.com/user-attachments/assets/b3384be1-0a35-4654-b39b-aae614703ad0" />
