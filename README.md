@@ -51,7 +51,7 @@ CSF models members defined by polygonal end sections connected by straight gener
   - Hollow sections (e.g., NREL tapered shell)
   - Multi-cellular shapes with internal stiffeners
   - Composite/multi-material sections via modular ratio weights
-- Version 2: fully arbitrary `w(z)` per polygon  
+- fully arbitrary `w(z)` per polygon  
   → non-linear thickness, modulus, or reinforcement variation  
   → access to `w₀`, `w₁`, current/initial/end distances `d(i,j)`, `di(i,j)`, `de(i,j)`, and all `math` functions
 - **Arbitrary Longitudinal Weight Functions**: Each polygon can be assigned a fully arbitrary longitudinal weight function `w(z)`. This enables:
