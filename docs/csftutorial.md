@@ -724,6 +724,4 @@ These conventions are not enforced, but they improve readability and reduce mist
 5. Output folders exist (`out/`).
 6. Run `--validate-only` once before long runs.
 
----
 
-*End of guide.*
