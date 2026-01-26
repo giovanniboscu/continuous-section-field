@@ -255,6 +255,10 @@ You set the void absolute weight to `0`, and CSF does the subtraction.
 
 ### Example D — Your three-polygon test (pol1 contains pol2 and pol3)
 
+> **Note (illustrative only):** setting `pol2 = pol1` so that `w^{eff}_{pol2} = 0` is shown here just to demonstrate the delta mechanism.  
+> In real models you typically **do not add “redundant” child polygons** whose absolute weight is identical to the parent, because they carry no effective contribution and only add complexity. Use child polygons only when they represent a **real change of material/property** (or a void with `w=0`).
+
+
 Given:
 - `pol1` is outer (parent=None)
 - `pol2` and `pol3` are inside `pol1` (parent=pol1)
