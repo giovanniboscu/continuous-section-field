@@ -75,6 +75,9 @@ This is intentionally simple:
 
 ## 5) Effective weight definition (the “delta”)
 
+> **You do not need to worry about any of these subtractions.**  
+> You only provide the **absolute target weights** for each polygon (including `0` for voids), and **CSF automatically finds the smallest container (parent) and computes the effective delta weights** so overlaps are handled correctly.
+> 
 Let \(w_i(z)\) be the **absolute** weight of polygon \(i\) at station \(z\), computed either by:
 - default interpolation, or
 - a custom law.
