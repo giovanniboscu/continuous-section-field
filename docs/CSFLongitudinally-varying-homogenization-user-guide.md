@@ -107,18 +107,12 @@ Meaning: the “most specific” region wins, **without double counting**.
 
 ## 6) Correct void logic 
 
-A void must remove the stiffness (or property) of the material it is cutting.
+### Voids (holes): always `w_void = 0`
 
-With **effective weights**, you should define a void polygon with the **absolute target weight of the void** (usually 0), and CSF will compute the correct subtraction automatically.
+A void is always defined with an **absolute target weight**:
 
-### ✅ Correct rule
-- If the void means “no material”, then **absolute weight** of the void region is:
 ```math
-w_{void} = 0
-```
-- CSF computes:
-```math
-w^{eff}_{void} = 0 - w_{parent}
+w_{void}(z) = 0
 ```
 
 ---
