@@ -159,7 +159,20 @@ The mass and stiffness distribution implied by these properties maintains the fi
 - **3P** blade‑passing frequency resonance.
 
 ---
+# Tower Section Diameters (Base and Top)
 
+| Level (z)        | Circle | Description                 | Diameter (m) |
+|------------------|--------|-----------------------------|--------------|
+| Base (0 m)       | 1      | Concrete – outer diameter   | 13.000       |
+| Base (0 m)       | 2      | Steel – outer diameter      | 11.426       |
+| Base (0 m)       | 3      | Concrete – inner diameter   | 11.400       |
+| Base (0 m)       | 4      | Void – inner diameter       | 11.400       |
+| Top (120 m)      | 1      | Concrete – outer diameter   | 4.000        |
+| Top (120 m)      | 2      | Steel – outer diameter      | 3.529        |
+| Top (120 m)      | 3      | Concrete – inner diameter   | 3.500        |
+| Top (120 m)      | 4      | Void – inner diameter       | 3.500        |
+
+---
 ## 4. Structural Modeling Notes
 
 - **Concrete class:** C60/75 or higher.
