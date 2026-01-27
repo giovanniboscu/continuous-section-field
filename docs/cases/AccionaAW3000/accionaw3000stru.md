@@ -379,10 +379,11 @@ These evaluate to 1 or 0, allowing piecewise functions in a single line.
 ### Outer concrete ring
 
     w = "(z <= 30)*(0.60 + 0.40*(z/30)) + (z > 30)*1.00"
-
+       w = "0.60 + 0.40/(1 + exp(-(z-15)/5))"
 ### Inner concrete ring
 
-    w = "(z <= 30)*(0.90 + 0.10*(z/30)) + (z > 30)*1.00"
+    w = "(z <= 30)*(0.90 + 0.10*(z/30)) + (z > 30)*1.00
+    "w = "0.90 + 0.10/(1 + exp(-(z-15)/5))"
 
 These expressions:
 
