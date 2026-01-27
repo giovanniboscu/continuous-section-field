@@ -81,7 +81,7 @@ Example
 ## The Default Behavior: Linear Variation
 
 By default, the variation of weight between the start and end sections is linear. If you do not specify a custom law, the software automatically interpolates the value based on the longitudinal position z.
- 
+
 # Important — what is `weight`?
 
 > In CSF, `weight` is a **scalar field** used to scale section properties (a generalized multiplier of the geometric area).  
@@ -102,13 +102,13 @@ By default, the variation of weight between the start and end sections is linear
 
  CSF supports two different (but equally valid) interpretations. You must pick one and
  keep it consistent across your workflow and exports:
- 
+
 ## Convention A — `weight` as a dimensionless stiffness ratio (recommended)
 
 - `weight = E / E_ref` (dimensionless)
 - Choose one reference modulus `E_ref` (e.g., steel, concrete, etc.)
 - Softer regions have `0 < weight < 1`, stiffer have `weight > 1`.
-- Voids are represented by negative weights (see "Voids" below).
+- Voids are represented by `weight = 0` (see "Voids" below).
 
 In this convention, CSF computes **modular (weighted) section properties**:
 
@@ -131,29 +131,32 @@ $$
  (e.g., \(\int E\,dA\)). This is valid, but you must then export to OpenSees using a
  stiffness-encoded contract (see OpenSees mapping below).
 
- ### Voids: the sign rule
- A void must always subtract the same “material measure” that the solid contributes.
- If a solid region uses `+w`, the matching void must use `-w`.
- This guarantees that the overlap sum is zero and contributes no stiffness:
-
+ ### Voids: use `0` in input (CSF handles the effective subtraction)
+ A void/hole is a region where the target material property is **zero**.  
+ Therefore, in your input data you should simply use:
 
 ```math
-w_{solid} + w_{void} = 0
+w_{void} = 0
 ```
+
+When a void polygon overlaps a solid polygon, CSF internally converts the overlap into an
+**effective (delta) representation** so that the overlapped region contributes **zero**
+to the weighted integrals.  
+**You should not enter negative weights for voids in the user model.**
 
 # 📑 Deep Dive: The Logic of "Weight" (W) and Voids
 
-In CSF, the parameter `weight` (W) is a generalized multiplier of the geometric area. Understanding its sign and scale is fundamental to obtaining correct structural results.
+In CSF, the parameter `weight` (W) is a generalized multiplier of the geometric area. Understanding its scale is fundamental to obtaining correct structural results.
 In this guide we use weight primarily as E-modulus (or E-ratio), but the same mechanism can represent other per-area properties.
 
 ---
 ### 1. Normalized Logic: The Unitary Material (W = 1.0)
 When working with a single material, we use **1.0** to represent "Full Material".
 * **Solid:** `weight = 1.0`
-* **Void (Hole):** `weight = -1.0`
+* **Void (Hole):** `weight = 0.0`
 
-**The Superposition Principle:**
-If you place a hole (W = -1.0) over a solid (W = 1.0), the sum in the overlap area is exactly **0.0**. This area will contribute zero to the Area, First Moment of Area (Statics), and Moment of Inertia.
+**The Superposition Principle (as seen by the user):**
+If you place a void polygon (`W = 0.0`) over a solid region (`W = 1.0`), CSF automatically treats the overlap as a true void (effective contribution **0.0**) in the section integrals.
 
 ---
 
@@ -161,19 +164,18 @@ If you place a hole (W = -1.0) over a solid (W = 1.0), the sum in the overlap ar
 If your section has materials with different stiffnesses, you choose a "Reference Material" (usually the one with the highest E) and scale the others accordingly.
 
 **Example: Concrete (Reference) and Timber**
-* **Concrete (Ref):** `weight = 1.0` | **Hole in Concrete:** `weight = -1.0`
-* **Timber (Softer):** `weight = 0.5` | **Hole in Timber:** `weight = -0.5`
+* **Concrete (Ref):** `weight = 1.0` | **Hole (Void) over Concrete:** `weight = 0.0`
+* **Timber (Softer):** `weight = 0.5` | **Hole (Void) over Timber:** `weight = 0.0`
 
-**Crucial Rule on Signs:**
-A hole MUST always have the **negative sign of the material it is subtracting from**. 
-* If you subtract a hole from the Timber part using `-1.0` instead of `-0.5`, you are not just making a hole; you are creating a "negative stiffness" zone that will pull the center of gravity towards the opposite side incorrectly.
+**Crucial rule (user-side):**
+A void is always declared as **zero**. CSF performs the internal bookkeeping needed to remove the underlying material contribution in the overlap.
 
 ---
 
 ### 3. Real Values Logic: Using Young's Modulus (E)
 You can skip normalization and enter the real Elastic Modulus (e.g., in MPa).
 * **Steel:** `weight = 210000`
-* **Steel Hole:** `weight = -210000`
+* **Steel Hole (Void):** `weight = 0`
 
 **Advanced Technique: Material Substitution**
 If you have a steel reinforcement (E=210k) inside concrete (E=30k), you don't need to cut a hole in the concrete coordinates. You can simply overlay the steel polygon with:
@@ -192,13 +194,13 @@ The name **`weight`** was chosen for two scientific reasons:
 ---
 
 ### ⚠️ Final Summary for Voids
-| Context | Solid Value | Void Value | Result in Overlap |
+| Context | Solid Value | Void Value (user input) | Result in Overlap (effective in CSF) |
 | :--- | :--- | :--- | :--- |
-| **Normalized** | `1.0` | `-1.0` | `0.0` (Absolute Void) |
-| **Half-Stiffness** | `0.5` | `-0.5` | `0.0` (Absolute Void) |
-| **Real E (Concrete)** | `30000` | `-30000` | `0.0` (Absolute Void) |
+| **Normalized** | `1.0` | `0.0` | `0.0` (Absolute Void) |
+| **Half-Stiffness** | `0.5` | `0.0` | `0.0` (Absolute Void) |
+| **Real E (Concrete)** | `30000` | `0.0` | `0.0` (Absolute Void) |
 
-**Warning:** If the sum of weights in an area is not zero, that area still possesses residual stiffness. Always verify that $W_{solid} + W_{void} = 0$.
+**Warning:** A void must be declared with `weight = 0.0`. If you use a non-zero weight, that region will retain residual stiffness/property.
 ---
 
 
@@ -275,8 +277,8 @@ When defining a custom law string, the mathematical engine enforces strict valid
 | **Physical Validity** | For solids, $E(z) > 0$. Use `np.maximum(min_val, ...)` to avoid $0$ or negative results. |
 | **Safety Handling** | Any law producing `NaN` or `inf` (e.g., division by zero) triggers an immediate traceback. |
 
-> **Warning on Holes:** If your law is for a hole, the result must be **negative**. 
-> Example for a dynamic hole: `"void,void : -1.0 * E_lookup('degradation.txt')"`
+> **Warning on Voids/Holes:** If your law is for a void, the result should be **0.0** (not negative).  
+> Example: `"void,void : 0.0"`
 
 #### 🛠️ Best Practice: Clamping and Safety
 To prevent unphysical results (like a stiffness dropping to zero or becoming negative due to extreme inputs), it is highly recommended to use a **clamping** logic. This ensures a minimum residual stiffness ($E_{min}$).
@@ -299,7 +301,7 @@ section_field.set_weight_laws([
 section_field.set_weight_laws([
     # Example 1: Quadratic transition for the upper part
     "upperpart,upperpart : w0 + (w1 - w0) * np.power(z / L, 2)",
-    
+
     # Example 2: External data scaled by the initial weight (w0)
     # Useful for applying degradation factors from experimental data
     "lowerpart,lowerpart : E_lookup('material_data.txt') * w0"
@@ -514,4 +516,4 @@ Using a chain of elements + `beamIntegration UserDefined` is the **enforcement m
 - **No arbitrary averaging:** section properties are not collapsed into equivalent prismatic blocks.
 - **Controlled sampling:** the sampling locations are prescribed by the Gauss–Lobatto rule.
 - **Exact end conditions:** Lobatto stations include the endpoints, so support and tip conditions coincide with the real member ends.
-- **Field fidelity:** increasing the number of stations refines the **quadrature of the same continuous field**, rather than changing a user-defined stepped approximation.
+- **Field fidelity:** increasing the number of stations refines the **quadrature of the same continuous field**, rather than changing a user-defined stepped prismatic segments.
