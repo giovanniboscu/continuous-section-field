@@ -187,17 +187,17 @@ The mechanism is fully generic: voids, materials, degraded zones, and overlays a
 Each ring is defined by:
 
 - its geometry (a closed polygon)
-- a stiffness weight \( W \), representing its contribution to the effective section
+- a stiffness weight $W$, representing its contribution to the effective section
 
 The weight is a scalar multiplier applied to the stiffness contribution of that ring.
 
 Examples:
 
-- \( W = 1.0 \) → full material (e.g., concrete)  
-- \( W = 0.0 \) → void  
-- \( W = E_s / E_c \) → homogenized steel  
-- \( W < 1.0 \) → degraded material  
-- \( W > 1.0 \) → stiffer material or reinforcement  
+- $W = 1.0$ → full material (e.g., concrete)  
+- $W = 0.0$ → void  
+- $W = E_s / E_c$ → homogenized steel  
+- $W < 1.0$ → degraded material  
+- $W > 1.0$ → stiffer material or reinforcement  
 
 ---
 
@@ -205,13 +205,9 @@ Examples:
 
 When two rings overlap, CSF computes the effective weight using a single universal rule:
 
-
-
-\[
+$$
 W_{\text{eff}} = W_{\text{upper}} - W_{\text{lower}}
-\]
-
-
+$$
 
 Where:
 
@@ -226,23 +222,15 @@ This rule applies to all cases.
 
 A void is simply defined as:
 
-
-
-\[
+$$
 W_{\text{void}} = 0
-\]
-
-
+$$
 
 When a void overlaps a material:
 
-
-
-\[
+$$
 W_{\text{eff}} = 0 - W_{\text{mat}} = -W_{\text{mat}}
-\]
-
-
+$$
 
 A negative effective weight indicates that the upper ring removes stiffness from the lower ring.  
 CSF interprets this automatically as a subtraction of material.
@@ -255,24 +243,20 @@ No boolean operations or special handling are required.
 
 Given:
 
-- Material 1 with weight \( W_1 \)  
-- Material 2 with weight \( W_2 \) placed above it  
+- Material 1 with weight $W_1$  
+- Material 2 with weight $W_2$ placed above it  
 
 The effective contribution is:
 
-
-
-\[
+$$
 W_{\text{eff}} = W_2 - W_1
-\]
-
-
+$$
 
 Interpretation:
 
-- If \( W_2 > W_1 \): the upper material adds stiffness  
-- If \( W_2 < W_1 \): the upper material reduces stiffness  
-- If \( W_2 = W_1 \): the upper material replaces the lower one with no net change  
+- If $W_2 > W_1$: the upper material adds stiffness  
+- If $W_2 < W_1$: the upper material reduces stiffness  
+- If $W_2 = W_1$: the upper material replaces the lower one with no net change  
 
 This supports:
 
@@ -309,15 +293,13 @@ This makes the ring‑based approach suitable for:
 - **Concrete class:** C60/75 or higher.
 - **Damping ratio:** 1–2% (typical for concrete towers).
 - **Post‑tensioning force:**  
-  \( P_0 = A_p · 0.7 f_{pk} \), with \( f_{pk} = 1860 \) MPa.
+  $P_0 = A_p \cdot 0.7 f_{pk}$, with $f_{pk} = 1860$ MPa.
 - **Fallback torsional rigidity:**  
-  \( K ≈ A^4 / (40 · I_p) \) (conservative).
+  $K \approx A^4 / (40 \cdot I_p)$ (conservative).
 - **Preferred torsional model:** Roark / Bredt formulation.
 
 ---
 
 
-
----
 
 *This benchmark is intended as a reference geometry and reinforcement layout for comparison with numerical models, including CSF-based relativized section approaches.*
