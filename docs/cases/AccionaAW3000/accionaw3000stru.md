@@ -299,6 +299,134 @@ This makes the ring‑based approach suitable for:
 - **Preferred torsional model:** Roark / Bredt formulation.
 
 ---
+# Differential Concrete Degradation in CSF
+# Outer vs Inner Concrete Rings with Height‑Dependent Weight Functions
+# Engineering Rationale, Mathematical Formulation, and CSF Implementation
+
+## 1. Introduction
+
+Concrete wind turbine towers often exhibit non‑uniform stiffness degradation along their height.
+Environmental exposure, cracking, moisture gradients, and thermal cycling typically affect the outer concrete shell more severely than the inner concrete core.
+
+The CSF (Concentric Section Framework) naturally supports this behavior by allowing each geometric ring to have its own weight function:
+
+    w = "expression in z"
+
+This weight scales the material stiffness (e.g., Young’s modulus) at height z.
+
+## 2. Why Outer and Inner Concrete Behave Differently
+
+### 2.1 Mechanical justification
+
+In bending‑dominated structures such as tall concrete towers:
+
+- The outer fibers carry the largest tensile and compressive strains.
+- These fibers are the first to crack, micro‑crack, or degrade.
+- The internal concrete remains mostly in compression, with lower strain gradients.
+
+Thus:
+
+- Outer concrete stiffness decreases significantly due to cracking and environmental exposure.
+- Inner concrete stiffness remains closer to the uncracked modulus.
+
+This is consistent with:
+
+- Eurocode 2 concepts of cracked vs uncracked stiffness
+- Tension stiffening models
+- Effective stiffness reduction in tall concrete structures
+- Observed behavior in real concrete towers (e.g., Acciona AW3000, Enercon hybrid towers)
+
+## 3. Engineering Scenario (Realistic)
+
+We consider a 120 m concrete tower (e.g., Acciona AW3000 type).
+Assume:
+
+- The first 30 m experience stronger environmental degradation.
+- The outer shell is significantly cracked.
+- The inner core is only mildly affected.
+
+This produces a realistic stiffness gradient.
+
+## 4. Mathematical Formulation of the Weight Functions
+
+### 4.1 Outer concrete ring (strong degradation)
+
+At the base:
+- Effective stiffness = 60% of the intact value
+- Linearly recovers to 100% at 30 m
+
+Mathematically:
+
+    W_outer(z) = 0.60 + 0.40*(z/30)   for 0 ≤ z ≤ 30
+    W_outer(z) = 1.00                 for z > 30
+
+### 4.2 Inner concrete ring (mild degradation)
+
+At the base:
+- Effective stiffness = 90% of the intact value
+- Recovers to 100% at 30 m
+
+Mathematically:
+
+    W_inner(z) = 0.90 + 0.10*(z/30)   for 0 ≤ z ≤ 30
+    W_inner(z) = 1.00                 for z > 30
+
+## 5. CSF Implementation (Copy‑Paste Ready)
+
+CSF uses boolean masks inside the weight expression.
+These evaluate to 1 or 0, allowing piecewise functions in a single line.
+
+### Outer concrete ring
+
+    w = "(z <= 30)*(0.60 + 0.40*(z/30)) + (z > 30)*1.00"
+
+### Inner concrete ring
+
+    w = "(z <= 30)*(0.90 + 0.10*(z/30)) + (z > 30)*1.00"
+
+These expressions:
+
+- are valid CSF syntax
+- are single‑line
+- require no Python code
+- produce a continuous stiffness profile
+- are fully versionable and documentable
+
+## 6. Engineering Interpretation
+
+### At the base (z = 0)
+
+- Outer concrete: W = 0.60
+- Inner concrete: W = 0.90
+
+This reflects:
+- severe cracking on the outside
+- mild degradation inside
+
+### At z = 30 m
+
+Both return to:
+- W = 1.00
+
+representing a fully intact section.
+
+### Above 30 m
+
+The tower behaves as an uncracked, intact concrete section.
+
+## 7. Practical Use in Engineering
+
+This model is not a normative verification, but it is extremely useful for:
+
+- stiffness sensitivity studies
+- pre‑design
+- comparison of tower variants
+- dynamic behavior estimation
+- generating consistent input for FEM beam models
+- documenting degradation assumptions
+- academic or training purposes
+
+
 
 
 
