@@ -48,6 +48,14 @@ High-strength post-tensioning tendons run vertically along the tower height. The
 | Station | Height z (m) | Area Ap (m²) | Continuity | Material Type |
 |---|---:|---:|:---:|---|
 | **All** | 0–120 | **0.100** | Constant | High-tensile steel (Y1860) |
+---
+# Top & Base Section Areas (Concrete, Passive Steel, Active Steel)
+
+| Station | Height z (m) | Concrete Area Ac (m²) | Passive Steel Area As (m²) | Active Steel Area Ap (m²) | As/Ac (%) | Description |
+|--------|---------------|------------------------|-----------------------------|----------------------------|-----------|-------------|
+| Base   | 0             | 30.65                  | 0.300                       | 0.100                      | 0.98      | Maximum bending demand, thick wall, highest reinforcement density |
+| Top    | 120           | 2.95                   | 0.060                       | 0.100                      | 2.03      | Flange connection zone, reduced concrete area, higher relative steel ratio |
+
 
 ---
 
