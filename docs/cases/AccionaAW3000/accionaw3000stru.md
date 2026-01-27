@@ -161,16 +161,35 @@ The mass and stiffness distribution implied by these properties maintains the fi
 ---
 # Tower Section Diameters (Base and Top)
 
-| Level (z)        | Circle | Description                 | Diameter (m) |
-|------------------|--------|-----------------------------|--------------|
-| Base (0 m)       | 1      | Concrete – outer diameter   | 13.000       |
-| Base (0 m)       | 2      | Steel – outer diameter      | 11.426       |
-| Base (0 m)       | 3      | Concrete – inner diameter   | 11.400       |
-| Base (0 m)       | 4      | Void – inner diameter       | 11.400       |
-| Top (120 m)      | 1      | Concrete – outer diameter   | 4.000        |
-| Top (120 m)      | 2      | Steel – outer diameter      | 3.529        |
-| Top (120 m)      | 3      | Concrete – inner diameter   | 3.500        |
-| Top (120 m)      | 4      | Void – inner diameter       | 3.500        |
+# 4‑Circle Section Geometry (Corrected)
+Acciona AW3000 Concrete Tower – H = 120 m
+
+## Base Section (z = 0 m)
+
+| Level (z) | Circle | Description                   | Diameter (m) |
+|-----------|--------|-------------------------------|---------------|
+| 0 m       | 1      | Concrete – outer diameter     | 13.000        |
+| 0 m       | 2      | Steel – outer diameter        | 11.426        |
+| 0 m       | 3      | Concrete – inner diameter     | 11.400        |
+| 0 m       | 4      | Void – inner diameter         | 11.200        |
+
+### Inner concrete ring thickness:
+- (11.400 − 11.200) / 2 = **0.10 m**
+
+---
+
+## Top Section (z = 120 m)
+
+| Level (z) | Circle | Description                   | Diameter (m) |
+|-----------|--------|-------------------------------|---------------|
+| 120 m     | 1      | Concrete – outer diameter     | 4.000         |
+| 120 m     | 2      | Steel – outer diameter        | 3.529         |
+| 120 m     | 3      | Concrete – inner diameter     | 3.500         |
+| 120 m     | 4      | Void – inner diameter         | 3.300         |
+
+### Inner concrete ring thickness:
+- (3.500 − 3.300) / 2 = **0.10 m**
+
 
 
 
