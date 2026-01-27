@@ -172,6 +172,137 @@ The mass and stiffness distribution implied by these properties maintains the fi
 | Top (120 m)      | 3      | Concrete – inner diameter   | 3.500        |
 | Top (120 m)      | 4      | Void – inner diameter       | 3.500        |
 
+
+
+# Weight Logic for Concentric Rings in CSF
+### Technical Documentation
+
+This section describes the general weight‑based logic used in CSF when defining concentric rings for tower cross‑sections.  
+The mechanism is fully generic: voids, materials, degraded zones, and overlays are all handled by the same rule, with no special cases.
+
+---
+
+## 1. Rings as Independent Layers
+
+Each ring is defined by:
+
+- its geometry (a closed polygon)
+- a stiffness weight \( W \), representing its contribution to the effective section
+
+The weight is a scalar multiplier applied to the stiffness contribution of that ring.
+
+Examples:
+
+- \( W = 1.0 \) → full material (e.g., concrete)  
+- \( W = 0.0 \) → void  
+- \( W = E_s / E_c \) → homogenized steel  
+- \( W < 1.0 \) → degraded material  
+- \( W > 1.0 \) → stiffer material or reinforcement  
+
+---
+
+## 2. Overlapping Rings: General Combination Rule
+
+When two rings overlap, CSF computes the effective weight using a single universal rule:
+
+
+
+\[
+W_{\text{eff}} = W_{\text{upper}} - W_{\text{lower}}
+\]
+
+
+
+Where:
+
+- **upper** = the ring defined later (higher in the stack)  
+- **lower** = the ring defined earlier  
+
+This rule applies to all cases.
+
+---
+
+## 3. Voids Are Not Special Cases
+
+A void is simply defined as:
+
+
+
+\[
+W_{\text{void}} = 0
+\]
+
+
+
+When a void overlaps a material:
+
+
+
+\[
+W_{\text{eff}} = 0 - W_{\text{mat}} = -W_{\text{mat}}
+\]
+
+
+
+A negative effective weight indicates that the upper ring removes stiffness from the lower ring.  
+CSF interprets this automatically as a subtraction of material.
+
+No boolean operations or special handling are required.
+
+---
+
+## 4. Material Replacement and Composite Layers
+
+Given:
+
+- Material 1 with weight \( W_1 \)  
+- Material 2 with weight \( W_2 \) placed above it  
+
+The effective contribution is:
+
+
+
+\[
+W_{\text{eff}} = W_2 - W_1
+\]
+
+
+
+Interpretation:
+
+- If \( W_2 > W_1 \): the upper material adds stiffness  
+- If \( W_2 < W_1 \): the upper material reduces stiffness  
+- If \( W_2 = W_1 \): the upper material replaces the lower one with no net change  
+
+This supports:
+
+- steel overlays  
+- steel substitution  
+- degraded zones  
+- multi‑material composites  
+- partial stiffness reductions  
+
+---
+
+## 5. Consequences for Tower Modeling
+
+Using this weight logic:
+
+- Voids, concrete, steel, and degraded regions are all treated uniformly  
+- No special geometry operations are needed  
+- The section remains fully parametric and modular  
+- Any number of rings can be added or removed without changing the logic  
+- Local modifications (e.g., degradation at specific heights) are easy to implement  
+
+This makes the ring‑based approach suitable for:
+
+- continuous tower definitions  
+- parametric studies  
+- stiffness sensitivity analyses  
+- degradation modeling  
+- rapid regeneration of section properties  
+
+
 ---
 ## 4. Structural Modeling Notes
 
