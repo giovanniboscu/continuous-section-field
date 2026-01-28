@@ -126,48 +126,11 @@ A section is defined by a **set of closed polylines**.
   - Polylines are closed implicitly; do not repeat the first vertex at the end of the list.
 
 ### Polyline Weight (Material Coefficient)
+
 - [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)
 - [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
 
 
-Each polyline is assigned a **scalar weight** \( w \), defined as:
-
-$$
-w = \frac{E}{E_{\text{ref}}}
-$$
-
-where:
-
- $E$ is the Young’s modulus of the region
-- $E_{\text{ref}}$ is the reference Young’s modulus
-
-Typical values:
-
-- $w = +1$: reference material  
-- $0 < w < 1$: softer material  
-- $w > 1$: stiffer material  
-- $w = -1$: void (geometric hole)
-
-All polylines use the same orientation; material addition or removal is controlled
-exclusively by the sign of **$w$**
-
-## Extreme Sections
-
-Two sections must be provided:
-
-- one at $z = 0$
-- one at $z = L$
-
-Both sections must contain:
-
-- the **same number of polylines**
-
-This ensures **geometric and material continuity** along the beam axis.
-
-### Polygon-Based Homogenization and Voids
-Polygons in CSF are the fundamental units for both geometry and mechanics:
-* **Multi-material sections**: Each polygon carries a `weight` attribute ($n = E_i / E_{ref}$). This allows the modeling of composite sections (e.g., steel-reinforced timber) by calculating the **Elastic Centroid**.
-* **Hole Modeling (Algebraic Voids)**: By assigning a **weight of -1.0**, a polygon acts as a hole. The library automatically subtracts its area and inertia from the total, allowing for effortless modeling of hollow tubes or cellular beams without complex boolean operations.
 
 ##  Geometric Interpolation
 
