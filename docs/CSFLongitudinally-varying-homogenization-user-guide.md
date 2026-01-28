@@ -99,7 +99,8 @@ In this document, weight, w(z) and W(z) refer to the same scalar field.
 
 **Operational meaning in CSF**
 
- In CSF, `weight` is a **scalar field W(z)** attached to each polygonal region.
+ In CSF, `weight` is a user-defined **scalar field** $W(z)$ attached to each **section patch** (polygonal sub-domain), with values defined along $z$ and evaluated consistently during section-property assembly.
+
  CSF uses it as a **multiplier inside area integrals**, i.e. it “weights” geometry to produce
  an **equivalent homogenized section**.
 
