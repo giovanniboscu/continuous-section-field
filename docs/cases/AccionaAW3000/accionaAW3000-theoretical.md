@@ -55,3 +55,32 @@ Assumption for steel inertia: **steel area Ast is smeared as a thin ring at mean
 | Effective J Bredt-like Jb_eff | m⁴(eq) | 1187.67 | 556.46 | 219.04 | 66.62 | 12.12 |
 | Effective Radius of Gyration r_eff | m | 4.32 | 3.57 | 2.83 | 2.08 | 1.33 |
 | Effective Section Modulus W_eff | m³(eq) | 91.74 | 51.98 | 25.87 | 10.70 | 3.04 |
+
+
+# CSF Composite Results Table — Concrete + Steel (2 decimals)
+
+Section-selected analysis results at the five stations (values rounded to **2 decimals**).
+
+| Key | Unit | Base (0 m) | S1 (30 m) | S2 (60 m) | S3 (90 m) | Top (120 m) |
+|---|---|---:|---:|---:|---:|---:|
+| Height (z) | m | 0 | 30 | 60 | 90 | 120 |
+| Area A | m² | 31.39 | 21.67 | 13.74 | 7.61 | 3.27 |
+| Centroid Cx | m | -0.00 | -0.00 | 0.00 | -0.00 | -0.00 |
+| Centroid Cy | m | -0.00 | -0.00 | 0.00 | -0.00 | -0.00 |
+| Inertia Ix | m⁴ | 584.02 | 275.61 | 109.24 | 32.69 | 5.75 |
+| Inertia Iy | m⁴ | 584.02 | 275.61 | 109.24 | 32.69 | 5.75 |
+| Product Ixy | m⁴ | 0.00 | -0.00 | 0.00 | 0.00 | 0.00 |
+| Polar Moment J | m⁴ | 1168.04 | 551.22 | 218.48 | 65.38 | 11.51 |
+| Principal I1 | m⁴ | 584.02 | 275.61 | 109.24 | 32.69 | 5.75 |
+| Principal I2 | m⁴ | 584.02 | 275.61 | 109.24 | 32.69 | 5.75 |
+| Radius rx | m | 4.31 | 3.57 | 2.82 | 2.07 | 1.33 |
+| Radius ry | m | 4.31 | 3.57 | 2.82 | 2.07 | 1.33 |
+| Section Modulus Wx | m³ | 89.85 | 51.28 | 25.70 | 10.46 | 2.88 |
+| Section Modulus Wy | m³ | 89.85 | 51.28 | 25.70 | 10.46 | 2.88 |
+| K_torsion | m⁴ | 20.78 | 10.00 | 4.08 | 1.28 | 0.25 |
+| First Moment Q_na | m³ | 60.91 | 34.76 | 17.43 | 7.10 | 1.95 |
+| J_sv | m⁴ | 309.48 | 188.22 | 99.60 | 42.21 | 11.76 |
+| J_s_vroark | m⁴ | 1028.06 | 485.16 | 192.30 | 57.55 | 10.13 |
+| J_s_vroark_fidelity | - | 0.10 | 0.10 | 0.10 | 0.10 | 0.10 |
+
+
