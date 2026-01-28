@@ -37,7 +37,7 @@ Example: Defining a Composite Beam
             Pt(-b/2,  0.0),
         ),
         weight=1,
-        name="lowerpart", <-- Weight
+        name="lowerpart", # <-- Weight
     )
 
 
