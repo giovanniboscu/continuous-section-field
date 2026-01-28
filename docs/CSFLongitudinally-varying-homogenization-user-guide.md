@@ -180,12 +180,17 @@ If you place a void polygon (`W = 0.0`) over a solid region (`W = 1.0`), CSF aut
 
 ---
 
-### 2. Multi-Material Logic: Scaled Weights (W = 0.5)
-If your section has materials with different stiffnesses, you choose a "Reference Material" (usually the one with the highest E) and scale the others accordingly.
+### 2. Multi-Material Logic: Scaled Weights (Example Only)
+
+> **This section is an illustrative example, not a mandatory rule.**  
+> The numeric values below are chosen only to demonstrate the concept of using a reference material and relative scaling.
+
+If your section includes materials with different stiffness (or other properties), you may define a **reference material** (often the one with the highest $E$) and assign **relative** `weight` values to the other patches accordingly.
 
 **Example: Concrete (Reference) and Timber**
-* **Concrete (Ref):** `weight = 1.0` | **Hole (Void) over Concrete:** `weight = 0.0`
-* **Timber (Softer):** `weight = 0.5` | **Hole (Void) over Timber:** `weight = 0.0`
+- **Concrete (Ref):** `weight = 1.0` | **Void within Concrete:** `weight = 0.0`
+- **Timber (softer):** `weight = 0.5` | **Void within Timber:** `weight = 0.0`
+
 
 **Crucial rule (user-side):**
 A void is always declared as **zero**. CSF performs the internal bookkeeping needed to remove the underlying material contribution in the overlap.
