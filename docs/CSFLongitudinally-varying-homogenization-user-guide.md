@@ -354,7 +354,7 @@ Let’s be honest: writing Python formulas inside strings can be tricky. A missi
 Our new **Inspector** acts as a professional co-pilot that talks back to you:
 
 * **Proactive File Checks**: If you use `E_lookup('data.txt')`, the engine checks if the file exists *before* running the calculation. If it’s missing, it tells you exactly where it should be.
-* **Beautiful Diagnostics**: Instead of messy code errors, you get a clean, high-contrast terminal report showing exactly what’s happening.
+* **Diagnostics**: Instead of messy code errors, you get a clean, high-contrast terminal report showing exactly what’s happening.
 * **Physics-Aware**: It doesn't just check math; it checks reality. If your formula results in negative weight or stiffness, it flags a `WARNING` so you can verify your logic.
 * **Friendly Advice**: Every error comes with an **ACTION** suggestion. It tells you how to fix the problem (e.g., "Add a small epsilon to avoid division by zero").
 
