@@ -148,6 +148,13 @@ where:
 - Differences relative to Test Case A arise exclusively from the
   steel-equivalent region, while the concrete geometry remains unchanged.
 
+CSF-computed cross-section areas agree with the benchmark within ±0.6% at all
+evaluated heights. Second moments of area are consistently lower than the
+benchmark values, with deviations in the range of approximately 4.5–6.4%.
+The systematic nature of this difference suggests a discrepancy in the
+benchmark inertia convention rather than numerical error.
+
+
 ---
 
 ## 6. Notes and Limitations
