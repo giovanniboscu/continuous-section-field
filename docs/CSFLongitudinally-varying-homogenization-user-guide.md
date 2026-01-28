@@ -172,25 +172,24 @@ A void is always declared as **zero**. CSF performs the internal bookkeeping nee
 
 ---
 
-### 3. Real Values Logic: Using Young's Modulus (E)
-You can skip normalization and enter the real Elastic Modulus (e.g., in MPa).
-* **Steel:** `weight = 210000`
-* **Steel Hole (Void):** `weight = 0`
+### Example: Embedded reinforcement (automatic effective property)
 
-**Advanced Technique: Material Substitution**
-If you have a steel reinforcement (E=210k) inside concrete (E=30k), you don't need to cut a hole in the concrete coordinates. You do not need to can to overlay the steel polygon with:
-`W_effective = E_steel - E_concrete = 180000`
-The system subtract  30k (concrete) + 180k (delta) and correctly obtains 210k in that region.
+If a steel reinforcement (**E = 210 000**) is embedded inside concrete (**E = 30 000**), the user does **not** need to modify or subtract the concrete geometry.
 
-If a steel reinforcement (E = 210 000) is embedded inside concrete (E = 30 000), the user does not need to subtract the concrete geometry manually.
+The reinforcement is defined using its **absolute** material property:
 
-The reinforcement is defined with its absolute property:
-E_steel = 210 000
+- `E_steel = 210 000`
 
-CSF automatically computes the effective contribution as:
-W_effective = E_steel − E_concrete = 180 000
+CSF automatically computes the effective contribution based on containment:
 
-The user only specifies the reinforcement property; the subtraction of the parent material is handled internally.
+- `W_effective = E_steel − E_concrete = 180 000`
+
+The user only specifies the reinforcement property.  
+The subtraction of the parent material is handled internally by CSF.
+
+> **Principle**  
+> All polygon properties are defined as **absolute values**.  
+> Effective contributions are derived automatically from containment relationships.
 
 ---
 
