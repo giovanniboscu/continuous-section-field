@@ -1,6 +1,6 @@
-# Continuous Section Field (CSF) - Longitudinally varying homogenization factors
+# Continuous Section Field (CSF) — Longitudinally Varying Homogenization Fields
 
-The **Continuous Section Field (CSF)** framework provides a continuous description of non-prismatic and multi-material beam members by generating longitudinally varying cross-section properties without using piecewise-prismatic discretization.
+The **Continuous Section Field (CSF)** framework provides a continuous description of non-prismatic and multi-material beam members by generating longitudinally varying cross-section properties without relying on piecewise-prismatic discretization.
 
 ---
 
@@ -10,7 +10,7 @@ In CSF, a beam is described through:
 
 1. A geometric definition of the beam axis and end sections  
 2. A cross-section layout composed of multiple material sub-domains  
-3. A continuous homogenization process that produces equivalent linear-elastic section properties along the beam axis  
+3. A user-defined continuous homogenization process that produces equivalent linear-elastic section properties along the beam axis  
 
 The beam is not discretized into prismatic elements.  
 Instead, cross-section properties are evaluated continuously as functions of the longitudinal coordinate.
@@ -20,12 +20,12 @@ Instead, cross-section properties are evaluated continuously as functions of the
 ## Cross-Section Homogenization
 
 Each cross-section may include multiple material patches.  
-For each patch, a reference elastic modulus is defined.
+For each patch, a material reference or an absolute property value is defined.
 
 An elastic homogenization factor is associated with each patch.  
 This factor scales the contribution of that patch to the equivalent section properties.
 
-Multiple homogenization factors may coexist within the same cross-section, each acting on a different portion of the section.
+Multiple homogenization factors may coexist within the same cross-section, each acting independently on a different portion of the geometry.
 
 ---
 
@@ -34,9 +34,9 @@ Multiple homogenization factors may coexist within the same cross-section, each 
 Homogenization factors may vary along the beam axis.
 
 Their variation is:
-- not required to be linear
-- defined by the user
-- independent for each material patch
+- not required to be linear  
+- explicitly defined by the user  
+- independent for each material patch  
 
 They can be specified either through tabulated data or through analytical functions supported by the Python environment.
 
@@ -48,10 +48,10 @@ CSF evaluates these factors continuously along the beam axis and applies them lo
 
 Using the homogenized material layout, CSF computes continuous sectional properties such as:
 
-- Cross-section area
-- Second moments of area
-- Torsional constant
-- Axial, bending, and torsional stiffness quantities
+- Cross-section area  
+- Second moments of area  
+- Torsional constant  
+- Axial, bending, and torsional stiffness-related quantities  
 
 All properties can be visualized, exported as tables, or used as input for structural analysis.
 
@@ -62,14 +62,14 @@ All properties can be visualized, exported as tables, or used as input for struc
 CSF can be used in two complementary ways:
 
 ### File-Based Workflow
-- Geometry definition file
-- Output and processing definition file
-- Automatic generation of section properties, plots, and solver-ready models
+- Geometry definition file  
+- Output and processing definition file  
+- Automatic generation of section properties, plots, and solver-ready models  
 
 ### Python API
-- Full control over geometry and homogenization
-- User-defined functions for longitudinal variation
-- Advanced scripting and customization
+- Full control over geometry and homogenization  
+- User-defined functions for longitudinal variation  
+- Advanced scripting and customization  
 
 ---
 
@@ -77,7 +77,7 @@ CSF can be used in two complementary ways:
 
 Additional documentation is available in the `docs/` directory:
 
-- [Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md) — homogenization concepts and assumptions
+- [Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md) — homogenization concepts and modeling assumptions
 
 ---
 
