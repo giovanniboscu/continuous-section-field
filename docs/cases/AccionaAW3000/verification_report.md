@@ -178,6 +178,88 @@ The CSF modeling approach is therefore validated at the geometric and sectional 
 for non-prismatic concrete tower geometries.
 
 ---
+## Justification of Reference Control Formulas
+
+The reference sectional properties used for verification are derived exclusively from
+standard closed-form expressions for an **ideal circular annulus**.
+
+These formulas are not part of the CSF implementation itself; they are used only as
+**external control equations** to validate the geometric consistency of the CSF results.
+
+---
+
+### Geometric Assumptions
+
+The control formulas assume that, at any longitudinal coordinate `z`:
+
+- the cross-section is a perfect circular ring,
+- the outer diameter `Do(z)` and wall thickness `t(z)` are known and vary linearly,
+- the inner diameter is computed as:
+
+```math
+D_i(z) = D_o(z) - 2\,t(z)
+```
+
+No assumptions are made regarding material heterogeneity, reinforcement layout,
+or numerical discretization.
+
+---
+
+### Reference Area Formula
+
+The reference cross-sectional area is computed as the difference between the areas
+of two concentric circles:
+
+```math
+A = \frac{\pi}{4}\left(D_o^2 - D_i^2\right)
+```
+
+This expression represents the exact geometric area of a hollow circular section.
+
+---
+
+### Reference Second Moment of Area
+
+The reference second moment of area about a centroidal axis is computed as:
+
+```math
+I = \frac{\pi}{64}\left(D_o^4 - D_i^4\right)
+```
+
+This is the exact analytical solution for a circular annulus and is independent of
+any numerical approximation.
+
+---
+
+### Purpose of the Control Formulas
+
+These formulas serve as a **geometry-only benchmark**:
+
+- they provide a fully traceable reference derived from published dimensions,
+- they allow direct verification of CSF geometric consistency,
+- they avoid reliance on undocumented or pre-tabulated benchmark properties.
+
+Any discrepancy between CSF results and these reference values can therefore be
+attributed to:
+
+- polygonal approximation of circular boundaries,
+- numerical integration effects,
+
+and **not** to ambiguity in the reference data.
+
+---
+
+### Scope Limitation
+
+The control formulas are used only for:
+
+- validation of concrete-only geometry,
+- sanity checks on sectional properties.
+
+They are **not** intended to replace CSF’s generalized homogenization framework,
+which supports arbitrary shapes, materials, and longitudinal property variation.
+
+---
 
 ## 9. Files
 
