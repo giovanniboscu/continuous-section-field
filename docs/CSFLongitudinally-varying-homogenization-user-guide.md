@@ -10,7 +10,7 @@ To ensure the engine correctly calculates the transition along the height, **you
 ### Unique Identification
 To avoid using confusing numerical indices for the connections (like "Pair #227"), each polygon must have a **unique name** within its section. This name acts as a human-readable label for the entire component's evolution. It makes it much easier to assign physical laws $w(z)$ to a specific structural member, such as a "Web" or "Flange," as it spans from the start to the end of the section field.
 While using the same name for both is not a technical requirement for the geometry, it is highly recommended for clarity and to ensure the correct physical properties are tracked along the height.
-
+In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept:  
 
 ### Automatic Mapping
 
