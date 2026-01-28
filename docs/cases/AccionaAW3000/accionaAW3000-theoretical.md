@@ -57,6 +57,36 @@ Assumption for steel inertia: **steel area Ast is smeared as a thin ring at mean
 | Effective Section Modulus W_eff | m³(eq) | 91.74 | 51.98 | 25.87 | 10.70 | 3.04 |
 
 
+# AW3000 — Single Consolidated Table (Geometry + Closed‑Form Results)
+
+| Key | Unit | Base (0 m) | S1 (30 m) | S2 (60 m) | S3 (90 m) | Top (120 m) |
+|---|---|---:|---:|---:|---:|---:|
+| **Height z** | m | 0 | 30 | 60 | 90 | 120 |
+| **Outer diameter Do** | m | 13.00 | 10.75 | 8.50 | 6.25 | 4.00 |
+| **Wall thickness t** | m | 0.80 | 0.66 | 0.52 | 0.39 | 0.25 |
+| **Inner diameter Di** | m | 11.40 | 9.43 | 7.46 | 5.47 | 3.50 |
+| **Mean radius Rm** | m | 6.10 | 5.04 | 3.99 | 2.93 | 1.88 |
+| **Passive steel As** | m² | 0.300 | 0.200 | 0.130 | 0.085 | 0.060 |
+| **Active steel Ap** | m² | 0.100 | 0.100 | 0.100 | 0.100 | 0.100 |
+| **Total steel Ast** | m² | 0.400 | 0.300 | 0.230 | 0.185 | 0.160 |
+|  |  |  |  |  |  |  |
+| **Concrete area A_c** | m² | 30.66 | 20.92 | 13.04 | 7.18 | 2.95 |
+| **Concrete inertia I_c** | m⁴ | 572.92 | 267.38 | 104.21 | 30.96 | 5.20 |
+| **Concrete polar moment Jp_c** | m⁴ | 1145.84 | 534.76 | 208.42 | 61.91 | 10.40 |
+| **Concrete Jsv** | m⁴ | 1145.84 | 534.76 | 208.42 | 61.91 | 10.40 |
+| **Concrete J Bredt** | m⁴ | 1140.93 | 532.48 | 207.54 | 61.64 | 10.35 |
+| **Concrete radius of gyration r_c** | m | 4.32 | 3.57 | 2.83 | 2.08 | 1.33 |
+| **Concrete section modulus W_c** | m³ | 88.14 | 49.75 | 24.52 | 9.91 | 2.60 |
+|  |  |  |  |  |  |  |
+| **Effective area A_eff (CLS=1, Steel=3.14)** | m²(eq) | 31.92 | 21.86 | 13.76 | 7.76 | 3.45 |
+| **Effective inertia I_eff** | m⁴(eq) | 596.29 | 279.37 | 109.96 | 33.45 | 6.08 |
+| **Effective polar moment Jp_eff** | m⁴(eq) | 1192.57 | 558.74 | 219.92 | 66.90 | 12.17 |
+| **Effective Jsv_eff** | m⁴(eq) | 1192.57 | 558.74 | 219.92 | 66.90 | 12.17 |
+| **Effective J Bredt‑like** | m⁴(eq) | 1187.67 | 556.46 | 219.04 | 66.62 | 12.12 |
+| **Effective radius r_eff** | m | 4.32 | 3.57 | 2.83 | 2.08 | 1.33 |
+| **Effective section modulus W_eff** | m³(eq) | 91.74 | 51.98 | 25.87 | 10.70 | 3.04 |
+
+
 # CSF Composite Results Table — Concrete + Steel (2 decimals)
 
 Section-selected analysis results at the five stations (values rounded to **2 decimals**).
