@@ -221,6 +221,28 @@ Computed **only** from ideal closed‑form expressions for a circular annulus:
 | J Roark / Bredt (thin‑wall) | m⁴ | 1140.93 | 532.48 | 207.54 | 61.64 | 10.35 |
 
 
+# Closed-Form vs CSF — Absolute & Percent Deviations (percent vs CSF)
+
+Reference values are computed from **ideal closed-form expressions** for a circular annulus using the published geometry (Do, t). Cell format: `|Δ| (|Δ| / CSF · 100%)`.
+
+| Key | Unit | Base (0 m) | S1 (30 m) | S2 (60 m) | S3 (90 m) | Top (120 m) |
+|---|---|---:|---:|---:|---:|---:|
+| Height (z) | m | 0.00 (—) | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) |
+| External Diameter | m | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) |
+| Wall Thickness (t) | m | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) |
+| Area A | m² | 0.13 (0.41%) | 0.01 (0.06%) | 0.06 (0.48%) | 0.07 (1.02%) | 0.01 (0.41%) |
+| Centroid Cx, Cy | m | 0.00 (—) | 0.00 (—) | 0.00 (—) | 0.00 (—) | 0.00 (—) |
+| Inertia Ix = Iy | m⁴ | 4.70 (0.83%) | 1.38 (0.52%) | 0.05 (0.05%) | 0.41 (1.35%) | 0.04 (0.83%) |
+| Product Ixy | m⁴ | 0.00 (—) | 0.00 (—) | 0.00 (—) | 0.00 (—) | 0.00 (—) |
+| Polar Moment J | m⁴ | 9.39 (0.83%) | 2.75 (0.52%) | 0.09 (0.05%) | 0.83 (1.35%) | 0.09 (0.83%) |
+| Principal I1 = I2 | m⁴ | 4.70 (0.83%) | 1.38 (0.52%) | 0.05 (0.05%) | 0.41 (1.35%) | 0.04 (0.83%) |
+| Radius of Gyration rx = ry | m | 0.01 (0.21%) | 0.01 (0.23%) | 0.01 (0.26%) | 0.00 (0.17%) | 0.00 (0.21%) |
+| Section Modulus Wx = Wy | m³ | 0.72 (0.83%) | 0.26 (0.52%) | 0.01 (0.05%) | 0.13 (1.35%) | 0.02 (0.83%) |
+| Torsional Rigidity K | m⁴ | n/a | n/a | n/a | n/a | n/a |
+| First Moment Q | m³ | n/a | n/a | n/a | n/a | n/a |
+| J Saint-Venant | m⁴ | 136.37 (10.64%) | 65.59 (10.93%) | 26.73 (11.37%) | 7.07 (10.25%) | 1.26 (10.81%) |
+| J Roark / Bredt | m⁴ | 140.67 (14.06%) | 64.23 (13.72%) | 24.18 (13.19%) | 7.87 (14.64%) | 1.28 (14.05%) |
+
 ---
 ## 7. Assessment
 
