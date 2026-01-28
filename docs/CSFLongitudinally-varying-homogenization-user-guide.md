@@ -78,8 +78,9 @@ Example
 ```
     # --- SECTION AND FIELD DEFINITION ---
     L = 10.0
-   s0 = Section(polygons=(poly_bottom_start,poly_top_start),z=0.0)
-   s1 = Section(polygons=(poly_bottom_end, poly_top_end),z=L)
+    s0 = Section(polygons=(poly_bottom_start, poly_top_start), z=0.0)
+    s1 = Section(polygons=(poly_bottom_end,  poly_top_end),  z=L)
+
 
 ```
 ---
