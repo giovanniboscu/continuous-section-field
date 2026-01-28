@@ -161,7 +161,7 @@ $$
 - **Continuous taper**: smooth transition between different shapes (e.g. tapered T-beams, conical tubes)
 - **Continuous properties**: $A(z)$, $I(z)$, $EA(z)$, $EI(z)$, $GJ(z)$ evaluated at any z (geometry from ruled-surface mapping)
 
-## Section Properties
+# Section Properties
 
 Section properties (area, inertia) are computed from geometry as:
 
@@ -186,7 +186,7 @@ Unlike traditional frame analysis software that treats members as prismatic, thi
 * **Dynamic Computation**: Every property is calculated "on-the-fly" at any longitudinal coordinate $z$ via linear vertex-mapping.
 * **Homogenization & Voids**: Full support for material homogenization through **positive weights** and internal voids or cut-outs through **negative weights**.
 
-# Cross-sectional properties 
+## Cross-sectional properties 
  
  [CSF – Section Full Analysis Output](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md)
  
