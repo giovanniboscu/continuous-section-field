@@ -197,6 +197,30 @@ Cell format: `|Δ| (|Δ| / Ref · 100%)`. For reference values equal to 0, the p
 | J Roark / Bredt | m⁴ | 133.24 (11.75%) | 64.84 (12.16%) | 23.44 (11.33%) | 6.74 (11.13%) | 1.02 (10.11%) |
 
 
+# Closed‑Form Reference Check — Circular Annulus (AW3000, H = 120 m)
+
+Computed **only** from ideal closed‑form expressions for a circular annulus:
+
+- A = (π/4)(Do² − Di²)
+- I = (π/64)(Do⁴ − Di⁴)
+
+| Key | Unit | Base (0 m) | S1 (30 m) | S2 (60 m) | S3 (90 m) | Top (120 m) |
+|---|---|---:|---:|---:|---:|---:|
+| Height (z) | m | 0 | 30 | 60 | 90 | 120 |
+| External Diameter | m | 13.00 | 10.75 | 8.50 | 6.25 | 4.00 |
+| Wall Thickness (t) | m | 0.80 | 0.66 | 0.52 | 0.39 | 0.25 |
+| Area A | m² | 30.66 | 20.92 | 13.04 | 7.18 | 2.95 |
+| Centroid Cx, Cy | m | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| Inertia Ix = Iy | m⁴ | 572.92 | 267.38 | 104.21 | 30.96 | 5.20 |
+| Product Ixy | m⁴ | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| Polar Moment J | m⁴ | 1145.84 | 534.76 | 208.42 | 61.91 | 10.40 |
+| Principal I1 = I2 | m⁴ | 572.92 | 267.38 | 104.21 | 30.96 | 5.20 |
+| Radius of Gyration rx = ry | m | 4.32 | 3.57 | 2.83 | 2.08 | 1.33 |
+| Section Modulus Wx = Wy | m³ | 88.14 | 49.75 | 24.52 | 9.91 | 2.60 |
+| J Saint‑Venant | m⁴ | 1145.84 | 534.76 | 208.42 | 61.91 | 10.40 |
+| J Roark / Bredt (thin‑wall) | m⁴ | 1140.93 | 532.48 | 207.54 | 61.64 | 10.35 |
+
+
 ---
 ## 7. Assessment
 
