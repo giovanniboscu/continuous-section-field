@@ -1,462 +1,161 @@
-# Technical Benchmark: Acciona AW3000 Concrete Tower (H = 120 m)
+# CSF Verification Report — Acciona AW3000 Concrete Tower (H = 120 m)
 
-**Model Type:** Perfect Frustum (Pure Truncated Cone)  
-**Reference:** Structural Engineering Benchmark for Wind Energy Projects
+This document is a **self-contained verification report** for the Acciona AW3000–type 120 m concrete tower, built around one principle:
 
----
+> **Only explicitly stated “project geometry” is treated as authoritative input.**  
+> Any “benchmark” sectional properties are **reconstructed** from known closed-form formulas so the reference is fully reproducible.
 
-## 1. Project Description
-This document provides a structural benchmark for a **120 m wind turbine concrete tower**, based on the **Acciona AW3000** platform. The geometry is modeled as a **perfect hollow frustum of a cone**, with **linear variation** of external diameter and wall thickness along the height. The benchmark is intended for **FEM (Finite Element Method) validation**, modal analysis, and comparison with reduced-order beam models.
-
----
-
-## 2. Geometric Data (Concrete Structure)
-The concrete section is defined by linear tapering laws:
-
-- **Diameter tapering gradient:** −0.075 m/m  
-- **Wall thickness tapering gradient:** −0.00458 m/m
-
-| Station | Height z (m) | External Diameter (m) | Wall Thickness (m) | Concrete Area Ac (m²) | Inertia I (m⁴) |
-|---|---:|---:|---:|---:|---:|
-| **Base** | 0 | 13.00 | 0.80 | 30.65 | 604.50 |
-| **S1** | 30 | 10.75 | 0.66 | 21.01 | 284.10 |
-| **S2** | 60 | 8.50 | 0.52 | 13.15 | 110.10 |
-| **S3** | 90 | 6.25 | 0.39 | 7.14 | 32.20 |
-| **Top** | 120 | 4.00 | 0.25 | 2.95 | 5.40 |
+The report ends with the CSF model assumptions and the resulting comparisons.
 
 ---
 
-## 3. Steel Reinforcement Details
-The steel reinforcement is divided into **passive (longitudinal rebar)** and **active (post-tensioning tendons)**.
+## 1. Project Geometry (Authoritative Inputs)
 
-### 3.1 Passive Steel (As – Longitudinal Reinforcement)
-Passive reinforcement provides crack control and flexural capacity. The reinforcement area decreases with height, following the bending moment envelope.
+The tower is idealized as a **perfect hollow frustum (truncated cone)** with linearly varying outer diameter `Do(z)` and wall thickness `t(z)`.
 
-| Station | Height z (m) | Area As (m²) | Ratio As/Ac | Engineering Note |
-|---|---:|---:|---:|---|
-| **Base** | 0 | 0.300 | 0.98% | High flexural demand |
-| **S1** | 30 | 0.200 | 0.95% | Mid-lower transition |
-| **S2** | 60 | 0.130 | 0.99% | Shear and fatigue control |
-| **S3** | 90 | 0.085 | 1.19% | Local wall stability |
-| **Top** | 120 | 0.060 | 2.03% | Flange connection zone |
+### 1.1 Stations
 
----
+| Station | Height z (m) | Outer Diameter Do (m) | Wall Thickness t (m) |
+|:--|--:|--:|--:|
+| Base | 0 | 13.00 | 0.80 |
+| S1 | 30 | 10.75 | 0.66 |
+| S2 | 60 | 8.50 | 0.52 |
+| S3 | 90 | 6.25 | 0.39 |
+| Top | 120 | 4.00 | 0.25 |
 
-### 3.2 Active Steel (Ap – Post-Tensioning Tendons)
-High-strength post-tensioning tendons run vertically along the tower height. The tendon area is assumed **constant** from base to top.
+### 1.2 Derived Inner Diameter
 
-| Station | Height z (m) | Area Ap (m²) | Continuity | Material Type |
-|---|---:|---:|:---:|---|
-| **All** | 0–120 | **0.100** | Constant | High-tensile steel (Y1860) |
----
-# Top & Base Section Areas (Concrete, Passive Steel, Active Steel)
+The inner diameter is derived directly from geometry:
 
-| Station | Height z (m) | Concrete Area Ac (m²) | Passive Steel Area As (m²) | Active Steel Area Ap (m²) | As/Ac (%) | Description |
-|--------|---------------|------------------------|-----------------------------|----------------------------|-----------|-------------|
-| Base   | 0             | 30.65                  | 0.300                       | 0.100                      | 0.98      | Maximum bending demand, thick wall, highest reinforcement density |
-| Top    | 120           | 2.95                   | 0.060                       | 0.100                      | 2.03      | Flange connection zone, reduced concrete area, higher relative steel ratio |
-
+```text
+Di(z) = Do(z) - 2 * t(z)
+```
 
 ---
 
-## 4. Summary of Composite Properties
-The following values are used for global mass and stiffness evaluations.
+## 2. Reconstructed “Benchmark” Section Properties (Geometry-Derived Reference)
 
-| Station | Height z (m) | Total Area Atot (m²) | Linear Weight (kN/m)* |
-|---|---:|---:|---:|
-| **Base** | 0 | 31.05 | 798.2 |
-| **S1** | 30 | 21.31 | 548.1 |
-| **S2** | 60 | 13.38 | 344.5 |
-| **S3** | 90 | 7.33 | 189.2 |
-| **Top** | 120 | 3.11 | 81.4 |
+This section reconstructs the reference sectional properties using **closed-form** expressions for an **ideal circular annulus**.  
+These values provide a transparent reference baseline for verification.
 
-*Assumed material densities: Concrete = 2500 kg/m³, Steel = 7850 kg/m³.*
+### 2.1 Reference Formulas (ideal circular annulus)
 
----
+```text
+Di = Do - 2*t
 
-## 5. Structural Modeling Guidelines
-- **Concrete class:** C60/75 or higher.
-- **Damping ratio:** Typically 1–2% for concrete towers.
-- **Post-tensioning force:** Initial force may be estimated as  
-  \( P_0 = A_p \cdot 0.7 f_{pk} \), with \( f_{pk} = 1860 \) MPa.
-- **FEM discretization:** Use at least **10 beam elements** along the height, or a refined shell mesh, to accurately capture tapering effects.
+A  = (pi/4)  * (Do^2 - Di^2)
+Ix = (pi/64) * (Do^4 - Di^4)      # Ix = Iy for circular annulus
 
----
-# CSF Verification Notes – Acciona AW3000 Concrete Tower (H = 120 m)
+J  = 2 * Ix                       # polar moment for circular section
+r  = sqrt(Ix / A)                 # radius of gyration
+W  = Ix / (Do/2)                  # section modulus at outer fiber
+```
 
-**Project Type:** Wind Turbine Tower – Structural Analysis Benchmark  
-**Geometry:** Perfect Hollow Frustum (Pure Truncated Cone)
+Notes:
+- `Cx = Cy = 0` and `Ixy = 0` by symmetry for a concentric annulus.
+- `I1 = I2 = Ix` for the same reason.
 
-This document provides **verification and congruence checks** between the analytical benchmark data of the Acciona AW3000 concrete tower and the corresponding **CSF (Continuous Section Field)** model results.
+### 2.2 Geometry-Derived Reference Table
 
----
-
-## 1. Concrete Geometry & Section Properties (Ac)
-
-The following table defines the **net concrete cross-section properties** at selected stations.  
-All values are **pure geometric properties** (non‑relativized) and are used as reference for CSF validation.
-
-### Geometry-derived reference (ideal circular annulus)
-
-Formulas used:
-- `Di = Do - 2*t`
-- `A  = (pi/4)  * (Do^2 - Di^2)`
-- `Ix = (pi/64) * (Do^4 - Di^4)`  (Ix = Iy)
-- `J  = 2 * Ix`
-- `r  = sqrt(Ix / A)`
-- `W  = Ix / (Do/2)`
-
-| Station | z (m) | Do (m) | t (m) | Di (m) | A_theory (m²) | Ix_theory (m⁴) | J_theory (m⁴) | r_theory (m) | W_theory (m³)  |
-|:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| Station | z (m) | Do (m) | t (m) | Di (m) | A_ref (m²) | Ix_ref (m⁴) | J_ref (m⁴) | r_ref (m) | W_ref (m³) |
+|:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|
 | Base | 0 | 13.00 | 0.80 | 11.40 | 30.661944 | 572.918429 | 1145.836858 | 4.322615 | 88.141297 |
 | S1 | 30 | 10.75 | 0.66 | 9.43 | 20.921122 | 267.381617 | 534.763233 | 3.574977 | 49.745417 |
-| S2 | 60 | 8.50 | 0.52 | 7.46 | 13.036353 | 104.210649 | 208.421299 | 2.827340 | 24.520153  |
+| S2 | 60 | 8.50 | 0.52 | 7.46 | 13.036353 | 104.210649 | 208.421299 | 2.827340 | 24.520153 |
 | S3 | 90 | 6.25 | 0.39 | 5.47 | 7.179796 | 30.955421 | 61.910841 | 2.076406 | 9.905735 |
-| Top | 120 | 4.00 | 0.25 | 3.50 | 2.945243 | 5.200195 | 10.400390 | 1.328768 | 2.600097  |
-|
+| Top | 120 | 4.00 | 0.25 | 3.50 | 2.945243 | 5.200195 | 10.400390 | 1.328768 | 2.600097 |
 
 ---
 
-## 2. Steel Reinforcement Breakdown
+## 3. CSF Model Used in This Verification
 
-Steel areas are provided per station and are **independent of CSF relativization**. They are used to define polygonal regions and weighting functions.
+### 3.1 Cross-section representation
 
-### 2.1 Passive Steel Area (As)
-*Longitudinal reinforcement and stirrups for bending, shear, and crack control.*
+Each station is modeled in CSF with **four concentric regions**, approximating circles via regular polygons:
 
-| Station | Height (m) | As (m²) | As / Ac | Structural Role |
-|---|---:|---:|---:|---|
-| **Base** | 0 | 0.300 | 0.98% | Maximum bending demand |
-| **S1** | 30 | 0.200 | 0.95% | Continuity |
-| **S2** | 60 | 0.130 | 0.99% | Crack control |
-| **S3** | 90 | 0.085 | 1.19% | Local stability |
-| **Top** | 120 | 0.060 | 2.03% | Flange reinforcement |
+- `C1`: outer concrete boundary (`Do`)
+- `C4`: inner concrete boundary (`Di`) — central void
+- `C2–C3`: optional **equivalent steel ring** (not used in the concrete-only test below)
 
----
+Circular boundaries are approximated with **regular 40-sided polygons** (41 vertices including closure).
 
-### 2.2 Active Steel Area (Ap)
-*Post‑tensioning tendons (high‑tensile steel).*
+### 3.2 Important modeling note (no material superposition)
 
-| Station | Height (m) | Ap (m²) | Trend | Material Grade |
-|---|---:|---:|---|---|
-| **Base → Top** | 0–120 | **0.100** | Constant | Y1860 S7 |
+CSF does **not** model “overlapping matter”.  
+Nested polygons are interpreted through **containment**, and effective contributions are handled internally by CSF.
 
----
+For voids/holes, the user declares:
 
-## 3. Congruence with CSF Model
+```text
+w_void = 0
+```
 
-### 3.1 Section‑Level Verification
-- CSF **geometric partial areas** computed via region selection match the benchmark values of **Ac** within numerical tolerance.
-- Centroid location is preserved at (0,0) due to axisymmetric geometry.
-- Ix, Iy, and J computed by CSF for concrete‑only regions reproduce the benchmark values listed above.
+CSF manages the internal bookkeeping so that the overlapped region contributes zero to the weighted integrals.
 
-### 3.2 Relativized vs Geometric Quantities
-- CSF **structural calculations** use *relativized* section properties (weighted by reference material).
-- The values in this document correspond to **pure geometric references** and are used for:
-  - conceptual validation,
-  - comparison with closed‑form solutions,
-  - FEM benchmarking.
+### 3.3 Steel representation (if used)
 
-### 3.3 Torsional Behavior
-- **Saint‑Venant torsion (Jsv):** For circular closed sections, equal to polar moment J.
-- **Roark / Bredt torsion:** Slightly lower; assumes shear flow at mid‑thickness. Recommended for thin‑walled concrete towers.
-- CSF allows both interpretations for verification purposes, without ambiguity.
+When steel is modeled as an equivalent ring, CSF uses *calculation diameters* `D2` and `D3` chosen to match a target steel area.
 
-### 3.4 Dynamic Benchmark Consistency
-The mass and stiffness distribution implied by these properties maintains the first natural frequency **f₁ ≈ 0.25–0.30 Hz**, avoiding:
-- **1P** rotor frequency resonance,
-- **3P** blade‑passing frequency resonance.
+```text
+A_ring = As + Ap
+D_mid  = Do - t
+```
 
----
-# Tower Section Diameters (Base and Top)
-
-# 4‑Circle Section Geometry 
-Acciona AW3000 Concrete Tower – H = 120 m
-
-## Base Section (z = 0 m)
-
-| Level (z) | Circle | Description                   | Diameter (m) |
-|-----------|--------|-------------------------------|---------------|
-| 0 m       | 1      | Concrete – outer diameter     | 13.000        |
-| 0 m       | 2      | Steel – outer diameter        | 11.426        |
-| 0 m       | 3      | Concrete – inner diameter     | 11.400        |
-| 0 m       | 4      | Void – inner diameter         | 11.200        |
-
-### Inner concrete ring thickness:
-- (11.400 − 11.200) / 2 = **0.10 m**
+This is a **modeling abstraction** intended for global equivalence (mass/stiffness), not a representation of discrete bars/tendons.
 
 ---
 
-## Top Section (z = 120 m)
+## 4. CSF Results — Concrete-Only Section Verification
 
-| Level (z) | Circle | Description                   | Diameter (m) |
-|-----------|--------|-------------------------------|---------------|
-| 120 m     | 1      | Concrete – outer diameter     | 4.000         |
-| 120 m     | 2      | Steel – outer diameter        | 3.529         |
-| 120 m     | 3      | Concrete – inner diameter     | 3.500         |
-| 120 m     | 4      | Void – inner diameter         | 3.300         |
+To validate CSF geometry and section-property reconstruction, a **concrete-only** configuration is evaluated (steel disabled):
 
-### Inner concrete ring thickness:
-- (3.500 − 3.300) / 2 = **0.10 m**
+- C1 = 1
+- C2 = 1
+- C3 = 1
+- C4 = 0
 
+### 4.1 CSF results (reported)
 
-
-
-# Weight Logic for Concentric Rings in CSF
-### Technical Documentation
-
-This section describes the general weight‑based logic used in CSF when defining concentric rings for tower cross‑sections.  
-The mechanism is fully generic: voids, materials, degraded zones, and overlays are all handled by the same rule, with no special cases.
+| z (m) | CSF A (m²) | CSF I (m⁴) |
+|---:|---:|---:|
+| 0 | 30.535990 | 568.223411 |
+| 30 | 20.908923 | 266.006341 |
+| 60 | 13.099427 | 104.163548 |
+| 90 | 7.107502 | 30.542182 |
+| 120 | 2.933148 | 5.157587 |
 
 ---
 
-## 1. Rings as Independent Layers
+## 5. Comparison — CSF vs Geometry-Derived Reference
 
-Each ring is defined by:
+Percent differences are computed as:
 
-- its geometry (a closed polygon)
-- a stiffness weight $W$, representing its contribution to the effective section
+```text
+Δ(%) = (CSF - Ref) / Ref * 100
+```
 
-The weight is a scalar multiplier applied to the stiffness contribution of that ring.
-
-Examples:
-
-- $W = 1.0$ → full material (e.g., concrete)  
-- $W = 0.0$ → void  
-- $W = E_s / E_c$ → homogenized steel  
-- $W < 1.0$ → degraded material  
-- $W > 1.0$ → stiffer material or reinforcement  
-
----
-
-## 2. Overlapping Rings: General Combination Rule
-
-When two rings overlap, CSF computes the effective weight using a single universal rule:
-
-$$
-W_{\text{eff}} = W_{\text{upper}} - W_{\text{lower}}
-$$
-
-Where:
-
-- **upper** = the ring defined later (higher in the stack)  
-- **lower** = the ring defined earlier  
-
-This rule applies to all cases.
+| z (m) | CSF A (m²) | A_ref (m²) | ΔA (%) | CSF I (m⁴) | Ix_ref (m⁴) | ΔI (%) |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 30.535990 | 30.661944 | -0.411 | 568.223411 | 572.918429 | -0.820 |
+| 30 | 20.908923 | 20.921122 | -0.058 | 266.006341 | 267.381617 | -0.514 |
+| 60 | 13.099427 | 13.036353 | +0.484 | 104.163548 | 104.210649 | -0.045 |
+| 90 | 7.107502 | 7.179796 | -1.007 | 30.542182 | 30.955421 | -1.335 |
+| 120 | 2.933148 | 2.945243 | -0.411 | 5.157587 | 5.200195 | -0.819 |
 
 ---
 
-## 3. Voids Are Not Special Cases
+## 6. Assessment
 
-A void is simply defined as:
+- Cross-section **areas** match the geometry-derived reference within approximately **±1.1%**.
+- Second moments of area match within approximately **±1.4%**.
+- The magnitude and sign of deviations are consistent with approximating circular boundaries using a finite-sided polygon.
 
-$$
-W_{\text{void}} = 0
-$$
-
-When a void overlaps a material:
-
-$$
-W_{\text{eff}} = 0 - W_{\text{mat}} = -W_{\text{mat}}
-$$
-
-A negative effective weight indicates that the upper ring removes stiffness from the lower ring.  
-CSF interprets this automatically as a subtraction of material.
-
-No boolean operations or special handling are required.
+No evidence of a systematic modeling bias is observed in this concrete-only verification.
 
 ---
 
-## 4. Material Replacement and Composite Layers
+## 7. Files / Reproducibility
 
-Given:
+- CSF geometry YAML (40-gon, 4 concentric regions): `acciona_aw3000_4circles_40sides.yaml`
 
-- Material 1 with weight $W_1$  
-- Material 2 with weight $W_2$ placed above it  
-
-The effective contribution is:
-
-$$
-W_{\text{eff}} = W_2 - W_1
-$$
-
-Interpretation:
-
-- If $W_2 > W_1$: the upper material adds stiffness  
-- If $W_2 < W_1$: the upper material reduces stiffness  
-- If $W_2 = W_1$: the upper material replaces the lower one with no net change  
-
-This supports:
-
-- steel overlays  
-- steel substitution  
-- degraded zones  
-- multi‑material composites  
-- partial stiffness reductions  
-
----
-
-## 5. Consequences for Tower Modeling
-
-Using this weight logic:
-
-- Voids, concrete, steel, and degraded regions are all treated uniformly  
-- No special geometry operations are needed  
-- The section remains fully parametric and modular  
-- Any number of rings can be added or removed without changing the logic  
-- Local modifications (e.g., degradation at specific heights) are easy to implement  
-
-This makes the ring‑based approach suitable for:
-
-- continuous tower definitions  
-- parametric studies  
-- stiffness sensitivity analyses  
-- degradation modeling  
-- rapid regeneration of section properties  
-
-
----
-## 4. Structural Modeling Notes
-
-- **Concrete class:** C60/75 or higher.
-- **Damping ratio:** 1–2% (typical for concrete towers).
-- **Post‑tensioning force:**  
-  $P_0 = A_p \cdot 0.7 f_{pk}$, with $f_{pk} = 1860$ MPa.
-- **Fallback torsional rigidity:**  
-  $K \approx A^4 / (40 \cdot I_p)$ (conservative).
-- **Preferred torsional model:** Roark / Bredt formulation.
-
----
-# Differential Concrete Degradation in CSF
-# Outer vs Inner Concrete Rings with Height‑Dependent Weight Functions
-# Engineering Rationale, Mathematical Formulation, and CSF Implementation
-
-## 1. Introduction
-
-Concrete wind turbine towers often exhibit non‑uniform stiffness degradation along their height.
-Environmental exposure, cracking, moisture gradients, and thermal cycling typically affect the outer concrete shell more severely than the inner concrete core.
-
-The CSF (Concentric Section Framework) naturally supports this behavior by allowing each geometric ring to have its own weight function:
-
-    w = "expression in z"
-
-This weight scales the material stiffness (e.g., Young’s modulus) at height z.
-
-## 2. Why Outer and Inner Concrete Behave Differently
-
-### 2.1 Mechanical justification
-
-In bending‑dominated structures such as tall concrete towers:
-
-- The outer fibers carry the largest tensile and compressive strains.
-- These fibers are the first to crack, micro‑crack, or degrade.
-- The internal concrete remains mostly in compression, with lower strain gradients.
-
-Thus:
-
-- Outer concrete stiffness decreases significantly due to cracking and environmental exposure.
-- Inner concrete stiffness remains closer to the uncracked modulus.
-
-This is consistent with:
-
-- Eurocode 2 concepts of cracked vs uncracked stiffness
-- Tension stiffening models
-- Effective stiffness reduction in tall concrete structures
-- Observed behavior in real concrete towers (e.g., Acciona AW3000, Enercon hybrid towers)
-
-## 3. Engineering Scenario (Realistic)
-
-We consider a 120 m concrete tower (e.g., Acciona AW3000 type).
-Assume:
-
-- The first 30 m experience stronger environmental degradation.
-- The outer shell is significantly cracked.
-- The inner core is only mildly affected.
-
-This produces a realistic stiffness gradient.
-
-## 4. Mathematical Formulation of the Weight Functions
-
-### 4.1 Outer concrete ring (strong degradation)
-
-At the base:
-- Effective stiffness = 60% of the intact value
-- Linearly recovers to 100% at 30 m
-
-Mathematically:
-
-    W_outer(z) = 0.60 + 0.40*(z/30)   for 0 ≤ z ≤ 30
-    W_outer(z) = 1.00                 for z > 30
-
-### 4.2 Inner concrete ring (mild degradation)
-
-At the base:
-- Effective stiffness = 90% of the intact value
-- Recovers to 100% at 30 m
-
-Mathematically:
-
-    W_inner(z) = 0.90 + 0.10*(z/30)   for 0 ≤ z ≤ 30
-    W_inner(z) = 1.00                 for z > 30
-
-## 5. CSF Implementation (Copy‑Paste Ready)
-
-CSF uses boolean masks inside the weight expression.
-These evaluate to 1 or 0, allowing piecewise functions in a single line.
-
-### Outer concrete ring
-
-    w = "(z <= 30)*(0.60 + 0.40*(z/30)) + (z > 30)*1.00"
-       w = "0.60 + 0.40/(1 + exp(-(z-15)/5))"
-### Inner concrete ring
-
-    w = "(z <= 30)*(0.90 + 0.10*(z/30)) + (z > 30)*1.00
-    "w = "0.90 + 0.10/(1 + exp(-(z-15)/5))"
-
-These expressions:
-
-- are valid CSF syntax
-- are single‑line
-- require no Python code
-- produce a continuous stiffness profile
-- are fully versionable and documentable
-
-## 6. Engineering Interpretation
-
-### At the base (z = 0)
-
-- Outer concrete: W = 0.60
-- Inner concrete: W = 0.90
-
-This reflects:
-- severe cracking on the outside
-- mild degradation inside
-
-### At z = 30 m
-
-Both return to:
-- W = 1.00
-
-representing a fully intact section.
-
-### Above 30 m
-
-The tower behaves as an uncracked, intact concrete section.
-
-## 7. Practical Use in Engineering
-
-This model is not a normative verification, but it is extremely useful for:
-
-- stiffness sensitivity studies
-- pre‑design
-- comparison of tower variants
-- dynamic behavior estimation
-- generating consistent input for FEM beam models
-- documenting degradation assumptions
-- academic or training purposes
-
-
-
-
-
-*This benchmark is intended as a reference geometry and reinforcement layout for comparison with numerical models, including CSF-based relativized section approaches.*
+To reproduce the reference values, use the formulas in Section 2.1 with the project geometry table in Section 1.1.
