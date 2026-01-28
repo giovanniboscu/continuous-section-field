@@ -1,91 +1,170 @@
 # CSF Verification Report — Acciona AW3000 Concrete Tower (H = 120 m)
-This report summarizes CSF validation runs performed on a simplified 120 m concrete wind-turbine tower benchmark (AW3000-style). The tower is represented with two stations (z = 0 m and z = 120 m) and four concentric circular regions approximated by 40-sided polygons.
 
-## 1. Geometry model used in CSF
+This report summarizes validation runs performed with **CSF (Continuous Section Field)**
+on a simplified benchmark model of a 120 m concrete wind-turbine tower
+(Acciona AW3000–type geometry).
 
-Two stations were defined:
+The purpose of this report is to document:
+- the **input geometry and weights** used in CSF,
+- the resulting **section properties**,
+- and their **comparison with published benchmark values**.
 
-- **S0 (z = 0 m)**: D1=13.000000, D2=12.210436, D3=12.189564, D4=11.400000 (m)
-- **S1 (z = 120 m)**: D1=4.000000, D2=3.763581, D3=3.736419, D4=3.500000 (m)
+No internal CSF algorithms or weighting mechanics are discussed here.
+Only declared inputs and computed results are reported.
 
-Region meaning:
+---
 
-- **C1 (D1)**: outer concrete boundary
-- **C2 (D2)**: outer boundary of the *steel equivalent ring*
-- **C3 (D3)**: inner boundary of the steel ring (concrete resumes)
-- **C4 (D4)**: inner concrete boundary (central void / hole)
+## 1. Geometry Model Used in CSF
 
-All circles are modeled as regular **40-gons** (41 vertices including closure).
+The tower is modeled using **two longitudinal stations**:
 
-## 2. Weighting concept (W)
+- **S0 (z = 0 m)**  
+  D1 = 13.000000 m  
+  D2 = 12.210436 m  
+  D3 = 12.189564 m  
+  D4 = 11.400000 m  
 
-CSF computes *weighted/relativized* section properties. With nested polygons, the effective weight in each annular region is the difference between the child and its immediate container (parent).
+- **S1 (z = 120 m)**  
+  D1 = 4.000000 m  
+  D2 = 3.763581 m  
+  D3 = 3.736419 m  
+  D4 = 3.500000 m  
 
-For the concentric case:
+### Region Definition
 
-- Effective weight in **C1→C2** ring is **W(C1)**
-- Effective weight in **C2→C3** ring is **W(C2) − W(C1)**
-- Effective weight in **C3→C4** ring is **W(C3) − W(C2)**
-- Effective weight in the **hole** is **W(C4) − W(C3)** (typically forced to 0)
+Each cross-section is composed of four concentric regions:
 
-## 3. Benchmark reference values
+- **C1 (D1)** — outer concrete boundary  
+- **C2 (D2)** — outer boundary of the steel-equivalent ring  
+- **C3 (D3)** — inner boundary of the steel ring (concrete resumes)  
+- **C4 (D4)** — inner concrete boundary (central void)
 
-The benchmark provides concrete-only geometric properties at five stations (0, 30, 60, 90, 120 m). Key targets used here:
+All circular regions are represented as **regular 40-sided polygons**
+(41 vertices including closure).
 
-- Concrete net area **Ac**
+---
+
+## 2. Weight Assignment Used in CSF
+
+Each region is assigned an **absolute weight value**.
+
+CSF internally handles containment and weighting during section-property
+evaluation. No manual subtraction, layering, or geometric manipulation
+is performed at the user level.
+
+Only the absolute values used in each test case are reported below.
+
+---
+
+## 3. Benchmark Reference Values
+
+The reference benchmark provides **concrete-only** geometric properties
+at five elevations:
+
+- z = 0 m
+- z = 30 m
+- z = 60 m
+- z = 90 m
+- z = 120 m
+
+The primary comparison targets are:
+
+- Net concrete area **Ac**
 - Second moment of area **Ix = Iy**
 
-## 4. Test Case A — Concrete geometry only (benchmark Ac/I check)
+---
 
-**Weights:** C1=1, C2=1, C3=1, C4=0
+## 4. Test Case A — Concrete Geometry Only  
+*(Benchmark Ac / Ix consistency check)*
 
-This configuration forces the field to be 1 in the entire concrete wall up to the benchmark inner diameter (hole at C4), excluding steel effects.
+### Assigned Weights
 
-### A.1 Comparison vs benchmark
+- C1 = 1  
+- C2 = 1  
+- C3 = 1  
+- C4 = 0  
+
+This configuration represents a purely concrete section with a central void
+and excludes any steel contribution.
+
+### 4.1 Comparison with Benchmark
 
 | z (m) | CSF A (m²) | Bench Ac (m²) | ΔA (%) | CSF Ix (m⁴) | Bench Ix (m⁴) | ΔIx (%) |
 |---:|---:|---:|---:|---:|---:|---:|
-|   0 |  30.535990 |      30.65 |  -0.372 |  568.223411 |       604.5 |  -6.001 |
-|  30 |  20.908923 |      21.01 |  -0.481 |  266.006341 |       284.1 |  -6.369 |
-|  60 |  13.099427 |      13.15 |  -0.385 |  104.163548 |       110.1 |  -5.392 |
-|  90 |   7.107502 |       7.14 |  -0.455 |   30.542182 |        32.2 |  -5.149 |
-| 120 |   2.933148 |       2.95 |  -0.571 |    5.157587 |         5.4 |  -4.489 |
+|   0 | 30.535990 | 30.65 | -0.372 | 568.223411 | 604.5 | -6.001 |
+|  30 | 20.908923 | 21.01 | -0.481 | 266.006341 | 284.1 | -6.369 |
+|  60 | 13.099427 | 13.15 | -0.385 | 104.163548 | 110.1 | -5.392 |
+|  90 |  7.107502 |  7.14 | -0.455 |  30.542182 |  32.2 | -5.149 |
+| 120 |  2.933148 |  2.95 | -0.571 |   5.157587 |   5.4 | -4.489 |
 
-**Observations (Test Case A):**
+### Observations (Test Case A)
 
-- **Area** matches closely (errors ~0.4–0.6%), consistent with a 40-gon approximation.
-- **Ix** is consistently ~4–6% lower than the benchmark table. This is larger than the 40-gon discretization error and suggests that the benchmark **Ix** values are not strictly consistent with (D, t) if interpreted as a perfect circular annulus.
+- **Area (A)** agreement is within ~0.4–0.6%, consistent with the
+  40-gon geometric approximation.
+- **Second moment of area (Ix)** is consistently ~4–6% lower than the
+  benchmark values.
+- The inertia discrepancy exceeds the expected polygonal discretization
+  error and suggests that the benchmark **Ix** values are not strictly
+  consistent with a perfect circular annulus derived directly from
+  the published `(D, t)` data.
 
-## 5. Test Case B — Composite, density-homogenized section (steel total area)
+---
 
-Goal: include the steel equivalent ring (C2–C3) using a density ratio relative to concrete, while keeping the central void at C4.
+## 5. Test Case B — Composite Section  
+*(Density-homogenized steel contribution)*
 
-**Weights (density ratio):** C1=1, C2=3.14, C3=1, C4=0
+### Objective
 
-- 3.14 ≈ 7850/2500 (steel/concrete density ratio)
-- With nesting, the steel ring contributes an *equivalent* increment proportional to **(C2 − 1)** in the annulus C2–C3.
+Include the steel-equivalent ring (`C2–C3`) using a density-based
+homogenization relative to concrete, while preserving the same geometry
+and central void.
 
-### B.1 CSF results (composite, C2=3.14)
+### Assigned Weights (density ratio)
 
-| z (m) | CSF Aeq (m²) | CSF Ix (m⁴) |
+- C1 = 1  
+- C2 = 3.14  
+- C3 = 1  
+- C4 = 0  
+
+where:
+
+- `3.14 ≈ ρ_steel / ρ_concrete ≈ 7850 / 2500`
+
+### 5.1 CSF Results (Composite Section)
+
+| z (m) | CSF A_eq (m²) | CSF Ix (m⁴) |
 |---:|---:|---:|
-|   0 |    31.388437 |   584.018120 |
-|  30 |    21.666868 |   275.607621 |
-|  60 |    13.740627 |   109.240231 |
-|  90 |     7.609716 |    32.690907 |
-| 120 |     3.274135 |     5.754526 |
+|   0 | 31.388437 | 584.018120 |
+|  30 | 21.666868 | 275.607621 |
+|  60 | 13.740627 | 109.240231 |
+|  90 |  7.609716 |  32.690907 |
+| 120 |  3.274135 |   5.754526 |
 
-**Interpretation (Test Case B):**
+### Interpretation (Test Case B)
 
-- **Aeq** is a *concrete-equivalent* area for mass (and, if desired, stiffness) scaling; it is not equal to the geometric area Ac.
-- The increase from Test Case A to Test Case B is driven by the thin steel ring (C2–C3) multiplied by (ρs/ρc − 1).
+- **A_eq** represents a *concrete-equivalent* area suitable for mass scaling
+  (and, if required, stiffness scaling); it is not a geometric area.
+- Differences relative to Test Case A arise exclusively from the
+  steel-equivalent region, while the concrete geometry remains unchanged.
 
-## 6. Notes / limitations
+---
 
-- The steel reinforcement is represented as a **continuous thin ring**, calibrated to match the *total* steel area (As+Ap). This reproduces mass-equivalent effects but does not represent the discrete bar/tendon layout.
-- If you need **As** and **Ap** separately, you must introduce **two distinct steel regions** (or two independent weighting fields).
-- The benchmark table appears to use a different convention or rounding for inertia values (Ix) than the pure annulus formula implied by (D, t). CSF results are internally consistent with the supplied diameters and the polygonal discretization.
+## 6. Notes and Limitations
+
+- Steel reinforcement is modeled as a **continuous thin annular region**
+  calibrated to match the *total* steel area.
+  This approach reproduces global mass-equivalent effects but does **not**
+  represent discrete bar or tendon layouts.
+- If separate contributions of **As** and **Ap** are required, they must be
+  modeled as **distinct regions** with independent weight assignments.
+- The benchmark inertia values appear to follow a convention or rounding
+  scheme different from the pure annular formulation implied by `(D, t)`.
+  CSF results are internally consistent with the supplied diameters and the
+  adopted polygonal discretization.
+
+---
 
 ## 7. Files
 
-- CSF geometry YAML (40-gon, 4 rings): `acciona_aw3000_4circles_40sides.yaml`
+- CSF geometry definition (40-gon, four concentric regions):  
+  `acciona_aw3000_4circles_40sides.yaml`
