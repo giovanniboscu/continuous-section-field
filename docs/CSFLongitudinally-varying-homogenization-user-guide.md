@@ -169,7 +169,7 @@ When working with a single material, we use **1.0** to represent "Full Material"
 * **Solid:** `weight = 1.0`
 * **Void (Hole):** `weight = 0.0`
 
-**The Superposition Principle (as seen by the user):**
+**Apparent Superposition (user perspective):**
 If you place a void polygon (`W = 0.0`) over a solid region (`W = 1.0`), CSF automatically treats the overlap as a true void in the section integrals.
 
 ---
