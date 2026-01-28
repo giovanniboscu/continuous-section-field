@@ -52,7 +52,8 @@ CSF internally handles containment and weighting during section-property
 evaluation. No manual subtraction, layering, or geometric manipulation
 is performed at the user level.
 
-Only the absolute values used in each test case are reported below.
+The absolute weight values used in each test case are reported explicitly
+in the “Assigned Weights” blocks of Sections 4 and 5.
 
 ---
 
