@@ -151,7 +151,53 @@ To verify geometric consistency, a **concrete-only configuration** is evaluated:
 | 120 | -0.41 | -0.82 |
 
 ---
+# CSF Results Table — Acciona AW3000 Concrete Tower (H = 120 m)
 
+This table reproduces the **benchmark-style layout** using the **CSF section-selected analysis** results (concrete-only) at the five stations.
+
+| Key | Unit | Base (0 m) | S1 (30 m) | S2 (60 m) | S3 (90 m) | Top (120 m) |
+|---|---|---:|---:|---:|---:|---:|
+| Height (z) | m | 0 | 30 | 60 | 90 | 120 |
+| External Diameter | m | 13.00 | 10.75 | 8.50 | 6.25 | 4.00 |
+| Wall Thickness (t) | m | 0.80 | 0.66 | 0.52 | 0.39 | 0.25 |
+| Area A | m² | 30.54 | 20.91 | 13.10 | 7.11 | 2.93 |
+| Centroid Cx, Cy | m | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| Inertia Ix = Iy | m⁴ | 568.22 | 266.01 | 104.16 | 30.54 | 5.16 |
+| Product Ixy | m⁴ | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
+| Polar Moment J | m⁴ | 1136.45 | 532.01 | 208.33 | 61.08 | 10.32 |
+| Principal I1 = I2 | m⁴ | 568.22 | 266.01 | 104.16 | 30.54 | 5.16 |
+| Radius of Gyration rx = ry | m | 4.31 | 3.57 | 2.82 | 2.07 | 1.33 |
+| Section Modulus Wx = Wy | m³ | 87.42 | 49.49 | 24.51 | 9.77 | 2.58 |
+| Torsional Rigidity K | m⁴ | 19.13 | 8.98 | 3.53 | 1.04 | 0.18 |
+| First Moment Q | m³ | 59.25 | 33.55 | 16.62 | 6.63 | 1.75 |
+| J Saint-Venant (CSF `J_sv`) | m⁴ | 1282.20 | 600.35 | 235.15 | 68.98 | 11.66 |
+| J Roark / Bredt (CSF `J_s_vroark`) | m⁴ | 1000.26 | 468.26 | 183.36 | 53.76 | 9.08 |
+
+
+# CSF vs Reference — Absolute & Percent Deviations (AW3000, H = 120 m)
+
+Cell format: `|Δ| (|Δ| / Ref · 100%)`. For reference values equal to 0, the percentage is shown as `—`.
+
+| Key | Unit | Base (0 m) | S1 (30 m) | S2 (60 m) | S3 (90 m) | Top (120 m) |
+|---|---|---:|---:|---:|---:|---:|
+| Height (z) | m | 0.00 (—) | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) |
+| External Diameter | m | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) |
+| Wall Thickness (t) | m | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) | 0.00 (0.00%) |
+| Area A | m² | 0.11 (0.37%) | 0.10 (0.48%) | 0.05 (0.38%) | 0.03 (0.46%) | 0.02 (0.57%) |
+| Centroid Cx, Cy | m | 0.00 (—) | 0.00 (—) | 0.00 (—) | 0.00 (—) | 0.00 (—) |
+| Inertia Ix = Iy | m⁴ | 36.28 (6.00%) | 18.09 (6.37%) | 5.94 (5.39%) | 1.66 (5.15%) | 0.24 (4.49%) |
+| Product Ixy | m⁴ | 0.00 (—) | 0.00 (—) | 0.00 (—) | 0.00 (—) | 0.00 (—) |
+| Polar Moment J | m⁴ | 72.55 (6.00%) | 36.19 (6.37%) | 11.87 (5.39%) | 3.32 (5.15%) | 0.48 (4.49%) |
+| Principal I1 = I2 | m⁴ | 36.28 (6.00%) | 18.09 (6.37%) | 5.94 (5.39%) | 1.66 (5.15%) | 0.24 (4.49%) |
+| Radius of Gyration rx = ry | m | 0.13 (2.84%) | 0.10 (2.81%) | 0.07 (2.43%) | 0.05 (2.22%) | 0.02 (1.77%) |
+| Section Modulus Wx = Wy | m³ | 5.58 (6.00%) | 3.31 (6.27%) | 1.39 (5.37%) | 0.53 (5.11%) | 0.12 (4.49%) |
+| Torsional Rigidity K | m⁴ | 0.93 (5.09%) | 5.58 (164.16%) | 3.19 (939.26%) | 1.02 (5122.13%) | 0.18 (89595.24%) |
+| First Moment Q | m³ | 29.65 (100.18%) | 16.75 (99.69%) | 8.42 (102.64%) | 3.43 (107.11%) | 0.95 (118.70%) |
+| J Saint-Venant | m⁴ | 73.20 (6.05%) | 32.15 (5.66%) | 14.95 (6.79%) | 4.58 (7.11%) | 0.86 (7.97%) |
+| J Roark / Bredt | m⁴ | 133.24 (11.75%) | 64.84 (12.16%) | 23.44 (11.33%) | 6.74 (11.13%) | 1.02 (10.11%) |
+
+
+---
 ## 7. Assessment
 
 - Cross-section **areas** computed by CSF agree with the geometry-derived reference
