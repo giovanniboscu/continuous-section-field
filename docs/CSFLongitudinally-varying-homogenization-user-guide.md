@@ -303,6 +303,18 @@ When defining a custom law string, the mathematical engine enforces strict valid
 > **Warning on Voids/Holes:** If your law is for a void, the result should be **0.0** (not negative).  
 > Example: `"void,void : 0.0"`
 
+> **Negative weights**
+>  
+> Negative values are **not forbidden** by CSF.  
+> They are allowed but require **explicit user awareness**, as they may represent
+> subtractive or corrective modeling choices rather than standard physical properties.
+>  
+> CSF issues a **warning** whenever negative weights are detected, but the computation
+> proceeds without modification.
+
+
+Così:
+
 #### 🛠️ Best Practice: Clamping and Safety
 To prevent unphysical results (like a stiffness dropping to zero or becoming negative due to extreme inputs), it is highly recommended to use a **clamping** logic. This ensures a minimum residual stiffness ($E_{min}$).
 
