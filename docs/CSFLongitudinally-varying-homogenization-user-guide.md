@@ -278,7 +278,7 @@ When using the distance function `d(i, j)` in your weight laws:
 
 ### Data-Driven Modeling: E_lookup data from external text file 
 
-If you have experimental data (e.g., from a sensor or a thermal analysis), put it in a text file ,example stiffness.txt:
+If you have experimental data (e.g., from a sensor or a thermal analysis), put it in a text file, for example `stiffness.txt`:
 The first column in the lookup file is the physical coordinate z (same units as the model, from 0 to L).
 ```
 # Z-coord   Value
@@ -553,4 +553,4 @@ Using a chain of elements + `beamIntegration UserDefined` is the **enforcement m
 - **No arbitrary averaging:** section properties are not collapsed into equivalent prismatic blocks.
 - **Controlled sampling:** the sampling locations are prescribed by the Gauss–Lobatto rule.
 - **Exact end conditions:** Lobatto stations include the endpoints, so support and tip conditions coincide with the real member ends.
-- **Field fidelity:** increasing the number of stations refines the **quadrature of the same continuous field**, rather than changing a user-defined stepped prismatic segments.
+- **Field fidelity:** increasing the number of stations refines the **quadrature of the same continuous field**, rather than changing user-defined stepped prismatic segments.
