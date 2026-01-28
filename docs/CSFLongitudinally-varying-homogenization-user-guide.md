@@ -111,7 +111,9 @@ By default, the variation of weight between the start and end sections is linear
  CSF supports two different (but equally valid) interpretations. You must pick one and
  keep it consistent across your workflow and exports:
 
-## Convention A — `weight` as a dimensionless stiffness ratio (recommended)
+## Convention A — `weight` as a dimensionless stiffness ratio 
+
+This convention preserves physical meaning, numerical stability, and clean interoperability with OpenSees.
 
 - `weight = E / E_ref` (dimensionless)
 - Choose one reference modulus `E_ref` (e.g., steel, concrete, etc.)
