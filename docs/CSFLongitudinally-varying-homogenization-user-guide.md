@@ -158,7 +158,7 @@ CSF internally converts this containment into an
 effective (delta) representation, so that the overlapped region contributes zero
 to the weighted integrals.
 
-You should not enter negative weights for voids in the user mo
+You should not enter negative weights for voids in the user model
 
 # 📑 Deep Dive: The Logic of "Weight" (W) and Voids
 
@@ -315,7 +315,6 @@ When defining a custom law string, the mathematical engine enforces strict valid
 > proceeds without modification.
 
 
-Così:
 
 #### 🛠️ Best Practice: Clamping and Safety
 To prevent unphysical results (like a stiffness dropping to zero or becoming negative due to extreme inputs), it is highly recommended to use a **clamping** logic. This ensures a minimum residual stiffness ($E_{min}$).
