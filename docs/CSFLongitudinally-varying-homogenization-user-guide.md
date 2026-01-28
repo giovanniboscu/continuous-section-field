@@ -95,7 +95,7 @@ By default, the variation of weight between the start and end sections is linear
 > It can represent an **E-modulus ratio** (dimensionless) *or* the **Young’s modulus E** (e.g., MPa).  
 > The only requirement is that your formulas and lookup data follow a **consistent convention**.
 
- **Important — what is `weight` in CSF?**
+**Operational meaning in CSF**
 
  In CSF, `weight` is a **scalar field W(z)** attached to each polygonal region.
  CSF uses it as a **multiplier inside area integrals**, i.e. it “weights” geometry to produce
