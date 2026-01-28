@@ -131,18 +131,24 @@ $$
  (e.g., \(\int E\,dA\)). This is valid, but you must then export to OpenSees using a
  stiffness-encoded contract (see OpenSees mapping below).
 
- ### Voids: use `0` in input (CSF handles the effective subtraction)
- A void/hole is a region where the target material property is **zero**.  
- Therefore, in your input data you should simply use:
+### Voids: use `0` in input (CSF handles the effective subtraction)
+
+A void/hole is a region where the target material property is **zero**.  
+Therefore, in your input data you should simply use:
 
 ```math
 w_{void} = 0
 ```
 
-When a void polygon overlaps a solid polygon, CSF internally converts the overlap into an
-**effective (delta) representation** so that the overlapped region contributes **zero**
-to the weighted integrals.  
-**You should not enter negative weights for voids in the user model.**
+CSF does not model material superposition.
+When a void polygon overlaps a solid polygon, the overlap is interpreted as a
+containment relationship, not as overlapping matter.
+
+CSF internally converts this containment into an
+effective (delta) representation, so that the overlapped region contributes zero
+to the weighted integrals.
+
+You should not enter negative weights for voids in the user mo
 
 # 📑 Deep Dive: The Logic of "Weight" (W) and Voids
 
