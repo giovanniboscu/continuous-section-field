@@ -13,6 +13,8 @@ While using the same name for both is not a technical requirement for the geomet
 
 In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept:  
 
+
+
 ### Automatic Mapping
 
 Example: Defining a Composite Beam
@@ -96,7 +98,6 @@ By default, the variation of weight between the start and end sections is linear
 > It can represent an **E-modulus ratio** (dimensionless) *or* the **Young’s modulus E** (e.g., MPa).  
 > The only requirement is that your formulas and lookup data follow a **consistent convention**.
 
-In this document, weight, w(z) and W(z) refer to the same scalar field.
 
 **Operational meaning in CSF**
 
