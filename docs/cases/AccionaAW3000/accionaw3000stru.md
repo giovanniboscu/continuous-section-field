@@ -103,48 +103,10 @@ D_mid  = Do - t
 
 This is a **modeling abstraction** intended for global equivalence (mass/stiffness), not a representation of discrete bars/tendons.
 
----
-
-## 4. CSF Results — Concrete-Only Section Verification
-
-To validate CSF geometry and section-property reconstruction, a **concrete-only** configuration is evaluated (steel disabled):
-
-- C1 = 1
-- C2 = 1
-- C3 = 1
-- C4 = 0
-
-### 4.1 CSF results (reported)
-
-| z (m) | CSF A (m²) | CSF I (m⁴) |
-|---:|---:|---:|
-| 0 | 30.535990 | 568.223411 |
-| 30 | 20.908923 | 266.006341 |
-| 60 | 13.099427 | 104.163548 |
-| 90 | 7.107502 | 30.542182 |
-| 120 | 2.933148 | 5.157587 |
 
 ---
 
-## 5. Comparison — CSF vs Geometry-Derived Reference
-
-Percent differences are computed as:
-
-```text
-Δ(%) = (CSF - Ref) / Ref * 100
-```
-
-| z (m) | CSF A (m²) | A_ref (m²) | ΔA (%) | CSF I (m⁴) | Ix_ref (m⁴) | ΔI (%) |
-|---:|---:|---:|---:|---:|---:|---:|
-| 0 | 30.535990 | 30.661944 | -0.411 | 568.223411 | 572.918429 | -0.820 |
-| 30 | 20.908923 | 20.921122 | -0.058 | 266.006341 | 267.381617 | -0.514 |
-| 60 | 13.099427 | 13.036353 | +0.484 | 104.163548 | 104.210649 | -0.045 |
-| 90 | 7.107502 | 7.179796 | -1.007 | 30.542182 | 30.955421 | -1.335 |
-| 120 | 2.933148 | 2.945243 | -0.411 | 5.157587 | 5.200195 | -0.819 |
-
----
-
-## 6. Assessment
+## 4. Assessment
 
 - Cross-section **areas** match the geometry-derived reference within approximately **±1.1%**.
 - Second moments of area match within approximately **±1.4%**.
@@ -154,7 +116,7 @@ No evidence of a systematic modeling bias is observed in this concrete-only veri
 
 ---
 
-## 7. Files / Reproducibility
+## 5. Files / Reproducibility
 
 - CSF geometry YAML (40-gon, 4 concentric regions): `acciona_aw3000_4circles_40sides.yaml`
 
