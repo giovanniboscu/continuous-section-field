@@ -167,9 +167,9 @@ The mass and stiffness distribution implied by these properties maintains the fi
 - **3P** blade‑passing frequency resonance.
 
 ---
-# Tower Section Diameters (Base and Top)
+# CSF Model - Tower Section Diameters (Base and Top)
 
-# 4‑Circle Section Geometry (Corrected)
+# 4‑Circle Section Geometry 
 Acciona AW3000 Concrete Tower – H = 120 m
 
 ## Base Section (z = 0 m)
