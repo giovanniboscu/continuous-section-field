@@ -22,8 +22,7 @@ Instead, cross-section properties are evaluated continuously as functions of the
 Each cross-section may include multiple material patches.  
 For each patch, a material reference or an absolute property value is defined.
 
-An elastic homogenization factor is associated with each patch.  
-This factor scales the contribution of that patch to the equivalent section properties.
+Each material patch may be assigned one or more user-defined **homogenization fields**:
 
 Multiple homogenization factors may coexist within the same cross-section, each acting independently on a different portion of the geometry.
 
