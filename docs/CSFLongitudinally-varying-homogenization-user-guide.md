@@ -72,8 +72,6 @@ The engine connects sections based on their **creation order**. The first polygo
 > Creation order defines the **geometric pairing**. Polygon names are used to **assign and track physical laws** (e.g., `W(z)`) along the section field.
 > The engine connects sections based on their **creation order**. The first polygon defined at the start automatically matches the first polygon defined at the end.
 
-> **Note**  
-> Creation order defines the **geometric pairing**. Polygon names are used to **assign and track physical laws** (e.g., `W(z)`) along the section field.
 
 
 Example
