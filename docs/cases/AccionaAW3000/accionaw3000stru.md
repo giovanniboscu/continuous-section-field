@@ -96,23 +96,24 @@ This document provides **verification and congruence checks** between the analyt
 The following table defines the **net concrete cross-section properties** at selected stations.  
 All values are **pure geometric properties** (non‑relativized) and are used as reference for CSF validation.
 
-| Key | Unit | Base (0 m) | S1 (30 m) | S2 (60 m) | S3 (90 m) | Top (120 m) |
-|---|---|---:|---:|---:|---:|---:|
-| **Height (z)** | m | 0 | 30 | 60 | 90 | 120 |
-| **External Diameter** | m | 13.00 | 10.75 | 8.50 | 6.25 | 4.00 |
-| **Wall Thickness (t)** | m | 0.80 | 0.66 | 0.52 | 0.39 | 0.25 |
-| **Area A** | m² | 30.65 | 21.01 | 13.15 | 7.14 | 2.95 |
-| **Centroid Cx, Cy** | m | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
-| **Inertia Ix = Iy** | m⁴ | 604.5 | 284.1 | 110.1 | 32.2 | 5.4 |
-| **Product Ixy** | m⁴ | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 |
-| **Polar Moment J** | m⁴ | 1209.0 | 568.2 | 220.2 | 64.4 | 10.8 |
-| **Principal I1 = I2** | m⁴ | 604.5 | 284.1 | 110.1 | 32.2 | 5.4 |
-| **Radius of Gyration rx = ry** | m | 4.44 | 3.67 | 2.89 | 2.12 | 1.35 |
-| **Section Modulus Wx = Wy** | m³ | 93.0 | 52.8 | 25.9 | 10.3 | 2.7 |
-| **Torsional Rigidity K** | m⁴ | 18.2 | 3.4 | 0.34 | 0.02 | 0.0002 |
-| **First Moment Q** | m³ | 29.6 | 16.8 | 8.2 | 3.2 | 0.8 |
-| **J Saint‑Venant** | m⁴ | 1209.0 | 568.2 | 220.2 | 64.4 | 10.8 |
-| **J Roark / Bredt** | m⁴ | 1133.5 | 533.1 | 206.8 | 60.5 | 10.1 |
+### Geometry-derived reference (ideal circular annulus)
+
+Formulas used:
+- `Di = Do - 2*t`
+- `A  = (pi/4)  * (Do^2 - Di^2)`
+- `Ix = (pi/64) * (Do^4 - Di^4)`  (Ix = Iy)
+- `J  = 2 * Ix`
+- `r  = sqrt(Ix / A)`
+- `W  = Ix / (Do/2)`
+
+| Station | z (m) | Do (m) | t (m) | Di (m) | A_theory (m²) | Ix_theory (m⁴) | J_theory (m⁴) | r_theory (m) | W_theory (m³) | ΔA vs table (%) | ΔIx vs table (%) |
+|:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| Base | 0 | 13.00 | 0.80 | 11.40 | 30.661944 | 572.918429 | 1145.836858 | 4.322615 | 88.141297 | +0.039 | −5.224 |
+| S1 | 30 | 10.75 | 0.66 | 9.43 | 20.921122 | 267.381617 | 534.763233 | 3.574977 | 49.745417 | −0.423 | −5.885 |
+| S2 | 60 | 8.50 | 0.52 | 7.46 | 13.036353 | 104.210649 | 208.421299 | 2.827340 | 24.520153 | −0.864 | −5.349 |
+| S3 | 90 | 6.25 | 0.39 | 5.47 | 7.179796 | 30.955421 | 61.910841 | 2.076406 | 9.905735 | +0.557 | −3.865 |
+| Top | 120 | 4.00 | 0.25 | 3.50 | 2.945243 | 5.200195 | 10.400390 | 1.328768 | 2.600097 | −0.161 | −3.700 |
+|
 
 ---
 
