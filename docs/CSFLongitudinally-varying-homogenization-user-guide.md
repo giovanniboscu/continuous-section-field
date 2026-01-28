@@ -156,7 +156,7 @@ When working with a single material, we use **1.0** to represent "Full Material"
 * **Void (Hole):** `weight = 0.0`
 
 **The Superposition Principle (as seen by the user):**
-If you place a void polygon (`W = 0.0`) over a solid region (`W = 1.0`), CSF automatically treats the overlap as a true void (effective contribution **0.0**) in the section integrals.
+If you place a void polygon (`W = 0.0`) over a solid region (`W = 1.0`), CSF automatically treats the overlap as a true void in the section integrals.
 
 ---
 
@@ -178,9 +178,19 @@ You can skip normalization and enter the real Elastic Modulus (e.g., in MPa).
 * **Steel Hole (Void):** `weight = 0`
 
 **Advanced Technique: Material Substitution**
-If you have a steel reinforcement (E=210k) inside concrete (E=30k), you don't need to cut a hole in the concrete coordinates. You can simply overlay the steel polygon with:
+If you have a steel reinforcement (E=210k) inside concrete (E=30k), you don't need to cut a hole in the concrete coordinates. You do not need to can to overlay the steel polygon with:
 `W_effective = E_steel - E_concrete = 180000`
-The system sums 30k (concrete) + 180k (delta) and correctly obtains 210k in that region.
+The system subtract  30k (concrete) + 180k (delta) and correctly obtains 210k in that region.
+
+If a steel reinforcement (E = 210 000) is embedded inside concrete (E = 30 000), the user does not need to subtract the concrete geometry manually.
+
+The reinforcement is defined with its absolute property:
+E_steel = 210 000
+
+CSF automatically computes the effective contribution as:
+W_effective = E_steel − E_concrete = 180 000
+
+The user only specifies the reinforcement property; the subtraction of the parent material is handled internally.
 
 ---
 
