@@ -79,7 +79,7 @@ The following values are used for global mass and stiffness evaluations.
 - **Damping ratio:** Typically 1–2% for concrete towers.
 - **Post-tensioning force:** Initial force may be estimated as  
   \( P_0 = A_p \cdot 0.7 f_{pk} \), with \( f_{pk} = 1860 \) MPa.
-- **FEM discretization:** Use at least **10 beam elements** along the height, or a refined shell mesh, to accurately capture tapering effects.
+
 
 ---
 # CSF Verification Notes – Acciona AW3000 Concrete Tower (H = 120 m)
