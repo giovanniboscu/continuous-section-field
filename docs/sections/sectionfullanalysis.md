@@ -221,6 +221,308 @@ where:
 - Valid primarily for **open thin-walled sections**.
 - Used as the **reference torsional constant** when no closed cell is detected.
 
+# Torsion constant methods for tagged polygons (`@cell` / `@wall`)
+
+This note documents the *implemented* methods used by:
+
+- `compute_saint_venant_J_cell(section)`
+- `compute_saint_venant_J_wall(section)`
+
+These routines do **not** solve the general Saint-Venant torsion boundary-value problem (Prandtl stress function / warping).
+They compute **model-based** torsion constants under thin-walled assumptions, restricted to **user-selected polygons**.
+
+Throughout, the returned quantity is a torsional constant `J_sv` in **m⁴**, intended to be used in a torsional stiffness `G · J_sv`.
+
+---
+
+## Common inputs and conventions
+
+### Input object
+
+Both functions accept:
+
+- `section`: a `Section` object providing `section.polygons`.
+
+Each polygon is assumed to provide:
+
+- `polygon.vertices`: ordered 2D vertices `(x, y)` (meters)
+- `polygon.name`: string
+- `polygon.weight`: scalar weight
+
+### Tagging (polygon selection)
+
+Only polygons whose **name** contains the relevant token are used:
+
+- **Cell method:** name contains `@cell` or `@closed` (case-insensitive)
+- **Wall method:** name contains `@wall` (case-insensitive)
+
+All other polygons are **ignored** by these functions.
+
+### Thickness token (`@t=<value>`)
+
+A thickness override may be encoded in the polygon name as:
+
+- `...@t=0.010`  (meters)
+
+Parsing rules (both functions):
+
+- Case-insensitive `@t=`
+- Parsing stops at the first character that is not one of: `0–9 . + - e E`
+- Thickness must be strictly positive (`t > 0`) or it is rejected
+
+### Weight usage
+
+For torsional stiffness, negative stiffness is not physically meaningful.
+Implemented convention:
+
+\[
+J_{\text{effective}} \;=\; \sum_i \left|w_i\right|\; J_i
+\]
+
+where `w_i` is the polygon weight and `J_i` the geometric torsion constant of that polygon entity.
+
+---
+
+# A) `compute_saint_venant_J_cell(section)`
+
+## Purpose
+
+Compute a **closed single-cell** torsional constant using a **Bredt–Batho** style formula
+for a **thin-walled closed section** with (assumed) **constant thickness**.
+
+This function only uses polygons tagged `@cell` or `@closed`.
+
+If no such polygons are present, the current implementation returns `0`.
+
+## Required parameters (user-specified)
+
+### Thickness is required (current default)
+
+For each `@cell` / `@closed` polygon, an explicit thickness **must** be provided:
+
+- `@t=<value>`
+
+If thickness is missing, the function raises an error (strict mode).
+
+> Note: there is a legacy fallback path in the code (estimate thickness as `t = 2A/P`),
+> but it is disabled by default (`REQUIRE_EXPLICIT_T = True`).
+
+## Geometry encoding required by the implementation
+
+A `@cell` polygon must encode **two loops** (outer boundary and inner boundary) in a **single vertex list**
+using repeated vertices as delimiters (a “slit-cell” encoding):
+
+- The **outer loop** starts at the first vertex and ends when that first vertex appears again.
+- Immediately after that, the **inner loop** starts and ends when its first vertex appears again.
+
+Schematically:
+
+```
+outer:  v0, v1, ... , v_{n-1}, v0,
+inner:  u0, u1, ... , u_{m-1}, u0
+```
+
+Additional requirements enforced:
+
+- Both loops must have at least 3 vertices.
+- Outer and inner loops must have the **same number of vertices**:
+  \[
+  n = m
+  \]
+  (this is required to build a pointwise midline by vertex averaging).
+
+## Method (step-by-step)
+
+For each selected `@cell` polygon:
+
+### Step 1 — Parse inputs
+
+- Read polygon weight `w`
+- Parse thickness `t` from `@t=...`
+- Build the raw XY list from vertices (dropping only an explicit closure *at the very end*, if present)
+
+### Step 2 — Split outer and inner loops
+
+Identify the first repeated vertex to delimit the outer loop, and similarly for the inner loop.
+
+### Step 3 — Area consistency checks
+
+Compute signed polygon areas by the standard shoelace formula:
+
+\[
+A = \frac{1}{2}\sum_{i=0}^{N-1} \left(x_i y_{i+1} - x_{i+1} y_i\right)
+\]
+
+The routine computes:
+
+- \(A_{\text{outer}} = |A(\text{outer loop})|\)
+- \(A_{\text{inner}} = |A(\text{inner loop})|\)
+- Wall area:
+  \[
+  A_{\text{wall}} = A_{\text{outer}} - A_{\text{inner}}
+  \]
+
+It then checks that \(A_{\text{wall}}\) is positive and consistent with the area returned by
+`polygon_area_centroid(p)` (within a strict tolerance).
+
+### Step 4 — Build a midline polygon
+
+The midline is built by averaging corresponding vertices of the outer loop
+and the **reversed** inner loop (to align orientation and indices):
+
+\[
+\mathbf{x}^{(m)}_k = \frac{1}{2}\left(\mathbf{x}^{(\text{outer})}_k + \mathbf{x}^{(\text{inner,ccw})}_k\right)
+\]
+
+This yields a midline polygon with:
+
+- enclosed area \(A_m\)
+- perimeter (midline length) \(b_m\)
+
+### Step 5 — Closed thin-walled torsion (Bredt–Batho)
+
+For a closed thin-walled section of constant thickness \(t\), the implemented formula is:
+
+\[
+J_{\text{geom}} = \frac{4 A_m^2}{\displaystyle \int \frac{ds}{t}}
+\quad\Longrightarrow\quad
+J_{\text{geom}} = \frac{4 A_m^2}{b_m/t} = 4A_m^2\,\frac{t}{b_m}
+\]
+
+So the contribution of one `@cell` polygon is:
+
+\[
+J_i = 4A_m^2\frac{t}{b_m}
+\]
+
+### Step 6 — Weight scaling and accumulation
+
+\[
+J_{\text{total}} = \sum_i |w_i|\,J_i
+\]
+
+## Output
+
+- Returns `max(J_total, 0)` as a float.
+
+## Assumptions and limitations
+
+- **Single-cell** per polygon entity (no multi-cell coupling).
+- **Constant thickness** per polygon entity (one `t` per cell polygon).
+- Requires **matched discretization** between outer and inner loops (same vertex count).
+- Warping and non-uniform thickness effects are **not** modeled.
+- Only considers **tagged polygons**; untagged geometry is ignored.
+
+---
+
+# B) `compute_saint_venant_J_wall(section)`
+
+## Purpose
+
+Compute a torsional constant for **open thin-walled** components, using polygons tagged `@wall`.
+
+This is an **open-section thin-walled approximation** applied per selected polygon,
+with an optional thickness override.
+
+If no `@wall` polygons are present, the current implementation returns `0`.
+
+## Parameters: optional vs required
+
+### Required
+
+- `section` with at least one polygon tagged `@wall`
+
+### Optional (per wall polygon)
+
+- `@t=<value>` thickness override (meters)
+
+If `@t=` is absent, thickness is estimated from geometry (see below).
+
+## Method (step-by-step)
+
+For each selected `@wall` polygon:
+
+### Step 1 — Compute geometric measures
+
+- Area magnitude:
+  \[
+  A = \left|\;A_{\text{signed}}\;\right|
+  \]
+  using `polygon_area_centroid(p)[0]`.
+
+- Perimeter \(P\) computed from the vertex polyline length.
+
+### Step 2 — Thickness selection
+
+- If `@t=<value>` is present: use that value.
+- Otherwise estimate an equivalent thickness from geometry:
+
+\[
+t_{\text{eq}} = \frac{2A}{P}
+\]
+
+This rule is intentionally shape-agnostic (no profile recognition and no validation).
+
+### Step 3 — Open thin-walled torsion constant
+
+A standard thin-walled open-section approximation is:
+
+\[
+J \approx \int \frac{t(s)^3}{3}\,ds
+\]
+
+For a single wall strip with constant thickness \(t\) and midline length \(b\):
+
+\[
+J_i \approx \frac{b\,t^3}{3}
+\]
+
+The implementation avoids explicit midline reconstruction by using the thin-wall identity:
+
+\[
+A \approx b\,t \quad\Longrightarrow\quad b \approx \frac{A}{t}
+\]
+
+Substituting into the strip formula gives:
+
+\[
+J_i \approx \frac{(A/t)\,t^3}{3} = \frac{A\,t^2}{3}
+\]
+
+So the implemented per-polygon contribution is:
+
+\[
+J_i = \frac{A\,t^2}{3}
+\]
+
+### Step 4 — Weight scaling and accumulation
+
+\[
+J_{\text{total}} = \sum_i |w_i|\,J_i
+\]
+
+## Output
+
+- Returns `J_total` as a float.
+
+## Assumptions and limitations
+
+- Intended for **open thin-walled** components represented as wall polygons.
+- Thickness may be **user-specified** (`@t=`) or **estimated** (`t = 2A/P`).
+- Using `t = 2A/P` is a geometric proxy; it does **not** verify thin-wall validity.
+- Warping and shear deformation effects are **not** modeled.
+- Only considers **tagged polygons**; untagged geometry is ignored.
+
+---
+
+## Practical guidance
+
+- Use `@cell ... @t=` when you have a **closed thin-walled** single-cell representation and you can provide a reliable wall thickness.
+- Use `@wall` for **open thin-walled** components (webs, flanges, plates) where strip-type torsion is appropriate.
+- If you need general torsion constants outside thin-walled assumptions, these routines are not sufficient (a Prandtl/warping solver is required).
+
+
+
 ---
 
 ## 17. Torsional Constant (Roark / Bredt)
