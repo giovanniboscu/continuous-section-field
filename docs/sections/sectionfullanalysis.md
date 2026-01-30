@@ -207,15 +207,308 @@ Q = integral( y * dA ) about the neutral axis
 
 **Key:** `J_sv`
 
-Effective Saint-Venant torsional constant.
 
-**Definition (open thin-walled sections)**:
 
-J ≈ sum( b_i * t_i^3 / 3 )
 
-where:
-- t_i = equivalent strip thickness
-- b_i = strip midline length
+# `compute_saint_venant_J(section)` — Generic approximate torsion constant (always calculated)
+
+This document specifies a **generic, always-computable** approximation for the torsion constant `J` returned by
+`compute_saint_venant_J(section)`.
+
+The purpose is **not** to provide a universally valid Saint-Venant solution, but to provide a **single, coherent**
+model that:
+
+- can be applied to **any** polygonal section (open, closed, mixed),
+- is **always** computable (no special-case branching by topology),
+- makes all modeling assumptions **explicit**, so the **user** can judge applicability.
+
+> If you need a method that explicitly models thin-walled **closed cells** or **open walls**, use the specialized routines
+> `compute_saint_venant_J_cell(...)` and `compute_saint_venant_J_wall(...)`.
+
+---
+
+## What this method is (and is not)
+
+### What it is
+A **thin-walled strip model** applied to each polygon independently and summed:
+
+- each polygon is treated as an equivalent thin strip with thickness `t`,
+- torsion constant is computed using the standard open-strip expression,
+- the final `J` is the sum of all polygon contributions (optionally weight-scaled).
+
+### What it is not
+- **Not** a general Saint-Venant torsion solver (no Prandtl stress function, no warping solution).
+- **Not** a topology-aware method (does not identify cells, multi-cells, or coupling between cells).
+- **Not** a verification routine (does not validate the thin-wall condition).
+
+This is an **engineering approximation** designed to be **well-defined for any input**.
+
+---
+
+## Inputs and metadata
+
+### Input
+- `section`: a `Section` object providing a list of polygons `section.polygons`.
+
+Each polygon is assumed to provide:
+- `vertices`: ordered 2D points `(x, y)` in **meters**
+- `name`: string
+- `weight`: scalar (dimensionless)
+
+### Optional thickness override
+Thickness can be specified per polygon via a token in the polygon name:
+
+- `@t=<value>` where `<value>` is thickness in **meters**, e.g. `@t=0.010`
+
+If `@t=` is absent, thickness is estimated automatically (see below).
+
+---
+
+## Output
+
+- A scalar torsion constant `J` in **m⁴**.
+- Intended to be used in torsional stiffness as `G · J`.
+
+---
+
+## Declared modeling assumptions
+
+This method assumes:
+
+1. **Thin-wall / strip behavior**
+   - Each polygon can be represented by an equivalent thin strip.
+
+2. **Independent contributions**
+   - The global torsion constant is the sum of polygon contributions.
+   - No multi-cell coupling or compatibility constraints are enforced.
+
+3. **No warping solution**
+   - Warping is not solved. The result is a Saint-Venant-like *estimate* under thin-wall assumptions.
+
+4. **User responsibility**
+   - The method will return a value even outside validity; the user must assess acceptability.
+
+---
+
+## Geometry primitives
+
+For each polygon with vertices $(x_i, y_i)$, define:
+
+### Signed area (shoelace)
+
+$$
+A_{\text{signed}}=\frac{1}{2}\sum_{i=0}^{N-1}\left(x_i y_{i+1}-x_{i+1}y_i\right)
+$$
+
+Area magnitude:
+
+$$
+A = \left|A_{\text{signed}}\right|
+$$
+
+### Perimeter
+
+$$
+P=\sum_{i=0}^{N-1}\left\|\mathbf{x}_{i+1}-\mathbf{x}_i\right\|
+$$
+
+with $\mathbf{x}_i=(x_i,y_i)$ and wrap-around indexing $i+1 \to 0$.
+
+---
+
+## Thickness definition (always defined)
+
+For each polygon $i$, define thickness $t_i$ as:
+
+$$
+t_i=
+\begin{cases}
+t_{\text{user}} & \text{if a valid }@t=\text{ token is present} \\
+\displaystyle \frac{2A_i}{P_i} & \text{otherwise}
+\end{cases}
+$$
+
+Requirements:
+- $t_i > 0$. If $t_i \le 0$, the contribution is invalid (implementation should emit an error or set contribution to zero).
+
+Notes:
+- $t_{\text{eq}} = 2A/P$ is a purely geometric proxy. It **does not** validate thin-wall behavior.
+
+---
+
+## Core torsion model (thin strip)
+
+### Strip torsion constant
+For an open thin strip of thickness $t$ and midline length $b$, the standard approximation is:
+
+$$
+J \approx \int \frac{t(s)^3}{3}\,ds
+\quad\Rightarrow\quad
+J \approx \frac{b\,t^3}{3}\quad(\text{constant }t)
+$$
+
+### Eliminating explicit midline length
+Using the thin-wall identity $A \approx b\,t$, set:
+
+$$
+b \approx \frac{A}{t}
+$$
+
+Substitute into the strip expression:
+
+$$
+J_i \approx \frac{(A_i/t_i)\,t_i^3}{3}=\frac{A_i\,t_i^2}{3}
+$$
+
+Therefore the per-polygon contribution is:
+
+$$
+\boxed{J_i=\frac{A_i\,t_i^2}{3}}
+$$
+
+This formula is **always computable** as long as $A_i$ and $t_i$ are defined.
+
+---
+
+## Weight scaling
+
+In many workflows, `weight` represents an effective stiffness scaling (e.g., normalized modulus ratio).
+Torsional stiffness should not become negative; therefore a conservative convention is:
+
+$$
+J_{\text{total}}=\sum_i \left|w_i\right|\,J_i
+$$
+
+If your modeling intent requires signed contributions, this must be stated explicitly and implemented as a different routine.
+
+---
+
+## Full algorithm (reference specification)
+
+Given `section.polygons`:
+
+For each polygon $i$:
+
+1. Compute $A_i$ (area magnitude) and $P_i$ (perimeter).
+2. Determine thickness $t_i$:
+   - from `@t=<value>` if present and valid, else
+   - $$t_i = \frac{2A_i}{P_i}$$
+3. Compute geometric torsion contribution:
+   $$J_i = \frac{A_i\,t_i^2}{3}$$
+4. Apply weight scaling:
+   $$J_i \leftarrow |w_i|\,J_i$$
+5. Accumulate:
+   $$J \leftarrow J + J_i$$
+
+Return $J$.
+
+**Edge cases (recommended handling):**
+- If $A_i = 0$ or $P_i = 0$: set $J_i = 0$ and emit a warning.
+- If $t_i \le 0$: error or $J_i = 0$ with warning (choose one policy and document it).
+
+---
+
+## Interpretation and limitations
+
+### When this method is reasonable
+- Dominant behavior is **thin-walled** and **strip-like**.
+- You want a **single fallback** that never fails and is consistent across geometries.
+- You accept that closed-cell effects are not explicitly enforced.
+
+### When this method is not appropriate
+- Thick sections (solid rectangles, circles) where thin-wall assumptions break.
+- Multi-cell closed sections where cell coupling matters.
+- Cases where warping restraint is significant and must be captured.
+
+### Relationship to specialized methods
+- **Closed thin-walled cells:** Bredt–Batho is typically more appropriate:
+
+$$
+J=\frac{4A_m^2}{\int \frac{ds}{t}}
+$$
+
+Use `compute_saint_venant_J_cell(...)`.
+
+- **Open thin-walled walls:** strip model is appropriate and can be applied per wall:
+
+$$
+J \approx \int \frac{t^3}{3}\,ds
+$$
+
+Use `compute_saint_venant_J_wall(...)`.
+
+This generic routine intentionally **does not** branch by topology: it applies the strip model everywhere.
+
+---
+
+## Quick sanity check: square box (order-of-magnitude)
+
+For a thin-walled square box (side $0.4$ m, thickness $t$), the closed-cell Bredt–Batho estimate scales like:
+
+$$
+J_{\text{cell}} \sim (0.4-t)^3\,t
+$$
+
+The generic strip model will generally produce a value of the same **order of magnitude** but may differ systematically
+because it does not enforce closed-cell compatibility. This is expected and should be documented in validation notes.
+
+---
+
+## Summary
+
+`compute_saint_venant_J(section)` (generic spec) is:
+
+- **Always defined**
+- **Single-model**
+- **Explicit assumptions**
+- **User-judged validity**
+
+It returns:
+
+$$
+\boxed{
+J = \sum_i |w_i|\,\frac{A_i\,t_i^2}{3}
+}
+$$
+
+with
+
+$$
+t_i=
+\begin{cases}
+t_{\text{user}} & \text{if }@t=\text{ provided} \\
+\displaystyle \frac{2A_i}{P_i} & \text{otherwise}
+\end{cases}
+$$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **Notes**
 - Valid primarily for **open thin-walled sections**.
