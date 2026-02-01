@@ -603,6 +603,233 @@ This yields a midline polygon with:
 - enclosed area \(A_m\)
 - perimeter (midline length) \(b_m\)
 
+# CSF `@cell` Polygon Encoding Requirements (v2)
+
+This note describes the **strict geometric and data-encoding conditions** required by the current CSF closed-cell torsion routine:
+
+- `compute_saint_venant_J_cell(section)` (v2)
+- Bredt–Batho **single-cell**, **thin-walled**, **constant thickness** (`@t=...`)
+- A closed cell is represented as **two loops encoded inside one polygon** (the “slit” encoding).
+
+The goal is to prevent silent wrong results by making the input representation unambiguous and mechanically consistent.
+
+---
+
+## 1) What the algorithm assumes (conceptually)
+
+A valid “cell polygon” represents a **tubular region** (a wall) bounded by:
+
+- an **outer** closed contour (external boundary)
+- an **inner** closed contour (hole boundary)
+
+and it approximates the wall as **thin-walled** with **constant thickness** `t`.
+
+The routine computes a *midline* (median contour) and applies the Bredt–Batho formula (constant thickness form):
+
+$$
+J \approx \frac{4A_m^2\,t}{b_m}
+$$
+
+where:
+
+- $A_m$ is the area enclosed by the **midline**
+- $b_m$ is the perimeter of the **midline**
+- $t$ is the (constant) wall thickness from the polygon name tag `@t=...`
+
+**Important:** in v2 the midline is built by **pairing vertices point-by-point** between outer and inner loops. Therefore, the data encoding must provide a consistent correspondence.
+
+---
+
+## 2) Required naming and parameters
+
+### 2.1 Tag to activate the closed-cell path
+The polygon **must** be tagged in its name:
+
+- `@cell`  (preferred)
+- or `@closed`
+
+Example:
+
+```yaml
+poly@cell@t=0.5
+```
+
+### 2.2 Thickness must be explicit
+Thickness must be provided as:
+
+- `@t=<positive float>`
+
+Example:
+
+- `poly@cell@t=0.5`
+
+If `@t=` is missing (and strict mode is enabled), CSF should raise an error rather than guessing thickness.
+
+---
+
+## 3) Required vertex encoding: **two closed loops in one `vertices` list**
+
+A single `@cell` polygon encodes **two loops** concatenated into one `vertices` array.
+
+### 3.1 Loop closure rule (mandatory)
+Each loop must be explicitly closed by repeating its first vertex at the end of that loop.
+
+So the pattern is:
+
+1. Loop #1: `p0, p1, ..., pN-1, p0`
+2. Loop #2: `q0, q1, ..., qN-1, q0`
+
+### 3.2 Exactly two loops
+The routine expects **exactly two** closed loops:
+
+- one outer boundary
+- one inner boundary
+
+(“Multiple holes” inside the same `@cell` polygon are **not** supported by this routine.)
+
+---
+
+## 4) Orientation conventions (your project standard)
+
+For consistency with CSF conventions, use:
+
+- **Outer loop:** counter-clockwise (**CCW**)
+- **Inner loop:** clockwise (**CW**)
+
+This is an **input convention**. The routine may internally normalize orientation for midline construction, but you should keep the encoding consistent to avoid confusion and reduce failure modes.
+
+---
+
+## 5) Outer vs inner identification
+
+Even if the two loops are provided in either order, the algorithm must be able to determine:
+
+- which loop is **outer** (larger enclosed area)
+- which loop is **inner** (smaller enclosed area)
+
+Therefore, a valid cell must satisfy:
+
+$$
+|A_{outer}| > |A_{inner}|
+$$
+
+where areas are measured by the signed shoelace integral.
+
+---
+
+## 6) Discrete correspondence constraints 
+
+
+### 6.1 Same vertex count (mandatory)
+Outer and inner loops must have the **same number of distinct vertices** (excluding the repeated closure point).
+
+If:
+
+- outer has $N$ points
+- inner has $M$ points
+
+then you must have:
+
+$$
+N = M
+$$
+
+### 6.2 Phase alignment (mandatory)
+The loops must have consistent “starting point” alignment so that:
+
+- outer vertex `i` corresponds to inner vertex `i` along the contour progression.
+
+If one loop is rotated (same shape, same points, different start index), the point-by-point pairing will be wrong and the computed midline may become distorted (or even degenerate).
+
+### 6.3 Offset-like relationship (strongly recommended)
+The method is intended for thin-walled cells where inner and outer boundaries are approximately “parallel” (inner is roughly an offset of outer).
+
+In practice:
+
+- the segment joining `outer[i]` and `inner[i]` should represent the local thickness direction.
+
+This does **not** require a perfect geometric offset, but it requires the two loops to be sampled in a consistent way.
+
+---
+
+## 7) Consistency check on areas
+
+A robust implementation often checks that the polygon’s net area matches the wall area implied by the two loops:
+
+$$
+A_{wall} = |A_{outer}| - |A_{inner}|
+$$
+
+and compares it to the area computed from the full polygon representation (as CSF integrates it).
+
+If these do not match within tolerance, it usually means:
+
+- the loop split failed (bad closure)
+- outer/inner were swapped and not corrected
+- the encoding is not representing a true wall region
+
+This check prevents returning a numerically plausible but physically wrong $J$.
+
+---
+
+## 8) Minimal YAML example (template)
+
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0
+      polygons:
+        poly@cell@t=0.5:
+          weight: 1
+          vertices:
+            # INNER loop (CW) - explicitly closed
+            - [xi0, yi0]
+            - [xi1, yi1]
+            - [xi2, yi2]
+            - [xi0, yi0]
+
+            # OUTER loop (CCW) - explicitly closed
+            - [xo0, yo0]
+            - [xo1, yo1]
+            - [xo2, yo2]
+            - [xo0, yo0]
+```
+
+Notes:
+
+- The example follows the input orientation convention: inner CW, outer CCW.
+- Use the same encoding for `S1` and any other station.
+
+---
+
+## 9) Practical checklist
+
+A `@cell` polygon is valid for v2 if all items below are true:
+
+1. Name includes `@cell` (or `@closed`).
+2. Name includes `@t=<t>` with $t > 0$.
+3. `weight` is present and not near zero.
+4. `vertices` contains **two** loops.
+5. Each loop is **explicitly closed** by repeating its first point.
+6. Outer and inner loops have the **same number of vertices** (excluding closure).
+7. Loops are **phase-aligned** (index-to-index correspondence).
+8. Outer encloses inner and has **larger area magnitude**.
+9. (Recommended) Outer is CCW, inner is CW.
+
+---
+
+## 10) Scope limitations (by design)
+
+This routine is intentionally limited to keep it explicit and predictable:
+
+- **Single-cell** only.
+- **Constant thickness** only (`@t=`), not $t(s)$.
+- Midline built by **pointwise averaging**, so correspondence constraints apply.
+
+If you need general closed-cell torsion for arbitrary wall thickness or non-corresponding boundaries, the algorithm must change (e.g., arc-length parametrization, $\oint ds/t(s)$ integration, multi-cell system).
+  
+
 ### Step 5 — Closed thin-walled torsion (Bredt–Batho)
 
 For a closed thin-walled section of constant thickness \(t\), the implemented formula is:
