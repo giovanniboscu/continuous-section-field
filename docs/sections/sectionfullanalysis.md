@@ -973,6 +973,198 @@ J_{\text{total}} = \sum_i |w_i|\,J_i
 - If you need general torsion constants outside thin-walled assumptions, these routines are not sufficient (a Prandtl/warping solver is required).
 
 
+# CSF `@wall` Polygon Geometry Requirements
+
+This note documents the **geometric/data-encoding requirements** assumed by the current CSF open-wall torsion routine:
+
+- `compute_saint_venant_J_wall(section)`
+- open thin-walled approximation over polygons tagged with `@wall`
+- thickness per wall polygon is either explicit (`@t=...`) or estimated.
+
+The purpose is to make the input representation **explicit** and to avoid silent misuse (e.g., using `@wall` for “bulky” solids or multi-loop slit encodings).
+
+---
+
+## 1) What this `@wall` routine computes
+
+For each polygon tagged `@wall`, the routine approximates the **Saint-Venant torsional constant** of an **open thin-walled strip**.
+
+The classical thin-walled open-section formula is:
+
+$$
+J \approx \int \frac{t(s)^3}{3}\,ds
+$$
+
+If the thickness is constant on the strip, $t(s)=t$, and if $b = \int ds$ is the strip length along the midline, then:
+
+$$
+J \approx \frac{b\,t^3}{3}
+$$
+
+In this implementation the midline length $b$ is not computed explicitly. Instead it uses the thin-strip area approximation $A \approx b\,t$ to get:
+
+$$
+J_i \approx \frac{A\,t^2}{3}
+$$
+
+and sums contributions (scaled by non-negative stiffness weight):
+
+$$
+J_{total} = \sum_i |w_i|\,J_i
+$$
+
+---
+
+## 2) Selection rule
+
+A polygon is handled by the `@wall` path if its name contains (case-insensitive):
+
+- `@wall`
+
+If no polygon contains `@wall`, the routine returns the **legacy** torsion value (outside the scope of this note).
+
+---
+
+## 3) Thickness definition per wall polygon
+
+### 3.1 Explicit thickness (recommended)
+Provide thickness in the polygon name:
+
+- `@t=<positive float>`
+
+Example:
+
+- `web@wall@t=0.012`
+
+This is the preferred mode because it avoids geometric guessing.
+
+### 3.2 Estimated thickness (fallback)
+If `@t=` is not present, thickness is estimated as:
+
+$$
+t := \frac{2A}{P}
+$$
+
+where:
+
+- $A$ is the polygon area (absolute)
+- $P$ is the polygon perimeter.
+
+**Important:** this estimate is only reliable when the polygon is a **thin strip** (high aspect ratio). For “bulky” polygons $2A/P$ behaves like a hydraulic-radius-type measure and is not a good wall thickness.
+
+---
+
+## 4) Geometry requirements (non-obvious constraints)
+
+The `@wall` routine does **not** reconstruct cells and does **not** support multi-loop encodings. It treats each `@wall` polygon as a single material patch.
+
+### 4.1 Single-loop boundary (mandatory)
+`vertices` must represent **one single closed loop**.
+
+- Do **not** concatenate multiple loops in one `vertices` list.
+- Do **not** use slit-style “outer+inner” loop encodings inside a `@wall` polygon.
+
+Reason: the perimeter is computed by wrapping the vertex list with `(i+1) % n`, which assumes a single loop.
+
+### 4.2 Thin-strip (strip-like) shape (mandatory for validity)
+Each `@wall` polygon must represent a **thin strip of material**, i.e. a wall patch whose midline length $b$ is much larger than thickness $t$.
+
+Operationally:
+
+- the polygon should look like an “offset” of a centerline with two short closing edges
+- two long sides are roughly parallel
+- the patch is not a “block” or a “compact” solid region.
+
+If the patch is not strip-like, the formula $J_i \approx A t^2/3$ is not a valid model.
+
+### 4.3 Approximately constant thickness on the patch
+A single `@wall` polygon represents **one constant thickness** (either explicit or estimated). If the physical thickness varies, split the wall into multiple polygons, each with its own `@t=`.
+
+### 4.4 Prefer explicit thickness for complex shapes
+If the strip has:
+
+- noticeable curvature
+- non-rectangular ends
+- varying width
+- local fillets/indentations
+
+then always use `@t=`. The fallback $t=2A/P$ is only a rough estimate and may drift.
+
+---
+
+## 5) Recommended modeling pattern
+
+Model an open thin-walled section as a **set of separate wall patches**, one polygon per patch:
+
+- web plates
+- flange plates
+- stiffener plates
+
+Each patch can have its own `weight` and its own `@t=`.
+
+---
+
+## 6) Minimal YAML example
+
+The following example models one thin rectangular strip of length $b=1.0\,m$ and thickness $t=0.02\,m$.
+
+Analytical (thin strip):
+
+$$
+J \approx \frac{b\,t^3}{3} = \frac{1.0\cdot 0.02^3}{3} = 2.666\times 10^{-6}\,m^4
+$$
+
+With $A=b\,t=0.02$, the code uses:
+
+$$
+J \approx \frac{A\,t^2}{3} = \frac{0.02\cdot 0.02^2}{3} = 2.666\times 10^{-6}\,m^4
+$$
+
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0
+      polygons:
+        strip@wall@t=0.02:
+          weight: 1
+          vertices:
+            # A thin strip (single loop): 1.0 x 0.02
+            - [0.00, 0.00]
+            - [1.00, 0.00]
+            - [1.00, 0.02]
+            - [0.00, 0.02]
+            - [0.00, 0.00]
+```
+
+Notes:
+
+- Single loop, explicitly closed (repeat the first point).
+- For more complex open sections, use multiple `@wall` polygons.
+
+---
+
+## 7) Practical checklist
+
+A polygon is valid for `@wall` torsion (v2) if all items below are true:
+
+1. Name includes `@wall`.
+2. `vertices` define **one** closed loop (no concatenated loops).
+3. The polygon represents a **thin strip** (midline length $b \gg t$).
+4. Thickness is provided as `@t=...` (recommended), or the strip is thin enough that $t=2A/P$ is meaningful.
+5. If thickness varies physically, the wall is split into multiple patches with separate polygons.
+
+---
+
+## 8) Scope limitations
+
+By design, this routine:
+
+- approximates **open** thin-walled torsion (no cell closure effects)
+- assumes one constant thickness per patch
+- does not compute warping constants
+- is not intended for compact solids or general thick-walled regions.
+
 
 ---
 
