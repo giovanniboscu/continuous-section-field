@@ -209,241 +209,244 @@ Q = integral( y * dA ) about the neutral axis
 
 
 
-# `compute_saint_venant_J` — Saint-Venant torsional constant for *solid* polygonal regions
+## CSF Solid Torsion (Approx.): `compute_saint_venant_J` with `alpha` parameter
 
-This note specifies the intended behavior and mathematics for a function:
+This note documents the scope, assumptions, and input requirements for the **current CSF “solid torsion” approximation**:
 
-```python
-def compute_saint_venant_J(polygons, *, grid_h, ...):
-    ...
+- `compute_saint_venant_J(section, alpha=..., eps_a=...)`
+
+It matches the implementation that **does not solve a PDE on a grid**. Instead, it derives torsion from **pure geometric section properties**.
+
+Math is written for **GitHub Markdown** using `$$...$$` blocks.
+
+---
+
+## 1) What this routine is (and is not)
+
+This function returns an **approximate Saint-Venant torsional constant** for a *Section-like* object with multiple weighted polygons.
+
+It is **not** a Prandtl stress-function (Poisson) solver. There is no meshing and no iterative field solution.
+
+Instead, it starts from the **polar second moment of area** and applies a user-controlled correction factor `alpha`.
+
+---
+
+## 2) Core approximation
+
+The polar second moment of area about the (weighted) centroid is:
+
+$$
+J_p = I_x + I_y
+$$
+
+For a circular solid section, the Saint-Venant torsion constant equals the polar moment:
+
+$$
+J_{sv} = J_p
+$$
+
+For **non-circular** solids, in general:
+
+$$
+J_{sv} \neq J_p
+$$
+
+This CSF routine approximates Saint-Venant torsion by scaling the polar moment:
+
+$$
+J_{sv} \approx \alpha\,J_p
+$$
+
+where:
+
+- `alpha` is a **user-chosen reduction factor** that “maps” $J_p$ to an estimate of $J_{sv}$.
+
+### 2.1 Interpretation of `alpha`
+
+- $\alpha=1$ corresponds to the **circular** case (exact).
+- Values $\alpha<1$ reflect that many non-circular shapes have **lower** Saint-Venant torsion constant than $J_p$.
+
+The common default `alpha = 0.8436` matches the **square** ratio (engineering reference):
+
+$$
+\alpha_{square} \approx \frac{J_{sv}}{J_p} \approx 0.8436
+$$
+
+Use this default only if you accept that it is a **global approximation**.
+
+---
+
+## 3) Weighted multi-polygon combination
+
+The routine is “weighted” across polygons.
+
+Geometric integrals (area, centroid, inertias) are combined by linear weights $w_i$:
+
+- weighted area: $A = \sum_i w_i A_i$
+- weighted centroid: computed from weighted first moments
+- weighted inertias: $I_x = \sum_i w_i I_{x,i}$, $I_y = \sum_i w_i I_{y,i}$
+
+Then:
+
+$$
+J_p = I_x + I_y\quad\text{(about the weighted centroid)}
+$$
+
+and finally:
+
+$$
+J_{sv} \approx \alpha\,J_p
+$$
+
+**Important:** this is an algebraic homogenization approach. It is not “automatic shape recognition” and it is not a union/difference geometry engine.
+
+---
+
+## 4) Geometry requirements (non-obvious constraints)
+
+These are the key requirements implied by the method and its inputs.
+
+### 4.1 Per-polygon input is a single loop
+Each polygon must be provided as a **single closed loop**.
+
+- Multi-loop encodings (outer+inner in one `vertices` list) are **not** a valid input for this method.
+
+Reason: the geometry formulas assume one boundary per polygon and do not reconstruct holes from multi-loop lists.
+
+### 4.2 Meaning of weights
+Weights enter linearly into area and inertia integrals.
+
+- If you interpret weights as stiffness scaling, $w_i$ should typically be **non-negative**.
+- Negative weights are mathematically allowed as an algebraic device, but then $J_{sv}$ no longer corresponds to a physical torsional constant of a real solid.
+
+### 4.3 What this method cannot infer
+Because this is a $\alpha\,J_p$ approximation:
+
+- it cannot detect whether a shape is thin-walled, open, closed-cell, etc.
+- it does not compute warping-related quantities (e.g., $C_w$, shear center)
+- it does not handle multiply-connected torsion physics (holes) in the Saint-Venant sense.
+
+---
+
+## 5) Under-the-hood geometry formulas (for `J_p`)
+
+The helper logic computes polygon area/centroid/inertias from standard signed shoelace integrals.
+
+### 5.1 Signed area (shoelace)
+For vertices $(x_i, y_i)$, define:
+
+$$
+\text{cross}_i = x_i y_{i+1} - x_{i+1} y_i
+$$
+
+Then the signed area is:
+
+$$
+A = \frac{1}{2}\sum_i \text{cross}_i
+$$
+
+### 5.2 Second moments about the origin
+The standard (signed) formulas are:
+
+$$
+I_x = \frac{1}{12}\sum_i (y_i^2 + y_i y_{i+1} + y_{i+1}^2)\,\text{cross}_i
+$$
+
+$$
+I_y = \frac{1}{12}\sum_i (x_i^2 + x_i x_{i+1} + x_{i+1}^2)\,\text{cross}_i
+$$
+
+$$
+I_{xy} = \frac{1}{24}\sum_i (x_i y_{i+1} + 2x_i y_i + 2x_{i+1} y_{i+1} + x_{i+1} y_i)\,\text{cross}_i
+$$
+
+### 5.3 Shift to the weighted centroid
+Composite centroid $(\bar x, \bar y)$ is computed from weighted first moments.
+
+The parallel-axis theorem shifts inertias from the origin to the composite centroid, e.g.:
+
+$$
+I_{x,c} = I_{x,o} - A\,\bar y^2,\qquad
+I_{y,c} = I_{y,o} - A\,\bar x^2
+$$
+
+Then:
+
+$$
+J_p = I_{x,c} + I_{y,c}
+$$
+
+and:
+
+$$
+J_{sv} \approx \alpha\,J_p
+$$
+
+---
+
+## 6) Minimal YAML examples
+
+### 6.1 Solid square (where `alpha≈0.8436` is meaningful)
+
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0
+      polygons:
+        square_solid:
+          weight: 1
+          vertices:
+            - [0.0, 0.0]
+            - [1.0, 0.0]
+            - [1.0, 1.0]
+            - [0.0, 1.0]
+            - [0.0, 0.0]
 ```
 
-The function computes the Saint-Venant torsional constant **J** for a set of planar polygonal regions, each treated as a **solid** (filled) domain, and combines them with a per-polygon **weight**.
+If you call:
 
-This document is written to match a “do what you’re told” contract:
-- **No geometry validation** is performed (no convexity checks, no self-intersection checks, no repairs).
-- **No biasing** (no `abs()` on signed quantities, no “fix orientation”, no automatic defaults for missing attributes).
-- The algorithm acts **blindly** on the supplied polygons and weights.
+```python
+J = compute_saint_venant_J(section, alpha=0.8436)
+```
+
+you are explicitly choosing the “square-like” scaling $J_{sv}\approx 0.8436\,J_p$.
+
+### 6.2 Solid circle (use `alpha=1`)
+
+For a circle of radius $R$, the exact value is:
+
+$$
+J_{sv} = J_p = \frac{\pi}{2}R^4
+$$
+
+So set:
+
+- `alpha = 1.0`
+
+and discretize the circle as a single solid polygon.
 
 ---
 
-## 1) Definitions and scope
+## 7) Practical checklist
 
-Let the cross-section consist of **n** polygonal regions:
+This method is appropriate if:
 
-$$
-\Omega = \{\Omega_1, \Omega_2, \dots, \Omega_n\}
-$$
-
-Each region $\Omega_i$ is the interior of a polygon described by a vertex list in the plane $(x,y)$, and has an associated **scalar weight** $w_i \in \mathbb{R}$.
-
-### Output
-
-The function returns a **weighted torsional constant**:
-
-$$
-J_\text{tot} = \sum_{i=1}^{n} w_i \, J_i
-$$
-
-where $J_i$ is the Saint-Venant torsional constant of the *solid* region $\Omega_i$.
-
-### Interpretation of the weight
-
-The meaning of $w_i$ is **external** to this function.
-
-Common interpretation in CSF-style workflows:
-- If $w_i = G_i / G_\text{ref}$ (or $E_i/E_\text{ref}$ under a chosen convention), then the returned
-  $$J_\text{tot} = \sum (G_i/G_\text{ref})\,J_i$$
-  can be used as a modular/weighted torsion measure so that
-  $$G_\text{ref}\,J_\text{tot} = \sum G_i\,J_i$$
-
-This function does **not** enforce physical constraints (e.g., it allows negative weights).
+1. You want a **fast approximation** based on section inertias.
+2. Each polygon is a **single closed loop** (one boundary per polygon).
+3. You accept that $\alpha$ is a **global calibration factor**, not shape recognition.
+4. You do not need multiply-connected Saint-Venant torsion physics (holes) in this path.
 
 ---
 
-## 2) “Solid” means “filled domain”
+## 8) Scope limitations (by design)
 
-Each polygon is treated as a filled region (a *solid cross-sectional domain*). There is:
-- no recognition of holes,
-- no nesting/subtraction,
-- no @wall/@cell behavior,
-- no topological union operation between polygons.
+- Accuracy depends on how representative the chosen $\alpha$ is for the actual shape family.
+- For thin-walled open sections use `@wall`.
+- For thin-walled closed cells use `@cell`.
+- For general solids where $J_{sv}$ must be computed accurately for arbitrary shapes, a dedicated Prandtl/Poisson solver is required (not this function).
 
-Therefore, if two polygons overlap, the overlap area is **counted twice** (once in each domain), because the contribution is computed per-domain and then summed. This is intentional under the “take what you find” contract.
 
----
-
-## 3) Saint-Venant torsion via Prandtl stress function
-
-For a solid simply-connected domain $\Omega_i$, define the **Prandtl stress function** $\psi_i(x,y)$ as the solution of the Poisson problem:
-
-$$
-\nabla^2 \psi_i = -2 \quad \text{in } \Omega_i
-$$
-
-with Dirichlet boundary condition:
-
-$$
-\psi_i = 0 \quad \text{on } \partial\Omega_i
-$$
-
-The Saint-Venant torsional constant is then:
-
-$$
-J_i = 2 \int_{\Omega_i} \psi_i \, dA
-$$
-
-### Equivalent energy identity (useful for checks)
-
-Using Green’s identity (for sufficiently regular solutions):
-
-$$
-\int_{\Omega_i} \|\nabla \psi_i\|^2 \, dA = 2\int_{\Omega_i} \psi_i \, dA
-$$
-
-so one may also view:
-
-$$
-J_i = \int_{\Omega_i} \|\nabla \psi_i\|^2 \, dA
-$$
-
-(The implementation may compute $J_i$ using either expression; the primary definition in this spec is
-$J_i = 2 \int \psi_i\, dA$.)
-
----
-
-## 4) Discrete numerical method (Cartesian grid Poisson solve)
-
-A robust, geometry-agnostic way to solve the Poisson problem on arbitrary polygons is a **masked Cartesian grid** method:
-
-1. Build a bounding box around the polygon $\Omega_i$.
-2. Create a uniform grid with spacing $h$:
-   - grid nodes $(x_p, y_q)$
-3. Classify nodes as **inside** or **outside** the polygon (point-in-polygon test).
-4. Solve the discrete Poisson equation on the inside nodes, enforcing $\psi=0$ on boundary/outside.
-
-### 4.1 Discrete Laplacian
-
-For an interior grid node $(p,q)$ inside $\Omega_i$, approximate:
-
-$$
-\nabla^2 \psi(p,q) \approx \frac{\psi_{p+1,q}+\psi_{p-1,q}+\psi_{p,q+1}+\psi_{p,q-1}-4\psi_{p,q}}{h^2}
-$$
-
-Impose:
-
-$$
-\frac{\psi_{p+1,q}+\psi_{p-1,q}+\psi_{p,q+1}+\psi_{p,q-1}-4\psi_{p,q}}{h^2} = -2
-$$
-
-For neighbors outside the domain, use $\psi=0$ (Dirichlet condition). This yields a sparse linear system:
-
-$$
-A\,\mathbf{\psi}=\mathbf{b}
-$$
-
-### 4.2 Discrete torsional constant
-
-Once $\psi$ is solved on the grid nodes classified inside:
-
-$$
-J_i \approx 2 \sum_{(p,q)\in \Omega_i} \psi_{p,q}\, h^2
-$$
-
-This is a midpoint-like quadrature on a uniform grid.
-
----
-
-## 5) Combined weighted result
-
-Given $J_i$ for each polygon:
-
-$$
-J_\text{tot} = \sum_{i=1}^{n} w_i\,J_i
-$$
-
-No post-processing is applied:
-- no absolute value,
-- no clipping,
-- no normalization.
-
-If the calling code wants physical constraints (e.g., $w_i\ge 0$), it must enforce them upstream.
-
----
-
-## 6) Preconditions (expected upstream)
-
-This function intentionally does **not** validate or repair input. For meaningful results, upstream validation should ensure:
-
-- Each polygon has at least 3 vertices.
-- Vertices define a non-degenerate region (non-zero area).
-- Polygon is simple enough for point-in-polygon classification (no wild self-intersections).
-- Each polygon provides a finite numeric weight $w_i$.
-
-If these are violated, the method may:
-- fail numerically (singular/ill-conditioned system),
-- return meaningless values,
-- or raise errors from the linear solver.
-
----
-
-## 7) Accuracy and resolution guidance (practical)
-
-Let $D$ be a characteristic dimension (e.g., the minimum bounding-box side length). Accuracy improves as $h$ decreases.
-
-A pragmatic rule:
-- Choose $h \approx D / N$ with $N$ in the range 80–250 for engineering-grade estimates,
-  depending on aspect ratio and required accuracy.
-
-The implementation may expose:
-- a hard cap on the grid size,
-- solver tolerances,
-- a maximum iteration count (for iterative solvers).
-
----
-
-## 8) Sanity-check reference values (optional)
-
-These are useful for verifying the implementation.
-
-### Solid square of side $a$
-
-A common reference is:
-
-$$
-J_\square \approx 0.1406\,a^4
-$$
-
-### Solid rectangle $a \times b$ (with $a \ge b$)
-
-Engineering references provide accurate series solutions; a frequently used approximation is:
-
-$$
-J \approx \frac{a\,b^3}{3}\left[1 - 0.63\frac{b}{a} + 0.052\left(\frac{b}{a}\right)^5\right]
-$$
-
-Use these as approximate targets for mesh convergence testing.
-
----
-
-## 9) Non-goals (explicit)
-
-This function does **not**:
-- compute thin-walled torsion (Bredt–Batho) for open/closed walls,
-- detect or process holes via nesting rules,
-- merge adjacent polygons into a geometric union,
-- fix orientation (CW/CCW),
-- apply any “helpful” absolute values or sign corrections.
-
-It is a pure “as supplied” solid-domain Saint-Venant torsion calculator with linear weighted summation.
-
----
-
-
-
-**Notes**
-- Valid primarily for **open thin-walled sections**.
-- Used as the **reference torsional constant** when no closed cell is detected.
 
 # Torsion constant methods for tagged polygons (`@cell` / `@wall`)
 
