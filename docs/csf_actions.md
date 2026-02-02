@@ -375,27 +375,43 @@ CSF_ACTIONS:
 ## `section_area_by_weight`
 
 **Purpose**  
-Compute an area breakdown grouped by **absolute weight** `W_abs` at each station.
+Produce a **per-polygon net-area report** at each station, with optional **visual grouping by weight** `W(z)`.
 
-**Concept** (nesting-only geometry; no intersections):
-- Each polygon has one immediate container (or none).
-- Relative weights follow: `W_rel = W_abs(child) - W_abs(container)`.
-- Exclusive area: `A_excl = A(poly) - sum(A(children_immediate))`.
-- The action groups `A_excl` values by `W_abs`.
+This action is a *sectional diagnostic* (transverse geometry + effective weights). It does **not** solve any longitudinal/mechanical problem.
 
-**Stations**: **REQUIRED**.  
-**Output**:
-- `stdout` → report per station (`W_abs`, area, fraction, polygons).
-- `*.csv` → rows `(z, W_abs, area, area_fraction, polygons)`.
-- other file → captured text report.
+**Concept** (nesting-only geometry; no intersections)
+- Each polygon has at most one **immediate container** (or none).
+- **Effective weight** per polygon is evaluated at the station: `W(z)` (as returned by `polygon_surface_w1_inners0`).
+- **Net surface per polygon** is computed with the local rule:
+  - `A_net = A(poly) - sum(A(direct_inners))`
+  - interpreted as “`w(poly)=1` and `w(inners)=0`”.
+- For each polygon the report shows `A_net` and `A_net * W(z)`.
+- Polygons can be displayed:
+  - **grouped by weight** (visual grouping; one `W` label per group), or
+  - **flat in id order**.
+
+**Stations**: **REQUIRED**.
+
+**Output**
+- If `output` is omitted → default is `[stdout]`.
+- `stdout` → one report block per station.
+- `*.txt` → captured text report.
+- `*.csv` → tabular output (one row per polygon).
+- If `output` contains files but **does not** contain `stdout`, then nothing is printed to stdout.
 
 **Parameters (`params:`)**
 
 | name | type | required | default | meaning |
 |---|---:|:---:|---:|---|
-| `w_tol` | float | no | `0.0` | Optional grouping tolerance. If > 0, weights are binned by rounding to multiples of `w_tol`. |
-| `include_per_polygon` | bool | no | `false` | If true, include a per-polygon diagnostic block (container, `W_rel`, `W_abs`, `A_excl`). |
-| `fmt_display` | str | no | `.6g` | Python numeric format for stdout/text report. Alias accepted: `fmt_diplay`. |
+| `group_mode` | str | no | `"weight"` | `"weight"` groups rows visually by `W(z)`; `"id"` prints a flat table sorted by polygon id (id is the first column). |
+| `w_tol` | float | no | `0.0` | Weight binning tolerance used only when `group_mode="weight"`. If `> 0`, weights are binned as `W_bin = round(W / w_tol) * w_tol`. If `<= 0`, grouping uses exact `W`. |
+| `include_per_polygon` | bool | no | `false` | If true, include per-polygon extra columns: `direct_inners` and `container`. |
+| `fmt_display` | str | no | `.6f` | Python numeric format for stdout/text report (e.g. `.6f`, `.4e`). Alias accepted: `fmt_diplay`. |
+
+Notes
+- Polygon ids are **0-based**.
+- Each polygon is assumed to have a consistent `(s0.name, s1.name)` pairing in order; missing mapping is treated as an error.
+- Unknown/legacy parameters (e.g. `zero_w_eps`) are ignored with a **warning**.
 
 **Example**
 
@@ -406,11 +422,12 @@ CSF_ACTIONS:
   actions:
     - section_area_by_weight:
         stations: [s_dense]
-        output: [stdout, out/area_by_weight.csv]
+        output: [stdout, out/area_by_weight.csv, out/area_by_weight.txt]
         params:
+          group_mode: "weight"
           w_tol: 0.0
           include_per_polygon: false
-          fmt_display: ".6g"
+          fmt_display: ".6f"
 ```
 
 ---
