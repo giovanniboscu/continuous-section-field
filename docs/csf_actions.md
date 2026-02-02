@@ -525,23 +525,3 @@ CSF_ACTIONS:
 
 ---
 
-## `write_samp2000_geometry` (alias)
-
-**Purpose**  
-Backward-compatibility alias for `write_sap2000_geometry` (typo tolerance).
-
-**Use**  
-Prefer `write_sap2000_geometry` in new files.
-
-**Example**
-
-```yaml
-CSF_ACTIONS:
-  actions:
-    - write_samp2000_geometry:
-        output: [out/sap2000_template_pack.txt]
-        params:
-          n_intervals: 6
-          E_ref: 2.1e+11
-          nu: 0.30
-```
