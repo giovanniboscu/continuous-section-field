@@ -386,7 +386,7 @@ This action is a *sectional diagnostic* (transverse geometry + effective weights
   - `A_net = A(poly) - sum(A(direct_inners))`
   - interpreted as “`w(poly)=1` and `w(inners)=0`”.
 - For each polygon the report shows `A_net` and `A_net * W(z)`.
- Total occupied Surface
+ occupied Surface
 - Polygons can be displayed:
   - **grouped by weight** (visual grouping; one `W` label per group), or
   - **flat in id order**.
