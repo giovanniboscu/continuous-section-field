@@ -432,6 +432,128 @@ CSF_ACTIONS:
 ```
 
 ---
+## `volume`
+
+**Purpose**  
+Produce a **per-polygon volume-style report** between exactly two stations `z1` and `z2`, using the same *accounting* concept previously used for areas:
+
+- **Occupied quantity**: integrate the *net occupied surface* of each polygon (polygon counted as 1, its direct inners counted as 0).
+- **Homogenized occupied quantity**: integrate the same net occupied surface multiplied by the polygon weight function `w(z)`.
+
+This action is **not** meant for structural calculations. It is intended to help *describe what each polygon is made of* (composition/weighting law) and to support accounting-style quantity summaries.
+
+---
+
+### Concept (accounting surface extended to a longitudinal integral)
+
+For a polygon `p` at a longitudinal coordinate `z`:
+
+1) **Net occupied surface** (accounting rule)
+
+- treat the polygon as `w=1`
+- treat its **direct inners** (holes) as `w=0`
+
+So the net occupied surface is:
+
+- `A_net(p,z) = A(p,z) - sum(A(i,z) for i in direct_inners(p))`
+
+2) **Weighted net occupied surface**
+
+- `A_w(p,z) = A_net(p,z) * w(p,z)`
+
+where `w(p,z)` follows the polygon `weight_law` (or `none`).
+
+3) **Integrated quantities between two stations**
+
+For the two stations `z1` and `z2`:
+
+- `V_occ(p)  = ∫[z1,z2] A_net(p,z) dz`
+- `V_hom(p)  = ∫[z1,z2] A_w(p,z) dz`
+
+The report shows both values per polygon. `V_hom` is provided for completeness; if `w(z) ≡ 1` on the interval, then `V_hom = V_occ`.
+
+> Note on interpretation: these are “volume-like” integrated quantities. Do not attach a physical unit here unless your project defines one.
+
+---
+
+## Stations
+
+**REQUIRED**.  
+For this action the `stations` entry must expand to **exactly two** absolute z-values, interpreted as the integration limits:
+
+- `z1` = first station value
+- `z2` = second station value
+
+If the station set expands to anything other than 2 values, the action must raise an error.
+
+---
+
+## Output
+
+- If `output` is omitted → default is `[stdout]`.
+- `stdout` → prints a single report block.
+- `*.txt` → writes the same report block as text.
+- `*.csv` → writes a table, one row per polygon.
+- If `output` contains files but **does not** include `stdout`, nothing is printed to stdout.
+
+---
+
+## Parameters (`params:`)
+
+| name | type | required | default | meaning |
+|---|---:|:---:|---:|---|
+| `n_points` | int | no | `20` | Number of Gauss–Legendre integration points (>= 1). Higher = more accurate for strongly varying laws. |
+| `fmt_display` | str | no | `.6f` | Python numeric format for stdout/txt report (e.g. `.6f`, `.4e`). Alias accepted: `fmt_diplay`. |
+| `w_tol` | float | no | `0.0` | Kept for compatibility. Not required for this action. (If present it may be ignored or warned, depending on your validation policy.) |
+
+Notes
+- Polygon ids are **0-based**.
+- Each polygon is assumed to have a consistent `(s0.name, s1.name)` pairing in order; missing mapping is treated as an error.
+- The report includes `w(z1)`, `w(z2)` and `weight_law` to document how the polygon weight varies across the interval.
+
+---
+
+## Report format (illustrative)
+
+The report header identifies the two stations:
+
+```
+VOLUME POLYGON LIST REPORT at z=<z1> and z=<z2>
+```
+
+Then a table with at least:
+
+- `id` (polygon index)
+- `s0.name`, `s1.name` (endpoint pairing names)
+- `w(z1)`, `w(z2)` (weight values at the interval endpoints)
+- `weight_law` (string, or `none`)
+- `Volume Occupied` (V_occ)
+- `Homogenized Volume Occupied` (V_hom)
+
+Finally:
+
+- `Total Occupied Volume` = sum over polygons of `V_occ`
+- `Total Occupied Homogenized Volume` = sum over polygons of `V_hom`
+
+---
+
+## Example
+
+```yaml
+CSF_ACTIONS:
+  stations:
+    station_edge: [0.0, 30.0]   # MUST contain exactly 2 z values
+
+  actions:
+    - volume:
+        stations: station_edge
+        output: [stdout, out/volume.txt, out/volume.csv]   # optional; default is [stdout]
+        params:
+          n_points: 20
+          fmt_display: ".6f"
+          w_tol: 0.0
+```
+---
 
 ## `export_yaml`
 
