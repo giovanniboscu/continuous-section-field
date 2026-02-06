@@ -202,36 +202,20 @@ Used in shear stress estimation:
 Q = integral( y * dA ) about the neutral axis
 
 ---
-
 ## 16. Torsional Constant (Saint-Venant)
 
 **Key:** `J_sv`
 
-
-
-## CSF Solid Torsion (Approx.): `compute_saint_venant_J` with `alpha` parameter
-
-This note documents the scope, assumptions, and input requirements for the **current CSF “solid torsion” approximation**:
-
-- `compute_saint_venant_J(section, alpha=..., eps_a=...)`
-
-It matches the implementation that **does not solve a PDE on a grid**. Instead, it derives torsion from **pure geometric section properties**.
-
-Math is written for **GitHub Markdown** using `$$...$$` blocks.
+CSF reports `J_sv` using the legacy solid-torsion approximation with **α = 1** (as shown in CSF output reports).
 
 ---
 
-## 1) What this routine is (and is not)
+## CSF solid torsion (legacy): `compute_saint_venant_J` (α·Jp, with α=1)
 
-This function returns an **approximate Saint-Venant torsional constant** for a *Section-like* object with multiple weighted polygons.
+This routine **does not** solve Prandtl’s stress-function PDE (no mesh, no field solution).  
+It derives torsion from **geometric section properties** and applies a scalar factor α.
 
-It is **not** a Prandtl stress-function (Poisson) solver. There is no meshing and no iterative field solution.
-
-Instead, it starts from the **polar second moment of area** and applies a user-controlled correction factor `alpha`.
-
----
-
-## 2) Core approximation
+### Core approximation
 
 The polar second moment of area about the (weighted) centroid is:
 
@@ -239,84 +223,65 @@ $$
 J_p = I_x + I_y
 $$
 
-For a circular solid section, the Saint-Venant torsion constant equals the polar moment:
+For a circular solid section:
 
 $$
 J_{sv} = J_p
 $$
 
-For **non-circular** solids, in general:
+For a general non-circular section:
 
 $$
 J_{sv} \neq J_p
 $$
 
-This CSF routine approximates Saint-Venant torsion by scaling the polar moment:
+CSF uses the approximation:
 
 $$
 J_{sv} \approx \alpha\,J_p
 $$
 
-where:
-
-- `alpha` is a **user-chosen reduction factor** that “maps” $J_p$ to an estimate of $J_{sv}$.
-
-### 2.1 Interpretation of `alpha`
-
-- $\alpha=1$ corresponds to the **circular** case (exact).
-- Values $\alpha<1$ reflect that many non-circular shapes have **lower** Saint-Venant torsion constant than $J_p$.
-
-The common default `alpha = 0.8436` matches the **square** ratio (engineering reference):
+In CSF reports for this legacy path, **α = 1**, hence:
 
 $$
-\alpha_{square} \approx \frac{J_{sv}}{J_p} \approx 0.8436
+J_{sv} \approx J_p
 $$
 
-Use this default only if you accept that it is a **global approximation**.
+### Multi-polygon weighting
 
----
+For multiple polygons with weights $w_i$, CSF combines geometric integrals linearly:
 
-## 3) Weighted multi-polygon combination
+$$
+A = \sum_i w_i A_i
+$$
 
-The routine is “weighted” across polygons.
+Centroid from weighted first moments, and inertias:
 
-Geometric integrals (area, centroid, inertias) are combined by linear weights $w_i$:
-
-- weighted area: $A = \sum_i w_i A_i$
-- weighted centroid: computed from weighted first moments
-- weighted inertias: $I_x = \sum_i w_i I_{x,i}$, $I_y = \sum_i w_i I_{y,i}$
+$$
+I_x = \sum_i w_i I_{x,i},\qquad I_y = \sum_i w_i I_{y,i}
+$$
 
 Then:
 
 $$
-J_p = I_x + I_y\quad\text{(about the weighted centroid)}
+J_p = I_x + I_y
 $$
 
-and finally:
-### 4.2 What the legacy `J_sv` cannot infer
+(all evaluated about the **weighted centroid**), and finally:
 
-`J_sv` is an **α·Jp approximation**, therefore it:
-
-- does not classify the section as thin-walled / open / closed-cell;
-- does not compute warping-related quantities (e.g., shear center, warping constant `Cw`);
-- is not a general Saint-Venant torsion solver for multiply-connected shapes (holes): it may be accurate only in special cases.
 $$
 J_{sv} \approx \alpha\,J_p
 $$
 
-**Important:** this is an algebraic homogenization approach. It is not “automatic shape recognition” and it is not a union/difference geometry engine.
-
 ---
 
-## 4) Geometry requirements (non-obvious constraints)
+## Limitations of this legacy `J_sv`
 
-### What this method cannot infer
-Because this is a $\alpha\,J_p$ approximation:
+Because this is an **α·Jp approximation**, it:
 
-- it cannot detect whether a shape is thin-walled, open, closed-cell, etc.
-- it does not compute warping-related quantities (e.g., $C_w$, shear center)
-- it does not handle multiply-connected torsion physics (holes) in the Saint-Venant sense.
-
+- does **not** classify the section as thin-walled / open / closed-cell;
+- does **not** compute warping-related quantities (e.g., shear center, warping constant $C_w$);
+- is **not** a general Saint-Venant torsion solver for multiply-connected shapes (holes): it may be accurate only in special cases.
 ---
 
 ## 5) Under-the-hood geometry formulas (for `J_p`)
