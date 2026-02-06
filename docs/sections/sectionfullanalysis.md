@@ -293,7 +293,13 @@ J_p = I_x + I_y\quad\text{(about the weighted centroid)}
 $$
 
 and finally:
+### 4.2 What the legacy `J_sv` cannot infer
 
+`J_sv` is an **α·Jp approximation**, therefore it:
+
+- does not classify the section as thin-walled / open / closed-cell;
+- does not compute warping-related quantities (e.g., shear center, warping constant `Cw`);
+- is not a general Saint-Venant torsion solver for multiply-connected shapes (holes): it may be accurate only in special cases.
 $$
 J_{sv} \approx \alpha\,J_p
 $$
@@ -304,22 +310,7 @@ $$
 
 ## 4) Geometry requirements (non-obvious constraints)
 
-These are the key requirements implied by the method and its inputs.
-
-### 4.1 Per-polygon input is a single loop
-Each polygon must be provided as a **single closed loop**.
-
-- Multi-loop encodings (outer+inner in one `vertices` list) are **not** a valid input for this method.
-
-Reason: the geometry formulas assume one boundary per polygon and do not reconstruct holes from multi-loop lists.
-
-### 4.2 Meaning of weights
-Weights enter linearly into area and inertia integrals.
-
-- If you interpret weights as stiffness scaling, $w_i$ should typically be **non-negative**.
-- Negative weights are mathematically allowed as an algebraic device, but then $J_{sv}$ no longer corresponds to a physical torsional constant of a real solid.
-
-### 4.3 What this method cannot infer
+### What this method cannot infer
 Because this is a $\alpha\,J_p$ approximation:
 
 - it cannot detect whether a shape is thin-walled, open, closed-cell, etc.
