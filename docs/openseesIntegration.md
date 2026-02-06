@@ -1,41 +1,53 @@
-
-
 ## OpenSees Integration
 
-The CSF library bridges the gap between continuous geometric modeling and structural analysis by generating optimized OpenSees models.
+CSF bridges continuous geometric modeling and structural analysis by exporting **station-wise section data** and building a consistent OpenSees beam model.
 
 ### 1. Force-Based Formulation
 
-The library uses the `forceBeamColumn` element (Non-linear Beam-Column). This approach is superior for tapered members because it integrates the **section flexibility** along the element. Unlike standard elements, it can capture the exact deformation of a variable-section beam using a single element, avoiding the need to manually break the beam into many small segments.
+CSF uses the `forceBeamColumn` element (force-based beam-column).  
+This formulation is well-suited to members with longitudinally varying stiffness because it performs **numerical integration of section response** along the element axis.
 
-### 2. Longitudinal Sampling (Gauss-Lobatto)
+**Important:** a “single element” representation is valid only when the **centroid offsets are constant** along the member. If centroid offsets vary, intermediate nodes are required (see §4).
 
-The internal variation of the cross-section is handled through a strategic sampling process:
+### 2. Longitudinal Sampling (Gauss–Lobatto)
 
-* **Point Distribution:** Section properties are sampled using the **Gauss-Lobatto rule**. This ensures that the beam ends (nodes) are included in the calculation, which is critical for accurate support reactions and tip displacement.
-* **Property Mapping:** Every sampling point is assigned a unique `section Elastic` tag. These tags are then linked via the `beamIntegration` command, mapping the continuous geometric transition onto the element's numerical scheme.
+The longitudinal variation is handled by exporting a deterministic set of stations:
 
-### 3. Torsional Rigidity (J) - Beta Status
+- **Point distribution:** section properties are sampled at **Gauss–Lobatto stations** (endpoints included), exported explicitly as:
+  - `# CSF_Z_STATIONS: z0 z1 ... zN-1`
+- **Property mapping:** each station is assigned one `section Elastic` record (unique tag).  
+  The OpenSees builder maps these station sections into the element integration using `beamIntegration UserDefined`:
+  - **Member-level strict Lobatto (N points):** only if exported stations match Lobatto abscissae and centroid offsets are constant.
+  - **Segmented (N−1 elements, 2-point endpoints):** used when centroid offsets vary, to avoid inventing intermediate sections.
 
-The torsional constant () is required for numerical stability in 3D FEA models to prevent singular matrices.
+This ensures the OpenSees model uses **only exported sections**, with no interpolation.
 
-* **Current Implementation:** The library uses a semi-empirical approximation based on the area and polar moment of inertia.
-* **Scope:** This method provides reliable numerical convergence for solid, compact sections.
-* **Note:** For thin-walled or complex open profiles, this value should be considered a preliminary estimate for stability purposes.
+### 3. Torsional Rigidity (J)
+
+A torsional constant `J` is required for 3D frame stability (torsional stiffness `GJ`) to prevent singular stiffness matrices.
+
+- **Current behavior:** CSF exports a station-wise torsion scalar `J` selected from available CSF torsion results (e.g. wall/cell/legacy depending on availability).
+- **Scope:** the value provides numerical stability and a consistent torsional stiffness input; its physical fidelity depends on the torsion model used (wall/cell/legacy) and the section topology.
 
 ### 4. Centroidal Axis Alignment
 
-When the section height or shape varies asymmetrically, the neutral axis might shift.
+If the section varies asymmetrically, the centroid \((x_c(z), y_c(z))\) may vary along the member.
 
-* **Alignment Logic:** CSF tracks the centroid () of every sampled section and uses a linear regression to align the OpenSees nodes.
-* **Purpose:** This ensures the element's longitudinal axis follows the physical center of the beam, minimizing unintended coupling between axial and bending forces.
+- **Data source:** `xc yc` are exported per station as **CSF-only fields** appended to each `section Elastic` line.
+- **Modeling strategy:** the builder constructs:
+  - a **reference axis** (for BCs/loads),
+  - a **centroid axis** (station nodes placed using `xc yc`),
+  - a station-wise kinematic bridge (e.g. `rigidLink beam`) between the two axes.
+
+**Note:** a simple linear regression using only end nodes is informational/legacy; it is not sufficient when \((x_c,y_c)\) varies nonlinearly.
 
 ---
 
 ### Implementation Overview
 
-* **Language:** Python (`openseespy`) or TCL.
-* **Element Type:** `forceBeamColumn`.
-* **Integration:** `beamIntegration Lobatto`.
-* **Geometry:** Topology-agnostic (adapts to any number of integration points).
-
+- **Language:** Python (`openseespy`) or Tcl builder.
+- **Element type:** `forceBeamColumn`.
+- **Stations:** `CSF_Z_STATIONS` (Gauss–Lobatto if chosen).
+- **Integration mapping:** `beamIntegration UserDefined`
+  - member-level strict Lobatto (N points) or segmented endpoint sampling (2 points/segment).
+- **Geometry:** topology-agnostic (any number of stations; no invented sections).
