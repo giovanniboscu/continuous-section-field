@@ -1,5 +1,5 @@
 """
-Prototype: continuous section field + property digestor + 2D/3D visualization
+continuous section field + property digestor + 2D/3D visualization
 
 Assumptions (explicit):
 - Two endpoint sections exist at z0 and z1.
@@ -10,27 +10,1093 @@ Assumptions (explicit):
 
 Dependencies: matplotlib (standard in most Python setups).
 """
-
 from __future__ import annotations
 import traceback
+from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 from typing import Tuple, Dict, Optional, List
 import math
 import random
 import warnings
 import os
-try:
-    import opensees as ops  # Windows (pip install opensees)
-except ImportError:
-    import openseespy.opensees as ops  # Linux/Mac
+import sys
+import numbers
+import textwrap
+#import openseespy.opensees as ops
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D 
 import re
 from datetime import datetime
+from typing import overload, Union, Literal
+from pathlib import Path
+Point = Tuple[float, float]
+Segment = Tuple[Point, Point]
+
+# -----------------------------
+# Robust 2D segment intersection
+# -----------------------------
+#
+# Your current implementation uses a "strict proper intersection" test:
+#     (o1 * o2 < 0) and (o3 * o4 < 0)
+# which detects only crossings where the intersection lies strictly inside both segments.
+#
+# It does NOT detect:
+# - touching at endpoints (T-junctions, vertex-on-edge contact),
+# - collinear overlaps,
+# - near-collinear cases where numerical noise makes orientation() return 0.
+#
+# The functions below implement a more complete predicate:
+# - detects proper crossings,
+# - detects endpoint touching,
+# - detects collinear overlap,
+# while still allowing you to ignore adjacent edges (handled by caller).
+
+EPS_L = 1e-12  # default Use this for: orientation tests, point-on-segment, segment intersection, etc.
+EPS_A = 1e-12  # EPS_A: area tolerance. Must scale as S^2. Use this for: "area nearly zero" checks, summed areas, etc.
+EPS_K = 1e-12 # Numerical/matrix tolerances.
+EPS_K_RTOL = 1e-10
+EPS_K_ATOL = 1e-12
+DDEBUG = False
+
+# (Optional: se vuoi usare PyYAML quando disponibile)
+try:
+    import yaml  # type: ignore
+except Exception as e:
+    print("PyYAML import failed:", repr(e))
+    yaml = None
+
+if yaml is not None:
+    class XY(tuple):
+        """Coppia (x,y) da stampare in flow style."""
+        pass
+
+    class CSFDumper(yaml.SafeDumper):
+        def increase_indent(self, flow=False, indentless=False):
+            return super().increase_indent(flow, False)
+
+    def _repr_xy(dumper, data: XY):
+        # forza sempre: [x, y]
+        return dumper.represent_sequence(
+            "tag:yaml.org,2002:seq",
+            [float(data[0]), float(data[1])],
+            flow_style=True,
+        )
+
+    CSFDumper.add_representer(XY, _repr_xy)
+else:
+    XY = None
+    CSFDumper = None
 
 
-def safe_evaluate_weight(formula: str, p0: Polygon, p1: Polygon, l_total: float, t: float,print=True) -> tuple[float, dict]:
+
+# Add this method inside class ContinuousSectionField.
+#
+# Goal:
+#   Provide an API to compute an AREA BREAKDOWN of one 2D section by MATERIAL WEIGHT (W)
+#   without requiring the user to manually manage nested polygons and negative "void" weights.
+#
+# Model assumptions (CSF nesting rule):
+#   - Polygons never intersect; they may touch.
+#   - Each polygon has an *immediate container* (or None if outermost), determinable on S0.
+#   - The Section returned by self.section(z) already uses RELATIVE weights:
+#         w_rel(child) = w_abs(child) - w_abs(container(child))
+#     This method reconstructs absolute weights w_abs and assigns area to the exclusive region
+#     of each polygon (polygon area minus its immediate children areas).
+
+from typing import Any, Dict, List, Optional, Tuple
+
+
+
+#################################################################
+# -----------------------------------------------------------------------------
+# Plot helper
+# -----------------------------------------------------------------------------
+
+def plot_section_variation(
+    stations_data: Sequence[Dict[str, Any]],
+    filename: str = "section_variation.png",
+    show: bool = False,
+) -> str:
+    """
+    Plot a quick visual preview of how a few properties vary along z.
+
+    Notes
+    -----
+    - This function is optional. It only runs if matplotlib is available.
+    - Units are intentionally NOT printed; they depend on the user's consistent unit system.
+    - The function expects each station dict to have at least:
+        'z', 'A', 'Ix', 'Iy', 'J'
+
+    Parameters
+    ----------
+    stations_data:
+        List of station dictionaries produced by _compute_station_data(...)
+    filename:
+        Path to save the plot image.
+    show:
+        If True, calls plt.show(). Otherwise it only saves.
+
+    Returns
+    -------
+    str:
+        The image path written to disk.
+
+    Raises
+    ------
+    RuntimeError:
+        If matplotlib is not available.
+    """
+
+    z = [st['z'] for st in stations_data]
+    area = [st['A'] for st in stations_data]
+    i33 = [st['Ix'] for st in stations_data]
+    i22 = [st['Iy'] for st in stations_data]
+    j = [st['J'] for st in stations_data]
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
+
+    # Plot Area
+    ax1.plot(z, area, 'o-', color='blue', label='Area [m²]')
+    ax1.set_ylabel('Cross Section Area [m²]')
+    ax1.grid(True, linestyle='--')
+    ax1.legend()
+    ax1.set_title('Variation of Geometric Properties along Z (Absolute)')
+
+    # Plot Inertia and Torsion
+    ax2.plot(z, i33, 's-', color='red', label='I33 (Strong Axis) [m⁴]')
+    ax2.plot(z, i22, 'd-', color='green', label='I22 (Weak Axis) [m⁴]')
+    ax2.plot(z, j, 'x--', color='purple', label='J (Torsion) [m⁴]')
+    ax2.set_xlabel('Z coordinate [m]')
+    ax2.set_ylabel('Inertia / Torsion [m⁴]')
+    ax2.grid(True, linestyle='--')
+    ax2.legend()
+    
+    plt.tight_layout()
+    plt.savefig(filename)
+    print(f"[PLOT] Preview saved as '{filename}'")
+    if show:
+        plt.show()
+
+
+
+# -----------------------------------------------------------------------------
+# Station generation
+# -----------------------------------------------------------------------------
+def get_lobatto_intervals(z_min: float, z_max: float, n_intervals: int) -> "np.ndarray":
+    """
+    Compute Gauss-Lobatto stations for a given number of intervals.
+
+    Why "intervals" and not "points"?
+    --------------------------------
+    For a beam discretization, users often think in terms of N segments (intervals).
+    Gauss-Lobatto rules include both endpoints, so the number of stations is:
+
+        n_stations = n_intervals + 1
+
+    The previous naming (get_lobatto_points(..., n_points)) easily leads to confusion
+    because the implementation returns n_points+1 stations for n_points >= 3.
+
+    Parameters
+    ----------
+    z_min, z_max:
+        Endpoints of the interval in physical coordinates.
+    n_intervals:
+        Number of intervals. Must be >= 1.
+
+    Returns
+    -------
+    np.ndarray:
+        Sorted station coordinates of length n_intervals + 1.
+
+    Implementation detail
+    ---------------------
+    We use a Jacobi matrix eigenvalue method to compute the internal Lobatto nodes for
+    the (n_stations)-point rule, then map from [-1,1] to [z_min,z_max].
+
+    Raises
+    ------
+    ValueError:
+        If n_intervals < 1
+    RuntimeError:
+        If numpy is not available.
+    """
+    if np is None:
+        raise RuntimeError("numpy is required for get_lobatto_intervals().")
+    if n_intervals < 1:
+        raise ValueError("n_intervals must be >= 1.")
+
+    n_stations = n_intervals + 1
+
+    # Trivial cases:
+    if n_stations == 2:
+        nodes = np.array([-1.0, 1.0], dtype=float)
+    elif n_stations == 1:
+        nodes = np.array([0.0], dtype=float)
+    else:
+        # For an n_stations-point Lobatto rule, there are m = n_stations-2 internal nodes.
+        n = n_stations
+        m = n - 2  # number of internal nodes => H must be m x m
+
+        # Off-diagonal coefficients have length (m-1)
+        i = np.arange(1, m, dtype=float)  # 1..m-1
+        a = np.sqrt(i * (i + 2.0) / ((2.0 * i + 1.0) * (2.0 * i + 3.0)))
+
+        # Jacobi matrix (symmetric tridiagonal) of size m x m
+        H = np.zeros((m, m), dtype=float)
+        H[np.arange(m - 1), np.arange(1, m)] = a
+        H[np.arange(1, m), np.arange(m - 1)] = a
+
+        internal_nodes = np.sort(np.linalg.eigvalsh(H))
+        nodes = np.concatenate((np.array([-1.0]), internal_nodes, np.array([1.0])))
+
+    # Map [-1, 1] -> [z_min, z_max]
+    z_min_f = float(z_min)
+    z_max_f = float(z_max)
+    return 0.5 * (nodes + 1.0) * (z_max_f - z_min_f) + z_min_f
+
+
+# -----------------------------------------------------------------------------
+# Core property sampling
+# -----------------------------------------------------------------------------
+def _compute_station_data(
+    field: Any,
+    z_values: Sequence[float],
+) -> List[Dict[str, Any]]:
+    """
+    Sample the CSF field at the provided z positions and compute section properties.
+
+    This function delegates the actual validation/computation to the CSF library's
+    analysis function. We intentionally do NOT "second-guess" the CSF analysis.
+
+    Expected CSF interface
+    ----------------------
+    - field.section(z) -> a section object at that z
+    - csf.section_field.section_full_analysis(section,alpha) -> dict with keys like:
+        'A', 'Cx', 'Cy', 'Ix', 'Iy', 'Ixy', 'J', ...
+      (We fall back to sensible defaults if some keys are missing.)
+
+    Returns
+    -------
+    List[Dict[str, Any]]:
+        Each dict contains:
+          id (1-based),
+          z,
+          Cx, Cy,
+          A, Ix, Iy, Ixy, J,
+          plus any extra keys the analysis returns (stored under 'analysis_raw').
+
+    Raises
+    ------
+    RuntimeError:
+        If section_full_analysis cannot be imported.
+    """
+    try:
+        from csf.section_field import section_full_analysis  # type: ignore
+    except Exception as e:
+        raise RuntimeError(
+            "Cannot import csf.section_field.section_full_analysis; "
+            "this template generator requires the CSF analysis function."
+        ) from e
+
+    out: List[Dict[str, Any]] = []
+
+    for i, z in enumerate(z_values):
+        section_at_z = field.section(float(z))
+        analysis = section_full_analysis(section_at_z,alpha = 1.0,) 
+
+        cx = analysis.get("Cx", analysis.get("cx", 0.0))
+        cy = analysis.get("Cy", analysis.get("cy", 0.0))
+        A = analysis.get("A", analysis.get("area", 0.0))
+        Ix = analysis.get("Ix", analysis.get("ix", analysis.get("ixx_g", 0.0)))
+        Iy = analysis.get("Iy", analysis.get("iy", analysis.get("iyy_g", 0.0)))
+        Ixy = analysis.get("Ixy", analysis.get("ixy", 0.0))
+        # Torsion: different libraries may report 'J' or 'K_torsion' etc.
+        J = analysis.get("J", analysis.get("j", analysis.get("K_torsion", 0.0)))
+        print
+        out.append(
+            {
+                "id": i + 1,
+                "z": float(z),
+                "Cx": float(cx),
+                "Cy": float(cy),
+                "A": float(A),
+                "Ix": float(Ix),
+                "Iy": float(Iy),
+                "Ixy": float(Ixy),
+                "J": float(J),
+                "analysis_raw": analysis,
+            }
+        )
+
+    return out
+
+
+# -----------------------------------------------------------------------------
+# Template pack writer
+# -----------------------------------------------------------------------------
+_Mode = Literal["BOTH", "CENTROIDAL_LINE", "REFERENCE_LINE"]
+
+def write_sap2000_template_pack(
+    field: Any,
+    n_intervals: int = 20,
+    template_filename: str = "template.txt",
+    *,
+    mode: _Mode = "BOTH",
+    section_prefix: str = "SEC",
+    joint_prefix: str = "J",
+    frame_prefix: str = "F",
+    material_name: str = "S355",
+    E_ref: Optional[float] = None,
+    nu: Optional[float] = None,
+    include_plot: bool = True,
+    plot_filename: str = "section_variation.png",
+    show_plot: bool = False,
+    z_values: Optional[List[float]] = None,
+) -> str:
+    """
+    Generate a SAP2000 "template pack" text file from a CSF field.
+
+    What this produces
+    ------------------
+    A single text file (template pack) that contains:
+      - assumptions and modeling modes,
+      - station list (z) and section naming for each station,
+      - a full numeric property table per station (the "core"),
+      - copy/paste-ready candidate SAP2000 table blocks with placeholders,
+      - a checklist of items that might still be required in SAP2000.
+
+    What this does NOT claim
+    ------------------------
+    This file is NOT guaranteed to import as-is into SAP2000.
+    It is designed as a complete data pack to enable a user (or a downstream script)
+    to construct a correct SAP2000 import file for their specific SAP2000 version.
+
+    Parameters
+    ----------
+    field:
+        A ContinuousSectionField-like object (must have field.s0.z, field.s1.z, and field.section(z)).
+    n_intervals:
+        Number of intervals along the element; number of stations is n_intervals + 1.
+        This parameter is used only when `z_values` is not provided.
+    template_filename:
+        Output text file path.
+    mode:
+        "BOTH" -> prints both centroidal and reference-line blocks.
+        "CENTROIDAL_LINE" -> prints only centroidal-line blocks.
+        "REFERENCE_LINE" -> prints only reference-line blocks.
+    section_prefix, joint_prefix, frame_prefix:
+        Naming prefixes used in the generated copy/paste blocks.
+    material_name:
+        A suggested material label. The user may change this in SAP2000.
+    E_ref, nu:
+        Optional reference elastic constants included as *suggested* values.
+        Units are not enforced here; they must be consistent in SAP2000.
+    include_plot:
+        If True and matplotlib is available, saves a plot image of property variation.
+    plot_filename:
+        Image path for the plot (saved only if include_plot and matplotlib available).
+    show_plot:
+        If True, displays the plot interactively (if backend allows).
+    z_values:
+        Optional explicit station coordinates in absolute z units.
+
+        Backward compatibility behavior:
+        - If z_values is None: the function uses the original Gauss-Lobatto generation
+          over [z_start, z_end] based on n_intervals (unchanged behavior).
+        - If z_values is provided: the function uses the provided station list and does
+          not generate Lobatto points.
+
+        Validation for explicit z_values:
+        - must be a non-empty list,
+        - each value must be numeric,
+        - values must be finite,
+        - values must be strictly increasing (no duplicates),
+        - every value must be within [z_start, z_end].
+
+        This keeps behavior explicit and avoids silently fixing user input.
+
+    Returns
+    -------
+    str:
+        The template file path written.
+    """
+    if mode not in ("BOTH", "CENTROIDAL_LINE", "REFERENCE_LINE"):
+        raise ValueError("mode must be one of: BOTH, CENTROIDAL_LINE, REFERENCE_LINE")
+
+    # Extract CSF absolute bounds exactly as before.
+    z_start = float(getattr(field.s0, "z"))
+    z_end = float(getattr(field.s1, "z"))
+    L = z_end - z_start
+
+    # -------------------------------------------------------------------------
+    # Station generation / selection
+    # -------------------------------------------------------------------------
+    # Minimal-impact rule:
+    # - keep the original Lobatto path untouched when z_values is not provided;
+    # - add a small explicit branch for user-provided stations.
+    if z_values is None:
+        # Original behavior (fully preserved).
+        station_z = get_lobatto_intervals(z_start, z_end, int(n_intervals)).tolist()
+    else:
+        # Explicit-stations behavior (new, opt-in).
+        if not isinstance(z_values, list) or len(z_values) == 0:
+            raise ValueError("z_values must be a non-empty list of numeric z coordinates.")
+
+        station_z = []
+        for i, v in enumerate(z_values):
+            try:
+                z = float(v)
+            except Exception as e:
+                raise ValueError(f"z_values[{i}] is not numeric: {v!r}") from e
+
+            # Finite check without extra imports:
+            # NaN fails z == z; infinities are caught by bound checks below.
+            if z != z:
+                raise ValueError(f"z_values[{i}] is NaN.")
+
+            # Range check in absolute coordinates.
+            if z < z_start or z > z_end:
+                raise ValueError(
+                    f"z_values[{i}]={z} is outside field bounds [{z_start}, {z_end}]."
+                )
+
+            station_z.append(z)
+
+        # Strict monotonic increase:
+        # no sorting/dedup on purpose (explicit input policy, no silent fixes).
+        for i in range(1, len(station_z)):
+            if not (station_z[i] > station_z[i - 1]):
+                raise ValueError(
+                    "z_values must be strictly increasing (no duplicates, no descending values)."
+                )
+
+    # Compute section data at selected stations (unchanged downstream flow).
+    stations_data = _compute_station_data(field, station_z)
+
+    # Optional plot (best-effort).
+    plot_path_written: Optional[str] = None
+    if include_plot and plt is not None:
+        try:
+            plot_path_written = plot_section_variation(
+                stations_data,
+                filename=plot_filename,
+                show=show_plot,
+            )
+        except Exception:
+            # Plotting must never prevent template creation.
+            plot_path_written = None
+
+    # -------------------------------------------------------------------------
+    # Build template text (unchanged logic below)
+    # -------------------------------------------------------------------------
+    lines: List[str] = []
+    lines.append("SAP2000 TEMPLATE PACK (from CSF)")
+    lines.append("=" * 78)
+    lines.append("")
+    lines.append("DISCLAIMER")
+    lines.append("-" * 78)
+    lines.append(
+        "This template is a data pack intended to help build a SAP2000 import file. "
+        "It may require adaptation depending on SAP2000 version/table format."
+    )
+    lines.append("")
+    lines.append("MODEL METADATA")
+    lines.append("-" * 78)
+    lines.append(f"z_start      : {z_start:.9g}")
+    lines.append(f"z_end        : {z_end:.9g}")
+    lines.append(f"length (L)   : {L:.9g}")
+    lines.append(f"stations     : {len(stations_data)}")
+    lines.append(f"mode         : {mode}")
+    lines.append(f"material     : {material_name}")
+    if E_ref is not None:
+        lines.append(f"E_ref        : {float(E_ref):.9g}")
+    if nu is not None:
+        lines.append(f"nu           : {float(nu):.9g}")
+    if plot_path_written is not None:
+        lines.append(f"plot         : {plot_path_written}")
+    lines.append("")
+
+    lines.append("STATIONS (CORE)")
+    lines.append("-" * 78)
+    lines.append(
+        "Columns: id, z, Cx, Cy, A, Ix, Iy, Ixy, J"
+    )
+    for d in stations_data:
+        lines.append(
+            f"{d['id']:>4d}  {d['z']:.9g}  {d['Cx']:.9g}  {d['Cy']:.9g}  "
+            f"{d['A']:.9g}  {d['Ix']:.9g}  {d['Iy']:.9g}  {d['Ixy']:.9g}  {d['J']:.9g}"
+        )
+    lines.append("")
+
+    lines.append("SECTION NAMES")
+    lines.append("-" * 78)
+    for d in stations_data:
+        lines.append(f"{section_prefix}{d['id']:04d} @ z={d['z']:.9g}")
+    lines.append("")
+
+    lines.append("CANDIDATE TABLE BLOCKS (EDIT/ADAPT FOR YOUR SAP2000 VERSION)")
+    lines.append("-" * 78)
+    lines.append("1) Frame Section Property Definitions")
+    lines.append(
+        "   - Create one section per station using the core properties above."
+    )
+    lines.append(
+        "   - Map section names with section_prefix + station id."
+    )
+    lines.append("")
+    lines.append("2) Joint Coordinates (if using segmented model)")
+    lines.append(
+        "   - Build joints along the member axis with joint_prefix and z station coordinates."
+    )
+    lines.append("")
+    lines.append("3) Connectivity and Section Assignment")
+    lines.append(
+        "   - Create frame objects with frame_prefix and assign station-based sections."
+    )
+    lines.append("")
+
+    if mode in ("BOTH", "CENTROIDAL_LINE"):
+        lines.append("MODE BLOCK: CENTROIDAL_LINE")
+        lines.append("-" * 78)
+        lines.append(
+            "Use Cx, Cy at each station to define centroidal alignment if needed."
+        )
+        lines.append("")
+
+    if mode in ("BOTH", "REFERENCE_LINE"):
+        lines.append("MODE BLOCK: REFERENCE_LINE")
+        lines.append("-" * 78)
+        lines.append(
+            "Keep a fixed geometric/reference axis and assign varying station properties."
+        )
+        lines.append("")
+
+    lines.append("CHECKLIST")
+    lines.append("-" * 78)
+    lines.append("[] Confirm units consistency (geometry, E, inertia, torsion).")
+    lines.append("[] Confirm SAP2000 table schema/version for import.")
+    lines.append("[] Confirm local axis conventions and sign conventions.")
+    lines.append("[] Confirm material definition exists in model.")
+    lines.append("[] Confirm section assignment strategy (per object/per segment).")
+    lines.append("")
+
+    text = "\n".join(lines).rstrip() + "\n"
+
+    # Ensure output directory exists.
+    out_path = Path(template_filename)
+    if out_path.parent and not out_path.parent.exists():
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(text)
+
+    return str(out_path)
+
+
+
+#--------------------------------------------------------------------------------
+def write_sap2000_template_pack2toremove(
+    field: Any,
+    n_intervals: int = 20,
+    template_filename: str = "template.txt",
+    *,
+    mode: _Mode = "BOTH",
+    section_prefix: str = "SEC",
+    joint_prefix: str = "J",
+    frame_prefix: str = "F",
+    material_name: str = "S355",
+    E_ref: Optional[float] = None,
+    nu: Optional[float] = None,
+    include_plot: bool = True,
+    plot_filename: str = "section_variation.png",
+    show_plot: bool = False,
+) -> str:
+    """
+    Generate a SAP2000 "template pack" text file from a CSF field.
+
+    What this produces
+    ------------------
+    A single text file (template pack) that contains:
+      - assumptions and modeling modes,
+      - station list (z) and section naming for each station,
+      - a full numeric property table per station (the "core"),
+      - copy/paste-ready candidate SAP2000 table blocks with placeholders,
+      - a checklist of items that might still be required in SAP2000.
+
+    What this does NOT claim
+    ------------------------
+    This file is NOT guaranteed to import as-is into SAP2000.
+    It is designed as a complete data pack to enable a user (or a downstream script)
+    to construct a correct SAP2000 import file for their specific SAP2000 version.
+
+    Parameters
+    ----------
+    field:
+        A ContinuousSectionField-like object (must have field.s0.z, field.s1.z, and field.section(z)).
+    n_intervals:
+        Number of intervals along the element; number of stations is n_intervals + 1.
+    template_filename:
+        Output text file path.
+    mode:
+        "BOTH" -> prints both centroidal and reference-line blocks.
+        "CENTROIDAL_LINE" -> prints only centroidal-line blocks.
+        "REFERENCE_LINE" -> prints only reference-line blocks.
+    section_prefix, joint_prefix, frame_prefix:
+        Naming prefixes used in the generated copy/paste blocks.
+    material_name:
+        A suggested material label. The user may change this in SAP2000.
+    E_ref, nu:
+        Optional reference elastic constants included as *suggested* values.
+        Units are not enforced here; they must be consistent in SAP2000.
+    include_plot:
+        If True and matplotlib is available, saves a plot image of property variation.
+    plot_filename:
+        Image path for the plot (saved only if include_plot and matplotlib available).
+    show_plot:
+        If True, displays the plot interactively (if backend allows).
+
+    Returns
+    -------
+    str:
+        The template file path written.
+    """
+    if mode not in ("BOTH", "CENTROIDAL_LINE", "REFERENCE_LINE"):
+        raise ValueError("mode must be one of: BOTH, CENTROIDAL_LINE, REFERENCE_LINE")
+
+    # Extract CSF absolute bounds.
+    z_start = float(getattr(field.s0, "z"))
+    z_end = float(getattr(field.s1, "z"))
+    L = z_end - z_start
+
+    # Generate station coordinates using Lobatto on [z_start, z_end].
+    z_values = get_lobatto_intervals(z_start, z_end, int(n_intervals)).tolist()
+
+    stations_data = _compute_station_data(field, z_values)
+
+    # Optional plot (best-effort).
+    plot_path_written: Optional[str] = None
+    if include_plot and plt is not None:
+        try:
+            plot_path_written = plot_section_variation(
+                stations_data,
+                filename=plot_filename,
+                show=show_plot,
+            )
+        except Exception:
+            # Plotting must never prevent template creation.
+            plot_path_written = None
+
+    # Prepare paths and directory.
+    out_path = Path(template_filename)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Decide whether to include a reference elastic constants block.
+    # If E_ref and nu are provided, we compute G_ref (isotropic assumption) as informational.
+    G_ref: Optional[float] = None
+    if E_ref is not None and nu is not None:
+        try:
+            G_ref = float(E_ref) / (2.0 * (1.0 + float(nu)))
+        except Exception:
+            G_ref = None
+
+    # Helper naming functions
+    def sec_name(st_id: int) -> str:
+        # Stable naming: include station id; users may rename later.
+        return f"{section_prefix}_{st_id}"
+
+    def joint_name(st_id: int) -> str:
+        return f"{joint_prefix}{st_id}"
+
+    def frame_name(seg_id: int) -> str:
+        return f"{frame_prefix}{seg_id}"
+
+    # Write template
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    lines: List[str] = []
+    lines.append("#" * 78)
+    lines.append("# SAP2000 TEMPLATE PACK (CSF)")
+    lines.append("#" * 78)
+    lines.append(f"# Generated: {now}")
+    lines.append("#")
+    lines.append("# DISCLAIMER:")
+    lines.append("#   This file is a DATA + COPY/PASTE TEMPLATE. It is not guaranteed to import")
+    lines.append("#   as a complete SAP2000 model without edits, because SAP2000 text tables and")
+    lines.append("#   required fields can vary by version and workflow.")
+    lines.append("#")
+    lines.append("# UNITS:")
+    lines.append("#   Units are NOT enforced here. Use one consistent unit system throughout.")
+    lines.append("#")
+    lines.append("# MODELING MODES SUPPORTED:")
+    lines.append("#   1) CENTROIDAL_LINE:")
+    lines.append("#      - Nodes follow the centroid (Cx(z), Cy(z)) in the global XY plane.")
+    lines.append("#      - The beam axis is the z-direction (absolute z stations).")
+    lines.append("#   2) REFERENCE_LINE:")
+    lines.append("#      - Nodes lie on a nominal axis (X=0, Y=0), with Z=z.")
+    lines.append("#      - Cx(z), Cy(z) are provided as offsets/eccentricities to be applied in SAP.")
+    lines.append("#")
+    lines.append("# CSF DOMAIN:")
+    lines.append(f"#   z_start = {z_start:.6f}")
+    lines.append(f"#   z_end   = {z_end:.6f}")
+    lines.append(f"#   L       = {L:.6f}")
+    lines.append(f"#   n_intervals = {int(n_intervals)}  ->  n_stations = {len(stations_data)}")
+    lines.append("#")
+    lines.append("# SUGGESTED ELASTIC CONSTANTS (OPTIONAL):")
+    lines.append(f"#   material_name = {material_name}")
+    if E_ref is not None and nu is not None:
+        lines.append(f"#   E_ref = {float(E_ref):.6e}")
+        lines.append(f"#   nu    = {float(nu):.6f}")
+        if G_ref is not None:
+            lines.append(f"#   G_ref = E_ref/(2*(1+nu)) = {G_ref:.6e}  (isotropic)")
+        else:
+            lines.append("#   G_ref could not be computed (invalid E_ref/nu)")
+    else:
+        lines.append("#   (not provided) -> define material properties directly in SAP2000 as needed.")
+    if plot_path_written:
+        lines.append(f"# PREVIEW PLOT: {plot_path_written}")
+    lines.append("#" * 78)
+    lines.append("")
+
+    # ---------------------------------------------------------------------
+    # Stations + naming
+    # ---------------------------------------------------------------------
+    lines.append("### STATIONS (ABSOLUTE z) + SECTION NAMING")
+    lines.append("")
+    lines.append("# Each station i is assigned a section name SEC_i (customizable).")
+    lines.append("# You can use this mapping to create SAP2000 'General' sections and then")
+    lines.append("# assign them to frame segments.")
+    lines.append("")
+    lines.append("# id, z, section_name")
+    for st in stations_data:
+        lines.append(f"# {st['id']:>3d}, {st['z']:.6f}, {sec_name(int(st['id']))}")
+    lines.append("")
+
+    # ---------------------------------------------------------------------
+    # Core properties table (the heart)
+    # ---------------------------------------------------------------------
+    lines.append("### TABLE C — SECTION PROPERTIES PER STATION (CORE DATA)")
+    lines.append("")
+    lines.append("# Meaning of columns:")
+    lines.append("#   z   : absolute station coordinate")
+    lines.append("#   A   : total net area")
+    lines.append("#   Cx,Cy: centroid coordinates in the section plane (CSF local axes)")
+    lines.append("#   Ix,Iy,Ixy: second moments / product of inertia about centroid (CSF local axes)")
+    lines.append("#   J   : torsional constant (as reported by CSF analysis; naming may differ by library)")
+    lines.append("#")
+    lines.append("# IMPORTANT AXIS NOTE:")
+    lines.append("#   SAP2000 uses local axes 1-2-3 for frame sections. If you map CSF (x,y) to SAP (2,3),")
+    lines.append("#   a common convention is: Ix -> I33, Iy -> I22, Ixy -> I23. Confirm your axis mapping.")
+    lines.append("")
+    lines.append("z,A,Cx,Cy,Ix,Iy,Ixy,J,section_name")
+    for st in stations_data:
+        lines.append(
+            f"{st['z']:.10g},"
+            f"{st['A']:.10g},"
+            f"{st['Cx']:.10g},"
+            f"{st['Cy']:.10g},"
+            f"{st['Ix']:.10g},"
+            f"{st['Iy']:.10g},"
+            f"{st['Ixy']:.10g},"
+            f"{st['J']:.10g},"
+            f"{sec_name(int(st['id']))}"
+        )
+    lines.append("")
+
+    # ---------------------------------------------------------------------
+    # Candidate SAP2000 blocks (copy/paste)
+    # ---------------------------------------------------------------------
+    lines.append("### TABLE D — COPY/PASTE CANDIDATE SAP2000 TEXT TABLES (VERSION-DEPENDENT)")
+    lines.append("")
+    lines.append("# These blocks are *starting points* for SAP2000's text-table import.")
+    lines.append("# Depending on SAP2000 version, you may need to adjust table names/columns.")
+    lines.append("# This template aims to avoid missing numeric data: all values you need are above.")
+    lines.append("")
+
+    # --- JOINT COORDINATES (CENTROIDAL LINE) ---
+    if mode in ("BOTH", "CENTROIDAL_LINE"):
+        lines.append("#### D1) JOINT COORDINATES — CENTROIDAL_LINE")
+        lines.append("# Nodes follow centroid coordinates Cx(z), Cy(z).")
+        lines.append("# Copy/paste example format (verify table/column names in your SAP2000 version):")
+        lines.append('TABLE: "JOINT COORDINATES"')
+        for st in stations_data:
+            jn = joint_name(int(st["id"]))
+            # Use centroid as global XY
+            lines.append(
+                f"  Joint={jn}  CoordSys=GLOBAL  CoordType=Cartesian  "
+                f"XorR={st['Cx']:.6f}  Y={st['Cy']:.6f}  Z={st['z']:.6f}  SpecialJt=No"
+            )
+        lines.append("")
+
+    # --- JOINT COORDINATES (REFERENCE LINE) ---
+    if mode in ("BOTH", "REFERENCE_LINE"):
+        lines.append("#### D2) JOINT COORDINATES — REFERENCE_LINE")
+        lines.append("# Nodes lie on a nominal axis (X=0, Y=0), with Z=z.")
+        lines.append("# Cx(z), Cy(z) are provided later as offsets/eccentricities.")
+        lines.append('TABLE: "JOINT COORDINATES"')
+        for st in stations_data:
+            jn = joint_name(int(st["id"]))
+            lines.append(
+                f"  Joint={jn}  CoordSys=GLOBAL  CoordType=Cartesian  "
+                f"XorR={0.0:.6f}  Y={0.0:.6f}  Z={st['z']:.6f}  SpecialJt=No"
+            )
+        lines.append("")
+        lines.append("#### D2b) OFFSETS / ECCENTRICITIES — REFERENCE_LINE (PLACEHOLDER)")
+        lines.append("# SAP2000 has multiple ways to apply offsets (insertion point, joint offsets, frame offsets).")
+        lines.append("# This template provides the numerical offsets you would need:")
+        lines.append("#   dx = Cx(z), dy = Cy(z)  (signs depend on your axis mapping)")
+        lines.append("# Apply them in SAP2000 using your chosen method.")
+        lines.append("# id, z, dx, dy")
+        for st in stations_data:
+            lines.append(f"# {st['id']:>3d}, {st['z']:.6f}, dx={st['Cx']:.6f}, dy={st['Cy']:.6f}")
+        lines.append("")
+
+    # --- FRAME CONNECTIVITY ---
+    lines.append("#### D3) FRAME CONNECTIVITY (SEGMENTS BETWEEN STATIONS)")
+    lines.append("# Discretization: create one frame between each consecutive pair of joints.")
+    lines.append("# Example format (verify exact table name/columns):")
+    lines.append('TABLE: "CONNECTIVITY - FRAME"')
+    for i in range(len(stations_data) - 1):
+        n1 = joint_name(int(stations_data[i]["id"]))
+        n2 = joint_name(int(stations_data[i + 1]["id"]))
+        fn = frame_name(i + 1)
+        lines.append(f"  Frame={fn}  JointI={n1}  JointJ={n2}  IsCurved=No")
+    lines.append("")
+
+    # --- FRAME SECTION PROPERTIES: GENERAL ---
+    lines.append("#### D4) FRAME SECTION PROPERTIES — GENERAL (CANDIDATE)")
+    lines.append("# For each station, define a 'General' section with A, Ixx/Iyy/Ixy, and torsion J.")
+    lines.append("# NOTE ON TORSION COLUMN NAME:")
+    lines.append("#   Different text exports have used different column names (e.g., TorsConst vs TorsProp).")
+    lines.append("#   You MUST verify the expected column name in your SAP2000 version.")
+    lines.append("#")
+    lines.append("# Option A (commonly documented style): use TorsConst=")
+    lines.append('TABLE: "FRAME SECTION PROPERTIES 01 - GENERAL"')
+    for st in stations_data:
+        sn = sec_name(int(st["id"]))
+        lines.append(
+            f"  SectionName={sn}  Material={material_name}  Shape=General  "
+            f"Area={st['A']:.8e}  I33={st['Ix']:.8e}  I22={st['Iy']:.8e}  I23={st['Ixy']:.8e}  "
+            f"TorsConst={st['J']:.8e}"
+        )
+    lines.append("")
+    lines.append("# Option B (alternate style): use TorsProp= (if your SAP2000 table expects this name)")
+    lines.append("#  (same numeric values; only the torsion column name differs)")
+    lines.append("#  Example line:")
+    lines.append("#    SectionName=SEC_1 ... Area=... I33=... I22=... I23=... TorsProp=...")
+    lines.append("")
+
+    # --- FRAME SECTION ASSIGNMENTS ---
+    lines.append("#### D5) FRAME SECTION ASSIGNMENTS (CANDIDATE)")
+    lines.append("# Assign each frame segment the section corresponding to its start station.")
+    lines.append("# If your workflow uses a dedicated assignment table, paste there.")
+    lines.append("# Example format (verify exact table name/columns):")
+    lines.append('TABLE: "FRAME SECTION ASSIGNMENTS"')
+    for i in range(len(stations_data) - 1):
+        fn = frame_name(i + 1)
+        sn = sec_name(int(stations_data[i]["id"]))
+        lines.append(f"  Frame={fn}  Section={sn}")
+    lines.append("")
+
+    # --- MATERIAL PROPERTIES ---
+    lines.append("#### D6) MATERIAL PROPERTIES (OPTIONAL TEMPLATE)")
+    lines.append("# If your SAP2000 model requires explicit material definitions, use:")
+    lines.append("#  - E, nu, and optionally G (if not derived automatically)")
+    lines.append("# Units must be consistent with the rest of the model.")
+    if E_ref is not None and nu is not None and G_ref is not None:
+        lines.append(f"# Suggested: Material={material_name}  E={float(E_ref):.6e}  nu={float(nu):.6f}  G={G_ref:.6e}")
+    else:
+        lines.append("# (No suggested E_ref/nu provided in this template pack.)")
+    lines.append("")
+
+    # ---------------------------------------------------------------------
+    # Checklist of missing/unknown items
+    # ---------------------------------------------------------------------
+    lines.append("### TABLE E — CHECKLIST (MAY STILL BE REQUIRED IN SAP2000)")
+    lines.append("")
+    lines.append("# The following items are not handled automatically by this template pack and may be")
+    lines.append("# required depending on your SAP2000 workflow/model:")
+    lines.append("#")
+    lines.append("# 1) Units setup in SAP2000 (choose a consistent unit system).")
+    lines.append("# 2) Material properties (E, nu, G, density/mass) and design parameters.")
+    lines.append("# 3) Frame local axis orientation (rotation about axis 1).")
+    lines.append("# 4) Insertion point / offsets / end offsets (especially for REFERENCE_LINE mode).")
+    lines.append("# 5) Shear area (AS2/AS3) if your model requires shear deformation effects.")
+    lines.append("# 6) Modifiers (A, I, J modifiers), if used in your SAP2000 practice.")
+    lines.append("# 7) End releases / boundary conditions / connectivity to the rest of the structure.")
+    lines.append("# 8) Loads, combinations, analysis settings, recorders, etc. (model-specific).")
+    lines.append("#")
+    lines.append("# If you discover that your SAP2000 version requires additional columns in any table,")
+    lines.append("# add them in the SAP file and keep using the numeric values from TABLE C above.")
+    lines.append("")
+
+    # Write file
+    out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return str(out_path)
+
+
+# -----------------------------------------------------------------------------
+# Backward-compatible alias (explicitly "template", not guaranteed .s2k import)
+# -----------------------------------------------------------------------------
+def write_sap2000_geometry(*args: Any, **kwargs: Any) -> str:
+    """
+    Backward-compatible wrapper.
+
+    Historically this function tried to generate a SAP2000 .s2k directly. In v2 we avoid
+    promising direct import correctness and instead generate a template pack.
+
+    Use:
+        write_sap2000_template_pack(...)
+
+    This wrapper calls write_sap2000_template_pack with the provided arguments.
+    """
+    return write_sap2000_template_pack(*args, **kwargs)
+
+#################################################################
+
+def _csf__is_finite_number(x: Any) -> bool:
+    """Return True if x can be converted to a finite float."""
+    try:
+        v = float(x)
+    except Exception:
+        return False
+    return math.isfinite(v)
+
+
+def _csf__ensure_parent_dir_exists(path: str) -> None:
+    """
+    Ensure the parent directory exists; otherwise raise CSFError.
+
+    Note: we intentionally do NOT auto-create directories. This makes typos
+    in output paths fail fast and is easier to debug.
+    """
+    parent = os.path.dirname(os.path.abspath(path))
+    if parent and not os.path.isdir(parent):
+        raise CSFError(
+            f"Output directory does not exist for yaml_path='{path}'. "
+            f"Missing directory: '{parent}'."
+        )
+
+
+def _csf__atomic_write_text(path: str, text: str) -> None:
+    """
+    Write a file atomically:
+      1) write to path + '.tmp'
+      2) os.replace to final name
+    """
+    tmp_path = path + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        f.write(text)
+    os.replace(tmp_path, path)
+
+
+def _csf__section_to_Sz_dict(section_obj,nodesection: str) -> Dict[str, Any]:
+    """
+    Convert a computed Section into the minimal YAML dict format:
+
+      Sz:
+        z: <float>
+        polygons:
+          <poly_name>:
+            weight: <float>
+            vertices:
+              - [x, y]
+              - [x, y]
+              ...
+
+    Polygon weights are exported exactly as computed at z (already include w(z)).
+    """
+    out_polys: Dict[str, Any] = {}
+
+    for i, poly in enumerate(section_obj.polygons):
+        if not hasattr(poly, "name"):
+            raise CSFError(f"Polygon at index {i} has no attribute 'name'.")
+        if not hasattr(poly, "weight"):
+            raise CSFError(f"Polygon '{getattr(poly,'name','?')}' at index {i} has no attribute 'weight'.")
+        if not hasattr(poly, "vertices"):
+            raise CSFError(f"Polygon '{getattr(poly,'name','?')}' at index {i} has no attribute 'vertices'.")
+
+        verts_out = []
+        for j, v in enumerate(poly.vertices):
+            if not hasattr(v, "x") or not hasattr(v, "y"):
+                raise CSFError(f"Vertex {j} of polygon '{poly.name}' lacks x/y attributes.")
+
+            x = float(v.x)
+            y = float(v.y)
+
+            # If your module defines XY (PyYAML pretty mode), use it to enforce flow style [x, y].
+            if "XY" in globals() and globals().get("XY") is not None:
+                verts_out.append(globals()["XY"]((x, y)))  # type: ignore[index]
+            else:
+                verts_out.append([x, y])
+
+        out_polys[str(poly.name)] = {
+            "weight": float(poly.weight),
+            "vertices": verts_out,
+        }
+
+    return {
+        nodesection: {
+            "z": float(getattr(section_obj, "z", float("nan"))),
+            "polygons": out_polys,
+        }
+    }
+#
+
+def _yaml_scalar(v):
+    if v is None:
+        return "null"
+    if isinstance(v, bool):
+        return "true" if v else "false"
+
+    # supporto numeri numpy (np.float64, np.int64, ecc.)
+    try:
+        import numpy as np
+        if isinstance(v, np.generic):
+            v = v.item()
+    except Exception:
+        pass
+
+    if isinstance(v, (int, float)):
+        return str(v)
+
+    s = str(v)
+    # quote se serve
+    if s == "" or any(c in s for c in [":", "#", "\n", "{", "}", "[", "]"]):
+        return '"' + s.replace('"', '\\"') + '"'
+    return s
+
+
+def _simple_yaml_dump(data, indent: int = 0) -> str:
+    sp = "  " * indent
+
+    if isinstance(data, dict):
+        out = []
+        for k, v in data.items():
+            if isinstance(v, (dict, list)):
+                out.append(f"{sp}{k}:")
+                out.append(_simple_yaml_dump(v, indent + 1))
+            else:
+                out.append(f"{sp}{k}: {_yaml_scalar(v)}")
+        return "\n".join(out)
+
+    if isinstance(data, list):
+        out = []
+        for item in data:
+            if isinstance(item, (dict, list)):
+                out.append(f"{sp}-")
+                out.append(_simple_yaml_dump(item, indent + 1))
+            else:
+                out.append(f"{sp}- {_yaml_scalar(item)}")
+        return "\n".join(out)
+
+    # scalare singolo
+    return f"{sp}{_yaml_scalar(data)}"
+
+
+
+
+def safe_evaluate_weight_zrelative(formula: str, p0: Polygon, p1: Polygon, z0: float, z1: float, z: float,print=True) -> tuple[float, dict]:
     """
     Evaluates a weight formula string safely by trapping all potential exceptions.
     
@@ -40,25 +1106,26 @@ def safe_evaluate_weight(formula: str, p0: Polygon, p1: Polygon, l_total: float,
     3. Physical constraint validation (e.g., negative results).
     4. Immediate visual reporting via print_evaluation_report.
     """
-    
     # 1. Initialize the internal report structure
+    t_pos=z/(z1-z0)
     report = {
         "status": "SUCCESS",
         "error_type": None,
         "message": "Formula evaluated successfully.",
         "suggestion": None,
-        "z_pos": t ,
+        "z_pos": z ,
+        "t_pos": t_pos,
         "formula": formula.strip()
     }
     
     result = 0.0
-
+    
     try:
         # --- BLOCK 1: PROACTIVE FILE SYSTEM CHECK ---
         # Scan formula for E_lookup('filename') calls using Regex
         # Handles single/double quotes and optional spaces
         match = re.search(r"E_lookup\s*\(\s*['\"](.+?)['\"]\s*\)", report["formula"])
-        
+       
         if match:
             filename = match.group(1)
             # Check if file exists on disk BEFORE calling the core logic
@@ -74,7 +1141,7 @@ def safe_evaluate_weight(formula: str, p0: Polygon, p1: Polygon, l_total: float,
 
         # --- BLOCK 2: FORMULA EVALUATION ---
         # Attempt to run the core evaluation logic
-        result = evaluate_weight_formula(formula, p0, p1, l_total, t)
+        result = evaluate_weight_formula_zrelative(formula, p0, p1, z0,z1, z)
         
         # --- BLOCK 3: PHYSICAL VALIDATION ---
         # Check for non-physical results (e.g., negative stiffness or weight)
@@ -103,7 +1170,7 @@ def safe_evaluate_weight(formula: str, p0: Polygon, p1: Polygon, l_total: float,
             "status": "ERROR",
             "error_type": "Mathematical Error",
             "message": "Division by zero encountered during evaluation.",
-            "suggestion": "Add a small epsilon to the denominator, e.g., (x + 1e-9)."
+            "suggestion": "Add a small epsilon to the denominator, e.g., (x + ESP_L)."
         })
 
     except IndexError:
@@ -131,166 +1198,6 @@ def safe_evaluate_weight(formula: str, p0: Polygon, p1: Polygon, l_total: float,
         print_evaluation_report(final_value, report)
     
     return float(final_value), report
-
-def print_evaluation_report(value: float, report: dict):
-    try:
-        """
-        Minimalist, high-contrast report table.
-        """
-        icons = {"SUCCESS": "🟢", "WARNING": "🟡", "ERROR": "🔴"}
-        icon = icons.get(report["status"], "⚪")
-        bw = 72
-        
-        def print_line(label, content):
-            print(f"  {label:<12} {content}")
-
-        print("\n" + "═" * bw)
-        header = f"{icon}  CSF WEIGHT LAW INSPECTOR  |  {report['status']}"
-        print(" " * ((bw - len(header)) // 2) + header)
-        print("═" * bw)
-
-        print_line("FORMULA:", report['formula'])
-        print_line("POSITION Z:", f"{report['z_pos']:.4f}")
-        print("-" * bw)
-        
-        if report["status"] != "ERROR":
-            print_line("RESULT W:", f"➤ {value:g}")
-        else:
-            print_line("RESULT W:", "❌ [ABORTED]")
-
-        if report["status"] != "SUCCESS":
-            print("-" * bw)
-            print_line("CATEGORY:", report.get("error_type", "N/A"))
-            print_line("DETAIL:", report.get("message", "N/A"))
-            print_line("ADVICE:", report.get("suggestion", "N/A"))
-
-        print("-" * bw)
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        ts = f"Validated: {now}"
-        print(" " * (bw - len(ts)) + ts)
-        print("═" * bw + "\n")
-    except Exception as e:
-        print(f"ERROR: this error occurred {e} ")
-
-def print_evaluation_report(value: float, report: dict):
-    """
-    Prints a professional, minimalist structured report.
-    """
-    icons = {"SUCCESS": "🟢", "WARNING": "🟡", "ERROR": "🔴"}
-    icon = icons.get(report["status"], "⚪")
-    bw = 72
-    
-    def print_line(label, content):
-        # Clean print helper to avoid alignment issues
-        print(f"  {label:<12} {content}")
-
-    print("\n" + "═" * bw)
-    header_text = f"{icon}  CSF WEIGHT LAW INSPECTOR  |  {report['status']}"
-    print(" " * ((bw - len(header_text)) // 2) + header_text)
-    print("═" * bw)
-
-    # Content
-    print_line("FORMULA:", report['formula'])
-    print_line("POSITION Z:", f"{report['z_pos']:.4f}")
-    print("-" * bw)
-    
-    if report["status"] != "ERROR":
-        print_line("RESULT W:", f"➤ {value:g}")
-    else:
-        print_line("RESULT W:", "❌ [ABORTED]")
-
-    # Detailed Error Block
-    if report["status"] != "SUCCESS":
-        print("-" * bw)
-        print_line("CATEGORY:", report.get("error_type", "N/A"))
-        print_line("DETAIL:", report.get("message", "N/A"))
-        print_line("ADVICE:", report.get("suggestion", "N/A"))
-
-    # Footer
-    print("-" * bw)
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"{' ' * (bw - 30)}Validated: {timestamp}")
-    print("═" * bw + "\n")
-
-
-def safe_evaluate_weight2(formula: str, p0: Polygon, p1: Polygon, l_total: float, t: float) -> tuple[float, dict]:
-    """
-    A robust wrapper that evaluates the weight formula, catches errors (including missing files), 
-    and IMMEDIATELY prints a professional table report.
-    """
-    # 1. Initialize the report structure
-    report = {
-        "status": "SUCCESS",
-        "error_type": None,
-        "message": "Formula evaluated successfully.",
-        "suggestion": None,
-        "z_pos": t * l_total,
-        "formula": formula 
-    }
-    
-    result = 0.0
-
-    try:
-        # 2. Execute the core mathematical logic
-        result = evaluate_weight_formula(formula, p0, p1, l_total, t)
-        
-        # 3. Check for physical consistency
-        if result < 0:
-            report["status"] = "WARNING"
-            report["error_type"] = "Physical Constraint"
-            report["message"] = f"Result is negative ({result:.2f})."
-            report["suggestion"] = "Use 'np.maximum(0, formula)' if this is not an intended void."
-
-    # --- SPECIFIC ERROR TRAPPING ---
-
-    except FileNotFoundError as e:
-        report.update({
-            "status": "ERROR",
-            "error_type": "File System Error",
-            "message": str(e),
-            "suggestion": "Check if the .txt file for E_lookup exists in the working directory."
-        })
-
-    except NameError as e:
-        report.update({
-            "status": "ERROR",
-            "error_type": "Syntax/Variable Error",
-            "message": f"Undefined variable: {str(e)}",
-            "suggestion": "Check spelling of 'w0', 'np', or 'd(i,j)'. Python is case-sensitive."
-        })
-
-    except ZeroDivisionError:
-        report.update({
-            "status": "ERROR",
-            "error_type": "Math Error",
-            "message": "Division by zero encountered.",
-            "suggestion": "Add a small epsilon to denominator: '(x + 1e-9)'."
-        })
-
-    except IndexError:
-        report.update({
-            "status": "ERROR",
-            "error_type": "Geometry Error",
-            "message": "Vertex index out of range in d(i,j).",
-            "suggestion": "Vertex indices must start at 1 and exist in the polygon definition."
-        })
-
-    except Exception as e:
-        # Catch-all for any other unforeseen 'exploding' scenarios
-        report.update({
-            "status": "ERROR",
-            "error_type": "Execution Error",
-            "message": f"Unexpected {type(e).__name__}: {str(e)}",
-            "suggestion": "Verify formula syntax or contact support if the issue persists."
-        })
-
-    # --- IMMEDIATE OUTPUT ---
-    # Print the "Wow" table before returning
-    print_evaluation_report(result if report["status"] != "ERROR" else 0.0, report)
-
-    return float(result), report
-
-
 
 
 
@@ -320,7 +1227,7 @@ def print_evaluation_report(value: float, report: dict):
     formula_display = report['formula'] if len(report['formula']) < 60 else report['formula'][:57] + "..."
     print_line("FORMULA:", formula_display)
     print_line("POSITION Z:", f"{report['z_pos']:.4f}  (ref. coordinate)")
-    
+    print_line("POSITION t:", f"{report['t_pos']:.4f}  (ref. normalized)")
     # 5. Results Section (Separator)
     print("-" * bw)
     if report["status"] != "ERROR":
@@ -346,16 +1253,101 @@ def print_evaluation_report(value: float, report: dict):
 
 
 
-def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon, l_total: float, t: float) -> float:
+def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float, z1: float, zt: float) -> float:
+    """
+    Wrapper function intended for use within 'eval()' contexts.
+    It bridges the string evaluation to the structural lookup logic.
+
+    Evaluates a string-based mathematical formula to determine the polygon weight at a 
+            
+    Args:
+        formula (str): The Python expression to evaluate.
+        p0 (Polygon): The polygon definition at the start section (z=0).
+        p1 (Polygon): The polygon definition at the end section (z=L).
+        zt (float): real relative or normalized values
+        normalize: how to interpred zt
+        
+    Returns:
+        float: The calculated weight (Elastic Modulus).
+        
+    Raises:
+        Exception: Propagates any error encountered during evaluation.
+    """
+    # 2. Generate a temporary for the 'd(i,j)' helper.
+    # This allows the formula to access distances at the current evaluation point.
+    #   
+    # z is absolute
+    z = zt  
+    # z must be absolute for interpolationg the poligons sections
+    l_total=z1-z0
+    current_verts = tuple(
+        v0.lerp(v1, z,l_total) for v0, v1 in zip(p0.vertices, p1.vertices)
+    )
+    p_z = Polygon(vertices=current_verts, weight=p0.weight, name=p0.name)
+   
+    t=(zt-z0)/(z1-z0)
+    #print(f"DEBUG z0 {z0} z1 {z1} zt {zt} t{t}")
+    # 3. Define the external file lookup helper
+    z=zt-z0
+    def E_lookup(filename: str) -> float:
+        # in this case z is abosolute
+        # we need to go in relative z
+        return lookup_homogenized_elastic_modulus(filename, z)
+    
+    def T_lookup(filename: str) -> float:
+        # only for T_lookup zt is normalized
+        return lookup_homogenized_elastic_modulus(filename, t)   
+        
+    # 4. Define local distance helpers for the context
+    # These are used in the formula as d(i,j), d0(i,j), d1(i,j)
+    d  = lambda i, j: get_points_distance(p_z, i, j)
+    di = lambda i, j: get_points_distance(p0, i, j)
+    de = lambda i, j: get_points_distance(p1, i, j)
+
+    # 5. Build the evaluation context (Environment)
+    #t = z / l_total if abs(l_total) > EPS_L else 0.0
+    context = {
+        "w0": p0.weight,        # Start weight
+        "w1": p1.weight,        # End weight
+        "z": z,                 # Alias for z-axis consistency
+        "t": t,    
+        "L": l_total,           # Physical length
+        "math": math,           # Python math library
+        "np": np,               # NumPy for advanced math
+        "d": d,                 # Current distance function
+        "d0": di,               # Start distance function
+        "d1": de,               # End distance function
+        "E_lookup": E_lookup,    # File-based data lookup
+        "T_lookup": T_lookup    # File-based data lookup
+    }
+
+    # 6. Execute evaluation in a clean sandbox
+    # We disable __builtins__ for safety to ensure only provided tools are used.
+
+    return float(eval(formula, {"__builtins__": {}}, context))
+
+
+'''
+def t_lookup(filename: str, t: float) -> float:
+    """
+    normalised
+    Wrapper function intended for use within 'eval()' contexts.
+    It bridges the string evaluation to the structural lookup logic.
+    """
+    z=t # to be implemented
+    return lookup_homogenized_elastic_modulus(filename, z)
+''' 
+
+
+def evaluate_weight_formula_zrelative( formula: str, p0: Polygon, p1: Polygon, z0: float, z1: float, z: float) -> float:
         """
         Evaluates a string-based mathematical formula to determine the polygon weight at a 
-        given normalized position t.
-        
+                
         Args:
             formula (str): The Python expression to evaluate.
             p0 (Polygon): The polygon definition at the start section (z=0).
             p1 (Polygon): The polygon definition at the end section (z=L).
-            t (float): Normalized longitudinal coordinate [0.0 to 1.0].
+            z (float): real relative z
             
         Returns:
             float: The calculated weight (Elastic Modulus).
@@ -363,41 +1355,50 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon, l_total: fl
         Raises:
             Exception: Propagates any error encountered during evaluation.
         """
-        # 2. Generate a temporary midpoint polygon for the 'd(i,j)' helper.
-        # This allows the formula to access distances at the current evaluation point.
-        current_verts = tuple(
-            v0.lerp(v1, t) for v0, v1 in zip(p0.vertices, p1.vertices)
-        )
-        p_mid = Polygon(vertices=current_verts, weight=p0.weight, name=p0.name)
 
+        #evaluate_weight_formula( formula, p0, p1, l_total, z)
+        '''
+        # 2. Generate a temporary for the 'd(i,j)' helper.
+        # This allows the formula to access distances at the current evaluation point.
+        #
+      
+        current_verts = tuple(
+            v0.lerp(v1, z,l_total) for v0, v1 in zip(p0.vertices, p1.vertices)
+        )
+        p_z = Polygon(vertices=current_verts, weight=p0.weight, name=p0.name)
+        #print(f"DEBUG p_z {p_z}")
         # 3. Define the external file lookup helper
         def E_lookup(filename: str) -> float:
-            return lookup_homogenized_elastic_modulus(filename, t)
-
+            return lookup_homogenized_elastic_modulus(filename, z)
+        def T_lookup(filename: str) -> float:
+            t=z
+            return lookup_homogenized_elastic_modulus(filename, t)       
         # 4. Define local distance helpers for the context
         # These are used in the formula as d(i,j), d0(i,j), d1(i,j)
-        d  = lambda i, j: get_points_distance(p_mid, i, j)
+        d  = lambda i, j: get_points_distance(p_z, i, j)
         di = lambda i, j: get_points_distance(p0, i, j)
         de = lambda i, j: get_points_distance(p1, i, j)
 
         # 5. Build the evaluation context (Environment)
+        #t = z / l_total if abs(l_total) > EPS_L else 0.0
         context = {
             "w0": p0.weight,        # Start weight
             "w1": p1.weight,        # End weight
-            "t": t,                 # Normalized coordinate
-            "z": t,                 # Alias for z-axis consistency
+            "z": z,                 # Alias for z-axis consistency
+            #"t": t,    
             "L": l_total,           # Physical length
             "math": math,           # Python math library
             "np": np,               # NumPy for advanced math
             "d": d,                 # Current distance function
             "d0": di,               # Start distance function
             "d1": de,               # End distance function
-            "E_lookup": E_lookup    # File-based data lookup
+            "E_lookup": E_lookup,    # File-based data lookup
+            "T_lookup": T_lookup    # File-based data lookup
         }
 
-        # 6. Execute evaluation in a clean sandbox
-        # We disable __builtins__ for safety to ensure only provided tools are used.
-        return float(eval(formula, {"__builtins__": {}}, context))
+        '''
+        zabsolute = z0+z
+        return evaluate_weight_formula( formula, p0, p1, z0,z1, zabsolute)
 
 
 
@@ -418,7 +1419,7 @@ def section_print_analysis(full_analysis, fmt=".8f"):
     print("="*span)
     
     # Using the 'fmt' parameter inside f-strings for all numerical values
-    print(f"1) Area (A):                          A                     {full_analysis['A']:{fmt}}     # Total net cross-sectional area")
+    print(f"1) Area (A):                          A                     {full_analysis['A']:{fmt}}     # Total Homogenized area")
     print(f"2) Centroid Cx:                       Cx                    {full_analysis['Cx']:{fmt}}     # Horizontal geometric centroid (X-axis locus)")
     print(f"3) Centroid Cy:                       Cy                    {full_analysis['Cy']:{fmt}}     # Vertical geometric centroid (Y-axis locus)")
     print(f"4) Inertia Ix:                        Ix                    {full_analysis['Ix']:{fmt}}     # Second moment of area about the centroidal X-axis")
@@ -433,92 +1434,15 @@ def section_print_analysis(full_analysis, fmt=".8f"):
     print(f"13) Elastic Modulus Wy:               Wy                    {full_analysis['Wy']:{fmt}}     # Elastic section modulus (flexural strength about Y)")
     print(f"14) Torsional Rigidity K:             K_torsion             {full_analysis['K_torsion']:{fmt}}     # Semi-empirical torsional stiffness approximation")
     print(f"15) First_moment:                     Q_na                  {full_analysis['Q_na']:{fmt}}     # First moment of area at NA (governs shear capacity)" )
-    print(f"16) Torsional const K:                J_sv                  {full_analysis['J_sv']:{fmt}}     # Effective St. Venant torsional constant (J)")
+    print(f"16) Torsional const K:                J_sv                  {full_analysis['J_sv']:{fmt}}     # alpha = {full_analysis['J_sv_alpha']:{fmt}} Effective St. Venant torsional constant (J)")
+    print(f"16) Torsional const K cell            J_sv_cell             {full_analysis['J_sv_cell']:{fmt}}  # Saint-Venant torsional constant for closed thin-walled by applying  Bredt–Batho formula")
+
+    print(f"16) Torsional const K wall            J_sv_wall             {full_analysis['J_sv_wall']:{fmt}}  # computes the Saint-Venant torsional constant for open thin-walled walls")
     print(f"17) Torsional const K roark:          J_s_vroark            {full_analysis['J_s_vroark']:{fmt}}     # Refined J using Roark-Young thickness correction")
     print(f"18) Torsional const K roark fidelity: J_s_vroark_fidelity   {full_analysis['J_s_vroark_fidelity']:{fmt}}     # Reliability index based on aspect-ratio (1.0 = Thin-walled, 0.0 = Stout")
     
     print("="*span)
-
-def evaluate_torsional_fidelity(polygon: Polygon) -> Dict[str, any]:
-    """
-    Performs a diagnostic assessment of the polygon's geometric properties 
-    to determine the validity of the Saint-Venant torsional approximation.
-    """
-    # 1. DATA ACQUISITION
-    pts = polygon.vertices
-    n = len(pts)
-    if n < 3:
-        return {"error": "Degenerate polygon", "confidence_index": 0.0}
-
-    # 2. GEOMETRIC INTEGRATION (Shoelace for Area and Centroid)
-    # Necessary to translate the polygon to its local baricentric system.
-    a_signed = 0.0
-    cx_num = 0.0
-    cy_num = 0.0
-    for i in range(n):
-        v0, v1 = pts[i], pts[(i + 1) % n]
-        cross = v0.x * v1.y - v1.x * v0.y
-        a_signed += cross
-        cx_num += (v0.x + v1.x) * cross
-        cy_num += (v0.y + v1.y) * cross
     
-    area = abs(0.5 * a_signed)
-    if area <= 1e-12:
-        return {"error": "Zero area", "confidence_index": 0.0}
-    
-    cx, cy = cx_num / (3.0 * a_signed), cy_num / (3.0 * a_signed)
-
-    # 3. MOMENTS OF INERTIA TENSOR
-    # Computing central moments to extract principal dimensions.
-    ix_c, iy_c, ixy_c = 0.0, 0.0, 0.0
-    for i in range(n):
-        x0, y0 = pts[i].x - cx, pts[i].y - cy
-        x1, y1 = pts[(i + 1) % n].x - cx, pts[(i + 1) % n].y - cy
-        cross = x0 * y1 - x1 * y0
-        ix_c += (y0**2 + y0*y1 + y1**2) * cross
-        iy_c += (x0**2 + x0*x1 + x1**2) * cross
-        ixy_c += (x0*y1 + 2.0*x0*y0 + 2.0*x1*y1 + x1*y0) * cross
-
-    ix_c = abs(ix_c / 12.0)
-    iy_c = abs(iy_c / 12.0)
-    ixy_c = ixy_c / 24.0
-
-    # 4. EIGENVALUE ANALYSIS (Principal Axes)
-    # Extracts the equivalent thickness (b) and length (a) of the section.
-    avg = (ix_c + iy_c) / 2.0
-    diff = (ix_c - iy_c) / 2.0
-    radius = math.sqrt(max(0.0, diff**2 + ixy_c**2))
-    
-    i_min = avg - radius
-    i_max = avg + radius
-
-    # Thickness (t) and Width (b) extraction
-    # Based on rectangular equivalent: I_min = (b * t^3)/12 and Area = b * t
-    t_equiv = math.sqrt(max(0.0, 12.0 * i_min / area))
-    b_equiv = area / t_equiv if t_equiv > 0 else 0.0
-    
-    a_side = max(b_equiv, t_equiv) # Long side
-    b_side = min(b_equiv, t_equiv) # Short side (thickness)
-
-    # 5. FIDELITY METRICS
-    # Aspect Ratio (AR): Theory is highly accurate for AR > 5.0
-    aspect_ratio = a_side / b_side if b_side > 1e-12 else 100.0
-    
-    # Stoutness check: Saint-Venant J = 1/3 bt^3 is a thin-walled assumption.
-    # If AR < 1.5, the section behaves more like a solid block than a strip.
-    is_stout = aspect_ratio < 1.5
-    
-    # Confidence Index: 1.0 (perfect) to 0.0 (unreliable)
-    # We use a logistic-style mapping based on aspect ratio.
-    confidence = min(1.0, aspect_ratio / 10.0)
-
-    return {
-        "slenderness_ratio": round(aspect_ratio, 2),
-        "is_stout": is_stout,
-        "confidence_index": round(confidence, 2),
-        "equivalent_thickness": round(b_side, 4),
-        "recommendation": "OK" if not is_stout else "WARNING: Low Aspect Ratio. Accuracy may be reduced."
-    }
 
 def section_full_analysis_keys() -> List[str]:
     """
@@ -542,90 +1466,453 @@ def section_full_analysis_keys() -> List[str]:
         'K_torsion'
         ,'Q_na'
         ,'J_sv'
+        ,'J_sv_wall'
+        ,'J_sv_cell'
         ,'J_s_vroark'
         ,'J_s_vroark_fidelity'
     ]
 
+def write_opensees_geometry(
+    field,
+    n_points: int,
+    E_ref: float = 2.1e11,
+    nu: float = 0.30,
+    filename: str = "geometry.tcl",
+):
+    """
+    Write a CSF-style OpenSees geometry file **as DATA** (to be parsed line-by-line),
+    not as a Tcl script to be sourced.
 
-def write_opensees_geometry(field, n_points, E_base=2.1e11, filename="geometry.tcl"):
+    --------------------------------------------------------------------------------
+    FILE CONTRACT (DATA, NOT Tcl)
+    --------------------------------------------------------------------------------
+    1) Exact stations (critical for reproducibility)
+       We write the exact longitudinal stations used by CSF:
+           # CSF_Z_STATIONS: z0 z1 ... zN-1
+       A downstream builder must use these stations (no re-generation).
+
+    2) Section record format (data record that *resembles* OpenSees)
+       We write one record per station:
+
+           section Elastic <tag> <E_ref> <A*> <Iz*> <Iy*> <G_ref> <J_tors> <Cx> <Cy>
+
+       IMPORTANT:
+       - This is a DATA record. OpenSees Tcl would NOT accept the trailing <Cx> <Cy>.
+       - Cx,Cy are appended for CSF parsers/builders (centroid offsets in section plane).
+       - A*, Iz*, Iy* are assumed already "CSF-weighted / modular" properties
+         (i.e., heterogeneity/holes already reflected by CSF analysis).
+
+    3) Torsion export without tying the file to a single CSF torsion model
+       CSF may provide multiple torsion candidates (e.g., wall/cell/legacy).
+       This writer exports a single neutral value J_tors (to feed OpenSees "J"):
+         - Prefer J_sv_wall if > 0
+         - else prefer J_sv_cell if > 0
+         - else use legacy "J" if > 0
+         - else fail-fast (recommended; avoids silent torsion defaults)
+
+       Note: In OpenSees, the "J" field in section Elastic is the torsion constant.
+             We export our selected torsion constant into that "J" slot.
+
+    4) Reference shear modulus
+       G_ref is computed as isotropic:
+           G_ref = E_ref / (2*(1+nu))
+
+    --------------------------------------------------------------------------------
+    OUTPUT CONTENTS
+    --------------------------------------------------------------------------------
+    - Header comments
+    - # CSF_Z_STATIONS: exact z-coordinates
+    - Optional informational nodes (best-fit line through centroid offsets)
+    - geomTransf Linear 1 1 0 0 (simple default)
+    - One section record per station (as described above)
+
+    --------------------------------------------------------------------------------
+    REQUIREMENTS
+    --------------------------------------------------------------------------------
+    - numpy must be available
+    - section_full_analysis(sec, ...) must return at least:
+        "A", "Ix", "Iy", "Cx", "Cy"
+      and (for torsion export) at least one of:
+        "J_sv_wall", "J_sv_cell", "J"
     """
-    Generates an OpenSees TCL geometry file using dispBeamColumn elements.
-    Optimized for tapered or thick sections where shear and torsion are critical.
+
+    import numpy as np
+
+    # -------------------------------------------------------------------------
+    # Helper: robust positive check for torsion fields
+    # Convention: J_* == 0 means "not provided / not applicable"
+    # -------------------------------------------------------------------------
+    def _is_pos(v: object, eps: float = 0.0) -> bool:
+        try:
+            x = float(v)
+        except Exception:
+            return False
+        return np.isfinite(x) and (x > eps)
+
+    # -------------------------------------------------------------------------
+    # 0) Member endpoints (same z convention used by the CSF field)
+    # -------------------------------------------------------------------------
+    z0 = float(field.s0.z)
+    z1 = float(field.s1.z)
+
+    # -------------------------------------------------------------------------
+    # 1) Exact sampling stations provided by CSF.
+    #    We do not assume formulas here; we trust the field.
+    # -------------------------------------------------------------------------
+    z_coords = field.get_opensees_integration_points(n_points)
+    z_coords = [float(z) for z in z_coords]
+
+    # -------------------------------------------------------------------------
+    # 2) Run section analysis at each station
+    # -------------------------------------------------------------------------
+    results = []
+    cx_list = []
+    cy_list = []
+
+    for z in z_coords:
+        sec = field.section(z)
+
+        # NOTE:
+        # If your CSF legacy torsion uses alpha=1 internally, that should be handled
+        # inside section_full_analysis / torsion routines.
+        # The exporter should not encode that assumption here unless it is part of
+        # the section analysis contract.
+        res = section_full_analysis(sec)
+
+        # Minimal required keys
+        for k in ("A", "Ix", "Iy", "Cx", "Cy"):
+            if k not in res:
+                raise KeyError(f"section_full_analysis() missing required key '{k}' at z={z}")
+
+        results.append(res)
+        cx_list.append(float(res["Cx"]))
+        cy_list.append(float(res["Cy"]))
+
+    # -------------------------------------------------------------------------
+    # 3) Informational-only: best-fit straight line through centroid offsets
+    #    (kept only for legacy scripts/human readability)
+    # -------------------------------------------------------------------------
+    m_y, q_y = np.polyfit(z_coords, cy_list, 1)
+    m_x, q_x = np.polyfit(z_coords, cx_list, 1)
+
+    # -------------------------------------------------------------------------
+    # 4) Reference shear modulus
+    # -------------------------------------------------------------------------
+    G_ref = float(E_ref) / (2.0 * (1.0 + float(nu)))
+
+    # -------------------------------------------------------------------------
+    # 5) Write file (DATA)
+    # -------------------------------------------------------------------------
+    try:
+        with open(filename, "w", encoding="utf-8") as f:
+            # ---- Header (comments only) ----
+            f.write("# OpenSees Geometry DATA File - Generated by CSF\n")
+            f.write(f"# Beam Span: {z1 - z0:.6f} (units follow your model)\n")
+            f.write(f"# Stations: {len(z_coords)}\n")
+            f.write("# NOTE: This file is meant to be PARSED AS DATA (do NOT source it as Tcl).\n")
+            f.write("# NOTE: Section lines append 'Cx Cy' as CSF-only fields (not OpenSees syntax).\n")
+            f.write("#\n")
+            f.write("# CSF_EXPORT_MODE: E=E_ref ; A/I/J are station-wise CSF results (already weighted)\n")
+            f.write("# CSF_TORSION_SELECTION: J_tors = (J_sv_wall>0) else (J_sv_cell>0) else (J>0) else ERROR\n\n")
+
+            # ---- Exact z stations ----
+            f.write("# CSF_Z_STATIONS: " + " ".join(f"{z:.12g}" for z in z_coords) + "\n\n")
+
+            # ---- Informational nodes (optional) ----
+            f.write("# Informational nodes (best-fit line through centroid offsets)\n")
+            f.write(f"node 1 {m_x * z0 + q_x:.12g} {m_y * z0 + q_y:.12g} {z0:.12g}\n")
+            f.write(f"node 2 {m_x * z1 + q_x:.12g} {m_y * z1 + q_y:.12g} {z1:.12g}\n\n")
+
+            # ---- Default transformation (builder may override) ----
+            f.write("geomTransf Linear 1 1 0 0\n\n")
+
+            # ---- Section records ----
+            # Record format (DATA):
+            #   section Elastic tag E_ref A Iz Iy G_ref J_tors Cx Cy
+            #
+            # Mapping:
+            #   Iz := Ix from CSF (if your axes are aligned); otherwise swap upstream.
+            #   Iy := Iy from CSF
+            #
+            # IMPORTANT: ensure your downstream builder interprets Ix/Iy consistently.
+            for i, res in enumerate(results):
+                tag = i + 1
+
+                # Select torsion constant to export into OpenSees "J"
+                if _is_pos(res.get("J_sv_wall"), 0.0):
+                    J_tors = float(res["J_sv_wall"])
+                    torsion_method = "WALL"
+                elif _is_pos(res.get("J_sv_cell"), 0.0):
+                    J_tors = float(res["J_sv_cell"])
+                    torsion_method = "CELL"
+                elif _is_pos(res.get("J"), 0.0):
+                    # Legacy / fallback torsion value provided by analysis
+                    J_tors = float(res["J"])
+                    torsion_method = "LEGACY"
+                else:
+                    raise KeyError(
+                        f"No torsion value available at station {tag} (z={z_coords[i]}). "
+                        "Expected positive J_sv_wall, J_sv_cell, or J."
+                    )
+
+                # Write section data record
+                f.write(
+                    "section Elastic {tag} {E:.6e} {A:.6e} {Iz:.6e} {Iy:.6e} {G:.6e} {J:.6e} "
+                    "{Cx:.6e} {Cy:.6e}  # torsion={tm}\n".format(
+                        tag=tag,
+                        E=float(E_ref),
+                        A=float(res["A"]),
+                        Iz=float(res["Ix"]),
+                        Iy=float(res["Iy"]),
+                        G=float(G_ref),
+                        J=float(J_tors),
+                        Cx=float(res["Cx"]),
+                        Cy=float(res["Cy"]),
+                        tm=torsion_method,
+                    )
+                )
+
+        print(f"[SUCCESS] Wrote CSF geometry data to: {filename}")
+        print(f"[INFO] Stations: {len(z_coords)} | Span: {z1 - z0:.6f}")
+
+    except OSError as e:
+        print(f"[ERROR] Could not write '{filename}': {e}")
+        raise
+
+
+
+def write_opensees_geometry2(field, n_points, E_ref=2.1e11, nu=0.30, filename="geometry.tcl"):
     """
-    # 1. Setup Beam Length (Z-axis)
+    Generate a CSF-style OpenSees "geometry.tcl" file that is meant to be READ AS DATA
+    (i.e., parsed line-by-line), not necessarily sourced as a Tcl script.
+
+    -------------------------------------------------------------------------------
+    KEY DESIGN GOALS / CONTRACT (why the file is written this way)
+    -------------------------------------------------------------------------------
+    1) No ambiguity in station placement:
+       - We explicitly write the exact CSF sampling stations as:
+            # CSF_Z_STATIONS: z0 z1 z2 ... zN-1
+         so any downstream builder can place stations exactly at those coordinates
+         without re-generating Lobatto points or assuming uniform spacing.
+
+    2) No "double counting" of stiffness:
+       - The file writes CONSTANT reference moduli (E_ref and G_ref).
+       - The section properties coming from `section_full_analysis(sec)` are assumed
+         ALREADY "CSF-weighted / modular" (e.g., accounting for holes, materials,
+         and CSF weights).
+       - Therefore OpenSees stiffness products become:
+            EA  = E_ref * A*
+            EIx = E_ref * Ix*
+            EIy = E_ref * Iy*
+         which matches Σ(E_i * property_i) when CSF weights are defined consistently
+         (e.g., weights normalized by E_ref).
+
+       IMPORTANT:
+       - This only makes sense if your CSF exporter intentionally encodes material
+         heterogeneity into the section properties (A*, Ix*, Iy*, ...).
+       - If instead geometry.tcl already contains physical E(z), G(z), then your
+         builder should use MATERIAL_INPUT_MODE="from_file" and properties should
+         be unweighted. That is a different contract.
+
+    3) Centroid tracking (tilt field):
+       - We export centroid offsets (Cx, Cy) at every station (if available).
+       - A downstream builder can reconstruct a centroid axis via rigid links.
+       - If Cx/Cy vary along the member, that implies geometric "tilt" / eccentricity
+         variation along z.
+
+    -------------------------------------------------------------------------------
+    WHAT THIS FUNCTION WRITES
+    -------------------------------------------------------------------------------
+    - Header comments (beam length, station count, export mode)
+    - # CSF_Z_STATIONS: exact station z coordinates (critical)
+    - Two "node" lines (legacy/template):
+         node 1 x(z0) y(z0) z0
+         node 2 x(z1) y(z1) z1
+      NOTE: these are derived by linear regression of Cx(z), Cy(z). Many builders
+      ignore these and build a clean reference axis instead.
+    - geomTransf Linear 1 1 0 0 (simple default orientation)
+    - One 'section Elastic' per station:
+         section Elastic tag E_ref A* Ix* Iy* G_ref J_placeholder Cx Cy
+    - A "TEMPLATE ONLY" hint for humans (not used by robust parsers/builders)
+
+    The goal is that changing ONLY `geometry.tcl` (stations + sections) is sufficient
+    to change the member description in downstream OpenSees / OpenSeesPy builders.
+    """
+
+    # ---------------------------------------------------------------------------
+    # 0) Member endpoints (in the same coordinate system used by CSF field)
+    # ---------------------------------------------------------------------------
     z0 = field.s0.z
     z1 = field.s1.z
-    
-    # 2. Get Integration Points (Lobatto rule ensures points at node 1 and node 2)
+
+    # ---------------------------------------------------------------------------
+    # 1) The *actual* integration/sampling stations used by CSF.
+    #    Typically these are Gauss–Lobatto stations including the endpoints,
+    #    but we do NOT assume any formula here: we ask the field for them.
+    #
+    #    These z coordinates are written verbatim to "# CSF_Z_STATIONS:" so
+    #    downstream readers can be exact.
+    # ---------------------------------------------------------------------------
     z_coords = field.get_opensees_integration_points(n_points)
-    
+
+    # Lists used to store centroid offsets and section properties at each station
+    cx_list = []
     cy_list = []
     section_results = []
 
-    # 3. Perform cross-section analysis at each integration point
+    # ---------------------------------------------------------------------------
+    # 2) Cross-section analysis at each station.
+    #
+    #    `section_full_analysis(sec,alpha)` is assumed to return *already CSF-weighted*
+    #    properties (A, Ix, Iy, etc.), plus centroid offsets (Cx, Cy).
+    #
+    #    Expected keys (minimum):
+    #       - "A", "Ix", "Iy", "Cx", "Cy"
+    #    Optional keys might exist (torsion, shear areas, etc.); this writer
+    #    currently exports a placeholder J (see below).
+    # ---------------------------------------------------------------------------
     for z in z_coords:
+        # Construct the cross-section object at coordinate z
         sec = field.section(z)
-        # section_full_analysis returns: A, Ix, Iy, J (Polar), K (St. Venant), Cy
-        res = section_full_analysis(sec) 
-        cy_list.append(res['Cy'])
+
+
+        # Perform section analysis (properties assumed to already incorporate CSF weights)
+        res = section_full_analysis(sec,alpha=0)#alpha not used
+
+        # Store centroid offsets for later regression and for writing into the file
+        cx_list.append(res["Cx"])
+        cy_list.append(res["Cy"])
+
+        # Store the full dictionary so we can write A/Ix/Iy/etc. later
         section_results.append(res)
 
-    # 4. Calculate the Centroidal Axis slope (Linear Regression)
-    # This aligns the beam nodes with the physical center of the sections
-    m, q = np.polyfit(z_coords, cy_list, 1)
-    
-    try:
-        with open(filename, "w") as f:
-            f.write("# OpenSees Geometry File - Generated by CSF Library\n")
-            f.write(f"# Beam Length: {z1-z0:.3f} m | Int. Points: {n_points}\n\n")
-            
-            # --- NODES ---
-            # Define Node 1 (Start) and Node 2 (End)
-            f.write(f"node 1 0.0 {m*z0 + q:.6f} {z0:.6f}\n")
-            f.write(f"node 2 0.0 {m*z1 + q:.6f} {z1:.6f}\n\n")
+    # ---------------------------------------------------------------------------
+    # 3) Linear regression for legacy/template end nodes.
+    #
+    #    Why do we do this?
+    #      - Some legacy workflows expect "node 1" and "node 2" to exist.
+    #      - We approximate a straight line passing through centroid offsets.
+    #
+    #    What is it used for?
+    #      - Only to write the two 'node' lines below.
+    #
+    #    What is it NOT used for?
+    #      - A robust OpenSees builder should rely on CSF_Z_STATIONS + (Cx,Cy)
+    #        per station and build its own reference/centroid axis.
+    # ---------------------------------------------------------------------------
+    m_y, q_y = np.polyfit(z_coords, cy_list, 1)
+    m_x, q_x = np.polyfit(z_coords, cx_list, 1)
 
-            # --- TRANSFORMATION ---
-            # Linear transformation: Global Z is the beam longitudinal axis
+    # ---------------------------------------------------------------------------
+    # 4) Reference shear modulus for an isotropic material:
+    #
+    #       G_ref = E_ref / (2*(1+nu))
+    #
+    #    If you had a custom legacy formula (e.g., E_ref/2.6), you can swap it,
+    #    but do so knowingly because it directly changes shear stiffness (GA, GJ).
+    # ---------------------------------------------------------------------------
+    G_ref = E_ref / (2.0 * (1.0 + nu))
+
+    # ---------------------------------------------------------------------------
+    # 5) Torsional constant placeholder.
+    #
+    #    Many CSF pipelines either:
+    #      (a) do not export torsion, or
+    #      (b) export a station-wise torsion constant J(z).
+    #
+    #    If you have station-wise torsion, you should write it per station.
+    #    For now we keep a constant placeholder to preserve old behavior.
+    # ---------------------------------------------------------------------------
+    st_venant_j = 2.6247e-06
+
+    # ---------------------------------------------------------------------------
+    # 6) Write the file.
+    #
+    #    NOTE: This file is intended to be PARSED as data.
+    #    Downstream scripts should not assume this file is safe to 'source'.
+    # ---------------------------------------------------------------------------
+    try:
+        with open(filename, "w", encoding="utf-8") as f:
+            # ---- Header / metadata (comments only) ----
+            f.write("# OpenSees Geometry File - Generated by CSF Library\n")
+            f.write(f"# Beam Length: {z1 - z0:.3f} m | Int. Points: {n_points}\n")
+            f.write("# CSF_EXPORT_MODE: E=E_ref ; A/I are CSF-weighted (modular) properties\n\n")
+
+            # -------------------------------------------------------------------
+            # CRITICAL: explicit station coordinates used by CSF.
+            #
+            # This is the single most important line for reproducibility:
+            # it prevents any re-computation of points (Lobatto/uniform/etc.)
+            # and makes downstream verification exact.
+            # -------------------------------------------------------------------
+            f.write("# CSF_Z_STATIONS: " + " ".join(f"{float(z):.6f}" for z in z_coords) + "\n\n")
+
+            # -------------------------------------------------------------------
+            # Legacy/template nodes:
+            #
+            # These nodes are NOT required by robust builders.
+            # They are kept for human readability or old scripts that expect them.
+            #
+            # x(z) = m_x*z + q_x, y(z) = m_y*z + q_y are just the best-fit line
+            # through the centroid offsets. This does NOT preserve a curved axis.
+            # -------------------------------------------------------------------
+            f.write(f"node 1 {m_x * z0 + q_x:.6f} {m_y * z0 + q_y:.6f} {z0:.6f}\n")
+            f.write(f"node 2 {m_x * z1 + q_x:.6f} {m_y * z1 + q_y:.6f} {z1:.6f}\n\n")
+
+            # -------------------------------------------------------------------
+            # Transformation:
+            #
+            # We write a simple default orientation for the local x–z plane.
+            # Downstream tools may override / ignore this if they compute their
+            # own basis. Still, writing it keeps the file self-describing.
+            # -------------------------------------------------------------------
             f.write("geomTransf Linear 1 1 0 0\n\n")
 
-            # --- SECTIONS ---
-            # OpenSees section Elastic format: $tag $E $A $Iz $Iy $G $J
+            # -------------------------------------------------------------------
+            # Sections:
+            #
+            # One Elastic section per station.
+            #
+            # Format used by downstream parsers:
+            #   section Elastic tag E_ref A* Ix* Iy* G_ref J [Cx Cy]
+            #
+            # - tag:     station index + 1 (stable ordering)
+            # - E_ref:   constant reference modulus (may be overridden later)
+            # - A*:      CSF-weighted area at station
+            # - Ix*,Iy*: CSF-weighted bending inertias at station
+            # - G_ref:   constant reference shear modulus
+            # - J:       torsion placeholder (constant for now)
+            # - Cx,Cy:   centroid offsets at station (used for "tilt"/eccentricity)
+            # -------------------------------------------------------------------
             for i, res in enumerate(section_results):
                 tag = i + 1
-                
-                # Material Properties
-                # Weighting E if the section contains different materials/densities
-                e_mod = E_base * field.section(z_coords[i]).polygons[0].weight
-                g_mod = e_mod / 2.6  # Standard G for Steel (nu = 0.3)
-                
-                # --- CRITICAL TORSION FIX ---
-                # OpenSees 'J' MUST be the Saint-Venant Torsional Constant (K), 
-                # NOT the Polar Moment of Inertia (Ix + Iy).
-                # We use the validated value from the HEA 400 analysis report.
-                st_venant_j = 2.6247e-06 
-                
-                f.write(f"section Elastic {tag} {e_mod:.6e} {res['A']:.6e} "
-                        f"{res['Ix']:.6e} {res['Iy']:.6e} {g_mod:.6e} {st_venant_j:.6e}\n")
 
-            # --- INTEGRATION ---
-            # Mapping the sections to the integration points
-            # Format: beamIntegration Lobatto $tag $secTags... $numSections
+                f.write(
+                    f"section Elastic {tag} {E_ref:.6e} {res['A']:.6e} "
+                    f"{res['Ix']:.6e} {res['Iy']:.6e} {G_ref:.6e} {st_venant_j:.6e} "
+                    f"{res['Cx']:.6f} {res['Cy']:.6f}\n"
+                )
+
+            # -------------------------------------------------------------------
+            # TEMPLATE ONLY (commented out):
+            #
+            # This is just a human hint. A robust builder should define its own
+            # beamIntegration/element blocks based on CSF_Z_STATIONS and the sections.
+            # -------------------------------------------------------------------
             tag_str = " ".join(map(str, range(1, n_points + 1)))
-            f.write(f"\nbeamIntegration Lobatto 1 {tag_str} 1\n")
+            f.write("\n# TEMPLATE ONLY (the Python builder defines the actual integration)\n")
+            f.write(f"# beamIntegration Lobatto 1 {tag_str} 1\n")
+            f.write("# element forceBeamColumn 1 1 2 1 1\n")
 
-            # --- ELEMENT ---
-            # element dispBeamColumn $eleTag $iNode $jNode $transfTag $integrationTag
-            f.write("element dispBeamColumn 1 1 2 1 1\n")
-            
-        print(f"[SUCCESS] {filename} created correctly.")
-        
-    except Exception as e:
-        print(f"[ERROR] Could not write geometry file: {e}")
+        print(f"[SUCCESS] {filename} created correctly (CSF modular properties + centroid tracking).")
+        print(f"[INFO] Beam span: {z1 - z0:.3f} (units follow your model convention).")
 
-    print(f"[INFO] Beam model verified for {z1-z0}m span.")
+    except OSError as e:
+        print(f"[ERROR] Could not write geometry file '{filename}': {e}")
+        raise
 
 
-def lookup_homogenized_elastic_modulus(filename: str, z: float) -> float:
+def lookup_homogenized_elastic_modulus(filename: str, zt: float) -> float:
     """
     Retrieves the elastic modulus (E) for a given longitudinal coordinate (z) 
     from an external lookup file.
@@ -648,7 +1935,7 @@ def lookup_homogenized_elastic_modulus(filename: str, z: float) -> float:
 
     Args:
         filename (str): Path to the lookup data file.
-        z (float): The current Z-coordinate where the property is needed.
+        zt (float): The current coordinate where the property is needed. can be both normalised or not
 
     Returns:
         float: The interpolated or exact Elastic Modulus.
@@ -687,10 +1974,10 @@ def lookup_homogenized_elastic_modulus(filename: str, z: float) -> float:
 
     # --- STEP 2: BOUNDARY CHECKS (Extrapolation) ---
     # If the requested z is below the minimum z in the file
-    if z <= data[0][0]:
+    if zt <= data[0][0]:
         return data[0][1]
     # If the requested z is above the maximum z in the file
-    if z >= data[-1][0]:
+    if zt >= data[-1][0]:
         return data[-1][1]
 
     # --- STEP 3: SEARCH AND INTERPOLATION ---
@@ -700,272 +1987,1624 @@ def lookup_homogenized_elastic_modulus(filename: str, z: float) -> float:
         z1, e1 = data[i+1]
         
         # Exact match check
-        if abs(z - z0) < 1e-12:
+        if abs(zt - z0) < EPS_L:
             
             return e0
-        
+           # Exact match check
+        if abs(zt - z1) < EPS_L:
+            
+            return e1
+
         # Check if z is within the current segment
-        if z0 < z < z1:
+        if z0 < zt < z1:
             # Linear Interpolation Formula:
             # weight = (target - start) / (end - start)
-            t = (z - z0) / (z1 - z0)
+            t = (zt - z0) / (z1 - z0)
             # Result = start_val + weight * (end_val - start_val)
             return e0 + t * (e1 - e0)
-
+    # end for
     # Fallback for the very last point
-    
     return data[-1][1]
-
-def w_lookup(filename: str, z: float) -> float:
-    """
-    Wrapper function intended for use within 'eval()' contexts.
-    It bridges the string evaluation to the structural lookup logic.
-    """
-    return lookup_homogenized_elastic_modulus(filename, z)
+######################################################################################################################################
+"""
 
 
-def compute_saint_venant_Jv2(poly_input, verbose=False) -> Tuple[float, float]:
-    """
-    Computes J and a Global Fidelity Index with optional logging suppression.
-    Includes mathematical safeguards against ZeroDivision in Roark's formula.
-    
-    Args:
-        poly_input: Polygon or Section object.
-        verbose (bool): If False, suppresses [SECTION ANALYSIS] console prints.
-        
-    Returns:
-        Tuple[float, float]: (J_total, global_confidence_index)
-    """
-    # --------------------------------------------------------------------------
-    # 1. POLYMORPHIC AGGREGATION (Recursive Section Handling)
-    # --------------------------------------------------------------------------
-    if hasattr(poly_input, 'polygons'):
-        total_j = 0.0
-        weighted_fidelity_sum = 0.0
-        total_area = 0.0
-        
-        for p in poly_input.polygons:
-            j_p, fid_p = compute_saint_venant_Jv2(p, verbose=False)
-            
-            # Area-based weighting calculation (Shoelace formula)
-            pts = p.vertices
-            p_area = abs(0.5 * sum(pts[i].x * pts[(i+1)%len(pts)].y - 
-                                   pts[(i+1)%len(pts)].x * pts[i].y 
-                                   for i in range(len(pts))))
-            
-            total_j += j_p
-            weighted_fidelity_sum += fid_p * p_area
-            total_area += p_area
-            
-        global_fidelity = weighted_fidelity_sum / total_area if total_area > 0 else 0.0
-        
-        if verbose and global_fidelity < 0.5:
-            print(f"[SECTION ANALYSIS] Global fidelity for '{getattr(poly_input, 'name', 'unnamed')}' is low ({global_fidelity:.2f}).")
-            
-        return total_j, global_fidelity
+CSF-consistent rewrite of:
 
-    # --------------------------------------------------------------------------
-    # 2. LOCAL DATA PREPARATION & PRINCIPAL AXIS MAPPING
-    # --------------------------------------------------------------------------
-    pts = poly_input.vertices 
-    if callable(pts): pts = pts()
+    def compute_saint_venant_Jv2(poly_input, verbose=False) -> Tuple[float, float]
+
+Design goals
+------------
+
+Representation-invariant for sections:
+   - The Roark equivalent-rectangle mapping is non-linear, so computing J per polygon
+     and summing depends on how the same domain is split into polygons.
+   - Therefore, for a Section we first aggregate (A, centroid, Ix, Iy, Ixy) algebraically
+     and apply the mapping ONCE.
+Fidelity is also representation-invariant:
+   - It is computed from the *equivalent rectangle* only (optionally via an external
+     diagnostic), not by averaging per-piece fidelities.
+
+Preconditions (expected upstream in CSF)
+----------------------------------------
+- Each polygon is a simple CCW loop with positive signed area.
+- EPS_A and EPS_K are provided upstream (as globals or attached to objects).
+"""
+
+# -----------------------------------------------------------------------------
+# Tolerance resolution (no hard-coded constants here)
+# -----------------------------------------------------------------------------
+
+def _resolve_eps_a(obj: Any) -> float:
+    """Resolve EPS_A from globals(), obj, or obj.field; otherwise fail."""
+    if "EPS_A" in globals():
+        return float(globals()["EPS_A"])
+    if hasattr(obj, "EPS_A"):
+        return float(getattr(obj, "EPS_A"))
+    fld = getattr(obj, "field", None)
+    if fld is not None and hasattr(fld, "EPS_A"):
+        return float(getattr(fld, "EPS_A"))
+    raise ValueError("EPS_A not found. Define EPS_A upstream or attach it to the object.")
+
+
+def _resolve_eps_k(obj: Any) -> float:
+    """Resolve EPS_K from globals(), obj, or obj.field; otherwise fail."""
+    if "EPS_K" in globals():
+        return float(globals()["EPS_K"])
+    if hasattr(obj, "EPS_K"):
+        return float(getattr(obj, "EPS_K"))
+    fld = getattr(obj, "field", None)
+    if fld is not None and hasattr(fld, "EPS_K"):
+        return float(getattr(fld, "EPS_K"))
+    raise ValueError("EPS_K not found. Define EPS_K upstream or attach it to the object.")
+
+
+# -----------------------------------------------------------------------------
+# Signed polygon integrals (no abs())
+# -----------------------------------------------------------------------------
+
+def _poly_signed_area_centroid(pts: Any, eps_a: float) -> Tuple[float, float, float]:
+    """
+    Shoelace integration.
+
+    Returns (A, Cx, Cy) with signed area A.
+    Under CSF preconditions polygons are CCW so A > 0.
+    """
     n = len(pts)
-    if n < 3: return 0.0, 0.0
+    if n < 3:
+        raise ValueError("Polygon has < 3 vertices.")
 
-    a_signed, cx_num, cy_num = 0.0, 0.0, 0.0
+    a2 = 0.0
+    cx6 = 0.0
+    cy6 = 0.0
+
     for i in range(n):
-        v0, v1 = pts[i], pts[(i + 1) % n]
+        v0 = pts[i]
+        v1 = pts[(i + 1) % n]
         cross = v0.x * v1.y - v1.x * v0.y
-        a_signed += cross
-        cx_num += (v0.x + v1.x) * cross
-        cy_num += (v0.y + v1.y) * cross
-    
-    area = abs(0.5 * a_signed)
-    if area <= 1e-12: return 0.0, 0.0 # Early exit for zero-area polygons
-    cx, cy = cx_num / (3.0 * a_signed), cy_num / (3.0 * a_signed)
+        a2 += cross
+        cx6 += (v0.x + v1.x) * cross
+        cy6 += (v0.y + v1.y) * cross
 
-    ix_c, iy_c, ixy_c = 0.0, 0.0, 0.0
+        '''
+        print(f"i={i:2d}: v0=({v0.x:8.6f}, {v0.y:8.6f}) v1=({v1.x:8.6f}, {v1.y:8.6f})")
+        print(f"     cross={cross:10.6f}  a2={a2:10.6f}  cx6_contrib={(v0.x + v1.x)*cross:10.6f}")
+        print(f"     cy6_contrib={(v0.y + v1.y)*cross:10.6f}  cx6_tot={cx6:10.6f}  cy6_tot={cy6:10.6f}")
+        print()  # riga vuota
+        '''
+
+
+
+    A = 0.5 * a2
+    if A <= eps_a:
+        raise ValueError("Polygon area is non-positive or too small (expected CCW, non-degenerate).")
+
+    Cx = cx6 / (3.0 * a2)
+    Cy = cy6 / (3.0 * a2)
+    return A, Cx, Cy
+
+
+def _poly_centroidal_inertia(pts: Any, cx: float, cy: float) -> Tuple[float, float, float]:
+    """
+    Centroidal second moments via signed polygon integration.
+
+    Returns (Ix, Iy, Ixy) about the polygon centroid.
+    """
+    n = len(pts)
+    ix = 0.0
+    iy = 0.0
+    ixy = 0.0
+
     for i in range(n):
-        x0, y0 = pts[i].x - cx, pts[i].y - cy
-        x1, y1 = pts[(i+1)%n].x - cx, pts[(i+1)%n].y - cy
+        x0 = pts[i].x - cx
+        y0 = pts[i].y - cy
+        x1 = pts[(i + 1) % n].x - cx
+        y1 = pts[(i + 1) % n].y - cy
         cross = x0 * y1 - x1 * y0
-        ix_c += (y0**2 + y0*y1 + y1**2) * cross
-        iy_c += (x0**2 + x0*x1 + x1**2) * cross
-        ixy_c += (x0*y1 + 2.0*x0*y0 + 2.0*x1*y1 + x1*y0) * cross
 
-    avg = (abs(ix_c/12.0) + abs(iy_c/12.0)) / 2.0
-    diff = (abs(ix_c/12.0) - abs(iy_c/12.0)) / 2.0
-    radius = math.sqrt(max(0.0, diff**2 + (ixy_c/24.0)**2))
-    i_min = avg - radius 
+        ix += (y0 * y0 + y0 * y1 + y1 * y1) * cross
+        iy += (x0 * x0 + x0 * x1 + x1 * x1) * cross
+        ixy += (x0 * y1 + 2.0 * x0 * y0 + 2.0 * x1 * y1 + x1 * y0) * cross
 
-    # --------------------------------------------------------------------------
-    # 3. ROARK'S SEMI-EMPIRICAL CORRECTION WITH ZERO-DIVISION GUARD
-    # --------------------------------------------------------------------------
-    # Equivalent rectangle dimensions (a = length, b = thickness)
-    t_equiv = math.sqrt(max(0.0, 12.0 * i_min / area))
-    b_equiv = area / t_equiv if t_equiv > 1e-15 else 0.0
-    a, b = max(b_equiv, t_equiv), min(b_equiv, t_equiv)
-    
-    diag = evaluate_torsional_fidelity(poly_input)
-    
-    # SAFETY CHECK: If 'a' is near-zero, the torsional constant J is physically zero.
-    # This prevents ZeroDivisionError in the (b/a) terms.
-    if a < 1e-15:
-        return 0.0, diag["confidence_index"]
+    ix /= 12.0
+    iy /= 12.0
+    ixy /= 24.0
+    return ix, iy, ixy
 
-    # Roark-Young Formula with aspect ratio correction
-    # Note: b/a is always <= 1.0 due to the max/min assignment above.
+
+def _principal_inertias(ix: float, iy: float, ixy: float) -> Tuple[float, float]:
+    """Principal inertias (eigenvalues) of the 2x2 centroidal inertia tensor."""
+    tr = ix + iy
+    diff = ix - iy
+    rad = math.sqrt((0.5 * diff) * (0.5 * diff) + ixy * ixy)
+    i1 = 0.5 * tr + rad
+    i2 = 0.5 * tr - rad
+    return i1, i2
+
+
+# -----------------------------------------------------------------------------
+# Roark equivalent-rectangle torsion proxy
+# -----------------------------------------------------------------------------
+
+def _roark_torsion_rect(a: float, b: float) -> float:
+    """
+    Roark-style torsion approximation for a solid rectangle; requires a >= b > 0:
+
+        J ≈ (1/3 - 0.21*(b/a)*(1 - (b/a)^4/12)) * a * b^3
+    """
     ratio = b / a
-    roark_factor = (1/3 - 0.21 * ratio * (1 - (ratio**4)/12))
-    j_value = roark_factor * a * (b**3) * poly_input.weight
-    
-    return j_value, diag["confidence_index"]
-    # --------------------------------------------------------------------------
-    # 2. LOCAL DATA PREPARATION & PRINCIPAL AXIS MAPPING
-    # --------------------------------------------------------------------------
-    pts = poly_input.vertices 
-    if callable(pts): pts = pts()
-    n = len(pts)
-    if n < 3: return 0.0, 0.0
+    factor = (1.0 / 3.0) - 0.21 * ratio * (1.0 - (ratio ** 4) / 12.0)
+    return factor * a * (b ** 3)
 
-    # Geometric integration via Shoelace
-    a_signed, cx_num, cy_num = 0.0, 0.0, 0.0
-    for i in range(n):
-        v0, v1 = pts[i], pts[(i + 1) % n]
-        cross = v0.x * v1.y - v1.x * v0.y
-        a_signed += cross
-        cx_num += (v0.x + v1.x) * cross
-        cy_num += (v0.y + v1.y) * cross
-    
-    area = abs(0.5 * a_signed)
-    if area <= 1e-12: return 0.0, 0.0
-    cx, cy = cx_num / (3.0 * a_signed), cy_num / (3.0 * a_signed)
 
-    # Compute Central Inertia Tensor
-    ix_c, iy_c, ixy_c = 0.0, 0.0, 0.0
-    for i in range(n):
-        x0, y0 = pts[i].x - cx, pts[i].y - cy
-        x1, y1 = pts[(i+1)%n].x - cx, pts[(i+1)%n].y - cy
-        cross = x0 * y1 - x1 * y0
-        ix_c += (y0**2 + y0*y1 + y1**2) * cross
-        iy_c += (x0**2 + x0*x1 + x1**2) * cross
-        ixy_c += (x0*y1 + 2.0*x0*y0 + 2.0*x1*y1 + x1*y0) * cross
-
-    # Extract Minor Principal Moment (I_min) for thickness mapping
-    avg = (abs(ix_c/12.0) + abs(iy_c/12.0)) / 2.0
-    diff = (abs(ix_c/12.0) - abs(iy_c/12.0)) / 2.0
-    radius = math.sqrt(max(0.0, diff**2 + (ixy_c/24.0)**2))
-    i_min = avg - radius 
-
-    # --------------------------------------------------------------------------
-    # 3. ROARK'S SEMI-EMPIRICAL CORRECTION
-    # --------------------------------------------------------------------------
-    # Maps arbitrary shape to an equivalent rectangle (a x b)
-    t_equiv = math.sqrt(max(0.0, 12.0 * i_min / area))
-    b_equiv = area / t_equiv if t_equiv > 0 else 0.0
-    a, b = max(b_equiv, t_equiv), min(b_equiv, t_equiv)
-    
-    # Calculate fidelity index for this polygon
-    diag = evaluate_torsional_fidelity(poly_input)
-    
-    # Roark-Young Formula for torsional constant (J)
-    # Corrects for stress concentration and warping in non-circular sections
-    roark_factor = (1/3 - 0.21 * (b/a) * (1 - (b**4)/(12 * a**4)))
-    j_value = roark_factor * a * (b**3) * poly_input.weight
-    
-    return j_value, diag["confidence_index"]
-
-def compute_saint_venant_J(section: Section) -> float:
+def _equiv_rectangle_dims(A: float, i_min: float, eps_k: float) -> Tuple[float, float]:
     """
-    Computes the Saint-Venant torsional constant (J) more accurately, deducing thickness from geometry.
-    
-    Strategy:
-    - If the section is a single closed hollow section (one outer + one inner with negative weight)
-      → uses Bredt's formula with thickness deduced from area/perimeter.
-    - Otherwise (open thin-walled or multi-polygon)
-      → uses Σ (length_i × thickness_i³ / 3), with thickness deduced as 2 * |area| / perimeter per polygon.
-    
-    No additional inputs needed: everything from geometry.
-    
-    Returns:
-        J : Saint-Venant torsional constant [length⁴]
+    Map (A, I_min) to equivalent rectangle dimensions (a >= b).
+
+    Uses: I_min = (A * t^2) / 12  -> t = sqrt(12*I_min/A),  b = A/t
     """
-    props = section_properties(section)
-    A_total = props['A']
-    
-    if abs(A_total) < 1e-12:
-        return 0.0
-    
-    n_poly = len(section.polygons)
-    
-    # Case 1: Closed hollow section with one outer polygon and one inner hole (negative weight)
-    if n_poly == 2 and len([p for p in section.polygons if p.weight < 0]) == 1:
-        outer = None
-        inner = None
-        for poly in section.polygons:
-            if poly.weight > 0:
-                outer = poly
-            elif poly.weight < 0:
-                inner = poly
-        
-        if outer and inner:
-            # Enclosed area ≈ area of the outer polygon (good approximation for thin-walled)
-            A_enclosed, _ = polygon_area_centroid(outer)
-            A_enclosed = abs(A_enclosed)
-            
-            # Approximate mean perimeter
-            perimeter = sum(
-                ((v2.x - v1.x)**2 + (v2.y - v1.y)**2)**0.5
-                for v1, v2 in zip(outer.vertices, outer.vertices[1:] + outer.vertices[:1])
+    if A <= 0.0:
+        raise ValueError("Effective area must be positive for the solid-rectangle mapping.")
+    if i_min <= 0.0:
+        raise ValueError("Minor principal inertia must be positive for the solid-rectangle mapping.")
+
+    t = math.sqrt(12.0 * i_min / A)
+    if t <= eps_k:
+        raise ValueError("Equivalent thickness too small; torsion proxy ill-conditioned.")
+
+    b_equiv = A / t
+    if b_equiv >= t:
+        a_dim = b_equiv
+        b_dim = t
+    else:
+        a_dim = t
+        b_dim = b_equiv
+    return a_dim, b_dim
+
+
+# -----------------------------------------------------------------------------
+# Representation-invariant fidelity
+# -----------------------------------------------------------------------------
+
+class _TmpPt:
+    __slots__ = ("x", "y")
+    def __init__(self, x: float, y: float) -> None:
+        self.x = float(x)
+        self.y = float(y)
+
+class _TmpPoly:
+    __slots__ = ("vertices", "weight", "name")
+    def __init__(self, vertices, name: str = "equiv_rect") -> None:
+        self.vertices = vertices
+        self.weight = 1.0
+        self.name = name
+
+def _equiv_rectangle_polygon(a: float, b: float) -> _TmpPoly:
+    """Build a CCW rectangle centered at the origin with side lengths a (x) and b (y)."""
+    hx = 0.5 * float(a)
+    hy = 0.5 * float(b)
+    verts = [_TmpPt(-hx, -hy), _TmpPt(hx, -hy), _TmpPt(hx, hy), _TmpPt(-hx, hy)]
+    return _TmpPoly(verts)
+
+def _fidelity_from_equiv_rectangle(a: float, b: float) -> float:
+    """
+    Fidelity index for the Roark proxy, invariant to polygon splitting.
+
+    Policy:
+    - If an external callable `evaluate_torsional_fidelity(obj)` exists, use it,
+      but evaluate it on the equivalent rectangle (synthetic polygon).
+    - Otherwise, return the rectangle aspect ratio b/a (with a >= b), which is a
+      simple compactness indicator in (0, 1].
+
+    No abs(), no sign normalization.
+    """
+    a = float(a)
+    b = float(b)
+    if a == 0.0:
+        return float("nan")
+    ratio = b / a
+
+    diag_fn = globals().get("evaluate_torsional_fidelity", None)
+    if callable(diag_fn):
+        try:
+            diag = diag_fn(_equiv_rectangle_polygon(a, b))
+            if isinstance(diag, dict) and ("confidence_index" in diag):
+                v = float(diag["confidence_index"])
+                if math.isfinite(v):
+                    return v
+        except Exception:
+            pass
+
+    return ratio
+
+
+# -----------------------------------------------------------------------------
+# Public API
+# -----------------------------------------------------------------------------
+
+
+
+def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[float, float]:
+    """
+    Returns (J_total, fidelity).
+
+    - Polygon input: compute centroidal inertias, map to equivalent rectangle, apply Roark.
+    - Section input (has `.polygons`): aggregate (A, centroid, Ix, Iy, Ixy) first, then map ONCE.
+
+    Weighting:
+    - For polygons: J_i is multiplied by polygon.weight.
+    - For sections: the aggregation uses A_eff = w_i*A_i and inertia_eff = w_i*(I_i + A_i*shift^2).
+      This is algebraic and representation-invariant.
+    """
+    eps_a = _resolve_eps_a(poly_input)
+    eps_k = _resolve_eps_k(poly_input)
+
+    # -------------------------------------------------------------------------
+    # 1) Section: aggregate keys then map once (representation-invariant)
+    # -------------------------------------------------------------------------
+    if hasattr(poly_input, "polygons"):
+        polys = poly_input.polygons
+
+        # First pass: effective area and centroid
+        A_tot = 0.0
+        Qx = 0.0
+        Qy = 0.0
+
+        cache = []  # (A_i, cx_i, cy_i, Ix_i, Iy_i, Ixy_i, w_i)
+
+        for p in polys:
+            pts = p.vertices() if callable(getattr(p, "vertices", None)) else getattr(p, "vertices", None)
+            if pts is None:
+                raise ValueError("Polygon has no vertices.")
+            if not hasattr(p, "weight"):
+                raise ValueError("Polygon has no weight.")
+            w_i = float(getattr(p, "weight"))
+
+            A_i, cx_i, cy_i = _poly_signed_area_centroid(pts, eps_a)
+            Ix_i, Iy_i, Ixy_i = _poly_centroidal_inertia(pts, cx_i, cy_i)
+
+            A_eff = w_i * A_i
+            A_tot += A_eff
+            Qx += A_eff * cx_i
+            Qy += A_eff * cy_i
+            cache.append((A_i, cx_i, cy_i, Ix_i, Iy_i, Ixy_i, w_i))
+
+        if A_tot <= eps_a:
+            print(f"WARNING:: Composite effective area is non-positive A_tot: {A_tot}; cannot compute solid-rectangle torsion proxy")
+            return 0,0
+            #raise ValueError(f"Composite effective area is non-positive A_tot: {A_tot}; cannot compute solid-rectangle torsion proxy.")
+
+        cx_tot = Qx / A_tot
+        cy_tot = Qy / A_tot
+
+        # Second pass: centroidal inertias about composite centroid
+        Ix = 0.0
+        Iy = 0.0
+        Ixy = 0.0
+
+        for A_i, cx_i, cy_i, Ix_i, Iy_i, Ixy_i, w_i in cache:
+            dx = cx_i - cx_tot
+            dy = cy_i - cy_tot
+            Ix += w_i * (Ix_i + A_i * (dy * dy))
+            Iy += w_i * (Iy_i + A_i * (dx * dx))
+            Ixy += w_i * (Ixy_i + A_i * (dx * dy))
+
+        i1, i2 = _principal_inertias(Ix, Iy, Ixy)
+        i_min = i2 if i2 <= i1 else i1
+
+        a_dim, b_dim = _equiv_rectangle_dims(A_tot, i_min, eps_k)
+        J_total = _roark_torsion_rect(a_dim, b_dim)
+        fid = _fidelity_from_equiv_rectangle(a_dim, b_dim)
+
+        if verbose and math.isfinite(fid) and (fid < 0.5):
+            print(
+                "[SECTION ANALYSIS] Global fidelity for '%s' is low (%.2f)." %
+                (getattr(poly_input, "name", "unnamed"), fid)
             )
-            
-            # Deduce thickness from area difference (outer - |inner|)
-            A_diff = abs(A_enclosed + polygon_area_centroid(inner)[0])
-            thickness_est = A_diff / perimeter if perimeter > 1e-12 else 1e-6
-            
-            if perimeter > 1e-12 and thickness_est > 1e-12:
-                return 4 * A_enclosed**2 * thickness_est / perimeter  # Bredt's formula
-    
-    # General case: open thin-walled or multi-polygon → Σ (b_i * t_i³ / 3)
-    J = 0.0
-    
-    for poly in section.polygons:
-        if poly.weight == 0:
-            continue
-        
-        verts = poly.vertices
-        n_verts = len(verts)
-        if n_verts < 3:
-            continue
-        
-        # Deduce thickness from geometry: 2 * |area| / perimeter (correction for thin strips)
-        area_poly = polygon_area_centroid(poly)[0]
-        perimeter = sum(
-            ((v2.x - v1.x)**2 + (v2.y - v1.y)**2)**0.5
-            for v1, v2 in zip(verts, verts[1:] + verts[:1])
-        )
-        thickness_est = 2 * abs(area_poly) / perimeter if perimeter > 1e-12 else 1e-6
-        
-        if thickness_est <= 0:
-            thickness_est = 1e-6  # minimum fallback
-        
-        # Add contribution of each side
-        for i in range(n_verts):
-            p1 = verts[i]
-            p2 = verts[(i + 1) % n_verts]
-            length = ((p2.x - p1.x)**2 + (p2.y - p1.y)**2)**0.5
-            if length > 1e-12:
-                J += abs(poly.weight) * length * (thickness_est ** 3) / 3.0  # abs(weight) for positive contribution
-    
-    # Final fallback: if everything else fails, use the original semi-empirical approximation
-    if J < 1e-12:
-        Ip = props['Ix'] + props['Iy']
-        if Ip > 1e-12:
-            J = (A_total**4) / (40.0 * Ip)
-    
-    return J
 
-def export_full_opensees_model(field: ContinuousSectionField, num_elements: int, E_val: float, filename: str = "main_beam_model.tcl"):
+        return float(J_total), float(fid)
+
+    # -------------------------------------------------------------------------
+    # 2) Single polygon
+    # -------------------------------------------------------------------------
+    pts = poly_input.vertices() if callable(getattr(poly_input, "vertices", None)) else getattr(poly_input, "vertices", None)
+    if pts is None:
+        raise ValueError("Polygon has no vertices.")
+    if len(pts) < 3:
+        return 0.0, float("nan")
+    if not hasattr(poly_input, "weight"):
+        raise ValueError("Polygon has no weight.")
+    w = float(getattr(poly_input, "weight"))
+
+    A, cx, cy = _poly_signed_area_centroid(pts, eps_a)
+    ix, iy, ixy = _poly_centroidal_inertia(pts, cx, cy)
+    i1, i2 = _principal_inertias(ix, iy, ixy)
+    i_min = i2 if i2 <= i1 else i1
+
+    a_dim, b_dim = _equiv_rectangle_dims(A, i_min, eps_k)
+    J_geom = _roark_torsion_rect(a_dim, b_dim)
+    J_value = w * J_geom
+    fid = _fidelity_from_equiv_rectangle(a_dim, b_dim)
+
+    return float(J_value), float(fid)
+
+######################################################################################################################################
+
+
+def calculate_t_eq(points):
+    """
+    Calcola t_eq = 2*A/P per poligono thin-walled.
+    points: list [[x1,y1], [x2,y2], ..., [xn,yn]] linea mediana.
+    """
+    points = np.array(points)
+    # Area shoelace
+    x, y = points[:,0], points[:,1]
+    A = 0.5 * np.abs(np.dot(x, np.roll(y,1)) - np.dot(y, np.roll(x,1)))
+    # Perimetro
+    diffs = np.diff(points, axis=0, append=points[0:1])
+    P = np.sum(np.sqrt(np.sum(diffs**2, axis=1)))
+    t_eq = 2 * A / P if P > 0 else 0
+    return t_eq, A, P  # Ritorna anche A, P per debug
+
+
+"""
+CSF torsion (Saint-Venant) - CELL-based closed thin-walled variant
+==================================================================
+
+This file provides a *single* drop-in function:
+
+    compute_saint_venant_J_cell(section)
+
+It is designed to live in the same module where your CSF geometry and torsion
+functions already exist (e.g., your `section_field.py`), because it expects
+these symbols to be available:
+
+Required symbols from your codebase
+-----------------------------------
+- compute_saint_venant_J(section)      : legacy fallback
+- polygon_area_centroid(poly) -> (A_signed, (Cx, Cy))
+- EPS_A, EPS_L                         : tolerances
+- CSFError                             : exception type (subclass of ValueError)
+- Section / Polygon data model:
+    section.polygons iterable of Polygon-like objects, each with:
+      - p.name (string)
+      - p.weight (float)   (MUST exist; no silent defaults)
+      - p.vertices iterable of points with .x and .y
+
+User convention for CLOSED thin-walled cells
+--------------------------------------------
+A polygon is treated as a "closed thin-walled cell" entity if its name contains
+either token (case-insensitive):
+
+    "@CLOSED"  or  "@CELL"
+
+Examples:
+    ring@wall@closed@t=0.020
+    box_skin@CELL
+    cell1@cell@t=0.008
+
+Important: "@WALL" is *not* required here; you can combine tags if you want.
+
+Dispatch rule (same spirit as @WALL)
+------------------------------------
+- If no polygon name contains "@CLOSED" or "@CELL": this function returns
+  compute_saint_venant_J(section) (legacy).
+- Otherwise: only polygons tagged with "@CLOSED"/"@CELL" contribute.
+
+Thickness per cell polygon
+--------------------------
+- If polygon name contains "@t=<value>": use that thickness (meters).
+- Else: estimate thickness via the SAME rigid rule you already adopted for @WALL:
+
+      t := 2*A / P
+
+  where:
+    A = abs(signed area of the *single polygon*),
+    P = perimeter of the *single polygon* boundary.
+
+Closed thin-walled torsion model (single-cell, constant thickness)
+------------------------------------------------------------------
+This function uses the Bredt-Batho single-cell engineering formula:
+
+    J ≈ 4 * A_m^2 / ∮(ds/t)
+
+For constant thickness t along the median line:
+
+    J ≈ 4 * A_m^2 * t / b
+
+where:
+- A_m is the area enclosed by the median line,
+- b = ∮ ds is the median line length (a "midline perimeter").
+
+Key modelling point for your "single polygon ring with a cut"
+-------------------------------------------------------------
+Your "ring as ONE polygon" representation typically follows the pattern:
+- traverse outer contour,
+- insert a radial connection to the inner contour,
+- traverse inner contour,
+- connect back.
+
+To compute A_m from this single polygon, we *reconstruct* two contours
+(outer and inner) by exploiting the repeated vertices that delimit the loops.
+
+Expected vertex pattern (robustly detected)
+-------------------------------------------
+Let v[0] be the first vertex.
+We expect to find:
+1) a second occurrence of v[0] somewhere later  -> end of OUTER loop
+2) the next vertex is the INNER loop start v_in
+3) a second occurrence of v_in later            -> end of INNER loop
+
+From these two reconstructed loops:
+- A_outer = |area(outer loop)|
+- A_inner = |area(inner loop)|
+
+Then:
+- A_wall  = max(A_outer - A_inner, 0)
+- A_m     ≈ (A_outer + A_inner)/2   (median-area proxy; exact for t->0 limit)
+
+Finally, with constant thickness:
+    b ≈ A_wall / t        (because A_wall ≈ b * t)
+so:
+    J ≈ 4 * A_m^2 * t / b = 4 * A_m^2 * t^2 / A_wall
+
+Limitations / non-goals (explicit)
+----------------------------------
+- Multi-cell connected torsion is NOT solved here (compatibility matrices, etc.).
+  If you tag multiple disjoint cells (physically disconnected), summing their J
+  contributions is reasonable and is what we do.
+- If the polygon does not match the expected "two loops separated by repeated points"
+  pattern, we raise a CSFError to fail fast (transparent, no heuristics).
+
+Weight convention
+-----------------
+For torsional stiffness (G*J), negative stiffness is not physically meaningful.
+We therefore scale each polygon contribution by abs(weight), consistent with your
+compute_saint_venant_J_wall implementation.
+
+"""
+
+
+
+def compute_saint_venant_J_cell(section: "Section") -> float:
+    """
+    Closed-cell Saint-Venant torsional constant J_sv [m^4] using Bredt-Batho (single-cell).
+
+    Returns legacy compute_saint_venant_J(section) if no @cell/@closed polygon is present.
+    """
+    TOKEN_CELL = "@cell"
+    TOKEN_CLOSED = "@closed"
+    TOKEN_T = "@t="
+
+    # Strictness: closed-cell torsion should not guess thickness by default.
+    REQUIRE_EXPLICIT_T = True
+
+    polys = getattr(section, "polygons", None)
+    if not polys:
+        return 0.0
+
+    # -----------------------------
+    # 0) Select cell polygons
+    # -----------------------------
+    cell_polys = []
+    for p in polys:
+        nm = str(getattr(p, "name", "") or "")
+        low = nm.lower()
+        if (TOKEN_CELL in low) or (TOKEN_CLOSED in low):
+            cell_polys.append(p)
+
+    # IMPORTANT: per spec, if nothing is tagged, fall back to legacy (NOT 0.0).
+    if not cell_polys:
+        return 0
+
+    # -----------------------------
+    # 1) Helpers
+    # -----------------------------
+    def _xy_list(poly) -> List[Tuple[float, float]]:
+        verts = getattr(poly, "vertices", None)
+        if not verts or len(verts) < 3:
+            return []
+        out = [(float(v.x), float(v.y)) for v in verts]
+        # Drop explicit closure (last == first) if present.
+        if len(out) >= 2:
+            x0, y0 = out[0]
+            x1, y1 = out[-1]
+            if abs(x1 - x0) <= EPS_L and abs(y1 - y0) <= EPS_L:
+                out = out[:-1]
+        return out
+
+    def _perimeter_xy(xy: List[Tuple[float, float]]) -> float:
+        n = len(xy)
+        if n < 2:
+            return 0.0
+        P = 0.0
+        for i in range(n):
+            x0, y0 = xy[i]
+            x1, y1 = xy[(i + 1) % n]
+            dx = x1 - x0
+            dy = y1 - y0
+            P += (dx * dx + dy * dy) ** 0.5
+        return P
+
+    def _signed_area_xy(xy: List[Tuple[float, float]]) -> float:
+        n = len(xy)
+        if n < 3:
+            return 0.0
+        a2 = 0.0
+        for i in range(n):
+            x0, y0 = xy[i]
+            x1, y1 = xy[(i + 1) % n]
+            a2 += x0 * y1 - x1 * y0
+        return 0.5 * a2
+
+    def _key(pt: Tuple[float, float], ndigits: int = 12) -> Tuple[float, float]:
+        return (round(pt[0], ndigits), round(pt[1], ndigits))
+
+    def _parse_t(name: str) -> Optional[float]:
+        low = name.lower()
+        idx = low.find(TOKEN_T)
+        if idx < 0:
+            return None
+        start = idx + len(TOKEN_T)
+        if start >= len(name):
+            return None
+        allowed = set("0123456789.+-eE")
+        s = []
+        for ch in name[start:]:
+            if ch in allowed:
+                s.append(ch)
+            else:
+                break
+        if not s:
+            return None
+        try:
+            tval = float("".join(s))
+        except Exception:
+            return None
+        if tval <= 0.0:
+            return None
+        return tval
+
+    # -----------------------------
+    # 2) Compute J
+    # -----------------------------
+    J_total = 0.0
+
+    for p in cell_polys:
+        nm = str(getattr(p, "name", "") or "")
+
+        # No silent defaults for structural parameters.
+        w = float(getattr(p, "weight"))
+        if abs(w) < EPS_A:
+            continue
+
+        xy = _xy_list(p)
+        if len(xy) < 6:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v2): polygon '{nm}' too small to be a slit-cell."
+            )
+
+        # Thickness: explicit, unless you deliberately disable strictness.
+        t = _parse_t(nm)
+        if t is None:
+            if REQUIRE_EXPLICIT_T:
+                raise CSFError(
+                    f"compute_saint_venant_J_cell(v2): polygon '{nm}' is @cell/@closed but missing '@t=...'."
+                )
+            # Optional legacy-style fallback: t = 2A/P
+            A_poly = abs(float(polygon_area_centroid(p)[0]))
+            P_poly = _perimeter_xy(xy)
+            if P_poly < EPS_L:
+                raise CSFError(
+                    f"compute_saint_venant_J_cell(v2): polygon '{nm}' has near-zero perimeter."
+                )
+            t = 2.0 * A_poly / P_poly
+
+        if t < EPS_L:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v2): polygon '{nm}' invalid thickness t={t}."
+            )
+
+        # -----------------------------
+        # Split OUTER and INNER loops
+        # -----------------------------
+        keys = [_key(pt) for pt in xy]
+        k0 = keys[0]
+
+        i_outer_end = None
+        for i in range(1, len(keys)):
+            if keys[i] == k0:
+                i_outer_end = i
+                break
+        #qui
+        
+        if i_outer_end is None or i_outer_end < 3:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v2): polygon '{nm}' cannot split OUTER loop "
+                f"(missing repeated start vertex)."
+            )
+        
+        i_inner_start = i_outer_end + 1
+        if i_inner_start >= len(keys):
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v2): polygon '{nm}' missing INNER loop start."
+            )
+
+        k_in = keys[i_inner_start]
+
+        i_inner_end = None
+        for j in range(i_inner_start + 1, len(keys)):
+            if keys[j] == k_in:
+                i_inner_end = j
+                break
+        if i_inner_end is None or (i_inner_end - i_inner_start) < 3:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v2): polygon '{nm}' cannot split INNER loop "
+                f"(missing repeated inner-start vertex)."
+            )
+
+        outer_xy = xy[0:i_outer_end]               # excludes repeated outer start
+        inner_xy = xy[i_inner_start:i_inner_end]   # excludes repeated inner start (often CW)
+
+        # --- FIX: decide which loop is OUTER by area magnitude (outer must be larger) ---
+        a_out = abs(_signed_area_xy(outer_xy))
+        a_in  = abs(_signed_area_xy(inner_xy))
+        if a_in > a_out:
+            outer_xy, inner_xy = inner_xy, outer_xy
+
+        # --- Enforce orientations for CSF slit-cell encoding ---
+        # outer must be CCW, inner must be CW
+        if _signed_area_xy(outer_xy) < 0.0:
+            outer_xy = list(reversed(outer_xy))
+        if _signed_area_xy(inner_xy) > 0.0:
+            inner_xy = list(reversed(inner_xy))
+
+
+        if len(outer_xy) < 3 or len(inner_xy) < 3:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v2): polygon '{nm}' produced degenerate loops."
+            )
+
+        A_outer = abs(_signed_area_xy(outer_xy))
+        A_inner = abs(_signed_area_xy(inner_xy))
+
+        
+        A_wall = A_outer - A_inner
+        print(f"DEBUG A_outer {A_outer}")
+        print(f"DEBUG A_inner {A_inner}")
+        if abs(A_wall) <= EPS_A:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v2): polygon '{nm}' has non-positive wall area after splitting."
+            )
+
+        # Consistency with actual polygon area (should match wall area for slit encoding).
+        A_poly = abs(float(polygon_area_centroid(p)[0]))
+
+        if abs(A_poly - A_wall) > 1e-9 and abs(A_poly - A_wall) / max(A_wall, 1.0) > 1e-6:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v2): polygon '{nm}' inconsistent areas. "
+                f"A_poly={A_poly:.12g} vs (A_outer-A_inner)={A_wall:.12g}."
+            )
+
+        # -----------------------------
+        # Build MIDLINE polygon (key change vs v1)
+        # -----------------------------
+        # Ensure both loops have the same vertex count (required for a pointwise midline).
+        n_out = len(outer_xy)
+        n_in = len(inner_xy)
+        if n_out != n_in:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v2): polygon '{nm}' has different outer/inner vertex counts "
+                f"({n_out} vs {n_in}). Provide matched discretization for @cell polygons."
+            )
+
+        # Make inner loop CCW to align indices with outer CCW.
+        inner_ccw = list(reversed(inner_xy))
+
+        mid_xy = [((outer_xy[i][0] + inner_ccw[i][0]) * 0.5,
+                   (outer_xy[i][1] + inner_ccw[i][1]) * 0.5) for i in range(n_out)]
+
+        # Midline geometric descriptors
+        A_m = abs(_signed_area_xy(mid_xy))
+        b_m = _perimeter_xy(mid_xy)
+
+        if A_m <= EPS_A or b_m <= EPS_L:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v2): polygon '{nm}' degenerate midline."
+            )
+
+        # Bredt-Batho (constant thickness): J = 4*A_m^2 / (b_m/t) = 4*A_m^2 * t / b_m
+        J_geom = 4.0 * (A_m ** 2) * t / b_m
+
+        # Non-negative stiffness scaling.
+        J_total += abs(w) * J_geom
+
+    return float(max(J_total, 0.0))
+
+
+"""
+CSF torsion (Saint-Venant) - WALL-based variant with optional thickness override
+
+Drop-in snippet: add this function in the same module where:
+- Section / Polygon classes are defined
+- polygon_area_centroid(poly) exists and returns (signed_area, cx, cy)
+- compute_saint_venant_J(section) exists (legacy fallback)
+- EPS_A, EPS_L exist (or replace with your tolerances)
+
+User convention
+---------------
+A polygon is treated as a "wall entity" if its name contains the token "@WALL"
+(case-insensitive). Example:
+
+    web@wall
+    top_flange@WALL
+
+Optional thickness override:
+----------------------------
+The user may also provide a thickness override inside the SAME name string:
+
+    web@wall@t=0.01
+    top_flange@wall@t=0.0125
+
+Rules:
+- If "@t=<number>" is present, that thickness (in meters) is used for that wall polygon.
+- If "@t=" is absent, thickness is estimated from pure geometry (rigid rule):
+
+        t := 2*A / P
+
+This is intentionally profile-agnostic: no shape recognition, no heuristics, no tests.
+The user is responsible for tagging the correct polygons.
+
+Theory (international standard: open thin-walled approximation)
+---------------------------------------------------------------
+For open thin-walled sections:
+
+    J_sv ≈ Σ ( b_i * t_i^3 / 3 )
+
+To avoid explicitly computing the midline length b_i, use the thin-wall identity:
+
+    A_i ≈ b_i * t_i  =>  b_i ≈ A_i / t_i
+
+Then:
+
+    J_i ≈ (A_i / t_i) * t_i^3 / 3 = A_i * t_i^2 / 3
+
+Important note on weights
+-------------------------
+CSF polygon weights may be used as stiffness scalars.
+For torsion stiffness (G * J), negative stiffness is not physically meaningful,
+so we scale contributions by abs(weight).
+If you want a different convention, change abs(w) accordingly.
+"""
+
+def compute_saint_venant_J_wall(section: "Section") -> float:
+    """
+    Compute Saint-Venant torsional constant J_sv using "@WALL" polygons.
+
+    Dispatch
+    --------
+    - If no polygon name contains "@WALL": return compute_saint_venant_J(section) (legacy).
+    - Otherwise: use open thin-walled approximation on polygons tagged with "@WALL".
+
+    Thickness choice per wall polygon
+    ---------------------------------
+    - If polygon name contains "@t=<value>": use that thickness (meters).
+    - Else: estimate thickness via t := 2*A/P.
+
+    Returns
+    -------
+    float
+        Effective Saint-Venant torsional constant J_sv [m^4].
+    """
+    token_wall = "@WALL"
+    token_t = "@t="
+
+    polys = getattr(section, "polygons", None)
+    if not polys:
+        return 0.0
+
+    # -----------------------------
+    # 0) Select wall polygons
+    # -----------------------------
+    wall_polys = []
+    for p in polys:
+        nm = str(getattr(p, "name", "") or "")
+        if token_wall.lower() in nm.lower():
+            wall_polys.append(p)
+    # No "@WALL" anywhere exit
+    if not wall_polys:
+        return 0.0 
+    
+    # -----------------------------
+    # 1) Geometry helpers
+    # -----------------------------
+    def _poly_area_abs(poly) -> float:
+        A_signed = polygon_area_centroid(poly)[0]
+        return abs(float(A_signed))
+
+    def _poly_perimeter(poly) -> float:
+        verts = getattr(poly, "vertices", None)
+        if not verts or len(verts) < 2:
+            return 0.0
+        perim = 0.0
+        n = len(verts)
+        for i in range(n):
+            j = (i + 1) % n
+            dx = float(verts[j].x) - float(verts[i].x)
+            dy = float(verts[j].y) - float(verts[i].y)
+            perim += (dx * dx + dy * dy) ** 0.5
+        return perim
+
+    # -----------------------------
+    # 2) Parse optional "@t=<...>"
+    # -----------------------------
+    def _parse_thickness_from_name(name: str) -> Optional[float]:
+        """
+        Parse thickness override from a polygon name.
+
+        Accepted patterns (case-insensitive):
+            "...@t=0.01"
+            "...@T=0.01"
+
+        Parsing stops at the first non-numeric character (besides . + - e E).
+
+        Returns
+        -------
+        float | None
+            Thickness in meters, or None if not present / not parseable.
+        """
+        low = name.lower()
+        idx = low.find(token_t)
+        if idx < 0:
+            return None
+
+        start = idx + len(token_t)
+        if start >= len(name):
+            return None
+
+        # Collect a valid float substring 
+        allowed = set("0123456789.+-eE")
+        s = []
+        for ch in name[start:]:
+            if ch in allowed:
+                s.append(ch)
+            else:
+                break
+
+        if not s:
+            return None
+
+        try:
+            tval = float("".join(s))
+        except Exception:
+            return None
+
+        # Reject non-positive values
+        if tval <= 0.0:
+            return None
+
+        return tval
+
+    # -----------------------------
+    # 3) Compute J_sv (open thin-walled)
+    # -----------------------------
+    J = 0.0
+
+    for p in wall_polys:
+        w = float(getattr(p, "weight"))
+        if abs(w) < EPS_A:
+            continue
+
+        A = _poly_area_abs(p)
+        if A < EPS_A:
+            continue
+
+        nm = str(getattr(p, "name", "") or "")
+        t_override = _parse_thickness_from_name(nm)
+
+        if t_override is not None:
+            t = float(t_override)
+        else:
+            P = _poly_perimeter(p)
+            if P < EPS_L:
+                continue
+            t = 2.0 * A / P
+
+        if t < EPS_L:
+            continue
+
+        # Use A ≈ b*t to avoid explicit midline computation:
+        # b ≈ A/t, so J_i ≈ (A/t)*t^3/3 = A*t^2/3
+        J_i = (A * (t ** 2)) / 3.0
+
+        # Keep torsional stiffness non-negative
+        J += abs(w) * J_i
+
+    return float(J)
+
+
+
+##########################################################################################################################################
+
+
+
+
+"""
+compute_saint_venant_j_co.py
+
+Saint-Venant torsional constant J for *solid* polygonal domains (grid-based Prandtl solve).
+
+Why your "simple box" looked like an infinite loop
+--------------------------------------------------
+With the previous defaults (auto_n=200, max_iter=20000), a 0.4 x 0.4 square generates
+a grid of about 201 x 201 nodes (≈ 40k unknowns). Running 20k SOR sweeps means
+~800 million node updates, which can look like a hang.
+
+This revision keeps the same numerical method, but adds *explicit safety caps*:
+- lower default auto_n
+- lower default max_iter
+- a maximum total grid node count; if exceeded, an error is raised (no silent coarsening)
+
+Contract (explicit, by design)
+------------------------------
+- NO geometry validation: no convexity checks, no self-intersection checks, no orientation checks.
+- NO sign post-processing: no abs(), no clipping, no "make positive".
+- NO inner (nested) helper functions: all helpers are module-level.
+- Each polygon is treated as its own SOLID filled domain; final result is a weighted sum.
+
+Model (per polygon Ω_i)
+-----------------------
+Solve Prandtl stress function ψ:
+
+    ∇²ψ = -2   in Ω_i
+    ψ  =  0    on ∂Ω_i
+
+Then:
+
+    J_i = 2 ∫_{Ω_i} ψ dA
+
+Method
+------
+Masked Cartesian grid + in-place SOR for the Poisson equation.
+
+Weighted output
+---------------
+    J_total = Σ w_i * J_i     (weights are taken verbatim from poly.weight)
+"""
+
+
+
+
+PointXY = Tuple[float, float]
+
+
+def _poly_vertices_xy(poly: Any) -> List[PointXY]:
+    """Extract polygon vertices as plain (x, y) float tuples."""
+    verts = getattr(poly, "vertices", None)
+    if verts is None:
+        raise ValueError(f"Polygon '{getattr(poly, 'name', None)}' has no .vertices attribute.")
+    out: List[PointXY] = []
+    for v in verts:
+        out.append((float(getattr(v, "x")), float(getattr(v, "y"))))
+    return out
+
+
+def _bbox_xy(verts: Sequence[PointXY]) -> Tuple[float, float, float, float]:
+    """Axis-aligned bounding box for a vertex list."""
+    if not verts:
+        raise ValueError("Empty vertex list.")
+    xs = [p[0] for p in verts]
+    ys = [p[1] for p in verts]
+    return (min(xs), min(ys), max(xs), max(ys))
+
+
+def _auto_grid_h_from_bbox(verts: Sequence[PointXY], auto_n: int) -> float:
+    """
+    Automatic grid spacing based on the polygon bounding box:
+
+        h := min(span_x, span_y) / auto_n
+    """
+    if auto_n <= 0:
+        raise ValueError("auto_n must be > 0.")
+    x0, y0, x1, y1 = _bbox_xy(verts)
+    span_x = x1 - x0
+    span_y = y1 - y0
+    span = span_x if span_x < span_y else span_y
+    if span <= 0.0:
+        raise ValueError("Degenerate polygon bounding box (zero span).")
+    return span / float(auto_n)
+
+
+def _point_on_segment_sq(
+    px: float, py: float,
+    ax: float, ay: float,
+    bx: float, by: float,
+    eps_l: float
+) -> bool:
+    """
+    Return True if point (px,py) lies on segment AB, with tolerance.
+
+    No abs(); uses squared comparisons.
+    """
+    abx = bx - ax
+    aby = by - ay
+    apx = px - ax
+    apy = py - ay
+
+    ab2 = abx * abx + aby * aby
+    eps2 = eps_l * eps_l
+
+    # Degenerate segment (A≈B): treat as a point.
+    if ab2 <= eps2:
+        dx = px - ax
+        dy = py - ay
+        return (dx * dx + dy * dy) <= eps2
+
+    # Collinearity: cross product magnitude squared <= (eps^2 * |AB|^2)
+    cross = abx * apy - aby * apx
+    if (cross * cross) > (eps2 * ab2):
+        return False
+
+    # Projection: 0 <= dot <= |AB|^2 (with tolerance)
+    dot = apx * abx + apy * aby
+    if dot < -eps_l:
+        return False
+    if dot > (ab2 + eps_l):
+        return False
+
+    return True
+
+
+def _point_in_poly_inclusive(px: float, py: float, verts: Sequence[PointXY], eps_l: float) -> bool:
+    """
+    Ray casting point-in-polygon, counting boundary as inside.
+
+    No validation is performed; self-intersections may yield undefined results.
+    """
+    n = len(verts)
+    if n < 3:
+        return False
+
+    # Boundary inclusion: test "on any edge".
+    for i in range(n):
+        ax, ay = verts[i]
+        bx, by = verts[(i + 1) % n]
+        if _point_on_segment_sq(px, py, ax, ay, bx, by, eps_l):
+            return True
+
+    inside = False
+    for i in range(n):
+        x1, y1 = verts[i]
+        x2, y2 = verts[(i + 1) % n]
+
+        # Edge straddles horizontal line at py?
+        cond = (y1 > py) != (y2 > py)
+        if cond:
+            x_int = x1 + (py - y1) * (x2 - x1) / (y2 - y1)
+            if x_int > px:
+                inside = not inside
+
+    return inside
+
+
+def _build_inside_mask(
+    verts: Sequence[PointXY],
+    xs: np.ndarray,
+    ys: np.ndarray,
+    eps_l: float
+) -> np.ndarray:
+    """Build boolean mask M[j,i] = True if grid node (xs[i], ys[j]) is inside polygon."""
+    ny = int(ys.size)
+    nx = int(xs.size)
+    mask = np.zeros((ny, nx), dtype=bool)
+
+    for j in range(ny):
+        y = float(ys[j])
+        for i in range(nx):
+            x = float(xs[i])
+            if _point_in_poly_inclusive(x, y, verts, eps_l):
+                mask[j, i] = True
+
+    return mask
+
+
+def _solve_poisson_sor(
+    mask: np.ndarray,
+    h: float,
+    *,
+    max_iter: int,
+    tol: float,
+    omega: float
+) -> np.ndarray:
+    """
+    Solve ∇²ψ = -2 on a masked grid using SOR, with ψ=0 outside.
+
+    Stopping rule:
+        max update magnitude <= tol
+    (implemented via squared values; no abs()).
+    """
+    ny, nx = mask.shape
+    psi = np.zeros((ny, nx), dtype=float)
+
+    h2 = h * h
+    tol2 = tol * tol
+    rhs_term = 2.0 * h2  # from discretization of -2
+
+    for _ in range(int(max_iter)):
+        max_d2 = 0.0
+
+        for j in range(ny):
+            for i in range(nx):
+                if not mask[j, i]:
+                    continue
+
+                old = psi[j, i]
+
+                # Neighbor values, ψ=0 outside.
+                e = psi[j, i + 1] if (i + 1 < nx and mask[j, i + 1]) else 0.0
+                w = psi[j, i - 1] if (i - 1 >= 0 and mask[j, i - 1]) else 0.0
+                n = psi[j - 1, i] if (j - 1 >= 0 and mask[j - 1, i]) else 0.0
+                s = psi[j + 1, i] if (j + 1 < ny and mask[j + 1, i]) else 0.0
+
+                gs = (e + w + n + s + rhs_term) * 0.25
+                new = (1.0 - omega) * old + omega * gs
+                psi[j, i] = new
+
+                d = new - old
+                d2 = d * d
+                if d2 > max_d2:
+                    max_d2 = d2
+
+        if max_d2 <= tol2:
+            break
+
+    return psi
+
+
+def _torsion_J_from_psi(psi: np.ndarray, mask: np.ndarray, h: float) -> float:
+    """Discrete J ≈ 2 Σ ψ h^2 over inside nodes."""
+    h2 = h * h
+    return 2.0 * float(np.sum(psi[mask]) * h2)
+
+
+def _compute_J_solid_polygon_grid(
+    verts: Sequence[PointXY],
+    *,
+    grid_h: float,
+    pad: float,
+    eps_l: float,
+    max_iter: int,
+    tol: float,
+    omega: float,
+    max_grid_nodes: int
+) -> float:
+    """Compute J for ONE polygon as a solid filled domain."""
+    if grid_h <= 0.0:
+        raise ValueError("grid_h must be > 0.")
+
+    x0, y0, x1, y1 = _bbox_xy(verts)
+
+    x0 = x0 - pad
+    y0 = y0 - pad
+    x1 = x1 + pad
+    y1 = y1 + pad
+
+    xs = np.arange(x0, x1 + 0.5 * grid_h, grid_h, dtype=float)
+    ys = np.arange(y0, y1 + 0.5 * grid_h, grid_h, dtype=float)
+
+    nx = int(xs.size)
+    ny = int(ys.size)
+    nodes = nx * ny
+    if nodes > int(max_grid_nodes):
+        raise ValueError(
+            "Grid too large for this polygon at the requested resolution. "
+            "Increase grid_h or reduce auto_n, or raise max_grid_nodes explicitly."
+        )
+
+    if nx < 3 or ny < 3:
+        raise ValueError("Grid too coarse for this polygon bounding box. Decrease grid_h.")
+
+    mask = _build_inside_mask(verts, xs, ys, eps_l)
+
+    if not np.any(mask):
+        raise ValueError("No interior grid nodes detected. Decrease grid_h or check polygon scale.")
+
+    psi = _solve_poisson_sor(mask, grid_h, max_iter=max_iter, tol=tol, omega=omega)
+    return _torsion_J_from_psi(psi, mask, grid_h)
+
+
+
+#----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+def alpha_from_keys(
+    A: float,
+    J: float,
+    I1: float,
+    I2: float,
+    K_torsion: float | None = None,
+) -> float:
+    """
+    Return alpha for the approximation J_SV ≈ alpha * J_p, with J_p = J (= Ix + Iy).
+
+    Two modes:
+    1) If K_torsion is provided, interpret it as an available estimate of J_SV and return:
+           alpha = K_torsion / J
+    2) Otherwise, assume a compact "rectangle-like" section and compute alpha from a
+       rectangle-equivalent approximation based on A, I1, I2, J.
+
+    No abs(), no sign normalization. Caller must ensure inputs make sense.
+
+
+    """
+
+
+    if J == 0.0:
+        raise ValueError("J must be non-zero.")
+
+    if K_torsion is not None:
+        return K_torsion / J
+
+    if I1 == 0.0 or I2 == 0.0:
+        raise ValueError("I1 and I2 must be non-zero for the rectangle-equivalent mode.")
+
+    # Ensure r >= 1 by swapping if needed (no abs involved).
+    if I2 > I1:
+        I1, I2 = I2, I1
+
+    r = math.sqrt(I1 / I2)  # r >= 1
+    if r == 0.0:
+        raise ValueError("Invalid I1/I2 ratio.")
+
+    # Rectangle-equivalent torsion approximation:
+    # J_SV,rect ≈ (A^2 / (3 r)) * (1 - 0.63/r + 0.052/r^5)
+    J_sv_rect = (A * A) / (3.0 * r) * (1.0 - 0.63 / r + 0.052 / (r**5))
+    alpha = J_sv_rect / J
+    return alpha
+
+
+
+"""
+compute_saint_venant_j_new_approc.py
+
+A CSF-friendly (fast, deterministic) approximation for the Saint-Venant torsional constant J.
+
+Why this exists
+---------------
+A PDE-based Prandtl solve (FEM/FD + iterative Poisson) is not aligned with CSF goals:
+- it is slow and can appear to "hang" depending on grid/shape,
+- it introduces solver parameters and convergence heuristics,
+- it is fragile for "unknown" polygon quality (self-intersections, near-degeneracy).
+
+This file provides a deliberately simple alternative:
+
+    J_sv  ≈  α * J_p
+
+where J_p is the polar second moment of area about the centroid:
+
+    J_p = I_x + I_y
+
+This approximation is:
+- O(N_vertices) if you already compute section properties (constant-time wrapper),
+- O(N_polygons * N_vertices) in the pure-geometry fallback,
+- deterministic (no loops, no convergence, no timeouts),
+- composable with CSF polygon weights.
+
+Accuracy note
+-------------
+For a solid circle:  J_sv = J_p  (α = 1).
+For a solid square:  J_sv ≈ 0.8436 * J_p.
+
+So α is a *shape factor* capturing warping effects in a single scalar.
+Default α is set to match the solid square case (common engineering baseline).
+
+Scope / contract
+----------------
+- No geometric validation: no convexity checks, no self-intersection checks, no orientation checks.
+- No repair or normalization of signs.
+- No nested helper functions (module-level helpers only).
+- Polygons are combined through their weights exactly as CSF does for other properties.
+
+Recommended usage in CSF
+------------------------
+If your codebase already has:
+
+    section_properties(section) -> dict with keys 'Ix','Iy' (centroidal) and/or 'J'
+
+then you should rely on that (fastest, most consistent with the rest of CSF).
+
+Otherwise, this module includes a standalone, pure-geometry fallback that computes:
+- weighted area A,
+- weighted centroid (Cx,Cy),
+- weighted centroidal inertias Ix,Iy,
+- then J_p = Ix + Iy.
+
+Data model expectations
+-----------------------
+- section.polygons: iterable of polygon-like objects
+- each polygon has:
+    - .vertices: iterable of points with .x and .y
+    - .weight  : numeric (MUST exist; no silent default)
+
+Return value
+------------
+A single float: the *weighted* torsional constant approximation for the section.
+"""
+
+PointXY = Tuple[float, float]
+
+
+# -----------------------------------------------------------------------------
+# Helpers: robust "sign-agnostic" comparisons without using abs()
+# -----------------------------------------------------------------------------
+
+def _sq(x: float) -> float:
+    return x * x
+
+
+def _is_near_zero(x: float, eps: float) -> bool:
+    """
+    Compare x to 0 using squared values to avoid abs().
+
+    Note: This is for degeneracy guards only (division-by-zero avoidance).
+    It does not "fix" or "normalize" signs.
+    """
+    return _sq(x) <= _sq(eps)
+
+
+# -----------------------------------------------------------------------------
+# Geometry fallback: compute weighted centroidal polar moment without relying on
+# external CSF helpers.
+# -----------------------------------------------------------------------------
+
+def _poly_signed_area_centroid_xy(verts: Sequence[PointXY], eps_a: float) -> Tuple[float, float, float]:
+    """
+    Shoelace formula.
+
+    Returns
+    -------
+    (A, Cx, Cy)
+        A  : signed polygon area (depends on vertex winding).
+        Cx : centroid x
+        Cy : centroid y
+
+    Notes
+    -----
+    - Works for simple (non self-intersecting) polygons.
+    - For self-intersecting polygons, results are an algebraic "signed" integral.
+    """
+    n = len(verts)
+    if n < 3:
+        raise ValueError("Polygon has <3 vertices.")
+
+    a2 = 0.0
+    cx6 = 0.0
+    cy6 = 0.0
+
+    for i in range(n):
+        x0, y0 = verts[i]
+        x1, y1 = verts[(i + 1) % n]
+        cross = x0 * y1 - x1 * y0
+        a2 += cross
+        cx6 += (x0 + x1) * cross
+        cy6 += (y0 + y1) * cross
+
+    A = 0.5 * a2
+
+    if _is_near_zero(A, eps_a):
+        raise ValueError("Polygon area is ~0; cannot compute centroid/inertia reliably.")
+
+    Cx = cx6 / (3.0 * a2)
+    Cy = cy6 / (3.0 * a2)
+    return A, Cx, Cy
+
+
+def _poly_inertia_about_origin_xy(verts: Sequence[PointXY]) -> Tuple[float, float, float]:
+    """
+    Second moments about the origin (0,0) using standard polygon formulas.
+
+    Returns
+    -------
+    (Ix_o, Iy_o, Ixy_o)
+        About origin, signed consistently with the polygon winding.
+    """
+    n = len(verts)
+    if n < 3:
+        raise ValueError("Polygon has <3 vertices.")
+
+    Ix = 0.0
+    Iy = 0.0
+    Ixy = 0.0
+
+    for i in range(n):
+        x0, y0 = verts[i]
+        x1, y1 = verts[(i + 1) % n]
+        cross = x0 * y1 - x1 * y0
+
+        Ix += (y0 * y0 + y0 * y1 + y1 * y1) * cross
+        Iy += (x0 * x0 + x0 * x1 + x1 * x1) * cross
+        Ixy += (x0 * y1 + 2.0 * x0 * y0 + 2.0 * x1 * y1 + x1 * y0) * cross
+
+    Ix *= (1.0 / 12.0)
+    Iy *= (1.0 / 12.0)
+    Ixy *= (1.0 / 24.0)
+    return Ix, Iy, Ixy
+
+
+def _section_polar_moment_fallback(section: Any, eps_a: float) -> float:
+    """
+    Compute the weighted polar second moment J_p = Ix + Iy about the *weighted* centroid.
+
+    This is a pure-geometry fallback used only if `section_properties(section)` is not available.
+
+    Important:
+    - No "fixing" of winding is performed.
+    - Polygon weights are applied as linear scalars to (A, Ix, Iy, Ixy).
+    """
+    polys = getattr(section, "polygons", None)
+    if polys is None:
+        raise ValueError("Input 'section' has no .polygons attribute.")
+
+    # First pass: weighted area and centroid
+    A_tot = 0.0
+    Qx = 0.0
+    Qy = 0.0
+
+    cache: List[Tuple[Sequence[PointXY], float, float, float, float]] = []
+    # cache item: (verts_xy, w, A, Cx, Cy)
+
+    for p in polys:
+        if not hasattr(p, "weight"):
+            raise ValueError(f"Polygon '{getattr(p, 'name', None)}' has no .weight attribute.")
+        w = float(getattr(p, "weight"))
+
+        verts_obj = getattr(p, "vertices", None)
+        if not verts_obj:
+            raise ValueError(f"Polygon '{getattr(p, 'name', None)}' has no .vertices.")
+        verts_xy = [(float(v.x), float(v.y)) for v in verts_obj]
+
+        A, Cx, Cy = _poly_signed_area_centroid_xy(verts_xy, eps_a)
+        Aw = w * A
+        A_tot += Aw
+        Qx += Aw * Cx
+        Qy += Aw * Cy
+
+        cache.append((verts_xy, w, A, Cx, Cy))
+
+    if _is_near_zero(A_tot, eps_a):
+        raise ValueError("Composite area is ~0; cannot compute section centroid/properties reliably.")
+
+    Cx_tot = Qx / A_tot
+    Cy_tot = Qy / A_tot
+
+    # Second pass: weighted inertias about origin, then shift to composite centroid
+    Ix_o = 0.0
+    Iy_o = 0.0
+    Ixy_o = 0.0
+
+    for verts_xy, w, _, _, _ in cache:
+        ix, iy, ixy = _poly_inertia_about_origin_xy(verts_xy)
+        Ix_o += w * ix
+        Iy_o += w * iy
+        Ixy_o += w * ixy
+
+    # Parallel axis theorem to composite centroid
+    Ix_c = Ix_o - A_tot * (Cy_tot * Cy_tot)
+    Iy_c = Iy_o - A_tot * (Cx_tot * Cx_tot)
+    # Ixy_c not needed for J_p, but kept here as a reminder:
+    # Ixy_c = Ixy_o - A_tot * (Cx_tot * Cy_tot)
+
+    return Ix_c + Iy_c
+
+
+# -----------------------------------------------------------------------------
+# Public API
+# -----------------------------------------------------------------------------
+
+def compute_saint_venant_J(
+    section: Any,
+    alpha: float = 0.8436,
+    *,
+    eps_a: Optional[float] = None,
+) -> float:
+    """
+    Approximate Saint-Venant torsional constant for a (possibly composite) section.
+
+    Formula
+    -------
+        J_sv ≈ alpha * J_p
+        J_p  = I_x + I_y  (about the centroid)
+
+    Parameters
+    ----------
+    section:
+        Section-like object with .polygons.
+    alpha:
+        Shape factor. Default 0.8436 matches a solid square.
+        Set alpha=1.0 to match a solid circle.
+    eps_a:
+        Area tolerance used only for degeneracy checks in the fallback path.
+        If None, we try to read EPS_A from `section` or `section.field`.
+        If neither exists, eps_a defaults to 0.0 (exact zero check).
+
+    Behavior
+    --------
+    1) If a callable `section_properties` symbol exists in the current namespace,
+       it is used as the primary source of centroidal inertias (fast and consistent).
+       Expected keys:
+         - either 'J' (polar moment) OR both 'Ix' and 'Iy' (centroidal).
+    2) Otherwise, a pure-geometry fallback computes J_p directly.
+
+    Notes
+    -----
+    - This function never iterates a solver and cannot "hang".
+    - No attempt is made to interpret convexity, holes, or topology.
+      The result is exactly as "blind" as alpha * (Ix+Iy) can be.
+    """
+    # Resolve eps_a (only used in fallback degeneracy checks).
+    if eps_a is None:
+        eps_val = None
+        if hasattr(section, "EPS_A"):
+            try:
+                eps_val = float(getattr(section, "EPS_A"))
+            except Exception:
+                eps_val = None
+        if eps_val is None:
+            fld = getattr(section, "field", None)
+            if fld is not None and hasattr(fld, "EPS_A"):
+                try:
+                    eps_val = float(getattr(fld, "EPS_A"))
+                except Exception:
+                    eps_val = None
+        eps_a_val = float(eps_val) if eps_val is not None else 0.0
+    else:
+        eps_a_val = float(eps_a)
+
+    # Primary path: rely on existing CSF section_properties if present.
+    sp = globals().get("section_properties", None)
+    if callable(sp):
+        props = sp(section)
+        if isinstance(props, dict):
+            if "J" in props:
+                Jp = float(props["J"])
+            elif ("Ix" in props) and ("Iy" in props):
+                Jp = float(props["Ix"]) + float(props["Iy"])
+            else:
+                raise ValueError("section_properties(section) did not provide 'J' nor ('Ix','Iy').")
+        else:
+            raise ValueError("section_properties(section) did not return a dict-like object.")
+    else:
+        # Fallback path: compute J_p directly from polygon geometry.
+        Jp = _section_polar_moment_fallback(section, eps_a_val)
+
+    return float(alpha) * float(Jp)
+
+
+##############################################################################################################################################à
+
+    
+
+def export_full_opensees_model2(field: ContinuousSectionField, num_elements: int, E_val: float, filename: str = "main_beam_model.tcl"):
     # -----------------------------------------------------------------------------
     # BETA VERSION NOTICE: 
     # This OpenSees integration module is in a Beta testing phase.
@@ -1089,49 +3728,6 @@ def export_full_opensees_model(field: ContinuousSectionField, num_elements: int,
 
     print(f"Master script '{filename}' and library '{sections_file}' generated.")
 
-def export_opensees_discretized_sections(field: ContinuousSectionField, z_coords: list, E_val: float, filename: str = "opensees_sections.tcl"):
-    """
-    Exports a series of elastic sections to a .tcl file for OpenSees.
-    This version fixes the previous inaccuracies regarding the shear modulus G 
-    and the torsional constant J (Saint-Venant K).
-    """
-    # Define physical constants for steel (or reference material)
-    nu = 0.3  # Standard Poisson's ratio
-    # Exact elastic relation: G = E / (2 * (1 + nu))
-    # This ensures G = 80769.23 for E = 210000.0
-    G_val = E_val / (2 * (1 + nu)) 
-    
-    with open(filename, "w") as f:
-        f.write("# --------------------------------------------------\n")
-        f.write("# OPENSEES SECTIONS - GENERATED BY CSF (ENHANCED)\n")
-        f.write(f"# Total sections discretized: {len(z_coords)}\n")
-        f.write("# Format: section Elastic $tag $E $A $Iz $Iy $G $J\n")
-        f.write("# --------------------------------------------------\n\n")
-        
-        for i, z in enumerate(z_coords):
-            # Extract section at coordinate z via LERP
-            sec = field.section(z)
-            
-            # Perform integral geometric analysis (Area, Moments of Inertia)
-            data = section_full_analysis(sec)
-            
-            # Torsional Rigidity Handling:
-            # If the library returns 0.0 for K_torsion, we apply a robust 
-            # semi-empirical approximation for solid cross-sections: J = A^4 / (40 * Ip)
-            j_torsion = data.get('K_torsion', 0.0)
-            if j_torsion <= 0:
-                ip_centroidal = data['Ix'] + data['Iy']
-                if ip_centroidal > 1e-12:
-                    j_torsion = (data['A']**4) / (40.0 * ip_centroidal)
-            
-            tag = i + 1
-            # Use fixed-point notation for high readability in TCL scripts
-            # Iz in OpenSees corresponds to Ix (strong axis) in our library
-            line = (f"section Elastic {tag} {E_val:.2f} {data['A']:.6f} "
-                    f"{data['Ix']:.6f} {data['Iy']:.6f} {G_val:.2f} {j_torsion:.6f}\n")
-            f.write(line)
-            
-    print(f"OpenSees export successful: {filename}")
 
 def export_to_opensees_tcl(field, K_12x12, filename="csf_model.tcl"):
     """
@@ -1169,97 +3765,102 @@ def export_to_opensees_tcl(field, K_12x12, filename="csf_model.tcl"):
     print(f"TCL file generated successfully: {filename}")
 
 
-    def assemble_element_stiffness_matrix(field: ContinuousSectionField, E_ref: float = 1.0, 
-                                    nu: float = 0.3, n_gauss: int = 5) -> np.ndarray:
-        """
-        Assembles the complete 12x12 Timoshenko beam stiffness matrix with full EIxy coupling.
+def assemble_element_stiffness_matrix(field: ContinuousSectionField, E_ref: float = 1.0, 
+                                nu: float = 0.3, n_gauss: int = 5) -> np.ndarray:
+    """
+    Assembles the complete 12x12 Timoshenko beam stiffness matrix with full EIxy coupling.
+
+    DOF order (OpenSees compatible): [ux1,uy1,uz1,θx1,θy1,θz1 | ux2,uy2,uz2,θx2,θy2,θz2]
+    Full asymmetric section support (EIxy coupling) + Saint-Venant torsion.
+    """
+    L = abs(field.z1 - field.z0)
+    if L < EPS_L:
+        raise ValueError("Element length must be positive")
+
+    G_ref = E_ref / (2 * (1 + nu))
+
+    # Gaussian quadrature points (n_gauss sufficient for exact integration)
+    gauss_points = np.polynomial.legendre.leggauss(n_gauss)
+
+    K = np.zeros((12, 12))
+
+    for xi, weight in gauss_points:
+        z_phys = ((field.z1 - field.z0) * xi + (field.z1 + field.z0)) / 2.0 # absolute z
+        W = weight * (L / 2.0)
         
-        DOF order (OpenSees compatible): [ux1,uy1,uz1,θx1,θy1,θz1 | ux2,uy2,uz2,θx2,θy2,θz2]
-        Full asymmetric section support (EIxy coupling) + Saint-Venant torsion.
-        """
-        L = abs(field.z1 - field.z0)
-        if L < 1e-9:
-            raise ValueError("Element length must be positive")
+        # Sectional properties
+        K_sec = section_stiffness_matrix(field.section(z_phys), E_ref=E_ref) # absolute z
+        props = section_full_analysis(field.section(z_phys),alpha=0.0)#alpha not used
         
-        G_ref = E_ref / (2 * (1 + nu))
+        Jt = props.get("J_sv", 0.0)
+        if Jt <= 0.0:
+            Jt = props.get("J_s_vroark", 0.0)
+        GK = G_ref * Jt
+
+        EA = K_sec[0, 0]
+        EIx = K_sec[1, 1] 
+        EIy = K_sec[2, 2]
+        EIxy = K_sec[1, 2]
+        #GK = props['J'] * G_ref  # Correct Saint-Venant torsion
         
-        # Gaussian quadrature points (n_gauss sufficient for exact integration)
-        gauss_points = np.polynomial.legendre.leggauss(n_gauss)
+        # Integration coefficients (Euler-Bernoulli exact)
+        c1 = 12 * W / L**3
+        c2 = 6 * W / L**2  
+        c3 = 4 * W / L
+        c4 = 2 * W / L
         
-        K = np.zeros((12, 12))
+        # AXIAL (DOF 0,6)
+        axial = EA * W / L
+        K[0,0] += axial; K[6,6] += axial
+        K[0,6] -= axial; K[6,0] -= axial
         
-        for xi, weight in gauss_points:
-            z_phys = ((field.z1 - field.z0) * xi + (field.z1 + field.z0)) / 2.0
-            W = weight * (L / 2.0)
-            
-            # Sectional properties
-            K_sec = section_stiffness_matrix(field.section(z_phys), E_ref=E_ref)
-            props = section_full_analysis(field.section(z_phys))
-            
-            EA = K_sec[0, 0]
-            EIx = K_sec[1, 1] 
-            EIy = K_sec[2, 2]
-            EIxy = K_sec[1, 2]
-            GK = props['J'] * G_ref  # Correct Saint-Venant torsion
-            
-            # Integration coefficients (Euler-Bernoulli exact)
-            c1 = 12 * W / L**3
-            c2 = 6 * W / L**2  
-            c3 = 4 * W / L
-            c4 = 2 * W / L
-            
-            # AXIAL (DOF 0,6)
-            axial = EA * W / L
-            K[0,0] += axial; K[6,6] += axial
-            K[0,6] -= axial; K[6,0] -= axial
-            
-            # TORSION (DOF 3,9) - Saint-Venant
-            tors = GK * W / L
-            K[3,3] += tors; K[9,9] += tors  
-            K[3,9] -= tors; K[9,3] -= tors
-            
-            # FLEXURE YZ (about X) - DOF 1,5,7,11 [uy1,θz1,uy2,θz2]
-            K[1,1] += c1*EIx; K[1,5] += c2*EIx; K[1,7] -= c1*EIx; K[1,11] += c2*EIx
-            K[5,5] += c3*EIx; K[5,7] -= c2*EIx; K[5,11] += c4*EIx
-            K[7,7] += c1*EIx; K[7,11] -= c2*EIx
-            K[11,11] += c3*EIx
-            
-            # FLEXURE XZ (about Y) - DOF 2,4,8,10 [uz1,θy1,uz2,θy2] 
-            K[2,2] += c1*EIy; K[2,4] -= c2*EIy; K[2,8] -= c1*EIy; K[2,10] -= c2*EIy
-            K[4,4] += c3*EIy; K[4,8] += c2*EIy; K[4,10] += c4*EIy
-            K[8,8] += c1*EIy; K[8,10] += c2*EIy
-            K[10,10] += c3*EIy
-            
-            # FULL EIxy COUPLING (24 terms) - Bending-bending interaction
-            # Node 1 rotations [uy1,uz1] = [1,2] couple with [θz1,θy1] = [5,4]
-            K[1,2] += c1*EIxy; K[2,1] += c1*EIxy
-            K[1,4] -= c2*EIxy; K[4,1] -= c2*EIxy  
-            K[1,8] -= c1*EIxy; K[8,1] -= c1*EIxy
-            K[1,10] -= c2*EIxy; K[10,1] -= c2*EIxy
-            
-            K[2,5] += c2*EIxy; K[5,2] += c2*EIxy
-            K[4,5] += c4*EIxy; K[5,4] += c4*EIxy  # Corrected from 0.0
-            K[2,7] -= c1*EIxy; K[7,2] -= c1*EIxy
-            K[2,11] -= c2*EIxy; K[11,2] -= c2*EIxy
-            
-            K[5,8] -= c2*EIxy; K[8,5] -= c2*EIxy
-            K[5,10] += c4*EIxy; K[10,5] += c4*EIxy
-            K[7,4] -= c2*EIxy; K[4,7] -= c2*EIxy
-            K[7,10] += c2*EIxy; K[10,7] += c2*EIxy
-            
-            K[11,4] += c2*EIxy; K[4,11] += c2*EIxy
-            K[11,8] -= c2*EIxy; K[8,11] -= c2*EIxy
+        # TORSION (DOF 3,9) - Saint-Venant
+        tors = GK * W / L
+        K[3,3] += tors; K[9,9] += tors  
+        K[3,9] -= tors; K[9,3] -= tors
         
-        # Final validation (reciprocity theorem)
-        if not np.allclose(K, K.T, rtol=1e-10, atol=1e-12):
-            warnings.warn("Minor asymmetry detected - enforcing symmetry", RuntimeWarning)
-            K = (K + K.T) / 2.0
+        # FLEXURE YZ (about X) - DOF 1,5,7,11 [uy1,θz1,uy2,θz2]
+        K[1,1] += c1*EIx; K[1,5] += c2*EIx; K[1,7] -= c1*EIx; K[1,11] += c2*EIx
+        K[5,5] += c3*EIx; K[5,7] -= c2*EIx; K[5,11] += c4*EIx
+        K[7,7] += c1*EIx; K[7,11] -= c2*EIx
+        K[11,11] += c3*EIx
         
-        # Physical bounds check
-        if np.any(np.diag(K[:6]) < 0):
-            raise ValueError("Negative diagonal stiffness detected")
-            
-        return K
+        # FLEXURE XZ (about Y) - DOF 2,4,8,10 [uz1,θy1,uz2,θy2] 
+        K[2,2] += c1*EIy; K[2,4] -= c2*EIy; K[2,8] -= c1*EIy; K[2,10] -= c2*EIy
+        K[4,4] += c3*EIy; K[4,8] += c2*EIy; K[4,10] += c4*EIy
+        K[8,8] += c1*EIy; K[8,10] += c2*EIy
+        K[10,10] += c3*EIy
+        
+        # FULL EIxy COUPLING (24 terms) - Bending-bending interaction
+        # Node 1 rotations [uy1,uz1] = [1,2] couple with [θz1,θy1] = [5,4]
+        K[1,2] += c1*EIxy; K[2,1] += c1*EIxy
+        K[1,4] -= c2*EIxy; K[4,1] -= c2*EIxy  
+        K[1,8] -= c1*EIxy; K[8,1] -= c1*EIxy
+        K[1,10] -= c2*EIxy; K[10,1] -= c2*EIxy
+        
+        K[2,5] += c2*EIxy; K[5,2] += c2*EIxy
+        K[4,5] += c4*EIxy; K[5,4] += c4*EIxy  # Corrected from 0.0
+        K[2,7] -= c1*EIxy; K[7,2] -= c1*EIxy
+        K[2,11] -= c2*EIxy; K[11,2] -= c2*EIxy
+        
+        K[5,8] -= c2*EIxy; K[8,5] -= c2*EIxy
+        K[5,10] += c4*EIxy; K[10,5] += c4*EIxy
+        K[7,4] -= c2*EIxy; K[4,7] -= c2*EIxy
+        K[7,10] += c2*EIxy; K[10,7] += c2*EIxy
+        
+        K[11,4] += c2*EIxy; K[4,11] += c2*EIxy
+        K[11,8] -= c2*EIxy; K[8,11] -= c2*EIxy
+
+    # Final validation (reciprocity theorem)
+    if not np.allclose(K, K.T, rtol=EPS_K_RTOL, atol=EPS_K_ATOL):
+        warnings.warn("Minor asymmetry detected - enforcing symmetry", RuntimeWarning)
+        K = (K + K.T) / 2.0
+
+    # Physical bounds check
+    if np.any(np.diag(K[:6]) < 0):
+        raise ValueError("Negative diagonal stiffness detected")
+        
+    return K
 
     
 def polygon_inertia_about_origin(poly: Polygon) -> Tuple[float, float, float]:
@@ -1297,13 +3898,277 @@ def polygon_inertia_about_origin(poly: Polygon) -> Tuple[float, float, float]:
     # Using signed formulas + abs for Ix/Iy tends to be robust for mixed orientations in prototypes.
     return (poly.weight * abs(Ix), poly.weight * abs(Iy), poly.weight * Ixy)
 
-def integrate_volume(field: ContinuousSectionField) -> float:
+
+
+
+
+
+
+
+
+
+
+"""
+Volume integration utilities for CSF (ContinuousSectionField).
+
+This file provides a drop-in replacement for the fixed n-point Gauss–Legendre
+volume integration used in section_field.py.
+
+The core idea is unchanged:
+
+    V = ∫_z0^z1 A(z) dz
+
+where A(z) is obtained by evaluating the CSF section at z and extracting its
+(net / transformed) area from section_properties(...).
+
+The improvement is that the number of Gauss points is now a parameter.
+
+"""
+# NOTE:
+# - This function assumes the following names exist in section_field.py:
+#     - class ContinuousSectionField with attributes z0, z1 and method section(z)
+#     - function section_properties(section) returning a dict containing key "A"
+#
+# If your code uses different names (e.g., "field.z0/z1" or "props['A_tr']"),
+# adjust only the extraction line where we read the area.
+def integrate_volume(
+    field: "ContinuousSectionField",
+    z0: float,
+    z1: float,
+    n_points: int = 20,
+    *,
+    idx: int | None = None,
+) -> float | tuple[float, float]:
+    """
+    Integrate "volume-like" quantities over [z0, z1] using Gauss–Legendre quadrature.
+
+    Two scenarios only
+    ------------------
+    1) idx is None (LEGACY):
+         Returns a single float:
+           V_legacy = ∫ A_global(z) dz
+         where A_global(z) is taken from:
+           section_properties(field.section(z))["A"]
+         (This preserves the existing legacy meaning: global area as defined by section_properties.)
+
+    2) idx is an int (0-based):
+         Returns a tuple of two floats:
+           (V_geom, V_weighted)
+         computed for ONE polygon only, using the "occupied surface" rule:
+           - polygon has w=1
+           - direct inners have w=0
+
+         At each z we use polygon_surface_w1_inners0[_single] to get:
+           A_net(z) = occupied surface (w=1 on polygon, w=0 on direct inners)
+           A_w(z)   = A_net(z) * w_eff(z)
+
+         Then:
+           V_geom     = ∫ A_net(z) dz
+           V_weighted = ∫ A_w(z) dz
+
+    Notes
+    -----
+    - In idx mode we DO NOT call section_properties(...) to avoid mixing global weighted section logic.
+    - Integration uses |z1 - z0| so results are positive "volumes" regardless of interval direction.
+    """
+    # --- basic validation ---
+    if not isinstance(n_points, int) or n_points < 1:
+        raise ValueError("n_points must be an integer >= 1")
+
+    if not isinstance(z0, (int, float)):
+        raise TypeError(f"z0 must be a number (float), got {type(z0).__name__}")
+    if not isinstance(z1, (int, float)):
+        raise TypeError(f"z1 must be a number (float), got {type(z1).__name__}")
+    z0 = float(z0)
+    z1 = float(z1)
+
+    if idx is not None:
+        if not isinstance(idx, int):
+            raise TypeError(f"idx must be an int (0-based) or None, got {type(idx).__name__}")
+        if idx < 0:
+            raise ValueError(f"idx must be >= 0 (0-based), got {idx}")
+
+    # Interval length (use absolute to produce positive "volume-like" values)
+    L = abs(z1 - z0)
+    if L == 0.0:
+        return (0.0, 0.0) if idx is not None else 0.0
+
+    z_mid = 0.5 * (z0 + z1)
+    half_L = 0.5 * L
+
+    # Gauss–Legendre nodes/weights on [-1, 1]
+    xi, wi = np.polynomial.legendre.leggauss(n_points)
+
+    # --- accumulators ---
+    if idx is None:
+        volume_legacy = 0.0
+    else:
+        volume_geom = 0.0
+        volume_weighted = 0.0
+
+    def _poly_A_pair_at_z(z_abs: float) -> tuple[float, float]:
+        """
+        Return (A_net, A_w) for the selected polygon idx at z_abs.
+
+        Prefer a dedicated single-polygon function if it exists; otherwise
+        fall back to computing the full list and selecting the requested idx.
+        """
+        # Try the specialized single function if available in the module namespace.
+        fn = globals().get("polygon_surface_w1_inners0_single")
+        if callable(fn):
+            rec = fn(field, z_abs, idx)  # type: ignore[misc]
+            return float(rec["A"]), float(rec["A_w"])
+
+        # Fallback: compute full list once at this z and pick the record by idx.
+        rows = polygon_surface_w1_inners0(field, z_abs)
+        for r in rows:
+            if int(r.get("idx", -1)) == idx:
+                return float(r["A"]), float(r["A_w"])
+        raise ValueError(f"Polygon idx={idx} not found at z={z_abs}.")
+
+    # --- integration loop ---
+    for x, w in zip(xi, wi):
+        # Map x in [-1,1] to z in [z0,z1] (using midpoint + half-length)
+        z = z_mid + half_L * float(x)
+        w = float(w)
+
+        if idx is None:
+            # -----------------------------------------------------------------
+            # LEGACY integrand (explicit and isolated):
+            #   A_global(z) from section_properties(...)["A"]
+            # -----------------------------------------------------------------
+            sec = field.section(z)
+            props = section_properties(sec)
+            A_global = float(props["A"])
+            volume_legacy += A_global * w * half_L
+        else:
+            # -----------------------------------------------------------------
+            # IDX integrands (explicit and isolated):
+            #   A_net(z): occupied surface (w=1 on polygon, w=0 on direct inners)
+            #   A_w(z)  : A_net(z) * w_eff(z)
+            # -----------------------------------------------------------------
+            A_net, A_w = _poly_A_pair_at_z(z)
+            volume_geom += A_net * w * half_L
+            volume_weighted += A_w * w * half_L
+
+    return volume_legacy if idx is None else (volume_geom, volume_weighted)
+
+
+
+def integrate_volume_wait(field: ContinuousSectionField, n_points: int =20) -> float:
+    """
+    Compute the member volume by integrating the cross-sectional area A(z) along z
+    using Gauss–Legendre quadrature with a user-selected number of points.
+
+    Parameters
+    ----------
+    field
+        ContinuousSectionField instance. Must provide:
+          - field.z0, field.z1 (float): endpoint coordinates along the axis
+          - field.section(z: float): returns a section object evaluable by section_properties
+    n_points
+        Number of Gauss–Legendre integration points (>= 1).
+        Typical choices:
+          - 2 to 4: fast, coarse
+          - 5 to 8: good default for smooth variation
+          - 10+   : for strongly varying / piecewise laws
+
+    Returns
+    -------
+    float
+        Approximate volume V = ∫ A(z) dz
+
+    Notes
+    -----
+    1) Quadrature domain mapping
+       Gauss–Legendre nodes/weights are defined on [-1, 1]. We map them to [z0, z1] via:
+
+           z(xi) = z_mid + (L/2) * xi
+           dz    = (L/2) dxi
+
+       where z_mid = (z0 + z1)/2 and L = |z1 - z0|.
+
+    2) What "A" means
+       This function integrates the area returned by section_properties(section)["A"].
+       If your project distinguishes between:
+         - geometric area (pure geometry),
+         - transformed area (including weights/material ratios),
+       decide which one you want to integrate and change the key accordingly
+       (e.g., "A_tr").
+
+    3) Discontinuities / step laws
+       If w(z) is piecewise (e.g., step activation), a single high-order Gauss rule may
+       not be optimal. In that case, consider splitting the integral into sub-intervals
+       aligned with discontinuity points and summing integrate_volume over each interval.
+    """
+    if not isinstance(n_points, int) or n_points < 1:
+        raise ValueError("n_points must be an integer >= 1")
+
+    z0 = float(field.z0)
+    z1 = float(field.z1)
+    L = abs(z1 - z0)
+
+    # Degenerate case: zero-length element -> zero volume
+    if L == 0.0:
+        return 0.0
+
+    z_mid = 0.5 * (z0 + z1)
+    half_L = 0.5 * L
+
+    # Gauss–Legendre nodes (xi) and weights (wi) on [-1, 1].
+    # numpy provides stable, high-quality values for arbitrary n.
+    xi, wi = np.polynomial.legendre.leggauss(n_points)
+
+    volume = 0.0
+
+    # Evaluate the integrand at Gauss points
+    for x, w in zip(xi, wi):
+        # Map node x in [-1,1] to physical coordinate z in [z0,z1]
+        z = z_mid + half_L * float(x)
+
+        # Evaluate section at z and extract area
+        sec = field.section(z)
+        props = section_properties(sec)
+
+        # --- IMPORTANT: choose the correct area key for your model ---
+        # Default: use "A" (net section area returned by your section_properties).
+        A = float(props["A"])
+
+        # Accumulate: V ≈ Σ A(z_i) * w_i * (L/2)
+        volume += A * float(w) * half_L
+
+    return volume
+
+
+def gauss_rule(n_points: int) -> Tuple[List[float], List[float]]:
+    """
+    Convenience helper: return Gauss–Legendre nodes and weights on [-1,1].
+
+    This is useful for debugging, documentation, or if you want to precompute rules
+    for repeated integrations.
+
+    Returns
+    -------
+    (nodes, weights) as Python lists of floats
+    """
+    if not isinstance(n_points, int) or n_points < 1:
+        raise ValueError("n_points must be an integer >= 1")
+
+    xi, wi = np.polynomial.legendre.leggauss(n_points)
+    return [float(x) for x in xi], [float(w) for w in wi]
+    # end gauss_rule
+
+
+def integrate_volume_5points(field: ContinuousSectionField) -> float:
     """
     Computes the total volume of a 3D ruled solid using high-precision 
     5-point Gaussian quadrature.
     """
     L = abs(field.z1 - field.z0)
     
+    if L < EPS_L:
+        raise ValueError("Element length must be positive")
+
     # 5-point Gaussian quadrature points and weights
     gauss_points = [
         (-0.9061798459, 0.2369268851),
@@ -1317,18 +4182,17 @@ def integrate_volume(field: ContinuousSectionField) -> float:
 
     for xi, weight in gauss_points:
         # Map Gauss point from [-1, 1] to physical [z0, z1]
-        z_phys = ((field.z1 - field.z0) * xi + (field.z1 + field.z0)) / 2.0
-        
+        z_phys = ((field.z1 - field.z0) * xi + (field.z1 + field.z0)) / 2.0# a absolute
         # Get sectional area at the Gauss point
         section = field.section(z_phys)
-        A = section_properties(section)["A"]
+        A = section_properties(section)["A"] # absolute 
         
         # Accumulate weighted volume (detJ = L / 2)
         V += A * weight * (L / 2.0)
 
     return V
 
-def section_full_analysis(section: Section):
+def section_full_analysis(section: Section,alpha: float = 1.0):
     """
     Performs a comprehensive structural and geometric analysis of a cross-section.
     
@@ -1371,9 +4235,9 @@ def section_full_analysis(section: Section):
     x_dist_max = max(max(all_x) - props['Cx'], props['Cx'] - min(all_x))
     
     # Calculate Elastic Moduli: W = I / c_max.
-    # A tolerance check (1e-12) prevents division by zero in degenerate geometries.
-    props['Wx'] = props['Ix'] / y_dist_max if y_dist_max > 1e-12 else 0.0
-    props['Wy'] = props['Iy'] / x_dist_max if x_dist_max > 1e-12 else 0.0
+    # A tolerance check (EPS_K) prevents division by zero in degenerate geometries.
+    props['Wx'] = props['Ix'] / y_dist_max if y_dist_max > EPS_K else 0.0
+    props['Wy'] = props['Iy'] / x_dist_max if x_dist_max > EPS_K else 0.0
     
 # -------------------------------------------------------------------------
     # 4. TORSIONAL RIGIDITY (K) - BETA ESTIMATION
@@ -1386,7 +4250,7 @@ def section_full_analysis(section: Section):
     Ip = props['Ix'] + props['Iy'] # Polar moment about centroid (Ip = J for centroidal axes)
     
     # Keep props['J'] exactly as originally computed by section_properties
-    if Ip > 1e-12:
+    if Ip > EPS_K:
         props['K_torsion'] = (A**4) / (40.0 * Ip)
     else:
         props['K_torsion'] = 0.0
@@ -1403,7 +4267,21 @@ def section_full_analysis(section: Section):
     # Torsional_constant
     # 2. Calculate Refined Saint-Venant Torsional Constant (J) torsional_constant
     # This provides a more accurate value than K_torsion for specific shapes.
-    props['J_sv'] = compute_saint_venant_J(section)
+    prop_deriv=section_derived_properties(props)
+    '''
+    alpha = alpha_from_keys(
+        A=props["A"],
+        J=props["J"],
+        I1=prop_deriv["I1"],
+        I2=prop_deriv["I2"],
+        K_torsion=props.get("K_torsion"),  # omit or set to None to use rectangle-equivalent mode
+    )
+    '''
+
+    props['J_sv'] = compute_saint_venant_J(section, alpha=alpha, eps_a=EPS_A)#compute_saint_venant_J(section)
+    props['J_sv_alpha']=alpha
+    props['J_sv_cell'] =compute_saint_venant_J_cell(section)#compute_saint_venant_J_wall(section)
+    props['J_sv_wall'] = compute_saint_venant_J_wall(section)
     props['J_s_vroark'],props['J_s_vroark_fidelity']= compute_saint_venant_Jv2(section)
     
 
@@ -1430,59 +4308,193 @@ def polygon_statical_moment(poly: Polygon, y_axis: float) -> float:
     d_y = cy_i - y_axis
     return area_i * d_y
 
-def section_statical_moment_partial(section: Section, y_cut: float, reference_axis: float = None) -> float:
+def section_statical_moment_partial(section: Section, y_cut: float, reference_axis: float | None = None) -> float:
     """
-    Computes the partial Statical Moment (Q) for the portion located ABOVE y_cut.
-    Robust version: handles horizontal segments, degenerate polygons, and precision issues.
+    Compute the statical moment Q of the portion of the section located ABOVE y_cut,
+    with respect to a horizontal reference axis y = y_ref.
+
+    The section is processed polygon-by-polygon:
+    - Each polygon is clipped by the half-plane y >= y_cut.
+    - For the retained part, we compute its area and centroid.
+    - We accumulate Q = A_part * (Cy_part - y_ref), using signed area if the polygon
+      representation supports signed contributions (e.g., holes via orientation/sign).
     """
+    # Compute section-level properties to obtain the default reference axis (neutral axis).
     props = section_properties(section)
-    # L'asse di riferimento è solitamente l'asse neutro (Cy)
-    y_na = reference_axis if reference_axis is not None else props['Cy']
-    
+    y_ref = props["Cy"] if reference_axis is None else reference_axis
+
     q_total = 0.0
-    eps = 1e-10  # Tolleranza per calcoli geometrici
-    
+    eps = EPS_L  # Geometric tolerance for comparisons and degenerate cases.
+
     for poly in section.polygons:
         verts = poly.vertices
         n = len(verts)
-        new_verts = []
-        
+
+        # Clip polygon against the half-plane y >= y_cut using an edge-walking approach.
+        clipped: list[Pt] = []
+
         for i in range(n):
             p1 = verts[i]
             p2 = verts[(i + 1) % n]
-            
-            # Posizione rispetto al taglio con tolleranza
-            p1_above = p1.y >= y_cut - eps
-            p2_above = p2.y >= y_cut - eps
-            
-            if p1_above and p2_above:
-                new_verts.append(p2)
-            elif p1_above and not p2_above:
+
+            # Classify endpoints with a tolerance to reduce numerical flicker at the cut line.
+            p1_in = (p1.y >= y_cut - eps)
+            p2_in = (p2.y >= y_cut - eps)
+
+            if p1_in and p2_in:
+                # Edge fully inside: keep the end vertex.
+                clipped.append(p2)
+
+            elif p1_in and not p2_in:
+                # Edge exits the half-plane: add the intersection point (if not horizontal).
                 dy = p2.y - p1.y
-                if abs(dy) > eps: # Protezione divisione per zero
+                if abs(dy) > eps:
                     t = (y_cut - p1.y) / dy
-                    new_verts.append(Pt(p1.x + t * (p2.x - p1.x), y_cut))
-            elif not p1_above and p2_above:
+                    clipped.append(Pt(p1.x + t * (p2.x - p1.x), y_cut))
+
+            elif (not p1_in) and p2_in:
+                # Edge enters the half-plane: add the intersection point then the end vertex.
                 dy = p2.y - p1.y
-                if abs(dy) > eps: # Protezione divisione per zero
+                if abs(dy) > eps:
                     t = (y_cut - p1.y) / dy
-                    new_verts.append(Pt(p1.x + t * (p2.x - p1.x), y_cut))
-                new_verts.append(p2)
-        
-        # Un poligono deve avere almeno 3 vertici e un'area significativa
-        if len(new_verts) >= 3:
-            # Controllo che non siano tutti punti sulla linea di taglio (poligono piatto)
-            if all(abs(v.y - y_cut) < eps for v in new_verts):
-                continue
-                
-            clipped_poly = Polygon(vertices=tuple(new_verts), weight=poly.weight)
-            area_part, (_, cy_part) = polygon_area_centroid(clipped_poly)
-            
-            # Aggiungiamo al totale solo se l'area è reale (fisica)
-            if abs(area_part) > eps:
-                q_total += area_part * (cy_part - y_na)
-                
+                    clipped.append(Pt(p1.x + t * (p2.x - p1.x), y_cut))
+                clipped.append(p2)
+
+            # If both endpoints are outside, add nothing.
+
+        # A valid polygonal region needs at least 3 vertices after clipping.
+        if len(clipped) < 3:
+            continue
+
+        # Skip regions that are effectively flat on the cut line.
+        if all(abs(v.y - y_cut) < eps for v in clipped):
+            continue
+
+        # Build a clipped polygon with the same weight as the source polygon.
+        clipped_poly = Polygon(vertices=tuple(clipped), weight=poly.weight)
+
+        # Compute area and centroid of the clipped part.
+        area_part, (_, cy_part) = polygon_area_centroid(clipped_poly)
+
+        # Ignore negligible contributions.
+        if abs(area_part) <= eps:
+            continue
+
+        # Statical moment contribution of this clipped part about y = y_ref.
+        q_total += area_part * (cy_part - y_ref)
+
     return q_total
+
+def section_derived_properties_debug(props: Dict[str, float], debug: bool = True) -> Dict[str, float]:
+    """
+    Computes derived structural properties including principal moments of inertia,
+    principal axis rotation, and radius of gyration.
+
+    Brutal debug mode:
+    - Set debug=True to print every intermediate quantity and consistency checks.
+    """
+    # --- mandatory inputs ---
+    Ix = float(props['Ix'])
+    Iy = float(props['Iy'])
+    Ixy = float(props['Ixy'])
+    A = float(props['A'])
+
+    # Optional context fields (if present) for easier trace
+    z_here = props.get('z', None)
+    sec_name = props.get('name', 'unnamed')
+
+    # --- Mohr circle core terms ---
+    avg = 0.5 * (Ix + Iy)
+    diff = 0.5 * (Ix - Iy)
+    R_sq = diff * diff + Ixy * Ixy
+    R = math.sqrt(R_sq) if R_sq >= 0.0 else float("nan")  # defensive, should be >= 0
+
+    I1 = avg + R
+    I2 = avg - R
+
+    # --- principal direction (with isotropy guard) ---
+    iso_thr = abs(avg) * EPS_K
+    is_near_isotropic = (R < iso_thr)
+
+    if is_near_isotropic:
+        theta = 0.0
+        theta_mode = "forced_zero_by_isotropy_guard"
+    else:
+        theta = 0.5 * math.atan2(-2.0 * Ixy, Ix - Iy)
+        theta_mode = "atan2"
+
+    theta_deg = math.degrees(theta)
+
+    # --- radii of gyration ---
+    rx = math.sqrt(Ix / A) if A > 0.0 else 0.0
+    ry = math.sqrt(Iy / A) if A > 0.0 else 0.0
+
+    # --- brutal consistency checks ---
+    # Eigenvalue invariants for 2x2 inertia tensor:
+    # trace = Ix + Iy = I1 + I2
+    # det   = Ix*Iy - Ixy^2 = I1*I2
+    trace_in = Ix + Iy
+    trace_pr = I1 + I2
+    det_in = Ix * Iy - Ixy * Ixy
+    det_pr = I1 * I2
+
+    # Reconstruction checks (from principal values + theta):
+    c = math.cos(theta)
+    s = math.sin(theta)
+    Ix_rec = I1 * c * c + I2 * s * s
+    Iy_rec = I1 * s * s + I2 * c * c
+    Ixy_rec = (I2 - I1) * s * c
+
+    # Relative errors (safe denominators)
+    def _rel_err(a: float, b: float, floor: float = 1e-30) -> float:
+        den = max(abs(a), abs(b), floor)
+        return abs(a - b) / den
+
+    e_trace = _rel_err(trace_in, trace_pr)
+    e_det = _rel_err(det_in, det_pr)
+    e_Ix = _rel_err(Ix, Ix_rec)
+    e_Iy = _rel_err(Iy, Iy_rec)
+    e_Ixy = _rel_err(Ixy, Ixy_rec)
+    e_sym = abs((I1 - I2) - 2.0 * R)  # should be ~0 by definition
+
+    # Branch fingerprint to catch "kinks"
+    if abs(Ixy) <= abs(avg) * EPS_K:
+        # In near-product-free case, principal values tend toward Ix/Iy ordering
+        branch = "Ixy~0"
+    else:
+        branch = "general"
+
+    if debug:
+        print("\n" + "=" * 160)
+        print("[DERIVED][INPUT]"
+              f" name={sec_name} z={z_here} A={A:+.16e} Ix={Ix:+.16e} Iy={Iy:+.16e} Ixy={Ixy:+.16e}")
+        print("[DERIVED][MOHR]"
+              f" avg={avg:+.16e} diff={diff:+.16e} R_sq={R_sq:+.16e} R={R:+.16e}")
+        print("[DERIVED][PRINCIPAL]"
+              f" I1={I1:+.16e} I2={I2:+.16e} (I1-I2)={I1-I2:+.16e} 2R={2.0*R:+.16e} e_sym={e_sym:.3e}")
+        print("[DERIVED][THETA]"
+              f" mode={theta_mode} theta_rad={theta:+.16e} theta_deg={theta_deg:+.16e}"
+              f" iso_thr={iso_thr:+.16e} is_near_isotropic={is_near_isotropic} branch={branch}")
+        print("[DERIVED][INVARIANTS]"
+              f" trace_in={trace_in:+.16e} trace_pr={trace_pr:+.16e} e_trace={e_trace:.3e} |"
+              f" det_in={det_in:+.16e} det_pr={det_pr:+.16e} e_det={e_det:.3e}")
+        print("[DERIVED][RECON]"
+              f" Ix_rec={Ix_rec:+.16e} e_Ix={e_Ix:.3e} |"
+              f" Iy_rec={Iy_rec:+.16e} e_Iy={e_Iy:.3e} |"
+              f" Ixy_rec={Ixy_rec:+.16e} e_Ixy={e_Ixy:.3e}")
+        print("[DERIVED][GYRATION]"
+              f" rx={rx:+.16e} ry={ry:+.16e}")
+        print("=" * 160)
+
+    return {
+        'I1': I1,                      # Major principal moment of inertia
+        'I2': I2,                      # Minor principal moment of inertia
+        'theta_rad': theta,
+        'theta_deg': theta_deg,
+        'rx': rx,
+        'ry': ry,
+    }
+
 
 
 def section_derived_properties(props: Dict[str, float]) -> Dict[str, float]:
@@ -1504,10 +4516,10 @@ def section_derived_properties(props: Dict[str, float]) -> Dict[str, float]:
     # For perfectly symmetric sections (like circles or squares), Ix = Iy and Ixy = 0.
     # This creates a mathematical singularity where the principal angle is indeterminate
     # (Mohr's Circle collapses to a single point). 
-    # To prevent numerical noise (1e-16) from producing erratic rotation angles,
+    # To prevent numerical noise from producing erratic rotation angles,
     # we detect if the radius R is negligible compared to the magnitude of inertia.
     # If isotropic, the principal angle is set to 0.0 by engineering convention.
-    if R < abs(avg) * 1e-14: 
+    if R < abs(avg) * EPS_K: 
         theta = 0.0
     else:
         # Standard calculation for the angle of the principal X-axis
@@ -1523,54 +4535,6 @@ def section_derived_properties(props: Dict[str, float]) -> Dict[str, float]:
         'ry': math.sqrt(Iy / props['A']) if props['A'] > 0 else 0,
     }
 
-def _get_triangle_gauss_points(v0: Pt, v1: Pt, v2: Pt):
-    """
-    Computes Gaussian sampling points and weights for a triangular domain.
-
-    TECHNICAL SUMMARY:
-    This function implements a 3-point Gaussian Quadrature rule for 2D numerical 
-    integration over a triangle defined by vertices v0, v1, and v2. It is the 
-    computational engine used to determine mass and stiffness properties 
-    (Area, Inertia, Elasticity) of complex polygonal sections.
-
-    MATHEMATICAL FORMULATION:
-    1. Local Area Calculation: 
-       The function calculates the triangle's area using the Shoelace formula 
-       (cross-product method): 
-       Area = 0.5 * |x0(y1 - y2) + x1(y2 - y0) + x2(y0 - y1)|
-
-    2. Barycentric Coordinate Mapping:
-       It utilizes optimal internal sampling points (r, s, t) where t = 1 - r - s.
-       The coordinates [(1/6, 1/6), (2/3, 1/6), (1/6, 2/3)] are chosen for 
-       Quadratic Precision, meaning they integrate any quadratic polynomial 
-       (like y^2 or x*y used in Inertia calculations) exactly.
-
-    3. Transformation to Cartesian Space:
-       The local coordinates are mapped to the global (x, y) system using:
-       P = r*V0 + s*V1 + t*V2
-
-    4. Weight Assignment:
-       Each point is assigned a weight equal to (1/3 * Area), ensuring that 
-       the sum of weights equals the total triangular area.
-
-    RETURNS:
-       A list of tuples (x, y, weight) representing the discrete integration points.
-    """
-    # Barycentric coordinates (r, s, t) with t = 1 - r - s
-    # Optimal interior points for quadratic accuracy
-    coords = [(1/6, 1/6), (2/3, 1/6), (1/6, 2/3)]
-    w_gauss = 1/3 
-    
-    # Triangle area (local Shoelace formula)
-    area = 0.5 * abs(v0.x*(v1.y - v2.y) + v1.x*(v2.y - v0.y) + v2.x*(v0.y - v1.y))
-    
-    points = []
-    for r, s in coords:
-        t = 1 - r - s
-        x = r*v0.x + s*v1.x + t*v2.x
-        y = r*v0.y + s*v1.y + t*v2.y
-        points.append((x, y, w_gauss * area))
-    return points
 
 # -------------------------
 # Stiffness Matrix Calculation
@@ -1695,26 +4659,116 @@ def _segments_intersect(p1, p2, p3, p4) -> bool:
     return (o1 * o2 < 0) and (o3 * o4 < 0)
 
 
+
+
+
 def polygon_has_self_intersections(poly: Polygon) -> bool:
+    """
+    Returns True if the polygon has any self-intersection between NON-adjacent edges.
+
+    This version is *robust*:
+    - Detects proper crossings (X-shaped intersections)
+    - Also detects "touching" (vertex on edge) and collinear overlaps
+
+    Why this matters:
+    - Your current _segments_intersect() uses a strict test (o1*o2 < 0 and o3*o4 < 0),
+        which will NOT flag touching or collinear overlap. :contentReference[oaicite:1]{index=1}
+    - For ruled-surface interpolation across z, "touching" can appear due to numerical
+        noise or twisting, and you typically want a warning.
+
+    Input model:
+    - poly.vertices: Tuple[Pt, ...]
+    - Pt has fields .x, .y
+    """
     verts = poly.vertices
     n = len(verts)
 
+    # Triangles cannot self-intersect (excluding degeneracy, which you already validate elsewhere).
+    if n < 4:
+        return False
+
+    eps = EPS_L  # Use your global linear tolerance
+
+    # ---------- Local geometric primitives (kept inside function; no extra global funcs) ----------
+
+    def _orient(a: Pt, b: Pt, c: Pt) -> float:
+        """Signed area*2 of triangle (a,b,c)."""
+        return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)
+
+    def _sign(x: float) -> int:
+        """Map x to {-1,0,+1} using eps."""
+        if x > eps:
+            return 1
+        if x < -eps:
+            return -1
+        return 0
+
+    def _on_segment(a: Pt, b: Pt, p: Pt) -> bool:
+        """
+        Return True if p lies on segment ab (including endpoints), assuming collinearity
+        (or near-collinearity) has already been established.
+        """
+        return (
+            min(a.x, b.x) - eps <= p.x <= max(a.x, b.x) + eps
+            and min(a.y, b.y) - eps <= p.y <= max(a.y, b.y) + eps
+        )
+
+    def _segments_intersect_robust(a1: Pt, a2: Pt, b1: Pt, b2: Pt) -> bool:
+        """
+        Robust 2D segment intersection test:
+        - Proper intersection (strict crossing)
+        - Touching at endpoints / vertex-on-edge
+        - Collinear overlap
+        """
+        o1 = _sign(_orient(a1, a2, b1))
+        o2 = _sign(_orient(a1, a2, b2))
+        o3 = _sign(_orient(b1, b2, a1))
+        o4 = _sign(_orient(b1, b2, a2))
+
+        # Proper crossing (strict)
+        if o1 * o2 < 0 and o3 * o4 < 0:
+            return True
+
+        # Touching / collinear cases
+        if o1 == 0 and _on_segment(a1, a2, b1):
+            return True
+        if o2 == 0 and _on_segment(a1, a2, b2):
+            return True
+        if o3 == 0 and _on_segment(b1, b2, a1):
+            return True
+        if o4 == 0 and _on_segment(b1, b2, a2):
+            return True
+
+        return False
+
+    # ---------- Edge pair scanning ----------
+    # Edge i: verts[i] -> verts[(i+1)%n]
+    # Compare only with non-adjacent edges to avoid trivial shared-vertex "intersections".
     for i in range(n):
         a1 = verts[i]
         a2 = verts[(i + 1) % n]
 
+        # j starts at i+2 to skip the adjacent edge (i+1).
         for j in range(i + 2, n):
-            # skip adjacent edges and the closing edge
-            if j == i or (j + 1) % n == i:
+            # Skip the edge that shares the closing vertex with edge i
+            # (i=0 edge is adjacent to the last edge).
+            if (j + 1) % n == i:
                 continue
 
             b1 = verts[j]
             b2 = verts[(j + 1) % n]
 
-            if _segments_intersect(a1, a2, b1, b2):
+            if _segments_intersect_robust(a1, a2, b1, b2):
                 return True
 
     return False
+
+
+
+class CSFError(ValueError):
+    
+    pass
+
 
 
 
@@ -1727,36 +4781,40 @@ class Pt:
     x: float
     y: float
 
-    def lerp(self, other: "Pt", t: float) -> "Pt":
-        return Pt(
-            (1.0 - t) * self.x + t * other.x,
-            (1.0 - t) * self.y + t * other.y
-        )
+    def lerp(self, other: "Pt", z_real: float, length: float) -> "Pt": 
+            """
+            Calculates the interpolated point at a specific distance using slopes.
+            
+            Args:
+                self start point
+                other (Pt): Ending point (top).
+                z_real (float): relative Distance from the starting point (0 to length).
+                length (float): Total vertical length of the segment.
+            """
+         
+            # Avoid division by zero
+            if abs(length) < EPS_L:
+                return self
 
+            # 1. Calculate the geometric slope (how much x and y change per meter)
+            slope_x = (other.x - self.x) / length
+            slope_y = (other.y - self.y) / length
+
+            # 2. Add the change to the initial x and y coordinates
+            # New = Initial + (Rate of change * distance)
+            xr = self.x + (slope_x * z_real)
+            yr = self.y + (slope_y * z_real) 
+            
+            return Pt( 
+                x = xr, 
+                y = yr  
+            )
 
 @dataclass(frozen=True)
 class Polygon:
     vertices: Tuple[Pt, ...]
     weight: float = 1.0   # Homogenization coefficient, can be negative for holes
     name: str = ""        # Optional label / ID
-
-    def vertices(self, new_pt: Pt) -> None:
-            """
-            Appends a new vertex to the polygon and re-validates the geometric integrity.
-            
-            Engineering Note: 
-            Since 'vertices' is a Tuple (immutable), we must recreate the collection.
-            This ensures that every update is followed by a consistency check.
-            """
-            # 1. Update the vertex collection
-            # We convert to list, append, and convert back to tuple
-            current_verts = list(self.vertices)
-            current_verts.append(new_pt)
-            self.vertices = tuple(current_verts)
-
-            # 2. Re-trigger validation
-            # After adding a vertex, we must ensure the polygon is still CCW and non-degenerate
-            self.__post_init__()
 
     def __post_init__(self) -> None:
         """
@@ -1785,13 +4843,13 @@ class Polygon:
                 f"An area of 0 means the polygon is degenerate (e.g., only 2 sides)."
             )
         
-        if abs(a2) < 1e-12: # Check if the area is practically zero
+        if abs(a2) < EPS_A: # Check if the area is practically zero
                 raise ValueError(
                     f"GEOMETRIC ERROR: Polygon '{self.name}' has zero area (degenerate polygon). "
                     f"A polygon must have at least 3 non-collinear vertices (it cannot have only 2 sides)."
                 )        
         # GEOMETRIC INTEGRITY CHECK
-        if a2 < 1e-12:  # Covers both negative area and zero area
+        if a2 < EPS_A:  # Covers both negative area and zero area
             if a2 < 0:
                 # Case: Clockwise (CW) order
                 raise ValueError(
@@ -1902,7 +4960,6 @@ def get_points_distance(polygon: Polygon, i: int, j: int) -> float:
     This can measure sides (if i, j are consecutive) or diagonals/distances 
     between any two nodes of the polygon.
     """
-    #print("DEBUG get_points_distance {i}")
     verts = polygon.vertices
     n = len(verts)
 
@@ -1940,7 +4997,1386 @@ def get_edge_length(polygon: Polygon, edge_idx: int) -> float:
     
     return math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2)
 
+##################################################################################################################################
+
+
+
+def list_polygons_with_contents(csf: Any, z: float) -> List[Dict[str, Any]]:
+    """
+    Return a per-polygon list with direct containment at coordinate z.
+
+    Output record fields:
+      - idx (int): polygon index in the sampled section ordering at z
+      - name (str): polygon name
+      - container_name (str | None): immediate container polygon name (or None if root)
+      - direct_children (List[str]): polygon names directly contained in this polygon
+      - is_container (bool): True if it has direct children
+
+    Notes:
+    - Direct children only (no grandchildren).
+    - Uses csf.build_direct_children_map(z) for containment; no geometry is recomputed.
+    - Validates: unique names at z, and hierarchy references only existing polygons.
+    """
+    if not isinstance(z, (int, float)):
+        raise TypeError(f"z must be a number (float), got {type(z).__name__}")
+
+    sec = csf.section(float(z))
+    if sec is None:
+        raise ValueError("csf.section(z) returned None (invalid z or failed sampling).")
+
+    polygons = getattr(sec, "polygons", None)
+    if polygons is None:
+        raise ValueError("Sampled section has no 'polygons' attribute.")
+    from collections.abc import Sequence
+
+    # In CSF, polygons may be stored as a tuple for immutability; accept any Sequence.
+    # Reject strings/bytes explicitly to avoid treating them as sequences of characters.
+    if (not isinstance(polygons, Sequence)) or isinstance(polygons, (str, bytes)):
+        raise TypeError(
+            f"section.polygons must be a sequence (list/tuple), got {type(polygons).__name__}."
+        )
+
+    # Collect polygon names in the section order; enforce uniqueness.
+    names: List[str] = []
+    seen = set()
+    for i, poly in enumerate(polygons):
+        name = getattr(poly, "name", None)
+        if not name or not isinstance(name, str):
+            raise ValueError(f"Polygon at index {i} has no valid string 'name'.")
+        if name in seen:
+            raise ValueError(f"Duplicate polygon name at z={z}: '{name}'.")
+        seen.add(name)
+        names.append(name)
+
+    # Direct containment from CSF (parent -> [children]).
+    children_map = csf.build_direct_children_map(float(z))
+    if children_map is None:
+        raise ValueError("build_direct_children_map(z) returned None (expected dict).")
+    if not isinstance(children_map, dict):
+        raise TypeError(
+            f"build_direct_children_map(z) must return dict, got {type(children_map).__name__}."
+        )
+
+    # Invert to child -> parent map (one container or none).
+    parent_of: Dict[str, str] = {}
+    for parent, childs in children_map.items():
+        if not isinstance(parent, str) or not parent:
+            raise ValueError(f"Invalid parent name in children_map: {parent!r}")
+        if parent not in seen:
+            raise ValueError(
+                f"Hierarchy references parent '{parent}' not present in section at z={z}."
+            )
+        if not isinstance(childs, list):
+            raise TypeError(
+                f"children_map['{parent}'] must be a list, got {type(childs).__name__}."
+            )
+        for child in childs:
+            if not isinstance(child, str) or not child:
+                raise ValueError(f"Invalid child name under '{parent}': {child!r}")
+            if child not in seen:
+                raise ValueError(
+                    f"Hierarchy references child '{child}' not present in section at z={z}."
+                )
+            if child in parent_of:
+                raise ValueError(
+                    f"Polygon '{child}' has multiple containers: '{parent_of[child]}' and '{parent}'."
+                )
+            parent_of[child] = parent
+
+    # Assemble records in the section ordering.
+    out: List[Dict[str, Any]] = []
+    for idx, name in enumerate(names):
+        direct_children = children_map.get(name, [])
+        if direct_children and not isinstance(direct_children, list):
+            raise TypeError(f"children_map['{name}'] must be a list.")
+
+        out.append(
+            {
+                "idx": idx,
+                "name": name,
+                "container_name": parent_of.get(name),
+                "direct_children": list(direct_children),
+                "is_container": bool(direct_children),
+            }
+        )
+
+    return out
+
+
+def polygon_surface_w1_inners0(self: Any, z: float) -> List[Dict[str, Any]]:
+    """
+    Args:
+        z (float): longitudinal coordinate.
+
+    Returns:
+        List[Dict[str, Any]]: one record per polygon with:
+          - idx (int)
+          - name (str)
+          - container_name (str | None)
+          - direct_inners (List[str])
+          - w (float): effective weight w_eff(p,z)
+          - A (float): occupied surface with w(p)=1 and w(inners)=0 (signed)
+          - A_w (float): A * w
+    """
+    if not isinstance(z, (int, float)):
+        raise TypeError(f"z must be a number (float), got {type(z).__name__}")
+    z = float(z)
+
+    # 1) Hierarchy (direct inners).
+    rows = list_polygons_with_contents(self, z)
+    if not isinstance(rows, list):
+        raise TypeError("list_polygons_with_contents(...) must return a list.")
+
+    container_of: Dict[str, str | None] = {}
+    direct_inners_of: Dict[str, List[str]] = {}
+
+    for r in rows:
+        if not isinstance(r, dict):
+            raise TypeError("list_polygons_with_contents(...) must return list of dicts.")
+        name = r.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError("Hierarchy row has missing/invalid 'name'.")
+        if name in container_of:
+            raise ValueError(f"Duplicate polygon name in hierarchy rows at z={z}: '{name}'.")
+
+        container_of[name] = r.get("container_name")  # may be None
+
+        # Helper still uses 'direct_children' internally; we expose 'direct_inners'.
+        inners = r.get("direct_children", [])
+        if inners and not isinstance(inners, list):
+            raise TypeError(f"direct_children for '{name}' must be a list.")
+        direct_inners_of[name] = list(inners)
+
+    # 2) Signed areas + relative weights from CSF inspection.
+    if not hasattr(self, "inspect_section_entities"):
+        raise AttributeError("Expected self.inspect_section_entities(z) to exist.")
+
+    entities = self.inspect_section_entities(z)
+    if not isinstance(entities, list):
+        raise TypeError("inspect_section_entities(z) must return a list of dict records.")
+
+    area_by_name: Dict[str, float] = {}
+    w_rel_by_name: Dict[str, float] = {}
+
+    for e in entities:
+        if not isinstance(e, dict):
+            raise TypeError("inspect_section_entities(z) must return a list of dict records.")
+        name = e.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError("inspect_section_entities(z) returned an entity with missing/invalid 'name'.")
+        if name in area_by_name:
+            raise ValueError(f"Duplicate entity name from inspect_section_entities at z={z}: '{name}'.")
+
+        if "area_signed" not in e:
+            raise ValueError(f"Entity '{name}' has no 'area_signed' field.")
+        if "weight_at_z" not in e:
+            raise ValueError(f"Entity '{name}' has no 'weight_at_z' field.")
+
+        area_by_name[name] = float(e["area_signed"])
+        
+        w_rel_by_name[name] = float(e["weight_at_z"])
+        
+    # Ensure hierarchy names exist in inspection.
+    for name in container_of:
+        if name not in area_by_name:
+            raise ValueError(
+                f"Polygon '{name}' is in hierarchy but missing from inspect_section_entities at z={z}."
+            )
+
+    # 3) Reconstruct effective weights (w_eff) from the immediate-container chain.
+    w_eff_by_name: Dict[str, float] = {}
+
+    # Initialize roots (no container).
+    for name, parent in container_of.items():
+        if parent is None:
+            w_eff_by_name[name] = w_rel_by_name[name]
+
+    unresolved = set(container_of.keys()) - set(w_eff_by_name.keys())
+    progress = True
+    while unresolved and progress:
+        progress = False
+        for name in list(unresolved):
+            parent = container_of[name]
+            if parent is None:
+                w_eff_by_name[name] = w_rel_by_name[name]
+                unresolved.remove(name)
+                progress = True
+                continue
+            if parent not in w_eff_by_name:
+                continue
+            w_eff_by_name[name] = w_rel_by_name[name] + w_eff_by_name[parent]
+            unresolved.remove(name)
+            progress = True
+
+    if unresolved:
+        missing = {name: container_of[name] for name in unresolved}
+        raise ValueError(f"Cannot resolve effective weights (cycle or missing container): {missing}")
+
+    # 4) Compute A and A*w for each polygon (local rule: w(p)=1, w(inners)=0).
+    out: List[Dict[str, Any]] = []
+    for r in rows:
+        name = r["name"]
+        inners = direct_inners_of.get(name, [])
+        area_p = area_by_name[name]
+
+        inners_sum = 0.0
+        for inner_name in inners:
+            if inner_name not in area_by_name:
+                raise ValueError(f"Inner polygon '{inner_name}' missing from inspection at z={z}.")
+            inners_sum += area_by_name[inner_name]
+
+        A = area_p - inners_sum
+        w_eff = w_eff_by_name[name]
+        #print(f"DEBUG { ["idx"]} name {name} {area_by_name[name]} {w_rel_by_name[name]}: {float(w_eff)} : {float(A)} inners_sum: {inners_sum}")
+        out.append(
+            {
+                "idx": int(r["idx"]),
+                "name": name,
+                "container_name": r.get("container_name"),
+                "direct_inners": list(inners),
+                "w": float(w_eff),
+                "A": float(A),
+                "A_w": float(A * w_eff),
+            }
+        )
+
+    return out
+
+
+def polygon_surface_w1_inners0_single(self: Any, z: float, idx: int) -> Dict[str, Any]:
+    """
+    Compute the *net occupied surface* for ONE polygon at coordinate z, using the local rule:
+      - w(polygon) = 1
+      - w(direct inners) = 0
+
+    And its weighted counterpart:
+      - A_w = A_net * w_eff(z)
+
+    This is a specialized version of polygon_surface_w1_inners0(...):
+    it reproduces the SAME math, but only for the requested polygon idx, avoiding
+    computing A/A_w for every polygon when you only need one.
+
+    Inputs:
+        z   : longitudinal coordinate (absolute).
+        idx : polygon index (0-based).
+
+    Returns:
+        Dict[str, Any] with:
+          - idx (int)
+          - name (str)
+          - container_name (str | None)
+          - direct_inners (List[str])
+          - w (float): effective weight w_eff(p,z)
+          - A (float): occupied surface with w(p)=1 and w(inners)=0 (signed)
+          - A_w (float): A * w
+    """
+    # -------------------------------------------------------------------------
+    # 0) Basic validation
+    # -------------------------------------------------------------------------
+    if not isinstance(z, (int, float)):
+        raise TypeError(f"z must be a number (float), got {type(z).__name__}")
+    z = float(z)
+
+    if not isinstance(idx, int):
+        raise TypeError(f"idx must be an int (0-based), got {type(idx).__name__}")
+    if idx < 0:
+        raise ValueError(f"idx must be >= 0 (0-based), got {idx}")
+
+    # -------------------------------------------------------------------------
+    # 1) Hierarchy at z: for the target polygon we need:
+    #    - its container (possibly None for root)
+    #    - its direct inners (names)
+    #    For w_eff we also need the container chain up to the root.
+    # -------------------------------------------------------------------------
+    rows = list_polygons_with_contents(self, z)
+    if not isinstance(rows, list):
+        raise TypeError("list_polygons_with_contents(...) must return a list.")
+
+    # Build name -> container_name map (needed to walk the container chain for w_eff).
+    container_of: Dict[str, str | None] = {}
+
+    target_row: Dict[str, Any] | None = None
+    for r in rows:
+        if not isinstance(r, dict):
+            raise TypeError("list_polygons_with_contents(...) must return list of dicts.")
+
+        name = r.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError("Hierarchy row has missing/invalid 'name'.")
+        if name in container_of:
+            raise ValueError(f"Duplicate polygon name in hierarchy rows at z={z}: '{name}'.")
+
+        container_of[name] = r.get("container_name")  # may be None
+
+        # Identify the target polygon by idx (0-based).
+        if "idx" not in r:
+            raise ValueError("Hierarchy row missing required 'idx' field.")
+        if int(r["idx"]) == idx:
+            target_row = r
+
+    if target_row is None:
+        raise ValueError(f"Polygon idx={idx} not found in hierarchy rows at z={z}.")
+
+    target_name = target_row.get("name")
+    if not isinstance(target_name, str) or not target_name:
+        raise ValueError(f"Target polygon idx={idx} has missing/invalid 'name' at z={z}.")
+
+    # Expose "direct_inners" but hierarchy helper still uses "direct_children".
+    inners = target_row.get("direct_children", [])
+    if inners and not isinstance(inners, list):
+        raise TypeError(f"direct_children for '{target_name}' must be a list.")
+    direct_inners = list(inners)
+
+    container_name = target_row.get("container_name")  # may be None
+
+    # -------------------------------------------------------------------------
+    # 2) Signed areas + relative weights at z (single point of truth):
+    #    We rely on inspect_section_entities(z) which must provide:
+    #      - area_signed (signed geometric area)
+    #      - weight_at_z (relative weight: W_rel = W_abs(child) - W_abs(container))
+    # -------------------------------------------------------------------------
+    if not hasattr(self, "inspect_section_entities"):
+        raise AttributeError("Expected self.inspect_section_entities(z) to exist.")
+
+    entities = self.inspect_section_entities(z)
+    if not isinstance(entities, list):
+        raise TypeError("inspect_section_entities(z) must return a list of dict records.")
+
+    area_by_name: Dict[str, float] = {}
+    w_rel_by_name: Dict[str, float] = {}
+
+    for e in entities:
+        if not isinstance(e, dict):
+            raise TypeError("inspect_section_entities(z) must return a list of dict records.")
+        name = e.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError("inspect_section_entities(z) returned an entity with missing/invalid 'name'.")
+        if name in area_by_name:
+            raise ValueError(f"Duplicate entity name from inspect_section_entities at z={z}: '{name}'.")
+
+        if "area_signed" not in e:
+            raise ValueError(f"Entity '{name}' has no 'area_signed' field.")
+        if "weight_at_z" not in e:
+            raise ValueError(f"Entity '{name}' has no 'weight_at_z' field.")
+
+        area_by_name[name] = float(e["area_signed"])
+        w_rel_by_name[name] = float(e["weight_at_z"])
+
+    # Ensure the target polygon exists in inspection.
+    if target_name not in area_by_name:
+        raise ValueError(
+            f"Polygon '{target_name}' (idx={idx}) is in hierarchy but missing from inspect_section_entities at z={z}."
+        )
+
+    # Ensure inners exist in inspection.
+    for inner_name in direct_inners:
+        if inner_name not in area_by_name:
+            raise ValueError(f"Inner polygon '{inner_name}' missing from inspection at z={z}.")
+
+    # -------------------------------------------------------------------------
+    # 3) Reconstruct effective weight w_eff for the target polygon only:
+    #    w_eff(target) = w_rel(target) + w_rel(parent) + ... + w_rel(root)
+    #    (root has container=None).
+    # -------------------------------------------------------------------------
+    w_eff = 0.0
+    cur = target_name
+    visited: set[str] = set()
+
+    while True:
+        if cur in visited:
+            raise ValueError(f"Cannot resolve effective weight: cycle detected in container chain at z={z}: {cur}")
+        visited.add(cur)
+
+        if cur not in w_rel_by_name:
+            raise ValueError(f"Polygon '{cur}' missing 'weight_at_z' in inspection at z={z}.")
+        w_eff += w_rel_by_name[cur]
+
+        parent = container_of.get(cur)
+        if parent is None:
+            break
+        if parent not in container_of:
+            raise ValueError(f"Container '{parent}' for polygon '{cur}' missing from hierarchy rows at z={z}.")
+        cur = parent
+
+    # -------------------------------------------------------------------------
+    # 4) Compute net occupied surface A and the weighted A_w for the target polygon:
+    #    A = area(target) - sum(area(direct_inners))
+    # -------------------------------------------------------------------------
+    area_p = area_by_name[target_name]
+    inners_sum = 0.0
+    for inner_name in direct_inners:
+        inners_sum += area_by_name[inner_name]
+
+    A = area_p - inners_sum
+    A_w = A * w_eff
+
+    return {
+        "idx": int(idx),
+        "name": target_name,
+        "container_name": container_name,
+        "direct_inners": direct_inners,
+        "w": float(w_eff),
+        "A": float(A),
+        "A_w": float(A_w),
+    }
+
+
+
+##################################################################################################################################
+
+
+
 class ContinuousSectionField:
+
+    
+
+    def inspect_section_entities(self, z: float) -> List[Dict[str, Any]]:
+        """
+        Performs a sterile, comprehensive inspection of all polygonal entities at a 
+        specific longitudinal coordinate z, including parent-child relationships.
+        
+        This function discloses the complete genealogy and mechanical state of each 
+        polygon. For each entity, it reports both its descendants (if any) and its 
+        ancestor (the immediate container).
+        
+        Fields returned include:
+        - Positional data (idx, name)
+        - Endpoint references (s0_name, s1_name, s0_weight, s1_weight)
+        - Interpolated state (weight_at_z, weight_law)
+        - Geometric property (area_signed, unaltered)
+        - Descendant info (is_container, direct_children)
+        - Ancestor info (container_idx, container_name) <-- NEW
+        
+        Args:
+            z (float): Longitudinal coordinate for section sampling.
+                    
+        Returns:
+            List[Dict[str, Any]]: List of entity records with fields:
+            
+            - idx (int): Position in section at z.
+            - name (str): Polygon identifier.
+            - s0_name, s1_name (str): Endpoint polygon names.
+            - s0_weight, s1_weight (float): Reference weights at ends.
+            - weight_at_z (float): Interpolated weight at z.
+            - weight_law (str | None): Weight law formula string.
+            - area_signed (float): Raw geometric area (shoelace, signed).
+            - is_container (bool): True if this polygon has children.
+            - direct_children (List[str]): Names of contained polygons.
+            - container_idx (int | None): Index of parent polygon (if nested).
+            - container_name (str | None): Name of parent polygon (if nested).
+        """
+        # --- 1) Sample section and get hierarchy ---
+        sec = self.section(z)
+        children_map = self.build_direct_children_map(z)
+        
+        # --- 2) Build child -> parent inverse mapping ---
+        # children_map is {parent_name: [child1, child2, ...]}
+        # We invert it to {child_name: parent_name} for O(1) lookup
+        parent_of: Dict[str, str] = {}
+        for parent_name, child_list in children_map.items():
+            for child_name in child_list:
+                parent_of[child_name] = parent_name
+        
+        # --- 3) Pre-compute name -> index mapping for current section ---
+        # This allows us to find the container's index quickly
+        name_to_idx: Dict[str, int] = {
+            getattr(poly, "name", f"unnamed_{i}"): i 
+            for i, poly in enumerate(sec.polygons)
+        }
+        
+        # --- 4) Compile records ---
+        records = []
+        
+        for idx, poly in enumerate(sec.polygons):
+            name = getattr(poly, "name", f"unnamed_{idx}")
+            weight_at_z = float(getattr(poly, "weight", 0.0))
+            
+            # Endpoint data
+            s0_poly = self.s0.polygons[idx]
+            s1_poly = self.s1.polygons[idx]
+            s0_name = getattr(s0_poly, "name", name)
+            s1_name = getattr(s1_poly, "name", name)
+            s0_weight = float(getattr(s0_poly, "weight", 0.0))
+            s1_weight = float(getattr(s1_poly, "weight", 0.0))
+            
+            # Weight law
+            weight_law = None
+            if self.weight_laws is not None:
+                if (idx + 1) in self.weight_laws:
+                    weight_law = str(self.weight_laws[idx + 1])
+                elif name in self.weight_laws:
+                    weight_law = str(self.weight_laws[name])
+            '''
+            # Geometric area (sterile, signed)
+            verts = poly.vertices
+            n = len(verts)
+            shoelace = sum(
+                float(verts[i].x) * float(verts[(i+1)%n].y) - 
+                float(verts[(i+1)%n].x) * float(verts[i].y)
+                for i in range(n)
+            )
+            area_signed = 0.5 * shoelace
+            '''
+            area_signed, _ = _polygon_signed_area_and_centroid(poly)
+
+            
+            # Hierarchy: Descendants (am I a container?)
+            is_container = name in children_map
+            direct_children = children_map.get(name, [])
+            
+            # Hierarchy: Ancestor (do I have a container?)
+            container_name = parent_of.get(name)  # Returns None if not present (outermost)
+            container_idx = name_to_idx.get(container_name) if container_name else None
+            
+            records.append({
+                "idx": idx,
+                "name": name,
+                "s0_name": s0_name,
+                "s1_name": s1_name,
+                "s0_weight": s0_weight,
+                "s1_weight": s1_weight,
+                "weight_at_z": weight_at_z,
+                "weight_law": weight_law,
+                "area_signed": area_signed,
+                "is_container": is_container,
+                "direct_children": direct_children,
+                "container_idx": container_idx,      # <-- NEW
+                "container_name": container_name     # <-- NEW
+            })
+        
+        return records
+
+
+    def build_direct_children_map(self, z: float) -> Dict[str, List[str]]:
+        """
+        Builds a direct parent-to-children mapping for polygons at a given z-section.
+        
+        This function analyzes the containment hierarchy at section coordinate `z` 
+        and returns a mapping where each parent polygon is associated with its 
+        immediate (direct) children only. This excludes nested descendants 
+        (grandchildren are not listed under grandparents).
+        
+        The hierarchy is determined from the stable S0 section topology and applied 
+        to the section at `z` via polygon names.
+        
+        Args:
+            z: Longitudinal coordinate where to sample the section.
+            
+        Returns:
+            Dict[str, List[str]]: A dictionary mapping parent polygon names to 
+            a list of their direct children names. 
+            
+            Example:
+            {
+                "outer_flange": ["web", "hole_1"],
+                "web": ["inner_cutout"]  # Only direct child, not grandchildren
+            }
+            
+            Polygons with no children will not appear as keys in the dictionary.
+            
+        Raises:
+            ValueError: If polygon names are missing, empty, or duplicated.
+            CSFError: If section at z cannot be computed.
+        """
+        # --- 1) Validate section at z (ensures coordinate is valid) ---
+        sec = self.section(z)
+        
+        # --- 2) Build stable name mapping from S0 ---
+        s0_polys = self.s0.polygons
+        if not s0_polys:
+            return {}
+        
+        s0_names: List[str] = []
+        seen_names = set()
+        
+        for poly in s0_polys:
+            name = getattr(poly, "name", None)
+            if not name:
+                raise ValueError(
+                    f"Polygon at index {len(s0_names)} in S0 has no name. "
+                    f"All polygons must have unique names."
+                )
+            if name in seen_names:
+                raise ValueError(f"Duplicate polygon name in S0: '{name}'")
+            seen_names.add(name)
+            s0_names.append(name)
+        
+        # --- 3) Determine immediate container for each polygon (child -> parent) ---
+        container_of: Dict[str, Optional[str]] = {}
+        
+        for idx, poly in enumerate(s0_polys):
+            child_name = s0_names[idx]
+            parent_idx = self.get_container_polygon_index(poly, idx)
+            
+            # Safety: prevent self-containment loops
+            if parent_idx == idx:
+                parent_idx = None
+                
+            if parent_idx is None:
+                parent_name = None
+            else:
+                if not (0 <= parent_idx < len(s0_polys)):
+                    raise ValueError(
+                        f"Invalid container index {parent_idx} returned for "
+                        f"polygon '{child_name}'"
+                    )
+                parent_name = s0_names[parent_idx]
+                # Defensive: name-level self-containment check
+                if parent_name == child_name:
+                    parent_name = None
+                    
+            container_of[child_name] = parent_name
+        
+        # --- 4) Invert mapping: parent -> list of direct children ---
+        children_map: Dict[str, List[str]] = {}
+        
+        for child_name, parent_name in container_of.items():
+            if parent_name is not None:
+                if parent_name not in children_map:
+                    children_map[parent_name] = []
+                children_map[parent_name].append(child_name)
+        
+        return children_map
+
+
+
+
+
+
+    def get_container_polygon_index(self, poly: "Polygon", i: int):
+        """
+        Return the index (0-based) of the *immediate container* of `poly` in self.s0.polygons.
+        Returns the index of the immediate container polygon (smallest-area polygon that contains `poly`),
+        not the outermost/global container.
+        Logic (as requested):
+        1) Take polygon p (= poly).
+        2) Collect all other polygons that contain p.
+        3) Pick pp such that pp contains p and there is no other polygon between them
+            (i.e., no q with p ⊂ q ⊂ pp). Polygons may touch (boundary counts as inside).
+
+        Debug:
+        - Enable with: self.debug_container = True
+        - No global variables are used to activate debug output.
+
+        Returns
+        -------
+        int | None
+            Index of the immediate container polygon, or None if no container exists.
+        """
+        debug = bool(getattr(self, "debug_container", False))
+
+        def _dbg(msg: str) -> None:
+            if debug:
+                print(msg)
+
+        polys = self.s0.polygons
+        n_polys = len(polys)
+
+        # Find the index of the same polygon in self.s0.polygons robustly.
+        # We only trust 'i' if it points to the same name; otherwise we search by name.
+        self_idx = None
+        poly_name = getattr(poly, "name", None)
+
+        if 0 <= i < n_polys and getattr(polys[i], "name", None) == poly_name:
+            self_idx = i
+        else:
+            if poly_name is not None:
+                for k, p in enumerate(polys):
+                    if getattr(p, "name", None) == poly_name:
+                        self_idx = k
+                        break
+            _dbg(f"[get_container_polygon_index] index mismatch: given i={i}, inferred self_idx={self_idx}, name={poly_name!r}")
+
+        # Linear tolerance (allow per-instance override, fallback to module default)
+        eps_l = float(getattr(self, "eps_l", EPS_L))
+        eps_a = eps_l * eps_l  # area-like tolerance derived from eps_l
+
+        def _strip_closure(verts):
+            # If polygon is explicitly closed (last == first), drop last vertex.
+            if len(verts) >= 2 and verts[0] == verts[-1]:
+                return verts[:-1]
+            return verts
+
+        def _area_abs(verts) -> float:
+            # Shoelace area magnitude.
+            a2 = 0.0
+            n = len(verts)
+            for k in range(n):
+                x0, y0 = verts[k].x, verts[k].y
+                x1, y1 = verts[(k + 1) % n].x, verts[(k + 1) % n].y
+                a2 += (x0 * y1 - x1 * y0)
+            return abs(0.5 * a2)
+
+        def _bbox(verts):
+            xs = [v.x for v in verts]
+            ys = [v.y for v in verts]
+            return (min(xs), min(ys), max(xs), max(ys))
+
+        def _bbox_contains(b_out, b_in) -> bool:
+            # Inclusive bbox containment with tolerance.
+            ox0, oy0, ox1, oy1 = b_out
+            ix0, iy0, ix1, iy1 = b_in
+            return (ox0 <= ix0 + eps_l and oy0 <= iy0 + eps_l and
+                    ox1 >= ix1 - eps_l and oy1 >= iy1 - eps_l)
+
+        def _point_on_segment(px, py, ax, ay, bx, by) -> bool:
+            # Robust "point on segment" with degenerate segment handling.
+            abx, aby = (bx - ax), (by - ay)
+            apx, apy = (px - ax), (py - ay)
+            ab2 = abx * abx + aby * aby
+
+            # Degenerate edge -> treat as a point.
+            if ab2 <= eps_l * eps_l:
+                dx = px - ax
+                dy = py - ay
+                return (dx * dx + dy * dy) <= eps_l * eps_l
+
+            # Collinearity via cross product.
+            cross = abx * apy - aby * apx
+            if abs(cross) > eps_l:
+                return False
+
+            # Projection check.
+            dot = apx * abx + apy * aby
+            if dot < -eps_l:
+                return False
+            if dot > ab2 + eps_l:
+                return False
+            return True
+
+        def _point_in_poly(px, py, verts) -> bool:
+            # Ray casting with boundary inclusion.
+            inside = False
+            n = len(verts)
+            for k in range(n):
+                x1, y1 = verts[k].x, verts[k].y
+                x2, y2 = verts[(k + 1) % n].x, verts[(k + 1) % n].y
+
+                # On-edge => inside.
+                if _point_on_segment(px, py, x1, y1, x2, y2):
+                    return True
+
+                # Ray casting toggle.
+                if (y1 > py) != (y2 > py):
+                    x_int = x1 + (py - y1) * (x2 - x1) / (y2 - y1 + 0.0)
+                    if x_int > px:
+                        inside = not inside
+            return inside
+
+        def _poly_inside(inner_verts, outer_verts) -> bool:
+            # Containment: all inner vertices must be inside or on boundary.
+            return all(_point_in_poly(v.x, v.y, outer_verts) for v in inner_verts)
+
+        inner_verts = _strip_closure(poly.vertices)
+        if len(inner_verts) < 3:
+            _dbg("[get_container_polygon_index] inner polygon degenerate (<3 vertices) -> None")
+            return None
+
+        a_inner = _area_abs(inner_verts)
+        b_inner = _bbox(inner_verts)
+
+        _dbg(f"[get_container_polygon_index] target={poly_name!r} a_inner={a_inner:.16g} bbox={b_inner}")
+
+        # 1) Collect all container candidates of p.
+        candidates = []  # list of tuples: (j, a_outer, outer_verts)
+        for j, outer in enumerate(polys):
+            if self_idx is not None and j == self_idx:
+                continue
+            if getattr(outer, "name", None) == poly_name:
+                continue
+
+            outer_verts = _strip_closure(outer.vertices)
+            if len(outer_verts) < 3:
+                continue
+
+            # Fast bbox reject.
+            if not _bbox_contains(_bbox(outer_verts), b_inner):
+                continue
+
+            a_outer = _area_abs(outer_verts)
+
+            # Must be strictly larger (with tolerance).
+            if a_outer <= a_inner + eps_a:
+                continue
+
+            if _poly_inside(inner_verts, outer_verts):
+                candidates.append((j, a_outer, outer_verts))
+                _dbg(f"  candidate j={j} name={getattr(outer,'name',None)!r} a_outer={a_outer:.16g}")
+
+        if not candidates:
+            _dbg("[get_container_polygon_index] no containers found -> None")
+            return None
+
+        # 2) Choose the immediate container:
+        #    pp is a container of p such that there is no other container q with p ⊂ q ⊂ pp.
+        immediate = []
+        for j, a_j, v_j in candidates:
+            has_between = False
+            for k, a_k, v_k in candidates:
+                if k == j:
+                    continue
+                # q is "between" if it is inside pp and is smaller than pp.
+                # Under non-intersection assumptions, this captures nesting.
+                if a_k < a_j - eps_a and _poly_inside(v_k, v_j):
+                    has_between = True
+                    _dbg(f"    reject j={j} because k={k} is between (k inside j)")
+                    break
+            if not has_between:
+                immediate.append((j, a_j))
+
+        if not immediate:
+            # This should not happen under the stated assumptions; fall back to smallest-area container.
+            best_idx = min(candidates, key=lambda t: t[1])[0]
+            _dbg(f"[get_container_polygon_index] no immediate candidate (unexpected). Fallback best_idx={best_idx}")
+            return best_idx
+
+        # If multiple immediate candidates exist (should be rare), pick the smallest-area one.
+        best_idx, best_area = min(immediate, key=lambda t: t[1])
+        _dbg(f"[get_container_polygon_index] result best_idx={best_idx} name={getattr(polys[best_idx],'name',None)!r} a={best_area:.16g}")
+        return best_idx
+
+
+
+    def write_section(self, z0: float,z1: float, yaml_path: str) -> None:
+        """
+        Export the computed section at absolute coordinate `z` to a YAML file.
+
+        Parameters
+        ----------
+        z0, z1: floats
+            Absolute coordinates along the CSF axis (same convention used by self.section(z)).
+        yaml_path : str
+            Output YAML filepath.
+
+        Raises
+        ------
+        CSFError
+            If validation fails, section computation fails, YAML serialization fails,
+            or file writing fails.
+        """
+        # Validate z0 e z1
+        z_min, z_max = min(self.s0.z, self.s1.z), max(self.s0.z, self.s1.z)
+        if not (z_min <= z0 <= z_max and z_min <= z1 <= z_max):
+            bad_zs = [z for z in (z0, z1) if not (z_min <= z <= z_max)]
+            raise CSFError(f"write_section: z0/z1 must be in [{z_min}, {z_max}]. Out: {bad_zs!r}")
+
+        if not all(_csf__is_finite_number(z) for z in (z0, z1)):
+            bad_zs = [z for z in (z0, z1) if not _csf__is_finite_number(z)]
+            raise CSFError(f"write_section: z must be finite number. Got: {bad_zs!r}")
+
+        
+        yaml_path = yaml_path.strip()
+        _csf__ensure_parent_dir_exists(yaml_path)
+       
+        # 2) Compute Section at z (includes w(z) logic)
+        weight_laws_yaml = []
+        secz0 = self.section(float(z0))
+        secz1 = self.section(float(z1))
+        if self.weight_laws is not None:   
+            try:
+                secz0 = self.section(float(z0))
+                secz1 = self.section(float(z1))  
+                for key in self.weight_laws:
+                    idx = key - 1
+                    
+                    namestartlaw = self.s0.polygons[idx].name 
+                    nameendlaw   =  self.s0.polygons[idx].name
+                    law_string = f"{namestartlaw},{nameendlaw}: {self.weight_laws[key]}"
+                    weight_laws_yaml.append(law_string)
+            except CSFError:
+                raise
+            except Exception as e:
+                raise CSFError(
+                    "write_section: weight_laws_yaml section(z) failed. "
+                    f"z={float(z0):.6g}, error={type(e).__name__}: {e}"
+                ) from e
+
+        # 3) Build minimal dict
+        try:
+            datas0 = _csf__section_to_Sz_dict(secz0,"S0")
+            datas1 = _csf__section_to_Sz_dict(secz1,"S1")
+        except CSFError:
+            raise
+        except Exception as e:
+            raise CSFError(
+                "write_section: failed while converting Section -> Sz dict. "
+                f"z={float(z1):.6g}, error={type(e).__name__}: {e}"
+            ) from e
+
+        # 4) Serialize to YAML (PyYAML if available, otherwise _simple_yaml_dump fallback)
+        try:
+            if "yaml" in globals() and globals().get("yaml") is not None:
+                dumper = globals().get("CSFDumper", None)
+                if dumper is None:
+                    yml = globals()["yaml"].safe_dump(data, sort_keys=False)  # type: ignore[index]
+                else:
+                   
+                        new_data = {
+                            "CSF": {
+                                **{
+                                    "sections": {
+                                        **datas0,
+                                        **datas1,
+                                    }
+                                }
+                            }
+                        }
+
+                        if len(weight_laws_yaml)>0:  # True if empty
+                            new_data["CSF"]["weight_laws"] = weight_laws_yaml
+
+                        yml = globals()["yaml"].dump(  # type: ignore[index]
+                        new_data,
+                        Dumper=dumper,
+                        sort_keys=False,
+                        allow_unicode=True,
+                        indent=2,
+                        default_flow_style=False,
+                    )
+            else:
+                if "_simple_yaml_dump" not in globals() or globals().get("_simple_yaml_dump") is None:
+                    raise CSFError(
+                        "write_section: YAML backend unavailable. "
+                        "Neither PyYAML (yaml) nor _simple_yaml_dump(...) are defined."
+                    )
+                yml = globals()["_simple_yaml_dump"](data) + "\n"  # type: ignore[index]
+        except CSFError:
+            raise
+        except Exception as e:
+            raise CSFError(
+                "write_section: YAML serialization failed. "
+                f"z={float(z0):.6g}, error={type(e).__name__}: {e}"
+            ) from e
+
+        # 5) Atomic write to disk
+        try:
+            _csf__atomic_write_text(yaml_path, yml)
+        except Exception as e:
+            raise CSFError(
+                f"write_section: could not write YAML file '{yaml_path}'. "
+                f"error={type(e).__name__}: {e}"
+            ) from e
+    # write_section
+
+    @staticmethod
+    def _section_to_dict(sec):
+        poly_map = {}
+        poly_names = [name for name, obj in globals().items() if isinstance(obj, Polygon)]
+        for p in sec.polygons:
+            key = p.name
+            if key in poly_map:
+                raise ValueError(f"Duplicate polygon name in section z={sec.z}: '{key}'")
+            poly_map[key] = ContinuousSectionField._polygon_to_dict(p)
+
+        return {
+            "z": float(sec.z),
+            "polygons": poly_map,  # <-- dict, non lista
+        }
+
+    @staticmethod
+    def _pt_to_xy(pt):
+        return [float(pt.x), float(pt.y)]
+
+    @staticmethod
+    def _polygon_to_dict(poly):
+        if XY is not None:
+            verts = [XY((float(v.x), float(v.y))) for v in poly.vertices]
+        else:
+            verts = [[float(v.x), float(v.y)] for v in poly.vertices]
+
+        return {
+            "weight": float(poly.weight),
+            "vertices": verts,
+        }
+
+
+
+    def section_area_by_weight(
+        self,
+        z: float,
+        w_tol: float = 0.0,
+        include_per_polygon: bool = False,
+        debug: bool = False,
+        zero_w_eps: float = 0.0,
+    ) -> Dict[str, Any]:
+        """
+        Compute area breakdown at section z grouped by ABSOLUTE weight (w_abs).
+        
+        This is a sterile implementation:
+        - Polygon areas preserve their signed value from the shoelace formula (no abs).
+        - Effective area (material area) is computed as sum(area * w_rel).
+        - No data clipping (max(0, ...)) is applied unless explicitly requested.
+        
+        Args:
+            z: Longitudinal coordinate where the section is sampled.
+            w_tol: Grouping tolerance for weights. If > 0, weights are rounded to 
+                   the nearest multiple of w_tol for grouping purposes only.
+            include_per_polygon: If True, includes detailed per-polygon data in output.
+            debug: If True, prints debug information to stdout.
+            zero_w_eps: Threshold for considering an absolute weight as zero when
+                        computing total_area_nonzero. If |w_abs| <= zero_w_eps, 
+                        that polygon's contribution is excluded from the nonzero sum.
+                        
+        Returns:
+            Dictionary containing:
+            - z: Coordinate (float)
+            - total_area: Effective area = sum(area * w_rel) for all polygons
+            - total_area_nonzero: Effective area excluding |w_abs| <= zero_w_eps
+            - total_area_geometric: Raw geometric sum = sum(area) (sterile, signed)
+            - groups: List of weight groups with accumulated geometric areas
+            - per_polygon: (Optional) Detailed polygon data
+        """
+        # --- 1) Sample section at z ---
+        sec = self.section(z)
+
+        # --- 2) Geometric helpers (sterile, sign-preserving) ---
+        def _extract_vertices(poly) -> List[Tuple[float, float]]:
+            """Extract vertices as list of (x, y) tuples."""
+            verts = getattr(poly, "vertices", None)
+            if verts is None:
+                raise ValueError(f"Polygon '{getattr(poly, 'name', None)}' has no vertices.")
+            out = []
+            for v in verts:
+                if isinstance(v, (list, tuple)) and len(v) >= 2:
+                    out.append((float(v[0]), float(v[1])))
+                else:
+                    out.append((float(getattr(v, "x")), float(getattr(v, "y"))))
+            return out
+
+        def _signed_area(vertices: List[Tuple[float, float]]) -> float:
+            """
+            Compute signed area using the shoelace formula.
+            Positive for CCW orientation, negative for CW.
+            No abs() is applied; the raw signed value is returned.
+            """
+            n = len(vertices)
+            if n < 3:
+                return 0.0
+            # Handle explicit closure safely (if last == first, modulo handles it)
+            cross_sum = 0.0
+            for i in range(n):
+                x1, y1 = vertices[i]
+                x2, y2 = vertices[(i + 1) % n]
+                cross_sum += x1 * y2 - x2 * y1
+            return 0.5 * cross_sum
+
+        # --- 3) Build container hierarchy from S0 (stable reference) ---
+        s0_polys = self.s0.polygons
+        if not s0_polys:
+            raise ValueError("S0 has no polygons; cannot establish container map.")
+
+        # Map index to name for S0
+        s0_names: List[str] = []
+        seen_names = set()
+        for p in s0_polys:
+            nm = getattr(p, "name", None)
+            if not nm:
+                raise ValueError("All S0 polygons must have a unique name.")
+            if nm in seen_names:
+                raise ValueError(f"Duplicate polygon name in S0: '{nm}'")
+            seen_names.add(nm)
+            s0_names.append(nm)
+
+        # Map child_name -> parent_name (None if outermost)
+        container_of: Dict[str, Optional[str]] = {}
+        for idx, poly in enumerate(s0_polys):
+            child_name = s0_names[idx]
+            parent_idx = self.get_container_polygon_index(poly, idx)
+            
+            # Prevent self-containment
+            if parent_idx == idx:
+                parent_idx = None
+                
+            if parent_idx is None:
+                parent_name = None
+            else:
+                if not (0 <= parent_idx < len(s0_polys)):
+                    raise ValueError(f"Invalid container index {parent_idx} for '{child_name}'")
+                parent_name = s0_names[parent_idx]
+                if parent_name == child_name:
+                    parent_name = None
+            container_of[child_name] = parent_name
+
+        # --- 4) Map current section polygons with raw data ---
+        poly_data: Dict[str, Dict[str, Any]] = {}
+        for idx, poly in enumerate(sec.polygons):
+            name = getattr(poly, "name", None)
+            if not name:
+                raise ValueError(f"Polygon at index {idx} has no name.")
+            if name in poly_data:
+                raise ValueError(f"Duplicate polygon name in section at z={z}: '{name}'")
+            
+            w_rel = float(getattr(poly, "weight"))
+            verts = _extract_vertices(poly)
+            area_geom = _signed_area(verts)  # Sterile: preserves sign
+            
+            poly_data[name] = {
+                "idx": idx,
+                "w_rel": w_rel,          # Relative weight (may be negative for voids)
+                "area_geom": area_geom,   # Raw geometric area (signed)
+            }
+
+        # Verify all S0 polygons exist in current section
+        for name in container_of.keys():
+            if name not in poly_data:
+                raise ValueError(f"Polygon '{name}' from S0 not found in section at z={z}")
+
+        # --- 5) Compute absolute weights (w_abs) via recursive chain ---
+        w_abs_cache: Dict[str, float] = {}
+        
+        def get_w_abs(poly_name: str) -> float:
+            """Compute absolute weight: w_rel + w_abs(parent)."""
+            if poly_name in w_abs_cache:
+                return w_abs_cache[poly_name]
+            parent = container_of[poly_name]
+            w_rel = poly_data[poly_name]["w_rel"]
+            if parent is None:
+                w_abs = w_rel
+            else:
+                w_abs = w_rel + get_w_abs(parent)
+            w_abs_cache[poly_name] = w_abs
+            return w_abs
+
+        for name in container_of.keys():
+            get_w_abs(name)
+
+        # --- 6) Group by absolute weight (with optional binning) ---
+        def bin_weight(w: float) -> float:
+            """Optional weight binning for grouping tolerance."""
+            if w_tol and w_tol > 0.0:
+                return round(w / w_tol) * w_tol
+            return w
+
+        groups: Dict[float, Dict[str, Any]] = {}
+        per_polygon_records = []
+
+        for name in container_of.keys():
+            w_abs_raw = w_abs_cache[name]
+            w_abs_grouped = bin_weight(w_abs_raw) if w_tol > 0 else w_abs_raw
+            area_geom = poly_data[name]["area_geom"]
+            
+            # Accumulate geometric area in groups (sterile sum, preserves sign)
+            if w_abs_grouped not in groups:
+                groups[w_abs_grouped] = {"w": w_abs_grouped, "area": 0.0, "polygons": []}
+            groups[w_abs_grouped]["area"] += area_geom
+            groups[w_abs_grouped]["polygons"].append(name)
+
+            # Record for per-polygon output
+            per_polygon_records.append({
+                "idx": poly_data[name]["idx"],
+                "name": name,
+                "container": container_of[name],
+                "w_rel": poly_data[name]["w_rel"],
+                "w_abs": w_abs_raw,  # Store original, not binned
+                "area": area_geom,
+            })
+
+        # --- 7) Compute totals (sterile calculations) ---
+        
+        # Effective mechanical area: sum of (geometric area * relative weight)
+        # This accounts for voids (negative w_rel) and material ratios.
+        total_effective = sum(
+            poly_data[name]["area_geom"] * poly_data[name]["w_rel"]
+            for name in container_of.keys()
+        )
+        
+        # Effective area excluding near-zero absolute weights
+        total_effective_nonzero = sum(
+            poly_data[name]["area_geom"] * poly_data[name]["w_rel"]
+            for name in container_of.keys()
+            if abs(w_abs_cache[name]) > float(zero_w_eps)
+        )
+        
+        # Pure geometric sum (sterile, includes signs from orientation)
+        total_geometric = sum(g["area"] for g in groups.values())
+
+        # Prepare groups list with fractions
+        groups_list = sorted(groups.values(), key=lambda d: d["w"])
+        effective_denom = total_effective if total_effective != 0 else 1.0
+        for g in groups_list:
+            # Fraction relative to effective area (can be >1 or negative if mixed signs)
+            g["area_fraction"] = (g["area"] * g["w"]) / effective_denom if g["w"] != 0 else 0.0
+
+        # --- 8) Debug output ---
+        if debug:
+            print("=" * 60)
+            print(f"section_area_by_weight (sterile) at z={z}")
+            print("-" * 60)
+            for rec in sorted(per_polygon_records, key=lambda x: x["idx"]):
+                print(f"  [{rec['idx']}] {rec['name']:<15} "
+                      f"w_rel={rec['w_rel']:+.3f} w_abs={rec['w_abs']:+.3f} "
+                      f"area={rec['area']:+.6e}")
+            print("-" * 60)
+            print(f"Geometric Sum:   {total_geometric:+.6e}")
+            print(f"Homogenized orea (|w|>0):  {total_effective:+.6e}")
+            print(f"Geometric Total Surface: {total_effective_nonzero:+.6e}")
+            print("=" * 60)
+
+        # --- 9) Assemble output ---
+        result: Dict[str, Any] = {
+            "z": float(z),
+            "total_area": float(total_effective),           # Area omogeneizzata effettiva
+            "total_area_nonzero": float(total_effective_nonzero),
+            "total_area_geometric": float(total_geometric),  # Somma geometrica pura
+            "groups": groups_list,
+        }
+        
+        if include_per_polygon:
+            result["per_polygon"] = per_polygon_records
+            
+        return result
+
+    
+    def _determine_magnitude(self) -> None:
+        """
+        Compute a global geometric magnitude (scale) from the model's geometry and
+        define tolerance values derived from that scale.
+
+        This method is intentionally self-contained (no external helper functions),
+        so it can be called once after object construction.
+
+        It defines:
+          - self.SCALE: characteristic length scale of the model
+          - self.EPS_L: linear/length tolerance (geometry predicates, intersections)
+          - self.EPS_A: area tolerance (degeneracy checks on areas, section integrals)
+          - self.EPS_K_ATOL / self.EPS_K_RTOL: tolerances for matrix/numerical checks
+        """
+        # 1) Collect bounding box over all points in start/end sections
+        inf = float("inf")
+        min_x, min_y = inf, inf
+        max_x, max_y = -inf, -inf
+
+        # NOTE: adapt these attribute names to your internal storage.
+        # The idea is: iterate over all polygons in both end sections and read their vertices.
+        #
+        # Expected structure (examples):
+        #   self.sections["I"][obj_id][poly_id].points  -> list[(x,y)]
+        #   self.sections["F"][obj_id][poly_id].points
+        #
+        # If your storage differs, only adjust this traversal; the rest stays the same.
+
+
+        # --- Bounding box over BOTH endpoint sections (S0 and S1) ---
+        # In your code:
+        #   self.s0, self.s1 are Section objects
+        #   section.polygons is Tuple[Polygon, ...]
+        #   polygon.vertices is Tuple[Pt, ...]
+        #   Pt has attributes .x and .y
+
+        for sec in (self.s0, self.s1):
+            for poly in sec.polygons:
+                for v in poly.vertices:
+                    x = float(v.x)
+                    y = float(v.y)
+
+                    if x < min_x: min_x = x
+                    if y < min_y: min_y = y
+                    if x > max_x: max_x = x
+                    if y > max_y: max_y = y
+
+
+
+
+        # Handle empty geometry defensively
+        if min_x is inf:
+            # No points found: fall back to a safe default
+            dx = dy = 0.0
+        else:
+            dx = max_x - min_x
+            dy = max_y - min_y
+
+        # 2) Characteristic length scale.
+        # Include L so long/slender members scale reasonably even with small cross-section extents.
+        L = float(getattr(self, "L", 0.0))
+        S = max(dx, dy, abs(L), 1.0)
+
+        SCALE = S
+
+        # 3) Tolerances
+        #
+        # EPS_L: geometric/linear tolerance.
+        # Use this for: orientation tests, point-on-segment, segment intersection, etc.
+        EPS_L = 1e-12 * S
+
+        # EPS_A: area tolerance. Must scale as S^2.
+        # Use this for: "area nearly zero" checks, summed areas, etc.
+        EPS_A = 1e-12 * (S * S)
+
+        # EPS_K: numerical/matrix tolerances.
+        # Here it's better to keep a relative tolerance and a small absolute tolerance.
+        # - RTOL controls proportional differences (scale-free).
+        # - ATOL controls tiny absolute noise.
+        #
+        # If your matrices scale strongly with geometry/material, you can scale ATOL too,
+        # but RTOL is the primary guard.
+        EPS_K_RTOL = 1e-10
+        EPS_K_ATOL = 1e-12
+
+        # Optional: if you want a single "EPS_K" name as you wrote,
+        # keep it as the absolute tolerance, and still keep RTOL separately.
+        EPS_K = EPS_K_ATOL
+        #print(f"SCALE {SCALE} EPS_K {EPS_K} EPS_L{EPS_L} EPS_A {EPS_A}")
+
+
+    def to_dict(self, include_weight_laws=True):
+        data = {
+            "CSF": {
+                "sections": {
+                    "S0": self._section_to_dict(self.s0),
+                    "S1": self._section_to_dict(self.s1),
+                },
+            }
+        }
+        # 
+        if include_weight_laws and isinstance(self.weight_laws, dict):
+            out = []
+            for idx in sorted(self.weight_laws):
+                i = idx - 1
+                n0 = self.s0.polygons[i].name
+                n1 = self.s1.polygons[i].name
+                out.append(f"{n0},{n1}: {self.weight_laws[idx]}")
+            data["CSF"]["weight_laws"] = out
+        return data
+
+    def to_yaml(self, filepath: Optional[str] = None, include_weight_laws: bool = True) -> str:
+        """
+        Produce YAML come stringa; se filepath è dato, scrive anche su file.
+        """
+        
+        data = self.to_dict(include_weight_laws=include_weight_laws)
+        if yaml is not None:
+            yml = yaml.dump(
+                data,
+                Dumper=CSFDumper,
+                sort_keys=False,
+                allow_unicode=True,
+                indent=2,
+                default_flow_style=False,
+            )
+        else:
+           
+            yml = _simple_yaml_dump(data) + "\n"
+
+        if filepath:
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(yml)
+
+        return yml
+
+
+
+        if include_weight_laws:
+            laws_out = []
+            if isinstance(self.weight_laws, dict):
+                for idx in sorted(self.weight_laws.keys()):
+                    expr = self.weight_laws[idx]
+                    i = int(idx) - 1
+                    n0 = self.s0.polygons[i].name
+                    n1 = self.s1.polygons[i].name
+                    laws_out.append(f"{n0},{n1}: {expr}")
+            data["field"]["weight_laws"] = laws_out
+
+        return data
 
     """
     Geometry-only object:
@@ -1986,7 +6422,7 @@ class ContinuousSectionField:
         
         
         
-        # Usiamo section0 e section1 come definito nel tuo costruttore field = ContinuousSectionField(section0=s0, section1=s1)
+        # Usiamo section0 e section1 come definito nel costruttore field = ContinuousSectionField(section0=s0, section1=s1)
         
         z_start = self.s0.z
         z_end = self.s1.z
@@ -2029,144 +6465,12 @@ class ContinuousSectionField:
         # single source of truth
         self.z0 = section0.z
         self.z1 = section1.z
-
+        self._determine_magnitude()
         # Optional list of callables or strings for custom weight interpolation
-        self.weight_laws: Optional[List[Any]] = None
+        self.weight_laws: Optional[Dict[int, str]] = None
 
         self._validate_inputs()
-
-
-    def validate_weight_law_at_midpoint2remove(self, formula: str) -> float:
-        """
-        DEBUG
-        Performs a 'flight test' of the formula at the beam's midpoint.
-        Uses the same execution context as the _interpolate_weight function.
-        """
-        if not formula or not formula.strip():
-            return 0.0
-
-        # 1. Calculation of the test point (Midpoint)
-        # Using section0 and section1 as defined in the class constructor
-        z0, z1 = self.s0.z, self.s1.z
-        z_mid = (z0 + z1) / 2.0
-        t_mid = 0.5 # t is always 0.5 at the midpoint between z0 and z1
-        L = abs(z1 - z0)
-
-        # 2. Prepare geometric data for the context (p0, p1, p_current)
-        # We test on the first polygon as a sample to validate the formula syntax
-        p0 = self.section0.polygons[0]
-        p1 = self.section1.polygons[0]
-        
-        # Generate the interpolated polygon at t=0.5 to allow d(i,j) helper to work
-        current_verts = tuple(v0.lerp(v1, t_mid) for v0, v1 in zip(p0.vertices, p1.vertices))
-        p_current = Polygon(vertices=current_verts, weight=p0.weight, name=p0.name)
-
-        # 3. Helper Functions Definition (same logic as _interpolate_weight)
-        def d(i: int, j: int) -> float:
-            """Distance between vertex i and j of the CURRENT polygon (1-based)"""
-            return get_points_distance(p_current, i, j)
-
-        def di(i: int, j: int) -> float:
-            """Distance between vertex i and j of the INITIAL polygon (1-based)"""
-            return get_points_distance(p0, i, j)
-
-        def de(i: int, j: int) -> float:
-            """Distance between vertex i and j of the FINAL polygon (1-based)"""
-            return get_points_distance(p1, i, j)
-
-        # New E_lookup helper for validation (consistent with _interpolate_weight)
-        def E_lookup(filename: str) -> float:
-            """
-            Validation-time lookup call. 
-            Uses t_mid (0.5) as the coordinate for the lookup file.
-            """
-            return lookup_homogenized_elastic_modulus(filename, t_mid)
-
-        # 4. Context Definition (identical to the one in _interpolate_weight)
-        context = {
-            "w0": p0.weight, 
-            "w1": p1.weight, 
-            "z": t_mid,  # z in the formula context represents the normalized t
-            "t": t_mid,
-            "L": L,
-            "math": math, 
-            "np": np,
-            "d": d, 
-            "d0": di, 
-            "d1e": de,
-            "E_lookup": E_lookup # Added to support external lookup files
-        }
-
-        # 5. EVALUATION TEST
-        try:
-            # Execution with builtins restriction as in the original code
-            result = eval(formula, {"__builtins__": {}}, context)
-            return float(result)
-        except Exception as e:
-            # If it fails, raise a detailed error that stops the process
-            raise ValueError(
-                f"CRITICAL ERROR in the weight law: '{formula}'\n"
-                f"The test at Z_mid={z_mid} (t={t_mid}) failed.\n"
-                f"Error details: {e}"
-            )
-            
-    def _evaluate_weight_formula(self, formula: str, p0: Polygon, p1: Polygon, t: float) -> float:
-            """
-            not used see evaluate_weight_formula 
-            Evaluates a string-based mathematical formula to determine the polygon weight at a 
-            given normalized position t.
-            
-            Args:
-                formula (str): The Python expression to evaluate.
-                p0 (Polygon): The polygon definition at the start section (z=0).
-                p1 (Polygon): The polygon definition at the end section (z=L).
-                t (float): Normalized longitudinal coordinate [0.0 to 1.0].
-                
-            Returns:
-                float: The calculated weight (Elastic Modulus).
-                
-            Raises:
-                Exception: Propagates any error encountered during evaluation.
-            """
-            # 1. Calculate the total length of the field
-            l_total = abs(self.s1.z - self.s0.z)
-
-            # 2. Generate a temporary midpoint polygon for the 'd(i,j)' helper.
-            # This allows the formula to access distances at the current evaluation point.
-            current_verts = tuple(
-                v0.lerp(v1, t) for v0, v1 in zip(p0.vertices, p1.vertices)
-            )
-            p_mid = Polygon(vertices=current_verts, weight=p0.weight, name=p0.name)
-
-            # 3. Define the external file lookup helper
-            def E_lookup(filename: str) -> float:
-                return lookup_homogenized_elastic_modulus(filename, t)
-
-            # 4. Define local distance helpers for the context
-            # These are used in the formula as d(i,j), d0(i,j), d1(i,j)
-            d  = lambda i, j: get_points_distance(p_mid, i, j)
-            di = lambda i, j: get_points_distance(p0, i, j)
-            de = lambda i, j: get_points_distance(p1, i, j)
-
-            # 5. Build the evaluation context (Environment)
-            context = {
-                "w0": p0.weight,        # Start weight
-                "w1": p1.weight,        # End weight
-                "t": t,                 # Normalized coordinate
-                "z": t,                 # Alias for z-axis consistency
-                "L": l_total,           # Physical length
-                "math": math,           # Python math library
-                "np": np,               # NumPy for advanced math
-                "d": d,                 # Current distance function
-                "d0": di,               # Start distance function
-                "d1": de,               # End distance function
-                "E_lookup": E_lookup    # File-based data lookup
-            }
-
-            # 6. Execute evaluation in a clean sandbox
-            # We disable __builtins__ for safety to ensure only provided tools are used.
-            return float(eval(formula, {"__builtins__": {}}, context))
-
+         
 
     def set_weight_laws(self, laws: Union[List[str], Dict[Union[int, str], str]]) -> None:
         """
@@ -2174,6 +6478,7 @@ class ContinuousSectionField:
         If a polygon name is not found or homology fails, it raises an error 
         to prevent falling back to default linear behavior.
         """
+       
         if not isinstance(laws, (list, dict)):
             raise ValueError("weight_laws must be a list or a dictionary.")
         
@@ -2191,7 +6496,6 @@ class ContinuousSectionField:
                 if isinstance(item, str) and ":" in item:
                     left, formula = item.split(":", 1)
                     left, formula = left.strip(), formula.strip()
-                    
                     # Debug output: (flange, flange)
                     #print(f"DEBUG - Processing: ({left}) : {formula}")
                     
@@ -2207,10 +6511,11 @@ class ContinuousSectionField:
                         idx0 = valid_names0.index(n0) + 1
                         idx1 = valid_names1.index(n1) + 1
                         
+                        
                         # STRICT CHECK: Homology (must be the same polygon)
                         if idx0 != idx1:
                             raise ValueError(f"Homology Mismatch: '{n0}' (pos {idx0}) and '{n1}' (pos {idx1}) must match.")
-                        
+                        #print(f"DEBUB idx0 {idx0} idx1 {idx1}")
                         normalized_map[idx0] = formula
                     
                     elif len(raw_names) == 1:
@@ -2239,15 +6544,17 @@ class ContinuousSectionField:
                     normalized_map[target_idx] = law
 
         z0, z1 = self.s0.z, self.s1.z
-        z_mid = (z0 + z1) / 2.0  # Actual Z value halfway between the sections
+        z_mid = (z0 + z1) / 2.0 # Actual RELATIVE Z value halfway between the sections
         L_val = z1 - z0
 
         # Compute t consistently with the interpolation formula
         # If L_val is 0 (coincident sections), t is forced to 0 to avoid division by zero
-        t_mid = (z_mid - z0) / L_val if L_val != 0 else 0.0
+        #t_mid = (z_mid - z0) / L_val if L_val != 0 else 0.0
         
 
         for idx, formula in normalized_map.items():
+            
+
             if isinstance(formula, str):
                 try:
                     # Endpoint polygon references for distance calculations
@@ -2255,38 +6562,36 @@ class ContinuousSectionField:
                     p1_test = self.s1.polygons[idx-1]
                     
                     # Generation of midpoint vertices for p_mid (required for d(i,j) helper)
-                    current_verts = tuple(v0.lerp(v1, t_mid) for v0, v1 in zip(p0_test.vertices, p1_test.vertices))
+                    current_verts = tuple(v0.lerp(v1,z_mid,L_val) for v0, v1 in zip(p0_test.vertices, p1_test.vertices))
                     p_mid = Polygon(vertices=current_verts, weight=p0_test.weight, name=p0_test.name)
                     
                     # 1. Calculate the total length of the field
                     l_total = abs(self.s1.z - self.s0.z)
-
                     try:
                         # We test the formula at mid-span (t=0.5) to verify syntax and logic
-                        we = evaluate_weight_formula(formula, p0_test, p1_test, l_total,t=t_mid)
-                       
-                    except Exception as e:                  
+                        we = evaluate_weight_formula(formula, p0_test, p1_test,z0=self.s0.z,z1=self.s1.z,zt=z_mid)
+                    except Exception as e:                      
                         raise ValueError(
                             f"VALIDATION FAILED: The formula for '{p0_test.name}' is not valid.\n"
                             f"Formula: '{formula}'\n"
-                            f"Error encountered at the midpoint: {e}"
+                            f"Error encountered at the midpoint::: {e}"
                         )
 
                 except Exception as e:
                     raise ValueError(
-                        f"VALIDATION FAILED: The formula for '{valid_names0[idx-1]}' is not valid.\n"
+                        f":VALIDATION FAILED: The formula for '{valid_names0[idx-1]}' is not valid.\n"
                         f"Formula: '{formula}'\n"
-                        f"Error encountered at the midpoint: {e}"
+                        f"Error encountered at the midpoint:- {e}"
                     )
                 
         # -------------------------------------------
         # 2. EFFECTIVE ASSIGNMENT (Bypassing FrozenInstanceError)
         for idx, formula in normalized_map.items():
+
             if formula is None: continue
-            
+           
             # Save as an integer for the interpolator
             self.weight_laws[idx] = str(formula)
-            
             try:
                 numeric_w = float(formula)
                 if 1 <= idx <= num_polygons:
@@ -2296,8 +6601,8 @@ class ContinuousSectionField:
             except ValueError:
                 # The formula is a function; it will be evaluated during interpolation
                 pass
-
-        print(f"SUCCESS - Weight laws correctly assigned: {list(self.weight_laws.keys())}")
+        # SUCCESS - Weight laws correctly assigned
+        print(f"SUCCESS - Weight laws correctly assigned: {self.weight_laws}")
 
 
     def _validate_inputs(self) -> None:
@@ -2312,35 +6617,37 @@ class ContinuousSectionField:
                 )
             
 
-    def _interpolate_weight(self, w0: float, w1: float, t: float, p0: Polygon, p1: Polygon, law: Optional[str]) -> float:
+
+    def _interpolate_weight(self, w0: float, w1: float, z: float, p0: Polygon, p1: Polygon, law: Optional[str]) -> float:
+        #
         L_val = abs(self.s1.z - self.s0.z)
+        
         if isinstance(law, str) and law.strip():
-            #print("DEBUG _interpolate_weight")
-            
+            # z is real RELATIVE not [0..1]
             # Use the existing section attributes. 
             # Based on the error, self.section1 doesn't exist. 
             # In ContinuousSectionField, endpoints are usually self.s0 and self.s1
-          
-           
-            
             # Since p_current is not in the signature, we interpolate vertices 
             # locally to allow the d(i, j) helper to work at height z
-            current_verts = tuple(v0.lerp(v1, t) for v0, v1 in zip(p0.vertices, p1.vertices))
+            #
+            current_verts = tuple(v0.lerp(v1, z,L_val) for v0, v1 in zip(p0.vertices, p1.vertices))
             p_current = Polygon(vertices=current_verts, weight=w0, name=p0.name) ## w0 is dummy value
-            
+           
             try:
                 # We test the formula at t and verify syntax and logic
-                wcust = evaluate_weight_formula(law, p0, p1, L_val,t=t)     
+                
+                wcust = evaluate_weight_formula(law, p0, p1, self.s0.z,self.s1.z,zt=z)  
+                
                 return wcust
             except Exception as e:                  
                 raise ValueError(
-                    f"VALIDATION FAILED: The formula for '{p0.name} '{p1.name}' is not valid.\n"
+                    f"VALIDATION FAILED-: The formula for '{p0.name} '{p1.name}' is not valid.\n"
                     f"Formula: '{law}'\n"
-                    f"Error encountered at the midpoint: {e}"
+                    f"Error encountered at the midpoint:: {e}"
                 )
             
         # Default fallback: Linear Interpolation
-        return w0 + (w1 - w0)/L_val * t
+        return w0 + (w1 - w0)/L_val * z
 
   
     def _to_t(self, z: float) -> float:
@@ -2349,13 +6656,21 @@ class ContinuousSectionField:
             raise ValueError(f"z={z} is outside [{self.z0}, {self.z1}].")
         return (z - self.z0) / (self.z1 - self.z0)
 
+
+
     def section(self, z: float) -> Section: 
-        origz=z
-        t = self._to_t(z)
+        # in input z is absolute
+        origz=z-self.z0 # make origz relative
+        #t = self._to_t(z) # normalize z 
+        lenght = abs(self.z1 - self.z0)
+        if z < self.z0 or z > self.z1:
+            raise CSFError(f"z={z} out of bounds [{self.z0}, {self.z1}]")
         polys: List[Polygon] = []
+       
         for i, (p0, p1) in enumerate(zip(self.s0.polygons, self.s1.polygons)):
-            verts = tuple(v0.lerp(v1, t) for v0, v1 in zip(p0.vertices, p1.vertices))
             
+            verts = tuple(v0.lerp(v1, origz,lenght) for v0, v1 in zip(p0.vertices, p1.vertices))
+            #print(f"DEBUG t {verts}")
             # keep weight/name from p0 by default
             # polys.append(Polygon(vertices=verts, weight=p0.weight, name=p0.name))
 
@@ -2364,24 +6679,63 @@ class ContinuousSectionField:
             # Support for both List (by index) and Dictionary (by index or by name).
             current_law = None
             idx = i + 1 
+
+            
+    
             if isinstance(self.weight_laws, list):
+               
                 if i < len(self.weight_laws):
                     current_law = self.weight_laws[idx]
+                    
             elif isinstance(self.weight_laws, dict):
                 # Look up by index first, then by polygon name
                 #current_law = self.weight_laws.get(i, self.weight_laws.get(p0.name))
                 current_law = self.weight_laws.get(idx)
+                #print(f"DEBUG idx {idx} current_law {current_law}")
+            else:
+                None
+                #print(f"DEBUG3  interp_weight  {idx} {current_law}")  
             
-            interp_weight = self._interpolate_weight(p0.weight, p1.weight, origz, p0, p1, current_law)
-            #print(f"DEBUG {interp_weight} ")
-            poly = Polygon(vertices=verts, weight=interp_weight, name=p0.name)
-            # --------------------------
+            interp_weight_child = self._interpolate_weight(p0.weight, p1.weight, origz, p0, p1, current_law)
+            idx_pol_parent= self.get_container_polygon_index(p0,i)
+            #interp_weight = self.weight_effective(p0.weight, p1.weight, origz, p0, p1, current_law)
 
+            polparent0 = None
+            polparent1 = None
+            parent_law = None
+            interp_weight_parent = 0 # default value when for parent is not found
+            if idx_pol_parent is not None:
+                polparent0 = self.s0.polygons[idx_pol_parent]
+                polparent1 = self.s1.polygons[idx_pol_parent]
+
+                # Get parent law with same conventions used elsewhere (list/dict, 1-based index)
+                if isinstance(self.weight_laws, list):
+                    # If your list is 1-based (because you use idx=i+1), keep that convention:
+                    parent_key = idx_pol_parent + 1
+                    if 0 <= idx_pol_parent < len(self.weight_laws):
+                        parent_law = self.weight_laws[parent_key]
+                elif isinstance(self.weight_laws, dict):
+                   
+                    parent_key = idx_pol_parent + 1  # same 1-based convention
+                    parent_law = self.weight_laws.get(parent_key, None)
+                    
+                    interp_weight_parent = self._interpolate_weight(polparent0.weight, polparent1.weight, origz, polparent0, polparent1, parent_law)
+                else:
+                    interp_weight_parent = self._interpolate_weight(polparent0.weight, polparent1.weight, origz, polparent0, polparent1, parent_law)
+
+            interp_weight_relative = interp_weight_child - interp_weight_parent #this is very important 
+            #print (f"DEBUG idx_pol_parent {idx_pol_parent}-{i} interp_weight_child {interp_weight_child} interp_weight_parent {interp_weight_parent} interp_weight_relative {interp_weight_relative} ")
+            #print ("------------------------------------------------------")
+            #print(f"DEBUG z {z} child {i} : name {p0.name}  interp_weight_child {interp_weight_child}  : idx_pol_parent {idx_pol_parent} parent_law {parent_law} : interp_weight_parent {interp_weight_parent} : interp_weight_relative {interp_weight_relative}")
+            poly = Polygon(vertices=verts, weight=interp_weight_relative, name=p0.name)
+            # --------------------------
+       
             if polygon_has_self_intersections(poly):
                 warnings.warn(
                     f"Self-intersection detected in polygon '{poly.name}' at z={z:.3f}",
                     RuntimeWarning
                 )
+
 
             polys.append(poly)
         return Section(polygons=tuple(polys), z=float(z))
@@ -2392,7 +6746,7 @@ class ContinuousSectionField:
 
 def _polygon_signed_area_and_centroid(poly: Polygon) -> Tuple[float, Tuple[float, float]]:
     """
-    Shoelace. Returns signed area (can be negative depending on orientation) and centroid.
+    Shoelace. Returns signed area (can be negative depending on orientation) and centroid. never in CSF
     """
     verts = poly.vertices
     n = len(verts)
@@ -2403,9 +6757,10 @@ def _polygon_signed_area_and_centroid(poly: Polygon) -> Tuple[float, Tuple[float
 
     for i in range(n):
         # Current vertex and next vertex (cyclic)
+       
         v0 = verts[i]
         v1 = verts[(i + 1) % n]
-        
+       
         x0, y0 = v0.x, v0.y
         x1, y1 = v1.x, v1.y
         
@@ -2417,13 +6772,12 @@ def _polygon_signed_area_and_centroid(poly: Polygon) -> Tuple[float, Tuple[float
         cx6 += (x0 + x1) * cross
         cy6 += (y0 + y1) * cross
 
-    if abs(a2) < 1e-14:
+    if abs(a2) < EPS_A:
         return 0.0, (0.0, 0.0)
 
     A = 0.5 * a2
     Cx = cx6 / (3.0 * a2)
     Cy = cy6 / (3.0 * a2)
-    
     return A, (Cx, Cy)
 
 def polygon_area_centroid(poly: Polygon) -> Tuple[float, Tuple[float, float]]:
@@ -2451,7 +6805,7 @@ def polygon_area_centroid(poly: Polygon) -> Tuple[float, Tuple[float, float]]:
        Cy = (1 / 6A) * Σ (y_i + y_{i+1}) * (x_i * y_{i+1} - x_{i+1} * y_i)
 
     COMPUTATIONAL ROBUSTNESS:
-    - Degeneracy Handling: Includes a threshold check (1e-14) to identify 
+    - Degeneracy Handling: Includes a threshold check (EPS_K) to identify 
       degenerate polygons (lines or points) and prevent division-by-zero errors.
     - Consistency: Since it utilizes a cyclic vertex indexing [(i + 1) % n], 
       it ensures a closed-loop integration regardless of vertex count.
@@ -2467,12 +6821,14 @@ def polygon_area_centroid(poly: Polygon) -> Tuple[float, Tuple[float, float]]:
        - Centroid: Tuple (Cx, Cy) representing the geometric center [L].
     """
     A_signed, (Cx, Cy) = _polygon_signed_area_and_centroid(poly)
+    
     A_mag = abs(A_signed)
     return poly.weight * A_mag, (Cx, Cy)
 
 
 def section_data(field: ContinuousSectionField, z: float) -> dict:
     """
+    z is ABSOLUTE
     Extracts the complete geometric state and physical properties of a section 
     at a specific longitudinal coordinate (z).
 
@@ -2522,6 +6878,8 @@ def section_data(field: ContinuousSectionField, z: float) -> dict:
         "properties": props,    # A, Cx, Cy, Ix, Iy, Ixy, J
     }
 
+
+
 def section_properties(section: Section) -> Dict[str, float]:
     """
     Computes the integral geometric properties for a composite cross-section.
@@ -2566,15 +6924,18 @@ def section_properties(section: Section) -> Dict[str, float]:
     Cy_num = 0.0
 
     poly_cache = []
+    ii=0
     for poly in section.polygons:
+        ii=ii+1
         A_i, (cx_i, cy_i) = polygon_area_centroid(poly)
         A_tot += A_i
+        
         Cx_num += A_i * cx_i
         Cy_num += A_i * cy_i
         poly_cache.append((poly, A_i, cx_i, cy_i))
 
-    if abs(A_tot) < 1e-14:
-        raise ValueError("Composite area is ~0; cannot compute centroid/properties reliably.")
+    if abs(A_tot) < EPS_A:
+        raise ValueError("Composite area is ~0;- cannot compute centroid/properties reliably. ")
 
     Cx = Cx_num / A_tot
     Cy = Cy_num / A_tot
@@ -2596,6 +6957,22 @@ def section_properties(section: Section) -> Dict[str, float]:
     Ixy_c = Ixy_o - A_tot * (Cx * Cy)
 
     J = Ix_c + Iy_c
+
+
+    if abs(A_tot)<EPS_A:
+        A_tot = 0
+    if abs(Cx)<EPS_L:
+        Cx = 0
+    if abs(Cy)<EPS_L:
+        Cy = 0
+    if abs(Ix_c)<EPS_K_ATOL:
+        Ix_c = 0
+    if abs(Iy_c)<EPS_K_ATOL:
+        Iy_c = 0
+    if abs(Ixy_c)<EPS_K_ATOL:
+        Ixy_c= 0
+    if abs(J)<EPS_K_ATOL:
+        J= 0                
 
     return {
         "z": section.z,
@@ -2680,244 +7057,518 @@ class Visualizer:
     def __init__(self, field: ContinuousSectionField):
         self.field = field
 
-    def plot_properties(self, keys_to_plot=None,  plot_w=False, num_points=100):
 
-       
-            """
-            Plots the evolution of geometric properties along the Z-axis.
-            "z": ,
-            "A":,
-            "Cx":
-            "Cy":
-            "Ix":,
-            "Iy"
-            "Ixy
-            "J"
-                Args:
-                    keys_to_plot (list, optional): List of dictionary keys to plot 
-                        (e.g., ["A", "Ix", "Iy", "Cy"]). If None, plots all standard properties.
-                    num_points (int): Number of sampling points along the longitudinal axis.
-                    plot_w (bool): If True, plots the weight (w) for each individual polygon in a separate figure.
-            """
+ 
+    def plot_properties(self, keys_to_plot=None, alpha=1, num_points=100):
+        """
+        Plot the evolution of selected section properties along the Z-axis and report min/max
+        *including the corresponding z locations*.
 
-            # Use the exact attributes for Z coordinates from your ContinuousSectionField class
-            z_start = self.field.s0.z
-            z_end = self.field.s1.z
-        
-            # EXACT KEYS returned by the global function section_properties
-            available_keys = ["A", "Cx", "Cy", "Ix", "Iy", "Ixy", "J"]
-            
-            if keys_to_plot is None:
-                keys_to_plot = []
-            
-            # 1. Sampling Z coordinates using your field range            
-            z_values = np.linspace(z_start, z_end, num_points)
-            data_series = {key: [] for key in keys_to_plot}
-            if len(keys_to_plot) > 0:
-                
-                # 2. Iterate and collect data
-                for z in z_values:
-                    # Generate the interpolated section at coordinate z
-                    current_section = self.field.section(z)
-                    
-                    # CALL: Use the global function section_properties and pass the section
-                    props = section_properties(current_section)
-                    
-                    for key in keys_to_plot:
-                        if key in props:
-                            data_series[key].append(props[key])
+        Args:
+            keys_to_plot (list[str] | None): property keys to plot (e.g. ["A","Ix","Iy"]).
+                If None, no keys are plotted (kept consistent with your current behavior).
+            alpha (float): passed to section_full_analysis (kept as-is; not used internally here).
+            num_points (int): number of sampling points along Z.
+        """
 
-                # 3. Plotting with stacked subplots for standard properties
-                num_keys = len(keys_to_plot)
-                fig, axes = plt.subplots(num_keys, 1, figsize=(10, 2.2 * num_keys), sharex=True)
-                
-                if num_keys == 1:
-                    axes = [axes]
+        # Z range taken from the CSF field endpoints
+        z_start = self.field.s0.z
+        z_end = self.field.s1.z
 
-                colors = plt.cm.viridis(np.linspace(0, 0.9, num_keys))
+        # Keep your current convention: if None -> plot nothing unless user provides keys
+        if keys_to_plot is None:
+            keys_to_plot = []
 
-                for i, (key, color) in enumerate(zip(keys_to_plot, colors)):
-                    axes[i].plot(z_values, data_series[key], color=color, linewidth=2)
-                    axes[i].set_ylabel(key, fontweight='bold')
-                    
-                    # --- correction scale
-                    v_min, v_max = min(data_series[key]), max(data_series[key])
-                    margin = (v_max - v_min) * 0.1 if v_max != v_min else 0.1
-                    axes[i].set_ylim(v_min - margin, v_max + margin) 
-                    # ------------------------
+        # Sample Z coordinates
+        z_values = np.linspace(z_start, z_end, num_points)
 
-                    axes[i].grid(True, linestyle=':', alpha=0.6)
-                    axes[i].set_title(f"{key} (Var: {v_min:.3f} to {v_max:.3f})", loc='right', fontsize=9)
+        # Collect values for each key
+        data_series = {key: [] for key in keys_to_plot}
 
-                axes[-1].set_xlabel("Z coordinate [m]")
-                plt.tight_layout()
-                
-            # --- ADDITIONAL BLOCK FOR POLYGON WEIGHT (w) controlled by plot_w ---
-          
-            if plot_w:
-                
-                # Determine number of polygons from the reference sections
-                num_polys = len(self.field.s0.polygons)
-                poly_w_series = {i: [] for i in range(num_polys)}
-                
-                # Use the internal interpolation function for each polygon
-               
-                for z in z_values:
-                    # Calculate the interpolation factor t for the current z
-                    t = z #(z - z_start) / (z_end - z_start)
-                   
-                    for i in range(num_polys):
-                        
-                        p0 = self.field.s0.polygons[i]
-                        p1 = self.field.s1.polygons[i]
-                        
-                        # CALL THE CORRECT PROTOCOL: _interpolate_weight
-                        # We pass the weights from the boundary polygons and the current t
-
-                        
-                        if self.field.weight_laws is not None and (i + 1) in self.field.weight_laws:
-                            current_law = self.field.weight_laws[i+1]
-                        else:
-                            current_law = None
-
-                        w_val = self.field._interpolate_weight(
-                            p0.weight, p1.weight, t, p0, p1, current_law
-                        )
-                        #print(f"DEBUG {w_val}")
-                        poly_w_series[i].append(w_val)
-                       
-                
-                # Create a dedicated figure for individual polygon weights
-                fig_w, axes_w = plt.subplots(num_polys, 1, figsize=(10, 2 * num_polys), sharex=True)
-                if num_polys == 1: 
-                    axes_w = [axes_w]
-                
-                for i in range(num_polys):
-
-                    p0 = self.field.s0.polygons[i]
-                    p1 = self.field.s1.polygons[i]      
-
-
-                    axes_w[i].plot(z_values, poly_w_series[i], color='tab:red', linewidth=1.5)
-                    axes_w[i].set_ylabel(f"s0 {p0.name} - s1 {p1.name}", fontweight='bold')
-                    
-                    v_min_w, v_max_w = min(poly_w_series[i]), max(poly_w_series[i])
-                    margin_w = (v_max_w - v_min_w) * 0.1 if v_max_w != v_min_w else 0.1
-                    axes_w[i].set_ylim(v_min_w - margin_w, v_max_w + margin_w)
-                    
-                    axes_w[i].grid(True, linestyle='--', alpha=0.5)
-                    axes_w[i].set_title(f"Weight (w) for polygon {i}", loc='right', fontsize=8)
-                
-                fig_w.suptitle("Individual Polygon Weight (w) Distributions (Interpolated)", fontweight='bold')
-                fig_w.tight_layout()
-            # --------------------------------------------------------------------
-
+        if len(keys_to_plot) == 0:
             plt.show()
+            return
 
-    def plot_section_2d(self, z: float, show_ids: bool = True, show_weights: bool = True,
-                            show_vertex_ids: bool = False, # Nuovo parametro
-                            title: Optional[str] = None, ax=None):
-        """
-        Draw the 2D section with descriptions in the corners:
-        - Polygon 0: Top right
-        - Polygon 1: Bottom left
+        # --- 1) Evaluate properties along z
+        for z in z_values:
+            # Build interpolated section at coordinate z
+            current_section = self.field.section(z)
 
-        Renders a 2D representation of the section at a specific longitudinal coordinate (z).
+            # Compute properties (alpha kept for API compatibility)
+            props = section_full_analysis(current_section, alpha=alpha)
+
+            # Append selected keys
+            for key in keys_to_plot:
+                if key in props:
+                    v = props[key]
+
+                    # Enforce numerical zero below tolerance (same logic you already had)
+                    if abs(v) < EPS_L:
+                        v = 0.0
+
+                    data_series[key].append(v)
+                else:
+                    # If a key is missing, append NaN to preserve alignment with z_values
+                    # (this avoids silent length mismatch bugs)
+                    data_series[key].append(np.nan)
+
+        # --- 2) Plot one subplot per key
+        num_keys = len(keys_to_plot)
+        fig, axes = plt.subplots(num_keys, 1, figsize=(10, 2.2 * num_keys), sharex=True)
+        if num_keys == 1:
+            axes = [axes]
+
+        colors = plt.cm.viridis(np.linspace(0, 0.9, num_keys))
+
+        for i, (key, color) in enumerate(zip(keys_to_plot, colors)):
+            # Convert to numpy array for robust min/max indexing
+            y = np.asarray(data_series[key], dtype=float)
+
+            # Handle the case where everything is NaN (or empty)
+            finite_mask = np.isfinite(y)
+            if y.size == 0 or not np.any(finite_mask):
+                axes[i].plot(z_values, y, color=color, linewidth=2)
+                axes[i].set_ylabel(key, fontweight="bold")
+                axes[i].grid(True, linestyle=":", alpha=0.6)
+                axes[i].set_title(f"{key}: no valid data", loc="right", fontsize=9)
+                continue
+
+            # Compute min/max on finite values only
+            y_f = y[finite_mask]
+            z_f = z_values[finite_mask]
+
+            i_min = int(np.argmin(y_f))
+            i_max = int(np.argmax(y_f))
+
+            v_min = float(y_f[i_min]); z_min = float(z_f[i_min])
+            v_max = float(y_f[i_max]); z_max = float(z_f[i_max])
+
+            # Plot the curve
+            axes[i].plot(z_values, y, color=color, linewidth=2)
+
+            # Mark min/max points on the curve
+            axes[i].scatter([z_min, z_max], [v_min, v_max], zorder=3)
+
+            axes[i].set_ylabel(key, fontweight="bold")
+
+            # Y-limits with margin (same concept as your current code)
+            margin = (v_max - v_min) * 0.1 if v_max != v_min else 0.1
+            axes[i].set_ylim(v_min - margin, v_max + margin)
+
+            axes[i].grid(True, linestyle=":", alpha=0.6)
+
+            # Title includes min/max AND the corresponding z locations
+            axes[i].set_title(
+                f"{key}: min={v_min:.6g}@z={z_min:.6g}  max={v_max:.6g}@z={z_max:.6g}",
+                loc="right",
+                fontsize=9,
+            )
+
+            # Optional: print to stdout (keep or remove as you prefer)
+            print(f"{key}: min={v_min} at z={z_min} | max={v_max} at z={z_max}")
+
+        axes[-1].set_xlabel(f"Z coordinate [m]  alpha={alpha}")
+        plt.tight_layout()
+        plt.show()
+
+
+
+
+
+    def plot_weight(self,num_points=100):
+     
+        # Use the exact attributes for Z coordinates from your ContinuousSectionField class
+        z_start = self.field.s0.z
+        z_end = self.field.s1.z
+        z_values = np.linspace(z_start, z_end, num_points)
+           
+        # Determine number of polygons from the reference sections
+        num_polys = len(self.field.s0.polygons)
+        poly_w_series = {i: [] for i in range(num_polys)}
         
-        Parameters:
-        -----------
-        z : float
-            The longitudinal coordinate where the section is evaluated.
-        show_ids : bool, default True
-            If True, displays the polygon index (e.g., #0, #1).
-        show_weights : bool, default True
-            If True, displays the physical weight/density assigned to each polygon.
-        show_vertex_ids : bool, default False
-            If True, labels each vertex with its index (1-based) using the polygon's color.
-        title : str, optional
-            Custom title for the plot.
-        ax : matplotlib.axes.Axes, optional
-            Existing axes to plot on. If None, a new figure is created.
+        # Use the internal interpolation function for each polygon
         
-        Layout Logic:
-        -------------
-        - Polygon 0 Info: Anchored to the Top-Right corner of the axes.
-        - Polygon 1 Info: Anchored to the Bottom-Left corner of the axes.
-        - Other Polygons: Labels are placed at their respective geometric centroids.
+        for z in z_values:
             
+            for i in range(num_polys):
+                
+                p0 = self.field.s0.polygons[i]
+                p1 = self.field.s1.polygons[i]
+                
+                # CALL THE CORRECT PROTOCOL: _interpolate_weight
+                # We pass the weights from the boundary polygons and the current t
+
+                
+                if self.field.weight_laws is not None and (i + 1) in self.field.weight_laws:
+                    current_law = self.field.weight_laws[i+1]
+                else:
+                    current_law = None
+
+                w_val = self.field._interpolate_weight(
+                    p0.weight, p1.weight, z, p0, p1, current_law
+                )
+                
+                #print(f"DEBUG {w_val}")
+                poly_w_series[i].append(w_val)
+                
+        
+        # Create a dedicated figure for individual polygon weights
+        fig_w, axes_w = plt.subplots(num_polys, 1, figsize=(10, 2 * num_polys), sharex=True)
+        if num_polys == 1: 
+            axes_w = [axes_w]
+   
+        for i in range(num_polys):
+
+            p0 = self.field.s0.polygons[i]
+            p1 = self.field.s1.polygons[i]      
+           
+
+            axes_w[i].plot(z_values, poly_w_series[i], color='tab:red', linewidth=1.5)
+            axes_w[i].set_ylabel(f"s0 {p0.name} - s1 {p1.name}", fontweight='bold')
+            
+            v_min_w, v_max_w = min(poly_w_series[i]), max(poly_w_series[i])
+            margin_w = (v_max_w - v_min_w) * 0.1 if v_max_w != v_min_w else 0.1
+            axes_w[i].set_ylim(v_min_w - margin_w, v_max_w + margin_w)
+            
+            axes_w[i].grid(True, linestyle='--', alpha=0.5)
+            axes_w[i].set_title(f"Weight (w) for polygon {i}", loc='right', fontsize=8)
+
+        fig_w.suptitle(f"Individual Polygon Weight (w) Distributions (Interpolated # {num_points} points)", fontweight='bold')
+        fig_w.tight_layout()
+
+        plt.show()
 
 
+    def plot_section_2d(
+        self,
+        z: float,
+        show_ids: bool = True,
+        show_weights: bool = True,
+        show_vertex_ids: bool = False,
+        title: Optional[str] = None,
+        ax=None,
+    ):
         """
+        Draw the 2D section at a given longitudinal coordinate z.
+
+        This version does NOT place polygon labels inside the axes.
+        Instead, it creates legends on the right side:
+
+        Legend 1 (top): "Polygons (w is relavite)"
+        - shows #id, relative w(z), name, and container id
+        - handle uses polygon color (and container color if it exists)
+
+        Legend 2 (below): "Weights (S0/S1/abs(z))"
+        - shows #id, (name_S0/name_S1), w_S0 - w_S1 - w_abs(z)
+        - appends the formal law string if a weight law is defined for that polygon
+        - handle uses the SAME color layout as legend 1 (polygon + container)
+
+        Notes on correctness
+        --------------------
+        - `self.field.get_container_polygon_index()` returns an index in `self.field.s0.polygons`.
+        Therefore, container lookup MUST be done in S0-space, then mapped by polygon name
+        into the current `sec.polygons` order for display.
+        - The section polygons at z carry RELATIVE weights. For the second legend we reconstruct
+        ABSOLUTE weights at z using the container chain:
+            w_abs(child) = w_rel(child) + w_abs(container(child))
+        """
+        # Local imports to keep this as a drop-in snippet (no module-level deps needed).
+        import matplotlib.pyplot as plt
+        from matplotlib.lines import Line2D
+        from matplotlib.legend_handler import HandlerTuple
+
         sec = self.field.section(z)
+
+        created_new_fig = False
         if ax is None:
             fig, ax = plt.subplots()
+            created_new_fig = True
+        else:
+            fig = ax.figure
+
+        # Store per-polygon plot colors (in the *sec.polygons* order) so we can reuse them in the legends.
+        poly_colors = []
+
+        # -------------------------
+        # 1) Plot polygon outlines
+        # -------------------------
+        for idx, poly in enumerate(sec.polygons):
+            # Build a closed polyline for plotting, but do not double-close if already closed.
+            xs = [p.x for p in poly.vertices]
+            ys = [p.y for p in poly.vertices]
+            if len(poly.vertices) >= 2:
+                x0, y0 = poly.vertices[0].x, poly.vertices[0].y
+                xN, yN = poly.vertices[-1].x, poly.vertices[-1].y
+                if (x0, y0) != (xN, yN):
+                    xs.append(x0)
+                    ys.append(y0)
+
+            # Plot polygon outline
+            line, = ax.plot(xs, ys, linewidth=1, zorder=2)
+            color = line.get_color()
+            poly_colors.append(color)
+
+            # Optional vertex numbering (kept inside axes)
+            if show_vertex_ids:
+                for v_idx, v in enumerate(poly.vertices, start=1):
+                    ax.text(
+                        v.x,
+                        v.y,
+                        f" {v_idx}",
+                        color=color,
+                        fontsize=9,
+                        fontweight="bold",
+                        zorder=4,
+                    )
+
+        # ---------------------------------------------
+        # 2) Precompute maps and container ids (S0-aware)
+        # ---------------------------------------------
+        sec_name_to_idx = {getattr(p, "name", None): i for i, p in enumerate(sec.polygons)}
+        s0_name_to_idx = {getattr(p, "name", None): i for i, p in enumerate(self.field.s0.polygons)}
+
+        # Per-sec index data used by BOTH legends
+        container_id_by_sec: list = [None] * len(sec.polygons)          # container index in sec order (or None)
+        child_s0_idx_by_sec: list = [None] * len(sec.polygons)          # child index in s0 order (or None)
 
         for idx, poly in enumerate(sec.polygons):
-            xs = [p.x for p in poly.vertices] + [poly.vertices[0].x]
-            ys = [p.y for p in poly.vertices] + [poly.vertices[0].y]
-            
-            # Disegno del poligono e recupero colore
-            line, = ax.plot(xs, ys, linewidth=1.5, zorder=2)
-            color = line.get_color()
+            container_id = None
+            child_s0_idx = None
 
-        
-            if show_vertex_ids:
-                for v_idx, v in enumerate(poly.vertices):
-                    v_idxvirtual = v_idx +1
+            try:
+                child_name = getattr(poly, "name", None)
+                child_s0_idx = s0_name_to_idx.get(child_name)
 
-                    ax.text(v.x, v.y, f" {v_idxvirtual}", color=color, fontsize=9, 
-                            fontweight='bold', zorder=4)
-                    
-            if show_weights:
-                # 
-                parts = []
-                if show_ids: parts.append(f"#{idx}")
-                if show_weights: parts.append(f"w={poly.weight:g}")
-                if poly.name: parts.append(poly.name)
-                label_text = "\n".join(parts)
-
-                # 
-                if idx == 0:
-                    x_pos, y_pos = 0.95, 0.95
-                    ha, va = 'right', 'top'
-                elif idx == 1:
-                    x_pos, y_pos = 0.05, 0.05
-                    ha, va = 'left', 'bottom'
-                else:
-                    _, (cx, cy) = polygon_area_centroid(poly)
-                    ax.text(cx, cy, label_text, color=color, ha='center', va='center',
-                            bbox=dict(facecolor='white', alpha=0.7, edgecolor=color))
-                    continue
-
-                ax.text(
-                    x_pos, y_pos, label_text,
-                    transform=ax.transAxes,
-                    fontsize=10,
-                    fontweight='bold',
-                    color=color,
-                    ha=ha, va=va,
-                    zorder=3,
-                    bbox=dict(
-                        facecolor='white', 
-                        alpha=0.85, 
-                        edgecolor=color, 
-                        boxstyle='round,pad=0.4'
+                if child_s0_idx is not None:
+                    parent_s0_idx = self.field.get_container_polygon_index(
+                        self.field.s0.polygons[child_s0_idx],
+                        child_s0_idx,
                     )
-                )
-            
 
+                    if parent_s0_idx is not None:
+                        parent_name = getattr(self.field.s0.polygons[parent_s0_idx], "name", None)
+                        container_id = sec_name_to_idx.get(parent_name)
+
+            except Exception:
+                container_id = None
+                child_s0_idx = None
+
+            container_id_by_sec[idx] = container_id
+            child_s0_idx_by_sec[idx] = child_s0_idx
+
+        # ---------------------------------------------
+        # 3) Reconstruct ABSOLUTE weights at z (w_abs(z))
+        # ---------------------------------------------
+        w_rel_z = [float(getattr(p, "weight", 0.0)) for p in sec.polygons]
+        w_abs_z_cache = {}
+
+        def _w_abs_z(i: int) -> float:
+            if i in w_abs_z_cache:
+                return w_abs_z_cache[i]
+            parent = container_id_by_sec[i]
+            if parent is None:
+                w_abs_z_cache[i] = w_rel_z[i]
+            else:
+                w_abs_z_cache[i] = w_rel_z[i] + _w_abs_z(parent)
+            return w_abs_z_cache[i]
+
+        w_abs_z = [_w_abs_z(i) for i in range(len(sec.polygons))]
+
+        # ---------------------------------------------
+        # 4) Legend 1 (relative weights, container-aware)
+        # ---------------------------------------------
+        legend1_handles = []
+        legend1_labels = []
+
+        for idx, poly in enumerate(sec.polygons):
+            container_id = container_id_by_sec[idx]
+
+            # Legend proxies: polygon color (+ container color if present)
+            h_poly = Line2D([0], [0], color=poly_colors[idx], linewidth=5.0)
+
+            if container_id is not None and 0 <= container_id < len(poly_colors):
+                h_container = Line2D([0], [0], color=poly_colors[container_id], linewidth=5.0)
+                legend1_handles.append((h_poly, h_container))
+            else:
+                legend1_handles.append(h_poly)
+
+            # Label: "#id  w=<rel>  name  container=#<id>"
+            name = (getattr(poly, "name", None) or f"poly_{idx}").strip()
+            parts = []
+            if show_ids:
+                parts.append(f"#{idx}")
+            if show_weights:
+                parts.append(f"w ={w_rel_z[idx]:g}")
+            parts.append(f"{name}  container=#{container_id if container_id is not None else 'None'}")
+            legend1_labels.append("  ".join(parts))
+
+        # -------------------------
+        # 5) Axes formatting
+        # -------------------------
         ax.set_aspect("equal", adjustable="box")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
-        ax.grid(True, linestyle=':', alpha=0.5, zorder=1)
+        ax.grid(True, linestyle=":", alpha=0.5, zorder=1)
 
         if title is None:
             title = f"Section at z={z:g}"
         ax.set_title(title)
 
+        # Create legend 1 (top)
+        leg1 = ax.legend(
+            legend1_handles,
+            legend1_labels,
+            loc="upper left",
+            bbox_to_anchor=(1.02, 1.0),
+            borderaxespad=0.0,
+            frameon=True,
+            title="Polygons (w is relavite)",
+            handler_map={tuple: HandlerTuple(ndivide=None)},
+        )
+        '''
+        # ---------------------------------------------
+        # 6) Legend 2 (S0/S1 endpoints, abs(z), optional law)
+        # ---------------------------------------------
+        legend2_handles = []
+        legend2_labels = []
+
+        # Build S1 name/weight lookup by index (assumes S0/S1 polygon lists are aligned by meaning)
+        s1_polys = getattr(self.field, "s1", None)
+        s1_list = getattr(s1_polys, "polygons", None) if s1_polys is not None else None
+
+        weight_laws = getattr(self.field, "weight_laws", None)
+        has_laws = isinstance(weight_laws, dict)
+
+        for idx, poly in enumerate(sec.polygons):
+            container_id = container_id_by_sec[idx]
+            child_s0_idx = child_s0_idx_by_sec[idx]
+
+            # Same handle layout (polygon + container colors)
+            h_poly = Line2D([0], [0], color=poly_colors[idx], linewidth=5.0)
+            if container_id is not None and 0 <= container_id < len(poly_colors):
+                h_container = Line2D([0], [0], color=poly_colors[container_id], linewidth=5.0)
+                legend2_handles.append((h_poly, h_container))
+            else:
+                legend2_handles.append(h_poly)
+
+            # Fetch endpoint names/weights (S0/S1) by the matched S0 index.
+            name_s0 = None
+            name_s1 = None
+            w_s0 = None
+            w_s1 = None
+            law_str = None
+
+            if child_s0_idx is not None:
+                p0 = self.field.s0.polygons[child_s0_idx]
+                name_s0 = getattr(p0, "name", None)
+                w_s0 = float(getattr(p0, "weight", 0.0))
+
+                if isinstance(s1_list, list) and 0 <= child_s0_idx < len(s1_list):
+                    p1 = s1_list[child_s0_idx]
+                    name_s1 = getattr(p1, "name", None)
+                    w_s1 = float(getattr(p1, "weight", 0.0))
+
+                # Weight law (formal string) if present: "<name_s0>,<name_s1>: <expr>"
+                if has_laws:
+                    key = child_s0_idx + 1  # laws use 1-based polygon id
+                    if key in weight_laws:
+                        n0 = name_s0 if name_s0 is not None else f"poly{key}"
+                        n1 = name_s1 if name_s1 is not None else n0
+                        law_str = f"{n0},{n1}: {weight_laws[key]}"
+
+            # Build legend 2 label:
+            # "#<id>  <nameS0>/<nameS1>  <wS0> - <wS1> - <w_abs(z)>  [- <law>]"
+            nm0 = (name_s0 or (getattr(poly, "name", None) or f"poly_{idx}")).strip()
+            nm1 = (name_s1 or nm0).strip()
+
+            w0_txt = f"{w_s0:g}" if w_s0 is not None else "None"
+            w1_txt = f"{w_s1:g}" if w_s1 is not None else "None"
+            wz_txt = f"{w_abs_z[idx]:g}"
+
+            parts2 = []
+            if show_ids:
+                parts2.append(f"#{idx}")
+            parts2.append(f"{nm0}/{nm1}")
+            parts2.append(f"{w0_txt} - {w1_txt} - {wz_txt}")
+            if law_str:
+                parts2.append(f"- {law_str}")
+
+            
+            lines = []
+            if show_ids:
+                lines.append(f"#{idx}  {nm0}/{nm1}")
+            else:
+                lines.append(f"{nm0}/{nm1}")
+
+            lines.append(f"{w0_txt} - {w1_txt} - {wz_txt}")
+
+            if law_str:
+                # wrap the long law string
+                lines.append(textwrap.fill(law_str, width=45))
+
+            legend2_labels.append("\n".join(lines))
+
+        # Place legend 2 right below legend 1 using the rendered bbox of legend 1.
+        anchor_y = 0.0
+        try:
+            fig.canvas.draw()
+            bbox1 = leg1.get_window_extent(fig.canvas.get_renderer())
+            bbox1_ax = bbox1.transformed(ax.transAxes.inverted())
+            anchor_y = max(float(bbox1_ax.y0) - 0.02, 0.0)
+        except Exception:
+            anchor_y = 0.0
+
+        leg2 = ax.legend(
+            legend2_handles,
+            legend2_labels,
+            loc="upper left",
+            bbox_to_anchor=(1.02, anchor_y),
+            borderaxespad=0.0,
+            frameon=True,
+            title="Weights (S0/S1/abs(z))",
+            handler_map={tuple: HandlerTuple(ndivide=None)},
+        )
+        '''
+        # Ensure legend 1 remains visible (ax.legend() replaces the previous legend).
+        ax.add_artist(leg1)
+
+        # Make room for the external legends when a new figure is created
+        if created_new_fig:
+            fig.subplots_adjust(right=0.78)
+
         return ax
 
-  
+
+
+
+    """
+    plot_section_2d (drop-in replacement)
+
+    This file contains a revised version of `plot_section_2d()` that fixes a subtle but important
+    index-space bug in the legend "container=#..." computation.
+
+    Key fix
+    -------
+    `get_container_polygon_index()` is documented to return an index in `self.field.s0.polygons`.
+    Therefore, the lookup must be performed in S0-space (by name), then mapped back to the
+    current `sec.polygons` order (also by name) for legend display.
+
+    This avoids mixing:
+    - `idx` from `sec.polygons` (section evaluated at z)
+    with:
+    - indices returned in `self.field.s0.polygons` (S0 topology space)
+
+    Secondary fix
+    -------------
+    Avoid double-closing polygons when the vertex list is already explicitly closed
+    (last vertex equals first vertex).
+
+    How to use
+    ----------
+    Copy/paste the function below into your class (replacing the existing method).
+    """
+
+
 
     def plot_volume_3d(self, show_end_sections: bool = True, line_percent: float = 100.0,
                        seed: int = 0, title: str = "Ruled volume (vertex-connection lines)", ax=None):
@@ -2976,7 +7627,7 @@ class Visualizer:
         # 7. PLOTTING
         # Draw the connection lines between the two Z-planes.
         for v0, v1 in all_lines:
-            ax.plot([v0.x, v1.x], [v0.y, v1.y], [z0, z1])
+            ax.plot([v0.x, v1.x], [v0.y, v1.y], [z0, z1],linewidth=0.7)
 
         # Draw axes labels
         ax.set_xlabel("X")

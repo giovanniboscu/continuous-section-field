@@ -1,12 +1,6 @@
-# __init__.py insde the folder csf
 import numpy as np
 import math
-
-try:
-    import opensees.openseespy as ops   # compat layer (opensees/xara)
-except ImportError:
-    import openseespy.opensees as ops  # Linux/Mac
-
+# __init__.py interno alla cartella csf
 
 from .section_field import (
     Pt,
@@ -22,21 +16,23 @@ from .section_field import (
     polygon_statical_moment,
     integrate_volume,
     Visualizer,
-    export_opensees_discretized_sections,
     section_data,
-    export_full_opensees_model,
     compute_saint_venant_J,
     compute_saint_venant_Jv2,
     write_opensees_geometry,
     section_full_analysis_keys,
     section_print_analysis,
-    evaluate_weight_formula,
-    safe_evaluate_weight,
+    safe_evaluate_weight_zrelative,
+    write_sap2000_geometry,
+    write_sap2000_template_pack,
+    plot_section_variation,
+    polygon_area_centroid,
+    list_polygons_with_contents,
+    polygon_surface_w1_inners0
 )
 
-# this is the list "from csf import *"
+# Questa è la lista fondamentale per "from csf import *"
 __all__ = [
-    "ops",
     "Pt",
     "Polygon",
     "Section",
@@ -52,13 +48,9 @@ __all__ = [
     "Visualizer",
     "export_opensees_discretized_sections",
     "section_data",
-    "polygon_statical_moment",
-    "compute_saint_venant_J",
-    "compute_saint_venant_Jv2",
-    "write_opensees_geometry",
-    "section_full_analysis_keys",
-    "section_print_analysis",
-    "evaluate_weight_formula",
-    "safe_evaluate_weight", 
+    "write_sap2000_geometry",
+    "write_sap2000_template_pack",
+    "polygon_area_centroid",
+    "list_polygons_with_contents",
+    "polygon_surface_w1_inners0"
 ]
-

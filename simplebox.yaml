@@ -1,0 +1,22 @@
+CSF:
+  sections:
+    S0:
+      z: 100.0
+      polygons:
+        startsection:
+          weight: 1.0
+          vertices:
+            - [-0.2, -0.2]
+            - [0.2, -0.2]
+            - [0.2, 0.2]
+            - [-0.2, 0.2]
+    S1:
+      z: 110.0
+      polygons:
+        endsection:
+          weight: 0.5
+          vertices:
+            - [-0.2, -0.2]
+            - [0.2, -0.2]
+            - [0.2, 0.2]
+            - [-0.2, 0.2]
