@@ -12,11 +12,10 @@ import matplotlib.pyplot as plt
 from csf import (
     Pt, Polygon, Section, ContinuousSectionField, 
     section_properties, section_full_analysis, 
-    Visualizer, export_opensees_discretized_sections,
+    Visualizer, 
     section_statical_moment_partial, section_stiffness_matrix,
     polygon_inertia_about_origin,
-    export_opensees_discretized_sections,
-    polygon_statical_moment,export_full_opensees_model,
+    polygon_statical_moment,
     compute_saint_venant_J,
     compute_saint_venant_Jv2,
     section_print_analysis,
@@ -83,18 +82,32 @@ if __name__ == "__main__":
     # ----------------------------------------------------------------------------------
     # 5. PRIMARY SECTION PROPERTIES (EVALUATED AT Z = 0.0)
     # ----------------------------------------------------------------------------------
-    zsec_val = 10.0
+    zsec_val = 13.0
     sec_mid = field.section(zsec_val)
  
     full_analysis = section_full_analysis(sec_mid)
+    print(f" Section z={zsec_val}")
     section_print_analysis(full_analysis)
+    
+    zsec_val_kink = 13.1
+    print(f" Section z={zsec_val_kink}")
+    sec_mid = field.section(zsec_val_kink)
+ 
+    full_analysis_kink = section_full_analysis(sec_mid)
+    section_print_analysis(full_analysis_kink)    
+    
+    
     # ----------------------------------------------------------------------------------
     # 6. VISUALIZATION
     # ----------------------------------------------------------------------------------
     viz = Visualizer(field)
     viz.plot_section_2d(z=zsec_val, show_vertex_ids=True,show_weights=True)    
-    viz.plot_volume_3d(line_percent=100.0, seed=1)
-    viz.plot_properties(plot_w=True)
+    viz.plot_volume_3d(line_percent=100.0)
+    #viz.plot_properties( ["A", "K_torsion", "Q_na", "J","J_sv","J_s_vroark","J_s_vroark_fidelity"])
+    viz.plot_properties( ["A","I1","I2","Ixy","J_s_vroark","J_s_vroark_fidelity",])
     
+    
+    
+    field.to_yaml("tsection_lab.yaml")
     plt.show()
 
