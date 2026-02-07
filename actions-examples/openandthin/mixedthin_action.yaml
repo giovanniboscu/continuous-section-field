@@ -9,7 +9,7 @@ CSF_ACTIONS:
     - plot_volume_3d:
         params:
           line_percent: 100.0
-          title: "Ruled volume"   
+          title: "Mixed Torsion Example Model"   
     - plot_section_2d:
           stations:
             - station_midle
