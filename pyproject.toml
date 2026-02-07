@@ -1,31 +1,32 @@
-build-system]^M
-requires = ["setuptools>=61.0"]^M
-build-backend = "setuptools.build_meta"^M
-^M
-[project]^M
-name = "csf-engine"^M
-version = "0.1.0"^M
-description = "An Analytical Engine for Non-Prismatic Structural Members"^M
-readme = "README.md"^M
-authors = [{ name = "Giovanni Boscu" }]^M
-license = { text = "GPL-3.0" }^M
-requires-python = ">=3.8"^M
-keywords = ["structural-mechanics", "analytical-engine", "non-prismatic-beams", "civil-engineering"]^M
-classifiers = [^M
-    "Programming Language :: Python :: 3",^M
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",^M
-    "Operating System :: OS Independent",^M
-    "Topic :: Scientific/Engineering",^M
-]^M
-^M
-dependencies = [^M
-    "numpy",^M
-    "matplotlib",^M
-    "opensees; sys_platform == 'win32'",^M
-    "openseespy; sys_platform != 'win32'"^M
-]^M
-^M
-[tool.setuptools.packages.find]^M
-where = ["."]^M
-include = ["csf*"]^M
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "csf-engine"
+version = "0.1.0"
+description = "An Analytical Engine for Non-Prismatic Structural Members"
+readme = "README.md"
+authors = [{ name = "Giovanni Boscu" }]
+license = { text = "GPL-3.0" }
+requires-python = ">=3.8"
+keywords = ["structural-mechanics", "analytical-engine", "non-prismatic-beams", "civil-engineering"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+]
+
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "PyYAML>=6.0",
+    "opensees; sys_platform == 'win32'",
+    "openseespy; sys_platform != 'win32'"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["csf*"]
 
