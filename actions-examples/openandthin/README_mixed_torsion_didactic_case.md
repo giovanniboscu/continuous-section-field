@@ -183,7 +183,6 @@ This is especially important for circles/ellipses and arbitrary smooth closed co
 
 ---
 
-## 11. Recommended documentation structure for your repository
 
 Use this order in docs:
 
