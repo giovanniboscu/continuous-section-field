@@ -5,17 +5,17 @@ import matplotlib.pyplot as plt
 from csf import (
     Pt, Polygon, Section, ContinuousSectionField, Visualizer,
     section_data, section_derived_properties, 
-    section_statical_moment_partial, integrate_volume,section_stiffness_matrix
+    section_statical_moment_partial, integrate_volume,section_stiffness_matrix,section_print_analysis,section_full_analysis
 )
 
 # =================================================================
 # 1. INPUT PARAMETERS
 # =================================================================
 H = 87.6            
-N_SIDES = 64       
+N_SIDES = 128       
 D_EXT = 4.9350
 THICKNESS = 0.0230
-DENSITY = 7850  # kg/m^3ls -l 
+DENSITY = 7850  # kg/m^3
 
 R_EXT = D_EXT / 2
 R_INT = R_EXT - THICKNESS
@@ -48,19 +48,19 @@ if __name__ == "__main__":
 
     s0 = Section(polygons=(
         create_circular_polygon(R_EXT, N_SIDES, 1.0, name=OUTER_NAME), 
-        create_circular_polygon(R_INT, N_SIDES, -1.0, name=INNER_NAME)
+        create_circular_polygon(R_INT, N_SIDES, 0.0, name=INNER_NAME)
     ), z=0.0)
 
     s1 = Section(polygons=(
         create_circular_polygon(R_EXT, N_SIDES, 1.0, name=OUTER_NAME), 
-        create_circular_polygon(R_INT, N_SIDES, -1.0, name=INNER_NAME)
+        create_circular_polygon(R_INT, N_SIDES, 0.0, name=INNER_NAME)
     ), z=H)
 
     field = ContinuousSectionField(section0=s0, section1=s1)
 
 
     # --- 1. DATA EXTRACTION AND MECHANICAL PARAMETERS ---
-    # Data extraction at mid-height for validation
+    # Data extraction at mid-height for validation (even if it is constant)
     z_mid = H / 2
     data = section_data(field, z_mid)
     p = data['properties']
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     ex_mass_den = ex_a * DENSITY
 
     # Global 3D properties (Volume and total tower mass)
-    num_vol = integrate_volume(field)
+    num_vol = integrate_volume(field,0,H)
     ex_vol = ex_a * H
     num_mass = (num_vol * DENSITY) / 1000
     ex_mass_total = (ex_vol * DENSITY) / 1000
@@ -112,7 +112,7 @@ if __name__ == "__main__":
         ("Bending stiffness about X", "EIxx", ex_i * E_mod, num_eixx, "N*m^2"),
         ("Bending stiffness about Y", "EIyy", ex_i * E_mod, num_eiyy, "N*m^2"),
         ("Symmetry check (Ixy)", "Ixy", 0.0, p['Ixy'], "m^4"),
-        ("Torsional stiffness constant", "J", ex_j, p['J'], "m^4"),
+        ("Torsional stiffness constant", "J_sv", ex_j, p['J'], "m^4"),
         ("Torsional stiffness (GJ)", "GJ", ex_j * G_mod, num_gj, "N*m^2"),
         ("Maximum bending stiffness", "EI_max", ex_i * E_mod, d['I1'] * E_mod, "N*m^2"),
         ("Minimum bending stiffness", "EI_min", ex_i * E_mod, d['I2'] * E_mod, "N*m^2"),
@@ -168,57 +168,62 @@ if __name__ == "__main__":
 
 
 
-    # Dati di input
+    # Input data
     D_ext = 4.9350  # m
     thickness = 0.0230  # m
     D_int = D_ext - (2 * thickness)
 
-    # Proprietà del materiale (Esempio: Acciaio)
-    E = 210e9  # Modulo di Young in Pa (N/m^2)
-    G = 80.7e9 # Modulo elastico tangenziale in Pa (N/m^2)
-    rho = 7850 # Densità in kg/m^3
+    # Material properties (Example: Steel)
+    E = 210e9  # Young's modulus in Pa (N/m^2)
+    G = 80.7e9 # Shear modulus in Pa (N/m^2)
+    rho = 7850 # Density in kg/m^3
 
-    # --- CALCOLI GEOMETRICI ---
+    # --- GEOMETRIC CALCULATIONS ---
 
-    # 1. Area della sezione netta
+    # 1. Net cross-section area
     area = (math.pi / 4) * (D_ext**2 - D_int**2)
 
-    # 2. Momento d'inerzia (I) - Uguale per X e Y per simmetria circolare
+    # 2. Second moment of area (I) - Same for X and Y due to circular symmetry
     I = (math.pi / 64) * (D_ext**4 - D_int**4)
 
-    # 3. Costante torsionale (J) - Per sezioni circolari J = Ix + Iy
+    # 3. Torsional constant (J) - For circular sections J = Ix + Iy
     J = (math.pi / 32) * (D_ext**4 - D_int**4)
 
-    # 4. Modulo di resistenza elastico (W)
+    # 4. Elastic section modulus (W)
     W_el = I / (D_ext / 2)
 
-    # 5. Raggio di inerzia (Buckling radius)
+    # 5. Radius of gyration (buckling radius)
     r = math.sqrt(I / area)
 
-    # 6. Primo momento d'area (per il taglio) - Sezione semicircolare cava
+    # 6. First moment of area (for shear) - Hollow semicircular section
     # Q = (2/3) * (R_ext^3 - R_int^3)
     Q = (1/12) * (D_ext**3 - D_int**3)
 
-    # 7. Massa per unità di lunghezza
+
+    # given:
+    # D_ext: float
+    # thickness: float
+
+    D_int = D_ext - 2.0 * thickness
+
+    J_sv = (math.pi / 32.0) * (D_ext**4 - D_int**4)
+    # equivalently (single expression):
+    J_sv_alt = (math.pi / 32.0) * (D_ext**4 - (D_ext - 2.0 * thickness)**4)
+
+    # radius form:
+    R_o = 0.5 * D_ext
+    R_i = 0.5 * D_int
+    J_sv = (math.pi / 2.0) * (R_o**4 - R_i**4)
+
+
+
+    # 7. Mass
     mass_per_m = area * rho
 
-    # --- OUTPUT ---
-
-    print(f"{'STRUCTURAL PROPERTY':<35} | {'VALUE':<15}")
-    print("=" * 55)
-    print(f"{'Net material cross-section':<35} | {area:>10.4f} m^2")
-    print(f"{'Horizontal center of mass':<35} | {0:>10.4f} m")
-    print(f"{'Vertical center of mass':<35} | {0:>10.4f} m")
-    print(f"{'Axial stiffness (EA)':<35} | {E*area:>10.2e} N")
-    print(f"{'Bending stiffness about X (EIx)':<35} | {E*I:>10.2e} Nm^2")
-    print(f"{'Bending stiffness about Y (EIy)':<35} | {E*I:>10.2e} Nm^2")
-    print(f"{'Symmetry check (Ixy)':<35} | {0:>10.4f} m^4")
-    print(f"{'Torsional stiffness constant (J)':<35} | {J:>10.4f} m^4")
-    print(f"{'Torsional stiffness (GJ)':<35} | {G*J:>10.2e} Nm^2")
-    print(f"{'Maximum bending stiffness':<35} | {E*I:>10.2e} Nm^2")
-    print(f"{'Minimum bending stiffness':<35} | {E*I:>10.2e} Nm^2")
-    print(f"{'Buckling radius about X':<35} | {r:>10.4f} m")
-    print(f"{'Buckling radius about Y':<35} | {r:>10.4f} m")
-    print(f"{'First moment of area (Shear)':<35} | {Q:>10.4f} m^3")
-    print(f"{'Elastic Section Modulus':<35} | {W_el:>10.4f} m^3")
-    print(f"{'Mass per unit length':<35} | {mass_per_m:>10.2f} kg/m")
+    zsec_val=0
+    sec_mid = field.section(zsec_val)
+    full_analysis = section_full_analysis(sec_mid,alpha=1)
+    print(f"Area :{full_analysis['A']}")
+    
+    section_print_analysis(full_analysis)
+    #field.to_yaml("cilinder.yaml")

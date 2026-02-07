@@ -12,18 +12,15 @@ import matplotlib.pyplot as plt
 from csf import (
     Pt, Polygon, Section, ContinuousSectionField, 
     section_properties, section_full_analysis, 
-    Visualizer, export_opensees_discretized_sections,
+    Visualizer, 
     section_statical_moment_partial, section_stiffness_matrix,
     polygon_inertia_about_origin,
-    export_opensees_discretized_sections,
-    polygon_statical_moment,export_full_opensees_model,
+    polygon_statical_moment,
     compute_saint_venant_J,
     compute_saint_venant_Jv2,
     write_opensees_geometry,
     section_full_analysis_keys,
     section_print_analysis,
-    evaluate_weight_formula,
-    safe_evaluate_weight
 )
 
 
@@ -98,7 +95,7 @@ if __name__ == "__main__":
     viz.plot_volume_3d(line_percent=100.0, seed=1)
 
     vizprop = Visualizer(section_field)
-    vizprop.plot_properties(['Cy','Ix','Iy','J'],plot_w=True)
+    vizprop.plot_properties(['Cy','Ix','Iy','J'])
     write_opensees_geometry(section_field, n_points=10, filename=geometryfile)
     #vizprop.plot_properties(['Cy','Ix','Iy','J'])
     plt.show()
