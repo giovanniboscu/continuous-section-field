@@ -1,0 +1,35 @@
+CSF_ACTIONS:
+  # Station sets are lists of absolute z coordinates [m].
+  stations:
+    station_ends:  [0.0, 5.0]
+    station_mid:   [2.5]
+    station_3pt:   [0.0, 2.5, 5.0]
+
+  actions:
+    - section_full_analysis:
+        stations: [station_3pt]
+        output: [stdout, out/full.csv]
+        params:
+          fmt_display: ".6g"
+
+    - plot_section_2d:
+        stations: [station_3pt]
+        output: [stdout, out/sections.bmp]
+
+    - plot_properties:
+        # This action samples internally between z0 and z1; stations are not used.
+        output: [stdout, out/properties.png]
+        properties: [A, Ix, Iy, Cx, Cy]
+        params:
+          num_points: 80
+
+    - export_yaml:
+        # Must contain exactly two z values.
+        stations: [station_ends]
+        output: [out/exported_geometry.yaml]
+        
+
+    - plot_volume_3d:
+          params:
+            line_percent: 100.0
+            title: "Ruled volume"          
