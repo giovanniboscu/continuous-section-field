@@ -1,0 +1,102 @@
+# Explicit thickness override for thin-wall torsion (@wall):
+#
+# Why @t is needed
+# ----------------
+# The automatic thickness estimate uses:
+#     t_est = 2A / P
+# where A is polygon area and P is polygon perimeter.
+#
+# For a rectangular wall strip (length b, thickness t):
+#     A = b*t
+#     P = 2(b+t)
+# so:
+#     t_est = 2A/P = (b*t)/(b+t)
+#
+# This is NOT exactly t.
+# It approaches t only in the very thin-strip limit (b >> t):
+#     (b*t)/(b+t) ≈ t
+# Otherwise it underestimates thickness, and this directly affects torsion.
+#
+# Impact on J_sv_wall
+# -------------------
+# In open thin-walled Saint-Venant torsion, each wall contribution scales with t^3
+# (equivalently J_i ~ A*t^2/3 in the implemented form).
+# Therefore, even a moderate thickness underestimation causes a large drop in J.
+#
+# IPE100 simplified model choice
+# ------------------------------
+# To keep the torsion model aligned with nominal section dimensions,
+# we force thickness explicitly in polygon names:
+#   - web thickness    tw = 4.1 mm  = 0.41 cm
+#   - flange thickness tf = 5.7 mm  = 0.57 cm
+#
+# This removes ambiguity from geometry-based t estimation and makes J_sv_wall
+# consistent with the intended open thin-walled analytical formulation for
+# the simplified 3-wall IPE representation (web + 2 flanges).
+#
+# Note
+# ----
+# Remaining difference vs tabulated rolled IPE torsional constants is expected:
+# this simplified model does not include full rolled-shape details (e.g. root
+# fillets and local transitions), and tabulated values are based on the real profile.
+
+web@wall@t=0.41:
+top_flange@wall@t=0.57:
+bottom_flange@wall@t=0.57:
+
+CSF:
+  sections:
+    S0:
+      z: 0.0   # cm
+      polygons:
+        web@wall@t=0.41:
+          weight: 1.0
+          vertices:
+            - [-0.205, -4.430]
+            - [ 0.205, -4.430]
+            - [ 0.205,  4.430]
+            - [-0.205,  4.430]
+
+        top_flange@wall@t=0.57:
+          weight: 1.0
+          vertices:
+            - [-2.750,  4.430]
+            - [ 2.750,  4.430]
+            - [ 2.750,  5.000]
+            - [-2.750,  5.000]
+
+        bottom_flange@wall@t=0.57:
+          weight: 1.0
+          vertices:
+            - [-2.750, -5.000]
+            - [ 2.750, -5.000]
+            - [ 2.750, -4.430]
+            - [-2.750, -4.430]
+
+    S1:
+      z: 2000.0   # cm (20 m)
+      polygons:
+        web@wall:
+          weight: 1.0
+          vertices:
+            - [-0.205, -4.430]
+            - [ 0.205, -4.430]
+            - [ 0.205,  4.430]
+            - [-0.205,  4.430]
+
+        top_flange@wall:
+          weight: 1.0
+          vertices:
+            - [-2.750,  4.430]
+            - [ 2.750,  4.430]
+            - [ 2.750,  5.000]
+            - [-2.750,  5.000]
+
+        bottom_flange@wall:
+          weight: 1.0
+          vertices:
+            - [-2.750, -5.000]
+            - [ 2.750, -5.000]
+            - [ 2.750, -4.430]
+            - [-2.750, -4.430]
+

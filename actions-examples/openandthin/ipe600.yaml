@@ -1,3 +1,18 @@
+# NOTE:
+# This IPE section is modeled as a single closed polygon ("ipe600"), i.e. one solid contour.
+# In this representation there are no separate wall parts (web/flanges) tagged with @wall.
+# Therefore the @wall torsional workflow is not applicable here.
+#
+# Why:
+# - @wall expects explicit wall polygons (e.g., web@wall, top_flange@wall, bottom_flange@wall),
+#   each representing a thin-walled component with its own thickness (optionally @t=...).
+# - A single closed polygon does not provide that decomposition, so wall-by-wall thin-wall
+#   Saint-Venant evaluation cannot be defined consistently from this input alone.
+#
+# Practical consequence:
+# - Keep this geometry as a "single-polygon solid example" for generic section properties.
+# - If you want to use J_sv_wall, rebuild the same profile as multiple polygons and tag them @wall.
+#
 CSF:
   sections:
     S0:

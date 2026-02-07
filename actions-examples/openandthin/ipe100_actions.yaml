@@ -10,9 +10,12 @@ CSF_ACTIONS:
         params:
           line_percent: 100.0
           title: "Ruled volume"   
+    - plot_section_2d:
+          stations:
+            - station_midle
     - section_selected_analysis:
         stations: station_midle
-        output:
-          - stdout
-        properties: [A, Cx, Cy, Ix, Iy, J_sv_wall]
-
+        properties: [A, Cx, Cy,Ix, Iy, J_sv_wall]
+        params:
+          fmt_display: ".5g"         
+                      
