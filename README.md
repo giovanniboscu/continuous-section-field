@@ -24,6 +24,12 @@ From this continuous description, CSF evaluates **section properties and derived
 
 CSF is a preprocessing tool for defining varying cross-section geometry and evaluating geometry-based section properties and derived fields along z. It is not a structural solver and does not implement constitutive nonlinearities (plasticity, cracking, damage).
 
+### No Python Programming Required
+
+You can run CSF workflows without writing Python code by using YAML-based inputs (`geometry.yaml` + `actions.yaml`).
+
+See the full step-by-step tutorial here:  
+[CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md)
 
 
 
