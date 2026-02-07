@@ -9,18 +9,20 @@
 
 **[Key Features](#key-features)** • **[Installation & setup](#setup-environment-linux--windows)** • **[Continuously Tapered Beam Example](#worked-example-continuously-tapered-t-beam)** •**[Validation](#-CSF-Numerical-Validation:-Circular-Hollow-Section)** • **[NREL 5-MW Case Study ](#numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
 
-## Continuous Section Field (CSF): Non-Prismatic, Multi-Material Members - Programmable via Python API, Usable Without Coding via CSFReader (YAML)
+
+
+## Continuous Section Field (CSF): Non-Prismatic, Multi-Material Members — Python API or No-Code YAML (CSFReader + CSFActions)
 
 **Continuous Section Field (CSF)** is a Python engine for **non-prismatic** and **non-homogeneous** beam-like members, designed as a *continuous pre-processor* for structural solvers.
 
-CSF treats a member as a **continuous field along the axis z**, combining two independent (but coupled) descriptions:
+CSF represents a member as a **continuous field along the axis z**, combining two coupled descriptions:
 
-- **Continuous Geometry** via ruled-surface interpolation between arbitrary polygonal end sections (taper, changing topology, multi-cell shapes).
-- **Continuous Material/Stiffness Laws** via user-defined longitudinal functions **w(z)**, optionally applied per polygon (multi-material, degradation laws, staged stiffness, void logic through negative weights).
+- **Continuous geometry** defined explicitly by the user as **arbitrary polygonal sections** at stations (e.g., S0 and S1), with interpolation between stations for tapered / varying shapes.
+- **Continuous material / stiffness laws** defined by user-provided longitudinal functions **w(z)**, optionally per polygon (multi-material layouts, staged stiffness, degradation laws). Voids and composite behavior are modeled explicitly through dedicated polygons and CSF’s composition rules.
 
-From this continuous description, CSF evaluates **section properties and stiffness/mass fields** (e.g., \(A(z), I(z), C(z), EA(z), EI(z), GJ(z)\)) and exports **solver-ready station data** for force-based beam formulations (e.g., OpenSees `forceBeamColumn`) using **Gauss–Lobatto stationing** so the member ends are sampled exactly.
+From this continuous description, CSF evaluates **section properties and derived fields** (e.g., \(A(z), I(z), C(z), EA(z), EI(z), GJ(z)\)) and can export **solver-ready station data**. For force-based beam formulations (e.g., OpenSees `forceBeamColumn`), CSF can generate **Gauss–Lobatto stationing** so member ends are sampled exactly.
 
-CSF targets **linear-elastic beam modeling and preprocessing** (visualization, export, validation). It does **not** model cracking, damage, or nonlinear material behavior.
+CSF is a preprocessing tool for defining varying cross-section geometry and evaluating geometry-based section properties and derived fields along z. It is not a structural solver and does not implement constitutive nonlinearities (plasticity, cracking, damage).
 
 
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
