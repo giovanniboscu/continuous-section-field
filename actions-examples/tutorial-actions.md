@@ -69,21 +69,73 @@ For a tapered member, the minimum useful case is:
 
 CSF uses these two to build a continuous field between them.
 
-### 3.2 Key rules to follow
+### 3.2 Key rules to follow (corrected)
 
-1. **Same polygon names at all stations**
-   - If you call the polygon `rect` at `S0`, you must also call it `rect` at `S1`.
+1. **Polygon names must be unique within the same section**
+   - Inside `S0`, every polygon key must be unique.
+   - Inside `S1`, every polygon key must be unique.
 
-2. **Same number of vertices for the same polygon**
-   - If `rect` has 4 vertices at `S0`, it must have 4 vertices at `S1`.
+2. **Across different sections (`S0` vs `S1`), polygon names can be different**
+   - You may call a polygon `start` in `S0` and `end` in `S1`.
+   - Matching between sections is not based on forcing equal text labels.
 
-3. **Vertices must be CCW (counter-clockwise)**
-   - CSF expects CCW orientation as a precondition. Do not rely on downstream “fixes”.
+3. **Topological consistency remains required**
+   - The corresponding polygon pair used for interpolation must represent the same logical part.
+   - Keep the same vertex count for corresponding polygons.
 
-4. **No silent defaults**
-   - If the polygon requires `weight`, provide it explicitly.
+4. **Vertices must be CCW (counter-clockwise)**
+   - CSF expects CCW orientation as a precondition.
 
-### 3.3 The actual geometry.yaml for the example
+5. **No silent defaults**
+   - If a required attribute (e.g., `weight`) is expected by your model/pipeline, declare it explicitly.
+
+> **Important correction**  
+> The statement “polygon names in `S0` and `S1` must be identical” is **not generally true**.  
+> What must hold is **uniqueness in each section** plus **valid correspondence/topology** between sections.
+
+### 3.3 Naming examples: valid vs invalid
+
+#### Valid (different names across sections)
+
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        start:
+          weight: 1.0
+          vertices:
+            - [-0.5, 0.0]
+            - [ 0.5, 0.0]
+            - [ 0.5, 1.0]
+            - [-0.5, 1.0]
+
+    S1:
+      z: 5.0
+      polygons:
+        end:
+          weight: 1.0
+          vertices:
+            - [-0.5, 0.0]
+            - [ 0.5, 0.0]
+            - [ 0.5, 2.0]
+            - [-0.5, 2.0]
+```
+
+#### Invalid (duplicate name in same section)
+
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        rect: {weight: 1.0, vertices: [[0,0],[1,0],[1,1],[0,1]]}
+        rect: {weight: 1.0, vertices: [[2,0],[3,0],[3,1],[2,1]]}  # duplicate key -> invalid
+```
+
+### 3.4 Full `geometry.yaml` for the example
 
 Save the following as `geometry.yaml`:
 
@@ -95,7 +147,7 @@ CSF:
     S0:
       z: 0.0
       polygons:
-        rect:
+        start:
           weight: 1.0
           vertices:
             # CCW vertices
@@ -107,7 +159,7 @@ CSF:
     S1:
       z: 5.0
       polygons:
-        rect:
+        end:
           weight: 1.0
           vertices:
             # CCW vertices
@@ -148,7 +200,7 @@ Many actions are evaluated at specific z coordinates, such as:
 - 2D plots at those same positions
 - exporting the end sections
 
-Defining station sets avoids repeating the raw numbers everywhere.
+Defining station sets avoids repeating raw numbers everywhere.
 
 In this example we define:
 
@@ -157,8 +209,6 @@ In this example we define:
 - `station_3pt`: `[0.0, 2.5, 5.0]`
 
 ### 4.4 Actions used in the example (what each one does)
-
-We use five actions:
 
 1. `section_full_analysis`
    - Computes a standard set of section properties at the given stations.
@@ -170,16 +220,16 @@ We use five actions:
 
 3. `plot_properties`
    - Plots how properties evolve along z (e.g., A, Ix, Iy, Cx, Cy).
-   - Important: this action **samples internally** along z and does not take stations.
+   - This action samples internally along z and does not use station sets.
 
 4. `export_yaml`
    - Exports the sections at two stations (typically the ends) into a new geometry YAML.
 
 5. `plot_volume_3d`
    - Plots the ruled volume built by interpolating between S0 and S1.
-   - Like `plot_properties`, it typically does internal sampling (no stations).
+   - It usually uses internal sampling.
 
-### 4.5 The actual actions.yaml for the example
+### 4.5 Full `actions.yaml` for the example
 
 Save the following as `actions.yaml`:
 
@@ -230,7 +280,7 @@ From the directory containing both files:
 python CSFActions.py geometry.yaml actions.yaml
 ```
 
-### 5.1 Output files you should see
+### 5.1 Expected output files
 
 Depending on your configured output paths, you should get:
 
@@ -238,71 +288,70 @@ Depending on your configured output paths, you should get:
 - `out/sections.bmp` — 2D section plot(s)
 - `out/properties.png` — curves of A, Ix, Iy, Cx, Cy along z
 - `out/exported_geometry.yaml` — exported end sections
-- (3D volume plot output depends on your implementation; some versions only show it, some also save it)
+- (3D volume plot behavior depends on your implementation: show only, or show + save)
 
-If an `out/` directory does not exist, create it first (or change the paths).
+If `out/` does not exist, create it first (or change output paths).
 
 ---
 
-## 6. What Results Should Look Like (Sanity Checks)
+## 6. Sanity Checks (Quick Validation)
 
-Because the width is constant and height increases linearly, you should expect:
+Because width is constant and height increases linearly, you should expect:
 
 - Area:  
   \( A(z) = b \cdot h(z) \)  
-  So A should increase linearly from 1.0 to 2.0.
+  so A increases linearly from 1.0 to 2.0.
 
-- Centroid y-coordinate (with base at y=0):  
+- Centroid y-coordinate (base at y=0):  
   \( C_y(z) = h(z)/2 \)  
-  So Cy increases from 0.5 to 1.0.
+  so Cy increases from 0.5 to 1.0.
 
-- Second moment of area about x-axis for a rectangle about its base:
-  If computed about centroid (common),  
+- Rectangle centroidal inertia around x:
   \( I_x(z) = b h(z)^3 / 12 \)  
-  So Ix grows with \(h^3\): strongly non-linear.
+  so Ix grows nonlinearly with \(h^3\).
 
-These checks help confirm the interpolation and evaluation are working.
+If your trends are qualitatively different, check geometry correspondence and orientation first.
 
 ---
 
-## 7. Common Mistakes and How to Fix Them
+## 7. Common Mistakes and Fixes
 
-### 7.1 “Stations missing” or “Stations invalid”
-- Ensure station set names exist under `CSF_ACTIONS.stations`.
-- Ensure `stations:` references the station set correctly, e.g. `stations: [station_3pt]`.
+### 7.1 Incorrect belief: “names must be identical in S0 and S1”
+- **Correction**: names may differ across sections.
+- Required: unique names within each section + valid correspondence/topology.
 
-### 7.2 Polygon mismatch between S0 and S1
-- Same polygon name at both stations.
-- Same number of vertices at both stations.
+### 7.2 Duplicate polygon key in same section
+- Fix by making each polygon key unique in that section.
 
-### 7.3 Wrong orientation (CW instead of CCW)
-- Reverse vertex order to make it CCW.
-- Do not rely on internal auto-fixes.
+### 7.3 Vertex mismatch on corresponding polygons
+- Ensure corresponding polygons have the same vertex count/order convention.
 
-### 7.4 Output path errors
-- Create `out/` directory or change the output paths.
+### 7.4 Wrong orientation (CW instead of CCW)
+- Reverse vertex order to CCW.
 
-### 7.5 “fmt_display does nothing”
-- `fmt_display` affects text formatting (stdout/txt), not necessarily CSV formatting.
-- Verify which action uses it and for which outputs.
+### 7.5 Output path errors
+- Create `out/` first or update paths.
+
+### 7.6 `fmt_display` expectations
+- It generally affects text display formatting, not every file format.
 
 ---
 
 ## 8. Extensions (Next Steps)
 
-Once this works, you can extend the same pattern:
-
-1. Add more stations (S2, S3, ...) if you want piecewise-defined geometry.
-2. Add multiple polygons to represent multi-material or voids (composite/nesting).
-3. Add solver writers:
+1. Add more stations (`S2`, `S3`, ...) for piecewise evolution.
+2. Add multiple polygons for composite parts/void modeling.
+3. Add solver-writer actions:
    - `write_opensees_geometry`
    - `write_sap2000_geometry`
-4. Change station sets to concentrate evaluation where needed (e.g., near discontinuities).
+4. Refine station sets to increase sampling near critical z zones.
 
 ---
 
-## Summary
+## 9. Final Rule to Remember
 
-- `geometry.yaml` defines the “what”: cross-section polygons at station sections.
-- `actions.yaml` defines the “how/when”: which z-stations to evaluate and which outputs to generate.
-- With these two files, you can run full analyses and generate plots without touching Python code.
+For polygon naming in CSF station sections:
+
+- **Within one section (e.g., S0), names must be unique.**
+- **Between different sections (S0 vs S1), names can be different.**
+- Geometry interpolation correctness depends on correspondence/topology, not string equality alone.
