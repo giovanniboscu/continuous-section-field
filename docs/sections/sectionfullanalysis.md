@@ -1171,6 +1171,129 @@ Interpretation:
 - **Selection is policy-driven**, not profile-driven **
 - This guarantees transparency, robustness, and solver independence.
 
+# Interpreting `J_s_vroark_fidelity` and Reading the Plot in Practice
+
+## Purpose
+
+This page explains how to interpret `J_s_vroark_fidelity` in CSF and how to read the associated plot correctly, using non-prismatic sections (including T-like cases).
+
+It is intentionally practical and documentation-oriented.
+
+---
+
+## What `J_s_vroark_fidelity` means
+
+`J_s_vroark_fidelity` is a **method-internal consistency indicator** for the same equivalent-mapping pipeline used to compute `J_s_vroark`.
+
+Use it to:
+
+- compare reliability trends along `z` **within the same model and same method**,
+- identify sections where the equivalent mapping is more/less stable.
+
+Do **not** use it as:
+
+- an absolute, geometry-independent physical accuracy metric.
+
+---
+
+## Why sharp points can appear without a discontinuity
+
+For many variable sections, principal inertia `I2(z)` can show a sharp point (kink) when the governing branch changes (commonly near `Ix ≈ Iy`, especially when `Ixy ≈ 0`).
+
+Important distinction:
+
+- **Kink**: curve is continuous, slope changes abruptly.
+- **Jump**: curve value itself is discontinuous.
+
+A sharp visual point in the plot is not automatically a jump.
+
+---
+
+## How to read the fidelity plot correctly
+
+When you look at `J_s_vroark_fidelity(z)`:
+
+1. **Check continuity first**  
+   If the curve is continuous and smooth except for mild corners, behavior is usually numerically consistent.
+
+2. **Correlate with inertia branches**  
+   Plot `Ix`, `Iy`, `I2` together.  
+   If `Ix-Iy` crosses zero, `I2` may change branch and show a kink.
+
+3. **Do not over-interpret local sharpness**  
+   A narrow sharp point can be a branch-swap signature, not a solver failure.
+
+4. **Read fidelity as a trend**  
+   Focus on zones where fidelity degrades persistently over intervals, not on one single point.
+
+---
+
+## Minimum diagnostic workflow (recommended)
+
+For suspicious points in the plot:
+
+1. Compute left/right values around suspect `z*`:
+   - evaluate at `z* - dz`, `z* + dz` for shrinking `dz`.
+2. Verify whether `Δ = I2(z*+dz)-I2(z*-dz)` tends to zero.
+3. Check sign change of `g(z)=Ix(z)-Iy(z)` around the same interval.
+4. If `Δ → 0` and `g` changes sign, classify as **continuous kink**.
+
+This is the preferred practical test to separate a real discontinuity from branch switching.
+
+---
+
+## Practical interpretation bands (documentation guidance)
+
+You may use these as reporting guidance (not hard physics thresholds):
+
+- **High confidence zone**: fidelity stable and high over an interval.
+- **Moderate confidence zone**: fidelity usable for trend comparison; watch local geometry transitions.
+- **Low confidence zone**: report explicitly that equivalent-mapping assumptions are stressed.
+
+Always pair this with engineering judgment and, when needed, higher-fidelity torsion methods.
+
+---
+
+## Suggested wording for reports
+
+Use this wording in outputs/manuals:
+
+> `J_s_vroark_fidelity` quantifies internal consistency of the equivalent-mapping approach used for `J_s_vroark` along the member axis.  
+> It is intended for comparative trend reading within the same method, not as a universal physical accuracy guarantee for arbitrary section shapes.
+
+---
+
+## Plot-reading checklist (quick)
+
+Before concluding there is a bug, verify:
+
+- [ ] `I2` left/right test with shrinking `dz`  
+- [ ] `Ix-Iy` sign around the same `z`  
+- [ ] `Ixy` magnitude (near zero often implies branch behavior is easier to interpret)  
+- [ ] no true jump in value, only slope change  
+- [ ] fidelity interpreted as method-confidence trend, not absolute truth
+
+---
+
+## Recommended figure set in documentation
+
+To make interpretation robust, include these plots together:
+
+1. `Ix(z), Iy(z), I2(z)` (same figure)  
+2. `Ix(z)-Iy(z)` (crossing visibility)  
+3. `J_s_vroark(z)`  
+4. `J_s_vroark_fidelity(z)`
+
+This combination avoids misreading isolated curves.
+
+---
+
+## Final note
+
+A sharp point in `I2` or in a related indicator may be a legitimate geometric-transition signature.  
+The correct criterion is continuity testing, not visual smoothness alone.
+
+
 For the formal torsional selection rules, see:
 
 **README-P.md – CSF Torsional Constant Policy**
