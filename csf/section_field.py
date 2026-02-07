@@ -2483,29 +2483,87 @@ We therefore scale each polygon contribution by abs(weight), consistent with you
 compute_saint_venant_J_wall implementation.
 
 """
-
-
-
 def compute_saint_venant_J_cell(section: "Section") -> float:
     """
-    Closed-cell Saint-Venant torsional constant J_sv [m^4] using Bredt-Batho (single-cell).
+    Compute closed-cell Saint-Venant torsional constant J_sv [m^4]
+    for polygons tagged as @cell/@closed, using a Bredt-Batho style formula.
 
-    Returns legacy compute_saint_venant_J(section) if no @cell/@closed polygon is present.
+    ================================================================================
+    MODELING CONTRACT (IMPORTANT)
+    ================================================================================
+    This function expects the CSF "slit-cell" encoding inside a SINGLE polygon:
+
+        [outer_loop..., repeat(outer_start),
+         inner_loop..., repeat(inner_start)]
+
+    In other words, each @cell polygon contains two closed loops:
+      - an OUTER loop
+      - an INNER loop
+    both encoded consecutively in the vertex list.
+
+    Why this encoding:
+      - It provides explicit geometric control for thin-walled closed-cell torsion.
+      - It avoids hidden topology inference.
+      - It remains compatible with generic loop shapes (not only rectangles).
+
+    ================================================================================
+    ROBUSTNESS / GENERICITY
+    ================================================================================
+    This implementation is robust for generic closed contours (circles, ellipses,
+    arbitrary polygons), and for different outer/inner discretizations, by:
+
+      1) Splitting OUTER and INNER loops from slit encoding.
+      2) Normalizing loop orientation to CCW (same parametric direction).
+      3) Re-sampling both loops by normalized curvilinear abscissa s in [0, 1).
+      4) Performing cyclic phase alignment (best circular shift) between re-sampled
+         loops before midline construction.
+      5) Building midline from pointwise average at aligned s positions.
+      6) Computing J with Bredt-Batho constant-thickness expression:
+             J = 4 * A_m^2 * t / b_m
+         where:
+             A_m = midline enclosed area
+             b_m = midline perimeter
+             t   = wall thickness
+
+    This fixes the classic failure mode where mismatched start points produce a
+    distorted midline and underestimated J.
+
+    ================================================================================
+    THICKNESS POLICY
+    ================================================================================
+    - By default, explicit thickness is REQUIRED via @t=<value>.
+    - If REQUIRE_EXPLICIT_T is set to False, fallback thickness t = 2A/P is used.
+      (Not recommended for production due to sensitivity/ambiguity.)
+
+    ================================================================================
+    FALLBACK WHEN NO @CELL IS PRESENT
+    ================================================================================
+    If no polygon is tagged @cell/@closed, this function returns the legacy
+    compute_saint_venant_J(section) value.
+
+    Returns
+    -------
+    float
+        Total non-negative closed-cell Saint-Venant torsional constant [m^4].
     """
     TOKEN_CELL = "@cell"
     TOKEN_CLOSED = "@closed"
     TOKEN_T = "@t="
 
-    # Strictness: closed-cell torsion should not guess thickness by default.
+    # Strict policy: do not guess structural thickness unless explicitly allowed.
     REQUIRE_EXPLICIT_T = True
+
+    # Number of samples used for curvilinear re-sampling of each loop.
+    # Higher values improve smoothness/accuracy on curved contours at higher cost.
+    MIDLINE_SAMPLES = 256
 
     polys = getattr(section, "polygons", None)
     if not polys:
         return 0.0
 
-    # -----------------------------
-    # 0) Select cell polygons
-    # -----------------------------
+    # -------------------------------------------------------------------------
+    # 0) Select closed-cell polygons by tag in name
+    # -------------------------------------------------------------------------
     cell_polys = []
     for p in polys:
         nm = str(getattr(p, "name", "") or "")
@@ -2513,27 +2571,29 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         if (TOKEN_CELL in low) or (TOKEN_CLOSED in low):
             cell_polys.append(p)
 
-    # IMPORTANT: per spec, if nothing is tagged, fall back to legacy (NOT 0.0).
+    # Per specification: no @cell -> fallback to legacy torsion.
     if not cell_polys:
-        return 0
+        return compute_saint_venant_J(section)
 
-    # -----------------------------
-    # 1) Helpers
-    # -----------------------------
+    # -------------------------------------------------------------------------
+    # 1) Geometry and parsing helpers
+    # -------------------------------------------------------------------------
     def _xy_list(poly) -> List[Tuple[float, float]]:
+        """
+        Return polygon vertices as [(x,y), ...] floats.
+        Repeated closure vertices are intentionally preserved because loop splitting
+        relies on them.
+        """
         verts = getattr(poly, "vertices", None)
         if not verts or len(verts) < 3:
             return []
-        out = [(float(v.x), float(v.y)) for v in verts]
-        # Drop explicit closure (last == first) if present.
-        if len(out) >= 2:
-            x0, y0 = out[0]
-            x1, y1 = out[-1]
-            if abs(x1 - x0) <= EPS_L and abs(y1 - y0) <= EPS_L:
-                out = out[:-1]
-        return out
+        return [(float(v.x), float(v.y)) for v in verts]
 
     def _perimeter_xy(xy: List[Tuple[float, float]]) -> float:
+        """
+        Perimeter of a closed polygonal chain.
+        The chain is considered closed by connecting last->first implicitly.
+        """
         n = len(xy)
         if n < 2:
             return 0.0
@@ -2547,6 +2607,10 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         return P
 
     def _signed_area_xy(xy: List[Tuple[float, float]]) -> float:
+        """
+        Signed area by shoelace formula.
+        Positive for CCW orientation, negative for CW orientation.
+        """
         n = len(xy)
         if n < 3:
             return 0.0
@@ -2558,16 +2622,26 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         return 0.5 * a2
 
     def _key(pt: Tuple[float, float], ndigits: int = 12) -> Tuple[float, float]:
+        """
+        Quantized key used to robustly detect repeated closure points.
+        """
         return (round(pt[0], ndigits), round(pt[1], ndigits))
 
     def _parse_t(name: str) -> Optional[float]:
+        """
+        Parse @t=<value> from polygon name.
+        Accepted numeric syntax includes scientific notation.
+        Returns positive float thickness or None.
+        """
         low = name.lower()
         idx = low.find(TOKEN_T)
         if idx < 0:
             return None
+
         start = idx + len(TOKEN_T)
         if start >= len(name):
             return None
+
         allowed = set("0123456789.+-eE")
         s = []
         for ch in name[start:]:
@@ -2575,172 +2649,276 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
                 s.append(ch)
             else:
                 break
+
         if not s:
             return None
+
         try:
             tval = float("".join(s))
         except Exception:
             return None
+
         if tval <= 0.0:
             return None
+
         return tval
 
-    # -----------------------------
-    # 2) Compute J
-    # -----------------------------
+    def _resample_closed_by_s(xy: List[Tuple[float, float]], n_samples: int) -> List[Tuple[float, float]]:
+        """
+        Re-sample a closed loop using uniform normalized curvilinear abscissa.
+
+        Input:
+            xy        : loop vertices (without explicit repeated endpoint)
+            n_samples : number of uniform samples over [0, total_length)
+
+        Output:
+            list of sampled points length n_samples
+
+        This decouples downstream operations from original vertex count/distribution.
+        """
+        if len(xy) < 3:
+            raise CSFError("compute_saint_venant_J_cell(v3): cannot resample degenerate loop (<3 points).")
+        if n_samples < 8:
+            raise CSFError("compute_saint_venant_J_cell(v3): n_samples too small; use >= 8.")
+
+        pts = list(xy)
+        pts.append(xy[0])  # explicit closure for segment traversal
+
+        seg_len = []
+        cum = [0.0]
+        for i in range(len(pts) - 1):
+            dx = pts[i + 1][0] - pts[i][0]
+            dy = pts[i + 1][1] - pts[i][1]
+            L = (dx * dx + dy * dy) ** 0.5
+            seg_len.append(L)
+            cum.append(cum[-1] + L)
+
+        total = cum[-1]
+        if total <= EPS_L:
+            raise CSFError("compute_saint_venant_J_cell(v3): loop perimeter is near zero.")
+
+        out = []
+        step = total / float(n_samples)
+        j = 0
+
+        for k in range(n_samples):
+            target = k * step
+
+            while j < len(seg_len) - 1 and cum[j + 1] < target:
+                j += 1
+
+            L0 = cum[j]
+            L1 = cum[j + 1]
+
+            if (L1 - L0) <= EPS_L:
+                out.append((pts[j][0], pts[j][1]))
+                continue
+
+            a = (target - L0) / (L1 - L0)
+            x = pts[j][0] + a * (pts[j + 1][0] - pts[j][0])
+            y = pts[j][1] + a * (pts[j + 1][1] - pts[j][1])
+            out.append((x, y))
+
+        return out
+
+    def _best_cyclic_shift(a: List[Tuple[float, float]], b: List[Tuple[float, float]]) -> int:
+        """
+        Find circular shift s of sequence b minimizing sum of squared distances:
+            min_s Σ || a[i] - b[(i+s) mod n] ||^2
+
+        This aligns loop phase after re-sampling so corresponding curvilinear points
+        are paired consistently, independent of start vertex choice.
+        """
+        n = len(a)
+        if n != len(b):
+            raise CSFError("compute_saint_venant_J_cell(v3): cyclic shift requires equal-length sequences.")
+        if n == 0:
+            return 0
+
+        best_s = 0
+        best_cost = None
+
+        # Exhaustive search: robust and deterministic.
+        # n=256 -> affordable in pure Python for this use case.
+        for s in range(n):
+            cost = 0.0
+            for i in range(n):
+                j = (i + s) % n
+                dx = a[i][0] - b[j][0]
+                dy = a[i][1] - b[j][1]
+                cost += dx * dx + dy * dy
+
+            if (best_cost is None) or (cost < best_cost):
+                best_cost = cost
+                best_s = s
+
+        return best_s
+
+    # -------------------------------------------------------------------------
+    # 2) Accumulate torsional constant over all @cell polygons
+    # -------------------------------------------------------------------------
     J_total = 0.0
 
     for p in cell_polys:
         nm = str(getattr(p, "name", "") or "")
 
-        # No silent defaults for structural parameters.
+        # No silent structural defaults for weight.
         w = float(getattr(p, "weight"))
         if abs(w) < EPS_A:
             continue
 
         xy = _xy_list(p)
-        if len(xy) < 6:
+        if len(xy) < 8:
             raise CSFError(
-                f"compute_saint_venant_J_cell(v2): polygon '{nm}' too small to be a slit-cell."
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has too few vertices for slit-cell encoding."
             )
 
-        # Thickness: explicit, unless you deliberately disable strictness.
+        # Thickness: explicit by policy unless strictness disabled.
         t = _parse_t(nm)
         if t is None:
             if REQUIRE_EXPLICIT_T:
                 raise CSFError(
-                    f"compute_saint_venant_J_cell(v2): polygon '{nm}' is @cell/@closed but missing '@t=...'."
+                    f"compute_saint_venant_J_cell(v3): polygon '{nm}' is @cell/@closed but missing '@t=...'."
                 )
-            # Optional legacy-style fallback: t = 2A/P
-            A_poly = abs(float(polygon_area_centroid(p)[0]))
-            P_poly = _perimeter_xy(xy)
-            if P_poly < EPS_L:
+
+            # Optional fallback (disabled by default):
+            # t = 2A/P using full encoded polygon.
+            A_poly_fallback = abs(float(polygon_area_centroid(p)[0]))
+            P_poly_fallback = _perimeter_xy(xy)
+            if P_poly_fallback < EPS_L:
                 raise CSFError(
-                    f"compute_saint_venant_J_cell(v2): polygon '{nm}' has near-zero perimeter."
+                    f"compute_saint_venant_J_cell(v3): polygon '{nm}' has near-zero perimeter."
                 )
-            t = 2.0 * A_poly / P_poly
+            t = 2.0 * A_poly_fallback / P_poly_fallback
 
         if t < EPS_L:
             raise CSFError(
-                f"compute_saint_venant_J_cell(v2): polygon '{nm}' invalid thickness t={t}."
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' invalid thickness t={t}."
             )
 
-        # -----------------------------
-        # Split OUTER and INNER loops
-        # -----------------------------
+        # ---------------------------------------------------------------------
+        # 2.1) Split OUTER and INNER loops from slit encoding
+        # ---------------------------------------------------------------------
         keys = [_key(pt) for pt in xy]
-        k0 = keys[0]
 
+        # OUTER loop: from index 0 to first repetition of first point
+        k0 = keys[0]
         i_outer_end = None
         for i in range(1, len(keys)):
             if keys[i] == k0:
                 i_outer_end = i
                 break
-        #qui
-        
+
         if i_outer_end is None or i_outer_end < 3:
             raise CSFError(
-                f"compute_saint_venant_J_cell(v2): polygon '{nm}' cannot split OUTER loop "
-                f"(missing repeated start vertex)."
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' cannot split OUTER loop "
+                f"(missing repeated outer-start vertex)."
             )
-        
+
+        # INNER loop starts immediately after OUTER closure
         i_inner_start = i_outer_end + 1
         if i_inner_start >= len(keys):
             raise CSFError(
-                f"compute_saint_venant_J_cell(v2): polygon '{nm}' missing INNER loop start."
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' missing INNER loop start."
             )
 
+        # INNER loop ends at repetition of its own start point
         k_in = keys[i_inner_start]
-
         i_inner_end = None
         for j in range(i_inner_start + 1, len(keys)):
             if keys[j] == k_in:
                 i_inner_end = j
                 break
+
         if i_inner_end is None or (i_inner_end - i_inner_start) < 3:
             raise CSFError(
-                f"compute_saint_venant_J_cell(v2): polygon '{nm}' cannot split INNER loop "
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' cannot split INNER loop "
                 f"(missing repeated inner-start vertex)."
             )
 
-        outer_xy = xy[0:i_outer_end]               # excludes repeated outer start
-        inner_xy = xy[i_inner_start:i_inner_end]   # excludes repeated inner start (often CW)
+        # Exclude repeated closure points from working loops.
+        loop_a = xy[0:i_outer_end]
+        loop_b = xy[i_inner_start:i_inner_end]
 
-        # --- FIX: decide which loop is OUTER by area magnitude (outer must be larger) ---
-        a_out = abs(_signed_area_xy(outer_xy))
-        a_in  = abs(_signed_area_xy(inner_xy))
-        if a_in > a_out:
-            outer_xy, inner_xy = inner_xy, outer_xy
+        if len(loop_a) < 3 or len(loop_b) < 3:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' produced degenerate loops."
+            )
 
-        # --- Enforce orientations for CSF slit-cell encoding ---
-        # outer must be CCW, inner must be CW
+        # Determine OUTER as loop with larger absolute enclosed area.
+        area_a = abs(_signed_area_xy(loop_a))
+        area_b = abs(_signed_area_xy(loop_b))
+
+        if area_a >= area_b:
+            outer_xy = loop_a
+            inner_xy = loop_b
+        else:
+            outer_xy = loop_b
+            inner_xy = loop_a
+
+        # Enforce same parametric direction (CCW) for robust s-to-s pairing.
         if _signed_area_xy(outer_xy) < 0.0:
             outer_xy = list(reversed(outer_xy))
-        if _signed_area_xy(inner_xy) > 0.0:
+        if _signed_area_xy(inner_xy) < 0.0:
             inner_xy = list(reversed(inner_xy))
 
-
-        if len(outer_xy) < 3 or len(inner_xy) < 3:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v2): polygon '{nm}' produced degenerate loops."
-            )
-
+        # Wall area must be positive.
         A_outer = abs(_signed_area_xy(outer_xy))
         A_inner = abs(_signed_area_xy(inner_xy))
-
-        
         A_wall = A_outer - A_inner
-        print(f"DEBUG A_outer {A_outer}")
-        print(f"DEBUG A_inner {A_inner}")
-        if abs(A_wall) <= EPS_A:
+
+        if A_wall <= EPS_A:
             raise CSFError(
-                f"compute_saint_venant_J_cell(v2): polygon '{nm}' has non-positive wall area after splitting."
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has non-positive wall area "
+                f"(A_outer={A_outer:.12g}, A_inner={A_inner:.12g})."
             )
 
-        # Consistency with actual polygon area (should match wall area for slit encoding).
+        # Consistency check: encoded polygon area should match ring wall area.
         A_poly = abs(float(polygon_area_centroid(p)[0]))
+        rel_err = abs(A_poly - A_wall) / max(A_wall, 1.0)
 
-        if abs(A_poly - A_wall) > 1e-9 and abs(A_poly - A_wall) / max(A_wall, 1.0) > 1e-6:
+        if abs(A_poly - A_wall) > 1e-9 and rel_err > 1e-6:
             raise CSFError(
-                f"compute_saint_venant_J_cell(v2): polygon '{nm}' inconsistent areas. "
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' inconsistent areas. "
                 f"A_poly={A_poly:.12g} vs (A_outer-A_inner)={A_wall:.12g}."
             )
 
-        # -----------------------------
-        # Build MIDLINE polygon (key change vs v1)
-        # -----------------------------
-        # Ensure both loops have the same vertex count (required for a pointwise midline).
-        n_out = len(outer_xy)
-        n_in = len(inner_xy)
-        if n_out != n_in:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v2): polygon '{nm}' has different outer/inner vertex counts "
-                f"({n_out} vs {n_in}). Provide matched discretization for @cell polygons."
+        # ---------------------------------------------------------------------
+        # 2.2) Build robust midline:
+        #      re-sample by s, align phase, then average pointwise
+        # ---------------------------------------------------------------------
+        outer_s = _resample_closed_by_s(outer_xy, MIDLINE_SAMPLES)
+        inner_s = _resample_closed_by_s(inner_xy, MIDLINE_SAMPLES)
+
+        shift = _best_cyclic_shift(outer_s, inner_s)
+        if shift != 0:
+            inner_s = inner_s[shift:] + inner_s[:shift]
+
+        mid_xy = [
+            (
+                0.5 * (outer_s[i][0] + inner_s[i][0]),
+                0.5 * (outer_s[i][1] + inner_s[i][1]),
             )
+            for i in range(MIDLINE_SAMPLES)
+        ]
 
-        # Make inner loop CCW to align indices with outer CCW.
-        inner_ccw = list(reversed(inner_xy))
-
-        mid_xy = [((outer_xy[i][0] + inner_ccw[i][0]) * 0.5,
-                   (outer_xy[i][1] + inner_ccw[i][1]) * 0.5) for i in range(n_out)]
-
-        # Midline geometric descriptors
         A_m = abs(_signed_area_xy(mid_xy))
         b_m = _perimeter_xy(mid_xy)
 
         if A_m <= EPS_A or b_m <= EPS_L:
             raise CSFError(
-                f"compute_saint_venant_J_cell(v2): polygon '{nm}' degenerate midline."
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' degenerate midline "
+                f"(A_m={A_m:.12g}, b_m={b_m:.12g})."
             )
 
-        # Bredt-Batho (constant thickness): J = 4*A_m^2 / (b_m/t) = 4*A_m^2 * t / b_m
+        # Bredt-Batho (uniform thickness):
+        #   J = 4 * A_m^2 / (∮ ds/t) = 4 * A_m^2 * t / b_m
         J_geom = 4.0 * (A_m ** 2) * t / b_m
 
-        # Non-negative stiffness scaling.
+        # Non-negative structural contribution scaling.
         J_total += abs(w) * J_geom
 
     return float(max(J_total, 0.0))
-
 
 """
 CSF torsion (Saint-Venant) - WALL-based variant with optional thickness override

@@ -1,0 +1,112 @@
+# Minimal mixed-pattern geometry for quick checks
+# Units: meters
+# Goal: very simple, symmetric, easy to sanity-check
+#
+# Included tags:
+# - left_web@wall@t=...
+# - right_web@wall@t=...
+# - inner_cell@cell@t=...
+#
+# Notes:
+# - The two wall polygons are identical rectangles (left/right), symmetric about y-axis.
+# - The cell polygon is a centered rectangle (closed contour).
+# - S0 and S1 are identical (constant along z) to simplify debugging.
+
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        left_web@wall@t=0.010:
+          weight: 1.0
+          vertices:
+            - [-0.060, -0.050]
+            - [-0.040, -0.050]
+            - [-0.040,  0.050]
+            - [-0.060,  0.050]
+
+        right_web@wall@t=0.010:
+          weight: 1.0
+          vertices:
+            - [ 0.040, -0.050]
+            - [ 0.060, -0.050]
+            - [ 0.060,  0.050]
+            - [ 0.040,  0.050]
+        cell_box@cell@t=0.008:
+          weight: 1.0
+          vertices:
+            # OUTER (CCW)
+            - [-0.040, -0.030]
+            - [ 0.040, -0.030]
+            - [ 0.040,  0.030]
+            - [-0.040,  0.030]
+            - [-0.040, -0.030]   # close OUTER
+
+            # INNER (CW)
+            - [-0.032, -0.022]
+            - [-0.032,  0.022]
+            - [ 0.032,  0.022]
+            - [ 0.032, -0.022]
+            - [-0.032, -0.022]   # close INNER
+        circle_core:
+          weight: 1.0
+          vertices:  # regular decagon, center (0,0), R = 0.020 m, CCW
+            - [ 0.02000000,  0.00000000]
+            - [ 0.01618034,  0.01175571]
+            - [ 0.00618034,  0.01902113]
+            - [-0.00618034,  0.01902113]
+            - [-0.01618034,  0.01175571]
+            - [-0.02000000,  0.00000000]
+            - [-0.01618034, -0.01175571]
+            - [-0.00618034, -0.01902113]
+            - [ 0.00618034, -0.01902113]
+            - [ 0.01618034, -0.01175571]        
+    S1:
+      z: 20.0
+      polygons:
+        left_web@wall@t=0.008:
+          weight: 1.0
+          vertices:
+            - [-0.048, -0.040]
+            - [-0.032, -0.040]
+            - [-0.032,  0.040]
+            - [-0.048,  0.040]
+
+        right_web@wall@t=0.008:
+          weight: 1.0
+          vertices:
+            - [ 0.032, -0.040]
+            - [ 0.048, -0.040]
+            - [ 0.048,  0.040]
+            - [ 0.032,  0.040]
+
+        cell_box@cell@t=0.0064:
+          weight: 1.0
+          vertices:
+            # OUTER (CCW), scaled by 0.8
+            - [-0.0320, -0.0240]
+            - [ 0.0320, -0.0240]
+            - [ 0.0320,  0.0240]
+            - [-0.0320,  0.0240]
+            - [-0.0320, -0.0240]  # close OUTER
+
+            # INNER (CW), scaled by 0.8
+            - [-0.0256, -0.0176]
+            - [-0.0256,  0.0176]
+            - [ 0.0256,  0.0176]
+            - [ 0.0256, -0.0176]
+            - [-0.0256, -0.0176]  # close INNER
+        circle_core:
+          weight: 1.0
+          vertices:  # regular decagon, center (0,0), R = 0.020 m, CCW
+            - [ 0.02000000,  0.00000000]
+            - [ 0.01618034,  0.01175571]
+            - [ 0.00618034,  0.01902113]
+            - [-0.00618034,  0.01902113]
+            - [-0.01618034,  0.01175571]
+            - [-0.02000000,  0.00000000]
+            - [-0.01618034, -0.01175571]
+            - [-0.00618034, -0.01902113]
+            - [ 0.00618034, -0.01902113]
+            - [ 0.01618034, -0.01175571]
+

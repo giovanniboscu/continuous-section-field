@@ -1,0 +1,24 @@
+CSF_ACTIONS:
+  stations:
+    station_midle:
+      - 10
+    station_edge:
+      - 0
+      - 20
+  actions:  
+    - plot_volume_3d:
+        params:
+          line_percent: 100.0
+          title: "Ruled volume"   
+    - plot_section_2d:
+          stations:
+            - station_midle
+          params:
+            show_ids: false
+            show_vertex_ids: false                              
+    - section_selected_analysis:
+        stations: station_edge
+        properties: [A, Cx, Cy, Ix, Iy, J_sv,J_sv_wall,J_sv_cell]
+        params:
+          fmt_display: ".5g"         
+                      
