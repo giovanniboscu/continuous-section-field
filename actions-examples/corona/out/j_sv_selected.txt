@@ -1,0 +1,10 @@
+
+### SECTION SELECTED ANALYSIS @ z = 15.0 ###
+torsion_alpha_sv     : 1  [Solid J_sv scaling factor]
+A                   : 2.0099  [Total net cross-sectional area]
+Cx                  : 0  [Horizontal centroid (X)]
+Cy                  : 0  [Vertical centroid (Y)]
+Ix                  : 0.68186  [Second moment about centroidal X-axis]
+Iy                  : 0.68186  [Second moment about centroidal Y-axis]
+J_sv                : 1.3637  [Effective St. Venant torsional constant (J)]
+J_s_vroark_fidelity : 0.49369  [Fidelity / reliability indicator]

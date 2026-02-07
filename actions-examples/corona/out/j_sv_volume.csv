@@ -1,0 +1,3 @@
+z1,z2,id,s0_w,s1_w,weight_law,s0_name,s1_name,volume_occupied,homogenized_volume_occupied,n_points
+0.0,30.0,0,1.0,1.0,1,pol_j_sv_start,pol_j_sv_end,60.295962181439975,60.295962181439975,20
+0.0,30.0,1,-1.0,-1.0,none,pol_j_sv_hole_start,pol_j_sv_hole_end,33.80048470368,0.0,20
