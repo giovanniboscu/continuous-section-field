@@ -1,0 +1,96 @@
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        ipe600:
+          weight: 1.0
+          vertices:
+            # Start at top-left outer corner, go CCW
+            - [-0.110000,  0.300000]
+            - [-0.110000,  0.281000]
+
+            # Top-left internal fillet (r = 0.024)
+            - [-0.030000,  0.281000]
+            - [-0.013029,  0.273971]
+            - [-0.006000,  0.257000]
+
+            # Web left face down
+            - [-0.006000, -0.257000]
+
+            # Bottom-left internal fillet
+            - [-0.013029, -0.273971]
+            - [-0.030000, -0.281000]
+
+            # Bottom flange top to left outer face
+            - [-0.110000, -0.281000]
+            - [-0.110000, -0.300000]
+
+            # Bottom outer edge
+            - [ 0.110000, -0.300000]
+            - [ 0.110000, -0.281000]
+
+            # Bottom-right internal fillet
+            - [ 0.030000, -0.281000]
+            - [ 0.013029, -0.273971]
+            - [ 0.006000, -0.257000]
+
+            # Web right face up
+            - [ 0.006000,  0.257000]
+
+            # Top-right internal fillet
+            - [ 0.013029,  0.273971]
+            - [ 0.030000,  0.281000]
+
+            # Top flange underside to right outer face
+            - [ 0.110000,  0.281000]
+            - [ 0.110000,  0.300000]
+
+
+    S1:
+      z: 20.0
+      polygons:
+        ipe600:
+          weight: 1.0
+          vertices:
+            # Start at top-left outer corner, go CCW
+            - [-0.110000,  0.300000]
+            - [-0.110000,  0.281000]
+
+            # Top-left internal fillet (r = 0.024)
+            - [-0.030000,  0.281000]
+            - [-0.013029,  0.273971]
+            - [-0.006000,  0.257000]
+
+            # Web left face down
+            - [-0.006000, -0.257000]
+
+            # Bottom-left internal fillet
+            - [-0.013029, -0.273971]
+            - [-0.030000, -0.281000]
+
+            # Bottom flange top to left outer face
+            - [-0.110000, -0.281000]
+            - [-0.110000, -0.300000]
+
+            # Bottom outer edge
+            - [ 0.110000, -0.300000]
+            - [ 0.110000, -0.281000]
+
+            # Bottom-right internal fillet
+            - [ 0.030000, -0.281000]
+            - [ 0.013029, -0.273971]
+            - [ 0.006000, -0.257000]
+
+            # Web right face up
+            - [ 0.006000,  0.257000]
+
+            # Top-right internal fillet
+            - [ 0.013029,  0.273971]
+            - [ 0.030000,  0.281000]
+
+            # Top flange underside to right outer face
+            - [ 0.110000,  0.281000]
+            - [ 0.110000,  0.300000]
+
+
