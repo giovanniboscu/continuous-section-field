@@ -25,10 +25,12 @@ From this continuous description, CSF evaluates **section properties and derived
 CSF is a preprocessing tool for defining varying cross-section geometry and evaluating geometry-based section properties and derived fields along z. It is not a structural solver and does not implement constitutive nonlinearities (plasticity, cracking, damage).
 
 
-<img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
 
 
-**[NREL 5-MW Case Study ](##-CSF-Validation-:-Numerical-Case-Study:-NREL-5-MW-Reference-Wind-Turbine-Tower)**
+![torsionmdel](https://github.com/user-attachments/assets/5174c945-6a45-49d5-bd1d-1ad61f3c4142)
+
+[README – Mixed Torsion Didactic Case](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/openandthin/README_mixed_torsion_didactic_case.md)
+
 
 ### **Motivation and Arbitrary Cross-Section Representation**
 
