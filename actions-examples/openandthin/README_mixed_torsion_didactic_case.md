@@ -36,10 +36,10 @@ In structural mechanics, torsional response depends strongly on cross-section to
    Closed cells develop membrane-like shear flow around the loop, producing much higher torsional stiffness than open walls of similar material amount.  
    A standard constant-thickness formula is:
 
-\[
+$$
 J_{\text{cell}} = \frac{4 A_m^2}{\int \frac{ds}{t}} \quad \Rightarrow \quad
 \text{if } t=\text{const},\; J_{\text{cell}} = \frac{4 A_m^2 t}{b_m}
-\]
+$$
 
 where:
 - \(A_m\): area enclosed by the cell midline
@@ -105,9 +105,9 @@ From your run:
 
 ## 6. Comparative table (S0 vs S1)
 
-\[
+$$
 \text{ratio} = \frac{\text{value at } z=20}{\text{value at } z=0}
-\]
+$$
 
 | Quantity | S0 | S1 | Ratio S1/S0 |
 |---|---:|---:|---:|
