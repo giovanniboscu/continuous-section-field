@@ -15,4 +15,8 @@ CSF_ACTIONS:
         output:
           - stdout
         properties: [A, Cx, Cy, Ix, Iy, J_sv_wall]
-
+    - plot_section_2d:
+        stations:
+          - station_edge
+        show_ids: False
+        show_vertex_ids: True 

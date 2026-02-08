@@ -177,6 +177,7 @@ def register(
                 title = str(title_tpl)
 
             # Delegate actual plotting to the Visualizer wrapper.
+
             viz.plot_section_2d(
                 z=zf,
                 show_ids=show_ids,

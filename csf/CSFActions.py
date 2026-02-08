@@ -1901,6 +1901,16 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
         # Per-action params validation + normalization (unknown params -> WARNING)
         ln = _find_key_line(text, action_name) or ln_actions
         p_issues, params_norm = _validate_action_params(action_name, params, filepath, text, ln)
+
+        if action_name == "plot_section_2d":
+            for k in ("show_ids", "show_weights", "show_vertex_ids"):
+                if k in payload:
+                    params_norm[k] = payload[k]
+                    v = params_norm[k]
+
+
+
+                   
         issues.extend(p_issues)
         params = params_norm
 
@@ -2918,6 +2928,24 @@ def _run_actions(field: Any, actions_root: Dict[str, Any]) -> Tuple[bool, List[I
                 )
             )
             return False, issues
+
+        # ---------------------------------------------------------------------
+        # plot_section_2d: mirror params -> root-level keys (compatibility)
+        # This allows runners that read action["show_*"] instead of action["params"]["show_*"].
+        # ---------------------------------------------------------------------
+        if name == "plot_section_2d":
+            # No merge here: normalized params already prepared upstream.
+            params = action.get("params", {}) or {}
+
+            # Compatibility mirror for runners that still read root-level keys.
+            if "show_ids" in params:
+                action["show_ids"] = params["show_ids"]
+            if "show_weights" in params:
+                action["show_weights"] = params["show_weights"]
+            if "show_vertex_ids" in params:
+                action["show_vertex_ids"] = params["show_vertex_ids"]
+
+
 
         try:
             runner(field, stations_map, action, debug_flag=debug_flag)

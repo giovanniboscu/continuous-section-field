@@ -7416,7 +7416,9 @@ class Visualizer:
 
         plt.show()
 
-    def plot_section_2d(
+    # -----------------------------------------------------------------------------------------------------------------------------------------
+
+    def plot_section_2d2remove(
         self,
         z: float,
         show_ids: bool = True,
@@ -7425,29 +7427,36 @@ class Visualizer:
         title: Optional[str] = None,
         ax=None,
     ):
-        """
-        Draw the 2D section at longitudinal coordinate z.
 
-        Key behavior in this version
-        ----------------------------
-        - Polygon outlines are drawn in the axis.
-        - External legend is placed BELOW the plot (not on the right).
-        - Legend anchoring uses FIGURE coordinates to avoid clipping/disappearing legends.
-        - Container lookup is done in S0-space (correct for CSF nesting logic) and mapped
-          back to the current section polygon order.
-        - Absolute weights at z are reconstructed from relative weights via container chain:
-              w_abs(child) = w_rel(child) + w_abs(container(child))
-
-        Notes
-        -----
-        - The second legend block (S0/S1/abs(z)) is kept commented on purpose.
-        - If you enable it, keep figure-coordinate anchors and increase bottom margin.
+        print(f"DEBUG show_ids {show_ids} show_vertex_ids {show_vertex_ids}")
         """
-        # Local imports so the method can be dropped into existing code with minimal edits.
+        Draw the 2D section at a given longitudinal coordinate z.
+
+        This version does NOT place polygon labels inside the axes.
+        Instead, it creates legends on the right side:
+
+        Legend 1 (top): "Polygons (w is relavite)"
+        - shows #id, relative w(z), name, and container id
+        - handle uses polygon color (and container color if it exists)
+
+        Legend 2 (below): "Weights (S0/S1/abs(z))"
+        - shows #id, (name_S0/name_S1), w_S0 - w_S1 - w_abs(z)
+        - appends the formal law string if a weight law is defined for that polygon
+        - handle uses the SAME color layout as legend 1 (polygon + container)
+
+        Notes on correctness
+        --------------------
+        - `self.field.get_container_polygon_index()` returns an index in `self.field.s0.polygons`.
+        Therefore, container lookup MUST be done in S0-space, then mapped by polygon name
+        into the current `sec.polygons` order for display.
+        - The section polygons at z carry RELATIVE weights. For the second legend we reconstruct
+        ABSOLUTE weights at z using the container chain:
+            w_abs(child) = w_rel(child) + w_abs(container(child))
+        """
+        # Local imports to keep this as a drop-in snippet (no module-level deps needed).
         import matplotlib.pyplot as plt
         from matplotlib.lines import Line2D
         from matplotlib.legend_handler import HandlerTuple
-        # import textwrap  # needed only if the second legend block is enabled
 
         sec = self.field.section(z)
 
@@ -7458,18 +7467,16 @@ class Visualizer:
         else:
             fig = ax.figure
 
-        # Stores line colors in sec polygon order, reused by legend handles.
+        # Store per-polygon plot colors (in the *sec.polygons* order) so we can reuse them in the legends.
         poly_colors = []
 
-        # -------------------------------------------------------------------------
-        # 1) Plot all polygon outlines
-        # -------------------------------------------------------------------------
+        # -------------------------
+        # 1) Plot polygon outlines
+        # -------------------------
         for idx, poly in enumerate(sec.polygons):
-            # Build XY arrays
+            # Build a closed polyline for plotting, but do not double-close if already closed.
             xs = [p.x for p in poly.vertices]
             ys = [p.y for p in poly.vertices]
-
-            # Ensure display polyline is closed (without duplicating if already closed).
             if len(poly.vertices) >= 2:
                 x0, y0 = poly.vertices[0].x, poly.vertices[0].y
                 xN, yN = poly.vertices[-1].x, poly.vertices[-1].y
@@ -7477,12 +7484,12 @@ class Visualizer:
                     xs.append(x0)
                     ys.append(y0)
 
-            # Draw outline and store color
+            # Plot polygon outline
             line, = ax.plot(xs, ys, linewidth=1, zorder=2)
             color = line.get_color()
             poly_colors.append(color)
 
-            # Optional per-vertex numbering
+            # Optional vertex numbering (kept inside axes)
             if show_vertex_ids:
                 for v_idx, v in enumerate(poly.vertices, start=1):
                     ax.text(
@@ -7495,17 +7502,15 @@ class Visualizer:
                         zorder=4,
                     )
 
-        # -------------------------------------------------------------------------
-        # 2) Build name/index maps and compute container ids correctly in S0-space
-        # -------------------------------------------------------------------------
+        # ---------------------------------------------
+        # 2) Precompute maps and container ids (S0-aware)
+        # ---------------------------------------------
         sec_name_to_idx = {getattr(p, "name", None): i for i, p in enumerate(sec.polygons)}
         s0_name_to_idx = {getattr(p, "name", None): i for i, p in enumerate(self.field.s0.polygons)}
 
-        # Data arrays in sec order:
-        # - container_id_by_sec[idx] -> parent index in sec order (or None)
-        # - child_s0_idx_by_sec[idx] -> same polygon index in s0 order (or None)
-        container_id_by_sec = [None] * len(sec.polygons)
-        child_s0_idx_by_sec = [None] * len(sec.polygons)
+        # Per-sec index data used by BOTH legends
+        container_id_by_sec: list = [None] * len(sec.polygons)          # container index in sec order (or None)
+        child_s0_idx_by_sec: list = [None] * len(sec.polygons)          # child index in s0 order (or None)
 
         for idx, poly in enumerate(sec.polygons):
             container_id = None
@@ -7520,21 +7525,21 @@ class Visualizer:
                         self.field.s0.polygons[child_s0_idx],
                         child_s0_idx,
                     )
+
                     if parent_s0_idx is not None:
                         parent_name = getattr(self.field.s0.polygons[parent_s0_idx], "name", None)
                         container_id = sec_name_to_idx.get(parent_name)
 
             except Exception:
-                # Keep robust behavior in plotting even if container logic fails for a polygon.
                 container_id = None
                 child_s0_idx = None
 
             container_id_by_sec[idx] = container_id
             child_s0_idx_by_sec[idx] = child_s0_idx
 
-        # -------------------------------------------------------------------------
-        # 3) Reconstruct absolute weights at z from relative + container chain
-        # -------------------------------------------------------------------------
+        # ---------------------------------------------
+        # 3) Reconstruct ABSOLUTE weights at z (w_abs(z))
+        # ---------------------------------------------
         w_rel_z = [float(getattr(p, "weight", 0.0)) for p in sec.polygons]
         w_abs_z_cache = {}
 
@@ -7549,28 +7554,26 @@ class Visualizer:
             return w_abs_z_cache[i]
 
         w_abs_z = [_w_abs_z(i) for i in range(len(sec.polygons))]
-        _ = w_abs_z  # currently used by optional second legend block only
 
-        # -------------------------------------------------------------------------
-        # 4) Build legend 1 content (relative weights + container id)
-        # -------------------------------------------------------------------------
+        # ---------------------------------------------
+        # 4) Legend 1 (relative weights, container-aware)
+        # ---------------------------------------------
         legend1_handles = []
         legend1_labels = []
 
         for idx, poly in enumerate(sec.polygons):
             container_id = container_id_by_sec[idx]
 
-            # Primary handle for this polygon
+            # Legend proxies: polygon color (+ container color if present)
             h_poly = Line2D([0], [0], color=poly_colors[idx], linewidth=5.0)
 
-            # If polygon has container, show tuple handle: (child color, container color)
             if container_id is not None and 0 <= container_id < len(poly_colors):
                 h_container = Line2D([0], [0], color=poly_colors[container_id], linewidth=5.0)
                 legend1_handles.append((h_poly, h_container))
             else:
                 legend1_handles.append(h_poly)
 
-            # Build readable label
+            # Label: "#id  w=<rel>  name  container=#<id>"
             name = (getattr(poly, "name", None) or f"poly_{idx}").strip()
             parts = []
             if show_ids:
@@ -7580,9 +7583,9 @@ class Visualizer:
             parts.append(f"{name}  container=#{container_id if container_id is not None else 'None'}")
             legend1_labels.append("  ".join(parts))
 
-        # -------------------------------------------------------------------------
+        # -------------------------
         # 5) Axes formatting
-        # -------------------------------------------------------------------------
+        # -------------------------
         ax.set_aspect("equal", adjustable="box")
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
@@ -7592,120 +7595,132 @@ class Visualizer:
             title = f"Section at z={z:g}"
         ax.set_title(title)
 
-        # -------------------------------------------------------------------------
-        # 6) Place legend 1 below plot using FIGURE coordinates (robust against clipping)
-        # -------------------------------------------------------------------------
+        # Create legend 1 (top)
         leg1 = ax.legend(
             legend1_handles,
             legend1_labels,
-            loc="lower center",
-            bbox_to_anchor=(0.5, 0.02),     # y in figure coords (bottom area)
-            bbox_transform=fig.transFigure, # critical: anchor in figure space, not axes space
+            loc="upper left",
+            bbox_to_anchor=(1.02, 1.0),
             borderaxespad=0.0,
             frameon=True,
             title="Polygons (w is relavite)",
             handler_map={tuple: HandlerTuple(ndivide=None)},
-            ncol=1,
         )
+        '''
+        # ---------------------------------------------
+        # 6) Legend 2 (S0/S1 endpoints, abs(z), optional law)
+        # ---------------------------------------------
+        legend2_handles = []
+        legend2_labels = []
 
-        # Keep legend visible if another legend is created later.
+        # Build S1 name/weight lookup by index (assumes S0/S1 polygon lists are aligned by meaning)
+        s1_polys = getattr(self.field, "s1", None)
+        s1_list = getattr(s1_polys, "polygons", None) if s1_polys is not None else None
+
+        weight_laws = getattr(self.field, "weight_laws", None)
+        has_laws = isinstance(weight_laws, dict)
+
+        for idx, poly in enumerate(sec.polygons):
+            container_id = container_id_by_sec[idx]
+            child_s0_idx = child_s0_idx_by_sec[idx]
+
+            # Same handle layout (polygon + container colors)
+            h_poly = Line2D([0], [0], color=poly_colors[idx], linewidth=5.0)
+            if container_id is not None and 0 <= container_id < len(poly_colors):
+                h_container = Line2D([0], [0], color=poly_colors[container_id], linewidth=5.0)
+                legend2_handles.append((h_poly, h_container))
+            else:
+                legend2_handles.append(h_poly)
+
+            # Fetch endpoint names/weights (S0/S1) by the matched S0 index.
+            name_s0 = None
+            name_s1 = None
+            w_s0 = None
+            w_s1 = None
+            law_str = None
+
+            if child_s0_idx is not None:
+                p0 = self.field.s0.polygons[child_s0_idx]
+                name_s0 = getattr(p0, "name", None)
+                w_s0 = float(getattr(p0, "weight", 0.0))
+
+                if isinstance(s1_list, list) and 0 <= child_s0_idx < len(s1_list):
+                    p1 = s1_list[child_s0_idx]
+                    name_s1 = getattr(p1, "name", None)
+                    w_s1 = float(getattr(p1, "weight", 0.0))
+
+                # Weight law (formal string) if present: "<name_s0>,<name_s1>: <expr>"
+                if has_laws:
+                    key = child_s0_idx + 1  # laws use 1-based polygon id
+                    if key in weight_laws:
+                        n0 = name_s0 if name_s0 is not None else f"poly{key}"
+                        n1 = name_s1 if name_s1 is not None else n0
+                        law_str = f"{n0},{n1}: {weight_laws[key]}"
+
+            # Build legend 2 label:
+            # "#<id>  <nameS0>/<nameS1>  <wS0> - <wS1> - <w_abs(z)>  [- <law>]"
+            nm0 = (name_s0 or (getattr(poly, "name", None) or f"poly_{idx}")).strip()
+            nm1 = (name_s1 or nm0).strip()
+
+            w0_txt = f"{w_s0:g}" if w_s0 is not None else "None"
+            w1_txt = f"{w_s1:g}" if w_s1 is not None else "None"
+            wz_txt = f"{w_abs_z[idx]:g}"
+
+            parts2 = []
+            if show_ids:
+                parts2.append(f"#{idx}")
+            parts2.append(f"{nm0}/{nm1}")
+            parts2.append(f"{w0_txt} - {w1_txt} - {wz_txt}")
+            if law_str:
+                parts2.append(f"- {law_str}")
+
+            
+            lines = []
+            if show_ids:
+                lines.append(f"#{idx}  {nm0}/{nm1}")
+            else:
+                lines.append(f"{nm0}/{nm1}")
+
+            lines.append(f"{w0_txt} - {w1_txt} - {wz_txt}")
+
+            if law_str:
+                # wrap the long law string
+                lines.append(textwrap.fill(law_str, width=45))
+
+            legend2_labels.append("\n".join(lines))
+
+        # Place legend 2 right below legend 1 using the rendered bbox of legend 1.
+        anchor_y = 0.0
+        try:
+            fig.canvas.draw()
+            bbox1 = leg1.get_window_extent(fig.canvas.get_renderer())
+            bbox1_ax = bbox1.transformed(ax.transAxes.inverted())
+            anchor_y = max(float(bbox1_ax.y0) - 0.02, 0.0)
+        except Exception:
+            anchor_y = 0.0
+
+        leg2 = ax.legend(
+            legend2_handles,
+            legend2_labels,
+            loc="upper left",
+            bbox_to_anchor=(1.02, anchor_y),
+            borderaxespad=0.0,
+            frameon=True,
+            title="Weights (S0/S1/abs(z))",
+            handler_map={tuple: HandlerTuple(ndivide=None)},
+        )
+        '''
+        # Ensure legend 1 remains visible (ax.legend() replaces the previous legend).
         ax.add_artist(leg1)
 
-        # -------------------------------------------------------------------------
-        # 7) OPTIONAL second legend (commented)
-        # -------------------------------------------------------------------------
-        # If enabled, keep figure-coordinate anchor and increase bottom margin.
-        #
-        # legend2_handles = []
-        # legend2_labels = []
-        #
-        # s1_polys = getattr(self.field, "s1", None)
-        # s1_list = getattr(s1_polys, "polygons", None) if s1_polys is not None else None
-        #
-        # weight_laws = getattr(self.field, "weight_laws", None)
-        # has_laws = isinstance(weight_laws, dict)
-        #
-        # for idx, poly in enumerate(sec.polygons):
-        #     container_id = container_id_by_sec[idx]
-        #     child_s0_idx = child_s0_idx_by_sec[idx]
-        #
-        #     h_poly = Line2D([0], [0], color=poly_colors[idx], linewidth=5.0)
-        #     if container_id is not None and 0 <= container_id < len(poly_colors):
-        #         h_container = Line2D([0], [0], color=poly_colors[container_id], linewidth=5.0)
-        #         legend2_handles.append((h_poly, h_container))
-        #     else:
-        #         legend2_handles.append(h_poly)
-        #
-        #     name_s0 = None
-        #     name_s1 = None
-        #     w_s0 = None
-        #     w_s1 = None
-        #     law_str = None
-        #
-        #     if child_s0_idx is not None:
-        #         p0 = self.field.s0.polygons[child_s0_idx]
-        #         name_s0 = getattr(p0, "name", None)
-        #         w_s0 = float(getattr(p0, "weight", 0.0))
-        #
-        #         if isinstance(s1_list, list) and 0 <= child_s0_idx < len(s1_list):
-        #             p1 = s1_list[child_s0_idx]
-        #             name_s1 = getattr(p1, "name", None)
-        #             w_s1 = float(getattr(p1, "weight", 0.0))
-        #
-        #         if has_laws:
-        #             key = child_s0_idx + 1  # law dict is 1-based
-        #             if key in weight_laws:
-        #                 n0 = name_s0 if name_s0 is not None else f"poly{key}"
-        #                 n1 = name_s1 if name_s1 is not None else n0
-        #                 law_str = f"{n0},{n1}: {weight_laws[key]}"
-        #
-        #     nm0 = (name_s0 or (getattr(poly, "name", None) or f"poly_{idx}")).strip()
-        #     nm1 = (name_s1 or nm0).strip()
-        #
-        #     w0_txt = f"{w_s0:g}" if w_s0 is not None else "None"
-        #     w1_txt = f"{w_s1:g}" if w_s1 is not None else "None"
-        #     wz_txt = f"{w_abs_z[idx]:g}"
-        #
-        #     lines = []
-        #     if show_ids:
-        #         lines.append(f"#{idx}  {nm0}/{nm1}")
-        #     else:
-        #         lines.append(f"{nm0}/{nm1}")
-        #
-        #     lines.append(f"{w0_txt} - {w1_txt} - {wz_txt}")
-        #     if law_str:
-        #         lines.append(textwrap.fill(law_str, width=45))
-        #
-        #     legend2_labels.append("\n".join(lines))
-        #
-        # leg2 = ax.legend(
-        #     legend2_handles,
-        #     legend2_labels,
-        #     loc="lower center",
-        #     bbox_to_anchor=(0.5, 0.19),     # above legend1, still in figure coords
-        #     bbox_transform=fig.transFigure,
-        #     borderaxespad=0.0,
-        #     frameon=True,
-        #     title="Weights (S0/S1/abs(z))",
-        #     handler_map={tuple: HandlerTuple(ndivide=None)},
-        #     ncol=1,
-        # )
-        # ax.add_artist(leg2)
-
-        # -------------------------------------------------------------------------
-        # 8) Layout: reserve space below for external legend(s)
-        # -------------------------------------------------------------------------
+        # Make room for the external legends when a new figure is created
         if created_new_fig:
-            # Safe default for one bottom legend.
-            bottom_margin = 0.30
-
-            # If second legend is enabled, increase this to ~0.50.
-            # bottom_margin = 0.50
-
-            fig.subplots_adjust(bottom=bottom_margin)
+            fig.subplots_adjust(right=0.78)
 
         return ax
 
+
+    # -----------------------------------------------------------------------------------------------------------------------------------------
     def plot_section_2d(
         self,
         z: float,
@@ -7733,6 +7748,7 @@ class Visualizer:
         - No clipping/cut-off of legend text.
         - Works with different font sizes, DPI, and label lengths.
         """
+        #print(f"DEBUG show_vertex_ids {show_vertex_ids} show_ids {show_ids} ")
         # Local imports keep the method self-contained as a drop-in replacement.
         import matplotlib.pyplot as plt
         from matplotlib.lines import Line2D
@@ -7781,6 +7797,22 @@ class Visualizer:
                         fontweight="bold",
                         zorder=4,
                     )
+            # Optional polygon id inside axes (placed at simple vertex-mean center)
+            if show_ids and len(poly.vertices) > 0:
+                cx = sum(p.x for p in poly.vertices) / float(len(poly.vertices))
+                cy = sum(p.y for p in poly.vertices) / float(len(poly.vertices))
+                ax.text(
+                    cx,
+                    cy,
+                    f"ID={idx}",
+                    color=color,
+                    fontsize=10,
+                    fontweight="bold",
+                    ha="center",
+                    va="center",
+                    zorder=5,
+                )
+
 
         # -------------------------------------------------------------------------
         # 2) Compute container mapping (S0-aware, then remapped to current section)
@@ -7856,14 +7888,14 @@ class Visualizer:
 
             name = (getattr(poly, "name", None) or f"poly_{idx}").strip()
 
-            parts = []
-            if show_ids:
-                parts.append(f"#{idx}")
-            if show_weights:
-                parts.append(f"w ={w_rel_z[idx]:g}")
-            parts.append(f"{name}  container=#{container_id if container_id is not None else 'None'}")
-
-            legend_labels.append("  ".join(parts))
+            label = (
+                f"ID={idx}  "
+                f"w={w_rel_z[idx]:g}  "
+                f"{name}  "
+                f"container={container_id if container_id is not None else 'None'}"
+            )
+            #print(f"DEBUG legend_label={repr(label)}")
+            legend_labels.append(label)
 
         # -------------------------------------------------------------------------
         # 5) Axes style
@@ -7877,60 +7909,41 @@ class Visualizer:
             title = f"Section at z={z:g}"
         ax.set_title(title)
 
+
+        if ax is None:
+            fig, ax = plt.subplots(constrained_layout=True)
+            created_new_fig = True
+        else:
+            fig = ax.figure
+            try:
+                fig.set_constrained_layout(True)
+            except Exception:
+                pass
+
+
         # -------------------------------------------------------------------------
-        # 6) Create legend with temporary figure-anchor, then dynamically lay out
+        # 6) Legend below axes (axes-anchored, no overlap with X label)
         # -------------------------------------------------------------------------
         leg = ax.legend(
             legend_handles,
             legend_labels,
-            loc="lower center",
-            bbox_to_anchor=(0.5, 0.01),      # temporary; corrected after measuring
-            bbox_transform=fig.transFigure,  # important: figure coordinates
+            loc="upper center",                 # top-center of legend box
+            bbox_to_anchor=(0.5, -0.16),        # place below axes
+            bbox_transform=ax.transAxes,        # anchor in AXES coordinates
             borderaxespad=0.0,
             frameon=True,
-            title="Polygons (w is relavite)",
+            title="Polygons (w is relative)",
             handler_map={tuple: HandlerTuple(ndivide=None)},
             ncol=1,
         )
-        ax.add_artist(leg)
 
         # -------------------------------------------------------------------------
-        # 7) Dynamic bottom layout from REAL rendered sizes (no hard-coded distances)
+        # 7) Final draw (no manual subplots_adjust needed)
         # -------------------------------------------------------------------------
-        # Do this always, even when ax is provided, because figure text extents can differ
-        # by backend, DPI, or prior layout state.
         fig.canvas.draw()
-        renderer = fig.canvas.get_renderer()
 
-        fig_w_px, fig_h_px = fig.canvas.get_width_height()
 
-        # Legend bbox in pixels -> convert height to figure fraction
-        leg_bbox_px = leg.get_window_extent(renderer=renderer)
-        leg_h_fig = leg_bbox_px.height / float(fig_h_px)
 
-        # Convert paddings from px to figure units
-        # - pad_bottom: distance between figure bottom and legend bottom
-        # - pad_top:    distance between legend top and axes bottom
-        pad_bottom_px = 8.0
-        pad_top_px = 8.0
-        pad_bottom_fig = pad_bottom_px / float(fig_h_px)
-        pad_top_fig = pad_top_px / float(fig_h_px)
-
-        # Required bottom for axes:
-        #   bottom >= pad_bottom + legend_height + pad_top
-        bottom_needed = pad_bottom_fig + leg_h_fig + pad_top_fig
-
-        # Clamp to avoid pathological values
-        bottom_needed = min(max(bottom_needed, 0.12), 0.85)
-
-        # Apply subplot margin
-        fig.subplots_adjust(bottom=bottom_needed)
-
-        # Re-anchor legend at exact bottom padding inside reserved strip
-        leg.set_bbox_to_anchor((0.5, pad_bottom_fig), transform=fig.transFigure)
-
-        # Final redraw after geometry updates
-        fig.canvas.draw()
 
         return ax
 
