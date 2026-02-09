@@ -29,6 +29,54 @@ That is why the polygon tag is:
 ```text
 @t=0.05
 ```
+```
+
+
+CSF:
+  sections:
+    S0:
+      z: 0
+      polygons:
+        MP1_outer@cell@t=0.05:
+          weight: 1
+          vertices:
+            - [-0.85, 1.04094977928e-16]
+            - [-0.848976137774, 0.0417075231783]
+            - [-0.845907017671, 0.0833145692801]
+            - [-0.84080003347, 0.124720903287]
+            - [-0.833667488343, 0.165826773714]
+            ...
+            ...
+            ...
+    S1:
+      z: 85
+      polygons:
+        MP1_inner:
+          weight: 0
+          vertices:
+            - [-0.85, 1.04094977928e-16]
+            - [-0.848976137774, 0.0417075231783]
+            - [-0.845907017671, 0.0833145692801]
+            - [-0.84080003347, 0.124720903287]
+            - [-0.833667488343, 0.165826773714]
+            - [-0.824526565215, 0.206533152918]
+            - [-0.813399285372, 0.246741975666]
+            - [-0.800312455406, 0.286356375383]
+            ...
+            ...
+            ...
+            - [-0.895666254005, 0.0882154262966]
+            - [-0.898915910585, 0.0441609068947]
+            - [-0.9, 1.10218211923e-16]
+  weight_laws:
+  - 'MP1_outer,MP1_inner: 1.0 - 0.28 * np.exp(-((z - 0.0)**2) / (2.0 * 1.5**2))'
+```
+
+To create a ring polygon (outer contour + inner hole), you can use:
+
+csf/utils/csf_polygon_hole_builder_v2.py
+
+This script contains the geometric parameters used to generate the YAML model geometry directly (dimensions and section setup are defined inside the code).
 
 ---
 
