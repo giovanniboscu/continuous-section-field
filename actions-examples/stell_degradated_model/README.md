@@ -7,6 +7,7 @@ This example demonstrates a **reproducible CSF workflow** for a circular hollow 
 - a position-dependent degradation law `w(z)`.
 
 It is suitable as a repository example because it is simple, transparent, and numerically self-consistent.
+![stell_sections](https://github.com/user-attachments/assets/b14ccdca-4d3d-473d-b1a6-3dd2a6a437e5)
 
 ---
 
@@ -186,6 +187,30 @@ A robust approach is:
 ### 6.4 Self-intersection warnings and tagged polygons
 
 If your encoding intentionally uses tagged/modeling polygons that may trigger generic checks, you can skip warning emission for names containing `@cell/@wall/@closed` in that specific diagnostic path.
+
+## Comment on the J_sv_cell Trend
+
+The plotted response is consistent with a **highly localized degradation law** near `z = 0`:
+
+- `J_sv_cell` starts from its minimum value (`0.151426`) at `z = 0`,
+- increases rapidly within the first meters,
+- reaches the nominal level (`~0.210314`) around `z ~ 13.55 m`,
+- then remains on a near-constant plateau up to the top of the member.
+
+### Engineering interpretation
+
+This indicates that torsional degradation is concentrated in a narrow critical band (splash-zone-like region), while outside that band the weight-law effect becomes negligible.
+
+In parametric terms, the initial steep rise is controlled by:
+
+- `beta` (damage amplitude),
+- `sigma` (critical-zone width).
+
+The resulting shape is therefore physically consistent with a localized corrosion scenario rather than uniform deterioration along the full length.
+
+
+
+<img width="1485" height="312" alt="stell_degradated" src="https://github.com/user-attachments/assets/1b034505-7f88-43e9-8b6c-cc42a8e301db" />
 
 ---
 
