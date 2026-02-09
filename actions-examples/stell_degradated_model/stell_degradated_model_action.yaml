@@ -24,6 +24,7 @@ CSF_ACTIONS:
           - station_midle
         show_ids: False
         show_vertex_ids: False 
+        output: [out/stell_sections.jpg]
     - plot_properties:    
          output: [stdout,out/stell_degradated.png]
          params: {num_points: 70}
