@@ -12,7 +12,7 @@
 
 ---
 
-## 0) Scope and Reliability Policy
+## Scope and Reliability Policy
 
 This document is intended for **numerical benchmarking in CSF**, not for certification or forensic reconstruction.
 
