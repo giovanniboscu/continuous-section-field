@@ -1,6 +1,10 @@
 # Case 3: Ekofisk Jacket Platform — Foundation Piles
 ## Reconstructed CSF Benchmark for Degradation Modeling
 
+![ekofisk_sections](https://github.com/user-attachments/assets/78078a19-9619-4d9c-a7c3-179e472a011b)
+
+
+
 ## Document Information
 - **Platform**: Ekofisk Complex, Block 2/4, Norwegian North Sea
 - **Initial installation era**: Early 1970s (Ekofisk development phase)
@@ -84,6 +88,9 @@ A splash-zone-centered reduction is modeled with a smooth Gaussian envelope.
 | Center elevation | `z0` | +5.0 | m (local/elevation mapping declared in model) | [Assumed] | Peak degradation location |
 
 ### 3.3 Weight Law
+
+![ekofisk_weight](https://github.com/user-attachments/assets/94235b88-1a77-4f8d-9770-983129cf53ad)
+
 
 `w(z) = 1 - beta * exp(-((z - z0)^2) / (2*sigma^2))`
 
