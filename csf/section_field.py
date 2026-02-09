@@ -2573,7 +2573,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
     # Per specification: no @cell -> fallback to legacy torsion.
     if not cell_polys:
-        return compute_saint_venant_J(section)
+        return 0
 
     # -------------------------------------------------------------------------
     # 1) Geometry and parsing helpers
