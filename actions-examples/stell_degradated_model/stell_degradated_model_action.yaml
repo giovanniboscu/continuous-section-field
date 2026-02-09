@@ -1,0 +1,39 @@
+CSF_ACTIONS:
+  stations:
+    station_midle:
+      - 42.5
+    station_edge:
+      - 0
+      - 85
+    station_sparse:
+      - 0
+      - 5
+      - 85       
+  actions:  
+    - plot_volume_3d:
+        params:
+          line_percent: 100.0
+          title: "Stell degradated"   
+    - section_selected_analysis:
+        stations: station_sparse
+        output:
+          - stdout
+        properties: [A, Cx, Cy, Ix, Iy, J_sv_cell]
+    - plot_section_2d:
+        stations:
+          - station_midle
+        show_ids: False
+        show_vertex_ids: False 
+    - plot_properties:    
+         output: [stdout,out/stell_degradated.png]
+         params: {num_points: 70}
+         properties: [J_sv_cell]         
+    - weight_lab_zrelative:
+        stations: [station_sparse]
+        output: [stdout, out/weight_lab.txt]
+        weith_law:
+         - "1.0 - 0.28 * np.exp(-((z - 0.0)**2) / (2.0 * 1.5**2))"
+    - plot_weight:
+        output: [stdout,out/stell_degrdated.jpg]
+        params: {num_points: 120}  
+
