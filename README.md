@@ -31,7 +31,8 @@ You can run CSF workflows without writing Python code by using YAML-based inputs
 See the full step-by-step tutorial here:  
 [CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md)
 
-![pillartwisted](https://github.com/user-attachments/assets/4dd0f9c8-6809-413a-9019-bafbad00c7af)                      ![torsionmdel](https://github.com/user-attachments/assets/85882b4e-6173-4630-84c5-fd703c54cad4)
+        
+![torsionmdel](https://github.com/user-attachments/assets/85882b4e-6173-4630-84c5-fd703c54cad4)
 
 
 [README – Mixed Torsion Didactic Case](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/openandthin/README_mixed_torsion_didactic_case.md)
