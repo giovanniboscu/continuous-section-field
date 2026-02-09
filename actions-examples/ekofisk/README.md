@@ -149,7 +149,7 @@ Values rounded for reporting; use direct CSF pipeline outputs for final tables.
 
 ---
 
-## 7) Selected-Station Benchmark Output (Current Run)
+## 7) Selected-Station Benchmark Output
 
 Stations used: `z = [0, 3, 5, 7, 10, 50, 175]`
 
