@@ -201,9 +201,13 @@ Unlike traditional frame analysis software that treats members as prismatic, thi
 * **Homogenization & Voids**: Full support for material homogenization through **positive weights** and internal voids or cut-outs through **negative weights**.
 
 ## Cross-sectional properties 
+
+![properties](https://github.com/user-attachments/assets/c399c6e8-7e85-4039-ac81-2edc5e2d5011)
+
  
  [CSF – Section Full Analysis Output](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md)
  
+
 
 ---
  
