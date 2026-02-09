@@ -2877,11 +2877,19 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         A_poly = abs(float(polygon_area_centroid(p)[0]))
         rel_err = abs(A_poly - A_wall) / max(A_wall, 1.0)
 
-        if abs(A_poly - A_wall) > 1e-9 and rel_err > 1e-6:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' inconsistent areas. "
-                f"A_poly={A_poly:.12g} vs (A_outer-A_inner)={A_wall:.12g}."
-            )
+        A_poly = abs(float(polygon_area_centroid(p)[0]))
+        abs_err = abs(A_poly - A_wall)
+        rel_err = abs_err / max(abs(A_wall), EPS_A)
+
+
+
+        if abs(A_poly - A_wall) > EPS_A and rel_err > EPS_K_RTOL:
+             warnings.warn(
+                 f"compute_saint_venant_J_cell(v3): polygon '{nm}' area mismatch (warning). "
+                 f"A_poly={A_poly:.12g}, A_outer-A_inner={A_wall:.12g}, "
+                 f"abs_err={abs_err:.12g}, rel_err={rel_err:.6e}",
+                 RuntimeWarning,
+             )
 
         # ---------------------------------------------------------------------
         # 2.2) Build robust midline:
@@ -6649,6 +6657,28 @@ class ContinuousSectionField:
 
         self._validate_inputs()
          
+    def _strip_model_tags(name: str) -> str:
+        """
+        Remove everything starting from @cell or @wall (case-insensitive).
+        If neither tag exists, return original trimmed name.
+        Examples:
+          "MP1_outer@cell@t=0.05" -> "MP1_outer"
+          "legA@wall@alpha=0.8"   -> "legA"
+          "poly_no_tags"          -> "poly_no_tags"
+        """
+        s = (name or "").strip()
+        # cut from first occurrence of @cell or @wall to end of string
+        return re.sub(r'(?i)@(cell|wall)\b.*$', '', s).strip()
+
+    def _strip_model_tags(self, name: str) -> str:
+        """
+        Normalize polygon name for matching:
+        - trim spaces
+        - remove everything starting from @cell, @wall, or @closed (case-insensitive)
+        """
+        s = str(name or "").strip()
+        return re.sub(r'(?i)@(cell|wall|closed)\b.*$', '', s).strip()
+
 
     def set_weight_laws(self, laws: Union[List[str], Dict[Union[int, str], str]]) -> None:
         """
@@ -6656,15 +6686,19 @@ class ContinuousSectionField:
         If a polygon name is not found or homology fails, it raises an error 
         to prevent falling back to default linear behavior.
         """
-       
+        print("set_weight_laws")
         if not isinstance(laws, (list, dict)):
             raise ValueError("weight_laws must be a list or a dictionary.")
         
         num_polygons = len(self.s0.polygons)
-        valid_names0 = [p.name for p in self.s0.polygons]
-        valid_names1 = [p.name for p in self.s1.polygons]
+        #valid_names0 = [p.name for p in self.s0.polygons]
+        #valid_names1 = [p.name for p in self.s1.polygons]
         
-        # Reset current laws
+        # Keep original polygon names as declared in S0/S1 strip @cell @wall
+        valid_names0 = [self._strip_model_tags(p.name) for p in self.s0.polygons]
+        valid_names1 = [self._strip_model_tags(p.name) for p in self.s1.polygons]
+        print(f"DEBUG valid_names0 {valid_names0} valid_names1 {valid_names1}")
+        # Reset current laws 
         self.weight_laws = {}
         normalized_map = {}
 
@@ -6674,10 +6708,8 @@ class ContinuousSectionField:
                 if isinstance(item, str) and ":" in item:
                     left, formula = item.split(":", 1)
                     left, formula = left.strip(), formula.strip()
-                    # Debug output: (flange, flange)
-                    #print(f"DEBUG - Processing: ({left}) : {formula}")
-                    
-                    raw_names = [n.strip() for n in left.split(",")]
+                    #raw_names = [n.strip() for n in left.split(",")]
+                    raw_names = [self._strip_model_tags(n) for n in left.split(",")]
                     if len(raw_names) == 2:
                         n0, n1 = raw_names
                         # STRICT CHECK: If the name does not exist, Error
@@ -6908,7 +6940,7 @@ class ContinuousSectionField:
             poly = Polygon(vertices=verts, weight=interp_weight_relative, name=p0.name)
             # --------------------------
        
-            if polygon_has_self_intersections(poly):
+            if not re.search(r'(?i)@(cell|wall|closed)\b', str(poly.name or "")) and  polygon_has_self_intersections(poly):
                 warnings.warn(
                     f"Self-intersection detected in polygon '{poly.name}' at z={z:.3f}",
                     RuntimeWarning

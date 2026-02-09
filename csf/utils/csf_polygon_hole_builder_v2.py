@@ -50,11 +50,7 @@ class Pt:
     y: float
 
 
-def make_tagged_wall_name_sv(base: str = "poly", t: float = 0.0) -> str:
-    """Return a polygon name tagged for the thin-wall path (name only)."""
-    return f"{base}@cell@t={t}"
-
-def make_tagged_wall_name(base: str = "poly", t: float = 0.0) -> str:
+def make_tagged_name(base: str = "poly") -> str:
     """Return a polygon name tagged for the thin-wall path (name only)."""
     return f"{base}"
 
@@ -205,27 +201,25 @@ def build_yaml_body_twopoly(
 if __name__ == "__main__":
     # If False: one polygon with two loops encoded in one vertex stream (inner loop CW).
     # If True : two polygons (outer + void) with weights (1.0, 0.0), both CCW.
-    SINGLE_POLE = False
+    SINGLE_POLE = True
 
     # -----------------------------------------------------------------------------
     # Output filenames (CSF)
     # -----------------------------------------------------------------------------
-    ACTIONS_YAML_FILENAME = "csf_single_poly_hole_actions.yaml"
+    ACTIONS_YAML_FILENAME = "stell_degradated_model.yaml"
     if SINGLE_POLE:
-        GEOMETRY_YAML_FILENAME = "csf_single_poly_hole_S0S1_geometry.yaml"
+        GEOMETRY_YAML_FILENAME = "stell_degradated_model_s.yaml"
     else:
-        GEOMETRY_YAML_FILENAME = "csf_two_poly_hole_S0S1_geometry.yaml"
+        GEOMETRY_YAML_FILENAME = "stell_degradated_model_d.yaml"
 
     # Station coordinates (two sections)
     z0 = 0.0
-    z1 = 10.0
+    z1 = 85
 
     # Defaults
     W_DEFAULT = 1.0
 
-    # Default @wall tagging (name only)
-    T_WALL_DEFAULT = 0.5
-    OUTER_POLY_NAME = make_tagged_wall_name(base="poly", t=T_WALL_DEFAULT)
+    OUTER_POLY_NAME = make_tagged_name(base="poly")
     VOID_POLY_NAME = make_void_name(base="void")
 
     # Start vertex rule: leftmost point of each loop (angle = pi)
@@ -237,14 +231,14 @@ if __name__ == "__main__":
     W0 = W_DEFAULT
 
     INNER_CENTER_0 = Pt(0.0, 0.0)
-    INNER_LX_0 = 2
-    INNER_LY_0 = 3
-    INNER_N_0  = 4
+    INNER_LX_0 = 1.70
+    INNER_LY_0 = 1.70
+    INNER_N_0  = 128
 
     OUTER_CENTER_0 = Pt(0.0, 0.0)
-    OUTER_LX_0 = 4
-    OUTER_LY_0 = 5
-    OUTER_N_0  = 4
+    OUTER_LX_0 = 1.80
+    OUTER_LY_0 = 1.80
+    OUTER_N_0  = 128
 
     # -----------------------
     # Section S1 parameters
@@ -252,14 +246,14 @@ if __name__ == "__main__":
     W1 = W_DEFAULT
 
     INNER_CENTER_1 = Pt(0.0, 0.0)
-    INNER_LX_1 = 2
-    INNER_LY_1 = 3
-    INNER_N_1  = 4
+    INNER_LX_1 = 1.70
+    INNER_LY_1 = 1.70
+    INNER_N_1  = 128
 
     OUTER_CENTER_1 = Pt(0.0, 0.0)
-    OUTER_LX_1 = 4
-    OUTER_LY_1 = 5
-    OUTER_N_1  = 4
+    OUTER_LX_1 = 1.80
+    OUTER_LY_1 = 1.80
+    OUTER_N_1  = 128
 
     # -----------------------------------------------------------------------------
     # Build loops for S0 and S1
@@ -299,11 +293,9 @@ if __name__ == "__main__":
     header.append("# SCRIPT                : csf_polygon_hole_builder_v1.py")
     header.append(f"# SINGLE_POLE           : {SINGLE_POLE}")
     header.append(f"# GEOMETRY_YAML_FILENAME: {GEOMETRY_YAML_FILENAME}")
-    header.append(f"# ACTIONS_YAML_FILENAME : {ACTIONS_YAML_FILENAME}")
     header.append(f"# OUTER_POLY_NAME       : {OUTER_POLY_NAME}")
     header.append(f"# VOID_POLY_NAME        : {VOID_POLY_NAME}")
     header.append(f"# W_DEFAULT             : {W_DEFAULT}")
-    header.append(f"# T_WALL_DEFAULT        : {T_WALL_DEFAULT}")
     header.append(f"# z0                    : {z0}")
     header.append(f"# z1                    : {z1}")
     header.append(f"# START_ANGLE           : {START_ANGLE}")
@@ -365,4 +357,4 @@ if __name__ == "__main__":
     _write_yaml_with_header(GEOMETRY_YAML_FILENAME, header, body)
 
     print(f"Wrote CSF geometry YAML: {GEOMETRY_YAML_FILENAME}")
-    # print(f"Actions YAML (create separately): {ACTIONS_YAML_FILENAME}")
+

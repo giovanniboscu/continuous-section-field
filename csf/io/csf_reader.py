@@ -1074,9 +1074,11 @@ class CSFReader:
 
             idx0 = self._polygon_index_by_name(field.s0, n0)
             idx1 = self._polygon_index_by_name(field.s1, n1)
+            
             if idx0 is None or idx1 is None:
                 issues.append(CSFIssues.make("CSF_E_WLAW_REF_MISSING", path=ip, context={"S0_name": n0, "S1_name": n1}))
                 continue
+            
             if idx0 != idx1:
                 issues.append(
                     CSFIssues.make(
@@ -1086,17 +1088,18 @@ class CSFReader:
                     )
                 )
                 continue
-
+            
             # Normalize for internal use
             laws_out.append(f"{n0},{n1}: {expr}")
 
         if any(i.severity == Severity.ERROR for i in issues):
+
             return
        
         try:
             field.set_weight_laws(laws_out)
            
-            
+
         except Exception as e:
             issues.append(
                 CSFIssues.make(
@@ -1136,10 +1139,26 @@ class CSFReader:
                 if n < 0:
                     return False
         return n == 0
+    @staticmethod
+    def _strip_model_tags(name: str) -> str:
+        """
+        Normalize polygon name for matching:
+        - trim spaces
+        - remove everything starting from @cell, @wall, or @closed (case-insensitive)
+        """
+        s = str(name or "").strip()
+        return re.sub(r'(?i)@(cell|wall|closed)\b.*$', '', s).strip()
+
 
     @staticmethod
     def _polygon_index_by_name(section: Any, name: str) -> Optional[int]:
+    
         for i, p in enumerate(section.polygons):
-            if p.name == name:
+               
+            model_p_name= CSFReader._strip_model_tags(p.name)
+            model_name= CSFReader._strip_model_tags(name)
+
+
+            if model_p_name == model_name:
                 return i
         return None
