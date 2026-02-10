@@ -26,9 +26,10 @@ CSF is designed to address this specific modeling gap.
 The fundamental idea behind CSF is to treat a structural member as a **continuous section field** rather than as a sequence of prismatic segments.
 
 Formally, the member is described by:
-- a longitudinal coordinate \( z \in [0, L] \),
-- a cross-section \( \Omega(z) \) that varies continuously with \( z \),
-- a set of scalar fields \( w_k(z) \) associated with subdomains of the section.
+- a longitudinal coordinate `z` in `[0, L]`,
+- a cross-section `Omega(z)` that varies continuously with `z`,
+- a set of scalar fields `w_k(z)` associated with section subdomains.
+
 
 All sectional quantities are derived from these continuous descriptions, not from discretized substitutes.
 
