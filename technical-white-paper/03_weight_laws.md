@@ -19,8 +19,8 @@ without altering the underlying geometric description.
 
 ## Definition of Weight
 
-Each polygonal region of a section is associated with a **scalar weight field**
-`w_k(z)` where k denotes the polygon index.
+Each polygonal region of a section is associated with a scalar weight field
+`w_k(z)` where k denotes the polygon index
 
 
 defined along the longitudinal coordinate`z`.
