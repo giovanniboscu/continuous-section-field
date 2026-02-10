@@ -39,7 +39,7 @@ Each polygon represents a **material or void subdomain** of the cross-section.
 For a polygon to be valid in CSF, it must satisfy the following conditions:
 
 1. **Closed polyline**  
-   The polygon is implicitly closed; the first vertex must not be repeated.
+   The polygon is always closed by CSF; repeating the first vertex is optional.
 
 2. **Counter-clockwise orientation (CCW)**  
    Vertices must be ordered counter-clockwise.  
