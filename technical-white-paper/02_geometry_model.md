@@ -187,7 +187,7 @@ A void is modeled explicitly as an inner polygon with `w = 0`.
 
 For a child polygon nested in a container polygon, the local effective field is:
 
-`w_eff(z) = w_child(z) - w_container(z)`
+`w_eff(z) = w_inner(z) - w_container(z)`
 
 where `child` is the directly nested inner polygon and `container` is its immediate parent.
 
