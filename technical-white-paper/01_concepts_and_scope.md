@@ -21,7 +21,7 @@ CSF enforces a strict separation between three modeling layers:
    The user defines the cross-section explicitly using polygonal regions at reference stations.
 
 2. **Sectional homogenization**  
-   Physical properties are introduced through user-defined scalar fields \( w(z) \), applied per polygon.
+   Physical properties are introduced through user-defined scalar fields ` w(z) `, applied per polygon.
 
 3. **Structural solution**  
    The global equilibrium problem is delegated to an external solver.
