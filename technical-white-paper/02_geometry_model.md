@@ -157,6 +157,136 @@ This strict policy avoids hidden corrections and preserves modeling transparency
 
 ---
 
+
+## Nesting Semantics, Voids, and Equivalent Encodings
+
+CSF does **not** use an explicit "hole entity".  
+Geometry is always described by polygons, and numerical contribution is controlled by polygon weight and nesting context.
+
+### Non-overlap semantics in nested regions
+
+When one polygon lies inside another, CSF does not perform a material superposition in the overlapped region as an additive stack.  
+The inner polygon occupies its own geometric domain inside the container.
+
+Practical consequence:
+
+- outer square with `w=1`,
+- inner square with `w=1`,
+
+does not create a doubled material contribution on the same footprint.  
+The model is resolved by domain occupancy, not by blind additive overlap.
+
+This is why a void in CSF is naturally represented as a normal polygon with `w=0`, not as a special object type.
+
+### Reinforced section example (concrete + bars)
+
+A rectangular concrete section with four steel bars near the edges can be represented with five polygons:
+
+- 1 concrete polygon (`w=1`),
+- 4 bar polygons (their own material/weight laws).
+
+No mandatory "hole entity" is required.  
+An explicit "void + bar" convention is still possible, but the void remains a standard polygon with `w=0`.
+
+### Signed-area conventions
+
+For standard inputs, each single polygon should be oriented to yield positive signed area (CCW point order).  
+This preserves consistency of Green/shoelace-based integrals.
+
+An advanced but still trivial case is a **single composite path** that physically represents multiple regions.  
+This is relevant in practice and can support compact `@cell` modeling patterns.
+
+Conceptually:
+
+- outer boundary gives positive contribution,
+- inner boundary gives negative contribution,
+- algebraic sum remains physically consistent for the net domain.
+
+---
+
+### Same figure encoded in two ways
+
+Consider the same ring-like rectangle (outer rectangle minus inner rectangle).
+
+Outer rectangle:
+- `(0,0) -> (10,0) -> (10,6) -> (0,6)`
+
+Inner void rectangle:
+- `(3,2) -> (7,2) -> (7,4) -> (3,4)`
+
+Net area:
+
+\[
+A_{net} = 10\cdot6 - 4\cdot2 = 52
+\]
+
+Both encodings describe the same geometry.
+
+#### A) Two-polygon encoding
+
+```yaml
+CSF_GEOMETRY:
+  sections:
+    - name: S0
+      z: 0.0
+      polygons:
+        - name: outer_rect
+          weight: 1.0
+          points:
+            - [0.0, 0.0]
+            - [10.0, 0.0]
+            - [10.0, 6.0]
+            - [0.0, 6.0]
+
+        - name: inner_void
+          weight: 0.0
+          points:
+            - [3.0, 2.0]
+            - [7.0, 2.0]
+            - [7.0, 4.0]
+            - [3.0, 4.0]
+```
+
+#### B) Single-polygon composite-path encoding
+
+One polyline encodes outer and inner loops using bridge segments and opposite contribution sense for the inner loop.
+
+```yaml
+CSF_GEOMETRY:
+  sections:
+    - name: S0
+      z: 0.0
+      polygons:
+        - name: rect_ring_single_path
+          weight: 1.0
+          points:
+            # Outer loop (positive contribution)
+            - [0.0, 0.0]
+            - [10.0, 0.0]
+            - [10.0, 6.0]
+            - [0.0, 6.0]
+            - [0.0, 0.0]
+
+            # Bridge to inner loop
+            - [3.0, 2.0]
+
+            # Inner loop (negative contribution)
+            - [3.0, 4.0]
+            - [7.0, 4.0]
+            - [7.0, 2.0]
+            - [3.0, 2.0]
+
+            # Bridge back / closure
+            - [0.0, 0.0]
+```
+
+The two-polygon form is generally easier to review and debug.  
+The single-path form is compact, trivial once understood, and useful when a composite path is preferred (including simple `@cell`-oriented patterns).
+
+
+
+This approach prioritizes determinism, reproducibility, and clarity over geometric convenience, forming a stable foundation for continuous sectional analysis.
+
 ## Summary
 
 The CSF geometric model is based on a small set of explicit and verifiable rules:
@@ -165,6 +295,5 @@ The CSF geometric model is based on a small set of explicit and verifiable rules
 - consistent topology,
 - ruled-surface interpolation,
 - strict orientation and ordering constraints.
-
-This approach prioritizes determinism, reproducibility, and clarity over geometric convenience, forming a stable foundation for continuous sectional analysis.
+- Nesting Semantics, Voids, and Equivalent Encodings
 
