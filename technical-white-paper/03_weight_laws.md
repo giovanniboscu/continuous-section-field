@@ -196,6 +196,7 @@ CSF:
 weight_laws:
     - 'solid_rect_start,solid_rect_end: 1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))'
 ```
+![ekofisk_weight](https://github.com/user-attachments/assets/71da1ca4-a331-4955-91aa-b382b59f3fae)
 
 
 ---
