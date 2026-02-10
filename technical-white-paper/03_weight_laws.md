@@ -134,9 +134,10 @@ Let:
 - \( w_1 \) be the weight at \( z = z_1 \).
 
 The default law is:
-\[
+
+$$
 w(z) = w_0 + \frac{z - z_0}{z_1 - z_0}\,(w_1 - w_0)
-\]
+$$
 
 ---
 
