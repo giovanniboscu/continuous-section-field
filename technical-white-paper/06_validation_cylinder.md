@@ -20,16 +20,16 @@ The validation model consists of a **non-tapered hollow circular section**,
 representing a steel pipe.
 
 Geometric parameters:
-- external diameter \( D_\text{ext} \),
-- wall thickness \( t \),
-- internal diameter \( D_\text{int} = D_\text{ext} - 2t \).
+- external diameter `D_ext`,
+- wall thickness `t`,
+- internal diameter `D_int = D_ext - 2t`.
 
-The section is modeled using a **regular polygon approximation**
-with a high number of sides (\( N = 512 \)),
-ensuring negligible geometric discretization error.
+The section is modeled using a **regular polygon approximation**  
+with a high number of sides (`N = 512`),  
+so geometric discretization error is negligible.
 
-The same section is used along the entire member length,
-so all sectional quantities are constant with respect to \( z \).
+The same section is used along the entire member length,  
+therefore all sectional quantities are constant with respect to `z`.
 
 ---
 
@@ -37,7 +37,7 @@ so all sectional quantities are constant with respect to \( z \).
 
 - Linear elastic behavior.
 - Uniform material properties.
-- Weight \( w = 1.0 \) assigned to the solid region.
+- Weight `w = 1.0` assigned to the solid region.
 - No voids other than the internal circular hole.
 
 The model is intentionally minimal to test the core numerical engine.
@@ -49,24 +49,29 @@ The model is intentionally minimal to test the core numerical engine.
 For a hollow circular section, the exact analytical properties are:
 
 - Area:
-\[
-A = \frac{\pi}{4}\left(D_\text{ext}^2 - D_\text{int}^2\right)
-\]
+
+$$
+A = \frac{\pi}{4}\left(D_{\text{ext}}^2 - D_{\text{int}}^2\right)
+$$
 
 - Second moments of area:
-\[
-I_x = I_y = \frac{\pi}{64}\left(D_\text{ext}^4 - D_\text{int}^4\right)
-\]
+
+$$
+I_x = I_y = \frac{\pi}{64}\left(D_{\text{ext}}^4 - D_{\text{int}}^4\right)
+$$
 
 - Polar moment:
-\[
+
+$$
 J = I_x + I_y
-\]
+$$
 
 - Centroid coordinates:
-\[
+
+$$
 C_x = C_y = 0
-\]
+$$
+
 
 These expressions provide a reliable benchmark.
 
