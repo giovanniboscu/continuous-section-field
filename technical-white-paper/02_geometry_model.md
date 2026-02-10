@@ -42,7 +42,7 @@ For a polygon to be valid in CSF, it must satisfy all the following conditions:
    The polygon is closed by CSF. Repeating the first vertex is optional.
 
 2. **Counter-clockwise orientation (CCW)**  
-   This is a strict requirement for consistent Green/shoelace sign conventions in area and inertia computation. See "One-polygon encoding (@cell)" for mandatory bridge rules and validity constraints of inner-loop single-polygon encoding.
+   Vertices must be ordered CCW. This is a strict requirement for consistent Green/shoelace sign conventions in area and inertia computation. See "One-polygon encoding (@cell)" for mandatory bridge rules and validity constraints of inner-loop single-polygon encoding.
 
 
 3. **No self-intersection**  
@@ -282,7 +282,7 @@ CSF:
 This is generally the easiest form to review, validate, and debug.
 
 ### B) One-polygon encoding
-# Single-Path Hole Representation (`@cell`) in CSF
+One-polygon Hole Representation (`@cell`) in CSF
 
 This note explains an alternative way to represent a section with a hole in CSF:  
 using **one composite polygon path** instead of two separate polygons (`outer` + `inner_void`).
@@ -362,27 +362,27 @@ CSF:
           weight: 1.0
           points:
             # OUTER loop (CCW)
-               - [0.0, 0.0]
-               - [10.0, 0.0]
-               - [10.0, 6.0]
-               - [0.0, 6.0]
-               - [0.0, 0.0]
-               # bridge to inner start
-               - [3.0, 2.0]
-               # INNER loop (CW)
-               - [3.0, 4.0]
-               - [7.0, 4.0]
-               - [7.0, 2.0]
-               - [3.0, 2.0]
-# bridge back (required by this convention)
-- [0.0, 0.0]
-
+            - [0.0, 0.0]
+            - [10.0, 0.0]
+            - [10.0, 6.0]
+            - [0.0, 6.0]
+            - [0.0, 0.0]
+            # bridge to inner start
+            - [3.0, 2.0]
+            # INNER loop (CW)
+            - [3.0, 4.0]
+            - [7.0, 4.0]
+            - [7.0, 2.0]
+            - [3.0, 2.0]
+            # bridge back (required by this convention)
+            - [0.0, 0.0]
     - name: S1
       z: 10.0
       polygons:
         - name: rect_ring_single_path # this name doesn't require @cell tag
           weight: 1.0
           points:
+            # OUTER loop (CCW)
             - [0.0, 0.0]
             - [10.0, 0.0]
             - [10.0, 6.0]
