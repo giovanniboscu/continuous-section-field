@@ -2,7 +2,7 @@
 
 # OpenSees Integration
 
-This document explains **how CSF outputs are consumed by OpenSees**, and—more importantly—**why the chosen integration strategy is mathematically consistent with a continuous stiffness field**.
+This document explains **how CSF outputs are consumed by OpenSees**, and - more importantly - **why the chosen integration strategy is mathematically consistent with a continuous stiffness field**.
 
 ---
 
@@ -38,7 +38,6 @@ Each station contains:
 - Centroid offsets:  
   \( C_x(z), C_y(z) \)
 
-These values are **not averaged**, **not interpolated by the user**, and **not guessed**.  
 They are evaluated directly from the continuous ruled-surface geometry and weight laws.
 
 ---
