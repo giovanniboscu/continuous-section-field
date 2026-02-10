@@ -19,7 +19,6 @@ CSF treats the member as a continuous domain:
 `z in [z_0, z_1]`
 
 All sectional quantities are evaluated as functions of ` z `.
-There is no implicit discretization into finite elements at this stage.
 
 The numerical engine samples this continuous field only for the purpose of:
 - evaluating integrals,
