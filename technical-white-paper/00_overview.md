@@ -59,7 +59,9 @@ This approach introduces unavoidable modeling choices:
 - location of sampling points,
 - averaging rules for section properties.
 
-As a result, the numerical solution may depend on **user-defined discretization decisions** rather than on the physical description of the member.
+
+If such a piecewise representation is not acceptable for the target accuracy, the method’s limitations become evident.
+Because the result depends on discretization choices (segment count, sampling locations, and property averaging rules), the numerical solution may reflect user decisions more than the member’s actual physical description.
 
 CSF adopts a different standpoint:
 - the member is defined once as a **continuous geometric and sectional field**;
@@ -84,6 +86,7 @@ For this reason, CSF workflows can be expressed entirely using **plain-text YAML
 - documentation-driven modeling,
 - long-term reproducibility.
 
+Alternatively, CSF can be used through its Python APIs, providing greater flexibility for programmable and automated workflows.
 ---
 
 ## Typical Application Domains
