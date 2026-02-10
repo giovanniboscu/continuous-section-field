@@ -214,8 +214,10 @@ Net area:
 `A_net = A_outer - A_hole = 60 - 8 = 52`
 
 ### A) Two-polygon encoding
+W is relative in the plot
 
 ![two_pol_ekofisk_sections](https://github.com/user-attachments/assets/fdcf8848-d8c4-48e1-8b1d-c60c076c5633)
+W is relative in the plot
 
 ```yaml
 # CSF geometry definition with two reference sections (S0 -> S1).
@@ -355,7 +357,10 @@ So this is not a different section, but a different representation of the same s
 
 ## Minimal YAML pattern (single-path)
 
+W is relative in the plot
+
 ``![one_pol_ekofisk_sections](https://github.com/user-attachments/assets/ba6f7f50-76da-480d-8f4d-ca55ba412d28)
+
 
 ```yaml
 CSF:
