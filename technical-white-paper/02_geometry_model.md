@@ -357,8 +357,6 @@ So this is not a different section, but a different representation of the same s
 
 ## Minimal YAML pattern (single-path)
 
-W is relative in the plot
-
 ``![one_pol_ekofisk_sections](https://github.com/user-attachments/assets/ba6f7f50-76da-480d-8f4d-ca55ba412d28)
 
 
