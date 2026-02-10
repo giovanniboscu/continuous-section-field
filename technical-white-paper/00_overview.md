@@ -47,10 +47,8 @@ CSF represents a structural member as a **continuous field along the longitudina
    - voids and cut-outs through explicit zero-weight regions.
 
 From these two descriptions, CSF evaluates **section properties and derived fields** such as:
-$$
-A(z),\; C_x(z),\; C_y(z),\; I_x(z),\; I_y(z),\; J(z),\; EA(z),\; EI(z),\; GJ(z)
-$$
 
+`A(z), C_x(z), C_y(z), I_x(z), I_y(z), J(z), EA(z), EI(z), GJ(z)`.
 ---
 
 ## Motivation and Methodological Positioning
