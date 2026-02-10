@@ -155,6 +155,38 @@ with access to:
 
 This enables non-linear, piecewise, or data-driven variation of properties.
 
+example:
+
+```
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        solid_rect_start:
+          weight: 1.0
+          vertices:
+            - [-2.0, -1.0]
+            - [ 2.0, -1.0]
+            - [ 2.0,  1.0]
+            - [-2.0,  1.0]
+
+    S1:
+      z: 10.0
+      polygons:
+        solid_rect_end:
+          weight: 1.0
+          vertices:
+            - [-2.0, -1.0]
+            - [ 2.0, -1.0]
+            - [ 2.0,  1.0]
+            - [-2.0,  1.0]
+
+weight_laws:
+    - 'solid_rect_start,solid_rect_end: 1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))'
+```
+
+
 ---
 
 ## Available Variables and Functions
