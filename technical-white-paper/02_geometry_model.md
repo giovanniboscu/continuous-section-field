@@ -355,12 +355,32 @@ So this is not a different section, but a different representation of the same s
 ```yaml
 CSF:
   sections:
-    - name: S0
-      z: 0.0
+    S0:
+      z: 0.000000
       polygons:
-        - name: rect_ring_single_path@cell@t=0.5 #  polygon on S0 marked as cell 
-          weight: 1.0
-          points:
+        outer:
+          weight: 1.000000
+          vertices:
+             # OUTER loop (CCW)
+             - [0.0, 0.0]
+             - [10.0, 0.0]
+             - [10.0, 6.0]
+             - [0.0, 6.0]
+             - [0.0, 0.0]
+             # bridge to inner start
+             - [3.0, 2.0]
+             # INNER loop (CW)
+             - [3.0, 4.0]
+             - [7.0, 4.0]
+             - [7.0, 2.0]
+             - [3.0, 2.0]
+
+    S1:
+      z: 175.000000
+      polygons:
+        outer:
+          weight: 1.000000
+          vertices:
             # OUTER loop (CCW)
             - [0.0, 0.0]
             - [10.0, 0.0]
@@ -374,29 +394,8 @@ CSF:
             - [7.0, 4.0]
             - [7.0, 2.0]
             - [3.0, 2.0]
-            # bridge back (required by this convention)
-            - [0.0, 0.0]
-    - name: S1
-      z: 10.0
-      polygons:
-        - name: rect_ring_single_path # this name doesn't require @cell tag
-          weight: 1.0
-          points:
-            # OUTER loop (CCW)
-            - [0.0, 0.0]
-            - [10.0, 0.0]
-            - [10.0, 6.0]
-            - [0.0, 6.0]
-            - [0.0, 0.0]
-            # bridge to inner start
-            - [3.0, 2.0]
-            # INNER loop (CW)
-            - [3.0, 4.0]
-            - [7.0, 4.0]
-            - [7.0, 2.0]
-            - [3.0, 2.0]
-            # bridge back (required by this convention)
-            - [0.0, 0.0]
+  
+```
 ---
 
 ## Practical recommendation
