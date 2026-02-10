@@ -8,7 +8,6 @@ CSF is designed to address a specific and well-defined gap in current structural
 the **explicit, continuous, and reproducible definition of cross-section geometry and properties along the member axis**, independent of the numerical solver used for global analysis.
 
 CSF does **not** aim to introduce new mechanical theories.  
-Its contribution lies in providing a **methodological and software framework** that allows engineers to describe complex, longitudinally varying members in a transparent and solver-agnostic way.
 
 ---
 
@@ -53,21 +52,9 @@ From these two descriptions, CSF evaluates **section properties and derived fiel
 
 ## Motivation and Methodological Positioning
 
-In standard engineering practice, non-prismatic members are often approximated as a **sequence of equivalent prismatic elements**.  
-This approach introduces unavoidable modeling choices:
-- number of segments,
-- location of sampling points,
-- averaging rules for section properties.
-
-
-If such a piecewise representation is not acceptable for the target accuracy, the method’s limitations become evident.
-Because the result depends on discretization choices (segment count, sampling locations, and property averaging rules), the numerical solution may reflect user decisions more than the member’s actual physical description.
-
-CSF adopts a different standpoint:
-- the member is defined once as a **continuous geometric and sectional field**;
-- numerical solvers are forced to **sample this field**, rather than inventing piecewise-constant substitutes.
-
-This does not eliminate discretization at the solver level, but it **removes arbitrariness from the definition of sectional properties**.
+Standard practice approximates non-prismatic members as prismatic segments. The result depends on arbitrary choices: segment count, sampling points, averaging rules.
+CSF defines the member as a continuous field. The solver samples this field; it does not invent piecewise-constant substitutes.
+Discretization remains at the solver level. Arbitrariness is removed from the section definition.
 
 ---
 
@@ -86,22 +73,7 @@ For this reason, CSF workflows can be expressed entirely using **plain-text YAML
 - documentation-driven modeling,
 - long-term reproducibility.
 
-Alternatively, CSF can be used through its Python APIs, providing greater flexibility for programmable and automated workflows.
-
-
----
-
-## Typical Application Domains
-
-CSF is most useful for members where sectional variation is a primary modeling feature, for example:
-
-- wind turbine towers,  
-- tapered columns and piles,  
-- thin-walled or shell-like beam members,  
-- non-uniform composite sections,  
-- research and validation studies with continuously varying geometry.  
-
-For strictly prismatic members with uniform properties, conventional prismatic-section tools are often more direct and sufficient.
+Alternatively, CSF can be used through its Python APIs, providing greater flexibility for programmable and automated workflows
 
 ---
 
