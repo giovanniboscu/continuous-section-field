@@ -1,9 +1,6 @@
 # Numerical Engine
 
-## Overview
-
-The numerical engine of CSF is designed to extract sectional and global quantities
-from a **continuously defined geometric and sectional field**.
+## Overview.
 
 This chapter describes:
 - how quantities are evaluated along the member,
