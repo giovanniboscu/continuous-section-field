@@ -214,7 +214,7 @@ Net area:
 `A_net = A_outer - A_hole = 60 - 8 = 52`
 
 ### A) Two-polygon encoding
-W is relative in the plot
+W is relative in the plot (w_eff)
 
 ![two_pol_ekofisk_sections](https://github.com/user-attachments/assets/fdcf8848-d8c4-48e1-8b1d-c60c076c5633)
 
