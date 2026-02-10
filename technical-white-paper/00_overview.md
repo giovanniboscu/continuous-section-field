@@ -35,7 +35,7 @@ CSF deliberately separates **geometric description**, **sectional homogenization
 CSF represents a structural member as a **continuous field along the longitudinal axis** \( z \), defined by two coupled but independent descriptions:
 
 1. **Continuous Geometry**  
-   The cross-section is defined explicitly by the user as a set of **polygonal regions** at a limited number of reference stations (typically start and end).  
+   The cross-section is defined explicitly by the user as a set of **polygonal regions** at a limited number of reference stations (start and end).  
    Intermediate sections are generated through **ruled-surface interpolation**, ensuring a smooth and deterministic geometric evolution.
 
 2. **Continuous Property Laws**  
@@ -47,9 +47,9 @@ CSF represents a structural member as a **continuous field along the longitudina
    - voids and cut-outs through explicit zero-weight regions.
 
 From these two descriptions, CSF evaluates **section properties and derived fields** such as:
-\[
+$$
 A(z),\; C_x(z),\; C_y(z),\; I_x(z),\; I_y(z),\; J(z),\; EA(z),\; EI(z),\; GJ(z)
-\]
+$$
 
 ---
 
