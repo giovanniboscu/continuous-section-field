@@ -274,6 +274,53 @@ CSF:
 
 This is generally the easiest form to review, validate, and debug.
 
+### B) One-polygon encoding
+
+```
+CSF:
+  sections:
+    - name: S0
+      z: 0.0
+      polygons:
+        - name: rect_ring_single_path
+          weight: 1.0
+          vertices:
+            # OUTER loop (CCW)
+            - [0.0, 0.0]
+            - [10.0, 0.0]
+            - [10.0, 6.0]
+            - [0.0, 6.0]
+            - [0.0, 0.0]   # close OUTER
+
+            # INNER loop (CW)
+            - [3.0, 2.0]
+            - [3.0, 4.0]
+            - [7.0, 4.0]
+            - [7.0, 2.0]
+            - [3.0, 2.0]   # close INNER
+
+    - name: S1
+      z: 10.0
+      polygons:
+        - name: rect_ring_single_path
+          weight: 1.0
+          vertices:
+            # OUTER loop (CCW)
+            - [0.0, 0.0]
+            - [10.0, 0.0]
+            - [10.0, 6.0]
+            - [0.0, 6.0]
+            - [0.0, 0.0]   # close OUTER
+
+            # INNER loop (CW)
+            - [3.0, 2.0]
+            - [3.0, 4.0]
+            - [7.0, 4.0]
+            - [7.0, 2.0]
+            - [3.0, 2.0]   # close INNER
+
+```
+
 ---
 
 ## Summary
