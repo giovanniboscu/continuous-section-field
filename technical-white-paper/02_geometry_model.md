@@ -206,7 +206,7 @@ Net area:
 
 `A_net = A_outer - A_hole = 60 - 8 = 52`
 
-### A) Two-polygon encoding (recommended for clarity)
+### A) Two-polygon encoding
 
 ```yaml
 CSF_GEOMETRY:
