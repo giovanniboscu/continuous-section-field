@@ -6,7 +6,7 @@ The fundamental idea behind CSF is to treat a structural member as a **continuou
 Formally, the member is described by:
 - a longitudinal coordinate `z` in `[0, L]`,
 - a cross-section `Omega(z)` that varies continuously with `z`,
-- a set of scalar fields `w_k(z)` associated with section subdomains.
+- a set of scalar fields `w_k(z)` associated with section subdomains , where k denotes the k-th polygon (section subdomain).
 
 
 All sectional quantities are derived from these continuous descriptions, not from discretized substitutes.
