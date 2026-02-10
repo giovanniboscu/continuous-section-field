@@ -215,6 +215,9 @@ Net area:
 
 ### A) Two-polygon encoding
 
+![two_pol_ekofisk_sections](https://github.com/user-attachments/assets/d5285471-e2b6-4fc9-b969-8ea4cf3b12ff)
+
+
 ```yaml
 # CSF geometry definition with two reference sections (S0 -> S1).
 # IMPORTANT: Polygon pairing is index-based, not name/proximity-based.
@@ -348,6 +351,9 @@ So this is not a different section, but a different representation of the same s
 ---
 
 ## Minimal YAML pattern (single-path)
+
+![one_pol_ekofisk_sections](https://github.com/user-attachments/assets/6afcb1fb-412a-4e12-8750-fad566ac3d5d)
+
 
 ```yaml
 CSF:
