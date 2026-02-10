@@ -217,7 +217,7 @@ Net area:
 W is relative in the plot
 
 ![two_pol_ekofisk_sections](https://github.com/user-attachments/assets/fdcf8848-d8c4-48e1-8b1d-c60c076c5633)
-W is relative in the plot
+
 
 ```yaml
 # CSF geometry definition with two reference sections (S0 -> S1).
