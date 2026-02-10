@@ -164,22 +164,33 @@ This policy avoids hidden corrections and preserves modeling transparency.
 
 ## Nesting Semantics and Voids
 
-CSF does not use a dedicated “hole entity”.  
-Geometry is always polygon-based. Numerical contribution is controlled by polygon weight plus nesting context.
+CSF does not implement a separate hole object.  
+A hole is represented only as a polygonal region in the section model.
 
-### Non-overlap semantics in nested regions
+Geometry is polygon-based; numerical contribution is evaluated per subdomain using polygon weight and nesting relations.
 
-When one polygon is inside another, CSF does not apply blind additive superposition in the shared footprint.  
-The inner polygon occupies its own domain within the container.
+### Non-overlap rule in nested regions
 
-Practical consequence:
+For nested polygons, CSF does not sum materials twice on the same footprint.  
+The inner polygon defines a distinct subdomain inside the container.
 
-- outer square with `w = 1`,
-- inner square with `w = 1`,
+Normative consequence:
 
-does not create doubled material over the same area.
+- container polygon with `w = 1`,
+- inner polygon with `w = 1`,
 
-A void is modeled explicitly as a polygon with `w = 0`.
+does **not** create doubled contribution in the overlap area.
+
+A void is modeled explicitly as an inner polygon with `w = 0`.
+
+### Local effective contribution (composite nesting)
+
+For a child polygon nested in a container polygon, the local effective field is:
+
+`w_eff(z) = w_child(z) - w_container(z)`
+
+where `child` is the directly nested inner polygon and `container` is its immediate parent.
+
 
 ### Effective contribution in nesting
 
@@ -191,7 +202,12 @@ This convention is fundamental for consistent void and inclusion modeling.
 
 ### Relation to `@wall` / `@cell`
 
-The nesting/composite logic above is distinct from special tagged workflows (for example `@wall` / `@cell`), which follow their own calculation paths and polygon-selection rules.
+The rules above (`w = 0` void modeling, nested-domain occupancy, and `w_eff(z) = w_child(z) - w_container(z)`) apply to the composite/nesting path.
+
+By contrast, `@wall` and `@cell` are solver-path tags appended to polygon names.  
+They select dedicated torsion workflows and polygon subsets; they do not redefine nesting semantics.
+
+As specified below, `@cell` denotes a single closed cell for torsion evaluation, geometrically represented as one domain with one internal void (one hole).
 
 ---
 
