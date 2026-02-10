@@ -311,7 +311,7 @@ CSF_ACTIONS:
 
 Evaluates user-defined weight-law expressions at **relative** z values (inspection tool).
 
-> Note: the key is spelled `weith_law` (as currently implemented).
+> Note: the key is spelled `weight_law` (as currently implemented).
 
 ```yaml
 CSF_ACTIONS:
@@ -322,7 +322,7 @@ CSF_ACTIONS:
     - weight_lab_zrelative:
         stations: [z_rel]
         output: [stdout, out/weight_inspector.txt]
-        weith_law:
+        weight:
           - "1.0"
           - "0.97 + 0.03/(1 + np.exp((z-10.0)/2.0))"
 ```
