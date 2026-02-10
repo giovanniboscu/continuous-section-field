@@ -15,11 +15,10 @@ This chapter describes:
 ## Continuous Longitudinal Formulation
 
 CSF treats the member as a continuous domain:
-\[
-z \in [z_0, z_1]
-\]
 
-All sectional quantities are evaluated as functions of \( z \).
+`z in [z_0, z_1]`
+
+All sectional quantities are evaluated as functions of ` z `.
 There is no implicit discretization into finite elements at this stage.
 
 The numerical engine samples this continuous field only for the purpose of:
@@ -56,7 +55,7 @@ Global quantities, such as:
 - total mass,
 - averaged properties,
 
-are obtained by integrating sectional quantities along \( z \).
+are obtained by integrating sectional quantities along ` z`.
 
 CSF employs **Gaussian quadrature schemes** for this purpose.
 
@@ -69,13 +68,12 @@ The default choice is motivated by:
 
 ## Gaussian Quadrature
 
-Let \( f(z) \) be a sectional quantity varying along the member.
+Let ` f(z) ` be a sectional quantity varying along the member.
 Its integral is approximated as:
 
-\[
-\int_{z_0}^{z_1} f(z)\, dz \;\approx\;
-\sum_{i=1}^{n} w_i\, f(z_i)
-\]
+$$
+\int_{z_0}^{z_1} f(z)\,dz \approx \sum_{i=1}^{n} w_i\,f(z_i)
+$$
 
 where:
 - \( z_i \) are the quadrature points,
