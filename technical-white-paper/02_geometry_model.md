@@ -275,52 +275,127 @@ CSF:
 This is generally the easiest form to review, validate, and debug.
 
 ### B) One-polygon encoding
+# Single-Path Hole Representation (`@cell`) in CSF
 
-```
+This note explains an alternative way to represent a section with a hole in CSF:  
+using **one composite polygon path** instead of two separate polygons (`outer` + `inner_void`).
+
+---
+
+## Why this representation exists
+
+In standard CSF nesting, a hole is typically modeled as a dedicated inner polygon with `weight: 0.0`.
+
+The single-path representation is an **alternative encoding** of the same geometry.  
+Its practical value is that the whole ring-like domain can be classified as a single tagged polygon, for example with `@cell`, to drive specific torsion workflows.
+
+---
+
+## Concept
+
+A single polygon entry contains two loops in one ordered point path:
+
+- an **outer loop** (usually CCW),
+- an **inner loop** (usually CW),
+
+both explicitly closed.
+
+This encodes a net domain equivalent to: outer boundary minus inner boundary.
+
+---
+
+## Important scope clarification
+
+This encoding is mainly useful when you want to treat the ring as one tagged entity, e.g. `@cell`.
+
+Example name:
+
+- `rect_ring_single_path@cell@t=0.5`
+
+Interpretation:
+
+- base geometric identity: `rect_ring_single_path`
+- tags: `@cell`, `@t=0.5`
+
+Tags guide calculation paths (e.g., torsion route selection) and parameters; they do not change the geometric base identity.
+
+---
+
+## Equivalence with two-polygon void model
+
+For a rectangular ring:
+
+- outer rectangle: `(0,0) -> (10,0) -> (10,6) -> (0,6) -> (0,0)`
+- bridge to inner: `(0,0) -> (3,2)`
+- inner void: `(3,2) -> (7,2) -> (7,4) -> (3,4)`
+
+the net area is:
+
+`A_net = A_outer - A_hole = 60 - 8 = 52`
+
+The same physical section can be encoded either as:
+
+1. **two polygons** (`outer_rect`, `inner_void` with `weight: 0.0`), or
+2. **one composite path** (outer + inner loops in one polygon entry).
+
+So this is not a different section, but a different representation of the same section.
+---
+
+## Minimal YAML pattern (single-path)
+
+```yaml
 CSF:
   sections:
     - name: S0
       z: 0.0
       polygons:
-        - name: rect_ring_single_path@cell@t=0.5 # @cell@t=0.5 is a torsion-solver tag: it controls the torsion calculation path only;
-                                           # the geometric polygon    identity remains "rect_ring_single_path" (the base name without @cell).
+        - name: rect_ring_single_path@cell@t=0.5
           weight: 1.0
-          vertices:
+          points:
             # OUTER loop (CCW)
             - [0.0, 0.0]
             - [10.0, 0.0]
             - [10.0, 6.0]
             - [0.0, 6.0]
-            - [0.0, 0.0]   # close OUTER
-
+            - [0.0, 0.0]
+            # bridge
+            - [0.0, 3.2]
             # INNER loop (CW)
-            - [3.0, 2.0]
+            - [3, 2.0]
             - [3.0, 4.0]
             - [7.0, 4.0]
             - [7.0, 2.0]
-            - [3.0, 2.0]   # close INNER
+            - [3.0, 2.0]
 
     - name: S1
       z: 10.0
       polygons:
         - name: rect_ring_single_path
           weight: 1.0
-          vertices:
+          points:
+          points:
             # OUTER loop (CCW)
             - [0.0, 0.0]
             - [10.0, 0.0]
             - [10.0, 6.0]
             - [0.0, 6.0]
-            - [0.0, 0.0]   # close OUTER
-
+            - [0.0, 0.0]
+            # bridge
+            - [0.0, 3.2]
             # INNER loop (CW)
-            - [3.0, 2.0]
+            - [3, 2.0]
             - [3.0, 4.0]
             - [7.0, 4.0]
             - [7.0, 2.0]
-            - [3.0, 2.0]   # close INNER
+            - [3.0, 2.0]
 
-```
+---
+
+## Practical recommendation
+
+- Use the **two-polygon encoding** when clarity and reviewability are the priority.
+- Use the **single-path encoding** when you need one tagged geometric entity (especially for `@cell`-based torsion workflows) and parser support is confirmed.
+
 
 ---
 
