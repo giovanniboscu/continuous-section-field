@@ -20,18 +20,15 @@ without altering the underlying geometric description.
 ## Definition of Weight
 
 Each polygonal region of a section is associated with a **scalar weight field**
-$$
-w_k(z)
-$$
-defined along the longitudinal coordinate \( z \).
+`w_k(z)`
+
+defined along the longitudinal coordinate`z`.
 
 During sectional property assembly, this scalar multiplies the geometric contribution
 of the corresponding polygon.
 
 Formally, a generic sectional quantity \( Q(z) \) is evaluated as:
-$$
-Q(z) = \sum_k w_k(z)\, Q_k(z)
-$$
+`Q(z) = sum_k [ w_k(z) * Q_k(z) ]`
 
 where \( Q_k(z) \) is the purely geometric contribution of polygon \( k \).
 
