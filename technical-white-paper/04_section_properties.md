@@ -22,11 +22,12 @@ and evaluates standard geometric quantities using exact polygonal formulas.
 
 For each polygon \( k \), the following quantities are computed:
 
-- area \( A_k(z) \),
-- centroid coordinates \( (C_{x,k}(z), C_{y,k}(z)) \),
-- second moments of area \( I_{x,k}(z), I_{y,k}(z) \),
-- product of inertia \( I_{xy,k}(z) \),
-- first moment of area \( Q_k(z) \) (for shear-related evaluations).
+- area `A_k(z)`,
+- centroid coordinates `(C_x,k(z), C_y,k(z))`,
+- second moments of area `I_x,k(z), I_y,k(z)`,
+- product of inertia `I_xy,k(z)`,
+- first moment of area `Q_k(z)` (for shear-related evaluations).
+
 
 These quantities are evaluated with respect to the **local section reference frame**.
 
@@ -38,13 +39,11 @@ The section as a whole is obtained by assembling the contributions of all polygo
 
 For a generic property \( P(z) \), the assembly rule is:
 
-\[
-P(z) = \sum_k w_k(z)\, P_k(z)
-\]
+`P(z) = sum_k [ w_k(z) * P_k(z) ]`
 
 where:
-- \( P_k(z) \) is the geometric contribution of polygon \( k \),
-- \( w_k(z) \) is its longitudinal weight.
+- ` P_k(z) ` is the geometric contribution of polygon ` k `,
+` w_k(z) ` is its longitudinal weight.
 
 This formulation applies uniformly to all area-based sectional quantities.
 
@@ -54,9 +53,8 @@ This formulation applies uniformly to all area-based sectional quantities.
 
 The effective (weighted) cross-sectional area is defined as:
 
-\[
-A(z) = \sum_k w_k(z)\, A_k(z)
-\]
+`A(z) = sum_k [ w_k(z) * A_k(z) ]`
+
 
 If all weights are equal to unity, \( A(z) \) coincides with the geometric area.
 
@@ -68,15 +66,15 @@ Zero-weight polygons contribute no area, representing voids.
 
 The centroid of the weighted section is computed as:
 
-\[
-C_x(z) = \frac{\sum_k w_k(z)\, A_k(z)\, C_{x,k}(z)}{A(z)}, \quad
-C_y(z) = \frac{\sum_k w_k(z)\, A_k(z)\, C_{y,k}(z)}{A(z)}
-\]
+`C_x(z) = (sum_k [ w_k(z) * A_k(z) * C_x,k(z) ]) / A(z)`
+
+`C_y(z) = (sum_k [ w_k(z) * A_k(z) * C_y,k(z) ]) / A(z)`
+
 
 The centroid location is therefore:
 - geometry-dependent,
 - weight-dependent,
-- generally varying along \( z \).
+- generally varying along `z `.
 
 This variability is explicitly tracked and exported.
 
@@ -89,10 +87,9 @@ then shifted to the section centroid using the parallel-axis theorem.
 
 The weighted sectional moments are:
 
-\[
-I_x(z) = \sum_k w_k(z)\, I_{x,k}^\text{(centroid)}(z), \quad
-I_y(z) = \sum_k w_k(z)\, I_{y,k}^\text{(centroid)}(z)
-\]
+`I_x(z) = sum_k [ w_k(z) * I_x,k^(centroid)(z) ]`
+
+`I_y(z) = sum_k [ w_k(z) * I_y,k^(centroid)(z) ]`
 
 The product of inertia \( I_{xy}(z) \) is evaluated analogously.
 
@@ -102,9 +99,7 @@ The product of inertia \( I_{xy}(z) \) is evaluated analogously.
 
 The polar moment of area is defined as:
 
-\[
-J_p(z) = I_x(z) + I_y(z)
-\]
+`J_p(z) = I_x(z) + I_y(z)`
 
 CSF also evaluates a torsional stiffness constant \( J(z) \),
 which coincides with \( J_p \) for simple solid sections and
@@ -125,12 +120,13 @@ From the primary properties, CSF derives additional quantities commonly used
 in engineering practice:
 
 - radii of gyration:
-  \[
-  r_x(z) = \sqrt{\frac{I_x(z)}{A(z)}}, \quad
-  r_y(z) = \sqrt{\frac{I_y(z)}{A(z)}}
-  \]
+- 
+`r_x(z) = sqrt( I_x(z) / A(z) )`
 
-- principal moments of inertia \( I_1(z), I_2(z) \),
+`r_y(z) = sqrt( I_y(z) / A(z) )`
+
+
+- principal moments of inertia ` I_1(z), I_2(z)`,
 - principal axis rotation angle.
 
 These quantities are purely sectional and independent of solver assumptions.
@@ -141,9 +137,9 @@ These quantities are purely sectional and independent of solver assumptions.
 
 Depending on the interpretation of weights, CSF may report stiffness-like products:
 
-- axial stiffness: \( EA(z) \),
-- bending stiffness: \( EI_x(z), EI_y(z) \),
-- torsional stiffness: \( GJ(z) \).
+- axial stiffness: ` EA(z) `,
+- bending stiffness: ` EI_x(z), EI_y(z)`,
+- torsional stiffness: `GJ(z)`.
 
 CSF itself does not enforce how these quantities are used.
 Their physical meaning depends on the adopted weight convention
@@ -163,7 +159,7 @@ any shear deformation theory.
 
 ## Coordinate System and Sign Conventions
 
-All sectional quantities are expressed in the local \( x\text{–}y \) reference frame.
+All sectional quantities are expressed in the local `x-y` reference frame.
 
 Sign conventions follow standard engineering practice:
 - areas are positive,
@@ -181,7 +177,7 @@ All geometric quantities are computed analytically from polygonal formulas.
 Accuracy depends on:
 - correctness of the geometry,
 - polygonal approximation of curved outlines,
-- numerical integration precision along \( z \).
+- numerical integration precision along ` z `.
 
 No artificial smoothing or correction is applied.
 
