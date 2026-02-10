@@ -4,9 +4,6 @@
 
 This document explains **how CSF outputs are consumed by OpenSees**, and—more importantly—**why the chosen integration strategy is mathematically consistent with a continuous stiffness field**.
 
-The goal is to avoid the common misconception that CSF + OpenSees is “just a refined piecewise-prismatic discretization”.  
-It is not.
-
 ---
 
 ## 1. Role Separation: CSF vs OpenSees
