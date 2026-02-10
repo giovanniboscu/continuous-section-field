@@ -278,6 +278,10 @@ CSF:
             - [3.0, 4.0]
 ```
 
+
+
+
+---
 This is generally the easiest form to review, validate, and debug.
 
 ### B) One-polygon encoding
