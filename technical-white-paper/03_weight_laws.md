@@ -79,14 +79,13 @@ This convention:
 ### Convention B — Weight as a Physical Property
 
 Alternatively, the weight may represent a physical quantity directly, such as:
-\[
+`
 w(z) = E(z)
-\]
+`
 
 In this case, the resulting integrals already carry stiffness dimensions:
-\[
-\int E(z)\, dA
-\]
+
+`integral_A [ E(z) dA ]`
 
 This approach is valid, but requires careful documentation and consistent handling
 during solver export.
@@ -96,9 +95,9 @@ during solver export.
 ## Voids and Zero-Weight Regions
 
 A **void** is modeled by assigning:
-\[
+`
 w(z) = 0
-\]
+`
 
 A zero-weight polygon contributes nothing to sectional integrals.
 
@@ -130,9 +129,8 @@ If no custom law is specified, CSF applies a **linear interpolation** of weights
 between reference sections.
 
 Let:
-- \( w_0 \) be the weight at \( z = z_0 \),
-- \( w_1 \) be the weight at \( z = z_1 \).
-
+- `w_0`: weight at `z = z_0`
+- `w_1`: weight at `z = z_1`
 The default law is:
 
 $$
