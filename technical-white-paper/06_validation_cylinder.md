@@ -116,7 +116,7 @@ Errors are dominated by:
 Increasing the number of polygon sides leads to systematic convergence
 towards the analytical solution.
 
-For \( N \geq 256 \), all sectional quantities converge within engineering tolerance.
+For `N >= 256`, all sectional quantities converge within engineering tolerance.
 
 This confirms that:
 - the polygonal formulation is consistent,
