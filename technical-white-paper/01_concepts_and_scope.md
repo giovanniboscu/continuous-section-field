@@ -1,27 +1,5 @@
-# Concepts and Scope
 
-## Problem Statement
-
-In structural engineering practice, beam-like members are commonly analyzed under the assumption of **prismatic geometry** and **uniform sectional properties**.  
-When a member is non-prismatic, the prevailing workaround consists in subdividing it into a sequence of prismatic elements, each assigned constant properties obtained by averaging or sampling.
-
-While this approach is computationally convenient, it introduces several conceptual limitations:
-- the solution depends on the number of subdivisions,
-- sectional properties depend on arbitrary sampling locations,
-- geometric continuity is replaced by stepwise approximations,
-- the modeling choices are often implicit and difficult to reproduce.
-
-These limitations become particularly evident for members with:
-- continuous tapering,
-- varying thickness or stiffness,
-- multi-material layouts,
-- internal voids or multi-cell geometries.
-
-CSF is designed to address this specific modeling gap.
-
----
-
-## Core Concept: The Continuous Section Field
+# Core Concept: The Continuous Section Field
 
 The fundamental idea behind CSF is to treat a structural member as a **continuous section field** rather than as a sequence of prismatic segments.
 
@@ -60,7 +38,7 @@ This separation ensures that CSF remains:
 CSF models a single structural member whose geometry satisfies the following assumptions:
 
 - The member is beam-like, with a dominant longitudinal axis.
-- Cross-sections are defined in planes normal to the axis.
+- Cross-sections are defined in planes normal to the axis, sections can be twisted
 - Section geometry is represented by **closed polygonal regions**.
 - Corresponding polygons between reference sections are connected through **ruled surfaces**.
 - The topology of the section is consistent between reference stations.
@@ -84,8 +62,7 @@ The interpretation of the scalar field \( w(z) \) is left to the user and must r
 
 ## Continuous vs. Piecewise-Prismatic Modeling
 
-CSF does not eliminate discretization at the solver level.  
-However, it eliminates **arbitrary discretization at the modeling level**.
+CSF defines the field; the solver samples at quadrature points chosen by the modeler.
 
 The key distinction is the following:
 
