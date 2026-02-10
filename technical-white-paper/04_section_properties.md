@@ -49,14 +49,14 @@ This formulation applies uniformly to all area-based sectional quantities.
 
 ---
 
-## Net Section Area
+## Section Area
 
 The effective (weighted) cross-sectional area is defined as:
 
 `A(z) = sum_k [ w_k(z) * A_k(z) ]`
 
 
-If all weights are equal to unity, \( A(z) \) coincides with the geometric area.
+If all weights are equal to unity,` A(z)` coincides with the geometric area.
 
 Zero-weight polygons contribute no area, representing voids.
 
@@ -91,7 +91,7 @@ The weighted sectional moments are:
 
 `I_y(z) = sum_k [ w_k(z) * I_y,k^(centroid)(z) ]`
 
-The product of inertia \( I_{xy}(z) \) is evaluated analogously.
+The product of inertia `I_{xy}(z) `is evaluated analogously.
 
 ---
 
@@ -101,8 +101,8 @@ The polar moment of area is defined as:
 
 `J_p(z) = I_x(z) + I_y(z)`
 
-CSF also evaluates a torsional stiffness constant \( J(z) \),
-which coincides with \( J_p \) for simple solid sections and
+CSF also evaluates a torsional stiffness constant ` J(z) `,
+which coincides with `J_p ` for simple solid sections and
 is computed using dedicated formulations for thin-walled or cellular geometries
 when applicable.
 
@@ -149,7 +149,7 @@ Their physical meaning depends on the adopted weight convention
 
 ## Shear-Related Quantities
 
-CSF can compute first moments of area \( Q(z) \) with respect to a specified cut,
+CSF can compute first moments of area`Q(z)`with respect to a specified cut,
 typically used in classical shear stress formulations.
 
 These quantities are provided as geometric inputs and do not imply
