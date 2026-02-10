@@ -5,10 +5,6 @@
 The numerical engine of CSF is designed to extract sectional and global quantities
 from a **continuously defined geometric and sectional field**.
 
-Unlike traditional approaches based on discrete prismatic elements,
-CSF evaluates properties directly from the continuous description,
-using deterministic numerical integration schemes.
-
 This chapter describes:
 - how quantities are evaluated along the member,
 - how numerical integration is performed,
