@@ -76,9 +76,9 @@ $$
 $$
 
 where:
-- \( z_i \) are the quadrature points,
-- \( w_i \) are the associated weights,
-- \( n \) is the number of integration points.
+- ` z_i ` are the quadrature points,
+- ` w_i` are the associated weights,
+- ` n ` is the number of integration points.
 
 The user may control the number of points to balance accuracy and cost.
 
@@ -103,7 +103,7 @@ This ensures that:
 When exporting sectional data for external solvers,
 CSF may use **Gauss–Lobatto sampling**.
 
-This scheme includes the end points \( z_0 \) and \( z_1 \),
+This scheme includes the end points ` z_0 ` and `z_1 `,
 ensuring that:
 - boundary conditions are applied at exact member ends,
 - end-section properties are evaluated without extrapolation.
@@ -115,7 +115,7 @@ This is particularly important for force-based beam formulations.
 ## Handling of Nonlinear Geometry Variation
 
 Although the ruled-surface interpolation of geometry is linear in vertex coordinates,
-the resulting sectional quantities are generally **nonlinear functions of \( z \)**.
+the resulting sectional quantities are generally **nonlinear functions of  `z  `**.
 
 For example:
 - moments of inertia vary polynomially,
