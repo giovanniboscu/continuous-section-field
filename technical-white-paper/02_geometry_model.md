@@ -225,58 +225,55 @@ Net area:
 
 CSF:
   sections:
-    # ---------------------------
-    # Reference section at z = 0
-    # ---------------------------
-    - name: S0
-      z: 0.0
+    S0:
+      # ---------------------------
+      # Reference section at z = 0
+      # ---------------------------
+      z: 0.000000
       polygons:
-        # Polygon index 0 in S0
-        # Paired with polygon index 0 in S1
-        - name: outer_rect
-          weight: 1.0  # Full contribution (container domain)
-          points:      # CCW point order required
-            - [0.0, 0.0]
-            - [10.0, 0.0]
-            - [10.0, 6.0]
-            - [0.0, 6.0]
-
+        outer:
+          weight: 1.000000 # Full contribution (container domain)
+          # Polygon index 0 in S0
+          # Paired with polygon index 0 in S1          
+          vertices: # CCW point order required
+             - [0.0, 0.0]
+             - [10.0, 0.0]
+             - [10.0, 6.0]
+             - [0.0, 6.0]
         # Polygon index 1 in S0
-        # Paired with polygon index 1 in S1
-        - name: inner_void
-          weight: 0.0  # Explicit void domain
-          points:      # CCW point order required
+        # Paired with polygon index 1 in S1           
+        inner:
+          weight: 0.000000 # void
+          vertices:
             - [3.0, 2.0]
             - [7.0, 2.0]
             - [7.0, 4.0]
             - [3.0, 4.0]
-
-    # ----------------------------
-    # Reference section at z = 10
-    # ----------------------------
-    - name: S1
-      z: 10.0
+            
+    S1:
+      z: 10.000000
+      # ---------------------------
+      # Reference section at z = 10
+      # ---------------------------      
       polygons:
-        # Polygon index 0 in S1
-        # Must correspond to S0 polygon index 0 (outer_rect)
-        - name: outer_rect
-          weight: 1.0
-          points:
-            - [0.0, 0.0]
-            - [10.0, 0.0]
-            - [10.0, 6.0]
-            - [0.0, 6.0]
-
-        # Polygon index 1 in S1
-        # Must correspond to S0 polygon index 1 (inner_void)
-        - name: inner_void
-          weight: 0.0
-          points:
+        outer:
+          weight: 1.000000  # Full contribution (container domain)
+          # Polygon index 0 in S1
+          # Must correspond to S0 polygon index 0 (outer)
+          vertices:
+             - [0.0, 0.0]
+             - [10.0, 0.0]
+             - [10.0, 6.0]
+             - [0.0, 6.0]
+        inner:
+          weight: 0.000000 # void
+          # Polygon index 1 in S1
+          # Must correspond to S0 polygon index 1 (inner)
+          vertices:
             - [3.0, 2.0]
             - [7.0, 2.0]
             - [7.0, 4.0]
             - [3.0, 4.0]
-
 ```
 
 This is generally the easiest form to review, validate, and debug.
@@ -376,7 +373,7 @@ CSF:
              - [3.0, 2.0]
 
     S1:
-      z: 175.000000
+      z: 10.000000
       polygons:
         outer:
           weight: 1.000000
