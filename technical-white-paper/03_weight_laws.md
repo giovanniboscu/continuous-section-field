@@ -58,21 +58,16 @@ All consistency checks are the responsibility of the user.
 ### Convention A — Dimensionless Homogenization Factor (Recommended)
 
 In this convention, the weight is defined as:
-\[
-w(z) = \frac{E(z)}{E_\text{ref}}
-\]
-where \( E_\text{ref} \) is a chosen reference modulus.
+`w(z) = E(z) / E_ref`
 
-Sectional integrals become *modular properties*:
-\[
-A^\*(z) = \sum_k w_k(z)\,A_k(z), \quad
-I^\*(z) = \sum_k w_k(z)\,I_k(z)
-\]
+where `E_ref` is a chosen reference modulus.
 
-Stiffness is recovered externally as:
-\[
-E_\text{ref}\,A^\*(z), \quad E_\text{ref}\,I^\*(z)
-\]
+`A*(z) = sum_k [ w_k(z) * A_k(z) ]`
+`I*(z) = sum_k [ w_k(z) * I_k(z) ]`
+
+`E_ref * A*(z)`
+`E_ref * I*(z)`
+
 
 This convention:
 - preserves numerical stability,
