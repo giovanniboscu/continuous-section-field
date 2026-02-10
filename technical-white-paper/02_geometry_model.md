@@ -42,10 +42,7 @@ For a polygon to be valid in CSF, it must satisfy all the following conditions:
    The polygon is closed by CSF. Repeating the first vertex is optional.
 
 2. **Counter-clockwise orientation (CCW)**  
-   Vertices must be ordered CCW.  
-   This is a strict requirement for consistent Green/shoelace sign conventions in area and inertia computation.
-   :
-    **Single-Path Hole Representation (`@cell`)** for the mandatory bridge rules and validity constraints of inner-loop single-polygon encoding.
+   Counter-clockwise orientation (CCW): vertices must be ordered CCW. This is a strict requirement for consistent Green/shoelace sign conventions in area and inertia computation. See "Single-Path Hole Representation (@cell)" for mandatory bridge rules and validity constraints of inner-loop single-polygon encoding.
 
 
 4. **No self-intersection**  
