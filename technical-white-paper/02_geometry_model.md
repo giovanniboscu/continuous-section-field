@@ -391,7 +391,6 @@ CSF:
         - name: rect_ring_single_path
           weight: 1.0
           points:
-          points:
             # OUTER loop (CCW)
             - [0.0, 0.0]
             - [10.0, 0.0]
