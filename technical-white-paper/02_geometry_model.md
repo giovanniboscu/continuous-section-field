@@ -209,30 +209,49 @@ Net area:
 ### A) Two-polygon encoding
 
 ```yaml
-CSF_GEOMETRY:
+# CSF geometry definition with two reference sections (S0 -> S1).
+# IMPORTANT: Polygon pairing is index-based, not name/proximity-based.
+# Pairing rule:
+#   S0.polygons[0] <-> S1.polygons[0]
+#   S0.polygons[1] <-> S1.polygons[1]
+# This ordering must remain consistent across all sections.
+
+CSF:
   sections:
+    # ---------------------------
+    # Reference section at z = 0
+    # ---------------------------
     - name: S0
       z: 0.0
       polygons:
+        # Polygon index 0 in S0
+        # Paired with polygon index 0 in S1
         - name: outer_rect
-          weight: 1.0
-          points:
+          weight: 1.0  # Full contribution (container domain)
+          points:      # CCW point order required
             - [0.0, 0.0]
             - [10.0, 0.0]
             - [10.0, 6.0]
             - [0.0, 6.0]
 
+        # Polygon index 1 in S0
+        # Paired with polygon index 1 in S1
         - name: inner_void
-          weight: 0.0
-          points:
+          weight: 0.0  # Explicit void domain
+          points:      # CCW point order required
             - [3.0, 2.0]
             - [7.0, 2.0]
             - [7.0, 4.0]
             - [3.0, 4.0]
 
+    # ----------------------------
+    # Reference section at z = 10
+    # ----------------------------
     - name: S1
       z: 10.0
       polygons:
+        # Polygon index 0 in S1
+        # Must correspond to S0 polygon index 0 (outer_rect)
         - name: outer_rect
           weight: 1.0
           points:
@@ -241,6 +260,8 @@ CSF_GEOMETRY:
             - [10.0, 6.0]
             - [0.0, 6.0]
 
+        # Polygon index 1 in S1
+        # Must correspond to S0 polygon index 1 (inner_void)
         - name: inner_void
           weight: 0.0
           points:
@@ -248,6 +269,7 @@ CSF_GEOMETRY:
             - [7.0, 2.0]
             - [7.0, 4.0]
             - [3.0, 4.0]
+
 ```
 
 This is generally the easiest form to review, validate, and debug.
