@@ -282,7 +282,8 @@ CSF:
     - name: S0
       z: 0.0
       polygons:
-        - name: rect_ring_single_path
+        - name: rect_ring_single_path@cell@t=0.5 # @cell@t=0.5 is a torsion-solver tag: it controls the torsion calculation path only;
+                                           # the geometric polygon    identity remains "rect_ring_single_path" (the base name without @cell).
           weight: 1.0
           vertices:
             # OUTER loop (CCW)
