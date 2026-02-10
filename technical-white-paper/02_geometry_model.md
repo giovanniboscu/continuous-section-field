@@ -185,11 +185,11 @@ A void is modeled explicitly as an inner polygon with `w = 0`.
 
 ### Local effective contribution (composite nesting)
 
-For a child polygon nested in a container polygon, the local effective field is:
+For a inner polygon nested in a container polygon, the local effective field is:
 
 `w_eff(z) = w_inner(z) - w_container(z)`
 
-where `child` is the directly nested inner polygon and `container` is its immediate parent.
+where `inner` is the directly nested inner polygon and `container` is its immediate parent.
 
 
 ### Effective contribution in nesting
