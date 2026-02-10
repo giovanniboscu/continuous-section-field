@@ -157,6 +157,16 @@ This enables non-linear, piecewise, or data-driven variation of properties.
 
 example:
 
+`w(z) = 1.0 - 0.40 * exp(-((z-5.0)^2) / (2*2.0^2))`
+
+This is a Gaussian-shaped reduction centered at `z=5.0`, subtracted from a baseline value of `1.0`.
+
+Interpretation:
+- far from `z=5.0`: `exp(...) -> 0`, so `w(z) -> 1.0`
+- at `z=5.0`: `exp(0)=1`, so `w(5)=1.0-0.40=0.60` (minimum value)
+- `2.0` is the spread parameter (`sigma`): larger `sigma` gives a wider dip, smaller `sigma` gives a narrower dip.
+
+
 ```
 CSF:
   sections:
