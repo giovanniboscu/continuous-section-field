@@ -1,4 +1,4 @@
-# CSF Documentation — Reader Index
+# CSF Documentation - Reader Index
 
 This folder contains the full technical documentation for **Continuous Section Field (CSF)**.
 The documents are structured to support **reviewers, researchers, and advanced practitioners**
