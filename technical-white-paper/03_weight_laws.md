@@ -30,7 +30,7 @@ of the corresponding polygon.
 Formally, a generic sectional quantity \( Q(z) \) is evaluated as:
 `Q(z) = sum_k [ w_k(z) * Q_k(z) ]`
 
-where \( Q_k(z) \) is the purely geometric contribution of polygon \( k \).
+where `Q_k(z)` is the purely geometric contribution of polygon ` k `.
 
 The term *weight* is deliberately generic.  
 It does not enforce a specific physical interpretation.
@@ -39,7 +39,7 @@ It does not enforce a specific physical interpretation.
 
 ## Physical Interpretation
 
-The physical meaning of \( w(z) \) is entirely **user-defined**, but must remain
+The physical meaning of  `w(z)` is entirely **user-defined**, but must remain
 **internally consistent** throughout the workflow.
 
 Typical interpretations include:
