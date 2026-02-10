@@ -183,7 +183,7 @@ CSF_ACTIONS:
 
 ---
 
-## 6) Why these stations are recommended
+## 6)  what stations are used for
 
 Use stations that capture:
 - degradation peak: `z=5`,
