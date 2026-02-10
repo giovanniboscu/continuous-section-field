@@ -39,7 +39,7 @@ CSF models a single structural member whose geometry satisfies the following ass
 
 - The member is beam-like, with a dominant longitudinal axis.
 - Cross-sections are defined in planes normal to the axis, sections can be twisted
-- Section geometry is represented by **closed polygonal regions**.
+- Section geometry is represented by **polygonal regions**.
 - Corresponding polygons between reference sections are connected through **ruled surfaces**.
 - The topology of the section is consistent between reference stations.
 
@@ -56,7 +56,7 @@ CSF operates within the framework of **linear elasticity** and **sectional homog
 - Cracking, yielding, damage, and hysteresis are outside the scope.
 - All physical effects are introduced through scalar weighting fields applied to geometry.
 
-The interpretation of the scalar field \( w(z) \) is left to the user and must remain consistent throughout the workflow.
+The interpretation of the scalar field `w(z)` is left to the user and must remain consistent throughout the workflow.
 
 ---
 
