@@ -44,11 +44,13 @@ For a polygon to be valid in CSF, it must satisfy all the following conditions:
 2. **Counter-clockwise orientation (CCW)**  
    Vertices must be ordered CCW.  
    This is a strict requirement for consistent Green/shoelace sign conventions in area and inertia computation.
+   See below: **Single-Path Hole Representation (`@cell`)** for the mandatory bridge rules and validity constraints of inner-loop single-polygon encoding.
 
-3. **No self-intersection**  
+
+4. **No self-intersection**  
    Polygons must be simple and non-self-intersecting.
 
-4. **Planar geometry**  
+5. **Planar geometry**  
    All vertices lie in the same `x-y` plane.
 
 Violation of these rules produces invalid geometry and must be corrected upstream (parser/validator stage).
