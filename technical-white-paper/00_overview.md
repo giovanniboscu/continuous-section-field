@@ -87,18 +87,21 @@ For this reason, CSF workflows can be expressed entirely using **plain-text YAML
 - long-term reproducibility.
 
 Alternatively, CSF can be used through its Python APIs, providing greater flexibility for programmable and automated workflows.
+
+
 ---
 
 ## Typical Application Domains
 
-CSF is particularly suited for members where sectional variation is **intrinsic** rather than incidental, such as:
-- wind turbine towers,
-- tapered columns and piles,
-- shell-like beam members,
-- non-uniform composite sections,
-- research and validation studies involving continuously varying geometry.
+CSF is most useful for members where sectional variation is a primary modeling feature, for example:
 
-For prismatic members with uniform properties, traditional tools remain sufficient and simpler.
+- wind turbine towers,  
+- tapered columns and piles,  
+- thin-walled or shell-like beam members,  
+- non-uniform composite sections,  
+- research and validation studies with continuously varying geometry.  
+
+For strictly prismatic members with uniform properties, conventional prismatic-section tools are often more direct and sufficient.
 
 ---
 
