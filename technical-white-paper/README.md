@@ -104,5 +104,3 @@ These documents complement:
 Together, they form a **complete, auditable technical package**.
 
 ---
-
-**End of index**
