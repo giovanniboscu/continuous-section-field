@@ -111,13 +111,7 @@ This ensures:
 
 ---
 
-## 7. Why This Is *Not* Piecewise-Prismatic
-
-### Classical piecewise-prismatic model
-- user chooses number of segments
-- user chooses averaging strategy
-- section properties are *invented* per segment
-- results depend on discretization choices
+## 7.CSF Is *Not* Piecewise-Prismatic
 
 ### CSF + OpenSees model
 - CSF defines a **continuous field**
