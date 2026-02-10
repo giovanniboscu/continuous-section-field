@@ -41,7 +41,7 @@ For a polygon to be valid in CSF, it must satisfy all the following conditions:
 1. **Closed polyline**  
    The polygon is closed by CSF. Repeating the first vertex is optional.
 
-2. Vertices must be ordered CCW ** (CCW)**  
+2. **Counter-clockwise orientation (CCW)**  
    This is a strict requirement for consistent Green/shoelace sign conventions in area and inertia computation. See "One-polygon encoding (@cell)" for mandatory bridge rules and validity constraints of inner-loop single-polygon encoding.
 
 
@@ -190,15 +190,6 @@ For a inner polygon nested in a container polygon, the local effective field is:
 `w_eff(z) = w_inner(z) - w_container(z)`
 
 where `inner` is the directly nested inner polygon and `container` is its immediate parent.
-
-
-### Effective contribution in nesting
-
-For composite nesting evaluation, the effective local contribution follows:
-
-`w_eff(z) = w_inner(z) - w_container(z)`
-
-This convention is fundamental for consistent void and inclusion modeling.
 
 ### Relation to `@wall` / `@cell`
 
