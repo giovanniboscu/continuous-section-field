@@ -86,7 +86,7 @@ w(z) = E(z)
 
 In this case, the resulting integrals already carry stiffness dimensions:
 
-`integral_A [ E(z) dA ]`
+`∫_A E(z) dA`
 
 This approach is valid, but requires careful documentation and consistent handling
 during solver export.
