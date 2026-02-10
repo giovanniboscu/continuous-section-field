@@ -91,9 +91,9 @@ The 3D geometry of the member is generated through **ruled surfaces**.
 
 For each polygon vertex \( P_i \), the spatial position along the member is defined as:
 
-\[
+$$
 P_i(z) = P_{i,0} + \frac{z - z_0}{z_1 - z_0} \left( P_{i,1} - P_{i,0} \right)
-\]
+$$
 
 where:
 - \( P_{i,0} \) is the vertex at the start section,
