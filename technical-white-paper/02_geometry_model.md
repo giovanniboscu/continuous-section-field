@@ -325,11 +325,13 @@ Tags guide calculation paths (e.g., torsion route selection) and parameters; the
 
 ## Equivalence with two-polygon void model
 
-For a rectangular ring:
+For the single-path encoding:
 
-- outer rectangle: `(0,0) -> (10,0) -> (10,6) -> (0,6) -> (0,0)`
+- outer loop (CCW): `(0,0) -> (10,0) -> (10,6) -> (0,6) -> (0,0)`
 - bridge to inner: `(0,0) -> (3,2)`
-- inner void: `(3,2) -> (7,2) -> (7,4) -> (3,4)`
+- inner loop (CW): `(3,2) -> (3,4) -> (7,4) -> (7,2) -> (3,2)`
+- bridge back: `(3,2) -> (0,0)` (required by this encoding rule)
+
 
 the net area is:
 
