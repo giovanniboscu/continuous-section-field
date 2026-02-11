@@ -24,9 +24,9 @@ Relevant clauses:
 
 - Equation (3.5):
 
-  $$
-  E_{cm} = 22000 \left( \frac{f_{cm}}{10} \right)^{0.3}
-  $$
+$$
+E_{cm} = 22000 ( f_{cm} / 10 )^{0.3}
+$$
 
 Eurocode 2 defines the mechanical relationship between compressive strength and elastic modulus for normal-weight structural concrete.
 
