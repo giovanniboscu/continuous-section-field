@@ -357,15 +357,15 @@ This comparison confirms the library's ability to accurately handle **continuous
 
 ## NREL 5-MW Reference Source
 
-This project was developed and validated using the following official engineering standards and technical references:
+This benchmark uses the following reference documents:
 
-### Wind Energy Reference Models
-* **NREL 5-MW Reference Wind Turbine**: The tower validation is based on the official technical report:
-  > *Jonkman, J., Butterfield, S., Musial, W., and Scott, G., "Definition of a 5-MW Reference Wind Turbine for Offshore System Development," NREL Technical Report NREL/TP-500-38060, February 2009.*
-  * [**Download Official PDF (NREL)**](https://www.nrel.gov/docs/fy09osti/38060.pdf)
-  * [**OpenFAST Documentation**](https://openfast.readthedocs.io/en/main/)
-  * [**NREL Wind Research**](https://www.nrel.gov/wind/)
-
+- NREL 5-MW reference turbine report:
+  Jonkman, J., Butterfield, S., Musial, W., and Scott, G.  
+  "Definition of a 5-MW Reference Wind Turbine for Offshore System Development,"  
+  NREL/TP-500-38060, February 2009.
+  - [Download PDF (NREL)](https://www.nrel.gov/docs/fy09osti/38060.pdf)
+  - [OpenFAST documentation](https://openfast.readthedocs.io/en/main/)
+  - [NREL wind research portal](https://www.nrel.gov/wind/)
     
 ---
 
