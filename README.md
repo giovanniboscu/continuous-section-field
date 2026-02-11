@@ -1,5 +1,5 @@
 
-## A Section Analyzer Engine for Non-Prismatic Structural Members
+## Section Property Preprocessor for Non-Prismatic Members
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18063427.svg)](https://doi.org/10.5281/zenodo.18063427)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![Math](https://img.shields.io/badge/Engine-Analytical_Mechanics-red.svg)
@@ -11,7 +11,7 @@
 
 
 
-## Continuous Section Field (CSF): Non-Prismatic, Multi-Material Members — Python API or No-Code YAML (CSFReader + CSFActions)
+## Continuous Section Field (CSF): Section-Property Preprocessing for Non-Prismatic, Multi-Region Members (Python API and YAML workflow)
 
 **Continuous Section Field (CSF)** is a Python engine for **non-prismatic** and **non-homogeneous** beam-like members, designed as a *continuous pre-processor* for structural solvers.
 
@@ -209,7 +209,7 @@ The engine employs a **multi-pass analysis** combined with **Gaussian integratio
 
 ####   Continuous Longitudinal Formulation
 Unlike traditional frame analysis software that treats members as prismatic, this library treats the member as a **Continuous Section Field**:
-* **Dynamic Computation**: Every property is calculated "on-the-fly" at any longitudinal coordinate $z$ via linear vertex-mapping.
+* **Dynamic Computation**: Every property is calculated at any longitudinal coordinate $z$ via linear vertex-mapping.
 * **Homogenization & Voids**: Full support for material homogenization through **positive weights** and internal voids or cut-outs through **negative weights**.
 
 ## Cross-sectional properties 
