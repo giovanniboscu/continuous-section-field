@@ -432,78 +432,6 @@ If thickness is missing, the function raises an error (strict mode).
 > Note: there is a legacy fallback path in the code (estimate thickness as `t = 2A/P`),
 > but it is disabled by default (`REQUIRE_EXPLICIT_T = True`).
 
-## Geometry encoding required by the implementation
-
-A `@cell` polygon must encode **two loops** (outer boundary and inner boundary) in a **single vertex list**
-using repeated vertices as delimiters (a “slit-cell” encoding):
-
-- The **outer loop** starts at the first vertex and ends when that first vertex appears again.
-- Immediately after that, the **inner loop** starts and ends when its first vertex appears again.
-
-Schematically:
-
-```
-outer:  v0, v1, ... , v_{n-1}, v0,
-inner:  u0, u1, ... , u_{m-1}, u0
-```
-
-Additional requirements enforced:
-
-- Both loops must have at least 3 vertices.
-- Outer and inner loops must have the **same number of vertices**:
-  \[
-  n = m
-  \]
-  (this is required to build a pointwise midline by vertex averaging).
-
-## Method (step-by-step)
-
-For each selected `@cell` polygon:
-
-### Step 1 — Parse inputs
-
-- Read polygon weight `w`
-- Parse thickness `t` from `@t=...`
-- Build the raw XY list from vertices (dropping only an explicit closure *at the very end*, if present)
-
-### Step 2 — Split outer and inner loops
-
-Identify the first repeated vertex to delimit the outer loop, and similarly for the inner loop.
-
-### Step 3 — Area consistency checks
-
-Compute signed polygon areas by the standard shoelace formula:
-
-\[
-A = \frac{1}{2}\sum_{i=0}^{N-1} \left(x_i y_{i+1} - x_{i+1} y_i\right)
-\]
-
-The routine computes:
-
-- \(A_{\text{outer}} = |A(\text{outer loop})|\)
-- \(A_{\text{inner}} = |A(\text{inner loop})|\)
-- Wall area:
-  \[
-  A_{\text{wall}} = A_{\text{outer}} - A_{\text{inner}}
-  \]
-
-It then checks that \(A_{\text{wall}}\) is positive and consistent with the area returned by
-`polygon_area_centroid(p)` (within a strict tolerance).
-
-### Step 4 — Build a midline polygon
-
-The midline is built by averaging corresponding vertices of the outer loop
-and the **reversed** inner loop (to align orientation and indices):
-
-\[
-\mathbf{x}^{(m)}_k = \frac{1}{2}\left(\mathbf{x}^{(\text{outer})}_k + \mathbf{x}^{(\text{inner,ccw})}_k\right)
-\]
-
-This yields a midline polygon with:
-
-- enclosed area \(A_m\)
-- perimeter (midline length) \(b_m\)
-
 # CSF `@cell` Polygon Encoding Requirements (v2)
 
 This note describes the **strict geometric and data-encoding conditions** required by the current CSF closed-cell torsion routine:
@@ -555,7 +483,7 @@ Example:
 poly@cell@t=0.5
 ```
 
-### 2.2 Thickness must be explicit
+### Thickness must be explicit
 Thickness must be provided as:
 
 - `@t=<positive float>`
@@ -568,19 +496,11 @@ If `@t=` is missing (and strict mode is enabled), CSF should raise an error rath
 
 ---
 
-## 3) Required vertex encoding: **two closed loops in one `vertices` list**
+## Required vertex encoding: **two closed loops in one `vertices` list**
 
 A single `@cell` polygon encodes **two loops** concatenated into one `vertices` array.
 
-### 3.1 Loop closure rule (mandatory)
-Each loop must be explicitly closed by repeating its first vertex at the end of that loop.
-
-So the pattern is:
-
-1. Loop #1: `p0, p1, ..., pN-1, p0`
-2. Loop #2: `q0, q1, ..., qN-1, q0`
-
-### 3.2 Exactly two loops
+### Exactly two loops
 The routine expects **exactly two** closed loops:
 
 - one outer boundary
@@ -590,7 +510,7 @@ The routine expects **exactly two** closed loops:
 
 ---
 
-## 4) Orientation conventions (your project standard)
+##  Orientation conventions (your project standard)
 
 For consistency with CSF conventions, use:
 
@@ -600,79 +520,6 @@ For consistency with CSF conventions, use:
 This is an **input convention**. The routine may internally normalize orientation for midline construction, but you should keep the encoding consistent to avoid confusion and reduce failure modes.
 
 ---
-
-## 5) Outer vs inner identification
-
-Even if the two loops are provided in either order, the algorithm must be able to determine:
-
-- which loop is **outer** (larger enclosed area)
-- which loop is **inner** (smaller enclosed area)
-
-Therefore, a valid cell must satisfy:
-
-$$
-|A_{outer}| > |A_{inner}|
-$$
-
-where areas are measured by the signed shoelace integral.
-
----
-
-## 6) Discrete correspondence constraints 
-
-
-### 6.1 Same vertex count (mandatory)
-Outer and inner loops must have the **same number of distinct vertices** (excluding the repeated closure point).
-
-If:
-
-- outer has $N$ points
-- inner has $M$ points
-
-then you must have:
-
-$$
-N = M
-$$
-
-### 6.2 Phase alignment (mandatory)
-The loops must have consistent “starting point” alignment so that:
-
-- outer vertex `i` corresponds to inner vertex `i` along the contour progression.
-
-If one loop is rotated (same shape, same points, different start index), the point-by-point pairing will be wrong and the computed midline may become distorted (or even degenerate).
-
-### 6.3 Offset-like relationship (strongly recommended)
-The method is intended for thin-walled cells where inner and outer boundaries are approximately “parallel” (inner is roughly an offset of outer).
-
-In practice:
-
-- the segment joining `outer[i]` and `inner[i]` should represent the local thickness direction.
-
-This does **not** require a perfect geometric offset, but it requires the two loops to be sampled in a consistent way.
-
----
-
-## 7) Consistency check on areas
-
-A robust implementation often checks that the polygon’s net area matches the wall area implied by the two loops:
-
-$$
-A_{wall} = |A_{outer}| - |A_{inner}|
-$$
-
-and compares it to the area computed from the full polygon representation (as CSF integrates it).
-
-If these do not match within tolerance, it usually means:
-
-- the loop split failed (bad closure)
-- outer/inner were swapped and not corrected
-- the encoding is not representing a true wall region
-
-This check prevents returning a numerically plausible but physically wrong $J$.
-
----
-
 ## 8) Minimal YAML example (template)
 
 ```yaml
@@ -710,17 +557,13 @@ A `@cell` polygon is valid for v2 if all items below are true:
 
 1. Name includes `@cell` (or `@closed`).
 2. Name includes `@t=<t>` with $t > 0$.
-3. `weight` is present and not near zero.
-4. `vertices` contains **two** loops.
-5. Each loop is **explicitly closed** by repeating its first point.
-6. Outer and inner loops have the **same number of vertices** (excluding closure).
-7. Loops are **phase-aligned** (index-to-index correspondence).
-8. Outer encloses inner and has **larger area magnitude**.
-9. (Recommended) Outer is CCW, inner is CW.
+3. `vertices` contains **two** loops.
+4. Outer and inner loops have the **same number of vertices** (excluding closure).
+5. Outer encloses inner and has **larger area magnitude**.
 
 ---
 
-## 10) Scope limitations (by design)
+## 10) Scope limitations
 
 This routine is intentionally limited to keep it explicit and predictable:
 
