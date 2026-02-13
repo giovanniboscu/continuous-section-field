@@ -44,7 +44,6 @@ For a polygon to be valid in CSF, it must satisfy all the following conditions:
 2. **Counter-clockwise orientation (CCW)**  
    Vertices must be ordered CCW. This is a strict requirement for consistent Green/shoelace sign conventions in area and inertia computation. See "One-polygon encoding (@cell)" for mandatory bridge rules and validity constraints of inner-loop single-polygon encoding.
 
-
 3. **No self-intersection**  
    Polygons must be simple and non-self-intersecting.
 
@@ -79,9 +78,7 @@ This means:
 - the same number of polygons must exist at each reference section,
 - each corresponding polygon must keep the same vertex count,
 - **Polygon pairing is resolved by list index between `S0` and `S1`: polygon `i` in `S0` pairs with polygon `i` in `S1` (creation order), not by geometric proximity.**
-
 - **For every index `i`, `S0.polygons[i]` must correspond to `S1.polygons[i]`; this index-based rule is the only pairing criterion.**
-
 
 Polygon names are used for tracking and assignment of physical laws, but they do not define geometric pairing.
 
@@ -185,7 +182,7 @@ A void is modeled explicitly as an inner polygon with `w = 0`.
 
 ### Local effective contribution (composite nesting)
 
-For a inner polygon nested in a container polygon, the local effective field is:
+For an inner polygon nested in a container polygon, the local effective field is:
 
 `w_eff(z) = w_inner(z) - w_container(z)`
 
@@ -199,6 +196,41 @@ By contrast, `@wall` and `@cell` are solver-path tags appended to polygon names.
 They select dedicated torsion workflows and polygon subsets; they do not redefine nesting semantics.
 
 As specified below, `@cell` denotes a single closed cell for torsion evaluation, geometrically represented as one domain with one internal void (one hole).
+
+---
+
+## Weight Field and Section-Level Attribute Reading
+
+CSF evaluates polygon attributes at the **current section station** `z`.
+
+### `w` is section-evaluated
+
+- `w` is read per polygon at the current section.
+- If values are declared at both `S0` and `S1`, CSF uses section-consistent interpolation along `z`.
+- If a value is available only at one side, CSF treats it as constant along `z`.
+
+So `w(z)` is always defined at section level, either interpolated or constant (single-sided definition).
+
+### Thickness tag `@t=` in torsion paths
+
+#### `@cell` path (closed thin-walled cell)
+
+- `@t=` is mandatory.
+- Thickness is read from the section polygon tags used by the `@cell` workflow.
+- If both ends provide thickness information, thickness evolves along `z` with the same section interpolation logic.
+- If only one value is available, it is treated as constant along `z`.
+
+No implicit fallback thickness is allowed for `@cell`.
+
+#### `@wall` path (open thin-walled approximation)
+
+- `@t=` is optional.
+- If `@t=` is present, that section value is used.
+- If both ends provide thickness information, it evolves along `z` with section interpolation.
+- If only one value is available, it is treated as constant along `z`.
+- If no valid `@t=` is present, thickness is estimated at that section from geometry (`t ≈ 2A/P`).
+
+So `@wall` can operate without explicit `@t=`, while `@cell` cannot.
 
 ---
 
@@ -217,7 +249,6 @@ Net area:
 W is relative in the plot (w_eff)
 
 ![two_pol_ekofisk_sections](https://github.com/user-attachments/assets/fdcf8848-d8c4-48e1-8b1d-c60c076c5633)
-
 
 ```yaml
 # CSF geometry definition with two reference sections (S0 -> S1).
@@ -238,14 +269,14 @@ CSF:
         outer:
           weight: 1.000000 # Full contribution (container domain)
           # Polygon index 0 in S0
-          # Paired with polygon index 0 in S1          
+          # Paired with polygon index 0 in S1
           vertices: # CCW point order required
              - [0.0, 0.0]
              - [10.0, 0.0]
              - [10.0, 6.0]
              - [0.0, 6.0]
         # Polygon index 1 in S0
-        # Paired with polygon index 1 in S1           
+        # Paired with polygon index 1 in S1
         inner:
           weight: 0.000000 # void
           vertices:
@@ -253,12 +284,12 @@ CSF:
             - [7.0, 2.0]
             - [7.0, 4.0]
             - [3.0, 4.0]
-            
+
     S1:
       z: 10.000000
       # ---------------------------
       # Reference section at z = 10
-      # ---------------------------      
+      # ---------------------------
       polygons:
         outer:
           weight: 1.000000  # Full contribution (container domain)
@@ -280,10 +311,8 @@ CSF:
             - [3.0, 4.0]
 ```
 
-
-
-
 ---
+
 This is generally the easiest form to review, validate, and debug.
 
 ### B) One-polygon encoding
@@ -342,7 +371,6 @@ For the single-path encoding:
 - inner loop (CW): `(3,2) -> (3,4) -> (7,4) -> (7,2) -> (3,2)`
 - bridge back: `(3,2) -> (0,0)` (required by this encoding rule)
 
-
 the net area is:
 
 `A_net = A_outer - A_hole = 60 - 8 = 52`
@@ -353,12 +381,12 @@ The same physical section can be encoded either as:
 2. **one composite path** (outer + inner loops in one polygon entry).
 
 So this is not a different section, but a different representation of the same section.
+
 ---
 
 ## Minimal YAML pattern (single-path)
 
-``![one_pol_ekofisk_sections](https://github.com/user-attachments/assets/ba6f7f50-76da-480d-8f4d-ca55ba412d28)
-
+![one_pol_ekofisk_sections](https://github.com/user-attachments/assets/ba6f7f50-76da-480d-8f4d-ca55ba412d28)
 
 ```yaml
 CSF:
@@ -366,7 +394,13 @@ CSF:
     S0:
       z: 0.000000
       polygons:
-        outer:
+        # Polygon base name is "outer".
+        # Suffix tags in the same key are metadata for classification and calculation:
+        #   @cell   -> select the closed-cell torsion workflow
+        #   @t=0.30 -> assign thickness parameter t for that workflow
+        # Tags do not define geometric pairing/order; they control how this polygon is processed.
+
+        outer@cell@t=0.30:
           weight: 1.000000
           vertices:
              # OUTER loop (CCW)
@@ -410,7 +444,6 @@ CSF:
 
 - Use the **two-polygon encoding** when clarity and reviewability are the priority.
 - Use the **single-path encoding** when you need one tagged geometric entity (especially for `@cell`-based torsion workflows) and parser support is confirmed.
-
 
 ---
 
