@@ -348,7 +348,6 @@ This method is appropriate if:
 3. You accept that $\alpha$ is a **global calibration factor**, not shape recognition.
 4. You do not need multiply-connected Saint-Venant torsion physics (holes) in this path.
 
----
 
 ## Scope limitations (by design)
 
@@ -356,6 +355,7 @@ This method is appropriate if:
 - For thin-walled closed cells use `@cell`.
 - For general solids where $J_{sv}$ must be computed accurately for arbitrary shapes, a dedicated Prandtl/Poisson solver is required (not this function).
 
+---
 
 ## Torsion constant methods for tagged polygons (`@cell` / `@wall`)
 **Key:** `J_sv_cell`   `J_sv_wall` 
