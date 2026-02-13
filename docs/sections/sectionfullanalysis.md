@@ -284,9 +284,9 @@ Because this is an **α·Jp approximation**, it:
 - is **not** a general Saint-Venant torsion solver for multiply-connected shapes (holes): it may be accurate only in special cases.
 ---
 
-## 5) Under-the-hood geometry formulas (for `J_p`)
+## Under-the-hood geometry formulas 
 
-The helper logic computes polygon area/centroid/inertias from standard signed shoelace integrals.
+The internal logic computes polygon area/centroid/inertias from standard signed shoelace integrals.
 
 ### 5.1 Signed area (shoelace)
 For vertices $(x_i, y_i)$, define:
@@ -339,48 +339,6 @@ J_{sv} \approx \alpha\,J_p
 $$
 
 ---
-
-## 6) Minimal YAML examples
-
-### 6.1 Solid square (where `alpha≈0.8436` is meaningful)
-
-```yaml
-CSF:
-  sections:
-    S0:
-      z: 0
-      polygons:
-        square_solid:
-          weight: 1
-          vertices:
-            - [0.0, 0.0]
-            - [1.0, 0.0]
-            - [1.0, 1.0]
-            - [0.0, 1.0]
-            - [0.0, 0.0]
-```
-
-If you call:
-
-```python
-J = compute_saint_venant_J(section, alpha=0.8436)
-```
-
-you are explicitly choosing the “square-like” scaling $J_{sv}\approx 0.8436\,J_p$.
-
-### 6.2 Solid circle (use `alpha=1`)
-
-For a circle of radius $R$, the exact value is:
-
-$$
-J_{sv} = J_p = \frac{\pi}{2}R^4
-$$
-
-So set:
-
-- `alpha = 1.0`
-
-and discretize the circle as a single solid polygon.
 
 ---
 
