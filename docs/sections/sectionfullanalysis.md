@@ -379,19 +379,6 @@ They compute **model-based** torsion constants under thin-walled assumptions, re
 
 ## Common inputs and conventions
 
-
-### Input object
-
-Both functions accept:
-
-- `section`: a `Section` object providing `section.polygons`.
-
-Each polygon is assumed to provide:
-
-- `polygon.vertices`: ordered 2D vertices `(x, y)` (meters)
-- `polygon.name`: string
-- `polygon.weight`: scalar weight
-
 ### Tagging (polygon selection)
 
 Only polygons whose **name** contains the relevant token are used:
@@ -403,7 +390,7 @@ All other polygons are **ignored** by these functions.
 
 ### Thickness token (`@t=<value>`)
 
-A thickness override may be encoded in the polygon name as:
+A thickness may be encoded in the polygon name as:
 
 - `...@t=0.010`  (meters)
 
@@ -441,11 +428,9 @@ For each `@cell` / `@closed` polygon, an explicit thickness **must** be provided
 
 This note describes the **strict geometric and data-encoding conditions** required by the current CSF closed-cell torsion routine:
 
-- `compute_saint_venant_J_cell(section)` (v2)
+- `compute_saint_venant_J_cell(section)`
 - Bredt–Batho **single-cell**, **thin-walled**, **constant thickness** (`@t=...`)
 - A closed cell is represented as **two loops encoded inside one polygon** (the “slit” encoding).
-
-The goal is to prevent silent wrong results by making the input representation unambiguous and mechanically consistent.
 
 ---
 ## Required naming and parameters
@@ -454,7 +439,6 @@ The goal is to prevent silent wrong results by making the input representation u
 The polygon **must** be tagged in its name:
 
 - `@cell`  (preferred)
-- or `@closed`
 
 Example:
 
@@ -542,13 +526,12 @@ A `@cell` polygon is valid for v2 if all items below are true:
 1. Name includes `@cell` (or `@closed`).
 2. Name includes `@t=<t>` with $t > 0$.
 3. `vertices` contains **two** loops.
-4. Outer and inner loops have the **same number of vertices** (excluding closure).
-5. Outer encloses inner and has **larger area magnitude**.
-
+4. Outer encloses inner and has **larger area magnitude**.
 
 ---
 
 ## 18 `compute_saint_venant_J_wall
+**Key:** `J_sv_wall`
 
 ## Purpose
 
@@ -592,13 +575,12 @@ If `@t=` is absent, thickness is estimated from geometry (see below).
 
 A polygon is handled by the `@wall` path if its name contains (case-insensitive):
 
-- `@wall`
-
 ---
 
 ## 3) Thickness definition per wall polygon
 
 ### 3.1 Explicit thickness (recommended)
+
 Provide thickness in the polygon name:
 
 - `@t=<positive float>`
@@ -609,7 +591,7 @@ Example:
 
 This is the preferred mode because it avoids geometric guessing.
 
-### Estimated thickness (fallback)
+### Estimated thickness
 If `@t=` is not present, thickness is estimated as:
 
 $$
@@ -631,6 +613,7 @@ The `@wall` routine does **not** reconstruct cells and does **not** support mult
 
 
 ### 4.2 Thin-strip (strip-like) shape (mandatory for validity)
+
 Each `@wall` polygon must represent a **thin strip of material**, i.e. a wall patch whose midline length $b$ is much larger than thickness $t$.
 
 Operationally:
@@ -641,12 +624,9 @@ Operationally:
 
 If the patch is not strip-like, the formula $J_i \approx A t^2/3$ is not a valid model.
 
-### Approximately constant thickness on the patch
-A single `@wall` polygon represents **one constant thickness** (either explicit or estimated). If the physical thickness varies, split the wall into multiple polygons, each with its own `@t=`.
-
 ### Prefer explicit thickness for complex shapes
-If the strip has:
 
+If the strip has:
 - noticeable curvature
 - non-rectangular ends
 - varying width
@@ -708,7 +688,7 @@ Notes:
 
 ---
 
-## 7) Practical checklist
+## Practical checklist
 
 A polygon is valid for `@wall` torsion (v2) if all items below are true:
 
@@ -720,7 +700,7 @@ A polygon is valid for `@wall` torsion (v2) if all items below are true:
 
 ---
 
-## 8) Scope limitations
+## Scope limitations
 
 By design, this routine:
 
@@ -728,7 +708,6 @@ By design, this routine:
 - assumes one constant thickness per patch
 - does not compute warping constants
 - is not intended for compact solids or general thick-walled regions.
-
 
 ---
 
