@@ -369,9 +369,6 @@ This note documents the *implemented* methods used by:
 These routines do **not** solve the general Saint-Venant torsion boundary-value problem (Prandtl stress function / warping).
 They compute **model-based** torsion constants under thin-walled assumptions, restricted to **user-selected polygons**.
 
-Throughout, the returned quantity is a torsional constant `J_sv` in **m⁴**, intended to be used in a torsional stiffness `G · J_sv`.
-
-
 > **Note:** `@t=` can be defined with different values at `S0` and `S1`.  
 > Intermediate sections use **linear interpolation** of `t` along `z`.
 
