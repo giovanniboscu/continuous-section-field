@@ -1,4 +1,4 @@
-#  🛠  ContinuousSectionField (CSF) | Custom Weight Laws User Guide
+#  🛠  ContinuousSectionField (CSF) — Custom Weight Laws: Programmer Guide
 
 This document provides the technical specifications for implementing and using **Custom Weight Laws** to define the variation of the Elastic Modulus ratio (`weight`) along a structural member.
 
