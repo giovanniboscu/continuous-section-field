@@ -469,9 +469,9 @@ where:
 
 ---
 
-## 2) Required naming and parameters
+## Required naming and parameters
 
-### 2.1 Tag to activate the closed-cell path
+### Tag to activate the closed-cell path
 The polygon **must** be tagged in its name:
 
 - `@cell`  (preferred)
@@ -551,19 +551,7 @@ Notes:
 
 ---
 
-## 9) Practical checklist
-
-A `@cell` polygon is valid for v2 if all items below are true:
-
-1. Name includes `@cell` (or `@closed`).
-2. Name includes `@t=<t>` with $t > 0$.
-3. `vertices` contains **two** loops.
-4. Outer and inner loops have the **same number of vertices** (excluding closure).
-5. Outer encloses inner and has **larger area magnitude**.
-
----
-
-## 10) Scope limitations
+##  Scope limitations
 
 This routine is intentionally limited to keep it explicit and predictable:
 
@@ -574,31 +562,27 @@ This routine is intentionally limited to keep it explicit and predictable:
 If you need general closed-cell torsion for arbitrary wall thickness or non-corresponding boundaries, the algorithm must change (e.g., arc-length parametrization, $\oint ds/t(s)$ integration, multi-cell system).
   
 
-### Step 5 — Closed thin-walled torsion (Bredt–Batho)
+### — Closed thin-walled torsion (Bredt–Batho)
 
 For a closed thin-walled section of constant thickness \(t\), the implemented formula is:
 
-\[
+$$
 J_{\text{geom}} = \frac{4 A_m^2}{\displaystyle \int \frac{ds}{t}}
 \quad\Longrightarrow\quad
 J_{\text{geom}} = \frac{4 A_m^2}{b_m/t} = 4A_m^2\,\frac{t}{b_m}
-\]
+$$
 
 So the contribution of one `@cell` polygon is:
 
-\[
+$$
 J_i = 4A_m^2\frac{t}{b_m}
-\]
+$$
 
-### Step 6 — Weight scaling and accumulation
+### Weight scaling and accumulation
 
-\[
+$$
 J_{\text{total}} = \sum_i |w_i|\,J_i
-\]
-
-## Output
-
-- Returns `max(J_total, 0)` as a float.
+$$
 
 ## Assumptions and limitations
 
@@ -607,6 +591,17 @@ J_{\text{total}} = \sum_i |w_i|\,J_i
 - Requires **matched discretization** between outer and inner loops (same vertex count).
 - Warping and non-uniform thickness effects are **not** modeled.
 - Only considers **tagged polygons**; untagged geometry is ignored.
+
+##  Practical checklist
+
+A `@cell` polygon is valid for v2 if all items below are true:
+
+1. Name includes `@cell` (or `@closed`).
+2. Name includes `@t=<t>` with $t > 0$.
+3. `vertices` contains **two** loops.
+4. Outer and inner loops have the **same number of vertices** (excluding closure).
+5. Outer encloses inner and has **larger area magnitude**.
+
 
 ---
 
