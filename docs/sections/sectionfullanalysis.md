@@ -595,7 +595,7 @@ This is the preferred mode because it avoids geometric guessing.
 If `@t=` is not present, thickness is estimated as:
 
 $$
-t := \frac{2A}{P}
+t = \frac{2A}{P}
 $$
 
 where:
