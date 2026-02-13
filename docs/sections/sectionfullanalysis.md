@@ -275,7 +275,7 @@ $$
 
 ---
 
-## Limitations of this legacy `J_sv`
+## Limitations of this `J_sv`
 
 Because this is an **α·Jp approximation**, it:
 
@@ -288,7 +288,7 @@ Because this is an **α·Jp approximation**, it:
 
 The internal logic computes polygon area/centroid/inertias from standard signed shoelace integrals.
 
-### 5.1 Signed area (shoelace)
+### Signed area (shoelace)
 For vertices $(x_i, y_i)$, define:
 
 $$
@@ -301,7 +301,7 @@ $$
 A = \frac{1}{2}\sum_i \text{cross}_i
 $$
 
-### 5.2 Second moments about the origin
+### Second moments about the origin
 The standard (signed) formulas are:
 
 $$
@@ -316,7 +316,7 @@ $$
 I_{xy} = \frac{1}{24}\sum_i (x_i y_{i+1} + 2x_i y_i + 2x_{i+1} y_{i+1} + x_{i+1} y_i)\,\text{cross}_i
 $$
 
-### 5.3 Shift to the weighted centroid
+### Shift to the weighted centroid
 Composite centroid $(\bar x, \bar y)$ is computed from weighted first moments.
 
 The parallel-axis theorem shifts inertias from the origin to the composite centroid, e.g.:
@@ -338,11 +338,8 @@ $$
 J_{sv} \approx \alpha\,J_p
 $$
 
----
 
----
-
-## 7) Practical checklist
+##  Practical checklist
 
 This method is appropriate if:
 
@@ -353,13 +350,11 @@ This method is appropriate if:
 
 ---
 
-## 8) Scope limitations (by design)
+## Scope limitations (by design)
 
-- Accuracy depends on how representative the chosen $\alpha$ is for the actual shape family.
 - For thin-walled open sections use `@wall`.
 - For thin-walled closed cells use `@cell`.
 - For general solids where $J_{sv}$ must be computed accurately for arbitrary shapes, a dedicated Prandtl/Poisson solver is required (not this function).
-
 
 
 # Torsion constant methods for tagged polygons (`@cell` / `@wall`)
