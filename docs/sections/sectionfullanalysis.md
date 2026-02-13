@@ -426,7 +426,8 @@ for a **thin-walled closed section** with (assumed) **constant thickness**.
 
 This function only uses polygons tagged `@cell` or `@closed`.
 
-If no such polygons are present, the current implementation returns `0`.
+If no `@cell` polygons are present, the current implementation returns `0`.
+
 
 ## Required parameters (user-specified)
 
@@ -436,7 +437,7 @@ For each `@cell` / `@closed` polygon, an explicit thickness **must** be provided
 
 - `@t=<value>`
 
-## CSF `@cell` Polygon Encoding Requirements (v2)
+## `@cell` Polygon Encoding Requirements
 
 This note describes the **strict geometric and data-encoding conditions** required by the current CSF closed-cell torsion routine:
 
@@ -498,7 +499,7 @@ For consistency with CSF conventions, use:
 This is an **input convention**. The routine may internally normalize orientation for midline construction, but you should keep the encoding consistent to avoid confusion and reduce failure modes.
 
 ---
-## Minimal YAML example (template)
+## Minimal YAML example 
 
 ```yaml
 CSF:
@@ -547,7 +548,7 @@ A `@cell` polygon is valid for v2 if all items below are true:
 
 ---
 
-## 18 `compute_saint_venant_J_wall(section)`
+## 18 `compute_saint_venant_J_wall
 
 ## Purpose
 
