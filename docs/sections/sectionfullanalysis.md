@@ -529,9 +529,14 @@ Notes:
 
 ---
 
+## Practical guidance
+
+Use `@cell ... @t=` when you have a **closed thin-walled** single-cell representation and you can provide a reliable wall thickness.
+
 ##  Practical checklist
 
 A `@cell` polygon is valid for v2 if all items below are true:
+
 
 1. Name includes `@cell` (or `@closed`).
 2. Name includes `@t=<t>` with $t > 0$.
@@ -565,72 +570,6 @@ If no `@wall` polygons are present, the current implementation returns `0`.
 
 If `@t=` is absent, thickness is estimated from geometry (see below).
 
-## Method (step-by-step)
-
-For each selected `@wall` polygon:
-
-### Step 1 — Compute geometric measures
-
-- Area magnitude:
-  \[
-  A = \left|\;A_{\text{signed}}\;\right|
-  \]
-  using `polygon_area_centroid(p)[0]`.
-
-- Perimeter \(P\) computed from the vertex polyline length.
-
-### Step 2 — Thickness selection
-
-- If `@t=<value>` is present: use that value.
-- Otherwise estimate an equivalent thickness from geometry:
-
-\[
-t_{\text{eq}} = \frac{2A}{P}
-\]
-
-This rule is intentionally shape-agnostic (no profile recognition and no validation).
-
-### Step 3 — Open thin-walled torsion constant
-
-A standard thin-walled open-section approximation is:
-
-\[
-J \approx \int \frac{t(s)^3}{3}\,ds
-\]
-
-For a single wall strip with constant thickness \(t\) and midline length \(b\):
-
-\[
-J_i \approx \frac{b\,t^3}{3}
-\]
-
-The implementation avoids explicit midline reconstruction by using the thin-wall identity:
-
-\[
-A \approx b\,t \quad\Longrightarrow\quad b \approx \frac{A}{t}
-\]
-
-Substituting into the strip formula gives:
-
-\[
-J_i \approx \frac{(A/t)\,t^3}{3} = \frac{A\,t^2}{3}
-\]
-
-So the implemented per-polygon contribution is:
-
-\[
-J_i = \frac{A\,t^2}{3}
-\]
-
-### Step 4 — Weight scaling and accumulation
-
-\[
-J_{\text{total}} = \sum_i |w_i|\,J_i
-\]
-
-## Output
-
-- Returns `J_total` as a float.
 
 ## Assumptions and limitations
 
@@ -644,60 +583,15 @@ J_{\text{total}} = \sum_i |w_i|\,J_i
 
 ## Practical guidance
 
-- Use `@cell ... @t=` when you have a **closed thin-walled** single-cell representation and you can provide a reliable wall thickness.
 - Use `@wall` for **open thin-walled** components (webs, flanges, plates) where strip-type torsion is appropriate.
 - If you need general torsion constants outside thin-walled assumptions, these routines are not sufficient (a Prandtl/warping solver is required).
 
 
-# CSF `@wall` Polygon Geometry Requirements
-
-This note documents the **geometric/data-encoding requirements** assumed by the current CSF open-wall torsion routine:
-
-- `compute_saint_venant_J_wall(section)`
-- open thin-walled approximation over polygons tagged with `@wall`
-- thickness per wall polygon is either explicit (`@t=...`) or estimated.
-
-The purpose is to make the input representation **explicit** and to avoid silent misuse (e.g., using `@wall` for “bulky” solids or multi-loop slit encodings).
-
----
-
-## 1) What this `@wall` routine computes
-
-For each polygon tagged `@wall`, the routine approximates the **Saint-Venant torsional constant** of an **open thin-walled strip**.
-
-The classical thin-walled open-section formula is:
-
-$$
-J \approx \int \frac{t(s)^3}{3}\,ds
-$$
-
-If the thickness is constant on the strip, $t(s)=t$, and if $b = \int ds$ is the strip length along the midline, then:
-
-$$
-J \approx \frac{b\,t^3}{3}
-$$
-
-In this implementation the midline length $b$ is not computed explicitly. Instead it uses the thin-strip area approximation $A \approx b\,t$ to get:
-
-$$
-J_i \approx \frac{A\,t^2}{3}
-$$
-
-and sums contributions (scaled by non-negative stiffness weight):
-
-$$
-J_{total} = \sum_i |w_i|\,J_i
-$$
-
----
-
-## 2) Selection rule
+## Selection rule
 
 A polygon is handled by the `@wall` path if its name contains (case-insensitive):
 
 - `@wall`
-
-If no polygon contains `@wall`, the routine returns the **legacy** torsion value (outside the scope of this note).
 
 ---
 
@@ -714,7 +608,7 @@ Example:
 
 This is the preferred mode because it avoids geometric guessing.
 
-### 3.2 Estimated thickness (fallback)
+### Estimated thickness (fallback)
 If `@t=` is not present, thickness is estimated as:
 
 $$
@@ -730,17 +624,10 @@ where:
 
 ---
 
-## 4) Geometry requirements (non-obvious constraints)
+## Geometry requirements (non-obvious constraints)
 
 The `@wall` routine does **not** reconstruct cells and does **not** support multi-loop encodings. It treats each `@wall` polygon as a single material patch.
 
-### 4.1 Single-loop boundary (mandatory)
-`vertices` must represent **one single closed loop**.
-
-- Do **not** concatenate multiple loops in one `vertices` list.
-- Do **not** use slit-style “outer+inner” loop encodings inside a `@wall` polygon.
-
-Reason: the perimeter is computed by wrapping the vertex list with `(i+1) % n`, which assumes a single loop.
 
 ### 4.2 Thin-strip (strip-like) shape (mandatory for validity)
 Each `@wall` polygon must represent a **thin strip of material**, i.e. a wall patch whose midline length $b$ is much larger than thickness $t$.
@@ -753,10 +640,10 @@ Operationally:
 
 If the patch is not strip-like, the formula $J_i \approx A t^2/3$ is not a valid model.
 
-### 4.3 Approximately constant thickness on the patch
+### Approximately constant thickness on the patch
 A single `@wall` polygon represents **one constant thickness** (either explicit or estimated). If the physical thickness varies, split the wall into multiple polygons, each with its own `@t=`.
 
-### 4.4 Prefer explicit thickness for complex shapes
+### Prefer explicit thickness for complex shapes
 If the strip has:
 
 - noticeable curvature
@@ -844,7 +731,7 @@ By design, this routine:
 
 ---
 
-## 17. Torsional Constant (Roark / Bredt)
+## 19. Torsional Constant (Roark / Bredt)
 
 **Key:** `J_s_vroark`
 
@@ -865,7 +752,7 @@ where:
 
 ---
 
-## 18. Roark Fidelity Index
+## 20. Roark Fidelity Index
 
 **Key:** `J_s_vroark_fidelity`
 
@@ -942,32 +829,6 @@ When you look at `J_s_vroark_fidelity(z)`:
 
 4. **Read fidelity as a trend**  
    Focus on zones where fidelity degrades persistently over intervals, not on one single point.
-
----
-
-## Minimum diagnostic workflow (recommended)
-
-For suspicious points in the plot:
-
-1. Compute left/right values around suspect `z*`:
-   - evaluate at `z* - dz`, `z* + dz` for shrinking `dz`.
-2. Verify whether `Δ = I2(z*+dz)-I2(z*-dz)` tends to zero.
-3. Check sign change of `g(z)=Ix(z)-Iy(z)` around the same interval.
-4. If `Δ → 0` and `g` changes sign, classify as **continuous kink**.
-
-This is the preferred practical test to separate a real discontinuity from branch switching.
-
----
-
-## Practical interpretation bands (documentation guidance)
-
-You may use these as reporting guidance (not hard physics thresholds):
-
-- **High confidence zone**: fidelity stable and high over an interval.
-- **Moderate confidence zone**: fidelity usable for trend comparison; watch local geometry transitions.
-- **Low confidence zone**: report explicitly that equivalent-mapping assumptions are stressed.
-
-Always pair this with engineering judgment and, when needed, higher-fidelity torsion methods.
 
 ---
 
