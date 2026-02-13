@@ -370,9 +370,17 @@ They compute **model-based** torsion constants under thin-walled assumptions, re
 
 Throughout, the returned quantity is a torsional constant `J_sv` in **m⁴**, intended to be used in a torsional stiffness `G · J_sv`.
 
+`@t=` can be defined with different values at `S0` and `S1`.
+
+For intermediate sections, if the two endpoint values are different, `t` is linearly interpolated along `z`.
+If only one endpoint value is provided, `t` is treated as constant along `z`.
+
 ---
 
 ## Common inputs and conventions
+
+> **Note:** `@t=` can be defined with different values at `S0` and `S1`.  
+> Intermediate sections use **linear interpolation** of `t` along `z`.
 
 ### Input object
 
