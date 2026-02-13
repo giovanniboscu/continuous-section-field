@@ -210,7 +210,7 @@ CSF reports `J_sv` using the legacy solid-torsion approximation with **α = 1** 
 
 ---
 
-## CSF solid torsion (legacy): `compute_saint_venant_J` (α·Jp, with α=1)
+## CSF solid torsion : `compute_saint_venant_J` (α·Jp, with α=1)
 
 This routine **does not** solve Prandtl’s stress-function PDE (no mesh, no field solution).  
 It derives torsion from **geometric section properties** and applies a scalar factor α.
