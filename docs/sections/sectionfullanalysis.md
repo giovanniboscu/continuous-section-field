@@ -358,6 +358,7 @@ This method is appropriate if:
 
 
 ## 17. Torsion constant methods for tagged polygons (`@cell` / `@wall`)
+**Key:** `J_sv_cell`   `J_sv_wall` 
 
 This note documents the *implemented* methods used by:
 
@@ -444,7 +445,7 @@ The goal is to prevent silent wrong results by making the input representation u
 
 ---
 
-##  What the algorithm assumes (conceptually)
+##  What the algorithm assumes
 
 A valid “cell polygon” represents a **tubular region** (a wall) bounded by:
 
@@ -550,47 +551,6 @@ Notes:
 - Use the same encoding for `S1` and any other station.
 
 ---
-
-##  Scope limitations
-
-This routine is intentionally limited to keep it explicit and predictable:
-
-- **Single-cell** only.
-- **Constant thickness** only (`@t=`), not $t(s)$.
-- Midline built by **pointwise averaging**, so correspondence constraints apply.
-
-If you need general closed-cell torsion for arbitrary wall thickness or non-corresponding boundaries, the algorithm must change (e.g., arc-length parametrization, $\oint ds/t(s)$ integration, multi-cell system).
-  
-
-### — Closed thin-walled torsion (Bredt–Batho)
-
-For a closed thin-walled section of constant thickness \(t\), the implemented formula is:
-
-$$
-J_{\text{geom}} = \frac{4 A_m^2}{\displaystyle \int \frac{ds}{t}}
-\quad\Longrightarrow\quad
-J_{\text{geom}} = \frac{4 A_m^2}{b_m/t} = 4A_m^2\,\frac{t}{b_m}
-$$
-
-So the contribution of one `@cell` polygon is:
-
-$$
-J_i = 4A_m^2\frac{t}{b_m}
-$$
-
-### Weight scaling and accumulation
-
-$$
-J_{\text{total}} = \sum_i |w_i|\,J_i
-$$
-
-## Assumptions and limitations
-
-- **Single-cell** per polygon entity (no multi-cell coupling).
-- **Constant thickness** per polygon entity (one `t` per cell polygon).
-- Requires **matched discretization** between outer and inner loops (same vertex count).
-- Warping and non-uniform thickness effects are **not** modeled.
-- Only considers **tagged polygons**; untagged geometry is ignored.
 
 ##  Practical checklist
 
