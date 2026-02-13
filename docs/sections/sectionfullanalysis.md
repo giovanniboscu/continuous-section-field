@@ -530,7 +530,7 @@ A `@cell` polygon is valid for v2 if all items below are true:
 
 ---
 
-## 18 `compute_saint_venant_J_wall
+## 18 compute_saint_venant_J_wall
 **Key:** `J_sv_wall`
 
 ## Purpose
