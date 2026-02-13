@@ -54,7 +54,7 @@ Numerical value:
 
 ---
 
-## 3) Why “Different CSF/Tcl/OpenSeesPy” Numbers Happened (And Why It Was Not a Bug)
+## 3) Why “Different CSF/Tcl/OpenSeesPy” Numbers Happened 
 
 ### Core issue: quadrature points vs available sections
 OpenSees `forceBeamColumn` integrates along the element using **integration points** (locations + weights).  
