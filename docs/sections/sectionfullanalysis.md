@@ -406,17 +406,6 @@ Parsing rules (both functions):
 - Parsing stops at the first character that is not one of: `0–9 . + - e E`
 - Thickness must be strictly positive (`t > 0`) or it is rejected
 
-### Weight usage
-
-For torsional stiffness, negative stiffness is not physically meaningful.
-Implemented convention:
-
-$$
-J_{\text{effective}} \;=\; \sum_i \left|w_i\right|\; J_i
-$$
-
-where `w_i` is the polygon weight and `J_i` the geometric torsion constant of that polygon entity.
-
 ---
 
 # A) `compute_saint_venant_J_cell(section)`
