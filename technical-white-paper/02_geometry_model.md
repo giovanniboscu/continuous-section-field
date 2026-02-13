@@ -400,7 +400,7 @@ CSF:
         #   @t=0.30 -> assign thickness parameter t for that workflow
         # Tags do not define geometric pairing/order; they control how this polygon is processed.
 
-        outer@cell@t=0.30:
+        outer@cell@t=0.03:
           weight: 1.000000
           vertices:
              # OUTER loop (CCW)
