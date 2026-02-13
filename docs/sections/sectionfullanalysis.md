@@ -372,6 +372,19 @@ They compute **model-based** torsion constants under thin-walled assumptions, re
 > **Note:** `@t=` can be defined with different values at `S0` and `S1`.  
 > Intermediate sections use **linear interpolation** of `t` along `z`.
 
+
+### Thickness tag `@t=` along `z`
+
+For intermediate sections:
+- if both endpoint values are present and different, `t` is linearly interpolated along `z`;
+- if only one endpoint value is present, `t` is treated as constant along `z`.
+
+For torsion paths:
+- `@cell`: `@t=` is mandatory;
+- `@wall`: `@t=` is optional (fallback thickness may be estimated at section level from geometry).
+
+
+
 ![softwarex_props](https://github.com/user-attachments/assets/c4b03d5c-544c-4d18-9821-e05facd651b7)
 
 
