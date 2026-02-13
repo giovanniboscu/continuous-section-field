@@ -357,7 +357,7 @@ This method is appropriate if:
 - For general solids where $J_{sv}$ must be computed accurately for arbitrary shapes, a dedicated Prandtl/Poisson solver is required (not this function).
 
 
-## 17. Torsion constant methods for tagged polygons (`@cell` / `@wall`)
+## Torsion constant methods for tagged polygons (`@cell` / `@wall`)
 **Key:** `J_sv_cell`   `J_sv_wall` 
 
 This note documents the *implemented* methods used by:
@@ -417,7 +417,9 @@ Parsing rules (both functions):
 
 ---
 
-## `compute_saint_venant_J_cell(section)`
+## 17. `compute_saint_venant_J_cell(section)`
+
+**Key:** `J_sv_cell`  
 
 ## Purpose
 
@@ -452,32 +454,6 @@ This note describes the **strict geometric and data-encoding conditions** requir
 The goal is to prevent silent wrong results by making the input representation unambiguous and mechanically consistent.
 
 ---
-
-##  What the algorithm assumes
-
-A valid “cell polygon” represents a **tubular region** (a wall) bounded by:
-
-- an **outer** closed contour (external boundary)
-- an **inner** closed contour (hole boundary)
-
-and it approximates the wall as **thin-walled** with **constant thickness** `t`.
-
-The routine computes a *midline* (median contour) and applies the Bredt–Batho formula (constant thickness form):
-
-$$
-J \approx \frac{4A_m^2\,t}{b_m}
-$$
-
-where:
-
-- $A_m$ is the area enclosed by the **midline**
-- $b_m$ is the perimeter of the **midline**
-- $t$ is the (constant) wall thickness from the polygon name tag `@t=...`
-
-**Important:** in v2 the midline is built by **pairing vertices point-by-point** between outer and inner loops. Therefore, the data encoding must provide a consistent correspondence.
-
----
-
 ## Required naming and parameters
 
 ### Tag to activate the closed-cell path
