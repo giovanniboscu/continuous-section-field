@@ -357,7 +357,7 @@ This method is appropriate if:
 - For general solids where $J_{sv}$ must be computed accurately for arbitrary shapes, a dedicated Prandtl/Poisson solver is required (not this function).
 
 
-# Torsion constant methods for tagged polygons (`@cell` / `@wall`)
+## 17. Torsion constant methods for tagged polygons (`@cell` / `@wall`)
 
 This note documents the *implemented* methods used by:
 
@@ -408,7 +408,7 @@ Parsing rules (both functions):
 
 ---
 
-# A) `compute_saint_venant_J_cell(section)`
+## `compute_saint_venant_J_cell(section)`
 
 ## Purpose
 
@@ -432,7 +432,7 @@ If thickness is missing, the function raises an error (strict mode).
 > Note: there is a legacy fallback path in the code (estimate thickness as `t = 2A/P`),
 > but it is disabled by default (`REQUIRE_EXPLICIT_T = True`).
 
-# CSF `@cell` Polygon Encoding Requirements (v2)
+## CSF `@cell` Polygon Encoding Requirements (v2)
 
 This note describes the **strict geometric and data-encoding conditions** required by the current CSF closed-cell torsion routine:
 
@@ -444,7 +444,7 @@ The goal is to prevent silent wrong results by making the input representation u
 
 ---
 
-## 1) What the algorithm assumes (conceptually)
+##  What the algorithm assumes (conceptually)
 
 A valid “cell polygon” represents a **tubular region** (a wall) bounded by:
 
@@ -520,7 +520,7 @@ For consistency with CSF conventions, use:
 This is an **input convention**. The routine may internally normalize orientation for midline construction, but you should keep the encoding consistent to avoid confusion and reduce failure modes.
 
 ---
-## 8) Minimal YAML example (template)
+## Minimal YAML example (template)
 
 ```yaml
 CSF:
@@ -605,7 +605,7 @@ A `@cell` polygon is valid for v2 if all items below are true:
 
 ---
 
-# B) `compute_saint_venant_J_wall(section)`
+## 18 `compute_saint_venant_J_wall(section)`
 
 ## Purpose
 
