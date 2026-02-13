@@ -360,6 +360,7 @@ This method is appropriate if:
 ## Torsion constant methods for tagged polygons (`@cell` / `@wall`)
 **Key:** `J_sv_cell`   `J_sv_wall` 
 
+
 This note documents the *implemented* methods used by:
 
 - `compute_saint_venant_J_cell(section)`
@@ -374,6 +375,10 @@ Throughout, the returned quantity is a torsional constant `J_sv` in **m⁴**, in
 
 For intermediate sections, if the two endpoint values are different, `t` is linearly interpolated along `z`.
 If only one endpoint value is provided, `t` is treated as constant along `z`.
+
+
+![softwarex_props](https://github.com/user-attachments/assets/c4b03d5c-544c-4d18-9821-e05facd651b7)
+
 
 ---
 
@@ -437,11 +442,6 @@ If no such polygons are present, the current implementation returns `0`.
 For each `@cell` / `@closed` polygon, an explicit thickness **must** be provided:
 
 - `@t=<value>`
-
-If thickness is missing, the function raises an error (strict mode).
-
-> Note: there is a legacy fallback path in the code (estimate thickness as `t = 2A/P`),
-> but it is disabled by default (`REQUIRE_EXPLICIT_T = True`).
 
 ## CSF `@cell` Polygon Encoding Requirements (v2)
 
