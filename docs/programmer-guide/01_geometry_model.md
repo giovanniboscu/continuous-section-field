@@ -257,5 +257,25 @@ J: 0.010149999999999998
 Ix: 0.008574999999999998
 
 ```
+---
+
+## Same API Pipeline, YAML-Loaded Model
+
+This final example shows that only the data source changes.  
+Once the model is loaded, the API workflow is exactly the same as in previous examples.
+
+```python
+
+# Load CSF model from YAML
+res = CSFReader().read_file("../actions-examples/rectangle/geomtry.yaml")
+field = res.field
+
+# Same API flow as before
+sec = field.section(2.5)
+out = section_full_analysis(sec)
+
+print(f"A: {out['A']}")
+
+---
 
 From this point, all action-style workflows can be reproduced programmatically.
