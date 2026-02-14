@@ -15,9 +15,7 @@ This example is organized into three essential steps:
 Create the file `t-shape.py`:
 
 ```python
-from __future__ import annotations
-
-# --- Core CSF imports used in this minimal example ---
+f# --- Core CSF imports used in this minimal example ---
 from csf import (
     Pt, Polygon, Section, ContinuousSectionField,
     section_full_analysis, section_print_analysis,section_full_analysis_keys
