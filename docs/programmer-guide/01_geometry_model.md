@@ -20,7 +20,7 @@ from __future__ import annotations
 # --- Core CSF imports used in this minimal example ---
 from csf import (
     Pt, Polygon, Section, ContinuousSectionField,
-    section_full_analysis, section_print_analysis
+    section_full_analysis, section_print_analysis,section_full_analysis_keys
 )
 
 # -------------------------------------------------------
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     )
 
     # -------------------------------------------------------
-    # 2) Section field instantiation
+    # Section field instantiation
     # -------------------------------------------------------
     # Define start/end sections and create the continuous field.
     L = 10.0
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     section_field = ContinuousSectionField(section0=s0, section1=s1)
 
     # -------------------------------------------------------
-    # 3) Extract one section and print full analysis
+    # Extract one section and print full analysis
     # -------------------------------------------------------
     # Here z = 10.0, so this is exactly the end section (S1).
     zsec_val = 10.0
@@ -107,6 +107,7 @@ if __name__ == "__main__":
 
     full_analysis = section_full_analysis(sec_at_z)
     section_print_analysis(full_analysis, fmt=".5f")
+
 ```
 
 Run the script first:
@@ -179,6 +180,6 @@ for k in keys:
 # If you already have a section object (e.g., sec_at_z), use:
 full_analysis = section_full_analysis(sec_at_z)
 
-# 3) Print only area
+#  Print only area
 print(f"Area: {full_analysis['A']}")
 ```
