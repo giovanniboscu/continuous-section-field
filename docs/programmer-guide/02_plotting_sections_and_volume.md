@@ -15,3 +15,5 @@ You will use plotting to inspect:
 - side-by-side comparisons between stations.
 
 By the end of this chapter, you will have a repeatable plotting workflow for debugging and validating CSF models directly from Python API calls.
+
+#work in progress
