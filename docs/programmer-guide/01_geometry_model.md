@@ -160,3 +160,26 @@ FULL MODEL ANALYSIS REPORT - SECTION EVALUATION
 > - `J_sv_wall = 0.00000` -> no active/valid `@wall` contribution in this section
 >
 > Therefore, `J_sv = 0.01015` should be interpreted as the reference torsional constant for this specific configuration and solver path.
+
+---
+
+## Read Available Analysis Keys and Print Only Area
+
+Use `section_full_analysis_keys()` to inspect all available output keys, then extract only the area from the full analysis dictionary.
+
+```python
+from csf import section_full_analysis_keys, section_full_analysis
+
+# Print all available keys (ordered)
+keys = section_full_analysis_keys()
+print("Available keys:")
+for k in keys:
+    print(f"- {k}")
+
+# Run full analysis (example: section object at z)
+# If you already have a section object (e.g., sec_at_z), use:
+full_analysis = section_full_analysis(sec_at_z)
+
+# 3) Print only area
+print(f"Area: {full_analysis['A']}")
+```
