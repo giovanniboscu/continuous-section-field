@@ -275,7 +275,7 @@ sec = field.section(2.5)
 out = section_full_analysis(sec)
 
 print(f"A: {out['A']}")
-
+```
 ---
 
 From this point, all action-style workflows can be reproduced programmatically.
