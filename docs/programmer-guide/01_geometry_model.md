@@ -168,7 +168,6 @@ FULL MODEL ANALYSIS REPORT - SECTION EVALUATION
 Use `section_full_analysis_keys()` to inspect all available output keys, then extract only the area from the full analysis dictionary.
 
 ```python
-from csf import section_full_analysis_keys, section_full_analysis
 
 # Print all available keys (ordered)
 keys = section_full_analysis_keys()
