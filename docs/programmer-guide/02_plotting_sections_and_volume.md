@@ -16,4 +16,4 @@ You will use plotting to inspect:
 
 By the end of this chapter, you will have a repeatable plotting workflow for debugging and validating CSF models directly from Python API calls.
 
-# Work in progress
+# Work in progress ....
