@@ -267,7 +267,7 @@ Once the model is loaded, the API workflow is exactly the same as in previous ex
 ```python
 
 # Load CSF model from YAML
-res = CSFReader().read_file("../actions-examples/rectangle/geomtry.yaml")
+res = CSFReader().read_file("../actions-examples/openandthin/ipe100.yaml")
 field = res.field
 
 # Same API flow as before
