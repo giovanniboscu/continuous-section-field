@@ -1,5 +1,5 @@
 # Quick Start Guide
-## Ekofisk Foundation Pile Benchmark
+
 ### Practical, didactic workflow from zero to results
 
 This guide explains how to start from a complete **CSF geometry file**, add a **degradation law `w(z)`**, run **CSF_ACTIONS**, and interpret the outputs.
