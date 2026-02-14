@@ -2,11 +2,11 @@
 
 ## First API Example — Build a Simple Shape and Print Section Results
 
-This example shows three core steps:
+This example is organized into three essential steps:
 
-1. Create points/polygons with the API  
+1. Create points and polygons through the API  
 2. Instantiate a `ContinuousSectionField`  
-3. Run and print section analysis at one `z` station
+3. Run the section analysis at one `z` station and print the results
 
 ---
 
@@ -145,10 +145,9 @@ FULL MODEL ANALYSIS REPORT - SECTION EVALUATION
 16) Torsional const K wall            J_sv_wall             0.00000     # computes the Saint-Venant torsional constant for open thin-walled walls
 17) Torsional const K roark:          J_s_vroark            0.00460     # Refined J using Roark-Young thickness correction
 18) Torsional const K roark fidelity: J_s_vroark_fidelity   0.42857     # Reliability index based on aspect-ratio (1.0 = Thin-walled, 0.0 = Stout)
-=================================================================================================================================
+==================================================================================================================================
 ```
 
----
 
 > **Note on `J_sv = 0.01015` (with `alpha = 1`)**
 >
@@ -166,7 +165,7 @@ FULL MODEL ANALYSIS REPORT - SECTION EVALUATION
 
 ## Read Available Analysis Keys and Print Only Area
 
-Use `section_full_analysis_keys()` to inspect all available output keys, then extract only the area from the full analysis dictionary.
+Use `section_full_analysis_keys()` to list all available output keys, then read only the area from the full-analysis dictionary.
 
 ```python
 
@@ -183,3 +182,79 @@ full_analysis = section_full_analysis(sec_at_z)
 #  Print only area
 print(f"Area: {full_analysis['A']}")
 ```
+
+Output
+
+```python
+Available keys:
+- A
+- Cx
+- Cy
+- Ix
+- Iy
+- Ixy
+- J
+- I1
+- I2
+- rx
+- ry
+- Wx
+- Wy
+- K_torsion
+- Q_na
+- J_sv
+- J_sv_wall
+- J_sv_cell
+- J_s_vroark
+- J_s_vroark_fidelity
+
+Area: 0.21
+```
+
+snipped for specifid keys
+
+```cpython
+    # Print all keys in official order
+    print("\nFull analysis results:")
+
+    for csfkey in keys:
+      value = full_analysis.get(csfkey, None)
+      print(f"{csfkey}: {value}")
+
+    # Select keys once, print in one loop
+    selected_keys = ["J", "Ix"]
+    print("\nPrint from the list")
+    for csfkey in selected_keys:
+      print(f"{csfkey}: {full_analysis[csfkey]}")
+```  
+
+output
+```
+
+Full analysis results:
+A: 0.21
+Cx: 0
+Cy: 0.25
+Ix: 0.008574999999999998
+Iy: 0.0015749999999999998
+Ixy: 0
+J: 0.010149999999999998
+I1: 0.008574999999999998
+I2: 0.001575
+rx: 0.202072594216369
+ry: 0.08660254037844387
+Wx: 0.024499999999999994
+Wy: 0.010499999999999999
+K_torsion: 0.004790172413793104
+Q_na: 0.018375000000000013
+J_sv: 0.010149999999999998
+J_sv_wall: 0.0
+J_sv_cell: 0.0
+J_s_vroark: 0.004603782069970846
+J_s_vroark_fidelity: 0.4285714285714287
+
+Print from the list
+J: 0.010149999999999998
+Ix: 0.008574999999999998
+
+```  
