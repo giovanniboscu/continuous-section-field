@@ -22,6 +22,7 @@ from csf import (
     Pt, Polygon, Section, ContinuousSectionField,
     section_full_analysis, section_print_analysis,section_full_analysis_keys
 )
+from csf.io.csf_reader import CSFReader
 
 # -------------------------------------------------------
 # 1) Geometry definition with API objects
