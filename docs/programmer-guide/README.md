@@ -2,7 +2,44 @@
 
 Programmer-oriented documentation for building, validating, and integrating **Continuous Section Field (CSF)** models.
 
-This README is the entry point. Detailed chapters are organized as separate files.
+This is a **practical programmer guide** for CSF.  
+The guide uses a single thread: **learn by examples**.
+
+---
+
+##  Environment Setup
+
+Before running any CSF example, install:
+
+- Python (recommended: Python 3.10+)
+- Git
+
+---
+
+##  Get the Project and Create a Virtual Environment
+
+```bash
+# Clone the repository
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
+
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install in editable mode
+pip install -e .
+
+```
+
+After activating the environment, create a dedicated working folder where all project files will be stored:
+
+```bash
+mkdir csf_project
+cd csf_project
+```
+
+
 
 ## Chapters
 1. [01_geometry_model.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/01_geometry_model.md)
