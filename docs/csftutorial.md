@@ -22,25 +22,7 @@ In other words:
 > **`geometry.yaml` describes the “what it is”** (continuous geometry + optional longitudinal material/stiffness laws),  
 > **`actions.yaml` describes the “what to do with it”** (analysis, validation, plotting, exporting).
 
-## Core model (unchanged)
-
-CSF treats a member as a continuous field along `z`, combining two independent (but coupled) descriptions:
-
-- **Continuous geometry** via ruled-surface interpolation between polygonal sections  
-  (tapering, topology changes, multi-cell sections).
-
-- **Continuous material/stiffness laws** via user-defined longitudinal functions `w(z)`,  
-  optionally applied per polygon (multi-material, degradation laws, staged stiffness, void logic through negative weights).
-
-From this continuous description, CSF evaluates section properties and stiffness/mass fields (e.g., `A(z)`, `I(z)`, `C(z)`, `EA(z)`, `EI(z)`, `GJ(z)`) and can export station data for structural solvers (including Gauss–Lobatto stationing so member ends are sampled exactly, where required).
-
 ## Scope
-
-CSF targets **linear-elastic beam modeling and preprocessing** (visualization, export, validation).  
-It does **not** model cracking, damage, or nonlinear material behavior.
-
-This guide explains how to run **CSF (Continuous Section Field)** workflows using **YAML only**.  
-You do **not** need to write Python to use CSF actions.
 
 CSF uses **two YAML files**:
 
@@ -78,14 +60,15 @@ CSF_ACTIONS:
       - 10.0
 
   actions:
-    - section_full_analysis:
-        stations:
-          - stations_example
+    - plot_volume_3d:
+        params:
+          line_percent: 100.0
+          title: "Ruled volume"
+    - section_selected_analysis:
+        stations: stations_example
         output:
           - stdout
-          - out/full_analysis.csv
-        params:
-          fmt_diplay: ".8f"
+        properties: [A, Cx, Cy, Ix, Iy]
 ```
 
 ### 1.3 CLI command
@@ -162,7 +145,7 @@ stations:
 ### 3.2 Station sets are reusable
 
 You can define multiple station sets and reference them in different actions:
-
+**action**
 ```yaml
 stations:
   coarse: [0.0, 10.0]
@@ -175,6 +158,37 @@ actions:
       stations: [coarse]
 ```
 
+**geometry**
+
+```yaml
+```
+CSF:
+  # Two stations defining a linearly tapered solid rectangle along z.
+  # Rectangle width is constant; height changes from S0 to S1.
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        rect:
+          weight: 1.0
+          vertices:
+            # CCW vertices
+            - [-0.5, 0.0]
+            - [ 0.5, 0.0]
+            - [ 0.5, 1.0]
+            - [-0.5, 1.0]
+
+    S1:
+      z: 10.0
+      polygons:
+        rect:
+          weight: 1.0
+          vertices:
+            # CCW vertices
+            - [-0.5, 0.0]
+            - [ 0.5, 0.0]
+            - [ 0.5, 2.0]
+            - [-0.5, 2.0]
 ---
 
 ## 4. Output rules (stdout vs file-only)
