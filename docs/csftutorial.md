@@ -116,7 +116,7 @@ python3 ../csf/CSFActions.py  geomtry.yaml  actions.yaml
 
 ### 1.4 Expected output snippet (example)
 
-You will see something similar to (truncated):
+what you will see
 
 ```
 ## SECTION SELECTED ANALYSIS @ z = 0.0 ###
