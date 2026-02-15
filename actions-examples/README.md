@@ -15,7 +15,7 @@
 5. **Simple rectangle example**  
    Minimal CSF case based on a rectangular section, intended for quick setup, validation, and first checks of area/inertia/torsion trends along the member length.
 
-
+---
 This directory contains **ready-to-run CSF examples** that require **no Python programming**.
 Each example is defined by **two YAML files**:
 
