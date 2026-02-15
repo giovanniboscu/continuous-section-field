@@ -20,6 +20,9 @@ pip install -e .
 After the installation, create your case folder structure (outside or inside the repo, depending on your workflow), for example:
 
 ```text
+mkdir mycase
+cd my_case
+
 my_case/
   geometry.yaml
   actions.yaml
