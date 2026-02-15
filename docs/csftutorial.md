@@ -119,9 +119,31 @@ python3 ../csf/CSFActions.py  geomtry.yaml  actions.yaml
 You will see something similar to (truncated):
 
 ```
-FULL MODEL ANALYSIS REPORT - SECTION EVALUATION
-#  Name                              Key
-1) Area (A):                          A                     ...
+## SECTION SELECTED ANALYSIS @ z = 0.0 ###
+torsion_alpha_sv     : 1.00000000  [Solid J_sv scaling factor]
+A                   : 1.00000000  [Total net cross-sectional area]
+Cx                  : 0.00000000  [Horizontal centroid (X)]
+Cy                  : 0.50000000  [Vertical centroid (Y)]
+Ix                  : 0.08333333  [Second moment about centroidal X-axis]
+Iy                  : 0.08333333  [Second moment about centroidal Y-axis]
+
+### SECTION SELECTED ANALYSIS @ z = 1.0 ###
+torsion_alpha_sv     : 1.00000000  [Solid J_sv scaling factor]
+A                   : 1.10000000  [Total net cross-sectional area]
+Cx                  : 0.00000000  [Horizontal centroid (X)]
+Cy                  : 0.55000000  [Vertical centroid (Y)]
+Ix                  : 0.11091667  [Second moment about centroidal X-axis]
+Iy                  : 0.09166667  [Second moment about centroidal Y-axis]
+
+### SECTION SELECTED ANALYSIS @ z = 10.0 ###
+torsion_alpha_sv     : 1.00000000  [Solid J_sv scaling factor]
+A                   : 2.00000000  [Total net cross-sectional area]
+Cx                  : 0.00000000  [Horizontal centroid (X)]
+Cy                  : 1.00000000  [Vertical centroid (Y)]
+Ix                  : 0.66666667  [Second moment about centroidal X-axis]
+Iy                  : 0.16666667  [Second moment about centroidal Y-axis]
+All actions completed successfully.
+        ...
 ```
 
 ---
