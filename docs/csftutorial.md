@@ -1,6 +1,6 @@
 # CSF YAML Tutorial (CSFActions.py)
 
-##  Get the Project and Create a Virtual Environment
+In these tutorials, the working directory is set **immediately after cloning** the repository.
 
 ```bash
 # Clone the repository
@@ -13,8 +13,24 @@ source venv/bin/activate
 
 # Install in editable mode
 pip install -e .
-
 ```
+
+After the installation, create your case folder structure (outside or inside the repo, depending on your workflow), for example:
+
+```text
+my_case/
+  geometry.yaml
+  actions.yaml
+  out/                # create this folder yourself
+```
+
+## Notes
+
+- `geometry.yaml` contains the geometric model definition.
+- `actions.yaml` contains the analysis/actions configuration.
+- The `out/` directory is not auto-created by default in this setup: create it manually before running workflows that write output files.
+
+
 
 ## Use CSF without writing Python
 
