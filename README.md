@@ -10,6 +10,9 @@
 **[Key Features](#key-features)** • **[Installation & setup](#setup-environment-linux--windows)** • **[Continuously Tapered Beam Example](#worked-example-continuously-tapered-t-beam)** •**[Validation](#-CSF-Numerical-Validation:-Circular-Hollow-Section)** • **[NREL 5-MW Case Study ](#numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
 
 
+[CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md) See the full step-by-step tutorial here
+
+[CSF Programmer Guide](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/programmer-guide) For developers who want full programmatic control via Python API
 
 ## Continuous Section Field (CSF): Section-Property Preprocessing for Non-Prismatic, Multi-Region Members (Python API and YAML workflow)
 
