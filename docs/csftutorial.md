@@ -111,9 +111,10 @@ From inside `my_case/`:
 python3 ../csf/CSFActions.py  geometry.yaml  action.yaml
 ```
 
-### 1.4 Expected output snippet (example)
+### 1.4 Expected output
 
 what you will see
+![Figure_1](https://github.com/user-attachments/assets/2f4daf1a-e309-4834-9499-d43fa3d9d087)
 
 ```
 ## SECTION SELECTED ANALYSIS @ z = 0.0 ###
