@@ -26,10 +26,6 @@ my_case/
   out/                # create this folder yourself
 ```
 
-## Notes
-
-- The `out/` directory is not auto-created by default in this setup: create it manually before running workflows that write output files.
-
 1. **`geometry.yaml`** — defines the member geometry as a continuous field along the axis `z`  
    - end (or intermediate) sections as **arbitrary polygons**  
    - optional multi-polygon sections (multi-cell shapes)  
@@ -44,7 +40,7 @@ my_case/
 **Important**: CSFActions checks that output paths are writable, but it does **not** create missing folders for you.  
 Create `out/` (and any subfolders) before running.
 
-###  Minimal `actions.yaml` (complete)
+###  Minimal `actions.yaml`
 
 This example runs one analysis at three stations and prints to screen + writes a CSV.
 
