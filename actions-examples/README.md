@@ -1,5 +1,21 @@
 # CSF YAML Examples (No Python Coding Required)
 
+1. **`write_opensees_geometry`**  
+   Exports CSF section data along `z` into an OpenSees-ready Tcl geometry file, using sampled stations and reference material parameters (`E_ref`, `nu`).
+
+2. **`degradation_laws_offshore`**  
+   Collection of offshore-oriented degradation laws (e.g., splash-zone effects, corrosion-driven reductions) to model longitudinal property loss through `w(z)` and related CSF inputs.
+
+3. **Torsion examples: `J_sv_cell` / `J_sv_wall`**  
+   Practical examples showing how to compute Saint-Venant torsional constant in CSF for closed-cell behavior (`J_sv_cell`) and thin-wall/open-wall behavior (`J_sv_wall`), with tag-based polygon selection.
+
+4. **Closed-Cell CHS with Splash-Zone Weight Law**  
+   This example demonstrates a **reproducible CSF workflow** for a circular hollow steel member (CHS), combining closed-cell torsion and a splash-zone degradation law to evaluate section-property evolution along `z`.
+
+5. **Simple rectangle example**  
+   Minimal CSF case based on a rectangular section, intended for quick setup, validation, and first checks of area/inertia/torsion trends along the member length.
+
+
 This directory contains **ready-to-run CSF examples** that require **no Python programming**.
 Each example is defined by **two YAML files**:
 
