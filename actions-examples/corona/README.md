@@ -36,8 +36,4 @@ Exports a text template pack for SAP2000 using predefined stations.
 
 **Typical use:** prepare SAP2000 input plus a visual check of section variation.
 
----
 
-## Practical note
-
-Both actions preserve consistency with the CSF definition of section variation along `z`, avoiding manual geometry rebuilds in target software.
