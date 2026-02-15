@@ -287,7 +287,7 @@ Some actions are strictly file-only and will reject `stdout` with a friendly err
 ### 5.1 Validate only (no execution)
 
 ```bash
-python CSFActions.py geometry.yaml actions.yaml --validate-only
+python ../csf/CSFActions.py geometry.yaml actions.yaml --validate-only
 ```
 
 Expected snippet:
@@ -342,7 +342,7 @@ This is useful when you only need a few keys (for plots, checking, exporting).
 ```yaml
 CSF_ACTIONS:
   stations:
-    z_list: [0.0, 10.0] #<= this list is also valis
+    z_list: [0.0, 10.0] #<= this list is also valid
 
   actions:
     - section_selected_analysis:
@@ -440,7 +440,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python CSFActions.py geometry.yaml actions.yaml
+python ../csf/CSFActions.py geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -475,7 +475,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python CSFActions.py geometry.yaml actions.yaml
+python ../csf/CSFActions.py geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -510,7 +510,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python CSFActions.py geometry.yaml actions.yaml
+python ../csf/CSFActions.py geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -550,7 +550,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python CSFActions.py geometry.yaml actions.yaml
+python ../csf/CSFActions.py geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -587,7 +587,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python CSFActions.py geometry.yaml actions.yaml
+python ../csf/CSFActions.py geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -624,7 +624,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python CSFActions.py geometry.yaml actions.yaml
+python ../csf/CSFActions.py geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -665,7 +665,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python CSFActions.py geometry.yaml actions.yaml
+python ../csf/CSFActions.py geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -678,7 +678,6 @@ python CSFActions.py geometry.yaml actions.yaml
 - `stdout` is forbidden.
 - `stations` is forbidden.
 - `mode` must be one of: `CENTROIDAL_LINE`, `REFERENCE_LINE`, `BOTH`.
-- There is a supported alias `write_samp2000_geometry` (typo tolerance), but prefer the correct name.
 
 ---
 
@@ -740,12 +739,6 @@ Below are typical categories of errors you may see. CSFActions prints:
 ### Q2) “actions must be a list”
 **Meaning**: you wrote a mapping instead of a list.  
 **Fix**:
-
-```yaml
-actions:
-  - section_full_analysis:
-      ...
-```
 
 ### Q3) “Unknown action …”
 **Meaning**: action name is not in the implemented catalog.  
