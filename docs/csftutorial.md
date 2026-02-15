@@ -48,6 +48,8 @@ Create `out/` (and any subfolders) before running.
 ### 1.2 Minimal `actions.yaml` (complete)
 
 This example runs one analysis at three stations and prints to screen + writes a CSV.
+
+
 **action.yaml**:
 
 ```yaml
@@ -72,7 +74,7 @@ CSF_ACTIONS:
         properties: [A, Cx, Cy, Ix, Iy]
 ```
 
-**geomety.yaml**:
+**geometry.yaml**:
 
 
 ```yaml
