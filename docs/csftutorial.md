@@ -1,6 +1,8 @@
 # CSF YAML Tutorial (CSFActions.py)
-
+Although CSF is implemented as a Python engine, it can be used **without programming** through the **CSFReader** tool.
 In these tutorials, the working directory is set **immediately after cloning** the repository.
+
+
 
 ```bash
 # Clone the repository
@@ -26,17 +28,7 @@ my_case/
 
 ## Notes
 
-- `geometry.yaml` contains the geometric model definition.
-- `actions.yaml` contains the analysis/actions configuration.
 - The `out/` directory is not auto-created by default in this setup: create it manually before running workflows that write output files.
-
-
-
-## Use CSF without writing Python
-
-Although CSF is implemented as a Python engine, it can be used **without programming** through the **CSFReader** tool.
-
-With CSFReader, you run the full CSF workflow by providing **two input YAML files**:
 
 1. **`geometry.yaml`** — defines the member geometry as a continuous field along the axis `z`  
    - end (or intermediate) sections as **arbitrary polygons**  
@@ -48,38 +40,13 @@ With CSFReader, you run the full CSF workflow by providing **two input YAML file
    - produce plots/visualizations and reports  
    - export solver-ready station data (e.g., for force-based beam formulations)
 
-In other words:
-
-> **`geometry.yaml` describes the “what it is”** (continuous geometry + optional longitudinal material/stiffness laws),  
-> **`actions.yaml` describes the “what to do with it”** (analysis, validation, plotting, exporting).
-
-## Scope
-
-CSF uses **two YAML files**:
-
-- `geometry.yaml` → defines the CSF geometry (read/validated by `CSFReader().read_file(...)`).
-- `actions.yaml` → defines **what to do** with that geometry (validated + executed by `CSFActions.py`).
-
----
-
-## 1. Quick start (one run)
-
-### 1.1 Folder layout (recommended)
-
-```
-my_case/
-  geometry.yaml
-  actions.yaml
-  out/                # create this folder yourself
-```
 
 **Important**: CSFActions checks that output paths are writable, but it does **not** create missing folders for you.  
 Create `out/` (and any subfolders) before running.
 
-### 1.2 Minimal `actions.yaml` (complete)
+###  Minimal `actions.yaml` (complete)
 
 This example runs one analysis at three stations and prints to screen + writes a CSV.
-
 
 **action.yaml**:
 
