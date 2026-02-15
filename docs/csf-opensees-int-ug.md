@@ -197,17 +197,3 @@ A correct CSF → OpenSees builder must:
    - **single element with N-point Gauss–Lobatto** (only if `xc,yc` are constant and stations match Lobatto), or
    - **segmented elements with 2-point endpoint sampling** (if `xc,yc` vary and you need intermediate nodes).
 
----
-
-## 8) Common confusion: “is this just piecewise-prismatic?”
-
-OpenSees must integrate numerically, so there are finitely many stations.  
-But CSF export is not an arbitrary stepped approximation:
-
-- stations are deterministic (Gauss–Lobatto if chosen),
-- properties are evaluated from the continuous field at those stations,
-- endpoint sampling is enforced by the stationing.
-
-So it is best described as:
-
-> quadrature sampling of a continuous stiffness field, not user-chosen piecewise stepping.
