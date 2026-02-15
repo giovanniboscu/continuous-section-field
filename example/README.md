@@ -1,6 +1,7 @@
 # CSF Programming Examples
 
-This directory contains **programmer-oriented CSF examples**.
+
+The files here demonstrate how to interact with CSF **directly via Python code** (programmatic API usage), moving beyond the YAML-driven workflows.
 
 ## Purpose
 
