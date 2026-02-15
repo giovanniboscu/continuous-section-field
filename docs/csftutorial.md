@@ -204,15 +204,18 @@ stations:
 You can define multiple station sets and reference them in different actions:
 **action**
 ```yaml
-stations:
-  coarse: [0.0, 10.0]
-  fine:   [0.0, 2.0, 4.0, 6.0, 8.0, 10.0]
+  stations:
+    stations_example:
+      - 0.0
+      - 1.0
+      - 10.0
 
 actions:
-  - section_full_analysis:
-      stations: [fine]
-  - plot_section_2d:
-      stations: [coarse]
+    - section_selected_analysis:
+        stations: stations_example
+        output:
+          - stdout
+        properties: [A, Cx, Cy, Ix, Iy]
 ```
 
 **geometry**
@@ -297,7 +300,7 @@ Validation-only mode: no actions executed.
 ### 5.2 Print built-in help for actions
 
 ```bash
-python CSFActions.py --help-actions
+ python3 ../csf/CSFActions.py --help-actions
 ```
 
 This prints:
@@ -320,39 +323,6 @@ Each tutorial includes:
 > In all examples below, assume `geometry.yaml` exists and is valid.
 
 ---
-
-### 6.1 `section_full_analysis` (stations REQUIRED)
-
-**Concept**  
-Computes a full set of section properties at each requested station.
-
-**YAML**
-
-```yaml
-CSF_ACTIONS:
-  stations:
-    z_list: [0.0, 5.0, 10.0]
-
-  actions:
-    - section_full_analysis:
-        stations: [z_list]
-        output: [stdout, out/full.csv]
-        params:
-          fmt_diplay: ".10f"
-```
-
-**CLI**
-
-```bash
-python CSFActions.py geometry.yaml actions.yaml
-```
-
-**Expected output snippet**
-
-```
-FULL MODEL ANALYSIS REPORT - SECTION EVALUATION
-1) Area (A):                          A                     ...
-```
 
 **Pitfalls**
 - `stations` missing → error (most actions need it).
@@ -380,7 +350,7 @@ CSF_ACTIONS:
         output: [stdout, out/selected.csv, out/selected.txt]
         properties: [A, Cx, Cy, Ix, Iy, J]
         params:
-          fmt_diplay: ".12f"
+          fmt_display: ".12f"
 ```
 
 **CLI**
