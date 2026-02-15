@@ -48,6 +48,7 @@ Create `out/` (and any subfolders) before running.
 ### 1.2 Minimal `actions.yaml` (complete)
 
 This example runs one analysis at three stations and prints to screen + writes a CSV.
+**action.yaml**:
 
 ```yaml
 CSF_ACTIONS:
@@ -71,6 +72,38 @@ CSF_ACTIONS:
         properties: [A, Cx, Cy, Ix, Iy]
 ```
 
+**geomety.yaml**:
+
+
+```yaml
+CSF:
+  # Two stations defining a linearly tapered solid rectangle along z.
+  # Rectangle width is constant; height changes from S0 to S1.
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        rect:
+          weight: 1.0
+          vertices:
+            # CCW vertices
+            - [-0.5, 0.0]
+            - [ 0.5, 0.0]
+            - [ 0.5, 1.0]
+            - [-0.5, 1.0]
+
+    S1:
+      z: 10.0
+      polygons:
+        rect:
+          weight: 1.0
+          vertices:
+            # CCW vertices
+            - [-0.5, 0.0]
+            - [ 0.5, 0.0]
+            - [ 0.5, 2.0]
+            - [-0.5, 2.0]
+```
 ### 1.3 CLI command
 
 From inside `my_case/`:
