@@ -343,7 +343,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python CSFActions.py geometry.yaml actions.yaml
+python ../CSFActions.py geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -389,7 +389,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python CSFActions.py geometry.yaml actions.yaml
+python ../CSFActions.py geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
