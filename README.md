@@ -30,7 +30,6 @@ You can run CSF workflows without writing Python code by using YAML-based inputs
 
 See the full step-by-step tutorial here:  
 [CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md)
-[CSF Quick Start Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/QuickStartGuide.md)
 
 
 ### Python Programmer Guide (API-first)
