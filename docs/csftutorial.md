@@ -331,7 +331,7 @@ Each tutorial includes:
 
 ---
 
-### 6.2 `section_selected_analysis` (stations REQUIRED)
+### 6.2 `section_selected_analysis` 
 
 **Concept**  
 Computes only a user-selected list of property keys (compact report + compact CSV).  
@@ -342,7 +342,7 @@ This is useful when you only need a few keys (for plots, checking, exporting).
 ```yaml
 CSF_ACTIONS:
   stations:
-    z_list: [0.0, 10.0]
+    z_list: [0.0, 10.0] #<= this list is also valis
 
   actions:
     - section_selected_analysis:
