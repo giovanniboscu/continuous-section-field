@@ -10,7 +10,6 @@
 - **Initial installation era**: Early 1970s (Ekofisk development phase)
 - **Operator history**: Phillips Petroleum (now ConocoPhillips)
 - **Water depth (field-level, indicative)**: approximately 70–75 m (historical), locally affected by seabed subsidence
-- **Document date**: February 2025
 - **Status**: Reconstructed benchmark from public-domain context plus engineering assumptions (not an as-built certified dossier)
 
 ---
