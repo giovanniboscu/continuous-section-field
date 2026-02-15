@@ -43,7 +43,7 @@ my_case/
 **Important**: CSFActions checks that output paths are writable, but it does **not** create missing folders for you.  
 Create `out/` (and any subfolders) before running.
 
-###  Minimal `actions.yaml`
+### 1. Minimal `actions.yaml`
 
 This example runs one analysis at three stations and prints to screen + writes a CSV.
 
@@ -103,7 +103,7 @@ CSF:
             - [ 0.5, 2.0]
             - [-0.5, 2.0]
 ```
-### 1.3 CLI command
+### 1.1 CLI command
 
 From inside `my_case/`:
 
@@ -111,7 +111,7 @@ From inside `my_case/`:
 python3 ../csf/CSFActions.py  geometry.yaml  action.yaml
 ```
 
-### 1.4 Expected output
+### 1.2 Expected output
 
 what you will see
 ![Figure_1](https://github.com/user-attachments/assets/2f4daf1a-e309-4834-9499-d43fa3d9d087)
@@ -146,18 +146,7 @@ All actions completed successfully.
 
 ---
 
-## 2. Core concepts (the two YAML files)
-
-### 2.1 `geometry.yaml` (input geometry)
-
-- This file describes the CSF member: end sections, polygons, vertices, weights/materials, etc.
-- It is validated by `CSFReader`.
-- If geometry validation fails, CSFActions prints the geometry issues and stops.
-
-**Note**: `geometry.yaml` is intentionally **separate** from the action plan.  
-You can reuse the same geometry with many different `actions.yaml` files.
-
-### 2.2 `actions.yaml` (execution plan)
+### 2 `actions.yaml` (execution plan)
 
 The `actions.yaml` file must contain a single top-level root key:
 
