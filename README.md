@@ -232,9 +232,11 @@ Unlike traditional frame analysis software that treats members as prismatic, thi
 The OpenSees model uses the `forceBeamColumn` element family, which integrates section flexibility along the member length and is suitable for non-prismatic members when section properties vary longitudinally.
 CSF bridges continuous geometric modeling and structural analysis by exporting a **solver-ready stiffness field** that OpenSees can integrate using a **force-based beam formulation**.
 
+* [OpenSees example](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/corona)
 * [OpenSees Integration Technical Details](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/openseesIntegration.md)
 * [OpenSees Integration and Numerical Strategy](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/OpenSeesIntegrationNumericalStrategy.md)
 * [Detailed, block-by-block explanation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf-opensees-int-ug.md)
+
 
  
 ---
