@@ -287,7 +287,8 @@ When using the distance function `d(i, j)` in your weight laws:
 ### Data-Driven Modeling: E_lookup data from external text file 
 
 If you have experimental data (e.g., from a sensor or a thermal analysis), put it in a text file, for example `stiffness.txt`:
-The first column in the lookup file is the physical coordinate z (same units as the model, from 0 to L).
+The first column in the lookup file is the physical coordinate z (same units as the model, from 0 to L). 
+Intermediate values are interpolated linearly.
 ```
 # Z-coord   Value
 0.0  210000
