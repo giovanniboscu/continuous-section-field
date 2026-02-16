@@ -322,7 +322,9 @@ this is the function you need to set up
 ![Figure_16](https://github.com/user-attachments/assets/6048faa0-d1e7-4ff3-ab5a-76fb449c74f3)
 
 
-## To use a no normalized lookup-file example, create a text file named:
+## no normalized lookup-file example
+
+create a text file named:
 
 zlookup_exponential.txt
 
