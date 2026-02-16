@@ -78,4 +78,4 @@ Plot the evolution of selected section properties along `z`, highlighting min/ma
 ## Notes
 
 - If `keys_to_plot` is empty, the function shows an empty figure and returns.
-- The x-axis label includes the selected `alpha` value.
+
