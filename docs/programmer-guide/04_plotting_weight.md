@@ -238,8 +238,6 @@ Usage in a law expression:
     viz = Visualizer(section_field)
     viz.plot_weight(num_points=100)
     plt.show()
-
-
 ```
 
 ---
@@ -270,7 +268,18 @@ section_field.set_weight_laws([
 
 This represents a half-cosine smooth degradation law (also called a cosine ramp degradation), with gradual variation from w0 to w1 along the member length.
 
+![Figure_11](https://github.com/user-attachments/assets/8e142df7-f5db-4128-a2ad-9dfcbec0ea54)
 
+
+
+```python
+   section_field.set_weight_laws([
+        "lowerpart,lowerpart :np.where(t < 1/3, w0, np.where(t < 2/3, 0.5*(w0 + w1), w1))", 
+    ])  
+```
+This is a **3-step piecewise law** on normalized `t` (`0..1`):
+
+![Figure_11](https://github.com/user-attachments/assets/90446236-d033-441e-96d5-98d03e688d38)
 
 ## Parameters
 
