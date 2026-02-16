@@ -132,6 +132,8 @@ if __name__ == "__main__":
     viz.plot_weight(num_points=100)
     plt.show()
 ```
+
+if no custom law is provided, interpolation is linear by default
 ![Figure_1](https://github.com/user-attachments/assets/2c576be1-1dfb-46b0-abb6-c5fd8886edc7)
 
 ---
