@@ -98,7 +98,7 @@ if __name__ == "__main__":
     section_field = ContinuousSectionField(section0=s0, section1=s1)
 
     # -------------------------------------------------------
-    # Extract one section and print full analysis
+    # Extract one section and print 
     # -------------------------------------------------------
     # Here z = 10.0, so this is exactly the end section (S1).
     zsec_val = 10.0
