@@ -339,6 +339,7 @@ this is the function you need to set up
     plt.show()
 ``` 
 
+![Figure_13](https://github.com/user-attachments/assets/6281395c-d2fa-461b-86fc-854a64168317)
 
 
 ---
