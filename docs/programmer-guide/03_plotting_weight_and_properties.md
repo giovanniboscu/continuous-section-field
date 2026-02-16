@@ -36,8 +36,6 @@ plt.show()
 ---
 
 
-# `plot_properties`
-
 ## `plot_properties(...)`
 
 ```python
