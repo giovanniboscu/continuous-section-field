@@ -59,7 +59,7 @@ if __name__ == "__main__":
             Pt( b/2,  h/2),
             Pt(-b/2,  h/2),
         ),
-        weight=1.0,
+        weight=1.0,#<=
         name="upperpart",
     )
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
             Pt( b/2,  0.0),
             Pt(-b/2,  0.0),
         ),
-        weight=1.0,
+        weight=1.5, # <= 
         name="lowerpart",
     )
 
@@ -115,11 +115,6 @@ if __name__ == "__main__":
     # Here z = 10.0, so this is exactly the end section (S1).
     zsec_val = 10.0
     sec_at_z = section_field.section(zsec_val)
-
-
-    section_field.set_weight_laws([
-        "lowerpart,lowerpart : t", 
-    ])
 
     # =================================================================
     # Plot weight
