@@ -276,7 +276,7 @@ section_field.set_weight_laws([
 
 To use a normalized lookup-file example, create a text file named:
 
-`elookup.txt`
+`wnormlookup.tx`
 
 with the following content:
 
