@@ -31,6 +31,7 @@ viz.plot_properties( ["A","I1","I2","Ixy","J_s_vroark","J_s_vroark_fidelity",])
 plt.show()
 
 ```
+![properties](https://github.com/user-attachments/assets/d0193807-26eb-48ef-bba2-482047e95366)
 
 ---
 
