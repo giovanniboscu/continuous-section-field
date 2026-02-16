@@ -326,6 +326,14 @@ with the following content:
 1.000000 0.700000
 ```
 
+this is the function you need to set up 
+
+```
+   section_field.set_weight_laws([
+        f"lowerpart,lowerpart: T_lookup('wnormlookup.txt' )" 
+    ])
+``` 
+
 
 ---
 
