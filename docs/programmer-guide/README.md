@@ -42,10 +42,10 @@ cd csf_project
 
 
 ## Chapters
-1. [01_geometry_model](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/01_geometry_model.md)
-2. [02_plotting_sections_and_volume](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/02_plotting_sections_and_volume.md)
-3. [03_plotting_properties.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/03_plotting_properties.md)
-4. `04_sectional_properties_api.md`
+1. [01_geometry model](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/01_geometry_model.md)
+2. [02_plotting sections_and_volume](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/02_plotting_sections_and_volume.md)
+3. [03_plotting properties](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/03_plotting_properties.md)
+4. [04_plotting weight]()
 5. `05_torsion_wall_and_cell.md`
 6. `06_actions_pipeline.md`
 7. `07_errors_and_diagnostics.md`
