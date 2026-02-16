@@ -1,11 +1,11 @@
-# 02 — Plotting propertis
+# 02 — Plotting Properties
 
 ## Purpose
 
-After checking numeric outputs, use plots propertis along  `z` 
+After checking numeric outputs, use plots of properties along `z`.
 
 This chapter covers:
--  plots propertis
+- property plots
 
 ---
 
@@ -26,23 +26,16 @@ import matplotlib.pyplot as plt
 ```python
 viz = Visualizer(section_field)
 
-viz.plot_properties( ["A","I1","I2","Ixy","J_s_vroark","J_s_vroark_fidelity",])
+viz.plot_properties(["A", "I1", "I2", "Ixy", "J_s_vroark", "J_s_vroark_fidelity"])
 
 plt.show()
-
 ```
+
 ![properties](https://github.com/user-attachments/assets/d0193807-26eb-48ef-bba2-482047e95366)
 
 ---
 
-
 ## `plot_properties(...)`
-
-```python
-plot_properties(self, keys_to_plot=None, alpha=1, num_points=100)
-```
-
-## `plot_properties` — Input Parameters
 
 ```python
 plot_properties(self, keys_to_plot=None, alpha=1, num_points=100)
@@ -57,7 +50,7 @@ Plot the evolution of selected section properties along `z`, highlighting min/ma
   If `None`, it is treated as an empty list (no properties plotted).
 
 - `alpha` (`float`, default: `1`)  
-  Forwarded to `section_full_analysis(...)` for J_sv factor
+  Forwarded to `section_full_analysis(...)` for the `J_sv` factor.
 
 - `num_points` (`int`, default: `100`)  
   Number of sampling points between `self.field.s0.z` and `self.field.s1.z`.
