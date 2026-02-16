@@ -57,7 +57,7 @@ Plot the evolution of selected section properties along `z`, highlighting min/ma
   If `None`, it is treated as an empty list (no properties plotted).
 
 - `alpha` (`float`, default: `1`)  
-  Forwarded to `section_full_analysis(...)` for API consistency.
+  Forwarded to `section_full_analysis(...)` for J_sv factor
 
 - `num_points` (`int`, default: `100`)  
   Number of sampling points between `self.field.s0.z` and `self.field.s1.z`.
