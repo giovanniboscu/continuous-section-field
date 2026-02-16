@@ -24,17 +24,7 @@ from csf import (
 )
 ```
 
-# `plot_volume_3d` — Input Parameters
-
-```python
-plot_volume_3d(
-    show_end_sections: bool = True,
-    line_percent: float = 100.0,
-    seed: int = 0,
-    title: str = "Ruled volume (vertex-connection lines)",
-    ax=None
-)
-```
+snipped code 
 
 ```
     # =================================================================
@@ -47,6 +37,20 @@ plot_volume_3d(
     viz.plot_section_2d(z=zsec_val,show_ids=False)  
     plt.show()
 ```
+
+# `plot_volume_3d` — Input Parameters
+
+```python
+plot_volume_3d(
+    show_end_sections: bool = True,
+    line_percent: float = 100.0,
+    seed: int = 0,
+    title: str = "Ruled volume (vertex-connection lines)",
+    ax=None
+)
+```
+
+
 
 Draws a 3D ruled skeleton of a `ContinuousSectionField` using:
 - optional end-section outlines (`z0` and `z1`),
