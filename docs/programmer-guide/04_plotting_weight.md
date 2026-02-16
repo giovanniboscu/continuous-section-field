@@ -187,6 +187,31 @@ The following helper functions are available in weight-law expressions.
 | **`T_lookup(file)`** | Interpolated scalar read from an external text file using normalized `t` in `[0, 1]` | `T_lookup('stiffness.txt')` |
 
 
+### For example, the following law can be defined along `z`:
+
+```python
+section_field.set_weight_laws([
+    "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
+])
+```
+
+This represents a half-cosine smooth degradation law (also called a cosine ramp degradation), with gradual variation from w0 to w1 along the member length.
+
+![Figure_11](https://github.com/user-attachments/assets/8e142df7-f5db-4128-a2ad-9dfcbec0ea54)
+
+
+
+This is a **3-step piecewise law** on normalized `t` (`0..1`):
+```python
+   section_field.set_weight_laws([
+        "lowerpart,lowerpart :np.where(t < 1/3, w0, np.where(t < 2/3, 0.5*(w0 + w1), w1))", 
+    ])  
+```
+
+![Figure_12](https://github.com/user-attachments/assets/81645c39-f894-4228-8b1f-0dabac953319)
+
+---
+
 # External Lookup Files for `E_lookup(...)` and `T_lookup(...)`
 
 Lookup functions read values from a plain text **key-value** table.
@@ -258,31 +283,7 @@ Usage in a law expression:
 ```python
 "T_lookup('stiffness_t.txt')"
 ```
-For example, the following law can be defined along `z`:
 
-```python
-section_field.set_weight_laws([
-    "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
-])
-```
-
-This represents a half-cosine smooth degradation law (also called a cosine ramp degradation), with gradual variation from w0 to w1 along the member length.
-
-![Figure_11](https://github.com/user-attachments/assets/8e142df7-f5db-4128-a2ad-9dfcbec0ea54)
-
-
-
-```python
-   section_field.set_weight_laws([
-        "lowerpart,lowerpart :np.where(t < 1/3, w0, np.where(t < 2/3, 0.5*(w0 + w1), w1))", 
-    ])  
-```
-This is a **3-step piecewise law** on normalized `t` (`0..1`):
-
-
-![Figure_12](https://github.com/user-attachments/assets/81645c39-f894-4228-8b1f-0dabac953319)
-
----
 # Example with lookup file 
 
 To use a normalized lookup-file example, create a text file named:
