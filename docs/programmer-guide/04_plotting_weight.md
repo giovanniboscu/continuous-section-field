@@ -318,9 +318,25 @@ with the following content:
 this is the function you need to set up 
 
 ```
-   section_field.set_weight_laws([
-        f"lowerpart,lowerpart: T_lookup('wnormlookup.txt' )" 
-    ])
+    # -------------------------------------------------------
+    # Extract one section and print full analysis
+    # -------------------------------------------------------
+    # Here z = 10.0, so this is exactly the end section (S1).
+    zsec_val = 10.0
+    sec_at_z = section_field.section(zsec_val)
+
+ 
+
+    section_field.set_weight_laws([
+            f"lowerpart,lowerpart: T_lookup('wnormlookup.txt' )" 
+        ])
+    
+    # =================================================================
+    # Plot weight
+    # =================================================================
+    viz = Visualizer(section_field)
+    viz.plot_weight(num_points=100)
+    plt.show()
 ``` 
 
 
