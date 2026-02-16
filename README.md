@@ -34,16 +34,6 @@ CSF is a preprocessing tool for defining varying cross-section geometry and eval
 
 [README – Mixed Torsion Didactic Case](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/openandthin/README_mixed_torsion_didactic_case.md)
 
-
-### **Motivation and Arbitrary Cross-Section Representation**
-
-The common practice of modeling non-prismatic members as a concatenation of equivalent prismatic elements (piecewise-prismatic approach) introduces a non-neutral methodological choice. The numerical solution varies with the number of subdivisions and the location of sampling points. Unlike traditional structural tools limited to predefined geometric templates, CSF treats the cross-section as a fully generic topological entity, providing accurate, continuous calculation of cross-section properties for complex non-prismatic members (tapered beams, wind turbine towers, piles, variable columns, FGM materials).
-
-> **Geometric Scope and Limitations**</br>
->This library is not a Finite Element Method (FEM) solver. It provides a geometric and constitutive formulation for a single non-prismatic member, returning sectional properties and stiffness matrices to be used in beam-based structural analysis or external solvers.</br>
-CSF models members defined by polygonal end sections connected by straight generator lines (ruled surfaces), with consistent polyline topology between the two ends. Curved outlines are handled via polygonal approximation: increasing the number of polygon sides allows accurate representation of practically curvilinear sections.
- See: **[core assumptions](docs/core_assumption.md)**
-
 ---
 ## Key Features
 
@@ -108,8 +98,20 @@ python3 .\example\tsection_opensees.py
 cd actions-examples\stell_degradated_model
 
 python3 ..\..\csf\CSFActions.py stell_degradated_model_s.yaml stell_degradated_model_action.yaml
-
 ```
+
+
+### **Motivation and Arbitrary Cross-Section Representation**
+
+The common practice of modeling non-prismatic members as a concatenation of equivalent prismatic elements (piecewise-prismatic approach) introduces a non-neutral methodological choice. The numerical solution varies with the number of subdivisions and the location of sampling points. Unlike traditional structural tools limited to predefined geometric templates, CSF treats the cross-section as a fully generic topological entity, providing accurate, continuous calculation of cross-section properties for complex non-prismatic members (tapered beams, wind turbine towers, piles, variable columns, FGM materials).
+
+> **Geometric Scope and Limitations**</br>
+>This library is not a Finite Element Method (FEM) solver. It provides a geometric and constitutive formulation for a single non-prismatic member, returning sectional properties and stiffness matrices to be used in beam-based structural analysis or external solvers.</br>
+CSF models members defined by polygonal end sections connected by straight generator lines (ruled surfaces), with consistent polyline topology between the two ends. Curved outlines are handled via polygonal approximation: increasing the number of polygon sides allows accurate representation of practically curvilinear sections.
+ See: **[core assumptions](docs/core_assumption.md)**
+
+---
+
 ## **CSF** treats the single member as a **continuous manifold** using **ruled surfaces**.
 
 ## Reference System
