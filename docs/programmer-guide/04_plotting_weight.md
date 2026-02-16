@@ -249,7 +249,7 @@ Usage in a law expression:
 section_field.set_weight_laws([
     "startsection,endsection : E_lookup('stiffness_z.txt')",
 ])
-
+```
 ---
 
 ## Example for `T_lookup(...)` (key = `t` in `[0, 1]`)
