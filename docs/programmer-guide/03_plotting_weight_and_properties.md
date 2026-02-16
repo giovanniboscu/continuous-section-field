@@ -42,7 +42,7 @@ plt.show()
 plot_properties(self, keys_to_plot=None, alpha=1, num_points=100)
 ```
 
-# `plot_properties` — Input Parameters
+## `plot_properties` — Input Parameters
 
 ```python
 plot_properties(self, keys_to_plot=None, alpha=1, num_points=100)
