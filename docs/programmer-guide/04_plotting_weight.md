@@ -23,14 +23,110 @@ import matplotlib.pyplot as plt
 
 ---
 
-## Minimal Example
+## Example
 
 ```python
-viz = Visualizer(section_field)
+# --- Core CSF imports used in this minimal example ---
+from csf import (
+    Pt, Polygon, Section, ContinuousSectionField,Visualizer,
+    section_full_analysis, section_print_analysis,section_full_analysis_keys
+)
 
-viz.plot_weight(num_points=100)
+import matplotlib.pyplot as plt
 
-plt.show()
+# -------------------------------------------------------
+# 1) Geometry definition with API objects
+# -------------------------------------------------------
+# We build a simple section from two rectangles:
+# - upperpart
+# - lowerpart
+# Then we define start section (S0) and end section (S1).
+
+if __name__ == "__main__":
+    # Optional file name placeholder (not used in this snippet)
+    geometryfile = "geometry.tcl"
+
+    # Geometric parameters
+    h = 1.20
+    hb = 0.40
+    b = 0.30
+
+    # --- S0 polygons (z = 0.0) ---
+    poly_top_start = Polygon(
+        vertices=(
+            Pt(-b/2,  0.0),
+            Pt( b/2,  0.0),
+            Pt( b/2,  h/2),
+            Pt(-b/2,  h/2),
+        ),
+        weight=1.0,
+        name="upperpart",
+    )
+
+    poly_bottom_start = Polygon(
+        vertices=(
+            Pt(-b/2, -h/2),
+            Pt( b/2, -h/2),
+            Pt( b/2,  0.0),
+            Pt(-b/2,  0.0),
+        ),
+        weight=1.0,
+        name="lowerpart",
+    )
+
+    # --- S1 polygons (z = L) ---
+    # upperpart unchanged, lowerpart modified (different depth)
+    poly_top_end = Polygon(
+        vertices=(
+            Pt(-b/2,  0.0),
+            Pt( b/2,  0.0),
+            Pt( b/2,  h/2),
+            Pt(-b/2,  h/2),
+        ),
+        weight=1.0,
+        name="upperpart",
+    )
+
+    poly_bottom_end = Polygon(
+        vertices=(
+            Pt(-b/2, -hb/4),
+            Pt( b/2, -hb/4),
+            Pt( b/2,  0.0),
+            Pt(-b/2,  0.0),
+        ),
+        weight=1.0,
+        name="lowerpart",
+    )
+
+    # -------------------------------------------------------
+    # Section field instantiation
+    # -------------------------------------------------------
+    # Define start/end sections and create the continuous field.
+    L = 10.0
+
+    s0 = Section(polygons=(poly_bottom_start, poly_top_start), z=0.0)
+    s1 = Section(polygons=(poly_bottom_end,   poly_top_end),   z=L)
+
+    section_field = ContinuousSectionField(section0=s0, section1=s1)
+
+    # -------------------------------------------------------
+    # Extract one section and print full analysis
+    # -------------------------------------------------------
+    # Here z = 10.0, so this is exactly the end section (S1).
+    zsec_val = 10.0
+    sec_at_z = section_field.section(zsec_val)
+
+
+    section_field.set_weight_laws([
+        "lowerpart,lowerpart : t", 
+    ])
+
+    # =================================================================
+    # Plot weight
+    # =================================================================
+    viz = Visualizer(section_field)
+    viz.plot_weight(num_points=100)
+    plt.show()
 ```
 
 ---
