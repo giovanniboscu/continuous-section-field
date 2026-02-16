@@ -136,8 +136,6 @@ if __name__ == "__main__":
 
 ---
 
----
-
 ## `plot_weight(...)`
 
 ```python
@@ -150,10 +148,43 @@ Plot interpolated polygon weights `w(z)` along the member axis, using one subplo
 
 The weight can also be defined in functional form using this syntax:
 
+
 ```python
 section_field.set_weight_laws([
     "startsection,endsection : f(z) or f(t)",
 ])
+```
+The independent variable can be either `z` (physical coordinate) or `t` (normalized coordinate in `[0, 1]`).
+
+The following variables are available in weight-law expressions:
+
+| Variable | Meaning | Example Law Expression |
+| :--- | :--- | :--- |
+| **`z`** | Physical coordinate along the member (from start to end) | `w0 * (1 + 0.2 * z / L)` |
+| **`t`** | Normalized coordinate in `[0, 1]` | `w0 + (w1 - w0) * t` |
+| **`w0`** | Weight at the start section (`z = z0`) | `w0 * 1.5` |
+| **`w1`** | Weight at the end section (`z = z1`) | `w1 / 2` |
+| **`L`** | Total physical length of the member | `w0 + (z / L) * 0.1` |
+| **`np`** | NumPy namespace | `np.sin(...)`, `np.exp(...)`, `np.sqrt(...)` |
+
+
+The following helper functions are available in weight-law expressions:
+
+### Geometric and Data Functions
+
+The following helper functions are available in weight-law expressions.
+
+**Important:** polygon vertex indexing is **1-based** (the first vertex is `1`, not `0`).
+
+### Geometric and Data Functions
+
+| Function | Meaning | Example Law Expression |
+| :--- | :--- | :--- |
+| **`d(i, j)`** | Distance between vertex `i` and `j` at the **current** `z` | `w0 * d(1, 2)` |
+| **`d0(i, j)`** | Distance between vertex `i` and `j` at the **start** section (`z = z0`) | `w0 * (d(1,2) / d0(1,2))` |
+| **`d1(i, j)`** | Distance between vertex `i` and `j` at the **end** section (`z = z1`) | `w1 * (d(1,2) / d1(1,2))` |
+| **`E_lookup(file)`** | Interpolated scalar read from an external text file | `E_lookup('stiffness.txt')` |
+| **`T_lookup(file)`** | Interpolated scalar read from an external text file using normalized `t` in `[0, 1]` | `T_lookup('stiffness.txt')` |
 
 
 ## Parameters
