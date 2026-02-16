@@ -246,24 +246,9 @@ Usage in a law expression:
 
 ```python
 
-    # -------------------------------------------------------
-    # Extract one section and print full analysis
-    # -------------------------------------------------------
-    # Here z = 10.0, so this is exactly the end section (S1).
-    zsec_val = 10.0
-    sec_at_z = section_field.section(zsec_val)
-
-    section_field.set_weight_laws([
-        "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))", 
-    ])
-    
-    # =================================================================
-    # Plot weight
-    # =================================================================
-    viz = Visualizer(section_field)
-    viz.plot_weight(num_points=100)
-    plt.show()
-```
+section_field.set_weight_laws([
+    "startsection,endsection : E_lookup('stiffness_z.txt')",
+])
 
 ---
 
