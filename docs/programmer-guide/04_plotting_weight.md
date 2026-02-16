@@ -279,7 +279,55 @@ This represents a half-cosine smooth degradation law (also called a cosine ramp 
 ```
 This is a **3-step piecewise law** on normalized `t` (`0..1`):
 
-![Figure_11](https://github.com/user-attachments/assets/90446236-d033-441e-96d5-98d03e688d38)
+
+![Figure_12](https://github.com/user-attachments/assets/81645c39-f894-4228-8b1f-0dabac953319)
+
+---
+# Example with lookup file 
+
+To use a normalized lookup-file example, create a text file named:
+
+`elookup.txt`
+
+with the following content:
+
+```txt
+# t    value
+0.000000 1.000000
+0.033333 1.000000
+0.066667 1.000000
+0.100000 1.000000
+0.133333 1.000000
+0.166667 1.000000
+0.200000 1.000000
+0.233333 1.000000
+0.266667 1.000000
+0.300000 1.000000
+0.333333 0.850000
+0.366667 0.850000
+0.400000 0.850000
+0.433333 0.850000
+0.466667 0.850000
+0.500000 0.850000
+0.533333 0.850000
+0.566667 0.850000
+0.600000 0.850000
+0.633333 0.850000
+0.666667 0.700000
+0.700000 0.700000
+0.733333 0.700000
+0.766667 0.700000
+0.800000 0.700000
+0.833333 0.700000
+0.866667 0.700000
+0.900000 0.700000
+0.933333 0.700000
+0.966667 0.700000
+1.000000 0.700000
+```
+
+
+---
 
 ## Parameters
 
