@@ -270,7 +270,6 @@ Usage in a law expression:
 section_field.set_weight_laws([
     "startsection,endsection : T_lookup('stiffness_t.txt')",
 ])
-
 ```
 
 # Example with lookup file 
