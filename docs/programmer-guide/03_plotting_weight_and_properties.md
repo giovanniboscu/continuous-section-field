@@ -1,12 +1,12 @@
-# 02 — Plotting propertis and polygon weigth
+# 02 — Plotting propertis
 
 ## Purpose
 
-After checking numeric outputs, use plots propertis and weigth along  `z` 
+After checking numeric outputs, use plots propertis along  `z` 
 
 This chapter covers:
 -  plots propertis
--  weigth
+
 ---
 
 ## Imports
@@ -35,7 +35,7 @@ plt.show()
 ---
 
 
-# `plot_properties` and `plot_weight` — Input Parameters
+# `plot_properties`
 
 ## `plot_properties(...)`
 
@@ -43,64 +43,47 @@ plt.show()
 plot_properties(self, keys_to_plot=None, alpha=1, num_points=100)
 ```
 
-Plot selected section properties along `z` and report min/max values with their corresponding `z` locations.
-
-### Parameters
-
-- `keys_to_plot` (`list[str] | None`, default: `None`)  
-  Property keys to evaluate/plot (for example: `["A", "Ix", "Iy"]`).  
-  If `None`, it is treated as an empty list (no series plotted).
-
-- `alpha` (`float`, default: `1`)  
-  Passed to `section_full_analysis(...)` for API consistency.
-
-- `num_points` (`int`, default: `100`)  
-  Number of sampling points between `self.field.s0.z` and `self.field.s1.z`.
-
-### Behavior Notes
-
-- Sections are evaluated at `np.linspace(z_start, z_end, num_points)`.
-- Missing keys are stored as `NaN` to keep alignment with `z_values`.
-- For each key, the function computes:
-  - `min(value)` with `z_min`
-  - `max(value)` with `z_max`
-- Min/max points are marked on each curve.
-- Subplot title format:  
-  `min=<...>@z=<...>  max=<...>@z=<...>`
-- Prints one summary line per key to stdout.
-
-### Return
-
-- No explicit return value (plot is shown with `plt.show()`).
-
----
-
-## `plot_weight(...)`
+# `plot_properties` — Input Parameters
 
 ```python
-plot_weight(self, num_points=100)
+plot_properties(self, keys_to_plot=None, alpha=1, num_points=100)
 ```
 
-Plot interpolated polygon weights `w(z)` along the member axis, one subplot per polygon.
+Plot the evolution of selected section properties along `z`, highlighting min/max values and their corresponding `z` positions.
 
-### Parameters
+## Parameters
+
+- `keys_to_plot` (`list[str] | None`, default: `None`)  
+  Property keys to evaluate and plot (for example: `["A", "Ix", "Iy"]`).  
+  If `None`, it is treated as an empty list (no properties plotted).
+
+- `alpha` (`float`, default: `1`)  
+  Forwarded to `section_full_analysis(...)` for API consistency.
 
 - `num_points` (`int`, default: `100`)  
   Number of sampling points between `self.field.s0.z` and `self.field.s1.z`.
 
-### Behavior Notes
+## Behavior
 
-- For each sampled `z` and each polygon index `i`, the function computes:
-  - `p0 = self.field.s0.polygons[i]`
-  - `p1 = self.field.s1.polygons[i]`
-  - optional law from `self.field.weight_laws[i+1]` (if available)
-  - interpolated weight via `self.field._interpolate_weight(...)`
-- Produces one subplot per polygon with:
-  - y-label: `s0 <name0> - s1 <name1>`
-  - auto y-limits with margin
-  - grid and per-polygon title
-- Adds global figure title with interpolation point count.
+- Sampling coordinates are generated with `np.linspace(z_start, z_end, num_points)`.
+- For each sampled `z`, the function evaluates:
+  - interpolated section: `self.field.section(z)`
+  - section properties: `section_full_analysis(current_section, alpha=alpha)`
+- For each requested key:
+  - values below `EPS_L` are set to `0.0`
+  - missing keys are stored as `NaN` (to preserve array alignment)
+- One subplot is created per key.
+- Min and max are computed on finite values only and shown:
+  - as markers on the curve
+  - in subplot title: `min=<...>@z=<...>  max=<...>@z=<...>`
+  - in stdout: `min=... at z=... | max=... at z=...`
 
-### Return
+## Output
 
-- No explicit return value (plot is shown with `plt.show()`).
+- Produces matplotlib plots (`plt.show()`).
+- No explicit return value.
+
+## Notes
+
+- If `keys_to_plot` is empty, the function shows an empty figure and returns.
+- The x-axis label includes the selected `alpha` value.
