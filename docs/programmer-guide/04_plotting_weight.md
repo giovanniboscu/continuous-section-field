@@ -341,6 +341,47 @@ this is the function you need to set up
 
 ![Figure_13](https://github.com/user-attachments/assets/6281395c-d2fa-461b-86fc-854a64168317)
 
+## To use a no normalized lookup-file example, create a text file named:
+
+zlookup_exponential.txt
+
+``` 
+# z    value
+0.000000 1.000000
+1.000000 0.525197
+2.000000 0.332157
+3.000000 0.253672
+4.000000 0.221763
+5.000000 0.208790
+6.000000 0.203515
+7.000000 0.201370
+8.000000 0.200499
+9.000000 0.200144
+10.000000 0.200000
+```
+this is the function you need to set up 
+
+```python
+    # -------------------------------------------------------
+    # Extract one section and print full analysis
+    # -------------------------------------------------------
+    # Here z = 10.0, so this is exactly the end section (S1).
+    zsec_val = 10.0
+    sec_at_z = section_field.section(zsec_val)
+
+ 
+
+    section_field.set_weight_laws([
+            f"lowerpart,lowerpart: E_lookup('zlookup_exponential.txt' )" 
+        ])
+    
+    # =================================================================
+    # Plot weight
+    # =================================================================
+    viz = Visualizer(section_field)
+    viz.plot_weight(num_points=100)
+    plt.show()
+```
 
 ---
 
