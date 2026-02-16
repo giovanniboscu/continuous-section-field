@@ -136,6 +136,8 @@ if __name__ == "__main__":
 
 ---
 
+---
+
 ## `plot_weight(...)`
 
 ```python
@@ -143,6 +145,16 @@ plot_weight(self, num_points=100)
 ```
 
 Plot interpolated polygon weights `w(z)` along the member axis, using one subplot per polygon.
+
+## custom weight law
+
+The weight can also be defined in functional form using this syntax:
+
+```python
+section_field.set_weight_laws([
+    "startsection,endsection : f(z) or f(t)",
+])
+
 
 ## Parameters
 
