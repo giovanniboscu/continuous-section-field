@@ -382,6 +382,7 @@ this is the function you need to set up
     viz.plot_weight(num_points=100)
     plt.show()
 ```
+![Figure_15](https://github.com/user-attachments/assets/3580a98c-e368-412f-bda3-b83cb8d8e940)
 
 ---
 
