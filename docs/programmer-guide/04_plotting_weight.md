@@ -1,4 +1,4 @@
-# 04 — Plotting Weight
+# 04 - Plotting Weight
 
 ## Purpose
 
