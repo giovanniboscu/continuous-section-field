@@ -152,6 +152,12 @@ The weight can also be defined in functional form using this syntax:
 
 On the left, there are the names of the corresponding polygons in section s0 and section s1.
 
+"lowerpart,lowerpart"
+
+The polygon names are not required to be the same.
+
+
+
 ```python
 section_field.set_weight_laws([
     "lowerpart,lowerpart: f(z) or f(t)",
