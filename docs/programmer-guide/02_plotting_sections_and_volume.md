@@ -2,7 +2,7 @@
 
 ## Purpose
 
-After checking numeric outputs, use plots to validate geometry and interpolation along `z` before structural analysis.
+After checking numeric outputs, use plots to validate geometry and interpolation along `z`.
 
 This chapter covers:
 - 2D section view at a given station,
