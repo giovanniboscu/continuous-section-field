@@ -150,6 +150,7 @@ Plot interpolated polygon weights `w(z)` along the member axis, using one subplo
 
 The weight can also be defined in functional form using this syntax:
 
+On the left, there are the names of the corresponding polygons in section s0 and section s1.
 
 ```python
 section_field.set_weight_laws([
