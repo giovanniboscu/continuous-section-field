@@ -225,6 +225,16 @@ This is a **3-step piecewise law** on normalized `t` (`0..1`):
 
 Lookup functions read values from a plain text **key-value** table.
 
+`T_lookup(...)` and `E_lookup(...)` return numeric values, so they can be used directly inside mathematical expressions.
+
+example
+
+```python
+section_field.set_weight_laws([
+    "lowerpart,lowerpart: T_lookup('w_profile.txt') * z / L",
+])
+```
+
 - `E_lookup(file)` uses **`z`** as the lookup key (physical coordinate).
 - `T_lookup(file)` uses **`t`** as the lookup key (normalized coordinate in `[0, 1]`).
 
