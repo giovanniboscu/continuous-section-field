@@ -319,8 +319,8 @@ this is the function you need to set up
     viz.plot_weight(num_points=100)
     plt.show()
 ``` 
+![Figure_16](https://github.com/user-attachments/assets/6048faa0-d1e7-4ff3-ab5a-76fb449c74f3)
 
-![Figure_13](https://github.com/user-attachments/assets/6281395c-d2fa-461b-86fc-854a64168317)
 
 ## To use a no normalized lookup-file example, create a text file named:
 
