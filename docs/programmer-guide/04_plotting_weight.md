@@ -294,8 +294,7 @@ with the following content:
 0.700000 0.748000
 0.800000 0.808000
 0.900000 0.892000
-1.000000 1.000000
-1.000000 1.000000
+1.000000 1.00000
 ```
 
 this is the function you need to set up 
