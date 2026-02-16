@@ -151,7 +151,7 @@ The weight can also be defined in functional form using this syntax:
 
 ```python
 section_field.set_weight_laws([
-    "startsection,endsection : f(z) or f(t)",
+    "lowerpart,lowerpart: f(z) or f(t)",
 ])
 ```
 The independent variable can be either `z` (physical coordinate) or `t` (normalized coordinate in `[0, 1]`).
@@ -247,7 +247,7 @@ Usage in a law expression:
 ```python
 
 section_field.set_weight_laws([
-    "startsection,endsection : E_lookup('stiffness_z.txt')",
+    "lowerpart,lowerpart : E_lookup('stiffness_z.txt')",
 ])
 ```
 ---
@@ -268,7 +268,7 @@ Usage in a law expression:
 ```python
 
 section_field.set_weight_laws([
-    "startsection,endsection : T_lookup('stiffness_t.txt')",
+    "lowerpart,lowerpart : T_lookup('stiffness_t.txt')",
 ])
 ```
 
