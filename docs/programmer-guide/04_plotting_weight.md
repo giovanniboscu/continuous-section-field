@@ -187,6 +187,62 @@ The following helper functions are available in weight-law expressions.
 | **`T_lookup(file)`** | Interpolated scalar read from an external text file using normalized `t` in `[0, 1]` | `T_lookup('stiffness.txt')` |
 
 
+# External Lookup Files for `E_lookup(...)` and `T_lookup(...)`
+
+Lookup functions read values from a plain text **key-value** table.
+
+- `E_lookup(file)` uses **`z`** as the lookup key (physical coordinate).
+- `T_lookup(file)` uses **`t`** as the lookup key (normalized coordinate in `[0, 1]`).
+
+## File Format
+
+Use a text file with two columns per row:
+
+`key value`
+
+- Column 1: key (`z` for `E_lookup`, `t` for `T_lookup`)
+- Column 2: scalar value
+- Rows should be ordered by increasing key.
+
+---
+
+## Example for `E_lookup(...)` (key = `z`)
+
+```txt
+# stiffness_z.txt
+0.0   2.10e11
+2.0   2.05e11
+5.0   1.95e11
+8.0   1.85e11
+10.0  1.80e11
+```
+
+Usage in a law expression:
+
+```python
+"E_lookup('stiffness_z.txt')"
+```
+
+---
+
+## Example for `T_lookup(...)` (key = `t` in `[0, 1]`)
+
+```txt
+# stiffness_t.txt
+0.00  1.00
+0.25  0.92
+0.50  0.85
+0.75  0.78
+1.00  0.70
+```
+
+Usage in a law expression:
+
+```python
+"T_lookup('stiffness_t.txt')"
+```
+
+
 ## Parameters
 
 - `num_points` (`int`, default: `100`)  
