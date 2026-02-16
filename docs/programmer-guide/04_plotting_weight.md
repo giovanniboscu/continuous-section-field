@@ -25,6 +25,15 @@ import matplotlib.pyplot as plt
 
 ## Example
 
+CSF automatically interpolates along `z` the weight specified for each section.  
+See the example below.
+
+
+
+ "weight=1.0,
+ weight=1.5,"
+ 
+
 ```python
 # --- Core CSF imports used in this minimal example ---
 from csf import (
@@ -123,6 +132,7 @@ if __name__ == "__main__":
     viz.plot_weight(num_points=100)
     plt.show()
 ```
+![Figure_1](https://github.com/user-attachments/assets/2c576be1-1dfb-46b0-abb6-c5fd8886edc7)
 
 ---
 
