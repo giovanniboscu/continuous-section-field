@@ -366,7 +366,8 @@ Ix                  : ...
 **Concept**  
 Plots the 2D section geometry at each station.  
 If you save an image and request multiple stations, CSFActions can create one **stacked composite image**.
-
+mkdir out 
+out dir is required
 **YAML**
 
 ```yaml
@@ -376,8 +377,8 @@ CSF_ACTIONS:
 
   actions:
     - plot_section_2d:
-        stations: [z_list]
-        output: [stdout, out/sections.png]
+        stations: stations_example
+        output: stdout, out/sections.jpg
         params:
           show_ids: true
           show_weights: true
