@@ -1,4 +1,36 @@
 # CSF Benchmark Case: Closed-Cell CHS with Marine Corrosion Degradation
+##  Get the Project and Create a Virtual Environment
+
+```bash
+# Clone the repository
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
+
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install in editable mode
+pip install -e .
+
+```
+
+ Suggested Folder Layout
+
+```text
+case_chs_cell_marine/
+├─ geometry.yaml
+├─ action.yaml
+├─ w_splash_lookup.txt
+├─ out/
+└─ README.md
+```
+From inside case_chs_cell_marine/:
+to perfor the project run
+```
+python3 ../csf/CSFActions.py geometry.yaml action.yaml
+```
+
 
 ## 1) Objective
 
