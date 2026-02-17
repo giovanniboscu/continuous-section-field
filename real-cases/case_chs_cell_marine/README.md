@@ -200,5 +200,16 @@ This guarantees auditability of each benchmark run.
    The theoretical reference for validation is the **polygonal midline** formula.  
    Therefore `J_sv_cell` must match the octagonal-midline theory (not the continuous perfect-circle formula).
 
-7. **Validation outcome (this case)**  
+8. **Validation outcome (this case)**  
    With `w(z)=1.0`, properties are invariant along `z`, `J_sv_wall=0`, and `J_sv_cell` matches polygonal-theory baseline.
+
+![chs-weight](https://github.com/user-attachments/assets/13b6b8da-e40c-4e56-bf0d-58efc3a43522)
+
+![Figure_1](https://github.com/user-attachments/assets/f6bed297-4e1f-4793-a3a5-6921ff1d7711)
+
+![chs_props](https://github.com/user-attachments/assets/324f6a16-7a05-429f-b6c2-2f33a15667ad)
+
+![chs-sections](https://github.com/user-attachments/assets/1f5c83de-7673-4739-bc48-2d8d86f73cfb)
+
+
+
