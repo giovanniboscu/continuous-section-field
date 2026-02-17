@@ -43,7 +43,7 @@ my_case/
 **Important**: CSFActions checks that output paths are writable, but it does **not** create missing folders for you.  
 Create `out/` (and any subfolders) before running.
 
-### 1. Minimal `actions.yaml`
+### 1. Minimal `action.yaml`
 
 This example runs one analysis at three stations and prints to screen + writes a CSV.
 
