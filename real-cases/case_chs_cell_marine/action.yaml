@@ -1,0 +1,55 @@
+CSF_ACTIONS:
+  stations:
+    station_middle:
+      - 15
+    station_edge:
+      - 0
+      - 30
+    station_3:
+      - 0
+      - 15
+      - 30
+    station_sparse:
+      - 0
+      - 5
+      - 10
+      - 15
+      - 20
+      - 25
+      - 30
+
+  actions:
+    - plot_volume_3d:
+        params:
+          line_percent: 70.0
+          title: "CHS corrosion-degradation model"
+          
+    - section_selected_analysis:
+        stations: station_3
+        output:
+          - stdout
+        properties: [A, Ix, Iy, J_sv, J_sv_cell]
+
+    - plot_properties:
+        output:
+          - stdout
+          - out/chs_props.jpg
+        params:
+          num_points: 200
+        properties: [A, Ix, Iy, J_sv, J_sv_cell]
+
+    - plot_section_2d:
+        stations:
+          - station_middle
+        show_ids: false
+        show_vertex_ids: false
+        output:
+          - [stdout, out/chs-sections.jpg]
+
+    - plot_weight:
+        output:
+          - stdout
+          - out/chs-weight.jpg
+        params:
+          num_points: 50
+
