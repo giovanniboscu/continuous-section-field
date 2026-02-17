@@ -124,10 +124,10 @@ It is intentionally minimal and reproducible, while keeping direct traceability 
 
 ---
 
-## 8) Suggested Folder Layout
+## 8) Folder Layout
 
 ```text
- /
+case_chs_cell_marine/
 ├─ geometry.yaml
 ├─ action.yaml
 ├─ w_splash_lookup.txt
