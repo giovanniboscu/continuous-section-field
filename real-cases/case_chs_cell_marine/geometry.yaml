@@ -38,7 +38,7 @@ CSF:
     S1:
       z: 30.0
       polygons:
-        ring@cell@t=0.035:
+        ring@cell@t=0.025: #<= 
           E: 2.10e11
           nu: 0.30
           rho: 7850
