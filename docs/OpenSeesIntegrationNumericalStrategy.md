@@ -206,11 +206,46 @@ This avoids the problematic case where a single element is used while the centro
 
 ## 6) Torsion input `J`
 
-In OpenSees `section Elastic`, the torsional stiffness contribution is `G*J`.
+In OpenSees `section Elastic`, torsional stiffness is represented by `G * J` (a single scalar per section).
 
-CSF exports a station-wise torsion scalar `J` in the section lines. The value may come from different CSF torsion paths (e.g. wall/cell/legacy), but **OpenSees only sees one scalar** per station.
+CSF exports **one torsion constant per station** into the `J` slot of each line:
 
-The model uses that station-wise `J` to represent torsional stiffness consistently with the chosen CSF torsion model.
+```tcl
+section Elastic <tag> <E> <A> <Iz> <Iy> <G> <J> <Cx> <Cy>  # torsion=<selected_key>
+```
+
+### What `J` means in the CSF export
+
+CSF may compute multiple torsion candidates at each station (different modeling paths), for example:
+- `J_sv_cell` : closed thin-walled cell (Bredt–Batho / midline)
+- `J_sv_wall` : open thin-walled wall
+- `J_sv`      : general Saint-Venant torsion estimate (fallback)
+
+OpenSees cannot store multiple torsion models in `section Elastic`, so **the exporter must select exactly one value** per station.
+
+### Export selection policy (current)
+
+Per station:
+
+1) If any thin-walled torsion candidate is available, export:
+
+- `J_eff = max(J_sv_cell, J_sv_wall)`
+
+and record the selected key as:
+
+- `# torsion=J_sv_cell` or `# torsion=J_sv_wall`
+
+2) If both thin-walled candidates are missing or non-positive, export:
+
+- `J_eff = J_sv`
+
+and record:
+
+- `# torsion=J_sv`
+
+3) If no torsion candidate is available, the export fails fast (`ERROR`).
+
+This keeps the file self-describing: the `J` value is always accompanied by the exact CSF key used to produce it.
 
 ---
 
