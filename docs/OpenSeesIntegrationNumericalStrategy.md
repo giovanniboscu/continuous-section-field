@@ -4,18 +4,6 @@ This document explains how **CSF (Continuous Section Field)** exports a continuo
 
 The focus is the **numerical integration strategy**: what is sampled, where it is sampled, and how those samples are mapped into OpenSees **without inventing extra sections**.
 
----
-
-## What CSF is (and what it is not)
-
-CSF is **not** a finite element solver.  
-CSF is a **geometric + constitutive engine** that provides a *continuous* description of a single non-prismatic member:
-
-- ruled-surface interpolation of section geometry between end stations,
-- continuous evaluation of sectional properties \(A(z), I(z), C(z)\),
-- optional longitudinal material/weight laws \(w(z)\) (including void logic in the CSF model).
-
-OpenSees performs the structural solution; CSF provides the **station-wise data** that OpenSees needs.
 
 ---
 
@@ -23,12 +11,12 @@ OpenSees performs the structural solution; CSF provides the **station-wise data*
 
 OpenSees integrates section behavior numerically along the element axis, so a continuously varying member must be **sampled**.
 
-CSF exports a set of **stations** along the axis:
+CSF exports a set of **stations** along the axis.
 
-- station coordinates: **Gauss–Lobatto points** (including both endpoints),
-- at each station \(i\):
-  - section properties are evaluated from the continuous field,
-  - centroid offsets \((x_c, y_c)\) are stored.
+In the current OpenSees export (`write_opensees_geometry()`), station coordinates are **Gauss–Lobatto points** (including both endpoints).  
+At each station `i`:
+- section properties are evaluated from the continuous field,
+- centroid offsets `(xc, yc)` are stored.
 
 This is **not** user-chosen “piecewise-prismatic stepping”. It is:
 
@@ -43,13 +31,13 @@ The CSF export `geometry.tcl` is intentionally a **data container**.
 It is **not** a full OpenSees model to be run directly.  
 A builder script reads it line-by-line and constructs nodes, constraints, elements, integration commands, loads, and BCs.
 
-### 2.1 Required blocks in `geometry.tcl`
+### 2.1 Typical blocks in `geometry.tcl`
 
 Typical export contains:
 
 1) Header (human hints only)
 ```tcl
-# Beam Span: 10.000000 (units follow your model)
+# Beam Length: 10.000000 (units follow your model)
 # Stations: 10
 # NOTE: This file is meant to be PARSED AS DATA (do NOT source it as Tcl).
 ```
@@ -77,7 +65,7 @@ node 2 x1 y1 z1
 
 ### 2.2 Meaning of the exported `section Elastic` line
 
-For station \(i\) at position `CSF_Z_STATIONS[i]`, the exported line:
+For station `i` at position `CSF_Z_STATIONS[i]`, the exported line:
 
 ```tcl
 section Elastic i  E  A  Iz  Iy  G  J  xc  yc
@@ -85,9 +73,9 @@ section Elastic i  E  A  Iz  Iy  G  J  xc  yc
 
 means:
 
-- \(A, I_z, I_y, J\) are **evaluated at that station** by CSF (already including CSF weights according to the chosen export contract).
-- \((x_c, y_c)\) are **centroid offsets** in the local section plane (used to build a centroid axis).
-- The interpretation of \(E, G\) depends on the chosen export convention (next section).
+- `A, Iz, Iy, J` are **evaluated at that station** by CSF (already including CSF weights according to the chosen export contract).
+- `(xc, yc)` are **centroid offsets** in the local section plane (used to build a centroid axis).
+- The interpretation of `E, G` depends on the chosen export convention (next section).
 
 **Note:** `xc yc` are **not** OpenSees syntax. They are extra fields intended for the builder.
 
@@ -101,17 +89,17 @@ CSF supports two workflows.
 
 ### 3.1 Mode A — export physical moduli (direct stiffness)
 
-- `geometry.tcl` stores the physical \(E(z)\) and \(G(z)\).
+- `geometry.tcl` stores the physical `E(z)` and `G(z)`.
 - The builder uses `MATERIAL_INPUT_MODE = "from_file"`.
 
-Result: OpenSees uses \(E,G\) exactly as written in the file.
+Result: OpenSees uses `E, G` exactly as written in the file.
 
 ### 3.2 Mode B — export reference modulus and “modular properties”
 
 In this contract:
 
-- `geometry.tcl` stores a convenient constant \(E_\text{ref}\) (and compatible \(G_\text{ref}\)),
-- the effects of weights / multi-material / void logic are embedded into the exported section properties \(\{A, I_z, I_y, J\}\).
+- `geometry.tcl` stores a convenient constant `E_ref` (and compatible `G_ref`),
+- the effects of weights / multi-material / void logic are embedded into the exported section properties `{A, Iz, Iy, J}`.
 
 A typical header states this explicitly, e.g.
 ```tcl
@@ -120,13 +108,13 @@ A typical header states this explicitly, e.g.
 
 If you want “real” displacements, the builder should typically use:
 
-- `MATERIAL_INPUT_MODE = "override"` and provide physical \(E_\text{real}\) (and \(G_\text{real}\)).
+- `MATERIAL_INPUT_MODE = "override"` and provide physical `E_real` (and `G_real`).
 
 ---
 
 ## 4) Variable centroid (“tilt”) handling
 
-CSF can export centroid offsets that vary with \(z\): \((x_c(z), y_c(z))\).
+CSF can export centroid offsets that vary with `z`: `(xc(z), yc(z))`.
 
 OpenSees frame elements define their axis between element nodes. If you only define the two end nodes, you cannot represent a centroid axis that changes along the member.
 
@@ -139,9 +127,9 @@ A clean straight line used for BCs and loads.
 
 2) **Centroid axis nodes**  
 At each station:
-$$
-\mathbf{x}_\text{cen}(z_i) \;=\; \mathbf{x}_\text{ref}(z_i) + x_c(z_i)\,\mathbf{e}_1 + y_c(z_i)\,\mathbf{e}_2
-$$
+```text
+x_cen(z_i) = x_ref(z_i) + xc(z_i)*e1 + yc(z_i)*e2
+```
 
 3) **Rigid kinematic bridge**
 Each station connects:
@@ -163,38 +151,32 @@ constraints Transformation
 
 ## 5) Integration method in OpenSees (core)
 
-CSF exports **Gauss–Lobatto stations**. The OpenSees model must honor them **without inventing intermediate sections**.
+CSF exports stations. The OpenSees model should honor them **without inventing intermediate sections**.
 
 ### 5.1 Two valid mappings (depending on centroid behavior)
 
-There are two consistent strategies, depending on whether \((x_c,y_c)\) are constant.
+There are two consistent strategies, depending on whether `(xc, yc)` are constant.
 
 #### Strategy A — Single element with N-point Gauss–Lobatto (strict)
 
 Allowed only if centroid offsets are constant along the member:
-$$
-x_c(z) = \text{const},\qquad y_c(z) = \text{const}.
-$$
+```text
+xc(z) = const,   yc(z) = const
+```
 
 Then the builder can use:
 
 - **one** `forceBeamColumn` element over the full span,
 - `beamIntegration UserDefined` with:
-  - \(N\) stations,
-  - **Gauss–Lobatto locations** \(s_i\in[0,1]\),
-  - **Gauss–Lobatto weights** \(w_i\).
+  - `N` stations,
+  - **Gauss–Lobatto locations** `s_i` in `[0,1]`,
+  - **Gauss–Lobatto weights** `w_i`.
 
-Station matching requirement (strict): the exported `CSF_Z_STATIONS` must match the Lobatto abscissae mapped to \([0,1]\):
-$$
-s_i \;=\; \frac{z_i - z_0}{z_{N-1} - z_0}
-$$
-
-and the builder enforces:
-
-$$
-\max_i \left| s_i - s_i^{\text{Lobatto}} \right| < \varepsilon
-$$
-
+Station matching requirement (strict): the exported `CSF_Z_STATIONS` must match the Lobatto abscissae mapped to `[0,1]`:
+```text
+s_i = (z_i - z_0) / (z_{N-1} - z_0)
+max_i | s_i - s_i^Lobatto | < eps
+```
 
 If it does not match, this strategy is rejected (no fallback weights).
 
@@ -202,36 +184,33 @@ If it does not match, this strategy is rejected (no fallback weights).
 
 Required when centroid offsets vary (tilt/curvature), because you need nodes at intermediate stations to represent the centroid axis.
 
-- Build **one element per station-to-station segment** (\(N\) stations → \(N-1\) elements).
-- For each segment \(i\to i+1\), assign:
-  - section\(_i\) at \(s=0\),
-  - section\(_{i+1}\) at \(s=1\),
-  - weights \(w=\{0.5, 0.5\}\) (Lobatto-2 / endpoint trapezoid on that segment).
+- Build **one element per station-to-station segment** (`N` stations → `N-1` elements).
+- For each segment `i -> i+1`, assign:
+  - `section_i` at `s=0`,
+  - `section_{i+1}` at `s=1`,
+  - weights `w={0.5, 0.5}` (Lobatto-2 / endpoint trapezoid on that segment).
 
 This uses only exported station sections and preserves the station-wise centroid axis.
 
-### 5.2 What the builder actually does (“AUTO”)
+### 5.2 “Example builder behavior (‘AUTO’)”
 
-The builder runs in `"auto"` mode by default:
 
-- If \((x_c,y_c)\) are **constant** across all stations → **Strategy A** (single element, strict N-point Lobatto).
-- If \((x_c,y_c)\) **vary** across stations → **Strategy B** (segmented, 2-point endpoint per segment).
+A builder may run in `"auto"` mode by default:
+
+- If `(xc, yc)` are **constant** across all stations → **Strategy A** (single element, strict N-point Lobatto).
+- If `(xc, yc)` **vary** across stations → **Strategy B** (segmented, 2-point endpoint per segment).
 
 This avoids the problematic case where a single element is used while the centroid axis is actually varying (which would silently discard geometry).
 
 ---
 
-## 6) Torsion input \(J\)
+## 6) Torsion input `J`
 
-In OpenSees `section Elastic`, the last scalar is the torsional constant used for torsional stiffness:
-$$
-GJ
-$$
-in the element formulation.
+In OpenSees `section Elastic`, the torsional stiffness contribution is `G*J`.
 
-CSF exports a station-wise torsion scalar \(J\) in the section lines. The value may come from different CSF torsion paths (e.g. wall/cell/legacy), but **OpenSees only sees one scalar** per station.
+CSF exports a station-wise torsion scalar `J` in the section lines. The value may come from different CSF torsion paths (e.g. wall/cell/legacy), but **OpenSees only sees one scalar** per station.
 
-The model uses that station-wise \(J\) to avoid torsional singularity and to represent torsional stiffness consistently with the chosen CSF torsion model.
+The model uses that station-wise `J` to represent torsional stiffness consistently with the chosen CSF torsion model.
 
 ---
 
@@ -249,12 +228,12 @@ The model uses that station-wise \(J\) to avoid torsional singularity and to rep
 
 ## 8) Practical checklist
 
-- Ensure `CSF_Z_STATIONS` exists and its length equals the number of `section Elastic` lines.
+- If you want strict station placement, ensure `CSF_Z_STATIONS` exists and its length equals the number of `section Elastic` lines.
 - If you use `rigidLink`, use `constraints Transformation`.
 - For strict member-level Lobatto:
-  - `CSF_Z_STATIONS` must match Lobatto abscissae for \(N\) stations (within tolerance),
+  - `CSF_Z_STATIONS` must match Lobatto abscissae for `N` stations (within tolerance),
   - centroid offsets must be constant.
-- Keep units consistent across geometry, forces, and \(E,G\).
+- Keep units consistent across geometry, forces, and `E, G`.
 
 ---
 
@@ -262,40 +241,7 @@ The model uses that station-wise \(J\) to avoid torsional singularity and to rep
 
 - Element formulation: `forceBeamColumn`
 - Variable centroid mapping: `rigidLink beam` (ref axis → centroid axis)
-- Station placement: `CSF_Z_STATIONS` (Gauss–Lobatto)
+- Station placement: `CSF_Z_STATIONS` (Gauss–Lobatto) when provided
 - Integration:
   - **AUTO**: single-element strict Lobatto if no centroid variation; otherwise segmented endpoint Lobatto-2
 - Constraints handler: `Transformation`
-
- OpenSees Geometry DATA File - Generated by CSF
- Beam Span: 10.000000 (units follow your model)
- Stations: 10
- NOTE: This file is meant to be PARSED AS DATA (do NOT source it as Tcl).
- NOTE: Section lines append 'Cx Cy' as CSF-only fields (not OpenSees syntax).
-
-
-
-```
-# CSF_EXPORT_MODE: E=E_ref ; A/I/J are station-wise CSF results (already weighted)
-# CSF_TORSION_SELECTION: J_tors = (J_sv_wall>0) else (J_sv_cell>0) else (J>0) else ERROR
-
-# CSF_Z_STATIONS: 0 0.402330459168 1.30613067447 2.61037525095 4.17360521167 5.82639478833 7.38962474905 8.69386932553 9.59766954083 10
-
-# Informational nodes (best-fit line through centroid offsets)
-node 1 0 1.35332593178e-17 0
-node 2 0 0.25 10
-
-geomTransf Linear 1 1 0 0
-
-section Elastic 1 1.000000e+00 3.600000e-01 4.320000e-02 2.700000e-03 5.000000e-01 4.590000e-02 0.000000e+00 0.000000e+00  # torsion=LEGACY
-section Elastic 2 1.000000e+00 3.539650e-01 4.106363e-02 2.654738e-03 5.000000e-01 4.371837e-02 0.000000e+00 1.005826e-02  # torsion=LEGACY
-section Elastic 3 1.000000e+00 3.404080e-01 3.652378e-02 2.553060e-03 5.000000e-01 3.907684e-02 0.000000e+00 3.265327e-02  # torsion=LEGACY
-section Elastic 4 1.000000e+00 3.208444e-01 3.058155e-02 2.406333e-03 5.000000e-01 3.298788e-02 0.000000e+00 6.525938e-02  # torsion=LEGACY
-section Elastic 5 1.000000e+00 2.973959e-01 2.435462e-02 2.230469e-03 5.000000e-01 2.658508e-02 0.000000e+00 1.043401e-01  # torsion=LEGACY
-section Elastic 6 1.000000e+00 2.726041e-01 1.875743e-02 2.044531e-03 5.000000e-01 2.080196e-02 0.000000e+00 1.456599e-01  # torsion=LEGACY
-section Elastic 7 1.000000e+00 2.491556e-01 1.432149e-02 1.868667e-03 5.000000e-01 1.619016e-02 0.000000e+00 1.847406e-01  # torsion=LEGACY
-section Elastic 8 1.000000e+00 2.295920e-01 1.120589e-02 1.721940e-03 5.000000e-01 1.292783e-02 0.000000e+00 2.173467e-01  # torsion=LEGACY
-section Elastic 9 1.000000e+00 2.160350e-01 9.335731e-03 1.620262e-03 5.000000e-01 1.095599e-02 0.000000e+00 2.399417e-01  # torsion=LEGACY
-section Elastic 10 1.000000e+00 2.100000e-01 8.575000e-03 1.575000e-03 5.000000e-01 1.015000e-02 0.000000e+00 2.500000e-01  # torsion=LEGACY
-(venv) giarrettu@giarrettu:~/continuous-section-field$ 
-```
