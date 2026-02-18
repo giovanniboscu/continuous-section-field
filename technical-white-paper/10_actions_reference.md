@@ -63,8 +63,6 @@ CSF_ACTIONS:
 | export_yaml | REQUIRED (2 z) | — | file-only |
 | write_opensees_geometry | FORBIDDEN | — | file-only |
 | write_sap2000_geometry | FORBIDDEN | — | file-only |
-| write_samp2000_geometry | FORBIDDEN | — | file-only (alias) |
-
 ---
 
 
