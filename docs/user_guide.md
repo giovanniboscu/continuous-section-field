@@ -9,6 +9,23 @@ CSF is built around a simple idea:
 
 ---
 
+##  Get the Project and Create a Virtual Environment
+
+```bash
+# Clone the repository
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
+
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install in editable mode
+pip install -e .
+
+```
+---
+
 ## Core Concept — Anchor Sections
 
 CSF needs two *anchor* sections:
