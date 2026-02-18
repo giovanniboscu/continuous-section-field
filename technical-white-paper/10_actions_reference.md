@@ -1,7 +1,7 @@
 # 10_actions_reference.md
 # CSF Actions Reference
 
-This document is the authoritative reference for **CSFActions**.
+This document is a reference for **CSFActions**.
 It lists all supported actions, their required/forbidden keys, parameters, defaults,
 and output rules. No conceptual explanations are included here; see the other chapters
 for theory and examples.
