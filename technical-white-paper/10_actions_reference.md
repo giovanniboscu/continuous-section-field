@@ -236,13 +236,6 @@ Generate a SAP2000 text template pack.
 
 ---
 
-## 10. write_samp2000_geometry
-
-Alias for `write_sap2000_geometry` (typo tolerance).
-All rules and parameters are identical.
-
----
-
 ## Validation Checklist
 
 - Root key `CSF_ACTIONS` exists
