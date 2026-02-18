@@ -149,6 +149,12 @@ CSF explicitly tracks:
 Cx(z), Cy(z)
 ```
 
+## 9. Torsion model
+
+`J_sv_wall` and `J_sv_cell` are thin-walled Saint-Venant torsion estimates for, respectively, **open** walls and **closed** cells (Bredt–Batho), while `J_sv` is the **general** Saint-Venant torsion estimate when thin-walled assumptions are not applicable.  
+When exporting to OpenSees (which accepts a single `J`), a consistent practice is to select a `J_eff` (e.g., `max(J_sv_cell, J_sv_wall)` if any > 0, otherwise `J_sv`).
+
+
 ### OpenSees implementation
 - create reference nodes along a straight axis
 - create centroid nodes offset by `Cx, Cy`
