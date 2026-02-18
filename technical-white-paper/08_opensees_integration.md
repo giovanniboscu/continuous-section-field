@@ -42,21 +42,28 @@ They are evaluated directly from the continuous ruled-surface geometry and weigh
 
 ---
 
-## 3. Why Standard `beamIntegration Lobatto` Is Not Enough
+## 3. Why Standard `beamIntegration Lobatto` May Not Be Enough
 
-In OpenSees, the command:
+In OpenSees, the standard integration:
 
-beamIntegration UserDefined
+- `beamIntegration Lobatto ...`
 
+defines the **integration rule** (number and location of points, and weights), but it does not provide an explicit, user-authored list of:
+- **which section tag** is used at each integration point
+- **where** (local coordinate \(\xi\)) each section is placed
+- **which integration weights** are associated to each point
 
-This integration:
-- explicitly specifies **which section tag** is used
-- explicitly specifies **where** (local coordinate)
-- explicitly specifies **integration weights**
-
-This is the only OpenSees mechanism that allows a one-to-one mapping between:
-- CSF stations  
+When you need a strict one-to-one, fully explicit mapping between:
+- exported CSF stations
 - OpenSees integration points
+
+the only OpenSees mechanism that can encode *(sectionTag, xi, weight)* explicitly is:
+
+- `beamIntegration UserDefined ...`
+
+> **Current CSF status**  
+> The current `write_opensees_geometry()` export samples stations at Gauss–Lobatto locations and writes the corresponding `section Elastic ...` definitions.  
+> It does **not** export `UserDefined` integration data (xi/weights), and it does **not** emit element definitions.
 
 ---
 
@@ -79,14 +86,27 @@ This guarantees:
 
 ## 6. Element Construction Strategy
 
-Because OpenSees cannot consume an arbitrary list of section tags inside a *single* element without ambiguity, the robust strategy is:
+### What is implemented today (export side)
 
-### Chain of Elements Between Stations
+`write_opensees_geometry()` currently:
+- generates **Gauss–Lobatto stations** for a chosen `n_points`
+- writes one `section Elastic <tag> ...` per station
+- writes station coordinates in a comment line for traceability
+
+It does **not** currently:
+- build OpenSees `element` commands
+- write `beamIntegration UserDefined ...` (xi/weights)
+
+### Optional robust strategy (solver-side)
+
+If you want an unambiguous station-to-integration mapping in the OpenSees model, a robust approach is:
+
+#### Chain of Elements Between Stations
 
 For stations:
-\[
+$$
 z_0, z_1, z_2, \dots, z_n
-\]
+$$
 
 Create:
 - one OpenSees element between each consecutive pair
@@ -95,19 +115,20 @@ For element \( i \to i+1 \):
 - local coordinate 0 → station \( i \)
 - local coordinate 1 → station \( i+1 \)
 
-Integration definition:
+Example integration definition (two-point symmetric rule):
 
+```
 beamIntegration UserDefined <tag> <sec_i> 0.0 0.5 <sec_{i+1}> 1.0 0.5
-
+```
 
 This ensures:
-- stiffness sampled **exactly at CSF stations**
+- stiffness sampled **exactly at stations used by CSF**
 - no invented intermediate section
 - symmetric integration weights
 
 ---
 
-## 7.CSF Is *Not* Piecewise-Prismatic
+## 7. CSF Is *Not* Piecewise-Prismatic
 
 ### CSF + OpenSees model
 - CSF defines a **continuous field**
@@ -126,16 +147,16 @@ Non-prismatic members often have:
 - eccentric stiffness relative to a reference axis
 
 CSF explicitly tracks:
-\[
+$$
 C_x(z),\; C_y(z)
-\]
+$$
 
 ### OpenSees implementation
 - create reference nodes along a straight axis
 - create centroid nodes offset by \( C_x, C_y \)
 - connect them using:
 
-## rigidLink beam
+`rigidLink beam`
 
 This produces:
 - automatic moment–axial coupling
@@ -144,7 +165,3 @@ This produces:
 
 > **Note**  
 > This requires `constraints Transformation` in OpenSees.
-
----
-
-	
