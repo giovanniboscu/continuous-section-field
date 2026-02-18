@@ -101,7 +101,7 @@ Usage in an action:
 
 ```yaml
 actions:
-  - section_full_analysis:
+  - section_selected_analysis:
       stations: [fine]
 ```
 
