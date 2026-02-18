@@ -195,14 +195,4 @@ Use this order in docs:
 7. **Validation/consistency checks**
 
 ---
-
-## 12. Final technical takeaway
-
-This case is a high-quality didactic benchmark because it is:
-
-- small enough to inspect by hand
-- rich enough to show fundamental torsion mechanisms
-- explicit enough to avoid hidden assumptions
-- extensible to curved/complex closed cells
-
 In short, it is an excellent bridge between **classical Scienza delle Costruzioni** torsion theory and **modern declarative computational modeling** in CSF.
