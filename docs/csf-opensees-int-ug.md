@@ -62,7 +62,7 @@ section Elastic 10 1.000000e+00 2.100000e-01 8.575000e-03 1.575000e-03 5.000000e
 
 **Critical clarification:**  
 The `section Elastic ...` lines include **two extra fields at the far right**:
-- `xc yc` = centroid offsets at that station, **CSF-only**, not OpenSees syntax.  
+- `Cx Cy` = centroid offsets at that station, **CSF-only**, not OpenSees syntax.  
 A robust builder must parse them explicitly.
 
 ---
