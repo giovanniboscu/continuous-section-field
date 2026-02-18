@@ -130,7 +130,7 @@ An intermediate section at any `z` in `[z0, z1]` is obtained by:
 This operation is purely geometric and independent of stiffness/material calculations.
 
 ---
-
+<!--
 ## Topological Constraints
 
 The following constraints apply along `z`:
@@ -141,7 +141,7 @@ The following constraints apply along `z`:
 - holes/voids must be explicitly represented as polygons.
 
 Topological events (merge/split of regions along `z`) are outside the current scope.
-
+-->
 ---
 
 ## Geometric Accuracy and User Responsibility
