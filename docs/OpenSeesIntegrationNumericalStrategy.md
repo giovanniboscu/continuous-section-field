@@ -1,4 +1,4 @@
-# CSF → OpenSees Integration and Numerical Strategy (`csfopenseescon`)
+# CSF → OpenSees Integration and Numerical Strategy 
 
 This document explains how **CSF (Continuous Section Field)** exports a continuously varying member and how that data is consumed to build a consistent **OpenSees `forceBeamColumn` model** (OpenSeesPy or OpenSees Tcl).
 
