@@ -357,7 +357,7 @@ This method is appropriate if:
 
 ---
 
-## Torsion constant methods for tagged polygons (`@cell` / `@wall`)
+## 17 - 18 Torsion constant methods for tagged polygons (`@cell` / `@wall`)
 **Key:** `J_sv_cell`   `J_sv_wall` 
 
 
@@ -486,7 +486,7 @@ The routine expects **exactly two** closed loops:
 
 ---
 
-##  Orientation conventions (your project standard)
+##  Orientation conventions
 
 For consistency with CSF conventions, use:
 
@@ -510,14 +510,12 @@ CSF:
             # INNER loop (CW) - explicitly closed
             - [xi0, yi0]
             - [xi1, yi1]
-            - [xi2, yi2]
-            - [xi0, yi0]
-
+             .....
+             .....
             # OUTER loop (CCW) - explicitly closed
             - [xo0, yo0]
             - [xo1, yo1]
-            - [xo2, yo2]
-            - [xo0, yo0]
+            ...
 ```
 
 Notes:
