@@ -54,7 +54,6 @@ CSF_ACTIONS:
 
 | Action | Stations | Extra Required Keys | Output Type |
 |------|---------|---------------------|-------------|
-| section_full_analysis | REQUIRED | — | stdout / csv / txt |
 | section_selected_analysis | REQUIRED | properties | stdout / csv / txt |
 | plot_section_2d | REQUIRED | — | display / image |
 | plot_volume_3d | FORBIDDEN | — | display only |
