@@ -23,8 +23,7 @@ In the base CSF formulation, two reference sections are used:
 - start section at `z = z0`,
 - end section at `z = z1` (typically `z1 = L`).
 
-All section geometries must be expressed in the **same `x-y` orientation**.  
-Relative rotation between reference sections is not supported in the current formulation.
+Define s0 (z=0) and s1 (z=L) in the same global x–y coordinate frame (same axes, origin convention, and units). The cross-section may undergo twist (rotation about the z-axis) along the member axis, which is supported in the formulation.
 
 ---
 
