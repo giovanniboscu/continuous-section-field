@@ -68,24 +68,8 @@ CSF_ACTIONS:
 
 ---
 
-## 1. section_full_analysis
 
-**Purpose**  
-Compute the full set of section properties at each station.
-
-**Stations**: REQUIRED
-
-**Parameters**
-- `fmt_diplay` (str, default `.8f`)
-
-**Output**
-- stdout (formatted report)
-- `.csv` table
-- optional text file
-
----
-
-## 2. section_selected_analysis
+## 1. section_selected_analysis
 
 **Purpose**  
 Compute a reduced set of properties.
@@ -105,7 +89,7 @@ Compute a reduced set of properties.
 
 ---
 
-## 3. plot_section_2d
+## 2. plot_section_2d
 
 **Purpose**  
 Plot 2D section geometry at specified stations.
@@ -125,7 +109,7 @@ Plot 2D section geometry at specified stations.
 
 ---
 
-## 4. plot_volume_3d
+## 3. plot_volume_3d
 
 **Purpose**  
 Visualize the ruled 3D volume between end sections.
@@ -143,7 +127,7 @@ Visualize the ruled 3D volume between end sections.
 
 ---
 
-## 5. plot_properties
+## 4. plot_properties
 
 **Purpose**  
 Plot selected properties along the member.
@@ -162,7 +146,7 @@ Plot selected properties along the member.
 
 ---
 
-## 6. plot_weight
+## 5. plot_weight
 
 **Purpose**  
 Plot polygon weight evolution along `z`.
@@ -178,7 +162,7 @@ Plot polygon weight evolution along `z`.
 
 ---
 
-## 7. weight_lab_zrelative
+## 6. weight_lab_zrelative
 
 **Purpose**  
 Inspect weight-law expressions at **relative z** values.
@@ -198,7 +182,7 @@ Inspect weight-law expressions at **relative z** values.
 
 ---
 
-## 8. export_yaml
+## 7. export_yaml
 
 **Purpose**  
 Export a new CSF geometry YAML from two stations.
@@ -211,7 +195,7 @@ Export a new CSF geometry YAML from two stations.
 
 ---
 
-## 9. write_opensees_geometry
+## 8. write_opensees_geometry
 
 **Purpose**  
 Export OpenSees-compatible Tcl geometry and sections.
@@ -228,7 +212,7 @@ Export OpenSees-compatible Tcl geometry and sections.
 
 ---
 
-## 10. write_sap2000_geometry
+## 9. write_sap2000_geometry
 
 **Purpose**  
 Generate a SAP2000 text template pack.
@@ -252,7 +236,7 @@ Generate a SAP2000 text template pack.
 
 ---
 
-## 11. write_samp2000_geometry
+## 10. write_samp2000_geometry
 
 Alias for `write_sap2000_geometry` (typo tolerance).
 All rules and parameters are identical.
