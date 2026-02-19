@@ -111,8 +111,8 @@ python3 ..\..\csf\CSFActions.py stell_degradated_model_s.yaml stell_degradated_m
 ```
 
 ### **Motivation and Arbitrary Cross-Section Representation**
+The common practice of modeling non-prismatic members as a concatenation of equivalent prismatic elements (piecewise-prismatic approach) introduces a non-neutral methodological choice: the numerical result depends on the number of subdivisions and the sampling locations. Unlike tools constrained to predefined geometric templates, CSF treats the cross-section as a generic topological entity and evaluates cross-section properties as continuous functions along the member axis for complex non-prismatic members.
 
-The common practice of modeling non-prismatic members as a concatenation of equivalent prismatic elements (piecewise-prismatic approach) introduces a non-neutral methodological choice. The numerical solution varies with the number of subdivisions and the location of sampling points. Unlike traditional structural tools limited to predefined geometric templates, CSF treats the cross-section as a fully generic topological entity, providing accurate, continuous calculation of cross-section properties for complex non-prismatic members.
 
 > **Geometric scope and limitations**  
 > CSF is not a FEM solver: it provides a geometric formulation for a multiple non-prismatic member and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
