@@ -216,6 +216,34 @@ The subtraction of the parent material is handled internally by CSF.
 > All polygon properties are defined as **absolute values**.  
 > Effective contributions are derived automatically from containment relationships.
 
+
+
+## Nesting Hierarchy and Effective Weight
+
+CSF resolves, for each polygon, its **immediate container** (direct parent) in the nesting hierarchy.
+
+This allows the engine to compute two distinct quantities per polygon:
+
+- **Absolute weight** `W(z)`: the weight assigned to the polygon by the user-defined law.
+- **Effective weight** `W_eff(z)`: the net local contribution of the polygon after removing the parent domain's weight:
+
+
+This prevents double-counting of the overlapping domain between a nested polygon and its immediate parent.
+
+### Example: embedded steel reinforcement in concrete
+
+| Polygon   | Absolute weight W | Container         | W_eff                        |
+|-----------|-------------------|-------------------|------------------------------|
+| Concrete  | 30 000            | none (root)       | 30 000                       |
+| Steel bar | 210 000           | Concrete          | 210 000 − 30 000 = 180 000   |
+
+The user declares only the absolute material property of each polygon.
+The effective contribution is derived automatically from the containment relationship.
+
+> **Note:** only the *immediate* parent is considered, not ancestors higher in the nesting hierarchy.
+
+
+
 ---
 
 ### 4. Why "Weight" and not "E"?
