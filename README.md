@@ -169,8 +169,6 @@ For details, see:
 - [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)
 - [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
 
-
-
 ##  Geometric Interpolation
 
 - Corresponding polylines at $z = 0$ and $z = L$ are interpolated along the beam axis.
@@ -242,7 +240,7 @@ CSF bridges continuous geometric modeling and structural analysis by exporting a
 ### 2) SAP2000 (tabular property export)
 CSF can also export **SAP2000-ready tabular packs** (station-based section properties and stiffness fields) to support non-prismatic members via discrete property stations.
 
-* [SAP2000 export action]([https://github.com/giovanniboscu/continuous-section-field](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_actions.md))
+* [SAP2000 export action](https://github.com/giovanniboscu/continuous-section-field](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_actions.md)
  
 ---
 
