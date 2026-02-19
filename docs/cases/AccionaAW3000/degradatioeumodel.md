@@ -226,3 +226,138 @@ This formulation:
 - Does not account for creep, cracking, nonlinear damage, or thermal reduction curves (fire design is treated in EN 1992-1-2).
 
 The degradation factor $\alpha$ is an engineering modeling parameter and must be justified separately.
+
+
+# From EC2 Degradation Formula to CSF Weight Law
+
+## 1. Starting point: the modulus ratio
+
+From the EC2 degradation procedure, the modulus ratio is:
+
+$$
+w(\alpha, f_{ck}) =
+\left(
+\frac{\alpha \, f_{ck} + 8}{f_{ck} + 8}
+\right)^{0.3}
+$$
+
+This is a dimensionless scalar in `(0, 1]`.  
+It is exactly what CSF expects as a polygon weight.
+
+---
+
+## 2. Mapping to CSF variables
+
+In CSF, a weight law expression has access to:
+
+| CSF variable | Meaning |
+|---|---|
+| `w0` | weight at start section (z = z0) |
+| `w1` | weight at end section (z = z1) |
+| `z` | physical coordinate along the member |
+| `L` | total member length |
+| `np` | NumPy namespace |
+
+The EC2 formula depends on two engineering parameters:
+
+| Parameter | Meaning |
+|---|---|
+| `alpha` | degradation factor ∈ (0, 1] — varies along z |
+| `fck` | characteristic compressive strength [MPa] — material constant |
+
+`fck` is a known constant for a given concrete class.  
+`alpha` is the modeling parameter that the engineer specifies.
+
+---
+
+## 3. Case A — uniform degradation (alpha constant)
+
+If degradation is uniform along the member, `alpha` is a scalar constant.  
+The weight law becomes a constant expression:
+
+```python
+fck = 30.0    # e.g. C30/37
+alpha = 0.70  # 30% strength reduction
+
+section_field.set_weight_laws([
+    "concrete,concrete : ((alpha * fck + 8) / (fck + 8)) ** 0.3",
+])
+```
+
+`alpha` and `fck` are Python variables defined before the call.  
+The string expression is evaluated by CSF at each integration point,
+where `alpha` and `fck` are captured from the enclosing scope.
+
+---
+
+## 4. Case B — longitudinally varying degradation (alpha = alpha(z))
+
+If degradation varies along z (e.g. more severe at the base), `alpha`
+can be expressed as a function of `z` directly inside the law string:
+
+```python
+fck = 30.0
+
+# Example: linear degradation from 1.0 at z=0 to 0.60 at z=L
+section_field.set_weight_laws([
+    "concrete,concrete : (((1.0 - 0.40 * z / L) * fck + 8) / (fck + 8)) ** 0.3",
+])
+```
+
+Or using `w0` and `w1` if the boundary weight values are already known:
+
+```python
+section_field.set_weight_laws([
+    "concrete,concrete : w0 + (w1 - w0) * (z / L)",
+])
+```
+
+This last form is the linear default — it bypasses the EC2 formula and
+interpolates directly between the two boundary modulus ratios.
+
+---
+
+## 5. Case C — data-driven degradation from external file
+
+If `alpha(z)` comes from an inspection campaign or a corrosion model,
+it can be stored in a lookup file and consumed via `E_lookup`:
+
+```txt
+# alpha_profile.txt  (key = z in meters)
+0.0   1.00
+2.0   0.92
+5.0   0.80
+8.0   0.72
+10.0  0.65
+```
+
+```python
+fck = 30.0
+
+section_field.set_weight_laws([
+    "concrete,concrete : ((E_lookup('alpha_profile.txt') * fck + 8) / (fck + 8)) ** 0.3",
+])
+```
+
+Here `E_lookup('alpha_profile.txt')` returns `alpha(z)` at the current
+integration point, and the EC2 formula is applied directly.
+
+---
+
+## 6. Summary
+
+The derivation is a direct substitution:
+
+1. Take the EC2 modulus ratio formula:
+   `w = ((alpha * fck + 8) / (fck + 8)) ** 0.3`
+
+2. Decide how `alpha` varies along z (constant, linear, or data-driven).
+
+3. Write `alpha` as a function of the CSF variables (`z`, `L`, `w0`, `w1`,
+   or `E_lookup`) and substitute into the formula string.
+
+4. Pass the string to `set_weight_laws()`.
+
+The formula string is a standard Python expression evaluated by CSF
+at each integration station along the member.
+
