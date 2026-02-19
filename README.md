@@ -116,7 +116,7 @@ The common practice of modeling non-prismatic members as a concatenation of equi
 
 > **Geometric scope and limitations**  
 > CSF is not a FEM solver: it provides a geometric formulation for a multiple non-prismatic member and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
-> Members are defined by polygonal end sections connected by straight generator lines (ruled surfaces) with consistent polyline topology between ends. Curved outlines are handled by polygonal approximation (increase the number of sides to reach the desired accuracy).
+> Curved outlines are handled by polygonal approximation (increase the number of sides to reach the desired accuracy).
 
  See: **[core assumptions](docs/core_assumption.md)**
 
