@@ -42,7 +42,7 @@ CSF_ACTIONS:
     - section_full_analysis:
         stations: [my_station_set]
         output: [stdout, out/full.csv]
-        params: {fmt_diplay: ".8f"}
+        params: {fmt_display: ".8f"}
 ```
 
 ### Station sets (`CSF_ACTIONS.stations`)
@@ -126,7 +126,7 @@ Compute the full standard property set at each requested station and route it to
 
 | name | type | required | default | meaning |
 |---|---:|:---:|---:|---|
-| `fmt_diplay` | str | no | `.8f` | Python numeric format for printed report (e.g. `.4f`, `.3e`). Alias accepted: `fmt_display`. |
+| `fmt_display` | str | no | `.8f` | Python numeric format for printed report (e.g. `.4f`, `.3e`). Alias accepted: `fmt_display`. |
 
 **Example**
 
@@ -139,7 +139,7 @@ CSF_ACTIONS:
         stations: [s_dense]
         output: [stdout, out/section_full.csv]
         params:
-          fmt_diplay: ".10f"
+          fmt_display: ".10f"
 ```
 
 ---
@@ -160,7 +160,7 @@ Compute only selected properties at each station (still derived from the full an
 
 | name | type | required | default | meaning |
 |---|---:|:---:|---:|---|
-| `fmt_diplay` | str | no | `.8f` | Python numeric format for printed report. Alias accepted: `fmt_display`. |
+| `fmt_display` | str | no | `.8f` | Python numeric format for printed report. Alias accepted: `fmt_display`. |
 
 **Example**
 
@@ -174,7 +174,7 @@ CSF_ACTIONS:
         output: [stdout, out/selected.csv]
         properties: [A, Cx, Cy, Ix, Iy, J_sv]
         params:
-          fmt_diplay: ".6g"
+          fmt_display: ".6g"
 ```
 
 ---
@@ -407,7 +407,7 @@ This action is a *sectional diagnostic* (transverse geometry + effective weights
 | `group_mode` | str | no | `"weight"` | `"weight"` groups rows visually by `W(z)`; `"id"` prints a flat table sorted by polygon id (id is the first column). |
 | `w_tol` | float | no | `0.0` | Weight binning tolerance used only when `group_mode="weight"`. If `> 0`, weights are binned as `W_bin = round(W / w_tol) * w_tol`. If `<= 0`, grouping uses exact `W`. |
 | `include_per_polygon` | bool | no | `false` | If true, include per-polygon extra columns: `direct_inners` and `container`. |
-| `fmt_display` | str | no | `.6f` | Python numeric format for stdout/text report (e.g. `.6f`, `.4e`). Alias accepted: `fmt_diplay`. |
+| `fmt_display` | str | no | `.6f` | Python numeric format for stdout/text report (e.g. `.6f`, `.4e`). Alias accepted: `fmt_display`. |
 
 Notes
 - Polygon ids are **0-based**.
@@ -503,7 +503,7 @@ If the station set expands to anything other than 2 values, the action must rais
 | name | type | required | default | meaning |
 |---|---:|:---:|---:|---|
 | `n_points` | int | no | `20` | Number of Gauss–Legendre integration points (>= 1). Higher = more accurate for strongly varying laws. |
-| `fmt_display` | str | no | `.6f` | Python numeric format for stdout/txt report (e.g. `.6f`, `.4e`). Alias accepted: `fmt_diplay`. |
+| `fmt_display` | str | no | `.6f` | Python numeric format for stdout/txt report (e.g. `.6f`, `.4e`). Alias accepted: `fmt_display`. |
 | `w_tol` | float | no | `0.0` | Kept for compatibility. Not required for this action. (If present it may be ignored or warned, depending on your validation policy.) |
 
 Notes
