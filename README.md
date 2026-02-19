@@ -15,7 +15,7 @@
 [CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md) See the full step-by-step tutorial here
 
 
-### Continuous Section Field (CSF): Section-Property Preprocessing for Non-Prismatic, Multi-Region Members (Python API and YAML workflow)
+**Continuous Section Field (CSF): Section-Property Preprocessing for Non-Prismatic, Multi-Region Members (Python API and YAML workflow)**
 
 **Continuous Section Field (CSF)** is a Python engine for **non-prismatic** and **non-homogeneous** beam-like members, designed as a *continuous pre-processor* for structural solvers.
 
