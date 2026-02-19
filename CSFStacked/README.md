@@ -81,19 +81,34 @@ What `append(field)` does:
 
 ```python
 from csf import Pt, Polygon, CSFStacked
-from csf.CSFStacked import SegmentSpec  # (module path may vary by your package layout)
+from csf.CSFStacked import SegmentSpec  # adjust import path to your package layout
 
-# Define polygons at z0 and z1 (example only)
-poly0 = Polygon(name="outer", vertices=(Pt(0,0), Pt(1,0), Pt(1,1), Pt(0,1)), weight=1.0)
-poly1 = Polygon(name="outer", vertices=(Pt(0,0), Pt(2,0), Pt(2,1), Pt(0,1)), weight=1.0)
+poly0 = Polygon(
+    name="outer",
+    vertices=(Pt(0, 0), Pt(1, 0), Pt(1, 1), Pt(0, 1)),
+    weight=1.0,
+)
+
+poly1 = Polygon(
+    name="outer",
+    vertices=(Pt(0, 0), Pt(2, 0), Pt(2, 1), Pt(0, 1)),
+    weight=1.0,
+)
 
 specs = [
-    SegmentSpec(tag="segA", z0=0.0, z1=5.0, polygons_s0=(poly0,), polygons_s1=(poly1,)),
+    SegmentSpec(
+        tag="segA",
+        z0=0.0,
+        z1=5.0,
+        polygons_s0=(poly0,),
+        polygons_s1=(poly1,),
+    ),
 ]
 
 stack = CSFStacked()
 stack.build_from_specs(specs)
 stack.validate_contiguity(require_contiguity=True)
+
 ```
 
 Under the hood:
