@@ -1544,19 +1544,54 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                         continue
                     if sref not in station_map:
                         missing.append(sref)
-
+                #--------------------------
                 if missing:
-                    ln = _find_key_line(text, action_name) or ln_actions
+                    # Try to locate the exact 'stations:' line inside the current action block.
+                    ln = None
+                    try:
+                        lines = text.splitlines()
+                        action_hdr = f"  {action_name}:"
+                        stations_key = "    stations:"
+                        in_action = False
+                        action_indent = None
+
+                        for i, line in enumerate(lines, start=1):
+                            if not in_action:
+                                if line.startswith(action_hdr):
+                                    in_action = True
+                                    action_indent = len(line) - len(line.lstrip(" "))
+                                    continue
+                            else:
+                                cur_indent = len(line) - len(line.lstrip(" "))
+                                # End of current action block when indentation returns to action level or less
+                                if line.strip() and cur_indent <= action_indent:
+                                    break
+                                if line.startswith(stations_key):
+                                    ln = i
+                                    break
+                    except Exception:
+                        ln = None
+
+                    if ln is None:
+                        ln = _find_key_line(text, "stations") or _find_key_line(text, action_name) or ln_actions
+
                     issues.append(
                         CSFIssues.make(
                             "CSFA_E_ACTION_STATIONS_UNKNOWN",
                             path=f"{apath}.{action_name}.stations",
                             message=f"Action '{action_name}' references unknown station(s): {', '.join(missing)}",
-                            hint=f"Define missing station names under '{root_key}.stations'.",
-                            context={"filepath": filepath, "snippet": _make_snippet(text, ln, 1)},
+                            hint=f"Define missing station names under '{TOP_KEY}.stations'.",
+                            context={
+                                        "filepath": filepath,
+                                        "missing_station": missing[0] if missing else None,
+                                        "missing_stations_str": ", ".join(missing),  # stringa pronta
+                                        "snippet": _make_snippet(text, ln, 2),
+                                    },
                         )
                     )
                     continue
+
+                    #-----------------------------------
 
         # ------------------------------------------------------------
         # Action-specific rule: export_yaml

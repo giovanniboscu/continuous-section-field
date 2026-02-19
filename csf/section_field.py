@@ -935,9 +935,6 @@ def write_sap2000_template_pack2toremove(
     return str(out_path)
 
 
-# -----------------------------------------------------------------------------
-# Backward-compatible alias (explicitly "template", not guaranteed .s2k import)
-# -----------------------------------------------------------------------------
 def write_sap2000_geometry(*args: Any, **kwargs: Any) -> str:
     """
     Backward-compatible wrapper.
@@ -1410,8 +1407,26 @@ def section_print_analysis(full_analysis, fmt=".8f"):
         full_analysis (dict): Dictionary containing the calculated properties.
         fmt (str): Optional Python format string for numerical output. 
                    Defaults to ".8f" (fixed-point with 8 decimals). 
+          
                    Can be set to ".4e" for scientific notation or others.
     """
+
+    def fmt_val_or_pair(x: Union[float, Tuple[float, float]], fmt: str) -> str:
+        """
+        Format either:
+        - a single float -> formatted with `fmt`
+        - a pair (v, t)  -> f"{v_fmt} t={t_fmt}" using the same `fmt`
+        """
+        # Case 1: single float
+        if isinstance(x, (int, float)):
+            return format(float(x), fmt)
+
+        # Case 2: tuple of 2 floats
+        if isinstance(x, tuple) and len(x) == 2:
+            v, t = x
+            return f"{format(float(v), fmt)} t={format(float(t), fmt)}"
+
+        raise TypeError("x must be a float/int or a tuple of 2 floats")    
     span = 130
     print("\n" + "="*span)
     print("FULL MODEL ANALYSIS REPORT - SECTION EVALUATION")
@@ -1435,11 +1450,10 @@ def section_print_analysis(full_analysis, fmt=".8f"):
     print(f"14) Torsional Rigidity K:             K_torsion             {full_analysis['K_torsion']:{fmt}}     # Semi-empirical torsional stiffness approximation")
     print(f"15) First_moment:                     Q_na                  {full_analysis['Q_na']:{fmt}}     # First moment of area at NA (governs shear capacity)" )
     print(f"16) Torsional const K:                J_sv                  {full_analysis['J_sv']:{fmt}}     # alpha = {full_analysis['J_sv_alpha']:{fmt}} Effective St. Venant torsional constant (J)")
-    print(f"16) Torsional const K cell            J_sv_cell             {full_analysis['J_sv_cell']:{fmt}}  # Saint-Venant torsional constant for closed thin-walled by applying  Bredt–Batho formula")
-
-    print(f"16) Torsional const K wall            J_sv_wall             {full_analysis['J_sv_wall']:{fmt}}  # computes the Saint-Venant torsional constant for open thin-walled walls")
-    print(f"17) Torsional const K roark:          J_s_vroark            {full_analysis['J_s_vroark']:{fmt}}     # Refined J using Roark-Young thickness correction")
-    print(f"18) Torsional const K roark fidelity: J_s_vroark_fidelity   {full_analysis['J_s_vroark_fidelity']:{fmt}}     # Reliability index based on aspect-ratio (1.0 = Thin-walled, 0.0 = Stout")
+    print(f"17) Torsional const K cell            J_sv_cell             {fmt_val_or_pair(full_analysis['J_sv_cell'],fmt)}   # Saint-Venant torsional constant for closed thin-walled by applying  Bredt–Batho formula")    
+    print(f"18) Torsional const K wall            J_sv_wall             {fmt_val_or_pair(full_analysis['J_sv_wall'],fmt)}   # computes the Saint-Venant torsional constant for open thin-walled walls")
+    print(f"19) Torsional const K roark:          J_s_vroark            {full_analysis['J_s_vroark']:{fmt}}     # Refined J using Roark-Young thickness correction")
+    print(f"20) Torsional const K roark fidelity: J_s_vroark_fidelity   {full_analysis['J_s_vroark_fidelity']:{fmt}}     # Reliability index based on aspect-ratio (1.0 = Thin-walled, 0.0 = Stout")
     
     print("="*span)
     
@@ -1613,10 +1627,10 @@ def write_opensees_geometry(
             f.write("# NOTE: Section lines append 'Cx Cy' as CSF-only fields (not OpenSees syntax).\n")
             f.write("#\n")
             f.write("# CSF_EXPORT_MODE: E=E_ref ; A/I/J are station-wise CSF results (already weighted)\n")
-            f.write("# CSF_TORSION_SELECTION: J_tors = (J_sv_wall>0) else (J_sv_cell>0) else (J>0) else ERROR\n\n")
+            f.write("# CSF_TORSION_SELECTION: J_eff = max(J_sv_cell, J_sv_wall) if any >0 else J_sv if >0 else ERROR")
 
             # ---- Exact z stations ----
-            f.write("# CSF_Z_STATIONS: " + " ".join(f"{z:.12g}" for z in z_coords) + "\n\n")
+            f.write("\n\n# CSF_Z_STATIONS: " + " ".join(f"{z:.12g}" for z in z_coords) + "\n\n")
 
             # ---- Informational nodes (optional) ----
             f.write("# Informational nodes (best-fit line through centroid offsets)\n")
@@ -1638,22 +1652,47 @@ def write_opensees_geometry(
             for i, res in enumerate(results):
                 tag = i + 1
 
+
+                # -------------------------------------------------------------------------
                 # Select torsion constant to export into OpenSees "J"
-                if _is_pos(res.get("J_sv_wall"), 0.0):
-                    J_tors = float(res["J_sv_wall"])
-                    torsion_method = "WALL"
-                elif _is_pos(res.get("J_sv_cell"), 0.0):
-                    J_tors = float(res["J_sv_cell"])
-                    torsion_method = "CELL"
-                elif _is_pos(res.get("J"), 0.0):
-                    # Legacy / fallback torsion value provided by analysis
-                    J_tors = float(res["J"])
-                    torsion_method = "LEGACY"
+                #
+                # POLICY:
+                #   1) If any thin-walled candidate is available:
+                #        J_eff = max(J_sv_cell, J_sv_wall)
+                #      and set torsion_method to the SELECTED KEY:
+                #        "J_sv_cell" or "J_sv_wall"
+                #
+                #   2) If no thin-walled candidate is available:
+                #        fallback to J_sv
+                #      and set torsion_method = "J_sv"
+                #
+                #   3) If nothing is available: fail-fast.
+                # -------------------------------------------------------------------------
+                cell_ok = _is_pos(res.get("J_sv_cell"), 0.0)
+                wall_ok = _is_pos(res.get("J_sv_wall"), 0.0)
+
+                if cell_ok or wall_ok:
+                    J_cell = float(res["J_sv_cell"]) if cell_ok else 0.0
+                    J_wall = float(res["J_sv_wall"]) if wall_ok else 0.0
+
+                    if J_cell >= J_wall:
+                        J_tors = J_cell
+                        torsion_method = "J_sv_cell"
+                    else:
+                        J_tors = J_wall
+                        torsion_method = "J_sv_wall"
+
+                elif _is_pos(res.get("J_sv"), 0.0):
+                    J_tors = float(res["J_sv"])
+                    torsion_method = "J_sv"
+
                 else:
                     raise KeyError(
                         f"No torsion value available at station {tag} (z={z_coords[i]}). "
-                        "Expected positive J_sv_wall, J_sv_cell, or J."
+                        "Expected positive J_sv_cell, J_sv_wall, or J_sv."
                     )
+
+
 
                 # Write section data record
                 f.write(
@@ -2070,6 +2109,10 @@ def _poly_signed_area_centroid(pts: Any, eps_a: float) -> Tuple[float, float, fl
     Returns (A, Cx, Cy) with signed area A.
     Under CSF preconditions polygons are CCW so A > 0.
     """
+    def _xy(p):
+        if hasattr(p, "x") and hasattr(p, "y"):
+            return float(p.x), float(p.y)
+        return float(p[0]), float(p[1])    
     n = len(pts)
     if n < 3:
         raise ValueError("Polygon has < 3 vertices.")
@@ -2483,86 +2526,28 @@ We therefore scale each polygon contribution by abs(weight), consistent with you
 compute_saint_venant_J_wall implementation.
 
 """
+
 def compute_saint_venant_J_cell(section: "Section") -> float:
     """
     Compute closed-cell Saint-Venant torsional constant J_sv [m^4]
-    for polygons tagged as @cell/@closed, using a Bredt-Batho style formula.
+    for polygons tagged as @cell/@closed using a thin-walled closed-cell model.
 
-    ================================================================================
-    MODELING CONTRACT (IMPORTANT)
-    ================================================================================
-    This function expects the CSF "slit-cell" encoding inside a SINGLE polygon:
-
-        [outer_loop..., repeat(outer_start),
-         inner_loop..., repeat(inner_start)]
-
-    In other words, each @cell polygon contains two closed loops:
-      - an OUTER loop
-      - an INNER loop
-    both encoded consecutively in the vertex list.
-
-    Why this encoding:
-      - It provides explicit geometric control for thin-walled closed-cell torsion.
-      - It avoids hidden topology inference.
-      - It remains compatible with generic loop shapes (not only rectangles).
-
-    ================================================================================
-    ROBUSTNESS / GENERICITY
-    ================================================================================
-    This implementation is robust for generic closed contours (circles, ellipses,
-    arbitrary polygons), and for different outer/inner discretizations, by:
-
-      1) Splitting OUTER and INNER loops from slit encoding.
-      2) Normalizing loop orientation to CCW (same parametric direction).
-      3) Re-sampling both loops by normalized curvilinear abscissa s in [0, 1).
-      4) Performing cyclic phase alignment (best circular shift) between re-sampled
-         loops before midline construction.
-      5) Building midline from pointwise average at aligned s positions.
-      6) Computing J with Bredt-Batho constant-thickness expression:
-             J = 4 * A_m^2 * t / b_m
-         where:
-             A_m = midline enclosed area
-             b_m = midline perimeter
-             t   = wall thickness
-
-    This fixes the classic failure mode where mismatched start points produce a
-    distorted midline and underestimated J.
-
-    ================================================================================
-    THICKNESS POLICY
-    ================================================================================
-    - By default, explicit thickness is REQUIRED via @t=<value>.
-    - If REQUIRE_EXPLICIT_T is set to False, fallback thickness t = 2A/P is used.
-      (Not recommended for production due to sensitivity/ambiguity.)
-
-    ================================================================================
-    FALLBACK WHEN NO @CELL IS PRESENT
-    ================================================================================
-    If no polygon is tagged @cell/@closed, this function returns the legacy
-    compute_saint_venant_J(section) value.
-
-    Returns
-    -------
-    float
-        Total non-negative closed-cell Saint-Venant torsional constant [m^4].
+    Key parsing policy for @cell:
+    - OUTER loop is detected by the first repeated occurrence of the first vertex.
+    - INNER loop is the remaining tail after OUTER closure.
+    - INNER explicit repeated endpoint is optional; implicit closure is accepted.
     """
     TOKEN_CELL = "@cell"
     TOKEN_CLOSED = "@closed"
     TOKEN_T = "@t="
-
-    # Strict policy: do not guess structural thickness unless explicitly allowed.
     REQUIRE_EXPLICIT_T = True
-
-    # Number of samples used for curvilinear re-sampling of each loop.
-    # Higher values improve smoothness/accuracy on curved contours at higher cost.
-    MIDLINE_SAMPLES = 256
 
     polys = getattr(section, "polygons", None)
     if not polys:
         return 0.0
 
     # -------------------------------------------------------------------------
-    # 0) Select closed-cell polygons by tag in name
+    # 0) Select @cell polygons
     # -------------------------------------------------------------------------
     cell_polys = []
     for p in polys:
@@ -2571,18 +2556,15 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         if (TOKEN_CELL in low) or (TOKEN_CLOSED in low):
             cell_polys.append(p)
 
-    # Per specification: no @cell -> fallback to legacy torsion.
     if not cell_polys:
-        return 0
+        return 0.0
 
     # -------------------------------------------------------------------------
-    # 1) Geometry and parsing helpers
+    # 1) Local helpers
     # -------------------------------------------------------------------------
     def _xy_list(poly) -> List[Tuple[float, float]]:
         """
-        Return polygon vertices as [(x,y), ...] floats.
-        Repeated closure vertices are intentionally preserved because loop splitting
-        relies on them.
+        Return polygon vertices as [(x, y), ...], preserving original sequence.
         """
         verts = getattr(poly, "vertices", None)
         if not verts or len(verts) < 3:
@@ -2591,8 +2573,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
     def _perimeter_xy(xy: List[Tuple[float, float]]) -> float:
         """
-        Perimeter of a closed polygonal chain.
-        The chain is considered closed by connecting last->first implicitly.
+        Perimeter of a closed polygonal chain (last->first included).
         """
         n = len(xy)
         if n < 2:
@@ -2608,30 +2589,20 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
     def _signed_area_xy(xy: List[Tuple[float, float]]) -> float:
         """
-        Signed area by shoelace formula.
-        Positive for CCW orientation, negative for CW orientation.
+        Signed area by shoelace (>0 CCW, <0 CW).
         """
-        n = len(xy)
-        if n < 3:
-            return 0.0
-        a2 = 0.0
-        for i in range(n):
-            x0, y0 = xy[i]
-            x1, y1 = xy[(i + 1) % n]
-            a2 += x0 * y1 - x1 * y0
-        return 0.5 * a2
+        area, _, _ = _poly_signed_area_centroid_xy(xy, EPS_A)
+        return area
 
     def _key(pt: Tuple[float, float], ndigits: int = 12) -> Tuple[float, float]:
         """
-        Quantized key used to robustly detect repeated closure points.
+        Quantized key for robust repeated-point detection.
         """
         return (round(pt[0], ndigits), round(pt[1], ndigits))
 
     def _parse_t(name: str) -> Optional[float]:
         """
-        Parse @t=<value> from polygon name.
-        Accepted numeric syntax includes scientific notation.
-        Returns positive float thickness or None.
+        Parse @t=<value> from polygon name. Return positive float or None.
         """
         low = name.lower()
         idx = low.find(TOKEN_T)
@@ -2660,129 +2631,184 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
         if tval <= 0.0:
             return None
-
         return tval
 
-    def _resample_closed_by_s(xy: List[Tuple[float, float]], n_samples: int) -> List[Tuple[float, float]]:
+    def _find_outer_bridge_index(xy: List[Tuple[float, float]], nm: str) -> int:
         """
-        Re-sample a closed loop using uniform normalized curvilinear abscissa.
-
-        Input:
-            xy        : loop vertices (without explicit repeated endpoint)
-            n_samples : number of uniform samples over [0, total_length)
-
-        Output:
-            list of sampled points length n_samples
-
-        This decouples downstream operations from original vertex count/distribution.
+        Return index of first point matching the first vertex within global tolerance.
+        Uses EPS_L as requested.
         """
-        if len(xy) < 3:
-            raise CSFError("compute_saint_venant_J_cell(v3): cannot resample degenerate loop (<3 points).")
-        if n_samples < 8:
-            raise CSFError("compute_saint_venant_J_cell(v3): n_samples too small; use >= 8.")
+        if not xy:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has empty vertex list."
+            )
 
-        pts = list(xy)
-        pts.append(xy[0])  # explicit closure for segment traversal
+        x0, y0 = xy[0]
+        tol2 = EPS_L * EPS_L
+        i_outer_end = None
 
-        seg_len = []
-        cum = [0.0]
-        for i in range(len(pts) - 1):
-            dx = pts[i + 1][0] - pts[i][0]
-            dy = pts[i + 1][1] - pts[i][1]
-            L = (dx * dx + dy * dy) ** 0.5
-            seg_len.append(L)
-            cum.append(cum[-1] + L)
+        for i in range(1, len(xy)):
+            dx = xy[i][0] - x0
+            dy = xy[i][1] - y0
+            if (dx * dx + dy * dy) <= tol2:
+                i_outer_end = i
+                break
 
-        total = cum[-1]
-        if total <= EPS_L:
-            raise CSFError("compute_saint_venant_J_cell(v3): loop perimeter is near zero.")
+        if i_outer_end is None or i_outer_end < 3:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' cannot split OUTER loop "
+                f"(missing repeated outer-start vertex within tol={EPS_L:.6e})."
+            )
+        
+        return i_outer_end
 
-        out = []
-        step = total / float(n_samples)
-        j = 0
-
-        for k in range(n_samples):
-            target = k * step
-
-            while j < len(seg_len) - 1 and cum[j + 1] < target:
-                j += 1
-
-            L0 = cum[j]
-            L1 = cum[j + 1]
-
-            if (L1 - L0) <= EPS_L:
-                out.append((pts[j][0], pts[j][1]))
-                continue
-
-            a = (target - L0) / (L1 - L0)
-            x = pts[j][0] + a * (pts[j + 1][0] - pts[j][0])
-            y = pts[j][1] + a * (pts[j + 1][1] - pts[j][1])
-            out.append((x, y))
-
-        return out
-
-    def _best_cyclic_shift(a: List[Tuple[float, float]], b: List[Tuple[float, float]]) -> int:
+    def _extract_inner_loop_after_outer(
+        xy: List[Tuple[float, float]],
+        keys: List[Tuple[float, float]],
+        i_outer_end: int,
+        nm: str,
+    ) -> List[Tuple[float, float]]:
         """
-        Find circular shift s of sequence b minimizing sum of squared distances:
-            min_s Σ || a[i] - b[(i+s) mod n] ||^2
+        Extract INNER loop from the tail after OUTER closure.
 
-        This aligns loop phase after re-sampling so corresponding curvilinear points
-        are paired consistently, independent of start vertex choice.
+        Policy:
+        - Implicit closure is accepted (no mandatory repeated last point).
+        - If tail starts and ends with the same key, treat last as explicit closure
+          and drop it.
         """
-        n = len(a)
-        if n != len(b):
-            raise CSFError("compute_saint_venant_J_cell(v3): cyclic shift requires equal-length sequences.")
-        if n == 0:
-            return 0
+        rem_start = i_outer_end + 1
+        if rem_start >= len(xy):
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' missing INNER loop segment."
+            )
 
-        best_s = 0
-        best_cost = None
+        rem_xy = xy[rem_start:]
+        rem_keys = keys[rem_start:]
 
-        # Exhaustive search: robust and deterministic.
-        # n=256 -> affordable in pure Python for this use case.
-        for s in range(n):
-            cost = 0.0
-            for i in range(n):
-                j = (i + s) % n
-                dx = a[i][0] - b[j][0]
-                dy = a[i][1] - b[j][1]
-                cost += dx * dx + dy * dy
+        # At least 3 vertices are required for an implicitly closed loop.
+        if len(rem_xy) < 3:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' insufficient vertices for INNER loop."
+            )
 
-            if (best_cost is None) or (cost < best_cost):
-                best_cost = cost
-                best_s = s
+        # Optional explicit closure on inner tail.
+        if len(rem_xy) >= 2 and rem_keys[0] == rem_keys[-1]:
+            inner_xy = rem_xy[:-1]
+        else:
+            inner_xy = rem_xy
 
-        return best_s
+        if len(inner_xy) < 3:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' INNER loop degenerate."
+            )
+
+        return inner_xy
+
+    def _split_outer_inner_loops(
+        xy: List[Tuple[float, float]], nm: str
+    ) -> Tuple[List[Tuple[float, float]], List[Tuple[float, float]], int]:
+        """
+        Split slit-encoded polygon into OUTER and INNER loop candidates.
+
+        OUTER:
+            xy[0:i_outer_end], where i_outer_end is the first repetition of xy[0].
+        INNER:
+            extracted from remaining tail with implicit closure support.
+        """
+        keys = [_key(pt) for pt in xy]
+        i_outer_end = _find_outer_bridge_index(xy, nm)
+
+        #print(f"DEBUG i_outer_end {i_outer_end}")
+
+        loop_a = xy[0:i_outer_end]
+        loop_b = _extract_inner_loop_after_outer(xy, keys, i_outer_end, nm)
+
+        if len(loop_a) < 3 or len(loop_b) < 3:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' produced degenerate loops."
+            )
+
+        return loop_a, loop_b, i_outer_end
+
+    def _compute_J_geom_from_global_mid_quantities(
+        outer_xy: List[Tuple[float, float]],
+        inner_xy: List[Tuple[float, float]],
+        t: float,
+        nm: str,
+        i_cell: int,
+        z_sec,
+    ) -> float:
+        """
+        Compute J using global mid-quantities (no pointwise pairing):
+            A_m = 0.5*(A_outer + A_inner)
+            b_m = 0.5*(P_outer + P_inner)
+            J   = 4*A_m^2*t/b_m
+        """
+        A_outer = abs(_signed_area_xy(outer_xy))
+        A_inner = abs(_signed_area_xy(inner_xy))
+        A_wall = A_outer - A_inner
+
+        if A_wall <= EPS_A:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has non-positive wall area "
+                f"(A_outer={A_outer:.12g}, A_inner={A_inner:.12g})."
+            )
+
+        P_outer = _perimeter_xy(outer_xy)
+        P_inner = _perimeter_xy(inner_xy)
+
+        A_m = 0.5 * (A_outer + A_inner)
+        b_m = 0.5 * (P_outer + P_inner)
+
+        if A_m <= EPS_A or b_m <= EPS_L:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' degenerate global mid quantities "
+                f"(A_m={A_m:.12g}, b_m={b_m:.12g})."
+            )
+        '''
+        print(
+            f"[CELL-GEOM][idx={i_cell}][z={z_sec}][{nm}] "
+            f"A_outer={A_outer:.12g} A_inner={A_inner:.12g} A_wall={A_wall:.12g} "
+            f"P_outer={P_outer:.12g} P_inner={P_inner:.12g} "
+            f"A_m={A_m:.12g} b_m={b_m:.12g} t={t:.12g}"
+        )
+        '''
+        return 4.0 * (A_m ** 2) * t / b_m
 
     # -------------------------------------------------------------------------
-    # 2) Accumulate torsional constant over all @cell polygons
+    # 2) Accumulate contributions
     # -------------------------------------------------------------------------
     J_total = 0.0
 
-    for p in cell_polys:
+    for i_cell, p in enumerate(cell_polys):
         nm = str(getattr(p, "name", "") or "")
 
-        # No silent structural defaults for weight.
+        # No silent default for structural weight.
         w = float(getattr(p, "weight"))
         if abs(w) < EPS_A:
             continue
 
         xy = _xy_list(p)
+        z_sec = getattr(section, "z", None)
+        '''
+        print(
+            f"[CELL-START][idx={i_cell}] z={z_sec} name={nm} "
+            f"id={id(p)} nverts={len(xy)} first={xy[0] if xy else None}"
+        )
+        '''
+
         if len(xy) < 8:
             raise CSFError(
                 f"compute_saint_venant_J_cell(v3): polygon '{nm}' has too few vertices for slit-cell encoding."
             )
 
-        # Thickness: explicit by policy unless strictness disabled.
+        # Thickness from @t=... (strict by policy).
         t = _parse_t(nm)
         if t is None:
             if REQUIRE_EXPLICIT_T:
                 raise CSFError(
                     f"compute_saint_venant_J_cell(v3): polygon '{nm}' is @cell/@closed but missing '@t=...'."
                 )
-
-            # Optional fallback (disabled by default):
-            # t = 2A/P using full encoded polygon.
             A_poly_fallback = abs(float(polygon_area_centroid(p)[0]))
             P_poly_fallback = _perimeter_xy(xy)
             if P_poly_fallback < EPS_L:
@@ -2796,59 +2822,24 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
                 f"compute_saint_venant_J_cell(v3): polygon '{nm}' invalid thickness t={t}."
             )
 
-        # ---------------------------------------------------------------------
-        # 2.1) Split OUTER and INNER loops from slit encoding
-        # ---------------------------------------------------------------------
-        keys = [_key(pt) for pt in xy]
-
-        # OUTER loop: from index 0 to first repetition of first point
-        k0 = keys[0]
-        i_outer_end = None
-        for i in range(1, len(keys)):
-            if keys[i] == k0:
-                i_outer_end = i
-                break
-
-        if i_outer_end is None or i_outer_end < 3:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' cannot split OUTER loop "
-                f"(missing repeated outer-start vertex)."
-            )
-
-        # INNER loop starts immediately after OUTER closure
-        i_inner_start = i_outer_end + 1
-        if i_inner_start >= len(keys):
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' missing INNER loop start."
-            )
-
-        # INNER loop ends at repetition of its own start point
-        k_in = keys[i_inner_start]
-        i_inner_end = None
-        for j in range(i_inner_start + 1, len(keys)):
-            if keys[j] == k_in:
-                i_inner_end = j
-                break
-
-        if i_inner_end is None or (i_inner_end - i_inner_start) < 3:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' cannot split INNER loop "
-                f"(missing repeated inner-start vertex)."
-            )
-
-        # Exclude repeated closure points from working loops.
-        loop_a = xy[0:i_outer_end]
-        loop_b = xy[i_inner_start:i_inner_end]
-
-        if len(loop_a) < 3 or len(loop_b) < 3:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' produced degenerate loops."
-            )
-
-        # Determine OUTER as loop with larger absolute enclosed area.
+        # Split loops (inner explicit closure is optional).
+        loop_a, loop_b, i_outer_end = _split_outer_inner_loops(xy, nm)
+        '''
+        print(
+            f"[OUTER_CLOSE][idx={i_cell}][z={z_sec}][{nm}] "
+            f"first={xy[0]} repeated={xy[i_outer_end]}"
+        )
+        '''
         area_a = abs(_signed_area_xy(loop_a))
         area_b = abs(_signed_area_xy(loop_b))
-
+        '''
+        print(
+            f"[CELL-LOOPS][idx={i_cell}][z={z_sec}][{nm}] "
+            f"len_loop_a={len(loop_a)} len_loop_b={len(loop_b)} "
+            f"area_a={area_a:.12g} area_b={area_b:.12g}"
+        )
+        '''
+        # OUTER is the loop with larger absolute area.
         if area_a >= area_b:
             outer_xy = loop_a
             inner_xy = loop_b
@@ -2856,77 +2847,69 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
             outer_xy = loop_b
             inner_xy = loop_a
 
-        # Enforce same parametric direction (CCW) for robust s-to-s pairing.
-        if _signed_area_xy(outer_xy) < 0.0:
+        s_outer_before = _signed_area_xy(outer_xy)
+        s_inner_before = _signed_area_xy(inner_xy)
+
+        if s_outer_before < 0.0:
             outer_xy = list(reversed(outer_xy))
-        if _signed_area_xy(inner_xy) < 0.0:
+        if s_inner_before < 0.0:
             inner_xy = list(reversed(inner_xy))
 
-        # Wall area must be positive.
+        s_outer_after = _signed_area_xy(outer_xy)
+        s_inner_after = _signed_area_xy(inner_xy)
+        '''
+        print(
+            f"[CELL-ORIENT][idx={i_cell}][z={z_sec}][{nm}] "
+            f"s_outer_before={s_outer_before:.12g} s_outer_after={s_outer_after:.12g} "
+            f"s_inner_before={s_inner_before:.12g} s_inner_after={s_inner_after:.12g}"
+        )
+        '''
+        # Optional area consistency warning.
         A_outer = abs(_signed_area_xy(outer_xy))
         A_inner = abs(_signed_area_xy(inner_xy))
         A_wall = A_outer - A_inner
 
-        if A_wall <= EPS_A:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has non-positive wall area "
-                f"(A_outer={A_outer:.12g}, A_inner={A_inner:.12g})."
-            )
-
-        # Consistency check: encoded polygon area should match ring wall area.
-        A_poly = abs(float(polygon_area_centroid(p)[0]))
-        rel_err = abs(A_poly - A_wall) / max(A_wall, 1.0)
-
-        A_poly = abs(float(polygon_area_centroid(p)[0]))
+        A_poly = abs(_signed_area_xy(xy))
         abs_err = abs(A_poly - A_wall)
         rel_err = abs_err / max(abs(A_wall), EPS_A)
-
-
-
-        if abs(A_poly - A_wall) > EPS_A and rel_err > EPS_K_RTOL:
-             warnings.warn(
-                 f"compute_saint_venant_J_cell(v3): polygon '{nm}' area mismatch (warning). "
-                 f"A_poly={A_poly:.12g}, A_outer-A_inner={A_wall:.12g}, "
-                 f"abs_err={abs_err:.12g}, rel_err={rel_err:.6e}",
-                 RuntimeWarning,
-             )
-
-        # ---------------------------------------------------------------------
-        # 2.2) Build robust midline:
-        #      re-sample by s, align phase, then average pointwise
-        # ---------------------------------------------------------------------
-        outer_s = _resample_closed_by_s(outer_xy, MIDLINE_SAMPLES)
-        inner_s = _resample_closed_by_s(inner_xy, MIDLINE_SAMPLES)
-
-        shift = _best_cyclic_shift(outer_s, inner_s)
-        if shift != 0:
-            inner_s = inner_s[shift:] + inner_s[:shift]
-
-        mid_xy = [
-            (
-                0.5 * (outer_s[i][0] + inner_s[i][0]),
-                0.5 * (outer_s[i][1] + inner_s[i][1]),
+        
+        if abs_err > EPS_A and rel_err > EPS_K_RTOL:
+            warnings.warn(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' "
+                f"(idx={i_cell}, z={z_sec}) geometric area mismatch. "
+                f"A_poly={A_poly:.12g}, A_outer-A_inner={A_wall:.12g}, "
+                f"abs_err={abs_err:.12g}, rel_err={rel_err:.6e}",
+                RuntimeWarning,
             )
-            for i in range(MIDLINE_SAMPLES)
-        ]
+        
+        J_geom = _compute_J_geom_from_global_mid_quantities(
+            outer_xy, inner_xy, t, nm, i_cell, z_sec
+        )
 
-        A_m = abs(_signed_area_xy(mid_xy))
-        b_m = _perimeter_xy(mid_xy)
+        contrib = w * J_geom
+        
+        '''
+        print(
+            f"[CELL-CONTRIB][idx={i_cell}][z={z_sec}][{nm}] "
+            f"w={w:.12g} J_geom={J_geom:.12g} contrib={contrib:.12g} J_total_before={J_total:.12g}"
+        )
+        '''
+        J_total += contrib
+        #print(f"[CELL-TOTAL][idx={i_cell}][z={z_sec}][{nm}] J_total_after={J_total:.12g}")
 
-        if A_m <= EPS_A or b_m <= EPS_L:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' degenerate midline "
-                f"(A_m={A_m:.12g}, b_m={b_m:.12g})."
-            )
 
-        # Bredt-Batho (uniform thickness):
-        #   J = 4 * A_m^2 / (∮ ds/t) = 4 * A_m^2 * t / b_m
-        J_geom = 4.0 * (A_m ** 2) * t / b_m
+        if t is None:
+                raise ValueError(
+                    "compute_saint_venant_J_cell: no @cell polygon contributed; thickness t is undefined."
+                )
 
-        # Non-negative structural contribution scaling.
-        J_total += abs(w) * J_geom
+        if len(cell_polys) == 1:
+            return J_total, t
+        else:
+            return J_total
 
-    return float(max(J_total, 0.0))
+#----------------------------------------------------------------------------
+
 
 """
 CSF torsion (Saint-Venant) - WALL-based variant with optional thickness override
@@ -2982,7 +2965,6 @@ For torsion stiffness (G * J), negative stiffness is not physically meaningful,
 so we scale contributions by abs(weight).
 If you want a different convention, change abs(w) accordingly.
 """
-
 def compute_saint_venant_J_wall(section: "Section") -> float:
     """
     Compute Saint-Venant torsional constant J_sv using "@WALL" polygons.
@@ -3095,7 +3077,7 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
     # 3) Compute J_sv (open thin-walled)
     # -----------------------------
     J = 0.0
-
+    n_wall_used = 0 
     for p in wall_polys:
         w = float(getattr(p, "weight"))
         if abs(w) < EPS_A:
@@ -3107,15 +3089,17 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
 
         nm = str(getattr(p, "name", "") or "")
         t_override = _parse_thickness_from_name(nm)
-
+        t_source = "?"
         if t_override is not None:
             t = float(t_override)
+            t_source = "@t"
+
         else:
             P = _poly_perimeter(p)
             if P < EPS_L:
                 continue
             t = 2.0 * A / P
-
+            t_source = "2A/P"
         if t < EPS_L:
             continue
 
@@ -3123,16 +3107,29 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
         # b ≈ A/t, so J_i ≈ (A/t)*t^3/3 = A*t^2/3
         J_i = (A * (t ** 2)) / 3.0
 
+        J_i_wall = J_i
+
+
+        P_dbg = _poly_perimeter(p)
+        b_est = (A / t) if t > EPS_L else 0.0
+        '''
+        print(
+            f"[J_WALL] nm={nm}  A={A:.6f}  P={P_dbg:.6f}  t={t:.6f} ({t_source})  "
+            f"b_est=A/t={b_est:.6f}  J_i={J_i_wall:.6f}  w={w:.6f} "
+        )
+        '''
+
         # Keep torsional stiffness non-negative
-        J += abs(w) * J_i
+        J += w * J_i
 
-    return float(J)
+    if len(wall_polys) == 1:
+        return float(J),t
+    else:
+        return float(J)
 
 
 
-##########################################################################################################################################
-
-
+#---------------------------------------------------------------------------------------
 
 
 """
@@ -3602,6 +3599,7 @@ def _poly_signed_area_centroid_xy(verts: Sequence[PointXY], eps_a: float) -> Tup
 
     Cx = cx6 / (3.0 * a2)
     Cy = cy6 / (3.0 * a2)
+
     return A, Cx, Cy
 
 
@@ -3790,7 +3788,7 @@ def compute_saint_venant_J(
 
     
 
-def export_full_opensees_model2(field: ContinuousSectionField, num_elements: int, E_val: float, filename: str = "main_beam_model.tcl"):
+def export_full_opensees_model2remove(field: ContinuousSectionField, num_elements: int, E_val: float, filename: str = "main_beam_model.tcl"):
     # -----------------------------------------------------------------------------
     # BETA VERSION NOTICE: 
     # This OpenSees integration module is in a Beta testing phase.
@@ -3976,7 +3974,7 @@ def assemble_element_stiffness_matrix(field: ContinuousSectionField, E_ref: floa
         
         # Sectional properties
         K_sec = section_stiffness_matrix(field.section(z_phys), E_ref=E_ref) # absolute z
-        props = section_full_analysis(field.section(z_phys),alpha=0.0)#alpha not used
+        props = section_full_analysis(field.section(z_phys))#alpha not used
         
         Jt = props.get("J_sv", 0.0)
         if Jt <= 0.0:
@@ -4083,15 +4081,6 @@ def polygon_inertia_about_origin(poly: Polygon) -> Tuple[float, float, float]:
     # For typical usage, we want weighted contributions. We take absolute values of Ix/Iy if polygon orientation flips.
     # Using signed formulas + abs for Ix/Iy tends to be robust for mixed orientations in prototypes.
     return (poly.weight * abs(Ix), poly.weight * abs(Iy), poly.weight * Ixy)
-
-
-
-
-
-
-
-
-
 
 
 """
@@ -4241,7 +4230,7 @@ def integrate_volume(
 
 
 
-def integrate_volume_wait(field: ContinuousSectionField, n_points: int =20) -> float:
+def integrate_volume_wait2remove(field: ContinuousSectionField, n_points: int =20) -> float:
     """
     Compute the member volume by integrating the cross-sectional area A(z) along z
     using Gauss–Legendre quadrature with a user-selected number of points.
@@ -4326,7 +4315,7 @@ def integrate_volume_wait(field: ContinuousSectionField, n_points: int =20) -> f
     return volume
 
 
-def gauss_rule(n_points: int) -> Tuple[List[float], List[float]]:
+def gauss_rule2remove(n_points: int) -> Tuple[List[float], List[float]]:
     """
     Convenience helper: return Gauss–Legendre nodes and weights on [-1,1].
 
@@ -4345,7 +4334,7 @@ def gauss_rule(n_points: int) -> Tuple[List[float], List[float]]:
     # end gauss_rule
 
 
-def integrate_volume_5points(field: ContinuousSectionField) -> float:
+def integrate_volume_5points2remove(field: ContinuousSectionField) -> float:
     """
     Computes the total volume of a 3D ruled solid using high-precision 
     5-point Gaussian quadrature.
@@ -4394,6 +4383,8 @@ def section_full_analysis(section: Section,alpha: float = 1.0):
     # Calculate fundamental properties: Net Area (A), Centroid coordinates (Cx, Cy),
     # Global Moments of Inertia (Ix, Iy, Ixy), and the Polar Moment (J).
     # This step accounts for weighted polygons (e.g., negative weights for holes).
+
+    
     props = section_properties(section)
     
     # -------------------------------------------------------------------------
@@ -6869,7 +6860,329 @@ class ContinuousSectionField:
 
 
     def section(self, z: float) -> Section: 
-        # in input z is absolute
+
+        #-----------------------------------------------------
+        # helpers
+        #-----------------------------------------------------
+
+
+        def _resolve_topology_and_t_from_names(
+            p0_name: str,
+            p1_name: str,
+            z: float,
+            z0: float,
+            z1: float,
+        ) -> Tuple[Optional[str], Optional[float]]:
+            """
+            Resolve topology tag and thickness t(z) from two polygon names.
+
+            Design intent
+            -------------
+            This helper is conservative and explicit:
+            - It resolves topology from tags in names (@cell, @wall, @closed).
+            - It resolves thickness from @t=... with linear interpolation in z.
+            - It does NOT build the final runtime name (that is delegated to a second helper).
+
+            Topology policy
+            ---------------
+            - If both names define topology and they differ, raise CSFError (blocking).
+            - If topology exists only on one side, keep it as constant.
+            - If no topology is found on both sides, return topology=None.
+
+            Thickness policy
+            ----------------
+            - If @t exists on both sides -> interpolate linearly at z.
+            - If @t exists on one side only -> keep constant.
+            - If @t missing on both sides -> t_value=None.
+            - If resolved topology is @cell and t_value is None -> blocking CSFError.
+
+            Parameters
+            ----------
+            p0_name, p1_name : str
+                Polygon names at start/end stations.
+            z : float
+                Absolute query coordinate.
+            z0, z1 : float
+                Absolute bounds used for interpolation.
+
+            Returns
+            -------
+            (topology_tag, t_value) : Tuple[Optional[str], Optional[float]]
+                topology_tag in {'@cell', '@wall', '@closed'} or None.
+                t_value as positive float or None.
+
+            Raises
+            ------
+            CSFError
+                On incompatible topology, invalid @t format/value, or @cell without thickness.
+            """
+
+            def _norm_name(s: str) -> str:
+                """Lowercase + trim helper."""
+                return str(s or "").strip().lower()
+
+            def _extract_topology(name: str) -> Optional[str]:
+                """
+                Extract at most one topology tag from name.
+
+                Valid tags:
+                    @cell, @wall, @closed
+
+                If more than one topology tag appears in the same name, raise CSFError.
+                """
+                low = _norm_name(name)
+                has_cell = "@cell" in low
+                has_wall = "@wall" in low
+                has_closed = "@closed" in low
+
+                n = int(has_cell) + int(has_wall) + int(has_closed)
+                if n > 1:
+                    raise CSFError(
+                        f"Invalid polygon name '{name}': multiple topology tags found "
+                        f"(@cell/@wall/@closed)."
+                    )
+
+                if has_cell:
+                    return "@cell"
+                if has_wall:
+                    return "@wall"
+                if has_closed:
+                    return "@closed"
+                return None
+
+            def _parse_t(name: str) -> Optional[float]:
+                """
+                Parse @t=<number> from a name.
+
+                Returns
+                -------
+                float | None
+                    Positive thickness if present, otherwise None.
+
+                Raises
+                ------
+                CSFError
+                    If @t exists but is malformed or non-positive.
+                """
+                s = str(name or "")
+                low = s.lower()
+                token = "@t="
+                i = low.find(token)
+                if i < 0:
+                    return None
+
+                j = i + len(token)
+                if j >= len(s):
+                    raise CSFError(f"Invalid @t tag in polygon name: '{name}'")
+
+                allowed = set("0123456789.+-eE")
+                buf = []
+                for ch in s[j:]:
+                    if ch in allowed:
+                        buf.append(ch)
+                    else:
+                        break
+
+                if not buf:
+                    raise CSFError(f"Invalid numeric @t value in polygon name: '{name}'")
+
+                try:
+                    t_val = float("".join(buf))
+                except Exception:
+                    raise CSFError(f"Invalid numeric @t value in polygon name: '{name}'")
+
+                if t_val <= 0.0:
+                    raise CSFError(f"Non-positive @t value in polygon name: '{name}'")
+                return t_val
+
+            def _interp_linear(zv: float, z0v: float, z1v: float, v0: float, v1: float) -> float:
+                """
+                Linear interpolation with clamped lambda in [0, 1].
+                """
+                dz = z1v - z0v
+                if abs(dz) <= EPS_L:
+                    return v0
+                lam = (zv - z0v) / dz
+                if lam < 0.0:
+                    lam = 0.0
+                elif lam > 1.0:
+                    lam = 1.0
+                return (1.0 - lam) * v0 + lam * v1
+
+            # --- Resolve topology ---
+            top0 = _extract_topology(p0_name)
+            top1 = _extract_topology(p1_name)
+
+            if top0 is not None and top1 is not None and top0 != top1:
+                raise CSFError(
+                    f"Incompatible topology tags between stations: "
+                    f"'{p0_name}' ({top0}) vs '{p1_name}' ({top1})."
+                )
+
+            topology = top0 if top0 is not None else top1
+
+            # --- Resolve thickness ---
+            t0 = _parse_t(p0_name)
+            t1 = _parse_t(p1_name)
+
+            if t0 is not None and t1 is not None:
+                t_val = _interp_linear(float(z), float(z0), float(z1), float(t0), float(t1))
+            elif t0 is not None:
+                t_val = float(t0)  # constant from S0
+            elif t1 is not None:
+                t_val = float(t1)  # constant from S1
+            else:
+                t_val = None
+
+            # Defensive post-check
+            if t_val is not None and t_val <= 0.0:
+                raise CSFError(
+                    f"Resolved non-positive thickness t={t_val} "
+                    f"from '{p0_name}' -> '{p1_name}' at z={z}."
+                )
+
+            # Mandatory thickness for @cell
+            if topology == "@cell" and t_val is None:
+                raise CSFError(
+                    f"Missing @t for @cell between '{p0_name}' and '{p1_name}'."
+                )
+
+            return topology, t_val
+
+
+        def _build_interpolated_polygon_name(
+            p0_name: str,
+            p1_name: str,
+            topology_tag: Optional[str],
+            t_value: Optional[float],
+        ) -> str:
+            """
+            Build the runtime polygon name from resolved metadata.
+
+            Important
+            ---------
+            - This helper does NOT interpolate values.
+            - It only formats a canonical name for the interpolated section.
+
+            Naming policy
+            -------------
+            - Canonical base name is taken from S0 left-part before '@'
+            (fallback to S1 if S0 base is empty).
+            - Different S0/S1 base names are allowed (no blocking mismatch).
+            - If topology is None -> return only base.
+            - @cell requires t_value.
+            - @wall / @closed accept optional t_value.
+
+            Examples
+            --------
+            - base@cell@t=0.25
+            - base@wall
+            - base@wall@t=0.18
+            - base@closed
+            """
+
+            def _left_of_at(name: str) -> str:
+                """Return substring before first '@'."""
+                s = str(name or "").strip()
+                k = s.find("@")
+                return s[:k] if k >= 0 else s
+
+            def _fmt_t(t: float) -> str:
+                """Compact numeric formatting for tags."""
+                return f"{float(t):.12g}"
+
+            base0 = _left_of_at(p0_name)
+            base1 = _left_of_at(p1_name)
+
+            # Conservative base selection: prefer S0 identity.
+            base = base0 if base0 else base1
+            if not base:
+                raise CSFError(
+                    f"Invalid polygon base name(s): '{p0_name}' / '{p1_name}'"
+                )
+
+            # No topology -> plain base name
+            if topology_tag is None:
+                return base
+
+            if topology_tag == "@cell":
+                if t_value is None:
+                    raise CSFError(f"Missing @t for @cell polygon '{base}'.")
+                return f"{base}@cell@t={_fmt_t(t_value)}"
+
+            if topology_tag == "@wall":
+                if t_value is None:
+                    return f"{base}@wall"
+                return f"{base}@wall@t={_fmt_t(t_value)}"
+
+            if topology_tag == "@closed":
+                if t_value is None:
+                    return f"{base}@closed"
+                return f"{base}@closed@t={_fmt_t(t_value)}"
+
+            raise CSFError(
+                f"Unsupported topology tag '{topology_tag}' for polygon '{base}'."
+            )
+
+
+
+
+        def _build_interpolated_polygon_name(
+            p0_name: str,
+            p1_name: str,
+            topology_tag: Optional[str],
+            t_value: Optional[float],
+        ) -> str:
+            """
+            Build runtime polygon name from resolved metadata.
+
+            Notes
+            -----
+            - This helper only formats the name.
+            - It does not validate/interpolate z-dependent values.
+            - Different base names between S0/S1 are allowed by design.
+            """
+
+            def _left_of_at(name: str) -> str:
+                s = str(name or "").strip()
+                k = s.find("@")
+                return s[:k] if k >= 0 else s
+
+            def _fmt_t(t: float) -> str:
+                return f"{float(t):.12g}"
+
+            base0 = _left_of_at(p0_name)
+            base1 = _left_of_at(p1_name)
+
+            # Use S0 base as canonical runtime name; fallback to S1 if needed.
+            base = base0 if base0 else base1
+            if not base:
+                raise CSFError(f"Invalid polygon base name(s): '{p0_name}' / '{p1_name}'")
+
+            if topology_tag is None:
+                return base
+
+            if topology_tag == "@cell":
+                if t_value is None:
+                    raise CSFError(f"Missing @t for @cell polygon '{base}'.")
+                return f"{base}@cell@t={_fmt_t(t_value)}"
+
+            if topology_tag == "@wall":
+                if t_value is None:
+                    return f"{base}@wall"
+                return f"{base}@wall@t={_fmt_t(t_value)}"
+
+            if topology_tag == "@closed":
+                if t_value is None:
+                    return f"{base}@closed"
+                return f"{base}@closed@t={_fmt_t(t_value)}"
+
+            raise CSFError(f"Unsupported topology tag '{topology_tag}' for polygon '{base}'.")
+
+
+
+        ### end helpers ----------------------------------------------------------------------------
+        # in input z is absol   ute
         origz=z-self.z0 # make origz relative
         #t = self._to_t(z) # normalize z 
         lenght = abs(self.z1 - self.z0)
@@ -6937,7 +7250,37 @@ class ContinuousSectionField:
             #print (f"DEBUG idx_pol_parent {idx_pol_parent}-{i} interp_weight_child {interp_weight_child} interp_weight_parent {interp_weight_parent} interp_weight_relative {interp_weight_relative} ")
             #print ("------------------------------------------------------")
             #print(f"DEBUG z {z} child {i} : name {p0.name}  interp_weight_child {interp_weight_child}  : idx_pol_parent {idx_pol_parent} parent_law {parent_law} : interp_weight_parent {interp_weight_parent} : interp_weight_relative {interp_weight_relative}")
-            poly = Polygon(vertices=verts, weight=interp_weight_relative, name=p0.name)
+
+            #poly = Polygon(vertices=verts, weight=interp_weight_relative, name=p0.name)
+
+
+            # Build runtime polygon metadata from both reference names.
+            # We first resolve topology and thickness consistently along z
+            # (including mandatory @t for @cell and optional @t for @wall),
+            # then compose a normalized name for the interpolated section.
+            # This centralizes tag logic in section(z) 
+
+            topology_tag, t_value = _resolve_topology_and_t_from_names(
+                p0_name=p0.name,
+                p1_name=p1.name,
+                z=z,          # oppure origz con coerenza al tuo resolver
+                z0=self.z0,
+                z1=self.z1,
+            )
+
+            poly_name = _build_interpolated_polygon_name(
+                p0_name=p0.name,
+                p1_name=p1.name,
+                topology_tag=topology_tag,
+                t_value=t_value,
+            )
+
+            poly = Polygon(vertices=verts, weight=interp_weight_relative, name=poly_name)
+
+
+
+
+
             # --------------------------
        
             if not re.search(r'(?i)@(cell|wall|closed)\b', str(poly.name or "")) and  polygon_has_self_intersections(poly):
@@ -7032,7 +7375,8 @@ def polygon_area_centroid(poly: Polygon) -> Tuple[float, Tuple[float, float]]:
     """
     A_signed, (Cx, Cy) = _polygon_signed_area_and_centroid(poly)
     
-    A_mag = abs(A_signed)
+    #A_mag = abs(A_signed) #qui
+    A_mag = (A_signed) #qui
     return poly.weight * A_mag, (Cx, Cy)
 
 
@@ -7079,6 +7423,9 @@ def section_data(field: ContinuousSectionField, z: float) -> dict:
        - 'section': The Section object (polygonal boundaries at z).
        - 'properties': A dictionary of computed geometric constants.
     """
+
+
+
 
     section = field.section(z)
     props = section_properties(section)
@@ -7266,63 +7613,239 @@ class Visualizer:
 
     def __init__(self, field: ContinuousSectionField):
         self.field = field
+    # ----------------------------------------------------------------------------
 
 
- 
+    def plot_weight(self, num_points=100, tol=1e-12):
+        """
+        Plot w(z) per polygon pair, skipping polygons with w(z) == 0 for all sampled z.
+        Skipped polygons are listed in a figure note.
+        Min/Max markers are shown on each plotted curve.
+        """
+        import numpy as np
+        import matplotlib.pyplot as plt
+
+        z_start = self.field.s0.z
+        z_end = self.field.s1.z
+        z_values = np.linspace(z_start, z_end, num_points)
+
+        num_polys = len(self.field.s0.polygons)
+        poly_w_series = {i: [] for i in range(num_polys)}
+
+        # Evaluate weights
+        for z in z_values:
+            for i in range(num_polys):
+                p0 = self.field.s0.polygons[i]
+                p1 = self.field.s1.polygons[i]
+
+                if self.field.weight_laws is not None and (i + 1) in self.field.weight_laws:
+                    current_law = self.field.weight_laws[i + 1]
+                else:
+                    current_law = None
+
+                w_val = self.field._interpolate_weight(
+                    p0.weight, p1.weight, z, p0, p1, current_law
+                )
+                poly_w_series[i].append(float(w_val))
+
+        # Split polygons: zero-flat vs plottable
+        zero_polys = []
+        plot_indices = []
+
+        for i in range(num_polys):
+            p0 = self.field.s0.polygons[i]
+            p1 = self.field.s1.polygons[i]
+            label = f"[{i}] s0:{p0.name} -> s1:{p1.name}"
+
+            y = np.asarray(poly_w_series[i], dtype=float)
+            if np.all(np.isclose(y, 0.0, atol=tol, rtol=0.0)):
+                zero_polys.append(label)
+            else:
+                plot_indices.append(i)
+
+        # If all are zero, no plot
+        if len(plot_indices) == 0:
+            print("All polygon weights are identically zero on sampled z.")
+            print("Skipped polygons:")
+            for s in zero_polys:
+                print(" -", s)
+            return
+
+        # Create subplots only for non-zero polygons
+        n_plot = len(plot_indices)
+        fig_w, axes_w = plt.subplots(n_plot, 1, figsize=(10, 2.4 * n_plot), sharex=True)
+        if n_plot == 1:
+            axes_w = [axes_w]
+        print("\n=== START WEIGHT MIN/MAX REPORT ===")
+        for ax_pos, i in enumerate(plot_indices):
+            ax = axes_w[ax_pos]
+            p0 = self.field.s0.polygons[i]
+            p1 = self.field.s1.polygons[i]
+            y = np.asarray(poly_w_series[i], dtype=float)
+
+            idx_min = int(np.argmin(y))
+            idx_max = int(np.argmax(y))
+            w_min, w_max = float(y[idx_min]), float(y[idx_max])
+            z_min, z_max = float(z_values[idx_min]), float(z_values[idx_max])
+            print(
+              f"[{i}] s0:{p0.name} -> s1:{p1.name} | "
+              f"min w={w_min:.12g} at z={z_min:.12g} | "
+              f"max w={w_max:.12g} at z={z_max:.12g}"
+            )
+            # Main curve
+            ax.plot(z_values, y, linewidth=1.5, label=f"s0 {p0.name} - s1 {p1.name}")
+
+            # Min/Max small markers on the curve
+            ax.scatter([z_min], [w_min], marker="v", s=26, zorder=3, label="min")
+            ax.scatter([z_max], [w_max], marker="^", s=26, zorder=3, label="max")
+
+            # Optional tiny text near markers
+            ax.annotate(f"{w_min:.4f}", (z_min, w_min), textcoords="offset points", xytext=(4, -12), fontsize=7)
+            ax.annotate(f"{w_max:.4f}", (z_max, w_max), textcoords="offset points", xytext=(4, 6), fontsize=7)
+
+            # y-limits
+            if w_max != w_min:
+                margin = (w_max - w_min) * 0.10
+            else:
+                margin = max(abs(w_max) * 0.05, 0.05)
+            ax.set_ylim(w_min - margin, w_max + margin)
+
+            ax.set_ylabel(f"s0 {p0.name}\ns1 {p1.name}", fontweight="bold")
+            ax.grid(True, linestyle="--", alpha=0.5)
+            ax.set_title(
+                f"Weight (w) | min={w_min:.6f} @ z={z_min:.3f} | max={w_max:.6f} @ z={z_max:.3f}",
+                loc="right", fontsize=8
+            )
+        print("=== END WEIGHT MIN/MAX REPORT ===")
+        axes_w[-1].set_xlabel("z")
+
+        # Figure-level note for zero-flat polygons
+        if zero_polys:
+            note = "Skipped (w=0 for all z): " + "; ".join(zero_polys)
+            fig_w.text(0.01, 0.01, note, ha="left", va="bottom", fontsize=8)
+
+        fig_w.suptitle(
+            f"Individual Polygon Weight (w) Distributions (Interpolated # {num_points} points)",
+            fontweight="bold"
+        )
+        fig_w.tight_layout(rect=[0, 0.04, 1, 0.96])
+        plt.show()
+
+
+
+
+
+
+
+    # ----------------------------------------------------------------------------
     def plot_properties(self, keys_to_plot=None, alpha=1, num_points=100):
         """
-        Plot the evolution of selected section properties along the Z-axis and report min/max
-        *including the corresponding z locations*.
+        Plot the evolution of selected section properties along the Z-axis.
+
+        Generic behavior for returned values:
+        - If a property is scalar -> plot on left y-axis.
+        - If a property returns a pair (left_value, right_value):
+            * left_value  is plotted on left y-axis
+            * right_value is plotted on right y-axis (twin axis)
+
+        Title behavior:
+        - Right side (top): min/max summary of left channel (same style as before)
+        - Left side  (top): only t(z0), t(z1) when right channel exists
 
         Args:
-            keys_to_plot (list[str] | None): property keys to plot (e.g. ["A","Ix","Iy"]).
-                If None, no keys are plotted (kept consistent with your current behavior).
-            alpha (float): passed to section_full_analysis (kept as-is; not used internally here).
-            num_points (int): number of sampling points along Z.
+            keys_to_plot (list[str] | None):
+                Property keys to plot (e.g., ["A", "Ix", "Iy"]).
+                If None, defaults to empty list.
+            alpha (float):
+                Passed through to section_full_analysis.
+            num_points (int):
+                Number of z samples between s0.z and s1.z.
         """
+        import numpy as np
+        import matplotlib.pyplot as plt
 
-        # Z range taken from the CSF field endpoints
+        # Z bounds from field endpoints
         z_start = self.field.s0.z
         z_end = self.field.s1.z
 
-        # Keep your current convention: if None -> plot nothing unless user provides keys
+        # Keep current convention: None -> empty list
         if keys_to_plot is None:
             keys_to_plot = []
 
-        # Sample Z coordinates
-        z_values = np.linspace(z_start, z_end, num_points)
-
-        # Collect values for each key
-        data_series = {key: [] for key in keys_to_plot}
-
+        # Early exit if no keys are requested
         if len(keys_to_plot) == 0:
             plt.show()
             return
 
-        # --- 1) Evaluate properties along z
+        # Uniform sampling along z
+        z_values = np.linspace(z_start, z_end, num_points)
+
+        # Left-axis values (main channel)
+        data_series = {key: [] for key in keys_to_plot}
+
+        # Right-axis values (secondary channel; only if property returns a pair)
+        data_series_right = {key: [] for key in keys_to_plot}
+
+        # -------------------------------------------------------------------------
+        # 1) Evaluate properties at each sampled z
+        # -------------------------------------------------------------------------
         for z in z_values:
-            # Build interpolated section at coordinate z
+            # Build section at current z
             current_section = self.field.section(z)
 
-            # Compute properties (alpha kept for API compatibility)
+            # Compute all properties for current section
             props = section_full_analysis(current_section, alpha=alpha)
 
-            # Append selected keys
             for key in keys_to_plot:
-                if key in props:
-                    v = props[key]
+                if key not in props:
+                    # Keep alignment with z_values even when key is missing
+                    data_series[key].append(np.nan)
+                    data_series_right[key].append(np.nan)
+                    continue
 
-                    # Enforce numerical zero below tolerance (same logic you already had)
-                    if abs(v) < EPS_L:
-                        v = 0.0
+                raw = props[key]
+
+                # Generic pair detection: any 2-item sequence is treated as (left, right)
+                is_pair = isinstance(raw, (tuple, list, np.ndarray)) and len(raw) == 2
+
+                if is_pair:
+                    # Left channel
+                    v_left = raw[0]
+                    if v_left is None:
+                        v_left = np.nan
+                    else:
+                        v_left = float(v_left)
+                        if abs(v_left) < EPS_L:
+                            v_left = 0.0
+
+                    # Right channel
+                    v_right = raw[1]
+                    if v_right is None:
+                        v_right = np.nan
+                    else:
+                        v_right = float(v_right)
+                        if abs(v_right) < EPS_L:
+                            v_right = 0.0
+
+                    data_series[key].append(v_left)
+                    data_series_right[key].append(v_right)
+
+                else:
+                    # Legacy scalar path (left only)
+                    v = raw
+                    if v is None:
+                        v = np.nan
+                    else:
+                        v = float(v)
+                        if abs(v) < EPS_L:
+                            v = 0.0
 
                     data_series[key].append(v)
-                else:
-                    # If a key is missing, append NaN to preserve alignment with z_values
-                    # (this avoids silent length mismatch bugs)
-                    data_series[key].append(np.nan)
+                    data_series_right[key].append(np.nan)
 
-        # --- 2) Plot one subplot per key
+        # -------------------------------------------------------------------------
+        # 2) Build one subplot per key
+        # -------------------------------------------------------------------------
         num_keys = len(keys_to_plot)
         fig, axes = plt.subplots(num_keys, 1, figsize=(10, 2.2 * num_keys), sharex=True)
         if num_keys == 1:
@@ -7330,428 +7853,209 @@ class Visualizer:
 
         colors = plt.cm.viridis(np.linspace(0, 0.9, num_keys))
 
-        for i, (key, color) in enumerate(zip(keys_to_plot, colors)):
-            # Convert to numpy array for robust min/max indexing
-            y = np.asarray(data_series[key], dtype=float)
+        # Console report header
+        print("\n=== PROPERTIES MIN/MAX REPORT ===")
+        print(f"z range: [{z_start:.6f}, {z_end:.6f}] | sampled points: {num_points}")
 
-            # Handle the case where everything is NaN (or empty)
-            finite_mask = np.isfinite(y)
-            if y.size == 0 or not np.any(finite_mask):
-                axes[i].plot(z_values, y, color=color, linewidth=2)
-                axes[i].set_ylabel(key, fontweight="bold")
-                axes[i].grid(True, linestyle=":", alpha=0.6)
-                axes[i].set_title(f"{key}: no valid data", loc="right", fontsize=9)
+        for i, (key, color) in enumerate(zip(keys_to_plot, colors)):
+            ax = axes[i]
+
+            # Left channel data and finite mask
+            y_left = np.asarray(data_series[key], dtype=float)
+            finite_left = np.isfinite(y_left)
+
+            # Right channel data and finite mask
+            y_right = np.asarray(data_series_right[key], dtype=float)
+            finite_right = np.isfinite(y_right)
+            has_right = bool(np.any(finite_right))
+
+            # Extract right-channel endpoint values (used for left top text: t(z0), t(z1))
+            t_start_txt = None
+            t_end_txt = None
+            if has_right:
+                idx_right = np.where(finite_right)[0]
+                if idx_right.size > 0:
+                    i0 = int(idx_right[0])    # first finite right sample
+                    i1 = int(idx_right[-1])   # last finite right sample
+                    t_start_txt = float(y_right[i0])
+                    t_end_txt = float(y_right[i1])
+
+            # ---------------------------------------------------------------------
+            # Case A: no valid left data
+            # ---------------------------------------------------------------------
+            if y_left.size == 0 or not np.any(finite_left):
+                ax.plot(z_values, y_left, color=color, linewidth=2)
+                ax.set_ylabel(key, fontweight="bold")
+                ax.grid(True, linestyle=":", alpha=0.6)
+
+                # Right-top text: status only (kept on the right)
+                title_right = f"{key}: no valid left-axis data"
+                ax.text(
+                    0.995, 1.01, title_right,
+                    transform=ax.transAxes,
+                    ha="right", va="bottom",
+                    fontsize=9,
+                    clip_on=False
+                )
+
+                # Left-top text: t endpoints only (requested behavior)
+                if t_start_txt is not None and t_end_txt is not None:
+                    title_left_t = f"t(z0)={t_start_txt:.6g}  t(z1)={t_end_txt:.6g}"
+                    ax.text(
+                        0.005, 1.01, title_left_t,
+                        transform=ax.transAxes,
+                        ha="left", va="bottom",
+                        fontsize=9,
+                        clip_on=False,
+                        wrap=True,
+                        bbox=dict(facecolor="white", edgecolor="none", pad=0.2)
+                    )
+
+                print(f"{key}: no valid left-axis data")
+
+                # Plot right channel if present
+                if has_right:
+                    ax_r = ax.twinx()
+                    ax_r.plot(z_values, y_right, linestyle="--", linewidth=1.5)
+                    #ax_r.set_ylabel(f"{key} (right)", fontweight="bold")
+                    ax_r.grid(False)
+
+                    # Console min/max for right channel
+                    y_rf = y_right[finite_right]
+                    z_rf = z_values[finite_right]
+                    i_min_r = int(np.argmin(y_rf))
+                    i_max_r = int(np.argmax(y_rf))
+                    v_min_r = float(y_rf[i_min_r])
+                    v_max_r = float(y_rf[i_max_r])
+                    z_min_r = float(z_rf[i_min_r])
+                    z_max_r = float(z_rf[i_max_r])
+
+                    print(
+                        f"{key} [right]: min={v_min_r:.12g} at z={z_min_r:.12g} | "
+                        f"max={v_max_r:.12g} at z={z_max_r:.12g}"
+                    )
                 continue
 
-            # Compute min/max on finite values only
-            y_f = y[finite_mask]
-            z_f = z_values[finite_mask]
+            # ---------------------------------------------------------------------
+            # Case B: valid left data
+            # ---------------------------------------------------------------------
+            y_lf = y_left[finite_left]
+            z_lf = z_values[finite_left]
 
-            i_min = int(np.argmin(y_f))
-            i_max = int(np.argmax(y_f))
+            i_min_l = int(np.argmin(y_lf))
+            i_max_l = int(np.argmax(y_lf))
 
-            v_min = float(y_f[i_min]); z_min = float(z_f[i_min])
-            v_max = float(y_f[i_max]); z_max = float(z_f[i_max])
+            v_min_l = float(y_lf[i_min_l])
+            v_max_l = float(y_lf[i_max_l])
+            z_min_l = float(z_lf[i_min_l])
+            z_max_l = float(z_lf[i_max_l])
 
-            # Plot the curve
-            axes[i].plot(z_values, y, color=color, linewidth=2)
+            # Plot left curve
+            ax.plot(z_values, y_left, color=color, linewidth=2)
 
-            # Mark min/max points on the curve
-            axes[i].scatter([z_min, z_max], [v_min, v_max], zorder=3)
+            # Mark min/max on left channel
+            ax.scatter([z_min_l], [v_min_l], marker="v", s=26, zorder=3)
+            ax.scatter([z_max_l], [v_max_l], marker="^", s=26, zorder=3)
 
-            axes[i].set_ylabel(key, fontweight="bold")
+            # Annotate left min/max values near markers
+            if np.isclose(v_min_l, v_max_l):
+                ax.annotate(
+                    f"{v_min_l:.4g}",
+                    (z_min_l, v_min_l),
+                    textcoords="offset points",
+                    xytext=(4, 6),
+                    fontsize=7,
+                )
+            else:
+                ax.annotate(
+                    f"{v_min_l:.4g}",
+                    (z_min_l, v_min_l),
+                    textcoords="offset points",
+                    xytext=(4, -12),
+                    fontsize=7,
+                )
+                ax.annotate(
+                    f"{v_max_l:.4g}",
+                    (z_max_l, v_max_l),
+                    textcoords="offset points",
+                    xytext=(4, 6),
+                    fontsize=7,
+                )
 
-            # Y-limits with margin (same concept as your current code)
-            margin = (v_max - v_min) * 0.1 if v_max != v_min else 0.1
-            axes[i].set_ylim(v_min - margin, v_max + margin)
+            # Left y-axis limits with margin
+            if v_max_l != v_min_l:
+                margin_l = (v_max_l - v_min_l) * 0.10
+            else:
+                margin_l = max(abs(v_max_l) * 0.05, 0.1)
+            ax.set_ylim(v_min_l - margin_l, v_max_l + margin_l)
 
-            axes[i].grid(True, linestyle=":", alpha=0.6)
+            ax.set_ylabel(key, fontweight="bold")
+            ax.grid(True, linestyle=":", alpha=0.6)
 
-            # Title includes min/max AND the corresponding z locations
-            axes[i].set_title(
-                f"{key}: min={v_min:.6g}@z={z_min:.6g}  max={v_max:.6g}@z={z_max:.6g}",
-                loc="right",
+            # Right-top text: min/max summary (unchanged side)
+            title_right = (
+                f"{key}: min={v_min_l:.6g}@z={z_min_l:.6g}  max={v_max_l:.6g}@z={z_max_l:.6g}"
+            )
+            ax.text(
+                0.995, 1.01, title_right,
+                transform=ax.transAxes,
+                ha="right", va="bottom",
                 fontsize=9,
+                clip_on=False
             )
 
-            # Optional: print to stdout (keep or remove as you prefer)
-            print(f"{key}: min={v_min} at z={z_min} | max={v_max} at z={z_max}")
-
-        axes[-1].set_xlabel(f"Z coordinate [m]  alpha={alpha}")
-        plt.tight_layout()
-        plt.show()
-
-
-
-
-
-    def plot_weight(self,num_points=100):
-     
-        # Use the exact attributes for Z coordinates from your ContinuousSectionField class
-        z_start = self.field.s0.z
-        z_end = self.field.s1.z
-        z_values = np.linspace(z_start, z_end, num_points)
-           
-        # Determine number of polygons from the reference sections
-        num_polys = len(self.field.s0.polygons)
-        poly_w_series = {i: [] for i in range(num_polys)}
-        
-        # Use the internal interpolation function for each polygon
-        
-        for z in z_values:
-            
-            for i in range(num_polys):
-                
-                p0 = self.field.s0.polygons[i]
-                p1 = self.field.s1.polygons[i]
-                
-                # CALL THE CORRECT PROTOCOL: _interpolate_weight
-                # We pass the weights from the boundary polygons and the current t
-
-                
-                if self.field.weight_laws is not None and (i + 1) in self.field.weight_laws:
-                    current_law = self.field.weight_laws[i+1]
-                else:
-                    current_law = None
-
-                w_val = self.field._interpolate_weight(
-                    p0.weight, p1.weight, z, p0, p1, current_law
+            # Left-top text: only t(z0), t(z1)
+            if t_start_txt is not None and t_end_txt is not None:
+                title_left_t = f"t(z0)={t_start_txt:.6g}  t(z1)={t_end_txt:.6g}"
+                ax.text(
+                    0.0015, 1.01, title_left_t,
+                    transform=ax.transAxes,
+                    ha="left", va="bottom",
+                    fontsize=9,
+                    clip_on=False,
+                    wrap=True,
+                    bbox=dict(facecolor="white", edgecolor="none", pad=0.2)
                 )
-                
-                #print(f"DEBUG {w_val}")
-                poly_w_series[i].append(w_val)
-                
-        
-        # Create a dedicated figure for individual polygon weights
-        fig_w, axes_w = plt.subplots(num_polys, 1, figsize=(10, 2 * num_polys), sharex=True)
-        if num_polys == 1: 
-            axes_w = [axes_w]
-   
-        for i in range(num_polys):
+                            # Console min/max for left channel
+            print(
+                f"{key}: min={v_min_l:.12g} at z={z_min_l:.12g} | "
+                f"max={v_max_l:.12g} at z={z_max_l:.12g}"
+            )
 
-            p0 = self.field.s0.polygons[i]
-            p1 = self.field.s1.polygons[i]      
-           
+            # Plot right channel if present
+            if has_right:
+                ax_r = ax.twinx()
+                ax_r.plot(z_values, y_right, linestyle="--", linewidth=1.5)
+                #ax_r.set_ylabel(f"{key} (right)", fontweight="bold")
+                ax_r.grid(False)
 
-            axes_w[i].plot(z_values, poly_w_series[i], color='tab:red', linewidth=1.5)
-            axes_w[i].set_ylabel(f"s0 {p0.name} - s1 {p1.name}", fontweight='bold')
-            
-            v_min_w, v_max_w = min(poly_w_series[i]), max(poly_w_series[i])
-            margin_w = (v_max_w - v_min_w) * 0.1 if v_max_w != v_min_w else 0.1
-            axes_w[i].set_ylim(v_min_w - margin_w, v_max_w + margin_w)
-            
-            axes_w[i].grid(True, linestyle='--', alpha=0.5)
-            axes_w[i].set_title(f"Weight (w) for polygon {i}", loc='right', fontsize=8)
+                # Console min/max for right channel
+                y_rf = y_right[finite_right]
+                z_rf = z_values[finite_right]
 
-        fig_w.suptitle(f"Individual Polygon Weight (w) Distributions (Interpolated # {num_points} points)", fontweight='bold')
-        fig_w.tight_layout()
+                i_min_r = int(np.argmin(y_rf))
+                i_max_r = int(np.argmax(y_rf))
 
+                v_min_r = float(y_rf[i_min_r])
+                v_max_r = float(y_rf[i_max_r])
+                z_min_r = float(z_rf[i_min_r])
+                z_max_r = float(z_rf[i_max_r])
+
+                print(
+                    f"{key} [right]: min={v_min_r:.12g} at z={z_min_r:.12g} | "
+                    f"max={v_max_r:.12g} at z={z_max_r:.12g}"
+                )
+
+        print("=== END PROPERTIES MIN/MAX REPORT ===\n")
+
+        axes[-1].set_xlabel(f"Z coordinate")
+
+        # Reserve top margin for top-left/top-right text lines
+        plt.tight_layout(rect=[0, 0, 1, 0.95])
         plt.show()
 
-    # -----------------------------------------------------------------------------------------------------------------------------------------
 
-    def plot_section_2d2remove(
-        self,
-        z: float,
-        show_ids: bool = True,
-        show_weights: bool = True,
-        show_vertex_ids: bool = False,
-        title: Optional[str] = None,
-        ax=None,
-    ):
-
-        print(f"DEBUG show_ids {show_ids} show_vertex_ids {show_vertex_ids}")
-        """
-        Draw the 2D section at a given longitudinal coordinate z.
-
-        This version does NOT place polygon labels inside the axes.
-        Instead, it creates legends on the right side:
-
-        Legend 1 (top): "Polygons (w is relavite)"
-        - shows #id, relative w(z), name, and container id
-        - handle uses polygon color (and container color if it exists)
-
-        Legend 2 (below): "Weights (S0/S1/abs(z))"
-        - shows #id, (name_S0/name_S1), w_S0 - w_S1 - w_abs(z)
-        - appends the formal law string if a weight law is defined for that polygon
-        - handle uses the SAME color layout as legend 1 (polygon + container)
-
-        Notes on correctness
-        --------------------
-        - `self.field.get_container_polygon_index()` returns an index in `self.field.s0.polygons`.
-        Therefore, container lookup MUST be done in S0-space, then mapped by polygon name
-        into the current `sec.polygons` order for display.
-        - The section polygons at z carry RELATIVE weights. For the second legend we reconstruct
-        ABSOLUTE weights at z using the container chain:
-            w_abs(child) = w_rel(child) + w_abs(container(child))
-        """
-        # Local imports to keep this as a drop-in snippet (no module-level deps needed).
-        import matplotlib.pyplot as plt
-        from matplotlib.lines import Line2D
-        from matplotlib.legend_handler import HandlerTuple
-
-        sec = self.field.section(z)
-
-        created_new_fig = False
-        if ax is None:
-            fig, ax = plt.subplots()
-            created_new_fig = True
-        else:
-            fig = ax.figure
-
-        # Store per-polygon plot colors (in the *sec.polygons* order) so we can reuse them in the legends.
-        poly_colors = []
-
-        # -------------------------
-        # 1) Plot polygon outlines
-        # -------------------------
-        for idx, poly in enumerate(sec.polygons):
-            # Build a closed polyline for plotting, but do not double-close if already closed.
-            xs = [p.x for p in poly.vertices]
-            ys = [p.y for p in poly.vertices]
-            if len(poly.vertices) >= 2:
-                x0, y0 = poly.vertices[0].x, poly.vertices[0].y
-                xN, yN = poly.vertices[-1].x, poly.vertices[-1].y
-                if (x0, y0) != (xN, yN):
-                    xs.append(x0)
-                    ys.append(y0)
-
-            # Plot polygon outline
-            line, = ax.plot(xs, ys, linewidth=1, zorder=2)
-            color = line.get_color()
-            poly_colors.append(color)
-
-            # Optional vertex numbering (kept inside axes)
-            if show_vertex_ids:
-                for v_idx, v in enumerate(poly.vertices, start=1):
-                    ax.text(
-                        v.x,
-                        v.y,
-                        f" {v_idx}",
-                        color=color,
-                        fontsize=9,
-                        fontweight="bold",
-                        zorder=4,
-                    )
-
-        # ---------------------------------------------
-        # 2) Precompute maps and container ids (S0-aware)
-        # ---------------------------------------------
-        sec_name_to_idx = {getattr(p, "name", None): i for i, p in enumerate(sec.polygons)}
-        s0_name_to_idx = {getattr(p, "name", None): i for i, p in enumerate(self.field.s0.polygons)}
-
-        # Per-sec index data used by BOTH legends
-        container_id_by_sec: list = [None] * len(sec.polygons)          # container index in sec order (or None)
-        child_s0_idx_by_sec: list = [None] * len(sec.polygons)          # child index in s0 order (or None)
-
-        for idx, poly in enumerate(sec.polygons):
-            container_id = None
-            child_s0_idx = None
-
-            try:
-                child_name = getattr(poly, "name", None)
-                child_s0_idx = s0_name_to_idx.get(child_name)
-
-                if child_s0_idx is not None:
-                    parent_s0_idx = self.field.get_container_polygon_index(
-                        self.field.s0.polygons[child_s0_idx],
-                        child_s0_idx,
-                    )
-
-                    if parent_s0_idx is not None:
-                        parent_name = getattr(self.field.s0.polygons[parent_s0_idx], "name", None)
-                        container_id = sec_name_to_idx.get(parent_name)
-
-            except Exception:
-                container_id = None
-                child_s0_idx = None
-
-            container_id_by_sec[idx] = container_id
-            child_s0_idx_by_sec[idx] = child_s0_idx
-
-        # ---------------------------------------------
-        # 3) Reconstruct ABSOLUTE weights at z (w_abs(z))
-        # ---------------------------------------------
-        w_rel_z = [float(getattr(p, "weight", 0.0)) for p in sec.polygons]
-        w_abs_z_cache = {}
-
-        def _w_abs_z(i: int) -> float:
-            if i in w_abs_z_cache:
-                return w_abs_z_cache[i]
-            parent = container_id_by_sec[i]
-            if parent is None:
-                w_abs_z_cache[i] = w_rel_z[i]
-            else:
-                w_abs_z_cache[i] = w_rel_z[i] + _w_abs_z(parent)
-            return w_abs_z_cache[i]
-
-        w_abs_z = [_w_abs_z(i) for i in range(len(sec.polygons))]
-
-        # ---------------------------------------------
-        # 4) Legend 1 (relative weights, container-aware)
-        # ---------------------------------------------
-        legend1_handles = []
-        legend1_labels = []
-
-        for idx, poly in enumerate(sec.polygons):
-            container_id = container_id_by_sec[idx]
-
-            # Legend proxies: polygon color (+ container color if present)
-            h_poly = Line2D([0], [0], color=poly_colors[idx], linewidth=5.0)
-
-            if container_id is not None and 0 <= container_id < len(poly_colors):
-                h_container = Line2D([0], [0], color=poly_colors[container_id], linewidth=5.0)
-                legend1_handles.append((h_poly, h_container))
-            else:
-                legend1_handles.append(h_poly)
-
-            # Label: "#id  w=<rel>  name  container=#<id>"
-            name = (getattr(poly, "name", None) or f"poly_{idx}").strip()
-            parts = []
-            if show_ids:
-                parts.append(f"#{idx}")
-            if show_weights:
-                parts.append(f"w ={w_rel_z[idx]:g}")
-            parts.append(f"{name}  container=#{container_id if container_id is not None else 'None'}")
-            legend1_labels.append("  ".join(parts))
-
-        # -------------------------
-        # 5) Axes formatting
-        # -------------------------
-        ax.set_aspect("equal", adjustable="box")
-        ax.set_xlabel("X")
-        ax.set_ylabel("Y")
-        ax.grid(True, linestyle=":", alpha=0.5, zorder=1)
-
-        if title is None:
-            title = f"Section at z={z:g}"
-        ax.set_title(title)
-
-        # Create legend 1 (top)
-        leg1 = ax.legend(
-            legend1_handles,
-            legend1_labels,
-            loc="upper left",
-            bbox_to_anchor=(1.02, 1.0),
-            borderaxespad=0.0,
-            frameon=True,
-            title="Polygons (w is relavite)",
-            handler_map={tuple: HandlerTuple(ndivide=None)},
-        )
-        '''
-        # ---------------------------------------------
-        # 6) Legend 2 (S0/S1 endpoints, abs(z), optional law)
-        # ---------------------------------------------
-        legend2_handles = []
-        legend2_labels = []
-
-        # Build S1 name/weight lookup by index (assumes S0/S1 polygon lists are aligned by meaning)
-        s1_polys = getattr(self.field, "s1", None)
-        s1_list = getattr(s1_polys, "polygons", None) if s1_polys is not None else None
-
-        weight_laws = getattr(self.field, "weight_laws", None)
-        has_laws = isinstance(weight_laws, dict)
-
-        for idx, poly in enumerate(sec.polygons):
-            container_id = container_id_by_sec[idx]
-            child_s0_idx = child_s0_idx_by_sec[idx]
-
-            # Same handle layout (polygon + container colors)
-            h_poly = Line2D([0], [0], color=poly_colors[idx], linewidth=5.0)
-            if container_id is not None and 0 <= container_id < len(poly_colors):
-                h_container = Line2D([0], [0], color=poly_colors[container_id], linewidth=5.0)
-                legend2_handles.append((h_poly, h_container))
-            else:
-                legend2_handles.append(h_poly)
-
-            # Fetch endpoint names/weights (S0/S1) by the matched S0 index.
-            name_s0 = None
-            name_s1 = None
-            w_s0 = None
-            w_s1 = None
-            law_str = None
-
-            if child_s0_idx is not None:
-                p0 = self.field.s0.polygons[child_s0_idx]
-                name_s0 = getattr(p0, "name", None)
-                w_s0 = float(getattr(p0, "weight", 0.0))
-
-                if isinstance(s1_list, list) and 0 <= child_s0_idx < len(s1_list):
-                    p1 = s1_list[child_s0_idx]
-                    name_s1 = getattr(p1, "name", None)
-                    w_s1 = float(getattr(p1, "weight", 0.0))
-
-                # Weight law (formal string) if present: "<name_s0>,<name_s1>: <expr>"
-                if has_laws:
-                    key = child_s0_idx + 1  # laws use 1-based polygon id
-                    if key in weight_laws:
-                        n0 = name_s0 if name_s0 is not None else f"poly{key}"
-                        n1 = name_s1 if name_s1 is not None else n0
-                        law_str = f"{n0},{n1}: {weight_laws[key]}"
-
-            # Build legend 2 label:
-            # "#<id>  <nameS0>/<nameS1>  <wS0> - <wS1> - <w_abs(z)>  [- <law>]"
-            nm0 = (name_s0 or (getattr(poly, "name", None) or f"poly_{idx}")).strip()
-            nm1 = (name_s1 or nm0).strip()
-
-            w0_txt = f"{w_s0:g}" if w_s0 is not None else "None"
-            w1_txt = f"{w_s1:g}" if w_s1 is not None else "None"
-            wz_txt = f"{w_abs_z[idx]:g}"
-
-            parts2 = []
-            if show_ids:
-                parts2.append(f"#{idx}")
-            parts2.append(f"{nm0}/{nm1}")
-            parts2.append(f"{w0_txt} - {w1_txt} - {wz_txt}")
-            if law_str:
-                parts2.append(f"- {law_str}")
-
-            
-            lines = []
-            if show_ids:
-                lines.append(f"#{idx}  {nm0}/{nm1}")
-            else:
-                lines.append(f"{nm0}/{nm1}")
-
-            lines.append(f"{w0_txt} - {w1_txt} - {wz_txt}")
-
-            if law_str:
-                # wrap the long law string
-                lines.append(textwrap.fill(law_str, width=45))
-
-            legend2_labels.append("\n".join(lines))
-
-        # Place legend 2 right below legend 1 using the rendered bbox of legend 1.
-        anchor_y = 0.0
-        try:
-            fig.canvas.draw()
-            bbox1 = leg1.get_window_extent(fig.canvas.get_renderer())
-            bbox1_ax = bbox1.transformed(ax.transAxes.inverted())
-            anchor_y = max(float(bbox1_ax.y0) - 0.02, 0.0)
-        except Exception:
-            anchor_y = 0.0
-
-        leg2 = ax.legend(
-            legend2_handles,
-            legend2_labels,
-            loc="upper left",
-            bbox_to_anchor=(1.02, anchor_y),
-            borderaxespad=0.0,
-            frameon=True,
-            title="Weights (S0/S1/abs(z))",
-            handler_map={tuple: HandlerTuple(ndivide=None)},
-        )
-        '''
-        # Ensure legend 1 remains visible (ax.legend() replaces the previous legend).
-        ax.add_artist(leg1)
-
-        # Make room for the external legends when a new figure is created
-        if created_new_fig:
-            fig.subplots_adjust(right=0.78)
-
-        return ax
-
-
+    
     # -----------------------------------------------------------------------------------------------------------------------------------------
     def plot_section_2d(
         self,
