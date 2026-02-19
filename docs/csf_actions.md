@@ -451,8 +451,6 @@ For the two stations `z1` and `z2`:
 
 The report shows both values per polygon. `V_hom` is provided for completeness; if `w(z) ≡ 1` on the interval, then `V_hom = V_occ`.
 
-> Note on interpretation: these are “volume-like” integrated quantities. Do not attach a physical unit here unless your project defines one.
-
 ---
 
 ## Stations
