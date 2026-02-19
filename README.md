@@ -31,8 +31,7 @@ CSF is a preprocessor: it computes geometry-based properties along `z` but it is
 ## Companion module: CSFStacked
 
 CSFStacked is a container that stacks multiple `ContinuousSectionField` segments along the global `z` axis and dispatches any query `z -> correct segment`.  
-It resolves segment boundaries deterministically (including exact junction queries) and exposes a single global API—e.g., section(z) and section_full_analysis(z)—to evaluate sections and properties anywhere along the full stacked member.
-
+It adds a practical layer on top of multiple CSF segments: junctions are handled deterministically and you can query sections/properties anywhere with a single global API (section(z), section_full_analysis(z))
         
 ![torsionmdel](https://github.com/user-attachments/assets/85882b4e-6173-4630-84c5-fd703c54cad4)
 
