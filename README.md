@@ -1,4 +1,3 @@
-
 ## Section-Property Preprocessor for Non-Prismatic Members (Continuous Field Model)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18063427.svg)](https://doi.org/10.5281/zenodo.18063427)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
@@ -7,26 +6,27 @@
 ![License](https://img.shields.io/github/license/giovanniboscu/continuous-section-field)
 ![Repo Size](https://img.shields.io/github/repo-size/giovanniboscu/continuous-section-field)
 
-**[Key Features](#key-features)** • **[Installation & setup](#setup-environment-linux--windows)** • **[Continuously Tapered Beam Example](#worked-example-continuously-tapered-t-beam)** •**[Validation](#-CSF-Numerical-Validation:-Circular-Hollow-Section)** • **[NREL 5-MW Case Study ](#numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
+**[Key Features](#key-features)** • **[Installation & setup](#setup-environment-linux--windows)** • **[Worked Example](#worked-example-continuously-tapered-t-beam)** • **[Validation: CHS](#csf-numerical-validation-circular-hollow-section)** • **[Case Study: NREL 5-MW](#csf-validation--numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
 
+- [CSF Programmer Guide](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/programmer-guide) — Python API (developer-oriented)
+- [CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md) — step-by-step YAML workflow
 
-[CSF Programmer Guide](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/programmer-guide) For developers who want full programmatic control via Python API
+---
 
-[CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md) See the full step-by-step tutorial here
+## Continuous Section Field (CSF)
 
+**CSF** is a Python engine for **non-prismatic** and **non-homogeneous** beam-like members, designed as a *continuous pre-processor* for structural solvers.
 
-## Continuous Section Field (CSF): Section-Property Preprocessing for Non-Prismatic, Multi-Region Members (Python API and YAML workflow)
+CSF models a member as a continuous field along the axis `z`, combining:
 
-**Continuous Section Field (CSF)** is a Python engine for **non-prismatic** and **non-homogeneous** beam-like members, designed as a *continuous pre-processor* for structural solvers.
-
-CSF represents a member as a **continuous field along the axis z**, combining two coupled descriptions:
-
-- **Continuous geometry** defined explicitly by the user as **arbitrary polygonal sections** at stations (e.g., S0 and S1), with interpolation between stations for tapered / varying shapes.
-- **Continuous material / stiffness laws** defined by user-provided longitudinal functions **w(z)**, optionally per polygon (multi-material layouts, staged stiffness, degradation laws). Voids and composite behavior are modeled explicitly through dedicated polygons and CSF’s composition rules.
+- **Geometry field**: arbitrary polygonal sections at stations (e.g., `S0`, `S1`) with interpolation for tapered / varying shapes.
+- **Weight field**: user-defined longitudinal laws `w(z)`, optionally per polygon (multi-material layouts, staged stiffness, degradation).Composite sections are modeled explicitly as multiple polygonal regions (one per material/region) and combined through CSF’s polygon composition rules.
 
 From this continuous description, CSF evaluates section properties and stiffness fields along `z` (e.g., `A(z)`, `I(z)`, `C(z)`, `EA(z)`, `EI(z)`, `GJ(z)`) and can export solver-ready station data. For force-based beam formulations (e.g., OpenSees `forceBeamColumn`), CSF can generate Gauss–Lobatto stationing so member ends are sampled exactly.
 
-CSF is a preprocessor: it computes geometry-based properties along `z` but it is not a structural solver and does not implement constitutive nonlinearities (plasticity, cracking, damage).
+CSF is a preprocessor: it computes geometry-based properties along `z`. It is not a structural solver and does not implement constitutive nonlinearities (plasticity, cracking, damage).
+
+
 
 ### CSFStacked module (segmented `ContinuousSectionField` stacking)
 
