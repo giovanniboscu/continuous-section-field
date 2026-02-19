@@ -90,7 +90,9 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 import math
 import re
-
+from pathlib import Path
+import io
+from contextlib import redirect_stdout, redirect_stderr
 try:
     import yaml  # type: ignore
 except Exception:
@@ -209,10 +211,14 @@ class CSFReader:
         # This lets us show one controlled error (CSF_E_VALIDATOR) instead of:
         #   - rough validator printing something
         #   - then us printing another generic message unrelated to the actual failure
-        import io
-        from contextlib import redirect_stdout, redirect_stderr
+
 
         buf = io.StringIO()
+        p = Path(filepath)
+
+        if not p.is_file():
+            raise FileNotFoundError(f"File not found: {p.resolve()}")
+
         with redirect_stdout(buf), redirect_stderr(buf):
             validator_result = csf_rough_validator(filepath)
         validator_out = buf.getvalue().strip()
@@ -309,66 +315,7 @@ class CSFReader:
         # so error messages can reference the file name.
         
         return self.read_text(text)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    '''
-    def read_file(self, filepath: str) -> ReadResult:
-        """
-        Read CSF YAML from a file path.
-        """
-        self._polygons_map_coercions = []
-        issues: List[Issue] = []
-
-        # NEW: Pre-validate with csf_rough_validator (0=OK, 1=error, 2=missing)
-        validator_result = csf_rough_validator(filepath)
-        if validator_result == 2:  # File missing
-            issues.append(CSFIssues.make("CSF_E_IO_READ", path="$", context="File not found"))
-            return ReadResult(field=None, issues=issues)
-        elif validator_result == 1:  # Validation failed (quoted numbers/structure)
-            # Add generic validator issue - detailed output already printed by validator
-            print ("csf_rough_validator Validation failed ")
-
-            issues.append(CSFIssues.make(
-                "CSF_E_VALIDATOR", 
-                path="$", 
-                message="CSF YAML validation failed (check console output)",
-                hint="Fix quoted numbers (use 1.0 not \"1.0\"), structure, then re-run"
-            ))
-            return ReadResult(field=None, issues=issues)        
-
-
-        try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                text = f.read()
-        except UnicodeDecodeError as e:
-            issues.append(CSFIssues.make("CSF_E_ENCODING", path="$", context=str(e)))
-            return ReadResult(field=None, issues=issues)
-        except Exception as e:
-            issues.append(CSFIssues.make("CSF_E_IO_READ", path="$", context=str(e)))
-            return ReadResult(field=None, issues=issues)
-
-        return self.read_text(text)
-    '''
+    
     def read_text(self, text: str) -> ReadResult:
         """
         Read CSF YAML from a string.
