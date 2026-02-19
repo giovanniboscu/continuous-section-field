@@ -30,3 +30,8 @@ dependencies = [
 where = ["."]
 include = ["csf*"]
 
+[project.optional-dependencies]
+examples = [
+    "pycba"
+]
+
