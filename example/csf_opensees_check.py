@@ -1,3 +1,15 @@
+"""
+TEMPLATE USE
+------------
+Most users only need the parser:
+
+    geom = parse_csf_geometry("geometry.tcl")
+    # geom.z_stations, geom.sections, geom.vecxz are now available
+
+The OpenSeesPy part (run_csf_opensees) is an example builder showing one
+possible mapping strategy; users may replace it with their own builder.
+"""
+
 from __future__ import annotations
 
 import os
@@ -10,10 +22,70 @@ from numpy.polynomial.legendre import Legendre
 
 
 """
-CSF -> OpenSeesPy Checker / Builder (single file, no CLI)
+
+CSF -> OpenSeesPy Builder (reads geometry.tcl as DATA)
 
 ================================================================================
-WHAT CHANGED (IMPORTANT)
+FILE (geometry.tcl)
+================================================================================
+- This script reads geometry.tcl as a DATA file (do NOT source it as Tcl).
+- Required/used records:
+  1) "# CSF_Z_STATIONS: z0 ... zN-1"   (comment line, but machine-readable here)
+  2) "geomTransf Linear 1 vx vy vz"
+  3) "section Elastic tag E A Iz Iy G J Cx Cy"  (Cx,Cy are CSF-only extra fields)
+
+Notes:
+- "Cx Cy" (or "xc yc"): the names do NOT matter. They are simply the last two
+  numeric tokens of each "section Elastic" line. OpenSees would ignore them if
+  sourced, but this script parses them as centroid offsets in the local section plane.
+- "node 1/2" lines in geometry.tcl are treated as informational only and are ignored.
+
+================================================================================
+STATION COORDINATES (z)
+================================================================================
+- Preferred: use CSF_Z_STATIONS if present and PREFER_CSF_Z_STATIONS=True.
+- Fallback: if missing and ALLOW_FALLBACK_IF_MISSING_Z_STATIONS=True, generate
+  stations with DISC = "lobatto" or "uniform" over length L.
+  WARNING: fallback breaks strict reproducibility versus CSF export.
+
+================================================================================
+INTEGRATION STRATEGY (why AUTO may segment)
+================================================================================
+AUTO chooses between two consistent mappings WITHOUT inventing new sections:
+
+A) MEMBER-LEVEL (single element, N-point Gauss–Lobatto)
+   - Used only when centroid offsets are constant across stations (no "tilt"):
+       max(Cx)-min(Cx) <= TILT_TOL and max(Cy)-min(Cy) <= TILT_TOL
+   - Requires CSF_Z_STATIONS to match Gauss–Lobatto abscissae for N points
+     (strict check, no trapezoid fallback).
+
+B) SEGMENTED (N-1 elements, 2-point endpoint sampling per segment)
+   - Used when centroid offsets vary (tilt/curvature/eccentricity varies).
+   - Creates nodes at every station so the centroid axis is represented explicitly.
+   - Each segment uses UserDefined integration with locs=[0,1], weights=[0.5,0.5]
+     and section tags taken from the two end stations ONLY.
+
+Rationale:
+- A single forceBeamColumn element has only two element nodes, so it cannot
+  represent a varying centroid axis unless you accept losing that variation.
+- Segmentation is therefore the minimal way to preserve station-wise Cx,Cy
+  while still using only file-provided sections.
+
+================================================================================
+MATERIAL MODE (E,G)
+================================================================================
+- MATERIAL_INPUT_MODE="from_file": use E and G from geometry.tcl.
+- MATERIAL_INPUT_MODE="override": use E_OVERRIDE and (G_OVERRIDE or E/(2*(1+nu))).
+  A/Iz/Iy/J and Cx/Cy are always taken from file.
+
+================================================================================
+TORSION (J)
+================================================================================
+- OpenSees Elastic section uses the single scalar J in "G*J".
+- geometry.tcl must therefore export ONE J per station (already selected upstream).
+- The trailing comment "# torsion=..." is informational only; this script reads
+  only the numeric J field.
+
 ================================================================================
 This version supports a "true" Gauss–Lobatto integration strategy *without*
 creating any interpolated/new sections:
