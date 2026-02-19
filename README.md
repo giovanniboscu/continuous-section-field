@@ -28,7 +28,7 @@ From this continuous description, CSF evaluates section properties and stiffness
 
 CSF is a preprocessor: it computes geometry-based properties along `z` but it is not a structural solver and does not implement constitutive nonlinearities (plasticity, cracking, damage).
 
-## Companion module: CSFStacked
+# CSFStacked module (segmented `ContinuousSectionField` stacking)
 
 CSFStacked is a container that stacks multiple `ContinuousSectionField` segments along the global `z` axis and dispatches any query `z -> correct segment`.  
 It adds a practical layer on top of multiple CSF segments: junctions are handled deterministically and you can query sections/properties anywhere with a single global API (section(z), section_full_analysis(z))
