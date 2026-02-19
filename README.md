@@ -131,7 +131,7 @@ Sections are modeled as ruled surfaces linearly interpolated between two arbitra
 Two section planes are defined:
 
 - start section at \( z = 0 \)
-- end section at \( z = L \)
+- end section at \( z = L \) on
 
 Both end sections are defined in parallel planes at  z=0 and z=L.
 Their geometries are expressed in the same local $x$ – $y$ reference frame (same axis orientation), with no relative rotation.
@@ -213,7 +213,7 @@ The engine employs a **multi-pass analysis** combined with **Gaussian integratio
 ####   Continuous Longitudinal Formulation
 Unlike traditional frame analysis software that treats members as prismatic, this library treats the member as a **Continuous Section Field**:
 * **Dynamic Computation**: Every property is calculated at any longitudinal coordinate $z$ via linear vertex-mapping.
-* **Homogenization & Voids**: Full support for material homogenization through **positive weights** and internal voids or cut-outs through **negative weights**.
+* **Homogenization: Full support for material homogenization through **positive weights**
 
 ## Cross-sectional properties 
 
