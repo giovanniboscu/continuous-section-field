@@ -146,7 +146,11 @@ This is intended as a **debug/verification** view (geometry continuity, segment 
 
 ---
 
-## 6) Fast integration example with PyCBA (beam bending)
+## 6) PyCBA integration 
+
+CSFStacked integration with **PyCBA**: sample `EI(z)` (or other section properties) from the stacked CSF along the global axis and feed them into a 1D beam model to run fast deflection checks on members with **piecewise-varying stiffness**.  
+The example uses midpoint sampling per solver element to avoid ambiguity at segment junctions and to keep the mapping `z → segment → properties` deterministic.
+
 
 Below is a minimal pattern used in `stacked_csf_example.py`: extract `EI(z)` from the stacked CSF and run a 1D beam analysis with PyCBA.
 
