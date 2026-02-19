@@ -179,27 +179,6 @@ CSF_ACTIONS:
 
 ---
 
-## `weight_lab` (placeholder)
-
-**Purpose**  
-Reserved for future weight-law exploration/reporting.
-
-**Status**: **NOT IMPLEMENTED** (the runner knows the name for validation, but execution is expected to fail).
-
-**Example (do not use in production runs yet)**
-
-```yaml
-CSF_ACTIONS:
-  stations:
-    dummy: [0.0]
-  actions:
-    - weight_lab:
-        stations: [dummy]
-        output: [stdout]
-```
-
----
-
 ## `plot_section_2d`
 
 **Purpose**  
