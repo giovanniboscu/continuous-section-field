@@ -41,22 +41,26 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 ---
 ## Key Features
 
-- **Algebraic Polygon Logic**: Sections defined as collections of 2D vertices with weights. Handles any shape - from standard profiles to fully custom architectural sections.
-- ***Custom Weight Laws*** (Advanced Material Modeling) Define property variations w(z) independent from geometry. Model thermal degradation, concrete maturation, soil confinement, localized damage, or variable reinforcement density using custom formulas or external data files. **[See Full Documentation** ]
- [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)
- [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
-- **Curvature Handling**: Discrete segments with arbitrary vertex count → approximate curved surfaces (e.g., circular towers) to any desired precision.
-- **No Predefined Templates**: No restricted "Circle" or "Rectangle" classes — any geometry describable by coordinates is supported (A, I, J, Q, etc.).
-- **Topological Freedom**:
-  - Hollow sections (e.g., NREL tapered shell)
-  - Multi-cellular shapes with internal stiffeners
-  - Composite/multi-material sections via modular ratio weights
-- fully arbitrary `w(z)` per polygon  
-  → non-linear thickness, modulus, or reinforcement variation  
-  → access to `w₀`, `w₁`, current/initial/end distances `d(i,j)`, `di(i,j)`, `de(i,j)`, and all `math` functions
-- **Arbitrary Longitudinal Weight Functions**: Each polygon can be assigned a fully arbitrary longitudinal weight function `w(z)`. This enables:
-  - non-linear variation of thickness, elastic modulus, or reinforcement along the member
-  - access to initial and final weights (`w₀`, `w₁`) and to geometric distances (`d(i,j)`, `di(i,j)`, `de(i,j)`), with full support for standard `math` functions
+- **Polygon-based sections (algebraic composition)**: each section is a set of 2D polygons (vertices + per-polygon weight). Supports standard profiles and fully custom shapes.
+
+- **Custom weight laws `w(z)` (advanced longitudinal modeling)**: define property variations along the axis **independent from geometry**, per polygon. `w(z)` can be a formula or read from external lookup files; useful for staged properties, degradation, maturation, localized changes, modular ratios.  
+  [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)  
+  [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
+
+- **Curved/lofted surfaces via discretization**: arbitrary vertex counts across stations allow approximating curved boundaries (e.g., circular towers/shells) to the required precision.
+
+- **No geometry templates**: no special “Circle/Rectangle” classes. Any shape described by coordinates is supported for section-property evaluation (e.g., `A`, `I`, `J`, `Q`, etc.).
+
+- **Topology flexibility**:
+  - hollow sections (e.g., tapered shells)
+  - multi-cell shapes (including internal stiffeners)
+  - composite/multi-material layouts via per-polygon weights (e.g., modular ratios)
+
+- **Full expression support inside `w(z)`** (per polygon):
+  - fully arbitrary, non-linear `w(z)`
+  - access to `w0`, `w1` and distances `d(i,j)`, `di(i,j)`, `de(i,j)`
+  - standard `math` functions for custom laws
+
 ---
 ## 🛠 Installation & Quick Start
 
