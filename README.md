@@ -1,5 +1,5 @@
 
-## Section Property Preprocessor for Non-Prismatic Members
+## Section-Property Preprocessor for Non-Prismatic Members (Continuous Field Model)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18063427.svg)](https://doi.org/10.5281/zenodo.18063427)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![Math](https://img.shields.io/badge/Engine-Analytical_Mechanics-red.svg)
@@ -15,7 +15,7 @@
 [CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md) See the full step-by-step tutorial here
 
 
-**Continuous Section Field (CSF): Section-Property Preprocessing for Non-Prismatic, Multi-Region Members (Python API and YAML workflow)**
+## Continuous Section Field (CSF): Section-Property Preprocessing for Non-Prismatic, Multi-Region Members (Python API and YAML workflow)
 
 **Continuous Section Field (CSF)** is a Python engine for **non-prismatic** and **non-homogeneous** beam-like members, designed as a *continuous pre-processor* for structural solvers.
 
@@ -28,7 +28,7 @@ From this continuous description, CSF evaluates section properties and stiffness
 
 CSF is a preprocessor: it computes geometry-based properties along `z` but it is not a structural solver and does not implement constitutive nonlinearities (plasticity, cracking, damage).
 
-# CSFStacked module (segmented `ContinuousSectionField` stacking)
+### CSFStacked module (segmented `ContinuousSectionField` stacking)
 
 CSFStacked is a container that stacks multiple `ContinuousSectionField` segments along the global `z` axis and dispatches any query `z -> correct segment`.  
 It adds a practical layer on top of multiple CSF segments: junctions are handled deterministically and you can query sections/properties anywhere with a single global API (section(z), section_full_analysis(z))
