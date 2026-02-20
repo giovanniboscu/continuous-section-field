@@ -20,7 +20,7 @@
 CSF models a member as a continuous field along the axis `z`, combining:
 
 - **Geometry field**: arbitrary polygonal sections at stations (e.g., `S0`, `S1`) with interpolation for tapered / varying shapes.
-- **Weight field**: user-defined longitudinal laws `w(z)`, optionally per polygon (multi-material layouts, staged stiffness, degradation).Composite sections are modeled explicitly as multiple polygonal regions (one per material/region) and combined through CSF’s polygon composition rules.
+- **Weight field**: per-polygon custom participation factor w(z) along z that scales each region’s effective contribution (not self-weight).
 
 
 From this continuous description, CSF evaluates section properties and stiffness fields along `z` (e.g., `A(z)`, `I(z)`, `C(z)`, `EA(z)`, `EI(z)`, `GJ(z)`) and can export solver-ready station data (e.g., OpenSees `forceBeamColumn` stationing or SAP2000-ready tabular property packs).
