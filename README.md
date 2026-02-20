@@ -45,7 +45,7 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 
 - **Polygon-based sections (algebraic composition)**: each section is a set of 2D polygons (vertices + per-polygon weight). Supports standard profiles and fully custom shapes.
 
-- **Custom weight laws `w(z)` (advanced longitudinal modeling)**: define property variations along the axis **independent from geometry**, per polygon. `w(z)` can be a formula or read from external lookup files; useful for staged properties, degradation, maturation, localized changes, modular ratios.  
+- **Custom weight laws `w(z)` (advanced longitudinal modeling)**: Define property variations along the axis independent of geometry, per polygon. w(z) can be an analytic formula or read from external lookup files; useful for staged activation, degradation, curing/maturation, localized changes, and modular ratios.
   [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)  
   [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
 
