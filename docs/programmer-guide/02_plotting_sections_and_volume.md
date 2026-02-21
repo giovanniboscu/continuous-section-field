@@ -81,14 +81,15 @@ plt.show()
 ## `plot_section_2d(...)`
 
 ```python
-plot_section_2d(
-    z: float,
-    show_ids: bool = True,
-    show_weights: bool = True,
-    show_vertex_ids: bool = False,
-    title: Optional[str] = None,
-    ax=None,
-)
+    
+    plot_section_2d(
+        z=zsec_val,
+        show_ids = True,
+        show_weights = True,
+        show_vertex_ids = False,
+        title = "plot 2d",
+        ax=None,
+    )    
 ```
 
 ### Parameters
