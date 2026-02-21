@@ -1,2 +1,1 @@
-#!/bin/sh
-python3 ../../csf/CSFActions.py mixedthin.yaml mixedthin_action.yaml
+python3 -m csf.CSFActions mixedthin.yaml mixedthin_action.yaml

@@ -1,1 +1,1 @@
-python3 ../../csf/CSFActions.py ipe600.yaml ipe600_actions.yaml
+python3 -m csf.CSFActions ipe600.yaml ipe600_actions.yaml
