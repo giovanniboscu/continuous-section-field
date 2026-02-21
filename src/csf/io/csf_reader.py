@@ -976,7 +976,9 @@ class CSFReader:
         - referenced polygon names must exist in S0 and S1
         - names must refer to polygons with the SAME index in S0 and S1 (index homology)
         """
+
         if "weight_laws" not in csf_root:
+            print("_validate_and_apply_weight_laws")
             return  # optional
 
         wl = csf_root["weight_laws"]

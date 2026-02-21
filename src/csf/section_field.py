@@ -6424,7 +6424,7 @@ class ContinuousSectionField:
         # Keep original polygon names as declared in S0/S1 strip @cell @wall
         valid_names0 = [self._strip_model_tags(p.name) for p in self.s0.polygons]
         valid_names1 = [self._strip_model_tags(p.name) for p in self.s1.polygons]
-        print(f"DEBUG valid_names0 {valid_names0} valid_names1 {valid_names1}")
+        #print(f"DEBUG valid_names0 {valid_names0} valid_names1 {valid_names1}")
         # Reset current laws 
         self.weight_laws = {}
         normalized_map = {}

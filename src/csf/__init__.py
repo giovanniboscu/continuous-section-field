@@ -46,11 +46,10 @@ __all__ = [
     "polygon_statical_moment",
     "integrate_volume",
     "Visualizer",
-    "export_opensees_discretized_sections",
     "section_data",
     "write_sap2000_geometry",
     "write_sap2000_template_pack",
     "polygon_area_centroid",
     "list_polygons_with_contents",
-    "polygon_surface_w1_inners0"
+    "polygon_surface_w1_inners0",
 ]
