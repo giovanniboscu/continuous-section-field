@@ -102,8 +102,8 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 # ---------------------------------------------------------------------------
 # Project imports
 # ---------------------------------------------------------------------------
-from csf.io.csf_reader import CSFReader
-from csf.io.csf_issues import CSFIssues, Issue, Severity
+from .io.csf_reader import CSFReader
+from .io.csf_issues import CSFIssues, Issue, Severity
 
 # The analysis/printing functions are defined at module level in section_field.py.
 # Adjust the import path if your package layout differs.
@@ -2824,7 +2824,7 @@ def _load_actions() -> None:
     register_action(ACTION_SPECS["section_full_analysis"], _wrap_no_debug(_run_action_section_full_analysis))
 
     # section_selected_analysis action migrated to actions/section_selected_analysis.py (explicit registration; no side effects).
-    from actions.section_selected_analysis import register as register_section_selected_analysis  # local import to avoid import cycles
+    from .actions.section_selected_analysis import register as register_section_selected_analysis
     register_section_selected_analysis(
         register_action,
         ActionSpec=ActionSpec,
@@ -2835,7 +2835,7 @@ def _load_actions() -> None:
 
 
     # section_area_by_weight action migrated to actions/section_area_by_weight.py (explicit registration; no side effects).
-    from actions.section_area_by_weight import register as register_section_area_by_weight  # local import to avoid import cycles
+    from .actions.section_area_by_weight import register as register_section_area_by_weight  # local import to avoid import cycles
     register_section_area_by_weight(
         register_action,
         ActionSpec=ActionSpec,
@@ -2843,7 +2843,7 @@ def _load_actions() -> None:
         expand_station_names=_expand_station_names,
         polygon_surface_w1_inners0=polygon_surface_w1_inners0,
     )
-    from actions.volume import register as register_volume  # local import to avoid import cycles
+    from .actions.volume import register as register_volume  # local import to avoid import cycles
     register_volume(
         register_action,
         ActionSpec=ActionSpec,
@@ -2854,7 +2854,7 @@ def _load_actions() -> None:
         csf_weights_by_pair_at_z=csf_weights_by_pair_at_z,
     )
     # export_yaml action migrated to actions/export_yaml.py (explicit registration; no side effects).
-    from actions.export_yaml import register as register_export_yaml  # local import to avoid import cycles
+    from .actions.export_yaml import register as register_export_yaml  # local import to avoid import cycles
     register_export_yaml(
         register_action,
         ActionSpec=ActionSpec,
@@ -2862,7 +2862,7 @@ def _load_actions() -> None:
         expand_station_names=_expand_station_names,
     )
     # write_opensees_geometry action migrated to actions/write_opensees_geometry.py (explicit registration; no side effects).
-    from actions.write_opensees_geometry import register as register_write_opensees_geometry  # local import to avoid import cycles
+    from .actions.write_opensees_geometry import register as register_write_opensees_geometry  # local import to avoid import cycles
     register_write_opensees_geometry(
         register_action,
         ActionSpec=ActionSpec,
@@ -2870,14 +2870,14 @@ def _load_actions() -> None:
         write_opensees_geometry=write_opensees_geometry,
     )
     # write_sap2000_geometry action migrated to actions/write_sap2000_geometry.py (explicit registration; no side effects).
-    from actions.write_sap2000_geometry import register as register_write_sap2000_geometry  # local import to avoid import cycles
+    from .actions.write_sap2000_geometry import register as register_write_sap2000_geometry  # local import to avoid import cycles
     register_write_sap2000_geometry(
         register_action,
         spec=ACTION_SPECS["write_sap2000_geometry"],
         write_sap2000_template_pack=write_sap2000_template_pack,
     )
     # weight_lab_zrelative action migrated to actions/weight_lab_zrelative.py (explicit registration; no side effects).
-    from actions.weight_lab_zrelative import register as register_weight_lab_zrelative  # local import to avoid import cycles
+    from .actions.weight_lab_zrelative import register as register_weight_lab_zrelative  # local import to avoid import cycles
     register_weight_lab_zrelative(
         register_action,
         ActionSpec=ActionSpec,
@@ -2886,7 +2886,7 @@ def _load_actions() -> None:
         safe_evaluate_weight_zrelative=safe_evaluate_weight_zrelative,
     )
     # plot_volume_3d action migrated to actions/plot_volume_3d.py (explicit registration; no side effects).
-    from actions.plot_volume_3d import register as register_plot_volume_3d  # local import to avoid import cycles
+    from .actions.plot_volume_3d import register as register_plot_volume_3d  # local import to avoid import cycles
     register_plot_volume_3d(
         register_action,
         ActionSpec=ActionSpec,
@@ -2894,7 +2894,7 @@ def _load_actions() -> None:
         Visualizer=Visualizer,
     )
     # plot_properties action migrated to actions/plot_properties.py (explicit registration; no side effects).
-    from actions.plot_properties import register as register_plot_properties  # local import to avoid import cycles
+    from .actions.plot_properties import register as register_plot_properties  # local import to avoid import cycles
     register_plot_properties(
         register_action,
         ActionSpec=ActionSpec,
@@ -2902,7 +2902,7 @@ def _load_actions() -> None:
         Visualizer=Visualizer,
     )
     # plot_weight action migrated to actions/plot_weight.py (explicit registration; no side effects).
-    from actions.plot_weight import register as register_plot_weight  # local import to avoid import cycles
+    from .actions.plot_weight import register as register_plot_weight  # local import to avoid import cycles
     register_plot_weight(
         register_action,
         ActionSpec=ActionSpec,
@@ -2910,7 +2910,7 @@ def _load_actions() -> None:
         Visualizer=Visualizer,
     )
     # plot_section_2d action migrated to actions/plot_section_2d.py (explicit registration; no side effects).
-    from actions.plot_section_2d import register as register_plot_section_2d  # local import to avoid import cycles
+    from .actions.plot_section_2d import register as register_plot_section_2d  # local import to avoid import cycles
     register_plot_section_2d(
         register_action,
         ActionSpec=ActionSpec,

@@ -85,7 +85,7 @@ Dependencies
 """
 
 from __future__ import annotations
-from csf.io.csf_rough_validator import csf_rough_validator
+from .csf_rough_validator import csf_rough_validator
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 import math
@@ -98,7 +98,7 @@ try:
 except Exception:
     yaml = None
 
-from csf.io.csf_issues import CSFIssues, Issue, Severity
+from .csf_issues import CSFIssues, Issue, Severity
 
 
 # -----------------------------

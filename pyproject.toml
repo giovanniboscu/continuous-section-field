@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "csf-engine"
+name = "csfpy"
 version = "0.1.0"
 description = "An Analytical Engine for Non-Prismatic Structural Members"
 readme = "README.md"
@@ -26,12 +26,14 @@ dependencies = [
     "openseespy; sys_platform != 'win32'"
 ]
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["csf*"]
 
 [project.optional-dependencies]
 examples = [
     "pycba"
 ]
-
