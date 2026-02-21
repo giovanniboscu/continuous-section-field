@@ -42,13 +42,13 @@ plt.show()
 ## `plot_volume_3d(...)`
 
 ```python
-plot_volume_3d(
-    show_end_sections: bool = True,
-    line_percent: float = 100.0,
-    seed: int = 0,
-    title: str = "Ruled volume (vertex-connection lines)",
-    ax=None
-)
+    plot_volume_3d(
+        show_end_sections = True,
+        line_percent = 100.0,
+        seed = 0,
+        title = "Ruled volume (vertex-connection lines)",
+        ax=None
+    )
 ```
 
 ### Parameters
