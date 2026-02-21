@@ -86,7 +86,7 @@ python3 example/cilinder_withcheck.py
 python3 example/csf_rotated_validation_benchmark.py
 cd actions-examples/stell_degradated_model
 
-python3 ../../csf/CSFActions.py stell_degradated_model_s.yaml stell_degradated_model_action.yaml
+python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 
 WINDOWS
 
