@@ -27,11 +27,6 @@ CSF models a member as a continuous field along the axis `z`, combining:
 
 From this continuous description, CSF evaluates section properties and stiffness fields along `z` (e.g., `A(z)`, `I(z)`, `C(z)`, `EA(z)`, `EI(z)`, `GJ(z)`) and can export solver-ready station data (e.g., OpenSees `forceBeamColumn` stationing or SAP2000-ready tabular property packs).
 
-
-### CSFStacked module (segmented `ContinuousSectionField` stacking)
-
-CSFStacked is a container that stacks multiple `ContinuousSectionField` segments along the global `z` axis and dispatches any query `z -> correct segment`.  
-It adds a practical layer on top of multiple CSF segments: junctions are handled deterministically and you can query sections/properties anywhere with a single global API (section(z), section_full_analysis(z))
         
 ![torsionmdel](https://github.com/user-attachments/assets/85882b4e-6173-4630-84c5-fd703c54cad4)
 
@@ -65,6 +60,13 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 
 ---
 
+
+### CSFStacked module (segmented `ContinuousSectionField` stacking)
+
+CSFStacked is a container that stacks multiple `ContinuousSectionField` segments along the global `z` axis and dispatches any query `z -> correct segment`.  
+It adds a practical layer on top of multiple CSF segments: junctions are handled deterministically and you can query sections/properties anywhere with a single global API (section(z), section_full_analysis(z))
+
+---
 ## Reference System
 
 Two section planes are defined:
