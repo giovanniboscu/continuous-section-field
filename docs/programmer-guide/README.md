@@ -47,7 +47,7 @@ cd csf_project
 3. [03_plotting properties](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/03_plotting_properties.md)
 4. [04_plotting weight](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/04_plotting_weight.md)
 5. `05_torsion_wall_and_cell.md`
-6. `06_actions_pipeline.md`
+6. `06_csf_stacked.md`
 7. `07_errors_and_diagnostics.md`
 8. `08_validation_and_benchmarks.md`
 9. `09_solver_integration.md`
