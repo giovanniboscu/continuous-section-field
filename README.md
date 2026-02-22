@@ -216,7 +216,7 @@ examples/cilinder_withcheck.py
 
 <img width="520" height="509" alt="circeltest" src="https://github.com/user-attachments/assets/b3384be1-0a35-4654-b39b-aae614703ad0" />
 
-To verify the accuracy of the numerical engine, a validation test was performed using a **non-tapered hollow cylinder** (Steel Pipe). This allows for a direct comparison between the library's results (based on weighted polygons) and exact analytical formulas.
+To verify the accuracy of the numerical engine, a validation test was performed using a **non-tapered hollow cilinder** (Steel Pipe). This allows for a direct comparison between the library's results (based on weighted polygons) and exact analytical formulas.
 
 The test script `cilinder_withcheck.py` models a tower with a diameter of 4.935m and a thickness of 23mm using a 512-sided polygon. The results demonstrate that the polygonal approximation converges to the analytical solution with exceptional precision.
 
