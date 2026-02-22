@@ -177,10 +177,6 @@ $$
 - Geometry is the primary input.
 - Section properties are automatically derived.
 
-## Sectional Analysis Engine
-
-The library is designed for the analysis of non-prismatic and non-homogeneous members,
-with section properties varying continuously along the longitudinal axis.
 
 ## CSF Technical Methodology & Integration Schemes
 
