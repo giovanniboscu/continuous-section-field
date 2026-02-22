@@ -45,25 +45,26 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 ---
 ## Key Features
 
-- **Polygon-based sections (algebraic composition)**: each section is a set of 2D polygons (vertices + per-polygon weight). Supports standard profiles and fully custom shapes.
+- **Polygon-based section representation (algebraic composition)**: each section is defined as a set of 2D polygons (vertices + per-polygon weight).
 
-- **Custom weight laws $w_i(z)$**: Define property variations along the axis independent of geometry, per polygon. $w_i(z)$ can be an analytic formula or read from external lookup files; useful for staged activation, degradation, curing/maturation, localized changes, and modular ratios.
+- **Per-polygon longitudinal weight laws $w_i(z)$**: property contributions can vary along the member axis independently of geometric interpolation. $w_i(z)$  can be defined analytically or through lookup-based expressions.
   [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)  
   [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
 
-- **Curved/lofted surfaces via discretization**: arbitrary vertex counts across stations allow approximating curved boundaries (e.g., circular towers/shells) to the required precision.
+- **Polygonal approximation of curved boundaries**: curved outlines (e.g., circular shells/towers) are represented through discretized polygons with user-selected vertex count.
 
-- **No geometry templates**: no special “Circle/Rectangle” classes. Any shape described by coordinates is supported for section-property evaluation (e.g., `A`, `I`, `J`, `Q`, etc.).
+- **Coordinate-defined geometry input**: no dedicated profile primitives are required (e.g., no `Circle`/`Rectangle` classes); section properties are computed from polygon coordinates.
 
-- **Topology flexibility**:
-  - hollow sections (e.g., tapered shells)
-  - multi-cell shapes (including internal stiffeners)
-  - composite/multi-material layouts via per-polygon weights (e.g., modular ratios)
+- **Section topology handling**:
+  - hollow sections
+  - multi-cell layouts
+  - multi-region sections with independent polygon weights
 
-- **Full expression support inside `w(z)`** (per polygon):
-  - fully arbitrary, non-linear $w_i(z)$ 
-  - access to `w0`, `w1` and distances `d(i,j)`, `di(i,j)`, `de(i,j)`
-  - standard `math` functions for custom laws
+- **Expression-based `w(z)` definitions** (per polygon):
+  - non-linear expressions
+  - access to `w0`, `w1`
+  - access to distances `d(i,j)`, `di(i,j)`, `de(i,j)`
+  - `math` functions available in expressions
 
 > **Geometric scope and limitations**  
 > CSF is not a FEM solver: it provides a geometric formulation for non-prismatic members and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
