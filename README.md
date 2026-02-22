@@ -53,8 +53,6 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 
 - **Polygonal approximation of curved boundaries**: curved outlines (e.g., circular shells/towers) are represented through discretized polygons with user-selected vertex count.
 
-- **Coordinate-defined geometry input**: no dedicated profile primitives are required (e.g., no `Circle`/`Rectangle` classes); section properties are computed from polygon coordinates.
-
 - **Section topology handling**:
   - hollow sections
   - multi-cell layouts
