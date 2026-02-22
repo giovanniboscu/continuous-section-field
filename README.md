@@ -41,7 +41,7 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 ---
 ## Key Features
 
-- **Polygon-based section representation (algebraic composition)**: each section is defined as a set of 2D polygons (material regions) and evaluated through geometric section-property integration.
+- **Polygon-based section representation (algebraic composition)**: The element is geometrically defined by its end cross-sections, each represented as an algebraic composition of 2D polygons; intermediate sections are generated from these definitions along z.
 
 - **Per-polygon longitudinal weight laws `w_i(z)`**: property contributions can vary along the member axis independently of geometric interpolation. Weight laws can be defined analytically or via lookup-based expressions.
   - non-linear expressions
