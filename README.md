@@ -47,6 +47,10 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 
 - **Polygon-based section representation (algebraic composition)**: each section is defined as a set of 2D polygons.
 - **Per-polygon longitudinal weight laws $w_i(z)$**: property contributions can vary along the member axis independently of geometric interpolation. $w_i(z)$  can be defined analytically or through lookup-based expressions.
+  - non-linear expressions
+  - access to `w0`, `w1`
+  - access to distances `d(i,j)`, `di(i,j)`, `de(i,j)`
+  - `math` functions available in expressions
   [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)  
   [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
 
@@ -55,12 +59,6 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 - **Thin-walled topology handling**:
   - open-section layouts
   - closed-cell and multi-cell layouts
-
-- **Expression-based `w(z)` definitions** (per polygon):
-  - non-linear expressions
-  - access to `w0`, `w1`
-  - access to distances `d(i,j)`, `di(i,j)`, `de(i,j)`
-  - `math` functions available in expressions
 
 > **Geometric scope and limitations**  
 > CSF is not a FEM solver: it provides a geometric formulation for non-prismatic members and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
