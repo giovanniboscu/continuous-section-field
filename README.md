@@ -65,6 +65,10 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
   - access to `w0`, `w1` and distances `d(i,j)`, `di(i,j)`, `de(i,j)`
   - standard `math` functions for custom laws
 
+> **Geometric scope and limitations**  
+> CSF is not a FEM solver: it provides a geometric formulation for a multiple non-prismatic member and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
+> Curved outlines are handled by polygonal approximation (increase the
+
 ---
 ## 🛠 Installation & Quick Start
 
@@ -111,14 +115,7 @@ cd actions-examples\stell_degradated_model
 
 python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 ```
-
-### **Motivation and Arbitrary Cross-Section Representation**
-The common practice of modeling non-prismatic members as a concatenation of equivalent prismatic elements (piecewise-prismatic approach) introduces a non-neutral methodological choice: the numerical result depends on the number of subdivisions and the sampling locations. Unlike tools constrained to predefined geometric templates, CSF treats the cross-section as a generic topological entity and evaluates cross-section properties as continuous functions along the member axis for complex non-prismatic members.
-
-
-> **Geometric scope and limitations**  
-> CSF is not a FEM solver: it provides a geometric formulation for a multiple non-prismatic member and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
-> Curved outlines are handled by polygonal approximation (increase the number of sides to reach the desired accuracy).
+ number of sides to reach the desired accuracy).
 
  See: **[core assumptions](docs/core_assumption.md)**
 
