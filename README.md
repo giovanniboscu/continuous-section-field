@@ -132,11 +132,6 @@ Two section planes are defined:
 
 - start section at \( z = 0 \)
 - end section at \( z = L \) on
-
-Both end sections are defined in parallel planes at  z=0 and z=L.
-Their geometries are expressed in the same local $x$ – $y$ reference frame (same axis orientation), with no relative rotation.
-The beam axis coincides with the z-axis, normal to both section plane
-
 - The beam axis is aligned with the **\( z \)-axis**, normal to the section planes.
 
 All section geometries must be provided in this local reference system.
