@@ -52,7 +52,7 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
   [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
 
 - **Polygonal approximation of curved boundaries**: curved outlines (e.g., circular shells/towers) are represented through discretized polygons with user-selected vertex count.
-- 
+
 - **Thin-walled topology handling**:
   - open-section layouts
   - closed-cell and multi-cell layouts
