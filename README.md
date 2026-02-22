@@ -38,7 +38,7 @@ From this continuous description, CSF evaluates section properties and stiffness
 
 - **Polygon-based section representation (algebraic composition)**: The element is geometrically defined by its end cross-sections, each represented as an algebraic composition of 2D polygons; intermediate sections are generated from these definitions along z.
 
-- **Per-polygon longitudinal weight laws $w_i(z)$ **: property contributions can vary along the member axis independently of geometric interpolation. Weight laws can be defined analytically or via lookup-based expressions.
+- **Per-polygon longitudinal weight laws $w_i(z)$**: property contributions can vary along the member axis independently of geometric interpolation. Weight laws can be defined analytically or via lookup-based expressions.
   - non-linear expressions
   - access to `w0`, `w1`
   - access to distances `d(i,j)`, `di(i,j)`, `de(i,j)`
