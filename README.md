@@ -128,8 +128,6 @@ The common practice of modeling non-prismatic members as a concatenation of equi
 
 ## Reference System
 
-Sections are modeled as ruled surfaces linearly interpolated between two arbitrary end sections
-
 Two section planes are defined:
 
 - start section at \( z = 0 \)
