@@ -67,7 +67,7 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 
 > **Geometric scope and limitations**  
 > CSF is not a FEM solver: it provides a geometric formulation for a multiple non-prismatic member and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
-> Curved outlines are handled by polygonal approximation (increase the
+> Curved outlines are handled by polygonal approximation (increase the increase the number of sides to reach the desired accuracy
 
 ---
 ## 🛠 Installation & Quick Start
@@ -115,10 +115,6 @@ cd actions-examples\stell_degradated_model
 
 python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 ```
- number of sides to reach the desired accuracy).
-
- See: **[core assumptions](docs/core_assumption.md)**
-
 ---
 ## Reference System
 
