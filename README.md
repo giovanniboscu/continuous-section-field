@@ -120,9 +120,6 @@ python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_a
  See: **[core assumptions](docs/core_assumption.md)**
 
 ---
-
-## **CSF** treats the single member as a **continuous manifold** using **ruled surfaces**.
-
 ## Reference System
 
 Two section planes are defined:
