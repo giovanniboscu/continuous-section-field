@@ -80,22 +80,6 @@ Two section planes are defined:
 All section geometries must be provided in this local reference system.
 
 ---
-
-## Section Geometry
-
-A section is defined by a **set of closed polylines**.
-
-- Each polyline represents a **material region**.
-- All polylines must be:
-  - non-self-intersecting
-  - oriented **counter-clockwise (CCW)**
-  - closed implicitly (do not repeat the first vertex at the end of the list)
-
-> **Geometric scope and limitations**  
-> CSF is not a FEM solver: it provides a geometric formulation for non-prismatic members and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
-> Curved outlines are handled by polygonal approximation (increase the number of sides to reach the desired accuracy).
-
----
 ## 🛠 Installation & Quick Start
 
 To use the **CSF** engine, it is recommended to work inside a virtual environment.
