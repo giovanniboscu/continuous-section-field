@@ -349,7 +349,8 @@ In standard FEM, a tapered beam is often approximated as a series of stepped pri
 
 <img width="503" height="464" alt="tsec2d" src="https://github.com/user-attachments/assets/a39e6e6e-afd1-43dd-b755-7299d211cd55" />
 
-<details>python
+<details>
+        
 <summary>Click to expand the full T-Beam Python example</summary>
 
 ```
@@ -510,7 +511,7 @@ In standard FEM, a tapered beam is often approximated as a series of stepped pri
 ### How to Cite this Library
 <details>
 <summary>Click for BibTeX citation</summary>
-
+</details>
 ```bibtex
 @software{boscu_continuous_2025,
   author = {Boscu, Giovanni},
