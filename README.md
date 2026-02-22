@@ -66,8 +66,8 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
   - standard `math` functions for custom laws
 
 > **Geometric scope and limitations**  
-> CSF is not a FEM solver: it provides a geometric formulation for a multiple non-prismatic member and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
-> Curved outlines are handled by polygonal approximation (increase the increase the number of sides to reach the desired accuracy
+> CSF is not a FEM solver: it provides a geometric formulation for non-prismatic members and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
+> Curved outlines are handled by polygonal approximation (increase the number of sides to reach the desired accuracy).
 
 ---
 ## 🛠 Installation & Quick Start
