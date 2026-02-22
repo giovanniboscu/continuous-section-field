@@ -45,12 +45,13 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 ---
 ## Key Features
 
-- **Polygon-based section representation (algebraic composition)**: each section is defined as a set of 2D polygons.
-- **Per-polygon longitudinal weight laws $w_i(z)$**: property contributions can vary along the member axis independently of geometric interpolation. $w_i(z)$  can be defined analytically or through lookup-based expressions.
+- **Polygon-based section representation (algebraic composition)**: each section is defined as a set of 2D polygons (material regions) and evaluated through geometric section-property integration.
+
+- **Per-polygon longitudinal weight laws `w_i(z)`**: property contributions can vary along the member axis independently of geometric interpolation. Weight laws can be defined analytically or via lookup-based expressions.
   - non-linear expressions
   - access to `w0`, `w1`
   - access to distances `d(i,j)`, `di(i,j)`, `de(i,j)`
-  - `math` functions available in expressions
+  - `math` functions available in expressions  
   [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)  
   [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
 
@@ -59,6 +60,36 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 - **Thin-walled topology handling**:
   - open-section layouts
   - closed-cell and multi-cell layouts
+
+- **Continuous geometric interpolation between stations**: corresponding vertices are interpolated along `z`, enabling ruled-surface members and continuous property fields (e.g., `A(z)`, `I(z)`, `EA(z)`, `EI(z)`, `GJ(z)`).
+
+> **Geometric scope and limitations**  
+> CSF is not a FEM solver: it provides a geometric formulation for non-prismatic members and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
+> Curved outlines are handled by polygonal approximation (increase the number of sides to reach the desired accuracy).
+
+---
+
+## Reference System
+
+Two section planes are defined:
+
+- start section at `z = 0`
+- end section at `z = L`
+- the beam axis is aligned with the `z`-axis, normal to the section planes
+
+All section geometries must be provided in this local reference system.
+
+---
+
+## Section Geometry
+
+A section is defined by a **set of closed polylines**.
+
+- Each polyline represents a **material region**.
+- All polylines must be:
+  - non-self-intersecting
+  - oriented **counter-clockwise (CCW)**
+  - closed implicitly (do not repeat the first vertex at the end of the list)
 
 > **Geometric scope and limitations**  
 > CSF is not a FEM solver: it provides a geometric formulation for non-prismatic members and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
@@ -111,31 +142,6 @@ cd actions-examples\stell_degradated_model
 python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 ```
 ---
-## Reference System
-
-Two section planes are defined:
-
-- start section at \( z = 0 \)
-- end section at \( z = L \) on
-- The beam axis is aligned with the **\( z \)-axis**, normal to the section planes.
-
-All section geometries must be provided in this local reference system.
-
-## Section Geometry
-
-### Polylines
-
-A section is defined by a **set of closed polylines**.
-
-- Each polyline represents a **material region**.
-- All polylines must be:
-  - non self-intersecting
-  - oriented **counter-clockwise (CCW)**
-  - Polylines are closed implicitly; do not repeat the first vertex at the end of the list.
-
-- [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)
-- [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
-
 ##  Geometric Interpolation
 
 - Corresponding polylines at $z = 0$ and $z = L$ are interpolated along the beam axis.
