@@ -149,11 +149,6 @@ $$
 ## CSF Technical Methodology & Integration Schemes
 
 The engine employs a **multi-pass analysis** combined with **Gaussian integration schemes** to extract structural parameters. Specifically engineered for **tapered and non-homogeneous members**, it is ideal for applications where sectional properties vary continuously along the longitudinal axis.
-
-####   Continuous Longitudinal Formulation
-
-* **Dynamic Computation**: Every property is calculated at any longitudinal coordinate $z$ via linear vertex-mapping.
-* **Homogenization**: Full support for material homogenization through **positive weights**
     
 ## Cross-sectional properties 
 
