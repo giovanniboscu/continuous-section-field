@@ -507,11 +507,10 @@ In standard FEM, a tapered beam is often approximated as a series of stepped pri
 </details>
 
 ---
-
 ### How to Cite this Library
 <details>
 <summary>Click for BibTeX citation</summary>
-</details>
+
 ```bibtex
 @software{boscu_continuous_2025,
   author = {Boscu, Giovanni},
@@ -523,6 +522,8 @@ In standard FEM, a tapered beam is often approximated as a series of stepped pri
   url = {https://doi.org/10.5281/zenodo.18063427}
 }
 ```
+
+</details>
 ---
 ## License
 This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
