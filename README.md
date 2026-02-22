@@ -45,8 +45,7 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 ---
 ## Key Features
 
-- **Polygon-based section representation (algebraic composition)**: each section is defined as a set of 2D polygons (vertices + per-polygon weight).
-
+- **Polygon-based section representation (algebraic composition)**: each section is defined as a set of 2D polygons.
 - **Per-polygon longitudinal weight laws $w_i(z)$**: property contributions can vary along the member axis independently of geometric interpolation. $w_i(z)$  can be defined analytically or through lookup-based expressions.
   [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)  
   [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
