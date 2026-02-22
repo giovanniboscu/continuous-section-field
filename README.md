@@ -52,7 +52,7 @@ From this continuous description, CSF evaluates section properties and stiffness
   - open-section layouts
   - closed-cell and multi-cell layouts
 
-- **Continuous geometric interpolation between stations**: corresponding vertices are interpolated along `z`, enabling ruled-surface members and continuous property fields (e.g., `A(z)`, `I(z)`, `EA(z)`, `EI(z)`, `GJ(z)`).
+- **Continuous geometric interpolation between stations**: corresponding vertices are interpolated along z (geometric field), while polygon weights $w_i(z)$  are independently defined/evaluated (weight field), yielding the resulting section/stiffness property fields along the member.
 
 > **Geometric scope and limitations**  
 > CSF is not a FEM solver: it provides a geometric formulation for non-prismatic members and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
