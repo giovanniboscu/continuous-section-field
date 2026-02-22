@@ -67,17 +67,6 @@ CSFStacked is a container that stacks multiple `ContinuousSectionField` segments
 It adds a practical layer on top of multiple CSF segments: junctions are handled deterministically and you can query sections/properties anywhere with a single global API (section(z), section_full_analysis(z))
 
 ---
-## Reference System
-
-Two section planes are defined:
-
-- start section at `z = 0`
-- end section at `z = L`
-- the beam axis is aligned with the `z`-axis, normal to the section planes
-
-All section geometries must be provided in this local reference system.
-
----
 ## 🛠 Installation & Quick Start
 
 To use the **CSF** engine, it is recommended to work inside a virtual environment.
@@ -126,6 +115,16 @@ python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_a
 ```
 ---
 ##  Geometric Interpolation
+
+Reference System
+
+Two section planes are defined:
+
+- start section at `z = 0`
+- end section at `z = L`
+- the beam axis is aligned with the `z`-axis, normal to the section planes
+
+All section geometries must be provided in this local reference system.
 
 - Corresponding polylines at $z = 0$ and $z = L$ are interpolated along the beam axis.
 - Interpolation is performed **point-wise between matching vertices**.
