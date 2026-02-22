@@ -142,16 +142,6 @@ A section is defined by a **set of closed polylines**.
   - oriented **counter-clockwise (CCW)**
   - Polylines are closed implicitly; do not repeat the first vertex at the end of the list.
 
-### Polyline Weight (Material Coefficient)
-
-CSF allows each polygonal region of a section to carry its own **longitudinally varying coefficient**, used to homogenize geometry into equivalent section properties.
-
-Unlike traditional prismatic or step-wise models, this coefficient may vary **continuously along the member axis**, and is defined explicitly by the user rather than inferred by the solver.
-
-The same mechanism can represent stiffness ratios, material moduli, or other per-area physical fields, depending on the chosen modeling convention.
-
-For details, see:
-
 - [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)
 - [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
 
