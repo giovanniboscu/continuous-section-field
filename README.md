@@ -198,9 +198,9 @@ CSF can also export **SAP2000-ready tabular packs** (station-based section prope
 ---
 
 # CSF Numerical Validation: Circular Hollow Section
-examples/cylinder_withcheck.py
+`examples/cylinder_withcheck.py`
 
-<img width="520" height="509" alt="circeltest" src="https://github.com/user-attachments/assets/b3384be1-0a35-4654-b39b-aae614703ad0" />
+<img width="520" height="509" alt="circletest" src="https://github.com/user-attachments/assets/b3384be1-0a35-4654-b39b-aae614703ad0" />
 
 To verify the accuracy of the numerical engine, a validation test was performed using a **non-tapered hollow cylinder** (steel pipe). This allows for a direct comparison between the library's results (based on weighted polygons) and exact analytical formulas.
 
@@ -273,7 +273,7 @@ Density = 8500 kg/m3
 **Total Calculated Tower Mass:**   347.339 t  
 &nbsp;
 
-### Official NREL 5-MW Tower Data (Reference Table 6-1) pag. 15 [**Download Official PDF (NREL)**](https://www.nrel.gov/docs/fy09osti/38060.pdf)
+### Official NREL 5-MW Tower Data (Reference Table 6-1, p. 15) [**Download Official PDF (NREL)**](https://www.nrel.gov/docs/fy09osti/38060.pdf)
 
 | Elevation [m] | HtFract | TMassDen [kg/m] | TwFAStif [N·m²] | TwSSStif [N·m²] | TwGJStif [N·m²] | TwEAStif [N] | TwFAIner [kg·m] | TwSSIner [kg·m] |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
