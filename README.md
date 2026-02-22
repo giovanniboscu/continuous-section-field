@@ -21,7 +21,7 @@
 to generate solver-ready property fields.
 CSF models a member as a continuous field along the axis `z`, combining:
 
-- **Geometry field**: arbitrary polygonal sections at stations (e.g., `S0`, `S1`) with interpolation for tapered / varying shapes.
+- **Geometry field**: arbitrary polygonal sections at stations ( `S0`, `S1`) with interpolation for tapered / varying shapes.
 - **Weight field**: per-polygon custom participation factor w(z) along z that scales each region’s effective contribution (not self-weight).
 
 
