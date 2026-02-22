@@ -2,6 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import numpy as np
+from typing import List, Sequence, Tuple
 
 from .section_field import (
     Pt,
@@ -62,68 +63,58 @@ class CSFStacked:
     def append(self, field: ContinuousSectionField) -> None:
         """
         Append one pre-built ContinuousSectionField to the stack.
-        Accepts exactly one explicit argument: `field`.
+
+        Stacking contract (strict, no hidden reordering):
+        - The new segment must have valid local bounds (z_end > z_start).
+        - If the stack is not empty, the new segment must start exactly after the
+          previous segment, within ``self.eps_z`` tolerance.
+        - Gaps and overlaps are rejected immediately at append time.
+
+        Notes
+        -----
+        This method does not sort segments. The user-provided order is the stack order.
         """
-        z_start = float(field.s0.z)
-        z_end = float(field.s1.z)
+        new_z_start = float(field.s0.z)
+        new_z_end = float(field.s1.z)
 
-        if z_end <= z_start:
+        if new_z_end <= new_z_start:
             raise ValueError(
-                f"Invalid field bounds: z_end ({z_end}) must be > z_start ({z_start})."
+                f"Invalid field bounds: z_end ({new_z_end}) must be > z_start ({new_z_start})."
             )
 
-        self.segments.append(
-            StackSegment(
-                tag=f"seg_{len(self.segments)}",
-                z_start=z_start,
-                z_end=z_end,
-                field=field,
-            )
+        if self.segments:
+            previous_segment = self.segments[-1]
+            previous_z_end = float(previous_segment.z_end)
+            z_gap = new_z_start - previous_z_end
+
+            # Reject overlap / reversed insertion.
+            if z_gap < -self.eps_z:
+                raise ValueError(
+                    "Non-contiguous stack append: overlap or wrong order detected. "
+                    f"Previous segment '{previous_segment.tag}' ends at z={previous_z_end}, "
+                    f"new segment starts at z={new_z_start}, eps_z={self.eps_z}."
+                )
+
+            # Reject positive gap larger than tolerance.
+            if z_gap > self.eps_z:
+                raise ValueError(
+                    "Non-contiguous stack append: gap detected. "
+                    f"Previous segment '{previous_segment.tag}' ends at z={previous_z_end}, "
+                    f"new segment starts at z={new_z_start}, gap={z_gap}, eps_z={self.eps_z}."
+                )
+
+        new_segment = StackSegment(
+            tag=f"seg_{len(self.segments)}",
+            z_start=new_z_start,
+            z_end=new_z_end,
+            field=field,
         )
-
-        # Keep deterministic ordering after each append
-        self.segments.sort(key=lambda s: s.z_start)
+        self.segments.append(new_segment)
 
     def field_at(self, z: float, junction_side: str = "left") -> ContinuousSectionField:
-        """
-        Return the ContinuousSectionField at global z.
-
-        Junction policy:
-        - External boundaries are unambiguous.
-        - Internal junctions are resolved explicitly by `junction_side`:
-          - "left"  -> field on the left of the junction
-          - "right" -> field on the right of the junction
-        """
-        if not self.segments:
-            raise ValueError("Stack is empty.")
-        if junction_side not in ("left", "right"):
-            raise ValueError("junction_side must be 'left' or 'right'.")
-
-        z = float(z)
-        first = self.segments[0]
-        last = self.segments[-1]
-
-        if z < first.z_start - self.eps_z or z > last.z_end + self.eps_z:
-            raise ValueError(f"z={z} is outside stack domain [{first.z_start}, {last.z_end}].")
-
-        # External boundaries: always unambiguous
-        if abs(z - first.z_start) <= self.eps_z:
-            return first.field
-        if abs(z - last.z_end) <= self.eps_z:
-            return last.field
-
-        # Internal junctions: explicit side selection
-        for i in range(1, len(self.segments)):
-            z_j = self.segments[i].z_start
-            if abs(z - z_j) <= self.eps_z:
-                return self.segments[i - 1].field if junction_side == "left" else self.segments[i].field
-
-        # Regular interior point
-        for seg in self.segments:
-            if (z >= seg.z_start - self.eps_z) and (z <= seg.z_end + self.eps_z):
-                return seg.field
-
-        raise ValueError(f"z={z} could not be mapped to any segment.")
+        """Return the segment field mapped from global z."""
+        segment = self._find_segment(z=float(z), junction_side=junction_side)
+        return segment.field
 
     @staticmethod
     def make_field_from_polygons(
@@ -142,30 +133,32 @@ class CSFStacked:
         s1 = Section(polygons=tuple(polygons_s1), z=float(z1))
         return ContinuousSectionField(section0=s0, section1=s1)
 
-    def add_segment_spec(self, spec: SegmentSpec) -> None:
-        """Build one field from spec and append it to the stack."""
-        field = self.make_field_from_polygons(
-            z0=spec.z0,
-            z1=spec.z1,
-            polygons_s0=spec.polygons_s0,
-            polygons_s1=spec.polygons_s1,
-        )
-        self.segments.append(
-            StackSegment(
-                tag=spec.tag,
-                z_start=float(spec.z0),
-                z_end=float(spec.z1),
-                field=field,
-            )
-        )
+    def build_from_specs(self, specs: List[SegmentSpec], sort_by_z: bool = False) -> None:
+        """
+        Build the full stack from a list of ``SegmentSpec`` objects.
 
-    def build_from_specs(self, specs: List[SegmentSpec], sort_by_z: bool = True) -> None:
-        """Build full stack from a list of specs."""
-        self.segments = []
-        for spec in specs:
-            self.add_segment_spec(spec)
+        Notes
+        -----
+        - Specs are consumed in the provided order (stack semantics).
+        - Automatic reordering is intentionally not supported.
+        - Contiguity/coherence is enforced by ``append()`` for each built segment.
+        """
         if sort_by_z:
-            self.segments.sort(key=lambda s: s.z_start)
+            raise ValueError(
+                "Automatic reordering is not supported in CSFStacked. "
+                "Provide specs in the intended stack order."
+            )
+
+        self.segments = []
+
+        for spec in specs:
+            built_field = self.make_field_from_polygons(
+                z0=spec.z0,
+                z1=spec.z1,
+                polygons_s0=spec.polygons_s0,
+                polygons_s1=spec.polygons_s1,
+            )
+            self.append(built_field)
 
     def validate_contiguity(self, require_contiguity: bool = True) -> None:
         """Validate ordering, overlap, and optional strict contiguity."""
@@ -193,41 +186,73 @@ class CSFStacked:
                     f"'{seg.tag}' start={seg.z_start}."
                 )
 
-    def _find_segment(self, z: float) -> StackSegment:
+    def _find_segment(self, z: float, junction_side: str = "left") -> StackSegment:
         """
-        Return the unique segment containing z with deterministic interval policy.
+        Return the stack segment mapped from global ``z``.
 
-        Interval policy (left-open except first, always right-closed):
-        - First segment:      [z_start, z_end]
-        - Other segments:     (z_start, z_end]
+        Junction policy
+        --------------
+        - External boundaries are unambiguous and always map to the outer segments.
+        - Internal junctions are handled explicitly via ``junction_side``:
+            * ``"left"``  -> segment on the left of the junction
+            * ``"right"`` -> segment on the right of the junction
 
-        Consequences:
-        - Global left edge and right edge are included.
-        - Internal junctions are not ambiguous: they belong to the segment on the left.
+        Notes
+        -----
+        This method is the single internal dispatch implementation for ``z -> segment``.
+        Higher-level methods (``field_at``, ``section``, ``section_full_analysis``) must
+        delegate to this method to keep junction behavior consistent.
         """
         if not self.segments:
             raise ValueError("Stack is empty.")
 
-        z = float(z)
+        if junction_side not in ("left", "right"):
+            raise ValueError("junction_side must be 'left' or 'right'.")
 
-        # Fast global range check
-        z_min = self.segments[0].z_start
-        z_max = self.segments[-1].z_end
-        if z < z_min - self.eps_z or z > z_max + self.eps_z:
-            raise ValueError(f"z={z} is outside stack domain [{z_min}, {z_max}].")
+        query_z = float(z)
+        first_segment = self.segments[0]
+        last_segment = self.segments[-1]
+        stack_z_min = float(first_segment.z_start)
+        stack_z_max = float(last_segment.z_end)
 
-        for i, seg in enumerate(self.segments):
-            if i == 0:
-                left_ok = z >= seg.z_start - self.eps_z
-            else:
-                left_ok = z > seg.z_start + self.eps_z
+        # Global domain check with tolerance.
+        if query_z < stack_z_min - self.eps_z or query_z > stack_z_max + self.eps_z:
+            raise ValueError(
+                f"z={query_z} is outside stack domain [{stack_z_min}, {stack_z_max}]."
+            )
 
-            right_ok = z <= seg.z_end + self.eps_z
+        # External boundaries are never ambiguous.
+        if abs(query_z - stack_z_min) <= self.eps_z:
+            return first_segment
+        if abs(query_z - stack_z_max) <= self.eps_z:
+            return last_segment
 
-            if left_ok and right_ok:
-                return seg
+        # Internal junctions: explicit side selection.
+        for segment_index in range(1, len(self.segments)):
+            right_segment = self.segments[segment_index]
+            left_segment = self.segments[segment_index - 1]
+            junction_z = float(right_segment.z_start)
 
-        raise ValueError(f"z={z} not mapped to any segment (check contiguity/tolerance).")
+            if abs(query_z - junction_z) <= self.eps_z:
+                if junction_side == "left":
+                    return left_segment
+                return right_segment
+
+        # Interior (non-junction) query point.
+        for current_segment in self.segments:
+            segment_z_start = float(current_segment.z_start)
+            segment_z_end = float(current_segment.z_end)
+
+            strictly_inside_left = query_z > segment_z_start + self.eps_z
+            strictly_inside_right = query_z < segment_z_end - self.eps_z
+
+            if strictly_inside_left and strictly_inside_right:
+                return current_segment
+
+        raise ValueError(
+            f"z={query_z} could not be mapped to any segment "
+            f"(check stack contiguity and eps_z={self.eps_z})."
+        )
 
     def section(self, z: float, junction_side: str = "left"):
         return self.field_at(z, junction_side=junction_side).section(float(z))
@@ -567,4 +592,3 @@ class CSFStacked:
         z_min = min(seg.z_start for seg in self.segments)
         z_max = max(seg.z_end for seg in self.segments)
         return z_min, z_max
-
