@@ -28,10 +28,6 @@ CSF models a member as a continuous field along the axis `z`, combining:
 From this continuous description, CSF evaluates section properties and stiffness fields along `z` (e.g., `A(z)`, `I(z)`, `C(z)`, `EA(z)`, `EI(z)`, `GJ(z)`) and can export solver-ready station data (e.g., OpenSees `forceBeamColumn` stationing or SAP2000-ready tabular property packs).
 
 
-CSF  is not a structural solver and does not implement constitutive nonlinearities (plasticity, cracking, damage).
-
-
-
 ### CSFStacked module (segmented `ContinuousSectionField` stacking)
 
 CSFStacked is a container that stacks multiple `ContinuousSectionField` segments along the global `z` axis and dispatches any query `z -> correct segment`.  
