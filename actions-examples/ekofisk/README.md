@@ -1,7 +1,7 @@
 # Case 3: Ekofisk Jacket Platform - Foundation Piles
 ## Reconstructed CSF Benchmark for Degradation Modeling
 
-if you need to recreate the geometry
+if you need to ecreate a new modified geometry
 
 ```
 python3 csf_polygon_hole_builder_v2.py
