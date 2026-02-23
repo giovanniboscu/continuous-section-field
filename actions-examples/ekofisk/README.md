@@ -114,6 +114,40 @@ A splash-zone-centered reduction is modeled with a smooth Gaussian envelope.
 ## 8) CSF Implementation Template (YAML)
 
 ```yaml
+# -----------------------------------------------------------------------------
+# GEOMETRY INPUTS (auto-recorded by generator)
+# -----------------------------------------------------------------------------
+# SCRIPT                : csf_polygon_hole_builder_v2.py
+# SINGLE_POLE           : False
+# GEOMETRY_YAML_FILENAME: ekofisk_geometry_m.yaml
+# OUTER_POLY_NAME       : poly
+# VOID_POLY_NAME        : void
+# W_DEFAULT             : 1.0
+# z0                    : 0.0
+# z1                    : 175.0
+#
+# S0:
+#   W0           : 1.0
+#   INNER_CENTER : (0.0, 0.0)
+#   INNER_LX     : 2.3
+#   INNER_LY     : 2.3
+#   INNER_N      : 8
+#   OUTER_CENTER : (0.0, 0.0)
+#   OUTER_LX     : 2.4
+#   OUTER_LY     : 2.4
+#   OUTER_N      : 8
+#
+# S1:
+#   W1           : 1.0
+#   INNER_CENTER : (0.0, 0.0)
+#   INNER_LX     : 2.25
+#   INNER_LY     : 2.25
+#   INNER_N      : 8
+#   OUTER_CENTER : (0.0, 0.0)
+#   OUTER_LX     : 2.4
+#   OUTER_LY     : 2.4
+#   OUTER_N      : 8
+# -----------------------------------------------------------------------------
 CSF:
   sections:
     S0:
@@ -166,9 +200,9 @@ CSF:
             - [0.795495128835, 0.795495128835]
             - [3.4443191226e-16, 1.125]
             - [-0.795495128835, 0.795495128835]
-
-       weight_laws:
+  weight_laws:
          - 'poly,poly: 1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))'
+     
 ```
 
 ---
