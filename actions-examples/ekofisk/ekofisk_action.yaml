@@ -1,0 +1,61 @@
+CSF_ACTIONS:
+  stations:
+    station_midle:
+      - 42.5
+    station_edge:
+      - 0
+      - 175
+    station_10:
+      - 10
+    station_sparse:
+      - 0
+      - 3
+      - 5
+      - 7
+      - 10
+      - 50
+      - 175
+
+  actions:
+    - plot_volume_3d:
+        params:
+          line_percent: 100.0
+          title: "Stell degradated"
+
+    - section_selected_analysis:
+        stations: station_10
+        output:
+          - stdout
+        properties: [A, Cx, Cy, Iy,Wx,Wy,J,rx,ry,K_torsion,Q_na]
+
+    - plot_section_2d:
+        stations:
+          - station_10
+        show_ids: True
+        show_vertex_ids: True
+        output:
+          - [stdout,out/one_pol_ekofisk_sections.jpg]
+
+    - plot_properties:
+        output:
+          - stdout
+          - out/ekofisk.jpg
+        params:
+          num_points: 500
+        properties: [A, Ix,J]
+    - plot_weight:
+        output:
+          - stdout
+          - out/ekofisk_weight.jpg
+        params:
+          num_points: 500
+    - weight_lab_zrelative:
+        stations:
+          - station_edge
+        output:
+          - stdout
+          - out/ekofisk_weight_lab.txt
+        weith_law:
+          - "1.0 - 0.35*np.exp(-((z-5.0)**2)/(2*(2.0**2))) if z > -2.0 else 1.0"
+
+
