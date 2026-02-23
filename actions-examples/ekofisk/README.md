@@ -1,4 +1,4 @@
-# Case 3: Ekofisk Jacket Platform — Foundation Piles
+# Case 3: Ekofisk Jacket Platform - Foundation Piles
 ## Reconstructed CSF Benchmark for Degradation Modeling
 
 ![ekofisk_sections](https://github.com/user-attachments/assets/78078a19-9619-4d9c-a7c3-179e472a011b)
