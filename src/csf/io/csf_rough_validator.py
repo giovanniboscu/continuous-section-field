@@ -249,6 +249,19 @@ def _validate_csf_structure(doc: Dict[str, Any]) -> None:
     if TOP_KEY not in doc:
         raise ValidationError(f"Root missing exact '{TOP_KEY}:' key.")
 
+    # Reject misplaced top-level keys that must stay inside "CSF:".
+    # Example: "weight_laws" at YAML root must raise an error.
+    if "weight_laws" in doc:
+        raise ValidationError(
+            "Invalid YAML structure: 'weight_laws' is defined at the YAML root level.\n"
+            f"In CSF files, 'weight_laws' must be placed inside the '{TOP_KEY}:' block.\n"
+            "Fix example:\n"
+            f"  {TOP_KEY}:\n"
+            "    sections: ...\n"
+            "    weight_laws:\n"
+            "      - 'rect,rect: ...'"
+        )
+
     csf = _require_mapping(doc[TOP_KEY], f"{TOP_KEY}")
 
     if "sections" not in csf:
