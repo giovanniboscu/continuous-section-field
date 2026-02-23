@@ -94,19 +94,7 @@ A splash-zone-centered reduction is modeled with a smooth Gaussian envelope.
 
 
 `w(z) = 1 - beta * exp(-((z - z0)^2) / (2*sigma^2))`
-
-Constraint:
-`0 < w(z) <= 1`
-
-### 3.4 Sanity Values for Current Parameter Set
-
-Using `beta=0.40`, `sigma=2.0`, `z0=5`:
-
-- `w(5) = 0.60` (maximum degradation)
-- `w(3) ≈ 0.757`
-- `w(0) ≈ 0.982`
-- `w(10) ≈ 0.982`
-- `w(60) ≈ 1.000`
+`1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))`
 
 ---
 
@@ -162,41 +150,6 @@ Values rounded for reporting; use direct CSF pipeline outputs for final tables.
 
 Stations used: `z = [0, 3, 5, 7, 10, 50, 175]`
 
-### z = 0.0
-- `A = 3.23873931`
-- `Ix = 5.22358134`
-- `J = 10.44716288`
-
-### z = 3.0
-- `A = 2.11293062`
-- `Ix = 3.40782753`
-- `J = 6.81565519`
-
-### z = 5.0
-- `A = 1.96377841`
-- `Ix = 3.16726828`
-- `J = 6.33453668`
-
-### z = 7.0
-- `A = 2.11293062`
-- `Ix = 3.40782753`
-- `J = 6.81565519`
-
-### z = 10.0
-- `A = 3.23873931`
-- `Ix = 5.22358134`
-- `J = 10.44716288`
-
-### z = 50.0
-- `A = 3.26220907`
-- `Ix = 5.26143441`
-- `J = 10.52286902`
-
-### z = 175.0
-- `A = 3.26220907`
-- `Ix = 5.26143441`
-- `J = 10.52286902`
-
 ---
 
 ## 8) CSF Implementation Template (YAML)
@@ -205,67 +158,58 @@ Stations used: `z = [0, 3, 5, 7, 10, 50, 175]`
 CSF:
   sections:
     S0:
-      z: 0.0
+      z: 0
       polygons:
-        outer:
-          weight: 1.0
+        poly:
+          weight: 1
           vertices:
-            - [2.000000, 0.000000]
-            - [1.618034, 1.175571]
-            - [0.618034, 1.902113]
-            - [-0.618034, 1.902113]
-            - [-1.618034, 1.175571]
-            - [-2.000000, 0.000000]
-            - [-1.618034, -1.175571]
-            - [-0.618034, -1.902113]
-            - [0.618034, -1.902113]
-            - [1.618034, -1.175571]
-        inner_void:
-          weight: 0.0
+            - [-1.2, 1.46957615898e-16]
+            - [-0.848528137424, -0.848528137424]
+            - [-2.20436423847e-16, -1.2]
+            - [0.848528137424, -0.848528137424]
+            - [1.2, -2.93915231795e-16]
+            - [0.848528137424, 0.848528137424]
+            - [3.67394039744e-16, 1.2]
+            - [-0.848528137424, 0.848528137424]
+        void:
+          weight: 0
           vertices:
-            - [1.700000, 0.000000]
-            - [1.375329, 0.999235]
-            - [0.525329, 1.616796]
-            - [-0.525329, 1.616796]
-            - [-1.375329, 0.999235]
-            - [-1.700000, 0.000000]
-            - [-1.375329, -0.999235]
-            - [-0.525329, -1.616796]
-            - [0.525329, -1.616796]
-            - [1.375329, -0.999235]
-
+            - [-1.15, 1.40834381902e-16]
+            - [-0.813172798365, -0.813172798365]
+            - [-2.11251572853e-16, -1.15]
+            - [0.813172798365, -0.813172798365]
+            - [1.15, -2.81668763804e-16]
+            - [0.813172798365, 0.813172798365]
+            - [3.52085954755e-16, 1.15]
+            - [-0.813172798365, 0.813172798365]
     S1:
-      z: 175.0
+      z: 175
       polygons:
-        outer:
-          weight: 1.0
+        poly:
+          weight: 1
           vertices:
-            - [2.000000, 0.000000]
-            - [1.618034, 1.175571]
-            - [0.618034, 1.902113]
-            - [-0.618034, 1.902113]
-            - [-1.618034, 1.175571]
-            - [-2.000000, 0.000000]
-            - [-1.618034, -1.175571]
-            - [-0.618034, -1.902113]
-            - [0.618034, -1.902113]
-            - [1.618034, -1.175571]
-        inner_void:
-          weight: 0.0
+            - [-1.2, 1.46957615898e-16]
+            - [-0.848528137424, -0.848528137424]
+            - [-2.20436423847e-16, -1.2]
+            - [0.848528137424, -0.848528137424]
+            - [1.2, -2.93915231795e-16]
+            - [0.848528137424, 0.848528137424]
+            - [3.67394039744e-16, 1.2]
+            - [-0.848528137424, 0.848528137424]
+        void:
+          weight: 0
           vertices:
-            - [1.700000, 0.000000]
-            - [1.375329, 0.999235]
-            - [0.525329, 1.616796]
-            - [-0.525329, 1.616796]
-            - [-1.375329, 0.999235]
-            - [-1.700000, 0.000000]
-            - [-1.375329, -0.999235]
-            - [-0.525329, -1.616796]
-            - [0.525329, -1.616796]
-            - [1.375329, -0.999235]
+            - [-1.125, 1.37772764904e-16]
+            - [-0.795495128835, -0.795495128835]
+            - [-2.06659147356e-16, -1.125]
+            - [0.795495128835, -0.795495128835]
+            - [1.125, -2.75545529808e-16]
+            - [0.795495128835, 0.795495128835]
+            - [3.4443191226e-16, 1.125]
+            - [-0.795495128835, 0.795495128835]
 
-  weight_laws:
-    - 'outer,outer: 1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))'
+       weight_laws:
+         - 'poly,poly: 1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))'
 ```
 
 ---
@@ -275,11 +219,13 @@ CSF:
 ```yaml
 CSF_ACTIONS:
   stations:
-    station_mid:
+    station_midle:
       - 42.5
     station_edge:
       - 0
       - 175
+    station_10:
+      - 10
     station_sparse:
       - 0
       - 3
@@ -293,45 +239,36 @@ CSF_ACTIONS:
     - plot_volume_3d:
         params:
           line_percent: 100.0
-          title: "Steel degraded"
+          title: "ekifisk"
 
     - section_selected_analysis:
-        stations: station_sparse
+        stations: station_edge
         output:
           - stdout
-        properties: [A, Cx, Cy, Ix, Iy, J]
+          - out/section_selected_analysi_sekifisk.txt
+        properties: [A, Cx, Cy, Iy,Wx,Wy,J,J_sv,J_sv_cell,J_sv_wall,K_torsion,Q_na]
 
     - plot_section_2d:
         stations:
-          - station_mid
-        show_ids: false
-        show_vertex_ids: false
+          - station_edge
+        show_ids: True
+        show_vertex_ids: True
         output:
-          - out/ekofisk_sections.jpg
+          - [stdout,out/one_pol_ekofisk_sections.jpg]
 
     - plot_properties:
         output:
           - stdout
-          - out/ekofisk_props.jpg
+          - out/ekofisk.jpg
         params:
-          num_points: 70
-        properties: [A, Ix, Iy, J]
-
-    - weight_lab_zrelative:
-        stations:
-          - station_edge
-        output:
-          - stdout
-          - out/ekofisk_weight_lab.txt
-        weith_law:
-          - "1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))"
-
+          num_points: 500
+        properties: [A, Ix,J,J_sv,J_sv_cell,J_sv_wall]
     - plot_weight:
         output:
           - stdout
           - out/ekofisk_weight.jpg
         params:
-          num_points: 200
+          num_points: 500
 ```
 
 ---
