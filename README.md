@@ -22,7 +22,7 @@ to generate solver-ready property fields.
 CSF models a member as a continuous field along the axis `z`, combining:
 
 - **Geometry field**: arbitrary polygonal sections at stations ( `S0`, `S1`) with interpolation for tapered / varying shapes.
-- **Weight field**: per-polygon custom participation factor w(z) along z that scales each region’s effective contribution (not self-weight). [see the degradation example](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/stell_degradated_model) for a localized corrosion case on a CHS offshore tubular member.
+- **Weight field**: per-polygon custom participation factor w(z) along z that scales each region’s effective contribution (not self-weight). [see Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case on a CHS offshore tubular member.
 
 
 From this continuous description, CSF evaluates section properties and stiffness fields along `z` (e.g., `A(z)`, `I(z)`, `C(z)`, `EA(z)`, `EI(z)`, `GJ(z)`) and can export solver-ready station data (e.g., OpenSees `forceBeamColumn` stationing or SAP2000-ready tabular property packs).
