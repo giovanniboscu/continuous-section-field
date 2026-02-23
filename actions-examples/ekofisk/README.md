@@ -101,62 +101,14 @@ A splash-zone-centered reduction is modeled with a smooth Gaussian envelope.
 
 
 `w(z) = 1 - beta * exp(-((z - z0)^2) / (2*sigma^2))`
+
+
 `1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))`
 
 ---
 
-## 4) Section Formulas (Circular Hollow Section)
-
-At station `z`:
-
-- `A(z) = (pi/4) * (D_o^2 - D_i(z)^2)`
-- `I(z) = (pi/64) * (D_o^4 - D_i(z)^4)`
-- `W(z) = 2*I(z)/D_o`
-- `J_p(z) = (pi/32) * (D_o^4 - D_i(z)^4) = 2*I(z)`
-
-Weighted effective properties:
-
-- `EA_eff(z) = w(z) * E * A(z)`
-- `EI_eff(z) = w(z) * E * I(z)`
-- `GJ_eff(z) = w(z) * G * J_p(z)`, with `G = E / (2*(1+nu))`
-
----
-
-## 5) Material Set (Benchmark Steel)
-
-| Parameter | Symbol | Value | Unit | Evidence class |
-|---|---:|---:|---|---|
-| Young’s modulus | `E` | 210 | GPa | [Inferred] |
-| Poisson’s ratio | `nu` | 0.30 | — | [Inferred] |
-| Density | `rho` | 7850 | kg/m³ | [Inferred] |
-| Yield strength (reference grade-level) | `fy` | 345 | MPa | [Inferred] |
-
-Material naming in historical public sources may vary; keep this as a benchmark material card unless primary mill/test records are available.
-
----
-
-## 6) Numerical Snapshot (Illustrative)
-
-Example station near peak degradation (`z=5 m`), with model-generated section properties and current `w(5)=0.60`:
-
-- `A(5) = 1.96377841 m²`
-- `Ix(5) = 3.16726828 m⁴`
-- `Iy(5) = 3.16726840 m⁴`
-- `J(5) = 6.33453668 m⁴`
-
-If `E = 210 GPa`:
-- `EIx_eff(5) = w(5)*E*Ix(5) ≈ 0.60 * 210 * 3.16726828 ≈ 399.08 GN·m²`
-- `EIy_eff(5) = w(5)*E*Iy(5) ≈ 399.08 GN·m²`
-
-Values rounded for reporting; use direct CSF pipeline outputs for final tables.
-
----
-
-## 7) Selected-Station Benchmark Output
-![ekofisk](https://github.com/user-attachments/assets/199edbee-2915-4e9d-b177-b855c877a92d)
-
-Stations used: `z = [0, 3, 5, 7, 10, 50, 175]`
-
+### Geometry
+ 
 ---
 
 ## 8) CSF Implementation Template (YAML)
@@ -303,15 +255,3 @@ Optionally vary:
 - law family (Gaussian vs band-limited sigmoid).
 
 ---
-
-## 11) Source Strategy (Defensibility)
-
-Maintain a tracker with one row per parameter:
-
-- `parameter_name`
-- `value_used`
-- `class` = `[Measured|Inferred|Assumed]`
-- `source_id` (URL/report/page)
-- `justification`
-
-This avoids false precision and keeps updates straightforward when higher-quality primary data becomes available.
