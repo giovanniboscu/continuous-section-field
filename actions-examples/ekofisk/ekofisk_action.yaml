@@ -20,17 +20,18 @@ CSF_ACTIONS:
     - plot_volume_3d:
         params:
           line_percent: 100.0
-          title: "Stell degradated"
+          title: "ekifisk"
 
     - section_selected_analysis:
-        stations: station_10
+        stations: station_edge
         output:
           - stdout
-        properties: [A, Cx, Cy, Iy,Wx,Wy,J,rx,ry,K_torsion,Q_na]
+          - out/section_selected_analysi_sekifisk.txt
+        properties: [A,Iy,J,J_sv,K_torsion,Q_na]
 
     - plot_section_2d:
         stations:
-          - station_10
+          - station_edge
         show_ids: True
         show_vertex_ids: True
         output:
@@ -41,21 +42,22 @@ CSF_ACTIONS:
           - stdout
           - out/ekofisk.jpg
         params:
-          num_points: 500
-        properties: [A, Ix,J]
+          num_points: 200
+        properties: [A,Iy,J,J_sv,K_torsion,Q_na]
     - plot_weight:
         output:
           - stdout
           - out/ekofisk_weight.jpg
         params:
           num_points: 500
-    - weight_lab_zrelative:
-        stations:
-          - station_edge
-        output:
-          - stdout
-          - out/ekofisk_weight_lab.txt
-        weith_law:
-          - "1.0 - 0.35*np.exp(-((z-5.0)**2)/(2*(2.0**2))) if z > -2.0 else 1.0"
+#    for future use
+#    - weight_lab_zrelative:
+#        stations:
+#          - station_edge
+#        output:
+#          - stdout
+#          - out/ekofisk_weight_lab.txt
+#        weith_law:
+#          - "1.0 - 0.35*np.exp(-((z-5.0)**2)/(2*(2.0**2))) if z > -2.0 else 1.0"
 
 

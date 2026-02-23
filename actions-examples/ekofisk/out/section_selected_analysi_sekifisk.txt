@@ -1,0 +1,18 @@
+
+### SECTION SELECTED ANALYSIS @ z = 0.0 ###
+torsion_alpha_sv     : 1.00000000  [Solid J_sv scaling factor]
+A                   : 0.32649938  [Total net cross-sectional area]
+Iy                  : 0.20347394  [Second moment about centroidal Y-axis]
+J                   : 0.40694788  [Polar second moment (Ix + Iy)]
+J_sv                : 0.40694788  [Effective St. Venant torsional constant (J)]
+K_torsion           : 0.00069812  [Semi-empirical torsional stiffness approximation]
+Q_na                : 0.11579011  [First moment of area at neutral axis]
+
+### SECTION SELECTED ANALYSIS @ z = 175.0 ###
+torsion_alpha_sv     : 1.00000000  [Solid J_sv scaling factor]
+A                   : 0.49320698  [Total net cross-sectional area]
+Iy                  : 0.30103775  [Second moment about centroidal Y-axis]
+J                   : 0.60207550  [Polar second moment (Ix + Iy)]
+J_sv                : 0.60207550  [Effective St. Venant torsional constant (J)]
+K_torsion           : 0.00245700  [Semi-empirical torsional stiffness approximation]
+Q_na                : 0.17308462  [First moment of area at neutral axis]
