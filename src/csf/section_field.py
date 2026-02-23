@@ -3707,10 +3707,11 @@ def _section_polar_moment_fallback(section: Any, eps_a: float) -> float:
 
 def compute_saint_venant_J(
     section: Any,
-    alpha: float = 0.8436,
+    alpha: float = 1,
     *,
     eps_a: Optional[float] = None,
 ) -> float:
+
     """
     Approximate Saint-Venant torsional constant for a (possibly composite) section.
 
@@ -3780,7 +3781,6 @@ def compute_saint_venant_J(
     else:
         # Fallback path: compute J_p directly from polygon geometry.
         Jp = _section_polar_moment_fallback(section, eps_a_val)
-
     return float(alpha) * float(Jp)
 
 
@@ -7020,12 +7020,14 @@ class ContinuousSectionField:
             # --------------------------
        
             if not re.search(r'(?i)@(cell|wall|closed)\b', str(poly.name or "")) and  polygon_has_self_intersections(poly):
+                #silent
+                None
+                '''
                 warnings.warn(
                     f"Self-intersection detected in polygon '{poly.name}' at z={z:.3f}",
                     RuntimeWarning
                 )
-
-
+                '''
             polys.append(poly)
         return Section(polygons=tuple(polys), z=float(z))
 
@@ -7465,7 +7467,7 @@ class Visualizer:
             fontweight="bold"
         )
         fig_w.tight_layout(rect=[0, 0.04, 1, 0.96])
-        plt.show()
+        #plt.show()
 
 
 
@@ -7510,7 +7512,7 @@ class Visualizer:
 
         # Early exit if no keys are requested
         if len(keys_to_plot) == 0:
-            plt.show()
+            #plt.show()
             return
 
         # Uniform sampling along z
@@ -7530,8 +7532,7 @@ class Visualizer:
             current_section = self.field.section(z)
 
             # Compute all properties for current section
-            props = section_full_analysis(current_section, alpha=alpha)
-
+            props = section_full_analysis(current_section, alpha=1)
             for key in keys_to_plot:
                 if key not in props:
                     # Keep alignment with z_values even when key is missing
@@ -7788,7 +7789,7 @@ class Visualizer:
 
         # Reserve top margin for top-left/top-right text lines
         plt.tight_layout(rect=[0, 0, 1, 0.95])
-        plt.show()
+        #plt.show()
 
 
     
