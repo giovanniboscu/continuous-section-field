@@ -289,3 +289,6 @@ Optionally vary:
 - law family (Gaussian vs band-limited sigmoid).
 
 ---
+
+
+![ekofisk](https://github.com/user-attachments/assets/df92b10d-fda1-4318-9142-e6b873c7d85e)
