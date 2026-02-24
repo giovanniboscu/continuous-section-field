@@ -18,7 +18,7 @@ CSF_ACTIONS:
             show_vertex_ids: false                              
     - section_selected_analysis:
         stations: station_midle
-        properties: [A, Cx, Cy, Ix, Iy, J_sv_cell, J_s_vroark_fidelity]
+        properties: [A, Cx, Cy, Ix, Iy, J_sv_cell]
         params:
           fmt_display: ".5g"         
                       

@@ -68,7 +68,7 @@ CSF_ACTIONS:
           - stdout
           - out/j_sv_selected.csv
           - out/j_sv_selected.txt
-        properties: [A, Cx, Cy, Ix, Iy, J_sv, J_s_vroark_fidelity]
+        properties: [A, Cx, Cy, Ix, Iy]
 
         params:
           fmt_display: ".5g"         
