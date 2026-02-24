@@ -27,7 +27,7 @@ CSF_ACTIONS:
         output:
           - stdout
           - out/section_selected_analysi_sekifisk.txt
-        properties: [A,Iy,J,J_sv,K_torsion,Q_na]
+        properties: [A,Iy,J,K_torsion,Q_na]
 
     - plot_section_2d:
         stations:
@@ -43,7 +43,7 @@ CSF_ACTIONS:
           - out/ekofisk.jpg
         params:
           num_points: 200
-        properties: [A,Iy,J,J_sv,K_torsion,Q_na]
+        properties: [A,Iy,J,K_torsion,Q_na]
     - plot_weight:
         output:
           - stdout
