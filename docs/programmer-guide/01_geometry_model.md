@@ -139,10 +139,9 @@ FULL MODEL ANALYSIS REPORT - SECTION EVALUATION
 13) Elastic Modulus Wy:               Wy                    0.01050     # Elastic section modulus (flexural strength about Y)
 14) Torsional Rigidity K:             K_torsion             0.00479     # Semi-empirical torsional stiffness approximation
 15) First_moment:                     Q_na                  0.01838     # First moment of area at NA (governs shear capacity)
-16) Torsional const K:                J_sv                  0.01015     # alpha = 1.00000 Effective St. Venant torsional constant (J)
 16) Torsional const K cell            J_sv_cell             0.00000     # Saint-Venant torsional constant for closed thin-walled by applying Bredt–Batho formula
 16) Torsional const K wall            J_sv_wall             0.00000     # computes the Saint-Venant torsional constant for open thin-walled walls
-17) Torsional const K roark:          J_s_vroark            0.00460     # Refined J using Roark-Young thickness correction
+17) Torsional const K roark:          J_s_vroark            0.00460     # Roark torsional indicator (equivalent-rectangle mapping)
 18) Torsional const K roark fidelity: J_s_vroark_fidelity   0.42857     # Reliability index based on aspect-ratio (1.0 = Thin-walled, 0.0 = Stout)
 ==================================================================================================================================
 ```
