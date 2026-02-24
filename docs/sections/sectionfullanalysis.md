@@ -202,162 +202,7 @@ Used in shear stress estimation:
 Q = integral( y * dA ) about the neutral axis
 
 ---
-## 16. Torsional Constant (Saint-Venant)
-
-**Key:** `J_sv`
-
-CSF reports `J_sv` using the legacy solid-torsion approximation with **α = 1** (as shown in CSF output reports).
-
----
-
-## CSF solid torsion : `compute_saint_venant_J` (α·Jp, with α=1)
-
-This routine **does not** solve Prandtl’s stress-function PDE (no mesh, no field solution).  
-It derives torsion from **geometric section properties** and applies a scalar factor α.
-
-### Core approximation
-
-The polar second moment of area about the (weighted) centroid is:
-
-$$
-J_p = I_x + I_y
-$$
-
-For a circular solid section:
-
-$$
-J_{sv} = J_p
-$$
-
-For a general non-circular section:
-
-$$
-J_{sv} \neq J_p
-$$
-
-CSF uses the approximation:
-
-$$
-J_{sv} \approx \alpha\,J_p
-$$
-
-In CSF reports for this legacy path, **α = 1**, hence:
-
-$$
-J_{sv} \approx J_p
-$$
-
-### Multi-polygon weighting
-
-For multiple polygons with weights $w_i$, CSF combines geometric integrals linearly:
-
-$$
-A = \sum_i w_i A_i
-$$
-
-Centroid from weighted first moments, and inertias:
-
-$$
-I_x = \sum_i w_i I_{x,i},\qquad I_y = \sum_i w_i I_{y,i}
-$$
-
-Then:
-
-$$
-J_p = I_x + I_y
-$$
-
-(all evaluated about the **weighted centroid**), and finally:
-
-$$
-J_{sv} \approx \alpha\,J_p
-$$
-
----
-
-## Limitations of this `J_sv`
-
-Because this is an **α·Jp approximation**, it:
-
-- does **not** classify the section as thin-walled / open / closed-cell;
-- does **not** compute warping-related quantities (e.g., shear center, warping constant $C_w$);
-- is **not** a general Saint-Venant torsion solver for multiply-connected shapes (holes): it may be accurate only in special cases.
----
-
-## Under-the-hood geometry formulas 
-
-The internal logic computes polygon area/centroid/inertias from standard signed shoelace integrals.
-
-### Signed area (shoelace)
-For vertices $(x_i, y_i)$, define:
-
-$$
-\text{cross}_i = x_i y_{i+1} - x_{i+1} y_i
-$$
-
-Then the signed area is:
-
-$$
-A = \frac{1}{2}\sum_i \text{cross}_i
-$$
-
-### Second moments about the origin
-The standard (signed) formulas are:
-
-$$
-I_x = \frac{1}{12}\sum_i (y_i^2 + y_i y_{i+1} + y_{i+1}^2)\,\text{cross}_i
-$$
-
-$$
-I_y = \frac{1}{12}\sum_i (x_i^2 + x_i x_{i+1} + x_{i+1}^2)\,\text{cross}_i
-$$
-
-$$
-I_{xy} = \frac{1}{24}\sum_i (x_i y_{i+1} + 2x_i y_i + 2x_{i+1} y_{i+1} + x_{i+1} y_i)\,\text{cross}_i
-$$
-
-### Shift to the weighted centroid
-Composite centroid $(\bar x, \bar y)$ is computed from weighted first moments.
-
-The parallel-axis theorem shifts inertias from the origin to the composite centroid, e.g.:
-
-$$
-I_{x,c} = I_{x,o} - A\,\bar y^2,\qquad
-I_{y,c} = I_{y,o} - A\,\bar x^2
-$$
-
-Then:
-
-$$
-J_p = I_{x,c} + I_{y,c}
-$$
-
-and:
-
-$$
-J_{sv} \approx \alpha\,J_p
-$$
-
-
-##  Practical checklist
-
-This method is appropriate if:
-
-1. You want a **fast approximation** based on section inertias.
-2. Each polygon is a **single closed loop** (one boundary per polygon).
-3. You accept that $\alpha$ is a **global calibration factor**, not shape recognition.
-4. You do not need multiply-connected Saint-Venant torsion physics (holes) in this path.
-
-
-## Scope limitations (by design)
-
-- For thin-walled open sections use `@wall`.
-- For thin-walled closed cells use `@cell`.
-- For general solids where $J_{sv}$ must be computed accurately for arbitrary shapes, a dedicated Prandtl/Poisson solver is required (not this function).
-
----
-
-## 17 - 18 Torsion constant methods for tagged polygons (`@cell` / `@wall`)
+## 16 - 17 Torsion constant methods for tagged polygons (`@cell` / `@wall`)
 **Key:** `J_sv_cell`   `J_sv_wall` 
 
 
@@ -415,7 +260,7 @@ Parsing rules (both functions):
 
 ---
 
-## 17. `compute_saint_venant_J_cell(section)`
+## 16. `compute_saint_venant_J_cell(section)`
 
 **Key:** `J_sv_cell`  
 
@@ -541,7 +386,7 @@ A `@cell` polygon is valid for v2 if all items below are true:
 
 ---
 
-## 18 compute_saint_venant_J_wall
+## 17 compute_saint_venant_J_wall
 **Key:** `J_sv_wall`
 
 ## Purpose
@@ -722,57 +567,30 @@ By design, this routine:
 
 ---
 
-## 19. Torsional Constant (Roark / Bredt)
+## 18. Torsional Constant (Roark – Equivalent Rectangle)
 
 **Key:** `J_s_vroark`
 
-Closed-cell torsional constant based on Bredt–Batho / Roark thin-walled theory.
+General-purpose torsional constant estimate obtained by mapping the composite section to an **equivalent solid rectangle** (from effective area and principal inertias) and applying **Roark’s torsion formula for a solid rectangle**.
 
-Plain-text formula:
-
-J ≈ 4 * A_cell^2 * t / P
-
-where:
-- A_cell = area enclosed by the wall midline
-- t = wall thickness
-- P = cell perimeter
-
-**Notes**
-- Applicable **only to closed thin-walled cells**.
-- Automatically ignored for open sections **
+Notes:
+- Tag-free: independent of `@cell/@wall`.
+- Not a thin-walled closed-cell (Bredt–Batho) formulation; closed/open thin-walled torsion is handled by the dedicated `@cell/@wall` paths.
 
 ---
 
-## 20. Roark Fidelity Index
+## 19. Roark Fidelity Index
 
 **Key:** `J_s_vroark_fidelity`
 
-Dimensionless reliability index in the range [0, 1].
+Internal consistency index for the equivalent-rectangle mapping pipeline used to compute `J_s_vroark`. Intended as a trend/reliability indicator within the same method, not as an absolute physical accuracy metric.
 
-Interpretation:
+**Range:** `[0, 1]`
 
-- > 0.6 : model applicable
-- 0.3 – 0.6 : borderline validity
-- < 0.3 : outside validity domain
-
-**Notes**
-- Used to gate the use of `J_s_vroark` **
-
----
-
-## Final Remarks
-
-- CSF deliberately exposes **multiple torsional indicators**.
-- **Selection is policy-driven**, not profile-driven **
-- This guarantees transparency, robustness, and solver independence.
-
-# Interpreting `J_s_vroark_fidelity` and Reading the Plot in Practice
-
-## Purpose
-
-This page explains how to interpret `J_s_vroark_fidelity` in CSF and how to read the associated plot correctly, using non-prismatic sections (including T-like cases).
-
-It is intentionally practical and documentation-oriented.
+Interpretation (recommended gating):
+- `>= 0.6` : applicable
+- `0.3 – 0.6` : borderline validity
+- `< 0.3` : outside validity domain
 
 ---
 
@@ -781,26 +599,23 @@ It is intentionally practical and documentation-oriented.
 `J_s_vroark_fidelity` is a **method-internal consistency indicator** for the same equivalent-mapping pipeline used to compute `J_s_vroark`.
 
 Use it to:
-
 - compare reliability trends along `z` **within the same model and same method**,
-- identify sections where the equivalent mapping is more/less stable.
+- identify zones where the equivalent mapping is more/less stable.
 
 Do **not** use it as:
-
 - an absolute, geometry-independent physical accuracy metric.
 
 ---
 
 ## Why sharp points can appear without a discontinuity
 
-For many variable sections, principal inertia `I2(z)` can show a sharp point (kink) when the governing branch changes (commonly near `Ix ≈ Iy`, especially when `Ixy ≈ 0`).
+For many variable sections, any quantity derived from a branch selection (e.g., principal inertia I2(z) or the mapped I_min(z) used by the equivalent-rectangle pipeline) can show a sharp point (kink) when the governing branch changes (commonly near `Ix ≈ Iy`, especially when `Ixy ≈ 0`).
 
 Important distinction:
-
 - **Kink**: curve is continuous, slope changes abruptly.
 - **Jump**: curve value itself is discontinuous.
 
-A sharp visual point in the plot is not automatically a jump.
+A sharp visual point is not automatically a jump.
 
 ---
 
@@ -813,7 +628,7 @@ When you look at `J_s_vroark_fidelity(z)`:
 
 2. **Correlate with inertia branches**  
    Plot `Ix`, `Iy`, `I2` together.  
-   If `Ix-Iy` crosses zero, `I2` may change branch and show a kink.
+   If `Ix - Iy` crosses zero, `I2` may change branch and show a kink.
 
 3. **Do not over-interpret local sharpness**  
    A narrow sharp point can be a branch-swap signature, not a solver failure.
@@ -825,8 +640,6 @@ When you look at `J_s_vroark_fidelity(z)`:
 
 ## Suggested wording for reports
 
-Use this wording in outputs/manuals:
-
 > `J_s_vroark_fidelity` quantifies internal consistency of the equivalent-mapping approach used for `J_s_vroark` along the member axis.  
 > It is intended for comparative trend reading within the same method, not as a universal physical accuracy guarantee for arbitrary section shapes.
 
@@ -835,11 +648,10 @@ Use this wording in outputs/manuals:
 ## Plot-reading checklist (quick)
 
 Before concluding there is a bug, verify:
-
-- [ ] `I2` left/right test with shrinking `dz`  
-- [ ] `Ix-Iy` sign around the same `z`  
-- [ ] `Ixy` magnitude (near zero often implies branch behavior is easier to interpret)  
-- [ ] no true jump in value, only slope change  
+- [ ] `I2` left/right test with shrinking `dz`
+- [ ] `Ix - Iy` sign around the same `z`
+- [ ] `Ixy` magnitude (near zero often implies branch behavior is easier to interpret)
+- [ ] no true jump in value, only slope change
 - [ ] fidelity interpreted as method-confidence trend, not absolute truth
 
 ---
@@ -847,10 +659,9 @@ Before concluding there is a bug, verify:
 ## Recommended figure set in documentation
 
 To make interpretation robust, include these plots together:
-
-1. `Ix(z), Iy(z), I2(z)` (same figure)  
-2. `Ix(z)-Iy(z)` (crossing visibility)  
-3. `J_s_vroark(z)`  
+1. `Ix(z), Iy(z), I2(z)` (same figure)
+2. `Ix(z) - Iy(z)` (crossing visibility)
+3. `J_s_vroark(z)`
 4. `J_s_vroark_fidelity(z)`
 
 This combination avoids misreading isolated curves.
@@ -859,10 +670,5 @@ This combination avoids misreading isolated curves.
 
 ## Final note
 
-A sharp point in `I2` or in a related indicator may be a legitimate geometric-transition signature.  
+A sharp point in `I2` (or a related indicator) may be a legitimate geometric-transition signature.  
 The correct criterion is continuity testing, not visual smoothness alone.
-
-
-For the formal torsional selection rules, see:
-
-**README-P.md – CSF Torsional Constant Policy**
