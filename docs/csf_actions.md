@@ -91,7 +91,7 @@ Some actions require a `properties:` list (outside `params`). Allowed keys and m
 - `Q_na` — First moment of area at neutral axis  
 - `J_sv_wall` — Saint-Venant torsion for open thin-walled walls  
 - `J_sv_cell` — Saint-Venant torsion for closed thin-walled cells (Bredt-like approach)  
-- `J_s_vroark` — Refined torsion constant (Roark–Young thickness correction)  
+- `J_s_vroark` — Roark torsional indicator (equivalent-rectangle mapping) 
 - `J_s_vroark_fidelity` — Fidelity / reliability indicator for the Roark correction
 
 ---
