@@ -18,7 +18,7 @@ CSF_ACTIONS:
             show_vertex_ids: false                              
     - section_selected_analysis:
         stations: station_edge
-        properties: [A, Cx, Cy, Ix, Iy, J_sv,J_sv_wall,J_sv_cell]
+        properties: [A, Cx, Cy, Ix, Iy, J_sv_wall,J_sv_cell]
         params:
           fmt_display: ".5g"         
                       
