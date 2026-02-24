@@ -471,6 +471,14 @@ The `@wall` routine does **not** reconstruct cells and does **not** support mult
 ### 4.2 Thin-strip (strip-like) shape (mandatory for validity)
 
 Each `@wall` polygon must represent a **thin strip of material**, i.e. a wall patch whose midline length $b$ is much larger than thickness $t$.
+This polygon is assumed to represent a thin rectangular wall patch (“rettangoloid” in 2D), i.e. a polygon that is well-approximated by a rectangle with:
+
+two long edges (wall midline direction),
+
+two short edges (thickness direction),
+
+thickness t much smaller than the long dimension.
+
 
 Operationally:
 
@@ -563,6 +571,7 @@ By design, this routine:
 - approximates **open** thin-walled torsion (no cell closure effects)
 - assumes one constant thickness per patch
 - does not compute warping constants
+- shape must be rectanguloid
 - is not intended for compact solids or general thick-walled regions.
 
 ---
