@@ -11,7 +11,6 @@ from csf import (
     section_statical_moment_partial, section_stiffness_matrix,
     polygon_inertia_about_origin,
     polygon_statical_moment,
-    compute_saint_venant_J,
     compute_saint_venant_Jv2,
     section_print_analysis,
     write_opensees_geometry
@@ -204,53 +203,5 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     plt.show()
 
-   # ==============================================================================
-   # SECTION EVALUATION ANALYSIS REPORT - TECHNICAL COMMENTS (CORRECTED)
-   # ==============================================================================
-   #
-   # 1. GEOMETRIC ACCURACY (Items 1-13)
-   #    - The model is fully consistent with theoretical invariants for Area,
-   #      Principal Inertias, and Polar Moment:
-   #         A = 0.24000001 ~ 0.2400
-   #         I1 = 0.00720000
-   #         I2 = 0.00320000
-   #         J  = Ix + Iy = 0.01040000
-   #    - The apparent difference in (Ix, Iy, Ixy) compared to the "classical"
-   #      table is due to axis orientation:
-   #         CSF reports: Ix = 0.00520000, Iy = 0.00520000, Ixy = -0.00200000
-   #      This is exactly the inertia tensor expressed in a rotated frame
-   #      (about 45° from principal axes), not a geometric inconsistency.
-   #    - Symmetry check in the current reference frame:
-   #         Ix = Iy and rx = ry
-   #      confirms balanced distribution in that frame, while Ixy != 0 confirms
-   #      that the frame is not principal.
-   #
-   # 2. TORSIONAL RIGIDITY COMPARISON (Items 14-18)
-   #    - J_sv (0.01040000): Saint-Venant torsional constant used by CSF in this case
-   #      (alpha = 1.00000000). This is the highest value among the reported torsional
-   #      proxies and is consistent with the section's full solid response.
-   #    - K_torsion (0.00797538): fallback semi-empirical approximation, conservative
-   #      relative to J_sv (about 23.3% lower than J_sv).
-   #    - J_s_vroark (0.00751249): Roark-based proxy, slightly more conservative than
-   #      K_torsion (about 5.8% lower than K_torsion) and about 27.8% lower than J_sv.
-   #
-   # 3. FIDELITY / RELIABILITY INDEX
-   #    - J_s_vroark_fidelity = 0.66666659 (NOT 0.15).
-   #    - Interpretation: this is a medium-good mapping consistency indicator for the
-   #      Roark-equivalent approach in this section; it does not indicate a failure.
-   #    - Practical meaning: Roark proxy is usable as a conservative estimate here,
-   #      but the physical-reference torsional value remains J_sv.
-   #
-   # 4. STRUCTURAL INTEGRATION GUIDANCE
-   #    - For realistic FE/OpenSees torsional behavior: prefer J_sv = 0.01040000.
-   #    - For intentionally conservative preliminary checks: J_s_vroark = 0.00751249
-   #      may be adopted with explicit note of conservatism.
-   #
-   # STATUS:
-   #    Geometric consistency is confirmed (tensor invariants and principal values
-   #    match theory). Differences in Ix/Iy/Ixy are entirely due to coordinate-frame
-   #    rotation. Torsional estimates are internally coherent and ordered by expected
-   #    conservatism: J_sv > K_torsion > J_s_vroark.
-   # ==============================================================================
 
   

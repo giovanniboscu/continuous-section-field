@@ -112,7 +112,6 @@ if __name__ == "__main__":
         ("Bending stiffness about X", "EIxx", ex_i * E_mod, num_eixx, "N*m^2"),
         ("Bending stiffness about Y", "EIyy", ex_i * E_mod, num_eiyy, "N*m^2"),
         ("Symmetry check (Ixy)", "Ixy", 0.0, p['Ixy'], "m^4"),
-        ("Torsional stiffness constant", "J_sv", ex_j, p['J'], "m^4"),
         ("Torsional stiffness (GJ)", "GJ", ex_j * G_mod, num_gj, "N*m^2"),
         ("Maximum bending stiffness", "EI_max", ex_i * E_mod, d['I1'] * E_mod, "N*m^2"),
         ("Minimum bending stiffness", "EI_min", ex_i * E_mod, d['I2'] * E_mod, "N*m^2"),

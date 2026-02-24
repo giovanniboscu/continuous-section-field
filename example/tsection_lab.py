@@ -103,7 +103,6 @@ if __name__ == "__main__":
     viz = Visualizer(field)
     viz.plot_section_2d(z=zsec_val, show_vertex_ids=True,show_weights=True)    
     viz.plot_volume_3d(line_percent=100.0)
-    #viz.plot_properties( ["A", "K_torsion", "Q_na", "J","J_sv","J_s_vroark","J_s_vroark_fidelity"])
     viz.plot_properties( ["A","I1","I2","Ixy","J_s_vroark","J_s_vroark_fidelity",])
     
     
