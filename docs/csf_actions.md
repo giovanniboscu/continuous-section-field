@@ -89,7 +89,6 @@ Some actions require a `properties:` list (outside `params`). Allowed keys and m
 - `Wx`, `Wy` — Elastic section moduli  
 - `K_torsion` — Semi-empirical torsional stiffness approximation  
 - `Q_na` — First moment of area at neutral axis  
-- `J_sv` — Effective Saint-Venant torsional constant (J)  
 - `J_sv_wall` — Saint-Venant torsion for open thin-walled walls  
 - `J_sv_cell` — Saint-Venant torsion for closed thin-walled cells (Bredt-like approach)  
 - `J_s_vroark` — Refined torsion constant (Roark–Young thickness correction)  
