@@ -191,7 +191,7 @@ Available keys:
 - Ix
 - Iy
 - Ixy
-- J
+- Ip
 - I1
 - I2
 - rx
