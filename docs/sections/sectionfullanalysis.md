@@ -94,13 +94,13 @@ Product of inertia about centroidal axes.
 
 ---
 
-## 7. Polar Moment (J)
+## 7. Polar Moment (Ip)
 
-**Key:** `J`
+**Key:** `Ip`
 
 Polar second moment of area:
 
-J = Ix + Iy
+Ip = Ix + Iy
 
 **Notes**
 - Purely geometric.
