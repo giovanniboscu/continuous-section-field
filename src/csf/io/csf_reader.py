@@ -195,7 +195,6 @@ class CSFReader:
             c) generate a coherent hint (not always "quoted numbers")
         3) Read the file text (UTF-8) and then proceed with the full reader pipeline via read_text().
         """
-        # Reset state collected during a previous read (this is per-run state, not persistent config).
         self._polygons_map_coercions = []
         issues: List[Issue] = []
 
@@ -222,7 +221,7 @@ class CSFReader:
         with redirect_stdout(buf), redirect_stderr(buf):
             validator_result = csf_rough_validator(filepath)
         validator_out = buf.getvalue().strip()
-
+        
         if validator_result == 2:
             # Missing file or not readable: report as IO error (controlled).
             issues.append(

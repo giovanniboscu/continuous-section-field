@@ -1,0 +1,30 @@
+# Minimal CSF example: prismatic rectangular beam + single-polygon w(z) law
+# Geometry is constant; only polygon weight varies along z.
+# Pairing is index-based (S0 polygon[0] <-> S1 polygon[0]).
+
+CSF:
+  sections:
+    S0:
+      z: 0.000000
+      polygons:
+        rect:
+          weight: 1.000000
+          vertices:   # CCW required
+            - [0.0, 0.0]
+            - [2.0, 0.0]
+            - [2.0, 1.0]
+            - [0.0, 1.0]
+
+    S1:
+      z: 10.000000
+      polygons:
+        rect:
+          weight: 1.000000
+          vertices:   # Same geometry (prismatic member)
+            - [0.0, 0.0]
+            - [2.0, 0.0]
+            - [2.0, 1.0]
+            - [0.0, 1.0]
+  weight_laws:
+    #- 'rect,rect: 1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))' 
+    - 'rect,rect: 1.0 - 0.55*(np.sin(np.pi*z/10.0)**2)'

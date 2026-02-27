@@ -91,10 +91,10 @@ CSF_ACTIONS:
             line_percent: 100.0
             title: "Ruled volume"      
               
-#    - plot_properties:    
-#         output: [out/j_sv_properties.png]
-#         params: {num_points: 70}
-#         properties: [A, Ix, Iy, J_sv]      
+    - plot_properties:    
+         output: [out/j_sv_properties.png]
+         params: {num_points: 70}
+         properties: [A, Ix, Iy, Ip]      
          
          
     - plot_weight:
@@ -106,25 +106,25 @@ CSF_ACTIONS:
          - station_midle
         weith_law:
            - "T_lookup('w_variation.txt')"
-#    - write_opensees_geometry:
-#        output: 
-#          - out/j_sv_geometry.tcl # required, file-only (no stdout)
-#        params:
-#          n_points: 10 # required int
-#          E_ref: 2.1e+11 # required float
-#          nu: 0.30 # required float          
+    - write_opensees_geometry:
+        output: 
+          - out/j_sv_geometry.tcl # required, file-only (no stdout)
+        params:
+          n_points: 10 # required int
+          E_ref: 2.1e+11 # required float
+          nu: 0.30 # required float          
   
-#    - write_sap2000_geometry:
-#        stations: stations_dense
-#        output: [out/j_sv_sap2000_template_pack.txt]
-#        params:
-#          n_intervals: 7
-#          material_name: "S355"
-#          E_ref: 2.1e+11
-#          nu: 0.30
-#          mode: "BOTH"
-#          include_plot: True
-#          plot_filename: "out/j_sv_section_variation.png"
+    - write_sap2000_geometry:
+        stations: stations_dense
+        output: [out/j_sv_sap2000_template_pack.txt]
+        params:
+          n_intervals: 7
+          material_name: "S355"
+          E_ref: 2.1e+11
+          nu: 0.30
+          mode: "BOTH"
+          include_plot: True
+          plot_filename: "out/j_sv_section_variation.png"
 
 
                              

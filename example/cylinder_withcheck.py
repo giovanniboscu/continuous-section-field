@@ -74,7 +74,7 @@ if __name__ == "__main__":
     K = section_stiffness_matrix(data['section'], E_ref=E_mod)
     num_eixx = K[1, 1]
     num_eiyy = K[2, 2]
-    num_gj = G_mod * p['J']
+    num_gj = G_mod * p['Ip']
     
     # --- 2. DERIVED AND THEORETICAL QUANTITIES CALCULATION ---
     # Statical Q (First moment of area for shear analysis)

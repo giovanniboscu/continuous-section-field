@@ -16,23 +16,19 @@ from csf import (
     section_statical_moment_partial, section_stiffness_matrix,
     polygon_inertia_about_origin,
     polygon_statical_moment,
-    compute_saint_venant_J,
     compute_saint_venant_Jv2,
     write_opensees_geometry,
     section_full_analysis_keys,
     section_print_analysis
 )
 
-
-
 if __name__ == "__main__":
     # this is the file name
     geometryfile="geometry.tcl"
     
-    h = 1.20  # cm
+    h = 1.20  
     hb= 0.40
-    b = 0.30  # cm
-    #hf = 0.400
+    b = 0.30  
 
     poly_top_start = Polygon(
         vertices=(
@@ -42,7 +38,7 @@ if __name__ == "__main__":
             Pt(-b/2,  h/2),
         ),
         weight=1, # 
-        name="upperpart",
+        name="upperpart@wall",
     )
 
     
@@ -54,7 +50,7 @@ if __name__ == "__main__":
             Pt(-b/2,  0.0),
         ),
         weight=1,
-        name="lowerpart",
+        name="lowerpart@wall",
     )
     
 
@@ -66,7 +62,7 @@ if __name__ == "__main__":
             Pt(-b/2,  h/2),
         ),
         weight=1, # 
-        name="upperpart",
+        name="upperpart@wall",
     )
 
     poly_bottom_end = Polygon(
@@ -77,14 +73,11 @@ if __name__ == "__main__":
             Pt(-b/2,  0.0),
         ),
         weight=1,
-        name="lowerpart",
+        name="lowerpart@wall",
     )
 
     # --- SECTION AND FIELD DEFINITION ---
     L = 10.0
-
-    #s0 = Section(polygons=(poly_top_start,),z=0.0)
-    #s1 = Section(polygons=(poly_top_end,),z=L)
 
 
     s0 = Section(polygons=(poly_bottom_start,poly_top_start),z=0.0)
@@ -96,7 +89,7 @@ if __name__ == "__main__":
     sec_mid = section_field.section(zsec_val)
 
     full_analysis = section_full_analysis(sec_mid)
-    section_print_analysis(full_analysis,fmt=".2f")
+    section_print_analysis(full_analysis,fmt=".5f")
    
     
     viz = Visualizer(section_field)
@@ -105,7 +98,7 @@ if __name__ == "__main__":
     viz.plot_volume_3d(line_percent=100.0, seed=1)
 
     vizprop = Visualizer(section_field)
-    vizprop.plot_properties(['Cy','Ix','Iy','J'])
+    vizprop.plot_properties(['Cy','Ix','Iy','Ip'])
     write_opensees_geometry(section_field,E_ref=1, nu=0, n_points=10, filename=geometryfile)
     plt.show()
   

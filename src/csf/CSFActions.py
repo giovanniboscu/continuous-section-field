@@ -446,7 +446,7 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
             "\n"
             "YAML fields\n"
             "- stations:    NOT USED (forbidden). This action samples internally between z0 and z1.\n"
-            "- properties:  REQUIRED. List of property keys to plot (e.g. ['A','Ix','Iy','J']).\n"
+            "- properties:  REQUIRED. List of property keys to plot (e.g. ['A','Ix','Iy','Ip']).\n"
             "- output:      OPTIONAL. Default is [stdout] (show a window at end of run, if supported).\n"
             "              If output contains file path(s), the plot is saved to disk.\n"
             "              If output does NOT include 'stdout', the action is file-only.\n"
@@ -701,7 +701,7 @@ PLOT_PROPERTIES_ALLOWED = (
     "Ix",
     "Iy",
     "Ixy",
-    "J",
+    "Ip",
     "I1",
     "I2",
     "rx",
@@ -710,7 +710,6 @@ PLOT_PROPERTIES_ALLOWED = (
     "Wy",
     "K_torsion",
     "Q_na",
-    "J_sv",
     "J_sv_wall",
     "J_sv_cell",
     "J_s_vroark",
@@ -3136,7 +3135,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             "       Ix                 - Second moment about centroidal X-axis\n"
             "       Iy                 - Second moment about centroidal Y-axis\n"
             "       Ixy                - Product of inertia (symmetry indicator)\n"
-            "       J                  - Polar second moment (Ix + Iy)\n"
+            "       Ip                 - Polar second moment (Ix + Iy)\n"
             "       I1                 - Major principal second moment\n"
             "       I2                 - Minor principal second moment\n"
             "       rx                 - Radius of gyration (about X)\n"
@@ -3145,17 +3144,16 @@ def main(argv: Optional[List[str]] = None) -> int:
             "       Wy                 - Elastic section modulus about Y\n"
             "       K_torsion          - Semi-empirical torsional stiffness approximation\n"
             "       Q_na               - First moment of area at neutral axis\n"
-            "       J_sv               - Effective St. Venant torsional constant (J)\n"
             "       J_sv_wall          - computes the Saint-Venant torsional constant for open thin-walled walls\n"
             "       J_sv_cell          - Saint-Venant torsional constant for closed thin-walled by applying  Bredt–Batho formula\n"            
-            "       J_s_vroark         - Refined J (Roark-Young thickness correction)\n"
+            "       J_s_vroark         - Roark torsional indicator (equivalent-rectangle mapping)\n"
             "       J_s_vroark_fidelity- Fidelity / reliability indicator\n"
             "\n"
             "     Example:\n"
             "       - plot_properties:\n"
             "           output: [stdout, out/properties.bmp]\n"
             "           params: {num_points: 70}\n"
-            "           properties: [A, Ix, Iy, J]\n"
+            "           properties: [A, Ix, Iy, Ip]\n"
             "\n"
             "  5) plot_weight             (stations FORBIDDEN)\n"
             "     - Calls Visualizer.plot_weight(num_points=...)\n"
@@ -3307,7 +3305,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 "  This is NOT a guaranteed importable .s2k. It is a complete, well-commented\n"
                 "  DATA + COPY/PASTE pack that contains:\n"
                 "    - Stations (absolute z) and section naming per station\n"
-                "    - Table C: core numeric properties per station (A, Cx, Cy, Ix, Iy, Ixy, J)\n"
+                "    - Table C: core numeric properties per station (A, Cx, Cy, Ix, Iy, Ixy, Ip)\n"
                 "    - Candidate SAP2000 table blocks (JOINT COORDINATES, CONNECTIVITY - FRAME,\n"
                 "      FRAME SECTION PROPERTIES - GENERAL, FRAME SECTION ASSIGNMENTS)\n"
                 "    - A checklist of items you may still need to define in SAP2000\n"

@@ -126,7 +126,7 @@ def plot_section_variation(
     - This function is optional. It only runs if matplotlib is available.
     - Units are intentionally NOT printed; they depend on the user's consistent unit system.
     - The function expects each station dict to have at least:
-        'z', 'A', 'Ix', 'Iy', 'J'
+        'z', 'A', 'Ix', 'Iy', 'Ip'
 
     Parameters
     ----------
@@ -152,7 +152,7 @@ def plot_section_variation(
     area = [st['A'] for st in stations_data]
     i33 = [st['Ix'] for st in stations_data]
     i22 = [st['Iy'] for st in stations_data]
-    j = [st['J'] for st in stations_data]
+    j = [st['Ip'] for st in stations_data]
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
 
@@ -273,7 +273,7 @@ def _compute_station_data(
     ----------------------
     - field.section(z) -> a section object at that z
     - csf.section_field.section_full_analysis(section,alpha) -> dict with keys like:
-        'A', 'Cx', 'Cy', 'Ix', 'Iy', 'Ixy', 'J', ...
+        'A', 'Cx', 'Cy', 'Ix', 'Iy', 'Ixy', 'Ip', ...
       (We fall back to sensible defaults if some keys are missing.)
 
     Returns
@@ -291,6 +291,7 @@ def _compute_station_data(
     RuntimeError:
         If section_full_analysis cannot be imported.
     """
+    '''
     try:
         from csf.section_field import section_full_analysis  # type: ignore
     except Exception as e:
@@ -298,22 +299,23 @@ def _compute_station_data(
             "Cannot import csf.section_field.section_full_analysis; "
             "this template generator requires the CSF analysis function."
         ) from e
-
+    '''
+    
     out: List[Dict[str, Any]] = []
 
     for i, z in enumerate(z_values):
         section_at_z = field.section(float(z))
-        analysis = section_full_analysis(section_at_z,alpha = 1.0,) 
-
-        cx = analysis.get("Cx", analysis.get("cx", 0.0))
-        cy = analysis.get("Cy", analysis.get("cy", 0.0))
-        A = analysis.get("A", analysis.get("area", 0.0))
-        Ix = analysis.get("Ix", analysis.get("ix", analysis.get("ixx_g", 0.0)))
-        Iy = analysis.get("Iy", analysis.get("iy", analysis.get("iyy_g", 0.0)))
-        Ixy = analysis.get("Ixy", analysis.get("ixy", 0.0))
-        # Torsion: different libraries may report 'J' or 'K_torsion' etc.
-        J = analysis.get("J", analysis.get("j", analysis.get("K_torsion", 0.0)))
-        print
+        analysis = section_full_analysis(section_at_z) 
+        cx = analysis.get("Cx")
+        cy = analysis.get("Cy")
+        
+        A = analysis.get("A")
+        Ix = analysis.get("Ix")
+        Iy = analysis.get("Iy")
+        Ixy = analysis.get("Ixy")
+        # Torsion: different libraries may report 'Ip' or 'K_torsion' etc.
+        J = analysis.get("Ip")#, analysis.get("j", analysis.get("K_torsion", 0.0)))
+        
         out.append(
             {
                 "id": i + 1,
@@ -324,7 +326,7 @@ def _compute_station_data(
                 "Ix": float(Ix),
                 "Iy": float(Iy),
                 "Ixy": float(Ixy),
-                "J": float(J),
+                "Ip": float(J),
                 "analysis_raw": analysis,
             }
         )
@@ -344,8 +346,8 @@ def write_sap2000_template_pack(
     *,
     mode: _Mode = "BOTH",
     section_prefix: str = "SEC",
-    joint_prefix: str = "J",
-    frame_prefix: str = "F",
+    #joint_prefix: str = "J",
+    #frame_prefix: str = "F",
     material_name: str = "S355",
     E_ref: Optional[float] = None,
     nu: Optional[float] = None,
@@ -353,6 +355,7 @@ def write_sap2000_template_pack(
     plot_filename: str = "section_variation.png",
     show_plot: bool = False,
     z_values: Optional[List[float]] = None,
+    float_fmt: str = ".9g", 
 ) -> str:
     """
     Generate a SAP2000 "template pack" text file from a CSF field.
@@ -473,7 +476,7 @@ def write_sap2000_template_pack(
 
     # Compute section data at selected stations (unchanged downstream flow).
     stations_data = _compute_station_data(field, station_z)
-
+    
     # Optional plot (best-effort).
     plot_path_written: Optional[str] = None
     if include_plot and plt is not None:
@@ -503,29 +506,53 @@ def write_sap2000_template_pack(
     lines.append("")
     lines.append("MODEL METADATA")
     lines.append("-" * 78)
-    lines.append(f"z_start      : {z_start:.9g}")
-    lines.append(f"z_end        : {z_end:.9g}")
-    lines.append(f"length (L)   : {L:.9g}")
+    lines.append(f"z_start      : {format(z_start, float_fmt)}")
+    lines.append(f"z_end        : {format(z_end, float_fmt)}")
+    lines.append(f"length (L)   : {format(L, float_fmt)}")
     lines.append(f"stations     : {len(stations_data)}")
     lines.append(f"mode         : {mode}")
     lines.append(f"material     : {material_name}")
     if E_ref is not None:
-        lines.append(f"E_ref        : {float(E_ref):.9g}")
+        lines.append(f"E_ref        : {format(float(E_ref), float_fmt)}")
     if nu is not None:
         lines.append(f"nu           : {float(nu):.9g}")
     if plot_path_written is not None:
         lines.append(f"plot         : {plot_path_written}")
     lines.append("")
 
-    lines.append("STATIONS (CORE)")
+    lines.append("STATIONS (CORE) J_tors = J_sv_cell + J_sv_wall")
     lines.append("-" * 78)
     lines.append(
-        "Columns: id, z, Cx, Cy, A, Ix, Iy, Ixy, J"
+        "Columns: id, z, Cx, Cy, A, Ix, Iy, Ixy, Ip,J_tors"
     )
+
+
     for d in stations_data:
+  
+        J_cell = d["analysis_raw"]["J_sv_cell"]
+        J_wall = d["analysis_raw"]["J_sv_wall"]
+
+        J_tors = J_cell + J_wall
+
+        if J_cell and J_wall:
+            J_tors=0
+            warnings.warn(
+                "No valid Saint-Venant torsion contribution "
+                "(J_sv_cell or J_sv_wall) available for export."
+            )
+
+
         lines.append(
-            f"{d['id']:>4d}  {d['z']:.9g}  {d['Cx']:.9g}  {d['Cy']:.9g}  "
-            f"{d['A']:.9g}  {d['Ix']:.9g}  {d['Iy']:.9g}  {d['Ixy']:.9g}  {d['J']:.9g}"
+            f"{d['id']:>4d}  "
+            f"{format(d['z'], float_fmt)}  "
+            f"{format(d['Cx'], float_fmt)}  "
+            f"{format(d['Cy'], float_fmt)}  "
+            f"{format(d['A'], float_fmt)}  "
+            f"{format(d['Ix'], float_fmt)}  "
+            f"{format(d['Iy'], float_fmt)}  "
+            f"{format(d['Ixy'], float_fmt)}  "
+            f"{format(d['Ip'], float_fmt)} "
+            f"{format(J_tors, float_fmt)} "
         )
     lines.append("")
 
@@ -596,345 +623,6 @@ def write_sap2000_template_pack(
 
 
 #--------------------------------------------------------------------------------
-def write_sap2000_template_pack2toremove(
-    field: Any,
-    n_intervals: int = 20,
-    template_filename: str = "template.txt",
-    *,
-    mode: _Mode = "BOTH",
-    section_prefix: str = "SEC",
-    joint_prefix: str = "J",
-    frame_prefix: str = "F",
-    material_name: str = "S355",
-    E_ref: Optional[float] = None,
-    nu: Optional[float] = None,
-    include_plot: bool = True,
-    plot_filename: str = "section_variation.png",
-    show_plot: bool = False,
-) -> str:
-    """
-    Generate a SAP2000 "template pack" text file from a CSF field.
-
-    What this produces
-    ------------------
-    A single text file (template pack) that contains:
-      - assumptions and modeling modes,
-      - station list (z) and section naming for each station,
-      - a full numeric property table per station (the "core"),
-      - copy/paste-ready candidate SAP2000 table blocks with placeholders,
-      - a checklist of items that might still be required in SAP2000.
-
-    What this does NOT claim
-    ------------------------
-    This file is NOT guaranteed to import as-is into SAP2000.
-    It is designed as a complete data pack to enable a user (or a downstream script)
-    to construct a correct SAP2000 import file for their specific SAP2000 version.
-
-    Parameters
-    ----------
-    field:
-        A ContinuousSectionField-like object (must have field.s0.z, field.s1.z, and field.section(z)).
-    n_intervals:
-        Number of intervals along the element; number of stations is n_intervals + 1.
-    template_filename:
-        Output text file path.
-    mode:
-        "BOTH" -> prints both centroidal and reference-line blocks.
-        "CENTROIDAL_LINE" -> prints only centroidal-line blocks.
-        "REFERENCE_LINE" -> prints only reference-line blocks.
-    section_prefix, joint_prefix, frame_prefix:
-        Naming prefixes used in the generated copy/paste blocks.
-    material_name:
-        A suggested material label. The user may change this in SAP2000.
-    E_ref, nu:
-        Optional reference elastic constants included as *suggested* values.
-        Units are not enforced here; they must be consistent in SAP2000.
-    include_plot:
-        If True and matplotlib is available, saves a plot image of property variation.
-    plot_filename:
-        Image path for the plot (saved only if include_plot and matplotlib available).
-    show_plot:
-        If True, displays the plot interactively (if backend allows).
-
-    Returns
-    -------
-    str:
-        The template file path written.
-    """
-    if mode not in ("BOTH", "CENTROIDAL_LINE", "REFERENCE_LINE"):
-        raise ValueError("mode must be one of: BOTH, CENTROIDAL_LINE, REFERENCE_LINE")
-
-    # Extract CSF absolute bounds.
-    z_start = float(getattr(field.s0, "z"))
-    z_end = float(getattr(field.s1, "z"))
-    L = z_end - z_start
-
-    # Generate station coordinates using Lobatto on [z_start, z_end].
-    z_values = get_lobatto_intervals(z_start, z_end, int(n_intervals)).tolist()
-
-    stations_data = _compute_station_data(field, z_values)
-
-    # Optional plot (best-effort).
-    plot_path_written: Optional[str] = None
-    if include_plot and plt is not None:
-        try:
-            plot_path_written = plot_section_variation(
-                stations_data,
-                filename=plot_filename,
-                show=show_plot,
-            )
-        except Exception:
-            # Plotting must never prevent template creation.
-            plot_path_written = None
-
-    # Prepare paths and directory.
-    out_path = Path(template_filename)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Decide whether to include a reference elastic constants block.
-    # If E_ref and nu are provided, we compute G_ref (isotropic assumption) as informational.
-    G_ref: Optional[float] = None
-    if E_ref is not None and nu is not None:
-        try:
-            G_ref = float(E_ref) / (2.0 * (1.0 + float(nu)))
-        except Exception:
-            G_ref = None
-
-    # Helper naming functions
-    def sec_name(st_id: int) -> str:
-        # Stable naming: include station id; users may rename later.
-        return f"{section_prefix}_{st_id}"
-
-    def joint_name(st_id: int) -> str:
-        return f"{joint_prefix}{st_id}"
-
-    def frame_name(seg_id: int) -> str:
-        return f"{frame_prefix}{seg_id}"
-
-    # Write template
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    lines: List[str] = []
-    lines.append("#" * 78)
-    lines.append("# SAP2000 TEMPLATE PACK (CSF)")
-    lines.append("#" * 78)
-    lines.append(f"# Generated: {now}")
-    lines.append("#")
-    lines.append("# DISCLAIMER:")
-    lines.append("#   This file is a DATA + COPY/PASTE TEMPLATE. It is not guaranteed to import")
-    lines.append("#   as a complete SAP2000 model without edits, because SAP2000 text tables and")
-    lines.append("#   required fields can vary by version and workflow.")
-    lines.append("#")
-    lines.append("# UNITS:")
-    lines.append("#   Units are NOT enforced here. Use one consistent unit system throughout.")
-    lines.append("#")
-    lines.append("# MODELING MODES SUPPORTED:")
-    lines.append("#   1) CENTROIDAL_LINE:")
-    lines.append("#      - Nodes follow the centroid (Cx(z), Cy(z)) in the global XY plane.")
-    lines.append("#      - The beam axis is the z-direction (absolute z stations).")
-    lines.append("#   2) REFERENCE_LINE:")
-    lines.append("#      - Nodes lie on a nominal axis (X=0, Y=0), with Z=z.")
-    lines.append("#      - Cx(z), Cy(z) are provided as offsets/eccentricities to be applied in SAP.")
-    lines.append("#")
-    lines.append("# CSF DOMAIN:")
-    lines.append(f"#   z_start = {z_start:.6f}")
-    lines.append(f"#   z_end   = {z_end:.6f}")
-    lines.append(f"#   L       = {L:.6f}")
-    lines.append(f"#   n_intervals = {int(n_intervals)}  ->  n_stations = {len(stations_data)}")
-    lines.append("#")
-    lines.append("# SUGGESTED ELASTIC CONSTANTS (OPTIONAL):")
-    lines.append(f"#   material_name = {material_name}")
-    if E_ref is not None and nu is not None:
-        lines.append(f"#   E_ref = {float(E_ref):.6e}")
-        lines.append(f"#   nu    = {float(nu):.6f}")
-        if G_ref is not None:
-            lines.append(f"#   G_ref = E_ref/(2*(1+nu)) = {G_ref:.6e}  (isotropic)")
-        else:
-            lines.append("#   G_ref could not be computed (invalid E_ref/nu)")
-    else:
-        lines.append("#   (not provided) -> define material properties directly in SAP2000 as needed.")
-    if plot_path_written:
-        lines.append(f"# PREVIEW PLOT: {plot_path_written}")
-    lines.append("#" * 78)
-    lines.append("")
-
-    # ---------------------------------------------------------------------
-    # Stations + naming
-    # ---------------------------------------------------------------------
-    lines.append("### STATIONS (ABSOLUTE z) + SECTION NAMING")
-    lines.append("")
-    lines.append("# Each station i is assigned a section name SEC_i (customizable).")
-    lines.append("# You can use this mapping to create SAP2000 'General' sections and then")
-    lines.append("# assign them to frame segments.")
-    lines.append("")
-    lines.append("# id, z, section_name")
-    for st in stations_data:
-        lines.append(f"# {st['id']:>3d}, {st['z']:.6f}, {sec_name(int(st['id']))}")
-    lines.append("")
-
-    # ---------------------------------------------------------------------
-    # Core properties table (the heart)
-    # ---------------------------------------------------------------------
-    lines.append("### TABLE C — SECTION PROPERTIES PER STATION (CORE DATA)")
-    lines.append("")
-    lines.append("# Meaning of columns:")
-    lines.append("#   z   : absolute station coordinate")
-    lines.append("#   A   : total net area")
-    lines.append("#   Cx,Cy: centroid coordinates in the section plane (CSF local axes)")
-    lines.append("#   Ix,Iy,Ixy: second moments / product of inertia about centroid (CSF local axes)")
-    lines.append("#   J   : torsional constant (as reported by CSF analysis; naming may differ by library)")
-    lines.append("#")
-    lines.append("# IMPORTANT AXIS NOTE:")
-    lines.append("#   SAP2000 uses local axes 1-2-3 for frame sections. If you map CSF (x,y) to SAP (2,3),")
-    lines.append("#   a common convention is: Ix -> I33, Iy -> I22, Ixy -> I23. Confirm your axis mapping.")
-    lines.append("")
-    lines.append("z,A,Cx,Cy,Ix,Iy,Ixy,J,section_name")
-    for st in stations_data:
-        lines.append(
-            f"{st['z']:.10g},"
-            f"{st['A']:.10g},"
-            f"{st['Cx']:.10g},"
-            f"{st['Cy']:.10g},"
-            f"{st['Ix']:.10g},"
-            f"{st['Iy']:.10g},"
-            f"{st['Ixy']:.10g},"
-            f"{st['J']:.10g},"
-            f"{sec_name(int(st['id']))}"
-        )
-    lines.append("")
-
-    # ---------------------------------------------------------------------
-    # Candidate SAP2000 blocks (copy/paste)
-    # ---------------------------------------------------------------------
-    lines.append("### TABLE D — COPY/PASTE CANDIDATE SAP2000 TEXT TABLES (VERSION-DEPENDENT)")
-    lines.append("")
-    lines.append("# These blocks are *starting points* for SAP2000's text-table import.")
-    lines.append("# Depending on SAP2000 version, you may need to adjust table names/columns.")
-    lines.append("# This template aims to avoid missing numeric data: all values you need are above.")
-    lines.append("")
-
-    # --- JOINT COORDINATES (CENTROIDAL LINE) ---
-    if mode in ("BOTH", "CENTROIDAL_LINE"):
-        lines.append("#### D1) JOINT COORDINATES — CENTROIDAL_LINE")
-        lines.append("# Nodes follow centroid coordinates Cx(z), Cy(z).")
-        lines.append("# Copy/paste example format (verify table/column names in your SAP2000 version):")
-        lines.append('TABLE: "JOINT COORDINATES"')
-        for st in stations_data:
-            jn = joint_name(int(st["id"]))
-            # Use centroid as global XY
-            lines.append(
-                f"  Joint={jn}  CoordSys=GLOBAL  CoordType=Cartesian  "
-                f"XorR={st['Cx']:.6f}  Y={st['Cy']:.6f}  Z={st['z']:.6f}  SpecialJt=No"
-            )
-        lines.append("")
-
-    # --- JOINT COORDINATES (REFERENCE LINE) ---
-    if mode in ("BOTH", "REFERENCE_LINE"):
-        lines.append("#### D2) JOINT COORDINATES — REFERENCE_LINE")
-        lines.append("# Nodes lie on a nominal axis (X=0, Y=0), with Z=z.")
-        lines.append("# Cx(z), Cy(z) are provided later as offsets/eccentricities.")
-        lines.append('TABLE: "JOINT COORDINATES"')
-        for st in stations_data:
-            jn = joint_name(int(st["id"]))
-            lines.append(
-                f"  Joint={jn}  CoordSys=GLOBAL  CoordType=Cartesian  "
-                f"XorR={0.0:.6f}  Y={0.0:.6f}  Z={st['z']:.6f}  SpecialJt=No"
-            )
-        lines.append("")
-        lines.append("#### D2b) OFFSETS / ECCENTRICITIES — REFERENCE_LINE (PLACEHOLDER)")
-        lines.append("# SAP2000 has multiple ways to apply offsets (insertion point, joint offsets, frame offsets).")
-        lines.append("# This template provides the numerical offsets you would need:")
-        lines.append("#   dx = Cx(z), dy = Cy(z)  (signs depend on your axis mapping)")
-        lines.append("# Apply them in SAP2000 using your chosen method.")
-        lines.append("# id, z, dx, dy")
-        for st in stations_data:
-            lines.append(f"# {st['id']:>3d}, {st['z']:.6f}, dx={st['Cx']:.6f}, dy={st['Cy']:.6f}")
-        lines.append("")
-
-    # --- FRAME CONNECTIVITY ---
-    lines.append("#### D3) FRAME CONNECTIVITY (SEGMENTS BETWEEN STATIONS)")
-    lines.append("# Discretization: create one frame between each consecutive pair of joints.")
-    lines.append("# Example format (verify exact table name/columns):")
-    lines.append('TABLE: "CONNECTIVITY - FRAME"')
-    for i in range(len(stations_data) - 1):
-        n1 = joint_name(int(stations_data[i]["id"]))
-        n2 = joint_name(int(stations_data[i + 1]["id"]))
-        fn = frame_name(i + 1)
-        lines.append(f"  Frame={fn}  JointI={n1}  JointJ={n2}  IsCurved=No")
-    lines.append("")
-
-    # --- FRAME SECTION PROPERTIES: GENERAL ---
-    lines.append("#### D4) FRAME SECTION PROPERTIES — GENERAL (CANDIDATE)")
-    lines.append("# For each station, define a 'General' section with A, Ixx/Iyy/Ixy, and torsion J.")
-    lines.append("# NOTE ON TORSION COLUMN NAME:")
-    lines.append("#   Different text exports have used different column names (e.g., TorsConst vs TorsProp).")
-    lines.append("#   You MUST verify the expected column name in your SAP2000 version.")
-    lines.append("#")
-    lines.append("# Option A (commonly documented style): use TorsConst=")
-    lines.append('TABLE: "FRAME SECTION PROPERTIES 01 - GENERAL"')
-    for st in stations_data:
-        sn = sec_name(int(st["id"]))
-        lines.append(
-            f"  SectionName={sn}  Material={material_name}  Shape=General  "
-            f"Area={st['A']:.8e}  I33={st['Ix']:.8e}  I22={st['Iy']:.8e}  I23={st['Ixy']:.8e}  "
-            f"TorsConst={st['J']:.8e}"
-        )
-    lines.append("")
-    lines.append("# Option B (alternate style): use TorsProp= (if your SAP2000 table expects this name)")
-    lines.append("#  (same numeric values; only the torsion column name differs)")
-    lines.append("#  Example line:")
-    lines.append("#    SectionName=SEC_1 ... Area=... I33=... I22=... I23=... TorsProp=...")
-    lines.append("")
-
-    # --- FRAME SECTION ASSIGNMENTS ---
-    lines.append("#### D5) FRAME SECTION ASSIGNMENTS (CANDIDATE)")
-    lines.append("# Assign each frame segment the section corresponding to its start station.")
-    lines.append("# If your workflow uses a dedicated assignment table, paste there.")
-    lines.append("# Example format (verify exact table name/columns):")
-    lines.append('TABLE: "FRAME SECTION ASSIGNMENTS"')
-    for i in range(len(stations_data) - 1):
-        fn = frame_name(i + 1)
-        sn = sec_name(int(stations_data[i]["id"]))
-        lines.append(f"  Frame={fn}  Section={sn}")
-    lines.append("")
-
-    # --- MATERIAL PROPERTIES ---
-    lines.append("#### D6) MATERIAL PROPERTIES (OPTIONAL TEMPLATE)")
-    lines.append("# If your SAP2000 model requires explicit material definitions, use:")
-    lines.append("#  - E, nu, and optionally G (if not derived automatically)")
-    lines.append("# Units must be consistent with the rest of the model.")
-    if E_ref is not None and nu is not None and G_ref is not None:
-        lines.append(f"# Suggested: Material={material_name}  E={float(E_ref):.6e}  nu={float(nu):.6f}  G={G_ref:.6e}")
-    else:
-        lines.append("# (No suggested E_ref/nu provided in this template pack.)")
-    lines.append("")
-
-    # ---------------------------------------------------------------------
-    # Checklist of missing/unknown items
-    # ---------------------------------------------------------------------
-    lines.append("### TABLE E — CHECKLIST (MAY STILL BE REQUIRED IN SAP2000)")
-    lines.append("")
-    lines.append("# The following items are not handled automatically by this template pack and may be")
-    lines.append("# required depending on your SAP2000 workflow/model:")
-    lines.append("#")
-    lines.append("# 1) Units setup in SAP2000 (choose a consistent unit system).")
-    lines.append("# 2) Material properties (E, nu, G, density/mass) and design parameters.")
-    lines.append("# 3) Frame local axis orientation (rotation about axis 1).")
-    lines.append("# 4) Insertion point / offsets / end offsets (especially for REFERENCE_LINE mode).")
-    lines.append("# 5) Shear area (AS2/AS3) if your model requires shear deformation effects.")
-    lines.append("# 6) Modifiers (A, I, J modifiers), if used in your SAP2000 practice.")
-    lines.append("# 7) End releases / boundary conditions / connectivity to the rest of the structure.")
-    lines.append("# 8) Loads, combinations, analysis settings, recorders, etc. (model-specific).")
-    lines.append("#")
-    lines.append("# If you discover that your SAP2000 version requires additional columns in any table,")
-    lines.append("# add them in the SAP file and keep using the numeric values from TABLE C above.")
-    lines.append("")
-
-    # Write file
-    out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return str(out_path)
-
-
 def write_sap2000_geometry(*args: Any, **kwargs: Any) -> str:
     """
     Backward-compatible wrapper.
@@ -1440,7 +1128,7 @@ def section_print_analysis(full_analysis, fmt=".8f"):
     print(f"4) Inertia Ix:                        Ix                    {full_analysis['Ix']:{fmt}}     # Second moment of area about the centroidal X-axis")
     print(f"5) Inertia Iy:                        Iy                    {full_analysis['Iy']:{fmt}}     # Second moment of area about the centroidal Y-axis")
     print(f"6) Inertia Ixy:                       Ixy                   {full_analysis['Ixy']:{fmt}}     # Product of inertia (indicates axis symmetry)")
-    print(f"7) Polar Moment (J):                  J                     {full_analysis['J']:{fmt}}     # Polar second moment of area (sum of Ix and Iy)")
+    print(f"7) Polar Moment    :                  Ip                    {full_analysis['Ip']:{fmt}}     # Polar second moment of area (sum of Ix and Iy)")
     print(f"8) Principal Inertia I1:              I1                    {full_analysis['I1']:{fmt}}     # Major principal second moment of area")
     print(f"9) Principal Inertia I2:              I2                    {full_analysis['I2']:{fmt}}     # Minor principal second moment of area")
     print(f"10) Radius of Gyration rx:            rx                    {full_analysis['rx']:{fmt}}     # Radii of gyration relative to the X-axis")
@@ -1449,11 +1137,10 @@ def section_print_analysis(full_analysis, fmt=".8f"):
     print(f"13) Elastic Modulus Wy:               Wy                    {full_analysis['Wy']:{fmt}}     # Elastic section modulus (flexural strength about Y)")
     print(f"14) Torsional Rigidity K:             K_torsion             {full_analysis['K_torsion']:{fmt}}     # Semi-empirical torsional stiffness approximation")
     print(f"15) First_moment:                     Q_na                  {full_analysis['Q_na']:{fmt}}     # First moment of area at NA (governs shear capacity)" )
-    print(f"16) Torsional const K:                J_sv                  {full_analysis['J_sv']:{fmt}}     # alpha = {full_analysis['J_sv_alpha']:{fmt}} Effective St. Venant torsional constant (J)")
-    print(f"17) Torsional const K cell            J_sv_cell             {fmt_val_or_pair(full_analysis['J_sv_cell'],fmt)}   # Saint-Venant torsional constant for closed thin-walled by applying  Bredt–Batho formula")    
-    print(f"18) Torsional const K wall            J_sv_wall             {fmt_val_or_pair(full_analysis['J_sv_wall'],fmt)}   # computes the Saint-Venant torsional constant for open thin-walled walls")
-    print(f"19) Torsional const K roark:          J_s_vroark            {full_analysis['J_s_vroark']:{fmt}}     # Refined J using Roark-Young thickness correction")
-    print(f"20) Torsional const K roark fidelity: J_s_vroark_fidelity   {full_analysis['J_s_vroark_fidelity']:{fmt}}     # Reliability index based on aspect-ratio (1.0 = Thin-walled, 0.0 = Stout")
+    print(f"16) Torsional const K cell            J_sv_cell             {fmt_val_or_pair(full_analysis['J_sv_cell'],fmt)}     # Saint-Venant torsional constant for closed thin-walled by applying  Bredt–Batho formula")    
+    print(f"17) Torsional const K wall            J_sv_wall             {fmt_val_or_pair(full_analysis['J_sv_wall'],fmt)}     # computes the Saint-Venant torsional constant for open thin-walled walls")
+    print(f"18) Torsional const K roark:          J_s_vroark            {full_analysis['J_s_vroark']:{fmt}}     # Roark torsional indicator (equivalent-rectangle mapping)")
+    print(f"19) Torsional const K roark fidelity: J_s_vroark_fidelity   {full_analysis['J_s_vroark_fidelity']:{fmt}}     # Reliability index based on aspect-ratio (1.0 = Thin-walled, 0.0 = Stout")
     
     print("="*span)
     
@@ -1470,7 +1157,7 @@ def section_full_analysis_keys() -> List[str]:
         'Ix',
         'Iy',
         'Ixy',
-        'J',
+        'Ip',
         'I1',
         'I2',
         'rx',
@@ -1479,7 +1166,6 @@ def section_full_analysis_keys() -> List[str]:
         'Wy',
         'K_torsion'
         ,'Q_na'
-        ,'J_sv'
         ,'J_sv_wall'
         ,'J_sv_cell'
         ,'J_s_vroark'
@@ -1517,15 +1203,24 @@ def write_opensees_geometry(
          (i.e., heterogeneity/holes already reflected by CSF analysis).
 
     3) Torsion export without tying the file to a single CSF torsion model
-       CSF may provide multiple torsion candidates (e.g., wall/cell/legacy).
-       This writer exports a single neutral value J_tors (to feed OpenSees "J"):
-         - Prefer J_sv_wall if > 0
-         - else prefer J_sv_cell if > 0
-         - else use legacy "J" if > 0
-         - else fail-fast (recommended; avoids silent torsion defaults)
+       CSF may provide multiple Saint-Venant torsion contributions
+       (e.g., thin-walled cell and thin-walled open wall).
 
-       Note: In OpenSees, the "J" field in section Elastic is the torsion constant.
-             We export our selected torsion constant into that "J" slot.
+              Torsion selection policy:
+
+         - If both J_sv_cell and J_sv_wall are present and > 0:
+             J_tors = J_sv_cell + J_sv_wall
+           (additive Saint-Venant contributions)
+
+         - If only one of them is present and > 0:
+             J_tors = that value
+
+         - Legacy "Ip" is NOT automatically used here
+           (avoids mixing distinct torsion models silently).
+
+         - If no valid Saint-Venant contribution is available:
+             fail-fast (explicit error; no silent torsion default).
+
 
     4) Reference shear modulus
        G_ref is computed as isotropic:
@@ -1547,7 +1242,7 @@ def write_opensees_geometry(
     - section_full_analysis(sec, ...) must return at least:
         "A", "Ix", "Iy", "Cx", "Cy"
       and (for torsion export) at least one of:
-        "J_sv_wall", "J_sv_cell", "J"
+        "J_sv_wall", "J_sv_cell"
     """
 
     import numpy as np
@@ -1627,7 +1322,7 @@ def write_opensees_geometry(
             f.write("# NOTE: Section lines append 'Cx Cy' as CSF-only fields (not OpenSees syntax).\n")
             f.write("#\n")
             f.write("# CSF_EXPORT_MODE: E=E_ref ; A/I/J are station-wise CSF results (already weighted)\n")
-            f.write("# CSF_TORSION_SELECTION: J_eff = max(J_sv_cell, J_sv_wall) if any >0 else J_sv if >0 else ERROR")
+            f.write("# CSF_TORSION_SELECTION: J_eff = max(J_sv_cell, J_sv_wall) if any >0 else J if >0 else ERROR")
 
             # ---- Exact z stations ----
             f.write("\n\n# CSF_Z_STATIONS: " + " ".join(f"{z:.12g}" for z in z_coords) + "\n\n")
@@ -1653,20 +1348,17 @@ def write_opensees_geometry(
                 tag = i + 1
 
 
-                # -------------------------------------------------------------------------
-                # Select torsion constant to export into OpenSees "J"
                 #
                 # POLICY:
-                #   1) If any thin-walled candidate is available:
-                #        J_eff = max(J_sv_cell, J_sv_wall)
-                #      and set torsion_method to the SELECTED KEY:
-                #        "J_sv_cell" or "J_sv_wall"
+                #   1) If thin-walled Saint-Venant contributions are available:
+                #        J_tors = J_sv_cell + J_sv_wall
+                #      (additive contributions if both are present)
                 #
-                #   2) If no thin-walled candidate is available:
-                #        fallback to J_sv
-                #      and set torsion_method = "J_sv"
+                #      torsion_method is set to:
+                #        - "J_sv_cell+J_sv_wall" if both are present
+                #        - "J_sv_cell" if only cell is present
+                #        - "J_sv_wall" if only wall is present
                 #
-                #   3) If nothing is available: fail-fast.
                 # -------------------------------------------------------------------------
                 cell_ok = _is_pos(res.get("J_sv_cell"), 0.0)
                 wall_ok = _is_pos(res.get("J_sv_wall"), 0.0)
@@ -1675,23 +1367,22 @@ def write_opensees_geometry(
                     J_cell = float(res["J_sv_cell"]) if cell_ok else 0.0
                     J_wall = float(res["J_sv_wall"]) if wall_ok else 0.0
 
-                    if J_cell >= J_wall:
-                        J_tors = J_cell
+                    J_tors = J_cell + J_wall
+
+                    if cell_ok and wall_ok:
+                        torsion_method = "J_sv_cell+J_sv_wall"
+                    elif cell_ok:
                         torsion_method = "J_sv_cell"
                     else:
-                        J_tors = J_wall
                         torsion_method = "J_sv_wall"
 
-                elif _is_pos(res.get("J_sv"), 0.0):
-                    J_tors = float(res["J_sv"])
-                    torsion_method = "J_sv"
-
                 else:
-                    raise KeyError(
-                        f"No torsion value available at station {tag} (z={z_coords[i]}). "
-                        "Expected positive J_sv_cell, J_sv_wall, or J_sv."
+                    torsion_method = ""
+                    J_tors=0
+                    warnings.warn(
+                        "No valid Saint-Venant torsion contribution "
+                        "(J_sv_cell or J_sv_wall) available for export."
                     )
-
 
 
                 # Write section data record
@@ -3467,79 +3158,10 @@ def alpha_from_keys(
 
 
 
-"""
-compute_saint_venant_j_new_approc.py
-
-A CSF-friendly (fast, deterministic) approximation for the Saint-Venant torsional constant J.
-
-Why this exists
----------------
-A PDE-based Prandtl solve (FEM/FD + iterative Poisson) is not aligned with CSF goals:
-- it is slow and can appear to "hang" depending on grid/shape,
-- it introduces solver parameters and convergence heuristics,
-- it is fragile for "unknown" polygon quality (self-intersections, near-degeneracy).
-
-This file provides a deliberately simple alternative:
-
-    J_sv  ≈  α * J_p
-
-where J_p is the polar second moment of area about the centroid:
-
-    J_p = I_x + I_y
-
-This approximation is:
-- O(N_vertices) if you already compute section properties (constant-time wrapper),
-- O(N_polygons * N_vertices) in the pure-geometry fallback,
-- deterministic (no loops, no convergence, no timeouts),
-- composable with CSF polygon weights.
-
-Accuracy note
--------------
-For a solid circle:  J_sv = J_p  (α = 1).
-For a solid square:  J_sv ≈ 0.8436 * J_p.
-
-So α is a *shape factor* capturing warping effects in a single scalar.
-Default α is set to match the solid square case (common engineering baseline).
-
-Scope / contract
-----------------
-- No geometric validation: no convexity checks, no self-intersection checks, no orientation checks.
-- No repair or normalization of signs.
-- No nested helper functions (module-level helpers only).
-- Polygons are combined through their weights exactly as CSF does for other properties.
-
-Recommended usage in CSF
-------------------------
-If your codebase already has:
-
-    section_properties(section) -> dict with keys 'Ix','Iy' (centroidal) and/or 'J'
-
-then you should rely on that (fastest, most consistent with the rest of CSF).
-
-Otherwise, this module includes a standalone, pure-geometry fallback that computes:
-- weighted area A,
-- weighted centroid (Cx,Cy),
-- weighted centroidal inertias Ix,Iy,
-- then J_p = Ix + Iy.
-
-Data model expectations
------------------------
-- section.polygons: iterable of polygon-like objects
-- each polygon has:
-    - .vertices: iterable of points with .x and .y
-    - .weight  : numeric (MUST exist; no silent default)
-
-Return value
-------------
-A single float: the *weighted* torsional constant approximation for the section.
-"""
-
-PointXY = Tuple[float, float]
-
-
 # -----------------------------------------------------------------------------
 # Helpers: robust "sign-agnostic" comparisons without using abs()
 # -----------------------------------------------------------------------------
+PointXY = Tuple[float, float]
 
 def _sq(x: float) -> float:
     return x * x
@@ -3705,7 +3327,7 @@ def _section_polar_moment_fallback(section: Any, eps_a: float) -> float:
 # Public API
 # -----------------------------------------------------------------------------
 
-def compute_saint_venant_J(
+def compute_saint_venant_J2remove(
     section: Any,
     alpha: float = 1,
     *,
@@ -3725,7 +3347,7 @@ def compute_saint_venant_J(
     section:
         Section-like object with .polygons.
     alpha:
-        Shape factor. Default 0.8436 matches a solid square.
+        Shape factor. Default 1
         Set alpha=1.0 to match a solid circle.
     eps_a:
         Area tolerance used only for degeneracy checks in the fallback path.
@@ -3737,7 +3359,7 @@ def compute_saint_venant_J(
     1) If a callable `section_properties` symbol exists in the current namespace,
        it is used as the primary source of centroidal inertias (fast and consistent).
        Expected keys:
-         - either 'J' (polar moment) OR both 'Ix' and 'Iy' (centroidal).
+         - either 'Ip' (polar moment) OR both 'Ix' and 'Iy' (centroidal).
     2) Otherwise, a pure-geometry fallback computes J_p directly.
 
     Notes
@@ -3770,12 +3392,12 @@ def compute_saint_venant_J(
     if callable(sp):
         props = sp(section)
         if isinstance(props, dict):
-            if "J" in props:
-                Jp = float(props["J"])
+            if "Ip" in props:
+                Jp = float(props["Ip"])
             elif ("Ix" in props) and ("Iy" in props):
                 Jp = float(props["Ix"]) + float(props["Iy"])
             else:
-                raise ValueError("section_properties(section) did not provide 'J' nor ('Ix','Iy').")
+                raise ValueError("section_properties(section) did not provide 'Ip' nor ('Ix','Iy').")
         else:
             raise ValueError("section_properties(section) did not return a dict-like object.")
     else:
@@ -3858,7 +3480,7 @@ def assemble_element_stiffness_matrix(field: ContinuousSectionField, E_ref: floa
         EIx = K_sec[1, 1] 
         EIy = K_sec[2, 2]
         EIxy = K_sec[1, 2]
-        #GK = props['J'] * G_ref  # Correct Saint-Venant torsion
+        #GK = props['Ip'] * G_ref  # Correct Saint-Venant torsion
         
         # Integration coefficients (Euler-Bernoulli exact)
         c1 = 12 * W / L**3
@@ -3953,7 +3575,7 @@ def polygon_inertia_about_origin(poly: Polygon) -> Tuple[float, float, float]:
     # Apply weight; keep sign conventions consistent by using magnitude of orientation implicitly
     # For typical usage, we want weighted contributions. We take absolute values of Ix/Iy if polygon orientation flips.
     # Using signed formulas + abs for Ix/Iy tends to be robust for mixed orientations in prototypes.
-    return (poly.weight * abs(Ix), poly.weight * abs(Iy), poly.weight * Ixy)
+    return (poly.weight * Ix, poly.weight * Iy, poly.weight * Ixy)
 
 
 """
@@ -4103,7 +3725,7 @@ def integrate_volume(
 
 
 
-def section_full_analysis(section: Section,alpha: float = 1.0):
+def section_full_analysis(section: Section):
     """
     Performs a comprehensive structural and geometric analysis of a cross-section.
     
@@ -4122,6 +3744,7 @@ def section_full_analysis(section: Section,alpha: float = 1.0):
 
     
     props = section_properties(section)
+   
     
     # -------------------------------------------------------------------------
     # 2. PRINCIPAL AXIS ANALYSIS
@@ -4130,6 +3753,7 @@ def section_full_analysis(section: Section,alpha: float = 1.0):
     # This identifies the orientation where the product of inertia is zero, 
     # crucial for analyzing unsymmetrical bending.
     derived = section_derived_properties(props)
+
     
     # -------------------------------------------------------------------------
     # 3. ELASTIC SECTION MODULI (W) - BENDING CAPACITY
@@ -4155,14 +3779,14 @@ def section_full_analysis(section: Section,alpha: float = 1.0):
 # -------------------------------------------------------------------------
     # 4. TORSIONAL RIGIDITY (K) - BETA ESTIMATION
     # -------------------------------------------------------------------------
-    # J (props['J']) is the Polar Moment of Inertia (computed via Green's theorem).
-    # For non-circular sections, J overestimates torsional stiffness.
+    # J (props['Ip']) is the Polar Moment of Inertia (computed via Green's theorem).
+    # For non-circular sections, Ip overestimates torsional stiffness.
     # We add 'K_torsion' as a semi-empirical approximation: J_eff ≈ A^4 / (40 * Ip)
     
     A = props['A']
-    Ip = props['Ix'] + props['Iy'] # Polar moment about centroid (Ip = J for centroidal axes)
+    Ip = props['Ix'] + props['Iy'] # Polar moment about centroid 
     
-    # Keep props['J'] exactly as originally computed by section_properties
+    # Keep props['Ip'] exactly as originally computed by section_properties
     if Ip > EPS_K:
         props['K_torsion'] = (A**4) / (40.0 * Ip)
     else:
@@ -4191,8 +3815,8 @@ def section_full_analysis(section: Section,alpha: float = 1.0):
     )
     '''
 
-    props['J_sv'] = compute_saint_venant_J(section, alpha=alpha, eps_a=EPS_A)#compute_saint_venant_J(section)
-    props['J_sv_alpha']=alpha
+    #props['J_sv'] = compute_saint_venant_J(section, alpha=alpha, eps_a=EPS_A)#compute_saint_venant_J(section)
+    #props['J_sv_alpha']=alpha
     props['J_sv_cell'] =compute_saint_venant_J_cell(section)#compute_saint_venant_J_wall(section)
     props['J_sv_wall'] = compute_saint_venant_J_wall(section)
     props['J_s_vroark'],props['J_s_vroark_fidelity']= compute_saint_venant_Jv2(section)
@@ -4204,6 +3828,7 @@ def section_full_analysis(section: Section,alpha: float = 1.0):
     # -------------------------------------------------------------------------
     # Merge the primary properties with the derived principal axis data into 
     # a single comprehensive dictionary for downstream structural solvers.
+   
     return {**props, **derived}
 
 def polygon_statical_moment(poly: Polygon, y_axis: float) -> float:
@@ -4298,7 +3923,7 @@ def section_statical_moment_partial(section: Section, y_cut: float, reference_ax
 
     return q_total
 
-def section_derived_properties_debug(props: Dict[str, float], debug: bool = True) -> Dict[str, float]:
+def section_derived_properties_debug2remove(props: Dict[str, float], debug: bool = True) -> Dict[str, float]:
     """
     Computes derived structural properties including principal moments of inertia,
     principal axis rotation, and radius of gyration.
@@ -5343,6 +4968,8 @@ class ContinuousSectionField:
 
     
 
+
+
     def inspect_section_entities(self, z: float) -> List[Dict[str, Any]]:
         """
         Performs a sterile, comprehensive inspection of all polygonal entities at a 
@@ -5902,8 +5529,150 @@ class ContinuousSectionField:
             "vertices": verts,
         }
 
+    # --------------------------------------------------------------------------------------
+    
 
 
+    def section_area_list_report(
+        self,
+        z: float,
+        w_tol: float = 0.0,
+        zero_w_eps: float = 0.0,
+        group_mode: str = "weight",
+    ) -> None:
+        """
+        Print an accountant-style area listing at section z, grouped by ABSOLUTE weight (w_abs),
+        and include the two requested totals:
+
+            Occupied Total Surface: sum(A_net)
+            Homogenized area:       sum(A*w) where A*w = A_net * w_abs
+
+        Sterile/accounting intent:
+        - A_net is the polygon signed area as computed (no abs()).
+        With CCW-only polygons, A_net should be positive.
+        - W in the table is w_abs (absolute weight along the container chain).
+        w_tol bins W for grouping/printing only; the product A*w uses the RAW w_abs.
+
+        Parameters
+        ----------
+        z : float
+            Longitudinal coordinate where the section is sampled.
+        w_tol : float
+            Grouping tolerance for weights. If > 0, weights are rounded to the nearest multiple
+            of w_tol for grouping/printing purposes only.
+        zero_w_eps : float
+            Passed through to the underlying computation (kept for consistency with your API).
+            This report's totals are defined strictly by the table columns, not by zero_w_eps.
+        group_mode : str
+            Currently only "weight" is supported. Kept as a label in the header.
+        """
+        import numpy as np
+
+        if group_mode != "weight":
+            raise ValueError("Only group_mode='weight' is supported by this report.")
+
+        # Run the underlying sterile computation and request per-polygon records
+        res = self.section_area_by_weight(
+            z=float(z),
+            w_tol=float(w_tol),
+            include_per_polygon=True,
+            debug=False,
+            zero_w_eps=float(zero_w_eps),
+        )
+
+        per = res.get("per_polygon", [])
+        if not per:
+            print(f"SECTION AREA LIST REPORT at z = {z:g}")
+            print("(No polygons found.)")
+            return
+
+        # Use S0/S1 as the stable name sources for the left/right columns
+        s0_polys = self.s0.polygons
+        s1_polys = self.s1.polygons
+        n_polys = len(s0_polys)
+
+        # Determine index formatting width (e.g., [03], [102])
+        idx_width = max(2, len(str(max(0, n_polys - 1))))
+
+        # Weight binning must match section_area_by_weight grouping behavior
+        def _bin_weight(w: float) -> float:
+            if w_tol and w_tol > 0.0:
+                return round(w / w_tol) * w_tol
+            return w
+
+        # Build sortable rows: grouped weight then polygon index
+        rows = []
+        for rec in per:
+            idx = int(rec["idx"])
+            if not (0 <= idx < n_polys):
+                # Strict coherence: report expects S0/S1 indexing alignment
+                raise ValueError(f"Polygon index out of range in report: idx={idx}")
+
+            w_abs_raw = float(rec["w_abs"])
+            w_group = _bin_weight(w_abs_raw) if (w_tol and w_tol > 0.0) else w_abs_raw
+
+            # A_net is the sterile signed area (no abs)
+            a_net = float(rec["area"])
+
+            # A*w must use RAW w_abs (not binned), to remain faithful to "A*w" as a per-polygon product
+            a_w = a_net * w_abs_raw
+
+            s0_name = getattr(s0_polys[idx], "name", "")
+            s1_name = getattr(s1_polys[idx], "name", "")
+
+            rows.append(
+                {
+                    "w_group": w_group,
+                    "w_abs_raw": w_abs_raw,
+                    "idx": idx,
+                    "s0_name": s0_name,
+                    "s1_name": s1_name,
+                    "a_net": a_net,
+                    "a_w": a_w,
+                }
+            )
+
+        rows.sort(key=lambda r: (r["w_group"], r["idx"]))
+
+        # Totals requested by the user: defined by table columns, not by the underlying "effective" totals
+        occupied_total_surface = sum(r["a_net"] for r in rows)  # Σ A_net
+        homogenized_area = sum(r["a_w"] for r in rows)          # Σ (A_net * w_abs_raw)
+
+        # Header (match the requested style as closely as possible)
+        print(f"SECTION AREA LIST REPORT at z = {z:g}")
+        print("=" * 80)
+        print(f"group_mode={group_mode}  w_tol={w_tol:g}\n")
+        print(
+            f"{'W':>10} | {'id':<6} | {'s0.name':<18} | {'s1.name':<18} | "
+            f"{'A_net':>12} | {'A*w':>12}"
+        )
+        print("-" * 90)
+
+        # Print W only when the group changes (blank otherwise), like your sample
+        last_w = None
+        for r in rows:
+            w_disp = r["w_group"]
+            w_str = f"{w_disp:g}" if (last_w is None or w_disp != last_w) else ""
+            last_w = w_disp
+
+            idx_str = f"[{r['idx']:0{idx_width}d}]"
+            print(
+                f"{w_str:>10} | {idx_str:<6} | "
+                f"{r['s0_name']:<18} | {r['s1_name']:<18} | "
+                f"{r['a_net']:>12.6g} | {r['a_w']:>12.6g}"
+            )
+
+        print("-" * 90)
+
+        # Totals block (accountant-style, as requested)
+        print(f"Occupied Total Surface: {occupied_total_surface:.12g}")
+        print(f"Homogenized area:       {homogenized_area:.12g}")
+
+
+        
+
+
+    # --------------------------------------------------------------------------------------
     def section_area_by_weight(
         self,
         z: float,
@@ -5926,7 +5695,7 @@ class ContinuousSectionField:
                    the nearest multiple of w_tol for grouping purposes only.
             include_per_polygon: If True, includes detailed per-polygon data in output.
             debug: If True, prints debug information to stdout.
-            zero_w_eps: Threshold for considering an absolute weight as zero when
+            zero_w_eps: Threshold for considering an absolute weig  ht as zero when
                         computing total_area_nonzero. If |w_abs| <= zero_w_eps, 
                         that polygon's contribution is excluded from the nonzero sum.
                         
@@ -6413,7 +6182,7 @@ class ContinuousSectionField:
         If a polygon name is not found or homology fails, it raises an error 
         to prevent falling back to default linear behavior.
         """
-        print("set_weight_laws")
+        #print("set_weight_laws")
         if not isinstance(laws, (list, dict)):
             raise ValueError("weight_laws must be a list or a dictionary.")
         
@@ -6424,7 +6193,8 @@ class ContinuousSectionField:
         # Keep original polygon names as declared in S0/S1 strip @cell @wall
         valid_names0 = [self._strip_model_tags(p.name) for p in self.s0.polygons]
         valid_names1 = [self._strip_model_tags(p.name) for p in self.s1.polygons]
-        #print(f"DEBUG valid_names0 {valid_names0} valid_names1 {valid_names1}")
+        
+        print(f"DEBUG valid_names0 {valid_names0} valid_names1 {valid_names1}")
         # Reset current laws 
         self.weight_laws = {}
         normalized_map = {}
@@ -7211,7 +6981,7 @@ def section_properties(section: Section) -> Dict[str, float]:
        - 'A': Net weighted area.
        - 'Cx', 'Cy': Centroidal coordinates.
        - 'Ix', 'Iy', 'Ixy': Second moments of area about centroidal axes.
-       - 'J': Polar moment of area.
+       - 'Ip': Polar moment of area.
     """
     # First pass: area + centroid
     A_tot = 0.0
@@ -7233,6 +7003,7 @@ def section_properties(section: Section) -> Dict[str, float]:
         raise ValueError("Composite area is ~0;- cannot compute centroid/properties reliably. ")
 
     Cx = Cx_num / A_tot
+    
     Cy = Cy_num / A_tot
 
     # Second pass: inertia about origin then shift to centroid
@@ -7268,7 +7039,6 @@ def section_properties(section: Section) -> Dict[str, float]:
         Ixy_c= 0
     if abs(J)<EPS_K_ATOL:
         J= 0                
-
     return {
         "z": section.z,
         "A": A_tot,
@@ -7277,7 +7047,7 @@ def section_properties(section: Section) -> Dict[str, float]:
         "Ix": Ix_c,
         "Iy": Iy_c,
         "Ixy": Ixy_c,
-        "J": J,
+        "Ip": J,
     }
 
 
@@ -7354,7 +7124,185 @@ class Visualizer:
     # ----------------------------------------------------------------------------
 
 
-    def plot_weight(self, num_points=100, tol=1e-12):
+    def plot_weight(self, num_points=100, tol=1e-12, poly_indices_to_plot=None):
+        """
+        Plot w(z) per polygon pair, skipping polygons with w(z) == 0 for all sampled z.
+        Skipped polygons are listed in a figure note.
+        Min/Max markers are shown on each plotted curve.
+
+        Parameters
+        ----------
+        num_points : int
+            Number of z sample points in [s0.z, s1.z].
+        tol : float
+            Absolute tolerance used to classify a polygon as "zero-flat" over sampled z.
+        poly_indices_to_plot : list[int] | tuple[int] | set[int] | None
+            Optional explicit polygon indices to plot (0-based). Can include gaps (e.g., [0, 2, 5]).
+            If provided, only indices in this list are considered, after removing zero-flat polygons.
+            Indices out of range are ignored.
+        """
+        import numpy as np
+        import matplotlib.pyplot as plt
+
+        z_start = self.field.s0.z
+        z_end = self.field.s1.z
+        z_values = np.linspace(z_start, z_end, num_points)
+
+        num_polys = len(self.field.s0.polygons)
+        poly_w_series = {i: [] for i in range(num_polys)}
+
+        # Evaluate weights for every polygon index at every sampled z
+        for z in z_values:
+            for i in range(num_polys):
+                p0 = self.field.s0.polygons[i]
+                p1 = self.field.s1.polygons[i]
+
+                if self.field.weight_laws is not None and (i + 1) in self.field.weight_laws:
+                    current_law = self.field.weight_laws[i + 1]
+                else:
+                    current_law = None
+
+                w_val = self.field._interpolate_weight(
+                    p0.weight, p1.weight, z, p0, p1, current_law
+                )
+                poly_w_series[i].append(float(w_val))
+
+        # Split polygons: zero-flat vs plottable (non-zero)
+        zero_polys = []
+        plot_indices = []
+
+        for i in range(num_polys):
+            p0 = self.field.s0.polygons[i]
+            p1 = self.field.s1.polygons[i]
+            label = f"[{i}] s0:{p0.name} -> s1:{p1.name}"
+
+            y = np.asarray(poly_w_series[i], dtype=float)
+            if np.all(np.isclose(y, 0.0, atol=tol, rtol=0.0)):
+                zero_polys.append(label)
+            else:
+                plot_indices.append(i)
+
+        # If user provided an explicit index list, filter plot_indices accordingly
+        if poly_indices_to_plot is not None:
+            if not isinstance(poly_indices_to_plot, (list, tuple, set)):
+                raise TypeError(
+                    "poly_indices_to_plot must be a list/tuple/set of 0-based integer indices, or None."
+                )
+
+            requested = []
+            for v in poly_indices_to_plot:
+                if not isinstance(v, (int, np.integer)):
+                    raise TypeError(
+                        "poly_indices_to_plot must contain only integers (0-based polygon indices)."
+                    )
+                iv = int(v)
+                if 0 <= iv < num_polys:
+                    requested.append(iv)
+
+            # Preserve original plotting order (by index order in plot_indices), not user list order
+            requested_set = set(requested)
+            plot_indices = [i for i in plot_indices if i in requested_set]
+
+        # If nothing remains after filtering, do not plot
+        if len(plot_indices) == 0:
+            print("No polygons to plot after filtering (zero-flat and/or poly_indices_to_plot).")
+            if zero_polys:
+                print("Skipped polygons (w=0 for all sampled z):")
+                for s in zero_polys:
+                    print(" -", s)
+            return
+
+        # Create multiple figures, max 2 polygons per figure (keep all windows identical)
+        MAX_PLOTS_PER_FIG = 2  # Max number of polygon plots per window (do not expose as a function parameter)
+        FIGSIZE = (10, 2.4 * MAX_PLOTS_PER_FIG)  # Fixed size for all figures to avoid "odd last window" sizing
+
+        n_plot = len(plot_indices)
+
+        print("\n=== START WEIGHT MIN/MAX REPORT ===")
+        for start in range(0, n_plot, MAX_PLOTS_PER_FIG):
+            # Take up to MAX_PLOTS_PER_FIG polygon indices for this figure
+            chunk = plot_indices[start : start + MAX_PLOTS_PER_FIG]
+
+            # Always create exactly MAX_PLOTS_PER_FIG axes to keep window layout identical
+            fig_w, axes_w = plt.subplots(
+                MAX_PLOTS_PER_FIG, 1, figsize=FIGSIZE, sharex=True
+            )
+            axes_w = list(np.ravel(axes_w))
+
+            for ax_pos in range(MAX_PLOTS_PER_FIG):
+                ax = axes_w[ax_pos]
+
+                # If the last chunk has only 1 polygon, disable the unused axis (but keep the window size/layout)
+                if ax_pos >= len(chunk):
+                    ax.axis("off")
+                    continue
+
+                i = chunk[ax_pos]
+                p0 = self.field.s0.polygons[i]
+                p1 = self.field.s1.polygons[i]
+                y = np.asarray(poly_w_series[i], dtype=float)
+
+                idx_min = int(np.argmin(y))
+                idx_max = int(np.argmax(y))
+                w_min, w_max = float(y[idx_min]), float(y[idx_max])
+                z_min, z_max = float(z_values[idx_min]), float(z_values[idx_max])
+
+                print(
+                    f"[{i}] s0:{p0.name} -> s1:{p1.name} | "
+                    f"min w={w_min:.12g} at z={z_min:.12g} | "
+                    f"max w={w_max:.12g} at z={z_max:.12g}"
+                )
+
+                # Main curve
+                ax.plot(z_values, y, linewidth=1.5, label=f"s0 {p0.name} - s1 {p1.name}")
+
+                # Min/Max markers on the curve
+                ax.scatter([z_min], [w_min], marker="v", s=26, zorder=3, label="min")
+                ax.scatter([z_max], [w_max], marker="^", s=26, zorder=3, label="max")
+
+                # Optional tiny text near markers
+                ax.annotate(
+                    f"{w_min:.4f}", (z_min, w_min),
+                    textcoords="offset points", xytext=(4, -12), fontsize=7
+                )
+                ax.annotate(
+                    f"{w_max:.4f}", (z_max, w_max),
+                    textcoords="offset points", xytext=(4, 6), fontsize=7
+                )
+
+                # y-limits with a small margin for readability
+                if w_max != w_min:
+                    margin = (w_max - w_min) * 0.10
+                else:
+                    margin = max(abs(w_max) * 0.05, 0.05)
+                ax.set_ylim(w_min - margin, w_max + margin)
+
+                ax.set_ylabel(f"s0 {p0.name}\ns1 {p1.name}", fontweight="bold")
+                ax.grid(True, linestyle="--", alpha=0.5)
+                ax.set_title(
+                    f"Weight (w) | min={w_min:.6f} @ z={z_min:.3f} | max={w_max:.6f} @ z={z_max:.3f}",
+                    loc="right", fontsize=8
+                )
+
+            # Put x-label on the last active axis in this figure
+            axes_w[len(chunk) - 1].set_xlabel("z")
+
+            # Figure-level note for zero-flat polygons (repeat on each figure for consistency)
+            if zero_polys:
+                note = "Skipped (w=0 for all z): " + "; ".join(zero_polys)
+                fig_w.text(0.01, 0.01, note, ha="left", va="bottom", fontsize=8)
+
+            # Same title on every window
+            fig_w.suptitle(
+                f"Individual Polygon Weight (w) Distributions (Interpolated # {num_points} points)",
+                fontweight="bold"
+            )
+            fig_w.tight_layout(rect=[0, 0.04, 1, 0.96])
+
+        print("=== END WEIGHT MIN/MAX REPORT ===")
+        # plt.show()
+
+    def plot_weight2remove(self, num_points=100, tol=1e-12):
         """
         Plot w(z) per polygon pair, skipping polygons with w(z) == 0 for all sampled z.
         Skipped polygons are listed in a figure note.
@@ -7408,70 +7356,97 @@ class Visualizer:
             for s in zero_polys:
                 print(" -", s)
             return
+        # Create multiple figures, max 2 polygons per figure (keep all windows identical)
+        MAX_PLOTS_PER_FIG = 2  # Max number of polygon plots per window (do not expose as a function parameter)
+        FIGSIZE = (10, 2.4 * MAX_PLOTS_PER_FIG)  # Fixed size for all figures to avoid "odd last window" sizing
 
-        # Create subplots only for non-zero polygons
         n_plot = len(plot_indices)
-        fig_w, axes_w = plt.subplots(n_plot, 1, figsize=(10, 2.4 * n_plot), sharex=True)
-        if n_plot == 1:
-            axes_w = [axes_w]
+
         print("\n=== START WEIGHT MIN/MAX REPORT ===")
-        for ax_pos, i in enumerate(plot_indices):
-            ax = axes_w[ax_pos]
-            p0 = self.field.s0.polygons[i]
-            p1 = self.field.s1.polygons[i]
-            y = np.asarray(poly_w_series[i], dtype=float)
+        for start in range(0, n_plot, MAX_PLOTS_PER_FIG):
+            # Take up to MAX_PLOTS_PER_FIG polygon indices for this figure
+            chunk = plot_indices[start : start + MAX_PLOTS_PER_FIG]
 
-            idx_min = int(np.argmin(y))
-            idx_max = int(np.argmax(y))
-            w_min, w_max = float(y[idx_min]), float(y[idx_max])
-            z_min, z_max = float(z_values[idx_min]), float(z_values[idx_max])
-            print(
-              f"[{i}] s0:{p0.name} -> s1:{p1.name} | "
-              f"min w={w_min:.12g} at z={z_min:.12g} | "
-              f"max w={w_max:.12g} at z={z_max:.12g}"
+            # Always create exactly MAX_PLOTS_PER_FIG axes to keep window layout identical
+            fig_w, axes_w = plt.subplots(
+                MAX_PLOTS_PER_FIG, 1, figsize=FIGSIZE, sharex=True
             )
-            # Main curve
-            ax.plot(z_values, y, linewidth=1.5, label=f"s0 {p0.name} - s1 {p1.name}")
+            # Normalize axes to a plain Python list
+            axes_w = list(np.ravel(axes_w))
 
-            # Min/Max small markers on the curve
-            ax.scatter([z_min], [w_min], marker="v", s=26, zorder=3, label="min")
-            ax.scatter([z_max], [w_max], marker="^", s=26, zorder=3, label="max")
+            for ax_pos in range(MAX_PLOTS_PER_FIG):
+                ax = axes_w[ax_pos]
 
-            # Optional tiny text near markers
-            ax.annotate(f"{w_min:.4f}", (z_min, w_min), textcoords="offset points", xytext=(4, -12), fontsize=7)
-            ax.annotate(f"{w_max:.4f}", (z_max, w_max), textcoords="offset points", xytext=(4, 6), fontsize=7)
+                # If the last chunk has only 1 polygon, disable the unused axis (but keep the window size/layout)
+                if ax_pos >= len(chunk):
+                    ax.axis("off")
+                    continue
 
-            # y-limits
-            if w_max != w_min:
-                margin = (w_max - w_min) * 0.10
-            else:
-                margin = max(abs(w_max) * 0.05, 0.05)
-            ax.set_ylim(w_min - margin, w_max + margin)
+                i = chunk[ax_pos]
+                p0 = self.field.s0.polygons[i]
+                p1 = self.field.s1.polygons[i]
+                y = np.asarray(poly_w_series[i], dtype=float)
 
-            ax.set_ylabel(f"s0 {p0.name}\ns1 {p1.name}", fontweight="bold")
-            ax.grid(True, linestyle="--", alpha=0.5)
-            ax.set_title(
-                f"Weight (w) | min={w_min:.6f} @ z={z_min:.3f} | max={w_max:.6f} @ z={z_max:.3f}",
-                loc="right", fontsize=8
+                idx_min = int(np.argmin(y))
+                idx_max = int(np.argmax(y))
+                w_min, w_max = float(y[idx_min]), float(y[idx_max])
+                z_min, z_max = float(z_values[idx_min]), float(z_values[idx_max])
+
+                print(
+                    f"[{i}] s0:{p0.name} -> s1:{p1.name} | "
+                    f"min w={w_min:.12g} at z={z_min:.12g} | "
+                    f"max w={w_max:.12g} at z={z_max:.12g}"
+                )
+
+                # Main curve
+                ax.plot(z_values, y, linewidth=1.5, label=f"s0 {p0.name} - s1 {p1.name}")
+
+                # Min/Max small markers on the curve
+                ax.scatter([z_min], [w_min], marker="v", s=26, zorder=3, label="min")
+                ax.scatter([z_max], [w_max], marker="^", s=26, zorder=3, label="max")
+
+                # Optional tiny text near markers
+                ax.annotate(
+                    f"{w_min:.4f}", (z_min, w_min),
+                    textcoords="offset points", xytext=(4, -12), fontsize=7
+                )
+                ax.annotate(
+                    f"{w_max:.4f}", (z_max, w_max),
+                    textcoords="offset points", xytext=(4, 6), fontsize=7
+                )
+
+                # y-limits
+                if w_max != w_min:
+                    margin = (w_max - w_min) * 0.10
+                else:
+                    margin = max(abs(w_max) * 0.05, 0.05)
+                ax.set_ylim(w_min - margin, w_max + margin)
+
+                ax.set_ylabel(f"s0 {p0.name}\ns1 {p1.name}", fontweight="bold")
+                ax.grid(True, linestyle="--", alpha=0.5)
+                ax.set_title(
+                    f"Weight (w) | min={w_min:.6f} @ z={z_min:.3f} | max={w_max:.6f} @ z={z_max:.3f}",
+                    loc="right", fontsize=8
+                )
+
+            # Put x-label on the last active axis in this figure
+            last_active_ax = axes_w[len(chunk) - 1]
+            last_active_ax.set_xlabel("z")
+
+            # Figure-level note for zero-flat polygons (repeat on each figure for consistency)
+            if zero_polys:
+                note = "Skipped (w=0 for all z): " + "; ".join(zero_polys)
+                fig_w.text(0.01, 0.01, note, ha="left", va="bottom", fontsize=8)
+
+            # Same title on every window
+            fig_w.suptitle(
+                f"Individual Polygon Weight (w) Distributions (Interpolated # {num_points} points)",
+                fontweight="bold"
             )
+            fig_w.tight_layout(rect=[0, 0.04, 1, 0.96])
+
         print("=== END WEIGHT MIN/MAX REPORT ===")
-        axes_w[-1].set_xlabel("z")
-
-        # Figure-level note for zero-flat polygons
-        if zero_polys:
-            note = "Skipped (w=0 for all z): " + "; ".join(zero_polys)
-            fig_w.text(0.01, 0.01, note, ha="left", va="bottom", fontsize=8)
-
-        fig_w.suptitle(
-            f"Individual Polygon Weight (w) Distributions (Interpolated # {num_points} points)",
-            fontweight="bold"
-        )
-        fig_w.tight_layout(rect=[0, 0.04, 1, 0.96])
         #plt.show()
-
-
-
-
 
 
 
@@ -7499,9 +7474,10 @@ class Visualizer:
             num_points (int):
                 Number of z samples between s0.z and s1.z.
         """
-        import numpy as np
-        import matplotlib.pyplot as plt
 
+        if keys_to_plot is not None:
+            keys_to_plot = list(dict.fromkeys(keys_to_plot))       
+        
         # Z bounds from field endpoints
         z_start = self.field.s0.z
         z_end = self.field.s1.z
@@ -7532,7 +7508,7 @@ class Visualizer:
             current_section = self.field.section(z)
 
             # Compute all properties for current section
-            props = section_full_analysis(current_section, alpha=1)
+            props = section_full_analysis(current_section)
             for key in keys_to_plot:
                 if key not in props:
                     # Keep alignment with z_values even when key is missing
@@ -7800,8 +7776,10 @@ class Visualizer:
         show_ids: bool = True,
         show_weights: bool = True,
         show_vertex_ids: bool = False,
+        show_legenda: bool= False,
         title: Optional[str] = None,
         ax=None,
+        
     ):
         """
         Draw the 2D section at a given longitudinal coordinate z.
@@ -7939,36 +7917,35 @@ class Visualizer:
 
         w_abs_z = [_w_abs_z(i) for i in range(len(sec.polygons))]
         _ = w_abs_z  # currently used by optional legend blocks only
-
-        # -------------------------------------------------------------------------
-        # 4) Build legend entries (relative weights + container id)
-        # -------------------------------------------------------------------------
         legend_handles = []
         legend_labels = []
+        if show_legenda:
+            # -------------------------------------------------------------------------
+            # 4) Build legend entries (relative weights + container id)
+            # -------------------------------------------------------------------------
+            for idx, poly in enumerate(sec.polygons):
+                container_id = container_id_by_sec[idx]
 
-        for idx, poly in enumerate(sec.polygons):
-            container_id = container_id_by_sec[idx]
+                # Child handle
+                h_poly = Line2D([0], [0], color=poly_colors[idx], linewidth=5.0)
 
-            # Child handle
-            h_poly = Line2D([0], [0], color=poly_colors[idx], linewidth=5.0)
+                # If container exists, legend handle is a tuple (child, container)
+                if container_id is not None and 0 <= container_id < len(poly_colors):
+                    h_container = Line2D([0], [0], color=poly_colors[container_id], linewidth=5.0)
+                    legend_handles.append((h_poly, h_container))
+                else:
+                    legend_handles.append(h_poly)
 
-            # If container exists, legend handle is a tuple (child, container)
-            if container_id is not None and 0 <= container_id < len(poly_colors):
-                h_container = Line2D([0], [0], color=poly_colors[container_id], linewidth=5.0)
-                legend_handles.append((h_poly, h_container))
-            else:
-                legend_handles.append(h_poly)
+                name = (getattr(poly, "name", None) or f"poly_{idx}").strip()
 
-            name = (getattr(poly, "name", None) or f"poly_{idx}").strip()
-
-            label = (
-                f"ID={idx}  "
-                f"w={w_rel_z[idx]:g}  "
-                f"{name}  "
-                f"container={container_id if container_id is not None else 'None'}"
-            )
-            #print(f"DEBUG legend_label={repr(label)}")
-            legend_labels.append(label)
+                label = (
+                    f"ID={idx}  "
+                    f"w={w_rel_z[idx]:g}  "
+                    f"{name}  "
+                    f"container={container_id if container_id is not None else 'None'}"
+                )
+                #print(f"DEBUG legend_label={repr(label)}")
+                legend_labels.append(label)
 
         # -------------------------------------------------------------------------
         # 5) Axes style
@@ -8005,7 +7982,7 @@ class Visualizer:
             bbox_transform=ax.transAxes,        # anchor in AXES coordinates
             borderaxespad=0.0,
             frameon=True,
-            title="Polygons (w is relative)",
+            title="Polygons",
             handler_map={tuple: HandlerTuple(ndivide=None)},
             ncol=1,
         )

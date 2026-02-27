@@ -170,31 +170,31 @@ if __name__ == "__main__":
 
     
     for zrelative in nrel_stazioni:
-        # 1. Recupero dati già processati (quelli che usi per OpenSees)
-        z=zrelative+deltaz # section requires z abosolute
+        
+        z=zrelative+deltaz 
         sec = field.section(z)
         res = section_full_analysis(sec) # <--- retrievs all values  
         
         E_z = E_mod 
         G_z = G_mod
 
-        # 3. Mapping diretto sui parametri NREL
+        # 3. Mapping with REL
         HtFract  =  zrelative / tower_height
         TMassDen = res['A'] * DENSITY
         TwFAStif = E_z * res['Ix']   # Fore-Aft (EIxx)
         TwSSStif = E_z * res['Iy']   # Side-to-Side (EIyy)
-        TwGJStif = G_z * res['J']    # Torsion (GJ)
+        TwGJStif = G_z * res['Ip']    # Torsion (GJ)
         TwEAStif = E_z * res['A']    # Axial (EA)
         
-        # Inerzie massiche sezionali (kg-m)
+        # 
         TwFAIner = res['Ix'] * DENSITY
         TwSSIner = res['Iy'] * DENSITY
         
-        # 4. Stampa (il print rimane lo stesso)
+        # 4. Prinr
         print(f"{zrelative:9.2f} | {HtFract:8.2f} | {TMassDen:10.2f} | {TwFAStif:13.4e} | "
             f"{TwSSStif:13.4e} | {TwGJStif:13.4e} | {TwEAStif:12.4e} | {TwFAIner:10.2e} | {TwSSIner:10.2e}")
         
-    # Riassunto finale
+    # Summary final
     print(f"{'Model polygon #'} {N_LATI} sides")
     print(f"{'Total Calculated Volume:':<42} {num_vol:>18.6f} m^3")
     print(f"{'Total Calculated Mass:':<42} {num_mass:>18.6f} t")

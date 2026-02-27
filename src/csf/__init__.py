@@ -17,7 +17,6 @@ from .section_field import (
     integrate_volume,
     Visualizer,
     section_data,
-    compute_saint_venant_J,
     compute_saint_venant_Jv2,
     write_opensees_geometry,
     section_full_analysis_keys,

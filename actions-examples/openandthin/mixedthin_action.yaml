@@ -20,5 +20,5 @@ CSF_ACTIONS:
         stations: station_edge
         properties: [A, Cx, Cy, Ix, Iy, J_sv_wall,J_sv_cell]
         params:
-          fmt_display: ".5g"         
+          fmt_display: ".9g"         
                       

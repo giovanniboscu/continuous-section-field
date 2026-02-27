@@ -16,7 +16,6 @@ from csf import (
     section_statical_moment_partial, section_stiffness_matrix,
     polygon_inertia_about_origin,
     polygon_statical_moment,
-    compute_saint_venant_J,
     compute_saint_venant_Jv2,
     section_print_analysis,
     write_opensees_geometry

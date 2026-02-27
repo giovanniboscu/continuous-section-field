@@ -271,6 +271,11 @@ def _validate_csf_structure(doc: Dict[str, Any]) -> None:
     if not sections:
         raise ValidationError(f"{TOP_KEY}.sections must be non-empty.")
 
+
+    # Collect polygon ids while scanning sections.
+    # This is used to provide friendlier diagnostics for weight_laws typos (e.g. 'web_star' vs 'web_start').
+    poly_ids: set[str] = set()
+
     for sec_name, sec_data in sections.items():
         if not isinstance(sec_name, str) or not sec_name.startswith("S"):
             raise ValidationError(f"{TOP_KEY}.sections keys must start with 'S' (e.g. S0, S1). Found: {sec_name!r}")
@@ -293,6 +298,11 @@ def _validate_csf_structure(doc: Dict[str, Any]) -> None:
         for poly_name, poly_map in poly_items:
             # If polygons is a list, poly_name may be None. That's ok for this rough validator.
             poly_path = f"{sec_path}.polygons.{poly_name}" if poly_name else f"{sec_path}.polygons[?]"
+
+
+            # Track named polygons for weight_laws validation.
+            if isinstance(poly_name, str) and poly_name.strip():
+                poly_ids.add(poly_name.strip())
 
             if "weight" not in poly_map:
                 raise ValidationError(f"{poly_path} missing required 'weight:' key.")
@@ -318,9 +328,83 @@ def _validate_csf_structure(doc: Dict[str, Any]) -> None:
         wl = csf["weight_laws"]
         if not isinstance(wl, list) or not wl:
             raise ValidationError(f"{TOP_KEY}.weight_laws is optional, but if present it must be a non-empty list.")
+
         for i, item in enumerate(wl):
+            # Common YAML authoring mistake:
+            #   - web_start,web_end: 1.0 - ...
+            # YAML parses this as a mapping (dict), not as a string.
+            # Provide a friendly message that shows the fix (quote the whole item).
+            if isinstance(item, dict):
+                if len(item) == 1:
+                    k = next(iter(item.keys()))
+                    v = item[k]
+                    raise ValidationError(
+                        f"{TOP_KEY}.weight_laws[{i}] must be a SINGLE QUOTED string, but YAML parsed it as a mapping.\n"
+                        "You wrote something like:\n"
+                        f"  - {k}: {v}\n"
+                        "Correct form (quote the entire item):\n"
+                        f"  - '{k}: {v}'"
+                    )
+
+                raise ValidationError(
+                    f"{TOP_KEY}.weight_laws[{i}] must be a string in the form 'poly0,poly1: expr' (quoted)."
+                )
+
             if not isinstance(item, str) or ":" not in item:
-                raise ValidationError(f"{TOP_KEY}.weight_laws[{i}] must be a string in the form 'poly0,poly1: expr'.")
+                raise ValidationError(
+                    f"{TOP_KEY}.weight_laws[{i}] must be a string in the form 'poly0,poly1: expr' (quoted)."
+                )
+
+            # Optional additional check (no new schema rule):
+            # validate that polygon ids on the left-hand side exist in sections,
+            # to catch typos like 'web_star' vs 'web_start'.
+            # If polygons are unnamed (list style without 'name'), poly_ids may be empty; skip in that case.
+
+            if poly_ids:
+                lhs, _rhs = item.split(":", 1)
+
+                def _strip_wall_cell(name: str) -> str:
+                    i_wall = name.find("@wall")
+                    i_cell = name.find("@cell")
+                    cut = None
+                    if i_wall != -1:
+                        cut = i_wall
+                    if i_cell != -1:
+                        cut = i_cell if cut is None else min(cut, i_cell)
+                    return name[:cut] if cut is not None else name
+
+                names = [s.strip() for s in lhs.split(",") if s.strip()]
+                if not names:
+                    raise ValidationError(
+                        f"{TOP_KEY}.weight_laws[{i}] has an empty polygon list on the left side.\n"
+                        "Expected: 'poly0,poly1: expr'"
+                    )
+
+                poly_ids_norm = {_strip_wall_cell(pid) for pid in poly_ids}
+                names_norm = [_strip_wall_cell(n) for n in names]
+
+                unknown = [n for n, nn in zip(names, names_norm) if nn not in poly_ids_norm]
+                if unknown:
+                    # Best-effort suggestions (stdlib only).
+                    try:
+                        import difflib
+                        sug_lines = []
+                        for u in unknown:
+                            u_norm = _strip_wall_cell(u)
+                            matches = difflib.get_close_matches(u_norm, sorted(poly_ids_norm), n=3, cutoff=0.6)
+                            if matches:
+                                sug_lines.append(f"  - did you mean '{u}' -> {matches}?")
+                    except Exception:
+                        sug_lines = []
+
+                    msg = (
+                        f"{TOP_KEY}.weight_laws[{i}] References unknown polygon id(s): {unknown}.\n"
+                        f"Known polygon ids (from sections): {sorted(poly_ids)}"
+                    )
+                    if sug_lines:
+                        msg += "\nSuggestions:\n" + "\n".join(sug_lines)
+
+                    raise ValidationError(msg)
 
 
 # -----------------------------

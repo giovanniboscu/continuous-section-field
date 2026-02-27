@@ -3,11 +3,6 @@
 # This action module is part of the CSFActions modularization.
 # It intentionally avoids importing CSFActions to prevent circular imports.
 #
-# CHANGE (2026-02): Added parameter `torsion_alpha_sv` (required only when 'J_sv' is requested) for the solid Saint-Venant
-# torsion approximation key 'J_sv'. The action prints the chosen alpha and, when 'J_sv'
-# is requested, forces:
-#     J_sv = torsion_alpha_sv * (Ix + Iy)
-# about the weighted centroid.
 #
 # NOTE: This is a modeling policy knob. It is NOT used for 'J_sv_wall' or 'J_sv_cell'.
 
@@ -33,7 +28,7 @@ _ALLOWED_KEYS_MEANING: Dict[str, str] = {
     "Ix": "Second moment about centroidal X-axis",
     "Iy": "Second moment about centroidal Y-axis",
     "Ixy": "Product of inertia (symmetry indicator)",
-    "J": "Polar second moment (Ix + Iy)",
+    "Ip": "Polar second moment (Ix + Iy)",
     "I1": "Major principal second moment",
     "I2": "Minor principal second moment",
     "rx": "Radius of gyration (about X)",
@@ -42,10 +37,9 @@ _ALLOWED_KEYS_MEANING: Dict[str, str] = {
     "Wy": "Elastic section modulus about Y",
     "K_torsion": "Semi-empirical torsional stiffness approximation",
     "Q_na": "First moment of area at neutral axis",
-    "J_sv": "Effective St. Venant torsional constant (J)",
     "J_sv_wall": "Saint-Venant torsional constant for open thin-walled walls",
     "J_sv_cell": "Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)",
-    "J_s_vroark": "Refined J (Roark-Young thickness correction)",
+    "J_s_vroark": "Roark torsional indicator (equivalent-rectangle mapping)",
     "J_s_vroark_fidelity": "Fidelity / reliability indicator"
 }
 
@@ -77,32 +71,28 @@ def register(
             "- *.csv  : numeric table (z + selected keys).\n"
             "- other : captured text report (written to the given path).\n"
             "\n"
-            "Params\n"
-            "- torsion_alpha_sv (float, REQUIRED): scaling factor used ONLY for the solid Saint-Venant torsion\n"
-            "  approximation key 'J_sv'. When 'J_sv' is requested, CSF enforces:\n"
-            "      J_sv = torsion_alpha_sv * (Ix + Iy)\n"
-            "  about the weighted centroid. This is a modeling choice (no automatic shape recognition).\n"
-            "  Typical values: 1.0 (circular solid), 0.8436 (square-like solid).\n"
-            "  Not used for 'J_sv_wall' or 'J_sv_cell'.\n"
-            "- fmt_display (str, OPTIONAL): Python numeric format for printed reports (default '.8f').\n"
-            "\n"
             "Allowed keys + meaning:\n"
-            "  A                    - Total net cross-sectional area\n  Cx                   - Horizontal centroid (X)\n  Cy                   - Vertical centroid (Y)\n  Ix                   - Second moment about centroidal X-axis\n  Iy                   - Second moment about centroidal Y-axis\n  Ixy                  - Product of inertia (symmetry indicator)\n  J                    - Polar second moment (Ix + Iy)\n  I1                   - Major principal second moment\n  I2                   - Minor principal second moment\n  rx                   - Radius of gyration (about X)\n  ry                   - Radius of gyration (about Y)\n  Wx                   - Elastic section modulus about X\n  Wy                   - Elastic section modulus about Y\n  K_torsion            - Semi-empirical torsional stiffness approximation\n  Q_na                 - First moment of area at neutral axis\n  J_sv                 - Effective St. Venant torsional constant (J)\n  J_sv_wall            - Saint-Venant torsional constant for open thin-walled walls\n  J_sv_cell            - Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)\n  J_s_vroark           - Refined J (Roark-Young thickness correction)\n  J_s_vroark_fidelity  - Fidelity / reliability indicator\n"
+            "  A                    - Total net cross-sectional area\n"
+            "  Cx                   - Horizontal centroid (X)\n"
+            "  Cy                   - Vertical centroid (Y)\n"
+            "  Ix                   - Second moment about centroidal X-axis\n"
+            "  Iy                   - Second moment about centroidal Y-axis\n"
+            "  Ixy                  - Product of inertia (symmetry indicator)\n"
+            "  J                    - Polar second moment (Ix + Iy)\n"
+            "  I1                   - Major principal second moment\n"
+            "  I2                   - Minor principal second moment\n"
+            "  rx                   - Radius of gyration (about X)\n"
+            "  ry                   - Radius of gyration (about Y)\n"
+            "  Wx                   - Elastic section modulus about X\n"
+            "  Wy                   - Elastic section modulus about Y\n"
+            "  K_torsion            - Semi-empirical torsional stiffness approximation\n"
+            "  Q_na                 - First moment of area at neutral axis\n"
+            "  J_sv_wall            - Saint-Venant torsional constant for open thin-walled walls\n"
+            "  J_sv_cell            - Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)\n"
+            "  J_s_vroark           - Roark torsional indicator (equivalent-rectangle mapping)\n"
+            "  J_s_vroark_fidelity  - Fidelity / reliability indicator\n"
         ),
         params=(
-            # REQUIRED: solid torsion alpha used when 'J_sv' is requested
-            ParamSpec(
-                name="torsion_alpha_sv",
-                required=False,
-                typ="float",
-                default=None,
-                description=(
-                    "Scaling factor used ONLY for the solid Saint-Venant torsion approximation key 'J_sv'. "
-                    "When 'J_sv' is requested, CSF enforces: J_sv = torsion_alpha_sv * (Ix + Iy) "
-                    "about the weighted centroid. Modeling choice; not used for 'J_sv_wall' or 'J_sv_cell'."
-                ),
-                aliases=("torsion_alpha_sv",),
-            ),
             # OPTIONAL: display formatting
             ParamSpec(
                 name="fmt_display",  # NOTE: keep spelling stable
@@ -132,7 +122,7 @@ def register(
         # NOTE:
         # - Only required when the user requests 'J_sv' in properties.
         # - If 'J_sv' is not requested, torsion_alpha_sv is ignored (may be omitted).
-        torsion_alpha_sv = None
+        #torsion_alpha_sv = None
 
 
         # ---------------------------------------------------------------------
@@ -141,7 +131,7 @@ def register(
         fmt = params.get("fmt_display")
         if fmt is None:
             # SPEC.params is a tuple: [torsion_alpha_sv, fmt_display]
-            fmt = SPEC.params[1].default
+            ffmt = SPEC.params[0].default
 
         # Selected property keys
         props: List[str] = list(action.get("properties", []) or [])
@@ -151,7 +141,7 @@ def register(
         # ---------------------------------------------------------------------
         # No Conditional requirement Normalised value
         # ---------------------------------------------------------------------
-        torsion_alpha_sv=1
+        #torsion_alpha_sv=1
 
 
         # Duplicate property keys are allowed; we emit a warning and keep them.
@@ -191,6 +181,7 @@ def register(
             full = section_full_analysis(sec)
 
             # If the user requests 'J_sv', enforce the explicit alpha policy.
+            '''
             if "J_sv" in props:
                 ix = full.get("Ix")
                 iy = full.get("Iy")
@@ -200,11 +191,11 @@ def register(
                         "are missing from section_full_analysis output."
                     )
                 full["J_sv"] = torsion_alpha_sv * (float(ix) + float(iy))
-
+            '''
             buf = io.StringIO()
             with redirect_stdout(buf):
                 print(f"\n### SECTION SELECTED ANALYSIS @ z = {float(z)} ###")
-                print(f"torsion_alpha_sv     : {_format_value(torsion_alpha_sv)}  [Solid J_sv scaling factor]")
+                #print(f"torsion_alpha_sv     : {_format_value(torsion_alpha_sv)}  [Solid J_sv scaling factor]")
                 for k in props:
                     meaning = _ALLOWED_KEYS_MEANING.get(k, "Unknown key (not documented)")
                     print(f"{k:20s}: {_format_value(full.get(k))}  [{meaning}]")
@@ -213,7 +204,8 @@ def register(
             report_blocks.append(report_text)
 
             # Always carry torsion_alpha_sv in the row for traceability.
-            row = {"z": float(z), "torsion_alpha_sv": torsion_alpha_sv}
+            #row = {"z": float(z), "torsion_alpha_sv": torsion_alpha_sv}
+            row = {"z": float(z)}
             for k in props:
                 row[k] = full.get(k)
             rows.append(row)
@@ -242,12 +234,13 @@ def register(
                 raise RuntimeError(f"Output directory does not exist: {p.parent}")
 
             if p.suffix.lower() == ".csv":
-                fieldnames = ["z", "torsion_alpha_sv"] + props
+                fieldnames = ["z"] + props
                 with open(p, "w", newline="", encoding="utf-8") as f:
                     w = csv.DictWriter(f, fieldnames=fieldnames)
                     w.writeheader()
                     for r in rows:
-                        w.writerow(r)
+                        r_csv = {k: _format_value(r.get(k)) for k in fieldnames}
+                        w.writerow(r_csv)
             else:
                 with open(p, "w", encoding="utf-8") as f:
                     for blk in report_blocks:
