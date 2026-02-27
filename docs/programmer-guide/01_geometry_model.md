@@ -130,7 +130,7 @@ FULL MODEL ANALYSIS REPORT - SECTION EVALUATION
 4) Inertia Ix:                        Ix                    0.00857     # Second moment of area about the centroidal X-axis
 5) Inertia Iy:                        Iy                    0.00157     # Second moment of area about the centroidal Y-axis
 6) Inertia Ixy:                       Ixy                   0.00000     # Product of inertia (indicates axis symmetry)
-7) Polar Moment (J):                  J                     0.01015     # Polar second moment of area (sum of Ix and Iy)
+7) Polar Moment                       Ip                    0.01015     # Polar second moment of area (sum of Ix and Iy)
 8) Principal Inertia I1:              I1                    0.00857     # Major principal second moment of area
 9) Principal Inertia I2:              I2                    0.00158     # Minor principal second moment of area
 10) Radius of Gyration rx:            rx                    0.20207     # Radii of gyration relative to the X-axis
