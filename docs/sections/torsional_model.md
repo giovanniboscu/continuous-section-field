@@ -21,9 +21,6 @@ The torsional constant J is defined as:
 For solid domains, J depends purely on geometry and is computed from the
 full 2D domain Ω.
 
-This formulation applies to: - Solid sections - Thick-walled sections -
-Arbitrary filled polygonal domains
-
 ------------------------------------------------------------------------
 
 ## 1.2 Thin-Walled Open Sections
@@ -33,11 +30,7 @@ approximated by:
 
     J ≈ Σ ( b_i * t_i³ / 3 )
 
-where: - b_i = midline length of wall segment i - t_i = wall thickness
-
-This model assumes: - Thin walls (t \<\< characteristic dimension) -
-Shear flow approximately uniform across thickness - No closed shear flow
-circulation
+where: - b_i = midline length - t_i = wall thickness
 
 This is the basis of `J_sv_wall` in CSF.
 
@@ -45,10 +38,7 @@ This is the basis of `J_sv_wall` in CSF.
 
 ## 1.3 Thin-Walled Closed Sections (Bredt--Batho)
 
-For thin-walled closed cells, torsion is governed by shear flow
-circulation.
-
-For a single cell:
+For thin-walled closed cells:
 
     J ≈ 4 A_m² / ∮(ds / t)
 
@@ -56,136 +46,156 @@ For constant thickness t:
 
     J ≈ 4 A_m² * t / b_m
 
-where: - A_m = area enclosed by midline - b_m = total midline perimeter
+where: - A_m = area enclosed by midline - b_m = midline perimeter
 
 This is the basis of `J_sv_cell` in CSF.
-
-Closed-cell torsion is typically much stiffer than open-wall torsion due
-to shear flow continuity.
 
 ------------------------------------------------------------------------
 
 # 2. CSF Torsion Quantities
 
-CSF can evaluate two torsional measures:
+CSF evaluates:
 
--   `J_sv_cell` → thin-walled closed-cell torsion (Bredt--Batho)
--   `J_sv_wall` → thin-walled open-wall torsion
+-   `J_sv_cell` → closed thin-walled torsion
+-   `J_sv_wall` → open thin-walled torsion
+-   `J_sv` → general solid torsion non implemented
 
--   `J_sv` → general solid Saint-Venant torsion is not implemented
-
-Only `J_sv_cell` and `J_sv_wall` are used in the thin-walled torsion
-model described here.
+The thin-walled model uses only `J_sv_cell` and `J_sv_wall`.
 
 ------------------------------------------------------------------------
 
-# 3. Conceptual Model in CSF
+# 3. Thickness Definition and Interpolation
 
-CSF distinguishes torsional mechanisms based on polygon topology tags:
-
--   `@cell` or `@closed` → closed thin-walled cell
--   `@wall` → open thin-walled wall
--   no tag → not treated as thin-walled
-
-Thickness is defined explicitly via:
+Thickness is defined explicitly through:
 
     @t=<value>
 
-Thickness may vary along z and is interpolated between stations.
+If thickness differs between start and end sections:
+
+-   CSF interpolates thickness **linearly along z**
+-   The interpolated value becomes the active thickness at each section
+-   The interpolated thickness is embedded in the runtime polygon name
+-   Torsional stiffness is therefore evaluated with the local
+    interpolated t(z)
+
+This means torsional stiffness may vary continuously along the member
+due to thickness variation.
+
+For `@cell` polygons: - Thickness is mandatory.
+
+For `@wall` polygons: - Thickness is optional (if absent, a geometric
+estimate may be used).
+
+------------------------------------------------------------------------
+
+# 4. Conceptual Thin-Walled Model
 
 At any section z:
 
--   Each `@cell` polygon contributes via closed-cell formula
--   Each `@wall` polygon contributes via open-wall formula
--   Contributions are weighted by the polygon weight w(z)
+-   Each `@cell` polygon contributes using closed-cell formula
+-   Each `@wall` polygon contributes using open-wall formula
+-   Each contribution is multiplied by its polygon weight w(z)
 
 Total thin-walled torsion:
 
     J_thin(z) = Σ w_i(z) * J_i(z)
 
+Closed-cell and open-wall mechanisms are additive when both exist.
+
 ------------------------------------------------------------------------
 
-# 4. Export Behavior
+# 5. Export Behavior
 
-When exporting to solvers requiring a single torsional constant J:
+When exporting to solvers requiring a single torsional constant:
 
 If at least one thin-walled contribution is positive:
 
     J_export = J_sv_cell + J_sv_wall
 
-If both exist, they are additive.
-
-If neither exists:
+If neither is available:
 
     J_export = 0
     (with warning)
 
-No automatic fallback to general solid J_sv is performed.
-
-This guarantees:
-
--   Deterministic behavior
--   Explicit modeling intent
--   No silent substitutions
+There is no fallback to solid `J_sv`.
 
 ------------------------------------------------------------------------
 
-# 5. How the User Must Define Torsion
+# 6. User Modeling Guidelines
 
-## 5.1 Closed Thin-Walled Cells
+To activate torsion mechanisms:
 
-To activate closed-cell torsion:
+Closed cell:
 
--   Tag polygon with `@cell` (or `@closed`)
--   Provide thickness using `@t=<value>`
+    sectionPart@cell@t=0.012
 
-Example:
-
-    box@cell@t=0.012
-
-If thickness varies along z, define `@t=` at both end stations. CSF
-interpolates thickness linearly.
-
-------------------------------------------------------------------------
-
-## 5.2 Open Thin-Walled Walls
-
-To activate open-wall torsion:
-
--   Tag polygon with `@wall`
--   Optionally define `@t=<value>`
-
-Example:
+Open wall:
 
     plate@wall@t=0.008
 
-If `@t=` is omitted, thickness may be derived geometrically.
+### If thickness varies between stations, define different `@t=` values at
+each station. CSF automatically interpolates thickness along z.
 
-------------------------------------------------------------------------
 
-## 5.3 Mixed Sections
+---
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0.0   # cm
+      polygons:
+        web@wall@t=0.41:
+          weight: 1.0
+          vertices:
+            - [-0.205, -4.430]
+            - [ 0.205, -4.430]
+            - [ 0.205,  4.430]
+            - [-0.205,  4.430]
 
-If both closed cells and open walls exist in the same section:
+        top_flange@wall@t=0.57:
+          weight: 1.0
+          vertices:
+            - [-2.750,  4.430]
+            - [ 2.750,  4.430]
+            - [ 2.750,  5.000]
+            - [-2.750,  5.000]
 
--   Each mechanism is evaluated independently
--   Their torsional constants are summed
+        bottom_flange@wall@t=0.57:
+          weight: 1.0
+          vertices:
+            - [-2.750, -5.000]
+            - [ 2.750, -5.000]
+            - [ 2.750, -4.430]
+            - [-2.750, -4.430]
 
-This reflects the physical superposition of independent shear flow
-mechanisms.
+    S1:
+      z: 2000.0   # cm (20 m)
+      polygons:
+        web@wall:
+          weight: 1.0
+          vertices:
+            - [-0.205, -4.430]
+            - [ 0.205, -4.430]
+            - [ 0.205,  4.430]
+            - [-0.205,  4.430]
 
-------------------------------------------------------------------------
+        top_flange@wall:
+          weight: 1.0
+          vertices:
+            - [-2.750,  4.430]
+            - [ 2.750,  4.430]
+            - [ 2.750,  5.000]
+            - [-2.750,  5.000]
 
-# 6. What the Model Does Not Do
-
--   It does not automatically convert solid domains into thin-walled
-    models.
--   It does not infer topology without explicit tags.
--   It does not replace missing thin-walled torsion with solid torsion
-    during export.
--   It does not modify user-defined thickness laws.
-
-------------------------------------------------------------------------
-
+        bottom_flange@wall:
+          weight: 1.0
+          vertices:
+            - [-2.750, -5.000]
+            - [ 2.750, -5.000]
+            - [ 2.750, -4.430]
+            - [-2.750, -4.430]
+```
+---
 # 7. Summary
 
 CSF thin-walled torsion model:
