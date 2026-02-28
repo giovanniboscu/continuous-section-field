@@ -205,6 +205,7 @@ Q = integral( y * dA ) about the neutral axis
 ## 16 - 17 Torsion constant methods for tagged polygons (`@cell` / `@wall`)
 **Key:** `J_sv_cell`   `J_sv_wall` 
 
+[CSF Torsional Model Documentation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/torsional_model.md)
 
 This note documents the *implemented* methods used by:
 
