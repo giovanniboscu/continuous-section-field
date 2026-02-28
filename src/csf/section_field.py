@@ -22,7 +22,6 @@ import os
 import sys
 import numbers
 import textwrap
-#import openseespy.opensees as ops
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D 
@@ -30,12 +29,8 @@ import re
 from datetime import datetime
 from typing import overload, Union, Literal
 from pathlib import Path
-Point = Tuple[float, float]
-Segment = Tuple[Point, Point]
 
-# -----------------------------
-# Robust 2D segment intersection
-# -----------------------------
+
 #
 # Your current implementation uses a "strict proper intersection" test:
 #     (o1 * o2 < 0) and (o3 * o4 < 0)
@@ -58,6 +53,10 @@ EPS_K = 1e-12 # Numerical/matrix tolerances.
 EPS_K_RTOL = 1e-10
 EPS_K_ATOL = 1e-12
 DDEBUG = False
+
+Point = Tuple[float, float]
+Segment = Tuple[Point, Point]
+PointXY = Tuple[float, float]
 
 # (Optional: se vuoi usare PyYAML quando disponibile)
 try:
@@ -174,7 +173,7 @@ def plot_section_variation(
     
     plt.tight_layout()
     plt.savefig(filename)
-    print(f"[PLOT] Preview saved as '{filename}'")
+    #print(f"[PLOT] Preview saved as '{filename}'")
     if show:
         plt.show()
 
@@ -1377,7 +1376,7 @@ def write_opensees_geometry(
                         torsion_method = "J_sv_wall"
 
                 else:
-                    torsion_method = ""
+                    torsion_method = "Not available for export."
                     J_tors=0
                     warnings.warn(
                         "No valid Saint-Venant torsion contribution "
@@ -2280,9 +2279,11 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
     def _signed_area_xy(xy: List[Tuple[float, float]]) -> float:
         """
-        Signed area by shoelace (>0 CCW, <0 CW).
+        Signed area by shoelace (>0 CCW).
         """
-        area, _, _ = _poly_signed_area_centroid_xy(xy, EPS_A)
+        area, _, _ = _poly_signed_area_centroid_xy(xy)
+        
+        
         return area
 
     def _key(pt: Tuple[float, float], ndigits: int = 12) -> Tuple[float, float]:
@@ -2408,8 +2409,6 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         """
         keys = [_key(pt) for pt in xy]
         i_outer_end = _find_outer_bridge_index(xy, nm)
-
-        #print(f"DEBUG i_outer_end {i_outer_end}")
 
         loop_a = xy[0:i_outer_end]
         loop_b = _extract_inner_loop_after_outer(xy, keys, i_outer_end, nm)
@@ -2866,12 +2865,6 @@ Weighted output
     J_total = Σ w_i * J_i     (weights are taken verbatim from poly.weight)
 """
 
-
-
-
-PointXY = Tuple[float, float]
-
-
 def _poly_vertices_xy(poly: Any) -> List[PointXY]:
     """Extract polygon vertices as plain (x, y) float tuples."""
     verts = getattr(poly, "vertices", None)
@@ -3055,13 +3048,13 @@ def _solve_poisson_sor(
     return psi
 
 
-def _torsion_J_from_psi(psi: np.ndarray, mask: np.ndarray, h: float) -> float:
+def _torsion_J_from_psi2remove(psi: np.ndarray, mask: np.ndarray, h: float) -> float:
     """Discrete J ≈ 2 Σ ψ h^2 over inside nodes."""
     h2 = h * h
     return 2.0 * float(np.sum(psi[mask]) * h2)
 
 
-def _compute_J_solid_polygon_grid(
+def _compute_J_solid_polygon_grid2remove(
     verts: Sequence[PointXY],
     *,
     grid_h: float,
@@ -3158,10 +3151,6 @@ def alpha_from_keys(
 
 
 
-# -----------------------------------------------------------------------------
-# Helpers: robust "sign-agnostic" comparisons without using abs()
-# -----------------------------------------------------------------------------
-PointXY = Tuple[float, float]
 
 def _sq(x: float) -> float:
     return x * x
@@ -3177,27 +3166,16 @@ def _is_near_zero(x: float, eps: float) -> bool:
     return _sq(x) <= _sq(eps)
 
 
-# -----------------------------------------------------------------------------
-# Geometry fallback: compute weighted centroidal polar moment without relying on
-# external CSF helpers.
-# -----------------------------------------------------------------------------
 
-def _poly_signed_area_centroid_xy(verts: Sequence[PointXY], eps_a: float) -> Tuple[float, float, float]:
+
+def _signed_area_centroid_xy(
+    verts: Sequence[tuple[float, float]]
+) -> Tuple[float, float, float]:
     """
     Shoelace formula.
-
-    Returns
-    -------
-    (A, Cx, Cy)
-        A  : signed polygon area (depends on vertex winding).
-        Cx : centroid x
-        Cy : centroid y
-
-    Notes
-    -----
-    - Works for simple (non self-intersecting) polygons.
-    - For self-intersecting polygons, results are an algebraic "signed" integral.
+    Returns (A, Cx, Cy) not weight
     """
+
     n = len(verts)
     if n < 3:
         raise ValueError("Polygon has <3 vertices.")
@@ -3214,18 +3192,20 @@ def _poly_signed_area_centroid_xy(verts: Sequence[PointXY], eps_a: float) -> Tup
         cx6 += (x0 + x1) * cross
         cy6 += (y0 + y1) * cross
 
+    if abs(a2) < EPS_A:
+        return 0.0, 0.0, 0.0
+
     A = 0.5 * a2
-
-    if _is_near_zero(A, eps_a):
-        raise ValueError("Polygon area is ~0; cannot compute centroid/inertia reliably.")
-
     Cx = cx6 / (3.0 * a2)
     Cy = cy6 / (3.0 * a2)
 
     return A, Cx, Cy
 
 
-def _poly_inertia_about_origin_xy(verts: Sequence[PointXY]) -> Tuple[float, float, float]:
+def _poly_signed_area_centroid_xy(verts: Sequence[PointXY]) -> Tuple[float, float, float]:#qui
+    return _signed_area_centroid_xy(verts)
+
+def _poly_inertia_about_origin_xy2remove(verts: Sequence[PointXY]) -> Tuple[float, float, float]:
     """
     Second moments about the origin (0,0) using standard polygon formulas.
 
@@ -3257,7 +3237,7 @@ def _poly_inertia_about_origin_xy(verts: Sequence[PointXY]) -> Tuple[float, floa
     return Ix, Iy, Ixy
 
 
-def _section_polar_moment_fallback(section: Any, eps_a: float) -> float:
+def _section_polar_moment_fallback2remove(section: Any, eps_a: float) -> float:
     """
     Compute the weighted polar second moment J_p = Ix + Iy about the *weighted* centroid.
 
@@ -3289,7 +3269,7 @@ def _section_polar_moment_fallback(section: Any, eps_a: float) -> float:
             raise ValueError(f"Polygon '{getattr(p, 'name', None)}' has no .vertices.")
         verts_xy = [(float(v.x), float(v.y)) for v in verts_obj]
 
-        A, Cx, Cy = _poly_signed_area_centroid_xy(verts_xy, eps_a)
+        A, Cx, Cy = _poly_signed_area_centroid_xy(verts_xy)
         Aw = w * A
         A_tot += Aw
         Qx += Aw * Cx
@@ -3922,117 +3902,6 @@ def section_statical_moment_partial(section: Section, y_cut: float, reference_ax
         q_total += area_part * (cy_part - y_ref)
 
     return q_total
-
-def section_derived_properties_debug2remove(props: Dict[str, float], debug: bool = True) -> Dict[str, float]:
-    """
-    Computes derived structural properties including principal moments of inertia,
-    principal axis rotation, and radius of gyration.
-
-    Brutal debug mode:
-    - Set debug=True to print every intermediate quantity and consistency checks.
-    """
-    # --- mandatory inputs ---
-    Ix = float(props['Ix'])
-    Iy = float(props['Iy'])
-    Ixy = float(props['Ixy'])
-    A = float(props['A'])
-
-    # Optional context fields (if present) for easier trace
-    z_here = props.get('z', None)
-    sec_name = props.get('name', 'unnamed')
-
-    # --- Mohr circle core terms ---
-    avg = 0.5 * (Ix + Iy)
-    diff = 0.5 * (Ix - Iy)
-    R_sq = diff * diff + Ixy * Ixy
-    R = math.sqrt(R_sq) if R_sq >= 0.0 else float("nan")  # defensive, should be >= 0
-
-    I1 = avg + R
-    I2 = avg - R
-
-    # --- principal direction (with isotropy guard) ---
-    iso_thr = abs(avg) * EPS_K
-    is_near_isotropic = (R < iso_thr)
-
-    if is_near_isotropic:
-        theta = 0.0
-        theta_mode = "forced_zero_by_isotropy_guard"
-    else:
-        theta = 0.5 * math.atan2(-2.0 * Ixy, Ix - Iy)
-        theta_mode = "atan2"
-
-    theta_deg = math.degrees(theta)
-
-    # --- radii of gyration ---
-    rx = math.sqrt(Ix / A) if A > 0.0 else 0.0
-    ry = math.sqrt(Iy / A) if A > 0.0 else 0.0
-
-    # --- brutal consistency checks ---
-    # Eigenvalue invariants for 2x2 inertia tensor:
-    # trace = Ix + Iy = I1 + I2
-    # det   = Ix*Iy - Ixy^2 = I1*I2
-    trace_in = Ix + Iy
-    trace_pr = I1 + I2
-    det_in = Ix * Iy - Ixy * Ixy
-    det_pr = I1 * I2
-
-    # Reconstruction checks (from principal values + theta):
-    c = math.cos(theta)
-    s = math.sin(theta)
-    Ix_rec = I1 * c * c + I2 * s * s
-    Iy_rec = I1 * s * s + I2 * c * c
-    Ixy_rec = (I2 - I1) * s * c
-
-    # Relative errors (safe denominators)
-    def _rel_err(a: float, b: float, floor: float = 1e-30) -> float:
-        den = max(abs(a), abs(b), floor)
-        return abs(a - b) / den
-
-    e_trace = _rel_err(trace_in, trace_pr)
-    e_det = _rel_err(det_in, det_pr)
-    e_Ix = _rel_err(Ix, Ix_rec)
-    e_Iy = _rel_err(Iy, Iy_rec)
-    e_Ixy = _rel_err(Ixy, Ixy_rec)
-    e_sym = abs((I1 - I2) - 2.0 * R)  # should be ~0 by definition
-
-    # Branch fingerprint to catch "kinks"
-    if abs(Ixy) <= abs(avg) * EPS_K:
-        # In near-product-free case, principal values tend toward Ix/Iy ordering
-        branch = "Ixy~0"
-    else:
-        branch = "general"
-
-    if debug:
-        print("\n" + "=" * 160)
-        print("[DERIVED][INPUT]"
-              f" name={sec_name} z={z_here} A={A:+.16e} Ix={Ix:+.16e} Iy={Iy:+.16e} Ixy={Ixy:+.16e}")
-        print("[DERIVED][MOHR]"
-              f" avg={avg:+.16e} diff={diff:+.16e} R_sq={R_sq:+.16e} R={R:+.16e}")
-        print("[DERIVED][PRINCIPAL]"
-              f" I1={I1:+.16e} I2={I2:+.16e} (I1-I2)={I1-I2:+.16e} 2R={2.0*R:+.16e} e_sym={e_sym:.3e}")
-        print("[DERIVED][THETA]"
-              f" mode={theta_mode} theta_rad={theta:+.16e} theta_deg={theta_deg:+.16e}"
-              f" iso_thr={iso_thr:+.16e} is_near_isotropic={is_near_isotropic} branch={branch}")
-        print("[DERIVED][INVARIANTS]"
-              f" trace_in={trace_in:+.16e} trace_pr={trace_pr:+.16e} e_trace={e_trace:.3e} |"
-              f" det_in={det_in:+.16e} det_pr={det_pr:+.16e} e_det={e_det:.3e}")
-        print("[DERIVED][RECON]"
-              f" Ix_rec={Ix_rec:+.16e} e_Ix={e_Ix:.3e} |"
-              f" Iy_rec={Iy_rec:+.16e} e_Iy={e_Iy:.3e} |"
-              f" Ixy_rec={Ixy_rec:+.16e} e_Ixy={e_Ixy:.3e}")
-        print("[DERIVED][GYRATION]"
-              f" rx={rx:+.16e} ry={ry:+.16e}")
-        print("=" * 160)
-
-    return {
-        'I1': I1,                      # Major principal moment of inertia
-        'I2': I2,                      # Minor principal moment of inertia
-        'theta_rad': theta,
-        'theta_deg': theta_deg,
-        'rx': rx,
-        'ry': ry,
-    }
-
 
 
 def section_derived_properties(props: Dict[str, float]) -> Dict[str, float]:
@@ -5046,19 +4915,8 @@ class ContinuousSectionField:
                     weight_law = str(self.weight_laws[idx + 1])
                 elif name in self.weight_laws:
                     weight_law = str(self.weight_laws[name])
-            '''
-            # Geometric area (sterile, signed)
-            verts = poly.vertices
-            n = len(verts)
-            shoelace = sum(
-                float(verts[i].x) * float(verts[(i+1)%n].y) - 
-                float(verts[(i+1)%n].x) * float(verts[i].y)
-                for i in range(n)
-            )
-            area_signed = 0.5 * shoelace
-            '''
-            area_signed, _ = _polygon_signed_area_and_centroid(poly)
 
+            area_signed, _ = _polygon_signed_area_and_centroid(poly) #no weighted
             
             # Hierarchy: Descendants (am I a container?)
             is_container = name in children_map
@@ -5725,23 +5583,6 @@ class ContinuousSectionField:
                     out.append((float(getattr(v, "x")), float(getattr(v, "y"))))
             return out
 
-        def _signed_area(vertices: List[Tuple[float, float]]) -> float:
-            """
-            Compute signed area using the shoelace formula.
-            Positive for CCW orientation, negative for CW.
-            No abs() is applied; the raw signed value is returned.
-            """
-            n = len(vertices)
-            if n < 3:
-                return 0.0
-            # Handle explicit closure safely (if last == first, modulo handles it)
-            cross_sum = 0.0
-            for i in range(n):
-                x1, y1 = vertices[i]
-                x2, y2 = vertices[(i + 1) % n]
-                cross_sum += x1 * y2 - x2 * y1
-            return 0.5 * cross_sum
-
         # --- 3) Build container hierarchy from S0 (stable reference) ---
         s0_polys = self.s0.polygons
         if not s0_polys:
@@ -5790,8 +5631,10 @@ class ContinuousSectionField:
             
             w_rel = float(getattr(poly, "weight"))
             verts = _extract_vertices(poly)
-            area_geom = _signed_area(verts)  # Sterile: preserves sign
             
+            area_geom,(_,_) =_polygon_signed_area_and_centroid(poly)# Sterile: preserves sign with no weght
+            
+            #print(f"DEBUG area_geom {area_geom}")
             poly_data[name] = {
                 "idx": idx,
                 "w_rel": w_rel,          # Relative weight (may be negative for voids)
@@ -6193,8 +6036,6 @@ class ContinuousSectionField:
         # Keep original polygon names as declared in S0/S1 strip @cell @wall
         valid_names0 = [self._strip_model_tags(p.name) for p in self.s0.polygons]
         valid_names1 = [self._strip_model_tags(p.name) for p in self.s1.polygons]
-        
-        print(f"DEBUG valid_names0 {valid_names0} valid_names1 {valid_names1}")
         # Reset current laws 
         self.weight_laws = {}
         normalized_map = {}
@@ -6309,7 +6150,7 @@ class ContinuousSectionField:
                 # The formula is a function; it will be evaluated during interpolation
                 pass
         # SUCCESS - Weight laws correctly assigned
-        print(f"SUCCESS - Weight laws correctly assigned: {self.weight_laws}")
+        #print(f"SUCCESS - Weight laws correctly assigned: {self.weight_laws}")
 
 
     def _validate_inputs(self) -> None:
@@ -6807,84 +6648,18 @@ class ContinuousSectionField:
 
 def _polygon_signed_area_and_centroid(poly: Polygon) -> Tuple[float, Tuple[float, float]]:
     """
-    Shoelace. Returns signed area (can be negative depending on orientation) and centroid. never in CSF
+    Shoelace. 
+    with no weight 
     """
-    verts = poly.vertices
-    n = len(verts)
+    verts_xy = [(v.x, v.y) for v in poly.vertices]
+    A, Cx, Cy = _signed_area_centroid_xy(verts_xy)
 
-    a2 = 0.0  # 2*Area signed
-    cx6 = 0.0
-    cy6 = 0.0
-
-    for i in range(n):
-        # Current vertex and next vertex (cyclic)
-       
-        v0 = verts[i]
-        v1 = verts[(i + 1) % n]
-       
-        x0, y0 = v0.x, v0.y
-        x1, y1 = v1.x, v1.y
-        
-        # Calculate cross product for this segment
-        cross = x0 * y1 - x1 * y0
-
-        
-        a2 += cross
-        cx6 += (x0 + x1) * cross
-        cy6 += (y0 + y1) * cross
-
-    if abs(a2) < EPS_A:
-        return 0.0, (0.0, 0.0)
-
-    A = 0.5 * a2
-    Cx = cx6 / (3.0 * a2)
-    Cy = cy6 / (3.0 * a2)
     return A, (Cx, Cy)
 
 def polygon_area_centroid(poly: Polygon) -> Tuple[float, Tuple[float, float]]:
-    """
-    Computes the signed area and geometric centroid of a non-self-intersecting polygon.
-
-    TECHNICAL SUMMARY:
-    This function implements the Surveyor's Formula (Shoelace Algorithm), 
-    derived from Green's Theorem, to integrate area and first moments over 
-    a planar polygonal domain. It is designed to handle both "solid" (counter-clockwise) 
-    and "void" (clockwise) polygons to model hollow sections like wind turbine towers.
-
-    MATHEMATICAL FORMULATION:
-    1. Signed Area (A):
-       The area is computed as the sum of cross-products of vertex vectors:
-       A = 0.5 * Σ (x_i * y_{i+1} - x_{i+1} * y_i)
-       The sign of the area indicates the vertex winding order:
-       - Positive: Counter-Clockwise (CCW).
-       - Negative: Clockwise (CW).
-
-    2. Geometric Centroid (Cx, Cy):
-       The coordinates of the centroid (center of area) are derived from the 
-       first moments of area (Qx, Qy):
-       Cx = (1 / 6A) * Σ (x_i + x_{i+1}) * (x_i * y_{i+1} - x_{i+1} * y_i)
-       Cy = (1 / 6A) * Σ (y_i + y_{i+1}) * (x_i * y_{i+1} - x_{i+1} * y_i)
-
-    COMPUTATIONAL ROBUSTNESS:
-    - Degeneracy Handling: Includes a threshold check (EPS_K) to identify 
-      degenerate polygons (lines or points) and prevent division-by-zero errors.
-    - Consistency: Since it utilizes a cyclic vertex indexing [(i + 1) % n], 
-      it ensures a closed-loop integration regardless of vertex count.
-
-    APPLICABILITY IN RULED SURFACE MODELING:
-    By returning the signed area, this function allows for seamless 
-    homogenization. When a void (e.g., the inner diameter of a tower) is 
-    modeled with an opposite winding order or negative weight, the integration 
-    correctly subtracts its properties from the total section digest.
-
-    RETURNS:
-       - Area: Signed area of the polygon [L²].
-       - Centroid: Tuple (Cx, Cy) representing the geometric center [L].
-    """
+    # with weight
     A_signed, (Cx, Cy) = _polygon_signed_area_and_centroid(poly)
-    
-    #A_mag = abs(A_signed) #qui
-    A_mag = (A_signed) #qui
+    A_mag = (A_signed) 
     return poly.weight * A_mag, (Cx, Cy)
 
 
@@ -7301,152 +7076,6 @@ class Visualizer:
 
         print("=== END WEIGHT MIN/MAX REPORT ===")
         # plt.show()
-
-    def plot_weight2remove(self, num_points=100, tol=1e-12):
-        """
-        Plot w(z) per polygon pair, skipping polygons with w(z) == 0 for all sampled z.
-        Skipped polygons are listed in a figure note.
-        Min/Max markers are shown on each plotted curve.
-        """
-        import numpy as np
-        import matplotlib.pyplot as plt
-
-        z_start = self.field.s0.z
-        z_end = self.field.s1.z
-        z_values = np.linspace(z_start, z_end, num_points)
-
-        num_polys = len(self.field.s0.polygons)
-        poly_w_series = {i: [] for i in range(num_polys)}
-
-        # Evaluate weights
-        for z in z_values:
-            for i in range(num_polys):
-                p0 = self.field.s0.polygons[i]
-                p1 = self.field.s1.polygons[i]
-
-                if self.field.weight_laws is not None and (i + 1) in self.field.weight_laws:
-                    current_law = self.field.weight_laws[i + 1]
-                else:
-                    current_law = None
-
-                w_val = self.field._interpolate_weight(
-                    p0.weight, p1.weight, z, p0, p1, current_law
-                )
-                poly_w_series[i].append(float(w_val))
-
-        # Split polygons: zero-flat vs plottable
-        zero_polys = []
-        plot_indices = []
-
-        for i in range(num_polys):
-            p0 = self.field.s0.polygons[i]
-            p1 = self.field.s1.polygons[i]
-            label = f"[{i}] s0:{p0.name} -> s1:{p1.name}"
-
-            y = np.asarray(poly_w_series[i], dtype=float)
-            if np.all(np.isclose(y, 0.0, atol=tol, rtol=0.0)):
-                zero_polys.append(label)
-            else:
-                plot_indices.append(i)
-
-        # If all are zero, no plot
-        if len(plot_indices) == 0:
-            print("All polygon weights are identically zero on sampled z.")
-            print("Skipped polygons:")
-            for s in zero_polys:
-                print(" -", s)
-            return
-        # Create multiple figures, max 2 polygons per figure (keep all windows identical)
-        MAX_PLOTS_PER_FIG = 2  # Max number of polygon plots per window (do not expose as a function parameter)
-        FIGSIZE = (10, 2.4 * MAX_PLOTS_PER_FIG)  # Fixed size for all figures to avoid "odd last window" sizing
-
-        n_plot = len(plot_indices)
-
-        print("\n=== START WEIGHT MIN/MAX REPORT ===")
-        for start in range(0, n_plot, MAX_PLOTS_PER_FIG):
-            # Take up to MAX_PLOTS_PER_FIG polygon indices for this figure
-            chunk = plot_indices[start : start + MAX_PLOTS_PER_FIG]
-
-            # Always create exactly MAX_PLOTS_PER_FIG axes to keep window layout identical
-            fig_w, axes_w = plt.subplots(
-                MAX_PLOTS_PER_FIG, 1, figsize=FIGSIZE, sharex=True
-            )
-            # Normalize axes to a plain Python list
-            axes_w = list(np.ravel(axes_w))
-
-            for ax_pos in range(MAX_PLOTS_PER_FIG):
-                ax = axes_w[ax_pos]
-
-                # If the last chunk has only 1 polygon, disable the unused axis (but keep the window size/layout)
-                if ax_pos >= len(chunk):
-                    ax.axis("off")
-                    continue
-
-                i = chunk[ax_pos]
-                p0 = self.field.s0.polygons[i]
-                p1 = self.field.s1.polygons[i]
-                y = np.asarray(poly_w_series[i], dtype=float)
-
-                idx_min = int(np.argmin(y))
-                idx_max = int(np.argmax(y))
-                w_min, w_max = float(y[idx_min]), float(y[idx_max])
-                z_min, z_max = float(z_values[idx_min]), float(z_values[idx_max])
-
-                print(
-                    f"[{i}] s0:{p0.name} -> s1:{p1.name} | "
-                    f"min w={w_min:.12g} at z={z_min:.12g} | "
-                    f"max w={w_max:.12g} at z={z_max:.12g}"
-                )
-
-                # Main curve
-                ax.plot(z_values, y, linewidth=1.5, label=f"s0 {p0.name} - s1 {p1.name}")
-
-                # Min/Max small markers on the curve
-                ax.scatter([z_min], [w_min], marker="v", s=26, zorder=3, label="min")
-                ax.scatter([z_max], [w_max], marker="^", s=26, zorder=3, label="max")
-
-                # Optional tiny text near markers
-                ax.annotate(
-                    f"{w_min:.4f}", (z_min, w_min),
-                    textcoords="offset points", xytext=(4, -12), fontsize=7
-                )
-                ax.annotate(
-                    f"{w_max:.4f}", (z_max, w_max),
-                    textcoords="offset points", xytext=(4, 6), fontsize=7
-                )
-
-                # y-limits
-                if w_max != w_min:
-                    margin = (w_max - w_min) * 0.10
-                else:
-                    margin = max(abs(w_max) * 0.05, 0.05)
-                ax.set_ylim(w_min - margin, w_max + margin)
-
-                ax.set_ylabel(f"s0 {p0.name}\ns1 {p1.name}", fontweight="bold")
-                ax.grid(True, linestyle="--", alpha=0.5)
-                ax.set_title(
-                    f"Weight (w) | min={w_min:.6f} @ z={z_min:.3f} | max={w_max:.6f} @ z={z_max:.3f}",
-                    loc="right", fontsize=8
-                )
-
-            # Put x-label on the last active axis in this figure
-            last_active_ax = axes_w[len(chunk) - 1]
-            last_active_ax.set_xlabel("z")
-
-            # Figure-level note for zero-flat polygons (repeat on each figure for consistency)
-            if zero_polys:
-                note = "Skipped (w=0 for all z): " + "; ".join(zero_polys)
-                fig_w.text(0.01, 0.01, note, ha="left", va="bottom", fontsize=8)
-
-            # Same title on every window
-            fig_w.suptitle(
-                f"Individual Polygon Weight (w) Distributions (Interpolated # {num_points} points)",
-                fontweight="bold"
-            )
-            fig_w.tight_layout(rect=[0, 0.04, 1, 0.96])
-
-        print("=== END WEIGHT MIN/MAX REPORT ===")
-        #plt.show()
 
 
 
