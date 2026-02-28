@@ -977,7 +977,7 @@ class CSFReader:
         """
 
         if "weight_laws" not in csf_root:
-            print("_validate_and_apply_weight_laws")
+            #print("_validate_and_apply_weight_laws")
             return  # optional
 
         wl = csf_root["weight_laws"]
