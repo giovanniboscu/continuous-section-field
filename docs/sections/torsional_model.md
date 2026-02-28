@@ -133,8 +133,8 @@ Open wall:
 
     plate@wall@t=0.008
 
-### If thickness varies between stations, define different `@t=` values at
-each station. CSF automatically interpolates thickness along z.
+***If thickness varies between stations, define different `@t=` values at
+each station. CSF automatically interpolates thickness along z.***
 
 
 ---
