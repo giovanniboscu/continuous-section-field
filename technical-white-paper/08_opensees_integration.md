@@ -26,20 +26,7 @@ OpenSees is a **numerical integrator and solver**.
 
 ---
 
-## 2. What CSF Actually Exports
-
-CSF exports a **list of stations** along the member.
-
-Each station contains:
-- Section properties: `A, Iy, Iz, J`
-- Stiffness products (depending on mapping): `EA, EIy, EIz, GJ`
-- Centroid offsets: `Cx(z), Cy(z)`
-
-They are evaluated directly from the continuous ruled-surface geometry and weight laws.
-
----
-
-## 3. Why Standard `beamIntegration Lobatto` May Not Be Enough
+## 2. Why Standard `beamIntegration Lobatto` May Not Be Enough
 
 In OpenSees, the standard integration:
 
@@ -65,7 +52,7 @@ the only OpenSees mechanism that can encode `(sectionTag, xi, weight)` explicitl
 
 ---
 
-## 5. Station Placement: Gauss–Lobatto Rule
+## 3. Station Placement: Gauss–Lobatto Rule
 
 CSF places stations using the **Gauss–Lobatto quadrature rule**.
 
@@ -82,7 +69,7 @@ This guarantees:
 
 ---
 
-## 6. Element Construction Strategy
+## 4. Element Construction Strategy
 
 ### What is implemented today (export side)
 
@@ -126,7 +113,7 @@ This ensures:
 
 ---
 
-## 7. CSF Is *Not* Piecewise-Prismatic
+## 5. CSF Is *Not* Piecewise-Prismatic
 
 ### CSF + OpenSees model
 - CSF defines a **continuous field**
@@ -138,34 +125,202 @@ The OpenSees elements are therefore **integration carriers**, not modeling appro
 
 ---
 
-## 8. Centroid Axis and Eccentricity Preservation
 
-Non-prismatic members often have:
-- variable centroid position
-- eccentric stiffness relative to a reference axis
+# CSF -- Torsion Model for Export
 
-CSF explicitly tracks:
-```text
-Cx(z), Cy(z)
-```
+## 6. Available Torsion Quantities
 
-## 9. Torsion model
+CSF may compute the following Saint-Venant torsion estimates:
 
-`J_sv_wall` and `J_sv_cell` are thin-walled Saint-Venant torsion estimates for, respectively, **open** walls and **closed** cells (Bredt–Batho), while `J_sv` is the **general** Saint-Venant torsion estimate when thin-walled assumptions are not applicable.  
-When exporting to OpenSees (which accepts a single `J`), a consistent practice is to select a `J_eff` (e.g., `max(J_sv_cell, J_sv_wall)` if any > 0, otherwise `J_sv`).
+-   **J_sv_wall**\
+    Thin-walled Saint-Venant torsion constant for **open walls**.
 
+-   **J_sv_cell**\
+    Thin-walled Saint-Venant torsion constant for **closed cells**\
+    (Bredt--Batho formulation).
 
-### OpenSees implementation
-- create reference nodes along a straight axis
-- create centroid nodes offset by `Cx, Cy`
-- connect them using:
+-   **J_sv**\
+    General Saint-Venant torsion constant when thin-walled assumptions
+    are not applicable.
 
-`rigidLink beam`
+------------------------------------------------------------------------
 
-This produces:
-- automatic moment–axial coupling
-- correct geometric eccentricity
-- no artificial offset forces
+## 6.1 Export Philosophy
 
-> **Note**  
-> This requires `constraints Transformation` in OpenSees.
+External solvers such as OpenSees require a **single torsional constant
+`J`**.
+
+For export purposes:
+
+-   Only thin-walled torsion contributions are considered.
+-   The general `J_sv` value is **not** used as fallback.
+-   If no valid thin-walled contribution exists, torsion is exported as
+    zero and a warning is issued.
+
+This ensures deterministic and explicit behavior.
+
+------------------------------------------------------------------------
+
+## 6.2 Effective Torsional Constant
+
+Let:
+
+-   `cell_ok` → `J_sv_cell > 0`
+-   `wall_ok` → `J_sv_wall > 0`
+
+Then:
+
+### Case A -- At least one valid thin-walled contribution
+
+If either closed-cell or open-wall torsion is valid:
+
+    J_eff = J_sv_cell (if valid) + J_sv_wall (if valid)
+
+The export metadata records which contribution was used:
+
+-   `J_sv_cell`
+-   `J_sv_wall`
+-   `J_sv_cell + J_sv_wall`
+
+### Case B -- No valid thin-walled contribution
+
+If neither contribution is valid:
+
+    J_eff = 0
+
+A warning is emitted stating that no Saint-Venant thin-walled torsion
+contribution is available for export.
+
+No automatic substitution with `J_sv` occurs.
+
+------------------------------------------------------------------------
+
+## 6.3 Rationale
+
+The export model reflects the CSF philosophy:
+
+-   Thin-walled open walls and closed cells represent distinct physical
+    torsion mechanisms.
+-   Their Saint-Venant contributions are additive when both are present.
+-   Ambiguous fallback External solvers such as OpenSees require a **single torsional constant
+`J`**.
+
+For export purposes:
+
+-   Only thin-walled torsion contributions are considered.
+-   The general `J_sv` value is **not** used as fallback.
+-   If no valid thin-walled contribution exists, torsion is exported as
+    zero and a warning is issued.
+
+This ensures deterministic and explicit behavior.
+
+------------------------------------------------------------------------
+
+## 6.4 Effective Torsional Constant
+
+Let:
+
+-   `cell_ok` → `J_sv_cell > 0`
+-   `wall_ok` → `J_sv_wall > 0`
+
+Then:
+
+### Case A -- At least one valid thin-walled contribution
+
+If either closed-cell or open-wall torsion is valid:
+
+    J_eff = J_sv_cell (if valid) + J_sv_wall (if valid)
+
+The export metadata records which contribution was used:
+
+-   `J_sv_cell`
+-   `J_sv_wall`
+-   `J_sv_cell + J_sv_wall`
+
+### Case B -- No valid thin-walled contribution
+
+If neither contribution is valid:
+
+    J_eff = 0
+
+A warning is emitted stating that no Saint-Venant thin-walled torsion
+contribution is available for export.
+
+No automatic substitution with `J_sv` occurs.
+
+------------------------------------------------------------------------
+
+## 6.5 Rationale
+
+The export model reflects the CSF philosophy:
+
+-   Thin-walled open walls and closed cells represent distinct physical
+    torsion mechanisms.
+-   Their Saint-Venant contributions are additive when both are present.
+-   Ambiguous fallback rules are avoided.
+-   No silent defaults are introduced.
+
+The exported torsional constant is therefore:
+
+-   Explicit
+-   Traceable
+-   Deterministic
+
+------------------------------------------------------------------------
+
+## 6.6 Eccentricity Handling (Centroid Offsets)
+
+If section centroid offsets `(Cx, Cy)` are present:
+
+-   A reference node is created on the straight axis.
+-   A centroid node is created at `(Cx, Cy)`.
+-   A rigid beam link connects them.
+
+This guarantees:
+
+-   Correct geometric eccentricity
+-   Proper axial--bending coupling
+-   No artificial offset forces
+
+In OpenSees this requires:
+
+    constraints Transformation
+
+rules are avoided.
+-   No silent defaults are introduced.
+
+The exported torsional constant is therefore:
+
+-   Explicit
+-   Traceable
+-   Deterministic
+
+------------------------------------------------------------------------
+
+## 6.7 Eccentricity Handling (Centroid Offsets)
+
+If section centroid offsets `(Cx, Cy)` are present:
+
+-   A reference node is created on the straight axis.
+-   A centroid node is created at `(Cx, Cy)`.
+-   A rigid beam link connects them.
+
+This guarantees:
+
+-   Correct geometric eccentricity
+-   Proper axial--bending coupling
+-   No artificial offset forces
+
+In OpenSees this requires:
+
+    constraints Transformation
+
+------------------------------------------------------------------------
+
+## Summary
+
+-   Export uses only `J_sv_cell` and `J_sv_wall`
+-   Contributions are additive if both valid
+-   No fallback to `J_sv`
+-   Zero torsion is exported when no valid thin-walled mechanism exists
+-   Behavior is deterministic and explicitly documented
