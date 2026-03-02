@@ -200,7 +200,6 @@ Available keys:
 - Wy
 - K_torsion
 - Q_na
-- J_sv
 - J_sv_wall
 - J_sv_cell
 - J_s_vroark
