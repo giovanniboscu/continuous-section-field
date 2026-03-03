@@ -190,15 +190,29 @@ where Ip = Ix + Iy.
 
 ---
 
-## 15. First Moment of Area Q
+## 15. First Moment of Area `Q_na`
 
 **Key:** `Q_na`
 
-First moment of area about the **neutral axis**.
+First moment of area of the **portion of the section located on one side of the neutral axis** (used in shear stress evaluation).
 
-Used in shear stress estimation:
+Let the neutral axis be the centroidal axis `y = 0`. Then:
 
-Q = integral( y * dA ) about the neutral axis
+`Q_na = ∫_{A(y > 0)} y dA`
+
+where the integral is taken over the sub-area above the neutral axis  
+(the lower portion may equivalently be used in absolute value).
+
+Note:
+
+- Over the **entire section**, `∫_A y dA = 0` for centroidal axes.
+- `Q_na` is therefore computed over a **partial area**, not the full section.
+
+Typical use in shear stress estimation:
+
+`tau = V * Q / (I * b)`
+
+where `Q` is the first moment of the sub-area cut by the neutral axis.
 
 ---
 ## 16 - 17 Torsion constant methods for tagged polygons (`@cell` / `@wall`)
