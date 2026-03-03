@@ -198,7 +198,7 @@ First moment of area of the **portion of the section located on one side of the 
 
 Let the neutral axis be the centroidal axis `y = 0`. Then:
 
-`Q_na = ∫_{A(y > 0)} y * w(x,y) dA`
+`Q_na(z) = Σ_i w_i(z) * ∫_{A_i(y > 0)} y dA`
 
 where the integral is taken over the sub-area above the neutral axis  
 (the lower portion may equivalently be used in absolute value).
