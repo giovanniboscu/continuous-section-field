@@ -74,8 +74,9 @@ CSF:
 ```
 
 To create a ring polygon (outer contour + inner hole), you can use:
-
-csf/utils/csf_polygon_hole_builder_v2.py
+```
+../../src/csf/utils/csf_polygon_hole_builder_v2.py
+```
 
 This script contains the geometric parameters used to generate the YAML model geometry directly (dimensions and section setup are defined inside the code).
 
