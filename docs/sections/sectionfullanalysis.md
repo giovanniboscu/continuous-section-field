@@ -198,7 +198,7 @@ First moment of area of the **portion of the section located on one side of the 
 
 Let the neutral axis be the centroidal axis `y = 0`. Then:
 
-`Q_na = ∫_{A(y > 0)} y dA`
+`Q_na = ∫_{A(y > 0)} y * w(x,y) dA`
 
 where the integral is taken over the sub-area above the neutral axis  
 (the lower portion may equivalently be used in absolute value).
@@ -212,7 +212,8 @@ Typical use in shear stress estimation:
 
 `tau = V * Q / (I * b)`
 
-where `Q` is the first moment of the sub-area cut by the neutral axis.
+where `Q` is the first moment of the sub-area cut by the neutral axis,
+evaluated consistently with the same weighted section model.
 
 ---
 ## 16 - 17 Torsion constant methods for tagged polygons (`@cell` / `@wall`)
