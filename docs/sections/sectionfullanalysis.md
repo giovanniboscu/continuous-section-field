@@ -187,7 +187,6 @@ where Ip = Ix + Iy.
 **Notes**
 - Always defined.
 - Low physical fidelity.
-- Used only as a **fallback**.
 
 ---
 
