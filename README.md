@@ -357,7 +357,7 @@ In standard FEM, a tapered beam is often approximated as a series of stepped pri
     #   This is MANDATORY for the Shoelace/Green's Theorem algorithm to compute a 
     #   POSITIVE Area and correct Moments of Inertia. Clockwise order will result 
     #   in negative area values and mathematically incorrect results.
-    # - WEIGHT: Use 1.0 for solid parts and -1.0 to define voids/holes.
+    # - WEIGHT: Use 1.0 for solid parts and 0 to define voids/holes.
     # - The start section here is a T-shape composed of two non-overlapping polygons:
     #   a "flange" (top horizontal) and a "web" (vertical stem).
     # ----------------------------------------------------------------------------------
