@@ -361,5 +361,3 @@ Since CSF treats the string as code, you can perform math directly on the file r
 
 ---
 
-### PRO TIP
-Since CSF interprets the string directly, you can even use complex Python one-liners, but remember that **scannability is key** for your future self!
