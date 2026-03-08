@@ -27,7 +27,7 @@ CSF models a member as a continuous field along the axis `z`, combining:
 
 ### Conceptual Model
 
-CSF treats section properties as integrals of a continuous geometry–material field, rather than assuming the classical separable product between geometry and material.
+CSF treats section properties as integrals of a continuous geometry - material field, rather than assuming the classical separable product between geometry and material.
 
 See the conceptual explanation:  
 [geometric material decomposition](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/geometric_material_decomposition.md)
