@@ -47,7 +47,7 @@ CSF_ACTIONS:
           stations: station_edge
           output:
             - stdout
-            - [out/j_sv_volume.csv,out/j_sv_volume.txt]   # optional; if omitted -> [stdout]
+            - [out/j_sv_volume.txt,out/j_sv_volume.txt]   # optional; if omitted -> [stdout]
           params:
             n_points: 20           # optional (Gauss–Legendre points)
             fmt_display: ".6f"     # optional
