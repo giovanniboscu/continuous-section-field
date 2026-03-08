@@ -162,7 +162,7 @@ CSF_ACTIONS:
 - `actions:` **required** (must be a list)
 - `stations:` required for many actions (see per-action rules)
 
-#### Critical rule: `actions:` must appear only once
+#### Rule: `actions:` must appear only once
 
 YAML duplicate keys can overwrite silently in some tools.  
 CSFActions prevents this: **duplicate keys raise a controlled error** with a caret/snippet.
@@ -208,7 +208,7 @@ actions:
 **geometry**
 
 ```yaml
-```
+
 CSF:
   # Two stations defining a linearly tapered solid rectangle along z.
   # Rectangle width is constant; height changes from S0 to S1.
@@ -236,6 +236,8 @@ CSF:
             - [ 0.5, 0.0]
             - [ 0.5, 2.0]
             - [-0.5, 2.0]
+```
+
 ---
 
 ## 4. Output rules (stdout vs file-only)
@@ -274,7 +276,7 @@ Some actions are strictly file-only and will reject `stdout` with a friendly err
 ### 5.1 Validate only (no execution)
 
 ```bash
-python ../csf/CSFActions.py geometry.yaml actions.yaml --validate-only
+python3 -m csf.CSFActions geometry.yaml actions.yaml --validate-only
 ```
 
 Expected snippet:
@@ -343,7 +345,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python ../CSFActions.py geometry.yaml actions.yaml
+python3 -m csf.CSFActions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -390,7 +392,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python ../CSFActions.py geometry.yaml actions.yaml
+python3 -m csf.CSFActions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -428,7 +430,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python ../csf/CSFActions.py geometry.yaml actions.yaml
+python3 -m csf.CSFActions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -463,7 +465,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python ../csf/CSFActions.py geometry.yaml actions.yaml
+python3 -m csf.CSFActions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -498,7 +500,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python ../csf/CSFActions.py geometry.yaml actions.yaml
+python3 -m csf.CSFActions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -538,7 +540,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python ../csf/CSFActions.py geometry.yaml actions.yaml
+python3 -m csf.CSFActions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -575,7 +577,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python ../csf/CSFActions.py geometry.yaml actions.yaml
+python3 -m csf.CSFActions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -612,7 +614,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python ../csf/CSFActions.py geometry.yaml actions.yaml
+python3 -m csf.CSFActions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -653,7 +655,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python ../csf/CSFActions.py geometry.yaml actions.yaml
+python3 -m csf.CSFActions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
