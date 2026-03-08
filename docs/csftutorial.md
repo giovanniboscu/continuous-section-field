@@ -486,6 +486,29 @@ J_sv_wall           : 0.00000000  [Saint-Venant torsional constant for open thin
 J_s_vroark          : 0.16861940  [Roark torsional indicator (equivalent-rectangle mapping)]
 J_s_vroark_fidelity : 0.90909091  [Fidelity / reliability indicator]
 
+### SECTION SELECTED ANALYSIS @ z = 10.0 ###
+A                   : 2.00000000  [Total net cross-sectional area]
+Cx                  : 0.00000000  [Horizontal centroid (X)]
+Ix                  : 0.66666667  [Second moment about centroidal X-axis]
+Iy                  : 0.16666667  [Second moment about centroidal Y-axis]
+Ip                  : 0.83333333  [Polar second moment (Ix + Iy)]
+I1                  : 0.66666667  [Major principal second moment]
+I2                  : 0.16666667  [Minor principal second moment]
+Cy                  : 1.00000000  [Vertical centroid (Y)]
+rx                  : 0.57735027  [Radius of gyration (about X)]
+ry                  : 0.28867513  [Radius of gyration (about Y)]
+Ixy                 : 0.00000000  [Product of inertia (symmetry indicator)]
+Wx                  : 0.66666667  [Elastic section modulus about X]
+Wy                  : 0.33333333  [Elastic section modulus about Y]
+K_torsion           : 0.48000000  [Semi-empirical torsional stiffness approximation]
+Q_na                : 0.50000000  [First moment of area at neutral axis]
+J_sv_cell           : 0.00000000  [Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)]
+J_sv_wall           : 0.00000000  [Saint-Venant torsional constant for open thin-walled walls]
+J_s_vroark          : 0.45776042  [Roark torsional indicator (equivalent-rectangle mapping)]
+J_s_vroark_fidelity : 0.50000000  [Fidelity / reliability indicator]
+alent-rectangle mapping)]
+J_s_vroark_fidelity : 0.90909091  [Fidelity / reliability indicator]
+
 
 ```
 
