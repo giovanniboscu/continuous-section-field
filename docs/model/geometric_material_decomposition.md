@@ -1,5 +1,5 @@
 
-# Geometric–Material Decomposition and the Role of CSF
+# Geometric-Material Decomposition and the Role of CSF
 
 ## 1. Classical Separation of Geometry and Material
 
