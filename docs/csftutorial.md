@@ -300,7 +300,7 @@ This prints:
 
 ---
 
-## 6. Tutorials (one per main action)
+## 6. One per main action
 
 Each tutorial includes:
 - concept
