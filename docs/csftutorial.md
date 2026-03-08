@@ -337,7 +337,7 @@ CSF_ACTIONS:
     - section_selected_analysis:
         stations: [z_list]
         output: [stdout, out/selected.csv, out/selected.txt]
-        properties: [A, Cx, Cy, Ix, Iy, J]
+        properties: [A,Cx,Ix,Iy,Ip,I1,I2,Cy,rx,ry,Ixy,Wx,Wy,K_torsion,Q_na,J_sv_cell,J_sv_wall,J_s_vroark,J_s_vroark_fidelity]
         params:
           fmt_display: ".12f"
 ```
