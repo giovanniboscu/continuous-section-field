@@ -21,9 +21,9 @@ After the installation, create your case folder structure (outside or inside the
 
 ```text
 mkdir mycase
-cd my_case
+cd mycase
 
-my_case/
+mycase/
   geometry.yaml
   actions.yaml
   out/                # create this folder yourself
