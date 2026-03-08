@@ -6,11 +6,13 @@ CSF_ACTIONS:
     station_3pt:   [0.0, 2.5, 5.0]
 
   actions:
-    - section_full_analysis:
-        stations: [station_3pt]
-        output: [stdout, out/full.csv]
-        params:
-          fmt_display: ".6g"
+    - section_selected_analysis:
+        stations: station_3pt
+        output:
+          - stdout
+          - out/rectangle.csv
+          - out/rectangle.txt
+        properties: [A, Cx, Cy, Ix, Iy]
 
     - plot_section_2d:
         stations: [station_3pt]
@@ -32,4 +34,4 @@ CSF_ACTIONS:
     - plot_volume_3d:
           params:
             line_percent: 100.0
-            title: "Ruled volume"          
+            title: "Ruled volume"    
