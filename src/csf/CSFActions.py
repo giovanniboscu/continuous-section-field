@@ -118,6 +118,8 @@ try:
         write_opensees_geometry,
         write_sap2000_template_pack,
         polygon_surface_w1_inners0,
+        volume_polygon_list_report_data,
+        emit_volume_polygon_list_report,
     )
 except Exception:
     # If imports fail, we keep them as None and emit a friendly error later.
@@ -128,7 +130,11 @@ except Exception:
     Visualizer = None  # type: ignore
     safe_evaluate_weight_zrelative = None  # type: ignore
     write_opensees_geometry = None  # type: ignore
+    write_sap2000_template_pack = None  # type: ignore
     polygon_surface_w1_inners0 = None  # type: ignore
+    volume_polygon_list_report_data = None  # type: ignore
+    emit_volume_polygon_list_report = None  # type: ignore
+
  # type: ignore
 
 try:
@@ -694,6 +700,7 @@ def register_action(spec: ActionSpec, runner: Any) -> None:
 #
 # NOTE: These are the keys requested by the user spec, not necessarily every key
 # that might exist internally.
+
 PLOT_PROPERTIES_ALLOWED = (
     "A",
     "Cx",
@@ -714,6 +721,7 @@ PLOT_PROPERTIES_ALLOWED = (
     "J_sv_cell",
     "J_s_vroark",
     "J_s_vroark_fidelity",
+    "geometry"
 )
 
 
@@ -2372,7 +2380,7 @@ def _ensure_analysis_imports_or_error(
     return ok
 
 
-def _run_action_section_full_analysis(
+def _run_action_section_full_analysis2remove(
     field: Any,
     stations_map: Dict[str, List[float]],
     action: Dict[str, Any],
@@ -2393,6 +2401,7 @@ def _run_action_section_full_analysis(
     keys: List[str]
     if section_full_analysis_keys is not None:
         keys = list(section_full_analysis_keys())
+
     else:
         # fallback: will infer from first dict
         keys = []
@@ -2401,7 +2410,7 @@ def _run_action_section_full_analysis(
 
     # We'll build text reports (for non-CSV file outputs)
     report_blocks: List[str] = []
-
+    '''
     for z in z_list:
         sec = field.section(float(z))
         full = section_full_analysis(sec)
@@ -2409,7 +2418,7 @@ def _run_action_section_full_analysis(
         # Prepare a report block (text) by capturing stdout from section_print_analysis
         buf = io.StringIO()
         with redirect_stdout(buf):
-            print(f"\n### SECTION FULL ANALYSIS @ z = {float(z)} ###")
+            print(f"\n## SSECTION FULL ANALYSIS @ z = {float(z)} ###")
             section_print_analysis(full, fmt=fmt)
 
         report_text = buf.getvalue()
@@ -2423,7 +2432,7 @@ def _run_action_section_full_analysis(
         for k in keys:
             row[k] = full.get(k)
         rows.append(row)
-
+    
     # Output routing
     outputs = action["output"]
 
@@ -2456,7 +2465,7 @@ def _run_action_section_full_analysis(
                     if not blk.endswith("\n"):
                         f.write("\n")
 
-
+    '''    
 
 
 # [migrated] write_opensees_geometry runner moved to actions/write_opensees_geometry.py
@@ -2466,7 +2475,7 @@ def _run_action_section_full_analysis(
 
 
 
-def show_per_label(label):
+def show_per_label2remove(label):
     print(f"Label to show '{label}'")
     for num in plt.get_fignums():
         fig = plt.figure(num)
@@ -2478,7 +2487,7 @@ def show_per_label(label):
     print(f"Label '{label}' not found")
     return False
 
-def _run_action_plot_properties(
+def _run_action_plot_properties2remove(
     field: Any,
     stations_map: Dict[str, List[float]],
     action: Dict[str, Any],
@@ -2625,7 +2634,7 @@ def _run_action_plot_properties(
         want_show_2d = "yes"
 
 
-def _run_action_plot_weight(
+def _run_action_plot_weight2remove(
     field: Any,
     stations_map: Dict[str, List[float]],
     action: Dict[str, Any],
@@ -2820,7 +2829,7 @@ def _load_actions() -> None:
         return _runner
 
     # Explicit registrations for the current monolithic baseline.
-    register_action(ACTION_SPECS["section_full_analysis"], _wrap_no_debug(_run_action_section_full_analysis))
+    #register_action(ACTION_SPECS["section_full_analysis"], _wrap_no_debug(_run_action_section_full_analysis))
 
     # section_selected_analysis action migrated to actions/section_selected_analysis.py (explicit registration; no side effects).
     from .actions.section_selected_analysis import register as register_section_selected_analysis
@@ -2851,6 +2860,8 @@ def _load_actions() -> None:
         polygon_surface_w1_inners0=polygon_surface_w1_inners0,
         csf_weight_catalog_by_pair=csf_weight_catalog_by_pair,
         csf_weights_by_pair_at_z=csf_weights_by_pair_at_z,
+        volume_polygon_list_report_data=volume_polygon_list_report_data,
+        emit_volume_polygon_list_report=emit_volume_polygon_list_report,
     )
     # export_yaml action migrated to actions/export_yaml.py (explicit registration; no side effects).
     from .actions.export_yaml import register as register_export_yaml  # local import to avoid import cycles

@@ -21,16 +21,19 @@ from .section_field import (
     write_opensees_geometry,
     section_full_analysis_keys,
     section_print_analysis,
+    section_geometry,
     safe_evaluate_weight_zrelative,
     write_sap2000_geometry,
     write_sap2000_template_pack,
     plot_section_variation,
     polygon_area_centroid,
     list_polygons_with_contents,
-    polygon_surface_w1_inners0
+    polygon_surface_w1_inners0,
+    volume_polygon_list_report,
+    export_polygon_vertices_csv
 )
 
-# Questa è la lista fondamentale per "from csf import *"
+# 
 __all__ = [
     "Pt",
     "Polygon",
@@ -40,6 +43,7 @@ __all__ = [
     "section_derived_properties",
     "section_full_analysis",
     "section_stiffness_matrix",
+    "section_geometry",
     "section_statical_moment_partial",
     "polygon_inertia_about_origin",
     "polygon_statical_moment",
@@ -51,4 +55,6 @@ __all__ = [
     "polygon_area_centroid",
     "list_polygons_with_contents",
     "polygon_surface_w1_inners0",
+    "volume_polygon_list_report",
+    "export_polygon_vertices_csv"
 ]

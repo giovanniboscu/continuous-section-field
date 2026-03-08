@@ -63,6 +63,52 @@ class CSFStacked:
     def append(self, field: ContinuousSectionField) -> None:
         """
         Append one pre-built ContinuousSectionField to the stack.
+        ...
+        """
+        try:
+            new_z_start = float(field.s0.z)
+            new_z_end = float(field.s1.z)
+        except Exception as e:
+            raise RuntimeError(
+                f"CSFStacked.append failed while reading incoming field bounds: {e}"
+            ) from e
+
+        if new_z_end <= new_z_start:
+            raise ValueError(
+                f"Invalid field bounds: z_end ({new_z_end}) must be > z_start ({new_z_start})."
+            )
+
+        if self.segments:
+            previous_segment = self.segments[-1]
+            previous_z_end = float(previous_segment.z_end)
+            z_gap = new_z_start - previous_z_end
+
+            if z_gap < -self.eps_z:
+                raise ValueError(
+                    "Non-contiguous stack append: overlap or wrong order detected. "
+                    f"Previous segment '{previous_segment.tag}' ends at z={previous_z_end}, "
+                    f"new segment starts at z={new_z_start}, eps_z={self.eps_z}."
+                )
+
+            if z_gap > self.eps_z:
+                raise ValueError(
+                    "Non-contiguous stack append: gap detected. "
+                    f"Previous segment '{previous_segment.tag}' ends at z={previous_z_end}, "
+                    f"new segment starts at z={new_z_start}, gap={z_gap}, eps_z={self.eps_z}."
+                )
+
+        new_segment = StackSegment(
+            tag=f"seg_{len(self.segments)}",
+            z_start=new_z_start,
+            z_end=new_z_end,
+            field=field,
+        )
+        self.segments.append(new_segment)
+
+
+    def append2(self, field: ContinuousSectionField) -> None:
+        """
+        Append one pre-built ContinuousSectionField to the stack.
 
         Stacking contract (strict, no hidden reordering):
         - The new segment must have valid local bounds (z_end > z_start).

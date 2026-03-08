@@ -13,8 +13,11 @@ import io
 from contextlib import redirect_stdout
 from pathlib import Path
 from typing import Any, Dict, List
-
 import numpy as np
+from csf import (
+    Pt, Polygon, Section, ContinuousSectionField, Visualizer,section_geometry,export_polygon_vertices_csv,
+    section_full_analysis, section_print_analysis, section_full_analysis_keys
+)
 
 
 # -----------------------------------------------------------------------------
@@ -40,7 +43,7 @@ _ALLOWED_KEYS_MEANING: Dict[str, str] = {
     "J_sv_wall": "Saint-Venant torsional constant for open thin-walled walls",
     "J_sv_cell": "Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)",
     "J_s_vroark": "Roark torsional indicator (equivalent-rectangle mapping)",
-    "J_s_vroark_fidelity": "Fidelity / reliability indicator"
+    "J_s_vroark_fidelity": "Fidelity / reliability indicator",
 }
 
 
@@ -114,6 +117,7 @@ def register(
     ) -> None:
         """Execute section_selected_analysis action."""
 
+
         params = action.get("params", {}) or {}
 
         # ---------------------------------------------------------------------
@@ -133,16 +137,17 @@ def register(
             # SPEC.params is a tuple: [torsion_alpha_sv, fmt_display]
             ffmt = SPEC.params[0].default
 
+        
+        geometry_out = False
         # Selected property keys
         props: List[str] = list(action.get("properties", []) or [])
+        # geometry out is required
+        if "geometry" in props:
+            geometry_out = True
         if not props:
             raise RuntimeError("section_selected_analysis: 'properties' must be a non-empty list of keys.")
 
-        # ---------------------------------------------------------------------
-        # No Conditional requirement Normalised value
-        # ---------------------------------------------------------------------
-        #torsion_alpha_sv=1
-
+        props = [k for k in props if str(k).strip().lower() != "geometry"]
 
         # Duplicate property keys are allowed; we emit a warning and keep them.
         if len(props) != len(set(props)):
@@ -161,6 +166,7 @@ def register(
         z_list = expand_station_names(stations_map, action["stations"])
 
         rows: List[Dict[str, Any]] = []
+
         report_blocks: List[str] = []
 
         def _format_value(v: Any) -> str:
@@ -172,44 +178,34 @@ def register(
                 except Exception:
                     return str(v)
             return str(v)
-
+        
         for z in z_list:
+            
             sec = field.section(float(z))
-
             # Compute the full analysis dictionary (single source of truth),
             # then filter (and optionally override J_sv based on torsion_alpha_sv).
             full = section_full_analysis(sec)
 
             # If the user requests 'J_sv', enforce the explicit alpha policy.
-            '''
-            if "J_sv" in props:
-                ix = full.get("Ix")
-                iy = full.get("Iy")
-                if ix is None or iy is None:
-                    raise RuntimeError(
-                        "section_selected_analysis: cannot compute 'J_sv' because 'Ix' and/or 'Iy' "
-                        "are missing from section_full_analysis output."
-                    )
-                full["J_sv"] = torsion_alpha_sv * (float(ix) + float(iy))
-            '''
             buf = io.StringIO()
             with redirect_stdout(buf):
-                print(f"\n### SECTION SELECTED ANALYSIS @ z = {float(z)} ###")
-                #print(f"torsion_alpha_sv     : {_format_value(torsion_alpha_sv)}  [Solid J_sv scaling factor]")
+                if props:
+                    print(f"### SECTION SELECTED ANALYSIS @ z = {float(z)} ###")
                 for k in props:
                     meaning = _ALLOWED_KEYS_MEANING.get(k, "Unknown key (not documented)")
                     print(f"{k:20s}: {_format_value(full.get(k))}  [{meaning}]")
-
+                if geometry_out:                     
+                    export_polygon_vertices_csv(section=sec, field=field, zpos=None,fmt=fmt)
+                    
             report_text = buf.getvalue()
             report_blocks.append(report_text)
-
-            # Always carry torsion_alpha_sv in the row for traceability.
-            #row = {"z": float(z), "torsion_alpha_sv": torsion_alpha_sv}
-            row = {"z": float(z)}
-            for k in props:
-                row[k] = full.get(k)
-            rows.append(row)
-
+            
+            if props:
+                row = {"z": float(z)}
+                for k in props:                
+                    row[k] = full.get(k)
+                rows.append(row)
+        
         # ---------------------------------------------------------------------
         # Output routing
         # ---------------------------------------------------------------------
@@ -223,7 +219,7 @@ def register(
             else:
                 flat_outputs.append(outp)
 
-        for outp in flat_outputs:
+        for outp in flat_outputs:            
             if outp == "stdout":
                 for blk in report_blocks:
                     print(blk, end="" if blk.endswith("\n") else "\n")
@@ -232,21 +228,40 @@ def register(
             p = Path(outp)
             if not p.parent.exists():
                 raise RuntimeError(f"Output directory does not exist: {p.parent}")
-
+            
             if p.suffix.lower() == ".csv":
-                fieldnames = ["z"] + props
+                if props:
+                    fieldnames = ["z"] + props
+                else:
+                    fieldnames =""
                 with open(p, "w", newline="", encoding="utf-8") as f:
+                    
                     w = csv.DictWriter(f, fieldnames=fieldnames)
-                    w.writeheader()
-                    for r in rows:
-                        r_csv = {k: _format_value(r.get(k)) for k in fieldnames}
-                        w.writerow(r_csv)
+                    if props:
+                        w.writeheader()
+                        for r in rows:
+                            r_csv = {k: _format_value(r.get(k)) for k in fieldnames}
+                            w.writerow(r_csv)
+                                                    
+                        # --- Append polygon-vertices CSV after the main table -------------------
+                        f.write("\n")  # separator line between the two CSV blocks
+                    if geometry_out: 
+                        for z in z_list:
+                            sec = field.section(float(z))
+                            export_polygon_vertices_csv(
+                                section=sec,          # or section=None if you want to use field+zpos
+                                field=field,          # or field=field
+                                zpos=None,            # or zpos=z
+                                put=lambda s: f.write(s + "\n"),
+                                fmt=fmt
+                            )
             else:
                 with open(p, "w", encoding="utf-8") as f:
                     for blk in report_blocks:
                         f.write(blk)
                         if not blk.endswith("\n"):
                             f.write("\n")
+
 
     # Register in the hub registry (single source of truth).
     register_action(SPEC, RUN)

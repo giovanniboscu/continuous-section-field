@@ -29,7 +29,8 @@ import re
 from datetime import datetime
 from typing import overload, Union, Literal
 from pathlib import Path
-
+import io
+from contextlib import redirect_stdout
 
 #
 # Your current implementation uses a "strict proper intersection" test:
@@ -893,7 +894,7 @@ def print_evaluation_report(value: float, report: dict):
     Designed for maximum visual impact and traceability.
     """
     # 1. Icons and Styling
-    icons = {"SUCCESS": "🟢", "WARNING": "🟡", "ERROR": "🔴"}
+    icons = {"SUCCESS": "OK", "WARNING": "WW", "ERROR": "KO"}
     icon = icons.get(report["status"], "⚪")
     bw = 72  # Reference width for horizontal lines
     
@@ -935,6 +936,19 @@ def print_evaluation_report(value: float, report: dict):
     print(" " * (bw - len(timestamp_str)) + timestamp_str)
     print("═" * bw + "\n")
 
+def execute_string_to_float(code_string, x_value):
+    # 1. Create a workspace (namespace) for exec to run in
+    # We prepopulate it with 'x' so the string can use it for calculations
+    workspace = {"x": x_value}
+    
+    # 2. Execute the string of code
+    # The string is expected to store the final calculation in a variable named 'risultato'
+    # globals is kept empty {}, and workspace acts as the local namespace
+    exec(code_string, {}, workspace)
+    
+    # 3. Extract the value from the workspace
+    # We use .get() to avoid an error if 'risultato' is missing, then cast to float
+    final_number = float(workspace.get("output", 0.0))
 
 
 def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float, z1: float, zt: float) -> float:
@@ -1005,11 +1019,70 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
         "T_lookup": T_lookup    # File-based data lookup
     }
 
+
+    # Define minimal safe builtins
+    SAFE_BUILTINS = {
+    # numeric / conversion
+        "int": int,
+        "float": float,
+        "bool": bool,
+        "min": min,
+        "max": max,
+        "abs": abs,
+        "round": round,
+        "sum": sum,
+        "pow": pow,
+
+        # collections / iteration helpers
+        "len": len,
+        "range": range,
+        "sorted": sorted,
+        "enumerate": enumerate,
+        "zip": zip,
+        "list": list,
+        "tuple": tuple,
+        "dict": dict,
+        "set": set,
+
+        # logic
+        "any": any,
+        "all": all,
+    }
+
     # 6. Execute evaluation in a clean sandbox
     # We disable __builtins__ for safety to ensure only provided tools are used.
-
-    return float(eval(formula, {"__builtins__": {}}, context))
-
+    return float(eval(formula, {"__builtins__": SAFE_BUILTINS}, context))
+ 
+def execute_string_to_float(code_string, z_val, t_val):
+    """
+    Executes a Python procedure from a string and returns a float.
+    Uses 'z' and 't' as input variables.
+    """
+    
+    # 1. THE BRIDGE (Workspace)
+    # Here we map your numbers to the names 'z' and 't'
+    # These are the only variables the string will "see"
+    workspace = {
+        "z": z_val, 
+        "t": t_val,
+        "math": math
+    }
+    
+    try:
+        # 2. THE EXECUTION
+        exec(code_string, {}, workspace)
+        
+        # 3. THE RETRIEVAL
+        # The code string MUST save the final result in 'output'
+        if "output" not in workspace:
+            raise NameError("Error: The variable 'output' is missing in your string!")
+        
+        return float(workspace["output"])
+        
+    except Exception as e:
+        print(f"--- ERROR IN YOUR CODE STRING ---")
+        print(f"Details: {e}")
+        raise
 
 '''
 def t_lookup(filename: str, t: float) -> float:
@@ -1083,6 +1156,27 @@ def evaluate_weight_formula_zrelative( formula: str, p0: Polygon, p1: Polygon, z
         '''
         zabsolute = z0+z
         return evaluate_weight_formula( formula, p0, p1, z0,z1, zabsolute)
+
+def section_geometry(section: Section, fmt=".8f"):
+    """
+    Prints the section structure keeping the original table layout.
+    Uses 'fmt' for all vertex coordinates.
+    """
+    # print(f"DEBUG section_print_geometry {section}")
+    print(f"--- SECTION DETAILS (z={section.z}) ---")
+    
+    # Original Header
+    print(f"{'Name':<12} | {'Weight':<10} | {'N. Vertices':<10} | {'Coordinates':<30}")
+    print("-" * 100)
+    
+    for poly in section.polygons:
+        # We apply the explicit 'fmt' to EVERY vertex in the polygon
+        # This creates a single string with all points formatted as requested
+        v_coords = ", ".join([f"({format(v.x, fmt)}, {format(v.y, fmt)})" for v in poly.vertices])
+            
+        # Print using your exact original column widths
+        print(f"{poly.name:<12} | {poly.weight:<10.2f} | {len(poly.vertices):<10} | {v_coords}")
+
 
 
 
@@ -1406,238 +1500,6 @@ def write_opensees_geometry(
 
     except OSError as e:
         print(f"[ERROR] Could not write '{filename}': {e}")
-        raise
-
-
-
-def write_opensees_geometry2(field, n_points, E_ref=2.1e11, nu=0.30, filename="geometry.tcl"):
-    """
-    Generate a CSF-style OpenSees "geometry.tcl" file that is meant to be READ AS DATA
-    (i.e., parsed line-by-line), not necessarily sourced as a Tcl script.
-
-    -------------------------------------------------------------------------------
-    KEY DESIGN GOALS / CONTRACT (why the file is written this way)
-    -------------------------------------------------------------------------------
-    1) No ambiguity in station placement:
-       - We explicitly write the exact CSF sampling stations as:
-            # CSF_Z_STATIONS: z0 z1 z2 ... zN-1
-         so any downstream builder can place stations exactly at those coordinates
-         without re-generating Lobatto points or assuming uniform spacing.
-
-    2) No "double counting" of stiffness:
-       - The file writes CONSTANT reference moduli (E_ref and G_ref).
-       - The section properties coming from `section_full_analysis(sec)` are assumed
-         ALREADY "CSF-weighted / modular" (e.g., accounting for holes, materials,
-         and CSF weights).
-       - Therefore OpenSees stiffness products become:
-            EA  = E_ref * A*
-            EIx = E_ref * Ix*
-            EIy = E_ref * Iy*
-         which matches Σ(E_i * property_i) when CSF weights are defined consistently
-         (e.g., weights normalized by E_ref).
-
-       IMPORTANT:
-       - This only makes sense if your CSF exporter intentionally encodes material
-         heterogeneity into the section properties (A*, Ix*, Iy*, ...).
-       - If instead geometry.tcl already contains physical E(z), G(z), then your
-         builder should use MATERIAL_INPUT_MODE="from_file" and properties should
-         be unweighted. That is a different contract.
-
-    3) Centroid tracking (tilt field):
-       - We export centroid offsets (Cx, Cy) at every station (if available).
-       - A downstream builder can reconstruct a centroid axis via rigid links.
-       - If Cx/Cy vary along the member, that implies geometric "tilt" / eccentricity
-         variation along z.
-
-    -------------------------------------------------------------------------------
-    WHAT THIS FUNCTION WRITES
-    -------------------------------------------------------------------------------
-    - Header comments (beam length, station count, export mode)
-    - # CSF_Z_STATIONS: exact station z coordinates (critical)
-    - Two "node" lines (legacy/template):
-         node 1 x(z0) y(z0) z0
-         node 2 x(z1) y(z1) z1
-      NOTE: these are derived by linear regression of Cx(z), Cy(z). Many builders
-      ignore these and build a clean reference axis instead.
-    - geomTransf Linear 1 1 0 0 (simple default orientation)
-    - One 'section Elastic' per station:
-         section Elastic tag E_ref A* Ix* Iy* G_ref J_placeholder Cx Cy
-    - A "TEMPLATE ONLY" hint for humans (not used by robust parsers/builders)
-
-    The goal is that changing ONLY `geometry.tcl` (stations + sections) is sufficient
-    to change the member description in downstream OpenSees / OpenSeesPy builders.
-    """
-
-    # ---------------------------------------------------------------------------
-    # 0) Member endpoints (in the same coordinate system used by CSF field)
-    # ---------------------------------------------------------------------------
-    z0 = field.s0.z
-    z1 = field.s1.z
-
-    # ---------------------------------------------------------------------------
-    # 1) The *actual* integration/sampling stations used by CSF.
-    #    Typically these are Gauss–Lobatto stations including the endpoints,
-    #    but we do NOT assume any formula here: we ask the field for them.
-    #
-    #    These z coordinates are written verbatim to "# CSF_Z_STATIONS:" so
-    #    downstream readers can be exact.
-    # ---------------------------------------------------------------------------
-    z_coords = field.get_opensees_integration_points(n_points)
-
-    # Lists used to store centroid offsets and section properties at each station
-    cx_list = []
-    cy_list = []
-    section_results = []
-
-    # ---------------------------------------------------------------------------
-    # 2) Cross-section analysis at each station.
-    #
-    #    `section_full_analysis(sec,alpha)` is assumed to return *already CSF-weighted*
-    #    properties (A, Ix, Iy, etc.), plus centroid offsets (Cx, Cy).
-    #
-    #    Expected keys (minimum):
-    #       - "A", "Ix", "Iy", "Cx", "Cy"
-    #    Optional keys might exist (torsion, shear areas, etc.); this writer
-    #    currently exports a placeholder J (see below).
-    # ---------------------------------------------------------------------------
-    for z in z_coords:
-        # Construct the cross-section object at coordinate z
-        sec = field.section(z)
-
-
-        # Perform section analysis (properties assumed to already incorporate CSF weights)
-        res = section_full_analysis(sec,alpha=0)#alpha not used
-
-        # Store centroid offsets for later regression and for writing into the file
-        cx_list.append(res["Cx"])
-        cy_list.append(res["Cy"])
-
-        # Store the full dictionary so we can write A/Ix/Iy/etc. later
-        section_results.append(res)
-
-    # ---------------------------------------------------------------------------
-    # 3) Linear regression for legacy/template end nodes.
-    #
-    #    Why do we do this?
-    #      - Some legacy workflows expect "node 1" and "node 2" to exist.
-    #      - We approximate a straight line passing through centroid offsets.
-    #
-    #    What is it used for?
-    #      - Only to write the two 'node' lines below.
-    #
-    #    What is it NOT used for?
-    #      - A robust OpenSees builder should rely on CSF_Z_STATIONS + (Cx,Cy)
-    #        per station and build its own reference/centroid axis.
-    # ---------------------------------------------------------------------------
-    m_y, q_y = np.polyfit(z_coords, cy_list, 1)
-    m_x, q_x = np.polyfit(z_coords, cx_list, 1)
-
-    # ---------------------------------------------------------------------------
-    # 4) Reference shear modulus for an isotropic material:
-    #
-    #       G_ref = E_ref / (2*(1+nu))
-    #
-    #    If you had a custom legacy formula (e.g., E_ref/2.6), you can swap it,
-    #    but do so knowingly because it directly changes shear stiffness (GA, GJ).
-    # ---------------------------------------------------------------------------
-    G_ref = E_ref / (2.0 * (1.0 + nu))
-
-    # ---------------------------------------------------------------------------
-    # 5) Torsional constant placeholder.
-    #
-    #    Many CSF pipelines either:
-    #      (a) do not export torsion, or
-    #      (b) export a station-wise torsion constant J(z).
-    #
-    #    If you have station-wise torsion, you should write it per station.
-    #    For now we keep a constant placeholder to preserve old behavior.
-    # ---------------------------------------------------------------------------
-    st_venant_j = 2.6247e-06
-
-    # ---------------------------------------------------------------------------
-    # 6) Write the file.
-    #
-    #    NOTE: This file is intended to be PARSED as data.
-    #    Downstream scripts should not assume this file is safe to 'source'.
-    # ---------------------------------------------------------------------------
-    try:
-        with open(filename, "w", encoding="utf-8") as f:
-            # ---- Header / metadata (comments only) ----
-            f.write("# OpenSees Geometry File - Generated by CSF Library\n")
-            f.write(f"# Beam Length: {z1 - z0:.3f} m | Int. Points: {n_points}\n")
-            f.write("# CSF_EXPORT_MODE: E=E_ref ; A/I are CSF-weighted (modular) properties\n\n")
-
-            # -------------------------------------------------------------------
-            # CRITICAL: explicit station coordinates used by CSF.
-            #
-            # This is the single most important line for reproducibility:
-            # it prevents any re-computation of points (Lobatto/uniform/etc.)
-            # and makes downstream verification exact.
-            # -------------------------------------------------------------------
-            f.write("# CSF_Z_STATIONS: " + " ".join(f"{float(z):.6f}" for z in z_coords) + "\n\n")
-
-            # -------------------------------------------------------------------
-            # Legacy/template nodes:
-            #
-            # These nodes are NOT required by robust builders.
-            # They are kept for human readability or old scripts that expect them.
-            #
-            # x(z) = m_x*z + q_x, y(z) = m_y*z + q_y are just the best-fit line
-            # through the centroid offsets. This does NOT preserve a curved axis.
-            # -------------------------------------------------------------------
-            f.write(f"node 1 {m_x * z0 + q_x:.6f} {m_y * z0 + q_y:.6f} {z0:.6f}\n")
-            f.write(f"node 2 {m_x * z1 + q_x:.6f} {m_y * z1 + q_y:.6f} {z1:.6f}\n\n")
-
-            # -------------------------------------------------------------------
-            # Transformation:
-            #
-            # We write a simple default orientation for the local x–z plane.
-            # Downstream tools may override / ignore this if they compute their
-            # own basis. Still, writing it keeps the file self-describing.
-            # -------------------------------------------------------------------
-            f.write("geomTransf Linear 1 1 0 0\n\n")
-
-            # -------------------------------------------------------------------
-            # Sections:
-            #
-            # One Elastic section per station.
-            #
-            # Format used by downstream parsers:
-            #   section Elastic tag E_ref A* Ix* Iy* G_ref J [Cx Cy]
-            #
-            # - tag:     station index + 1 (stable ordering)
-            # - E_ref:   constant reference modulus (may be overridden later)
-            # - A*:      CSF-weighted area at station
-            # - Ix*,Iy*: CSF-weighted bending inertias at station
-            # - G_ref:   constant reference shear modulus
-            # - J:       torsion placeholder (constant for now)
-            # - Cx,Cy:   centroid offsets at station (used for "tilt"/eccentricity)
-            # -------------------------------------------------------------------
-            for i, res in enumerate(section_results):
-                tag = i + 1
-
-                f.write(
-                    f"section Elastic {tag} {E_ref:.6e} {res['A']:.6e} "
-                    f"{res['Ix']:.6e} {res['Iy']:.6e} {G_ref:.6e} {st_venant_j:.6e} "
-                    f"{res['Cx']:.6f} {res['Cy']:.6f}\n"
-                )
-
-            # -------------------------------------------------------------------
-            # TEMPLATE ONLY (commented out):
-            #
-            # This is just a human hint. A robust builder should define its own
-            # beamIntegration/element blocks based on CSF_Z_STATIONS and the sections.
-            # -------------------------------------------------------------------
-            tag_str = " ".join(map(str, range(1, n_points + 1)))
-            f.write("\n# TEMPLATE ONLY (the Python builder defines the actual integration)\n")
-            f.write(f"# beamIntegration Lobatto 1 {tag_str} 1\n")
-            f.write("# element forceBeamColumn 1 1 2 1 1\n")
-
-        print(f"[SUCCESS] {filename} created correctly (CSF modular properties + centroid tracking).")
-        print(f"[INFO] Beam span: {z1 - z0:.3f} (units follow your model convention).")
-
-    except OSError as e:
-        print(f"[ERROR] Could not write geometry file '{filename}': {e}")
         raise
 
 
@@ -2475,7 +2337,9 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
         # No silent default for structural weight.
         w = float(getattr(p, "weight"))
+
         if abs(w) < EPS_A:
+            t=0
             continue
 
         xy = _xy_list(p)
@@ -2593,10 +2457,13 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
                     "compute_saint_venant_J_cell: no @cell polygon contributed; thickness t is undefined."
                 )
 
-        if len(cell_polys) == 1:
-            return J_total, t
-        else:
-            return J_total
+    if len(cell_polys) == 1:
+        
+        return J_total, t
+    
+    else:
+        
+        return J_total
 
 #----------------------------------------------------------------------------
 
@@ -2674,25 +2541,6 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
     float
         Effective Saint-Venant torsional constant J_sv [m^4].
     """
-    token_wall = "@WALL"
-    token_t = "@t="
-
-    polys = getattr(section, "polygons", None)
-    if not polys:
-        return 0.0
-
-    # -----------------------------
-    # 0) Select wall polygons
-    # -----------------------------
-    wall_polys = []
-    for p in polys:
-        nm = str(getattr(p, "name", "") or "")
-        if token_wall.lower() in nm.lower():
-            wall_polys.append(p)
-    # No "@WALL" anywhere exit
-    if not wall_polys:
-        return 0.0 
-    
     # -----------------------------
     # 1) Geometry helpers
     # -----------------------------
@@ -2712,6 +2560,7 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
             dy = float(verts[j].y) - float(verts[i].y)
             perim += (dx * dx + dy * dy) ** 0.5
         return perim
+    
 
     # -----------------------------
     # 2) Parse optional "@t=<...>"
@@ -2763,23 +2612,51 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
 
         return tval
 
+    
+    token_wall = "@WALL"
+    token_t = "@t="
+
+    polys = getattr(section, "polygons", None)
+    if not polys:
+        return 0.0
+
     # -----------------------------
-    # 3) Compute J_sv (open thin-walled)
+    # 0) Select wall polygons
     # -----------------------------
+    wall_polys = []
+    for p in polys:
+        nm = str(getattr(p, "name", "") or "")
+        if token_wall.lower() in nm.lower():
+            wall_polys.append(p)
+
+    # No "@WALL" anywhere exit
+    #if not wall_polys:
+    #    return 0.0 
+    
+    # -----------------------------
+    # 3) Compute J_sv_wall (open thin-walled)
+    # -----------------------------
+
     J = 0.0
     n_wall_used = 0 
-    for p in wall_polys:
-        w = float(getattr(p, "weight"))
-        if abs(w) < EPS_A:
-            continue
 
+    for p in wall_polys:
+        
+        w = float(getattr(p, "weight"))
+        
+        if abs(w) < EPS_A:
+            t=0            
+            continue
+        
         A = _poly_area_abs(p)
         if A < EPS_A:
+            t=0
             continue
-
+        
         nm = str(getattr(p, "name", "") or "")
         t_override = _parse_thickness_from_name(nm)
         t_source = "?"
+        
         if t_override is not None:
             t = float(t_override)
             t_source = "@t"
@@ -2792,7 +2669,7 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
             t_source = "2A/P"
         if t < EPS_L:
             continue
-
+        
         # Use A ≈ b*t to avoid explicit midline computation:
         # b ≈ A/t, so J_i ≈ (A/t)*t^3/3 = A*t^2/3
         J_i = (A * (t ** 2)) / 3.0
@@ -2801,7 +2678,9 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
 
 
         P_dbg = _poly_perimeter(p)
+
         b_est = (A / t) if t > EPS_L else 0.0
+        
         '''
         print(
             f"[J_WALL] nm={nm}  A={A:.6f}  P={P_dbg:.6f}  t={t:.6f} ({t_source})  "
@@ -2811,7 +2690,6 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
 
         # Keep torsional stiffness non-negative
         J += w * J_i
-
     if len(wall_polys) == 1:
         return float(J),t
     else:
@@ -3048,108 +2926,6 @@ def _solve_poisson_sor(
     return psi
 
 
-def _torsion_J_from_psi2remove(psi: np.ndarray, mask: np.ndarray, h: float) -> float:
-    """Discrete J ≈ 2 Σ ψ h^2 over inside nodes."""
-    h2 = h * h
-    return 2.0 * float(np.sum(psi[mask]) * h2)
-
-
-def _compute_J_solid_polygon_grid2remove(
-    verts: Sequence[PointXY],
-    *,
-    grid_h: float,
-    pad: float,
-    eps_l: float,
-    max_iter: int,
-    tol: float,
-    omega: float,
-    max_grid_nodes: int
-) -> float:
-    """Compute J for ONE polygon as a solid filled domain."""
-    if grid_h <= 0.0:
-        raise ValueError("grid_h must be > 0.")
-
-    x0, y0, x1, y1 = _bbox_xy(verts)
-
-    x0 = x0 - pad
-    y0 = y0 - pad
-    x1 = x1 + pad
-    y1 = y1 + pad
-
-    xs = np.arange(x0, x1 + 0.5 * grid_h, grid_h, dtype=float)
-    ys = np.arange(y0, y1 + 0.5 * grid_h, grid_h, dtype=float)
-
-    nx = int(xs.size)
-    ny = int(ys.size)
-    nodes = nx * ny
-    if nodes > int(max_grid_nodes):
-        raise ValueError(
-            "Grid too large for this polygon at the requested resolution. "
-            "Increase grid_h or reduce auto_n, or raise max_grid_nodes explicitly."
-        )
-
-    if nx < 3 or ny < 3:
-        raise ValueError("Grid too coarse for this polygon bounding box. Decrease grid_h.")
-
-    mask = _build_inside_mask(verts, xs, ys, eps_l)
-
-    if not np.any(mask):
-        raise ValueError("No interior grid nodes detected. Decrease grid_h or check polygon scale.")
-
-    psi = _solve_poisson_sor(mask, grid_h, max_iter=max_iter, tol=tol, omega=omega)
-    return _torsion_J_from_psi(psi, mask, grid_h)
-
-
-
-#----------------------------------------------------------------------------------------------------------------------------------------------
-
-
-def alpha_from_keys(
-    A: float,
-    J: float,
-    I1: float,
-    I2: float,
-    K_torsion: float | None = None,
-) -> float:
-    """
-    Return alpha for the approximation J_SV ≈ alpha * J_p, with J_p = J (= Ix + Iy).
-
-    Two modes:
-    1) If K_torsion is provided, interpret it as an available estimate of J_SV and return:
-           alpha = K_torsion / J
-    2) Otherwise, assume a compact "rectangle-like" section and compute alpha from a
-       rectangle-equivalent approximation based on A, I1, I2, J.
-
-    No abs(), no sign normalization. Caller must ensure inputs make sense.
-
-
-    """
-
-
-    if J == 0.0:
-        raise ValueError("J must be non-zero.")
-
-    if K_torsion is not None:
-        return K_torsion / J
-
-    if I1 == 0.0 or I2 == 0.0:
-        raise ValueError("I1 and I2 must be non-zero for the rectangle-equivalent mode.")
-
-    # Ensure r >= 1 by swapping if needed (no abs involved).
-    if I2 > I1:
-        I1, I2 = I2, I1
-
-    r = math.sqrt(I1 / I2)  # r >= 1
-    if r == 0.0:
-        raise ValueError("Invalid I1/I2 ratio.")
-
-    # Rectangle-equivalent torsion approximation:
-    # J_SV,rect ≈ (A^2 / (3 r)) * (1 - 0.63/r + 0.052/r^5)
-    J_sv_rect = (A * A) / (3.0 * r) * (1.0 - 0.63 / r + 0.052 / (r**5))
-    alpha = J_sv_rect / J
-    return alpha
-
-
 
 
 def _sq(x: float) -> float:
@@ -3205,185 +2981,12 @@ def _signed_area_centroid_xy(
 def _poly_signed_area_centroid_xy(verts: Sequence[PointXY]) -> Tuple[float, float, float]:#qui
     return _signed_area_centroid_xy(verts)
 
-def _poly_inertia_about_origin_xy2remove(verts: Sequence[PointXY]) -> Tuple[float, float, float]:
-    """
-    Second moments about the origin (0,0) using standard polygon formulas.
 
-    Returns
-    -------
-    (Ix_o, Iy_o, Ixy_o)
-        About origin, signed consistently with the polygon winding.
-    """
-    n = len(verts)
-    if n < 3:
-        raise ValueError("Polygon has <3 vertices.")
-
-    Ix = 0.0
-    Iy = 0.0
-    Ixy = 0.0
-
-    for i in range(n):
-        x0, y0 = verts[i]
-        x1, y1 = verts[(i + 1) % n]
-        cross = x0 * y1 - x1 * y0
-
-        Ix += (y0 * y0 + y0 * y1 + y1 * y1) * cross
-        Iy += (x0 * x0 + x0 * x1 + x1 * x1) * cross
-        Ixy += (x0 * y1 + 2.0 * x0 * y0 + 2.0 * x1 * y1 + x1 * y0) * cross
-
-    Ix *= (1.0 / 12.0)
-    Iy *= (1.0 / 12.0)
-    Ixy *= (1.0 / 24.0)
-    return Ix, Iy, Ixy
-
-
-def _section_polar_moment_fallback2remove(section: Any, eps_a: float) -> float:
-    """
-    Compute the weighted polar second moment J_p = Ix + Iy about the *weighted* centroid.
-
-    This is a pure-geometry fallback used only if `section_properties(section)` is not available.
-
-    Important:
-    - No "fixing" of winding is performed.
-    - Polygon weights are applied as linear scalars to (A, Ix, Iy, Ixy).
-    """
-    polys = getattr(section, "polygons", None)
-    if polys is None:
-        raise ValueError("Input 'section' has no .polygons attribute.")
-
-    # First pass: weighted area and centroid
-    A_tot = 0.0
-    Qx = 0.0
-    Qy = 0.0
-
-    cache: List[Tuple[Sequence[PointXY], float, float, float, float]] = []
-    # cache item: (verts_xy, w, A, Cx, Cy)
-
-    for p in polys:
-        if not hasattr(p, "weight"):
-            raise ValueError(f"Polygon '{getattr(p, 'name', None)}' has no .weight attribute.")
-        w = float(getattr(p, "weight"))
-
-        verts_obj = getattr(p, "vertices", None)
-        if not verts_obj:
-            raise ValueError(f"Polygon '{getattr(p, 'name', None)}' has no .vertices.")
-        verts_xy = [(float(v.x), float(v.y)) for v in verts_obj]
-
-        A, Cx, Cy = _poly_signed_area_centroid_xy(verts_xy)
-        Aw = w * A
-        A_tot += Aw
-        Qx += Aw * Cx
-        Qy += Aw * Cy
-
-        cache.append((verts_xy, w, A, Cx, Cy))
-
-    if _is_near_zero(A_tot, eps_a):
-        raise ValueError("Composite area is ~0; cannot compute section centroid/properties reliably.")
-
-    Cx_tot = Qx / A_tot
-    Cy_tot = Qy / A_tot
-
-    # Second pass: weighted inertias about origin, then shift to composite centroid
-    Ix_o = 0.0
-    Iy_o = 0.0
-    Ixy_o = 0.0
-
-    for verts_xy, w, _, _, _ in cache:
-        ix, iy, ixy = _poly_inertia_about_origin_xy(verts_xy)
-        Ix_o += w * ix
-        Iy_o += w * iy
-        Ixy_o += w * ixy
-
-    # Parallel axis theorem to composite centroid
-    Ix_c = Ix_o - A_tot * (Cy_tot * Cy_tot)
-    Iy_c = Iy_o - A_tot * (Cx_tot * Cx_tot)
-    # Ixy_c not needed for J_p, but kept here as a reminder:
-    # Ixy_c = Ixy_o - A_tot * (Cx_tot * Cy_tot)
-
-    return Ix_c + Iy_c
 
 
 # -----------------------------------------------------------------------------
 # Public API
 # -----------------------------------------------------------------------------
-
-def compute_saint_venant_J2remove(
-    section: Any,
-    alpha: float = 1,
-    *,
-    eps_a: Optional[float] = None,
-) -> float:
-
-    """
-    Approximate Saint-Venant torsional constant for a (possibly composite) section.
-
-    Formula
-    -------
-        J_sv ≈ alpha * J_p
-        J_p  = I_x + I_y  (about the centroid)
-
-    Parameters
-    ----------
-    section:
-        Section-like object with .polygons.
-    alpha:
-        Shape factor. Default 1
-        Set alpha=1.0 to match a solid circle.
-    eps_a:
-        Area tolerance used only for degeneracy checks in the fallback path.
-        If None, we try to read EPS_A from `section` or `section.field`.
-        If neither exists, eps_a defaults to 0.0 (exact zero check).
-
-    Behavior
-    --------
-    1) If a callable `section_properties` symbol exists in the current namespace,
-       it is used as the primary source of centroidal inertias (fast and consistent).
-       Expected keys:
-         - either 'Ip' (polar moment) OR both 'Ix' and 'Iy' (centroidal).
-    2) Otherwise, a pure-geometry fallback computes J_p directly.
-
-    Notes
-    -----
-    - This function never iterates a solver and cannot "hang".
-    - No attempt is made to interpret convexity, holes, or topology.
-      The result is exactly as "blind" as alpha * (Ix+Iy) can be.
-    """
-    # Resolve eps_a (only used in fallback degeneracy checks).
-    if eps_a is None:
-        eps_val = None
-        if hasattr(section, "EPS_A"):
-            try:
-                eps_val = float(getattr(section, "EPS_A"))
-            except Exception:
-                eps_val = None
-        if eps_val is None:
-            fld = getattr(section, "field", None)
-            if fld is not None and hasattr(fld, "EPS_A"):
-                try:
-                    eps_val = float(getattr(fld, "EPS_A"))
-                except Exception:
-                    eps_val = None
-        eps_a_val = float(eps_val) if eps_val is not None else 0.0
-    else:
-        eps_a_val = float(eps_a)
-
-    # Primary path: rely on existing CSF section_properties if present.
-    sp = globals().get("section_properties", None)
-    if callable(sp):
-        props = sp(section)
-        if isinstance(props, dict):
-            if "Ip" in props:
-                Jp = float(props["Ip"])
-            elif ("Ix" in props) and ("Iy" in props):
-                Jp = float(props["Ix"]) + float(props["Iy"])
-            else:
-                raise ValueError("section_properties(section) did not provide 'Ip' nor ('Ix','Iy').")
-        else:
-            raise ValueError("section_properties(section) did not return a dict-like object.")
-    else:
-        # Fallback path: compute J_p directly from polygon geometry.
-        Jp = _section_polar_moment_fallback(section, eps_a_val)
-    return float(alpha) * float(Jp)
 
 
 ##############################################################################################################################################à
@@ -3556,6 +3159,342 @@ def polygon_inertia_about_origin(poly: Polygon) -> Tuple[float, float, float]:
     # For typical usage, we want weighted contributions. We take absolute values of Ix/Iy if polygon orientation flips.
     # Using signed formulas + abs for Ix/Iy tends to be robust for mixed orientations in prototypes.
     return (poly.weight * Ix, poly.weight * Iy, poly.weight * Ixy)
+
+# -----------------------------------------------------------------------------
+# Volume polygon-list report helpers (reuses integrate_volume; no local integration)
+# -----------------------------------------------------------------------------
+
+
+def volume_polygon_list_report_data(
+    field: "ContinuousSectionField",
+    z1: float,
+    z2: float,
+    n_points: int = 20,
+    *,
+    do_debug_check: bool = False,
+    debug_tol: float = 1e-9,
+) -> Dict[str, Any]:
+    """
+    Build per-polygon volume report data between two stations.
+
+    Design rules
+    ------------
+    - Volumes are computed ONLY via integrate_volume(...).
+    - Descriptive columns (names, weights at endpoints, law labels) are obtained
+      from field.inspect_section_entities(z).
+    - No additional validation/assumptions are introduced here; CSF preconditions
+      are enforced upstream (parser/validator).
+
+    Parameters
+    ----------
+    field:
+        ContinuousSectionField instance.
+    z1, z2:
+        Two absolute stations (order is preserved for reporting; integration uses [min,max]).
+    n_points:
+        Gauss-Legendre points passed to integrate_volume.
+    do_debug_check:
+        If True, checks (internally) that sum of per-polygon weighted volumes matches
+        integrate_volume(idx=None) (within tolerance). Not printed by default.
+    debug_tol:
+        Absolute tolerance used for the internal check.
+
+    Returns
+    -------
+    Dict[str, Any] with keys:
+      - "z1", "z2", "n_points"
+      - "rows": list of dict rows (one per polygon)
+      - "tot_occ", "tot_hom"
+      - "debug": dict (only meaningful if do_debug_check=True)
+    """
+    z1 = float(z1)
+    z2 = float(z2)
+
+    # Station snapshots (authoritative for metadata).
+    e1 = field.inspect_section_entities(z1)
+    e2 = field.inspect_section_entities(z2)
+
+    rows: List[Dict[str, Any]] = []
+
+    tot_occ = 0.0
+    tot_hom = 0.0
+
+    # Integration uses positive measure but we keep z1/z2 ordering for the report.
+    z_int0 = min(z1, z2)
+    z_int1 = max(z1, z2)
+
+    for i in range(len(e1)):
+        r1 = e1[i]
+        r2 = e2[i]
+
+        # Metadata (no reinterpretation).
+        s0_name = str(r1.get("s0_name"))
+        s1_name = str(r1.get("s1_name"))
+
+        w1 = float(r1.get("weight_at_z"))
+        w2 = float(r2.get("weight_at_z"))
+
+        law = r1.get("weight_law")
+        law_str = "none" if law is None else str(law)
+
+        # Volumes (no local integration here).
+        v = integrate_volume(field, z_int0, z_int1, int(n_points), idx=int(i))
+
+        # idx-mode returns a (V_geom, V_weighted) tuple by contract.
+        v_occ = float(v[0])
+        v_hom = float(v[1])
+
+        tot_occ += v_occ
+        tot_hom += v_hom
+
+        rows.append(
+            {
+                "id": int(i),
+                "s0_w": w1,
+                "s1_w": w2,
+                "weight_law": law_str,
+                "s0_name": s0_name,
+                "s1_name": s1_name,
+                "volume_occupied": v_occ,
+                "homogenized_volume_occupied": v_hom,
+            }
+        )
+
+    debug: Dict[str, Any] = {}
+    if do_debug_check:
+        v_total = float(integrate_volume(field, z_int0, z_int1, int(n_points), idx=None))
+        # Per requirement: compare against weighted sum (homogenized column).
+        delta = float(tot_hom - v_total)
+        ok = abs(delta) <= float(debug_tol)
+        debug = {
+            "enabled": True,
+            "v_total": v_total,
+            "sum_hom": float(tot_hom),
+            "delta": delta,
+            "abs_tol": float(debug_tol),
+            "ok": bool(ok),
+        }
+    
+    return {
+        "z1": z1,
+        "z2": z2,
+        "n_points": int(n_points),
+        "rows": rows,
+        "tot_occ": float(tot_occ),
+        "tot_hom": float(tot_hom),
+        "debug": debug,
+    }
+
+def volume_polygon_list_report(
+    field: "ContinuousSectionField",
+    z1: float,
+    z2: float,
+    *,
+    n_points: int = 20,
+    outputs: list[Any] | None = None,
+    fmt_display: str = "0.6f",
+    w_tol: float = 0.0,
+    do_debug_check: bool = False,
+    debug_tol: float = 1e-9,
+) -> dict[str, Any]:
+    """
+    High-level API: build and emit the per-polygon volume report.
+
+    This is a convenience wrapper around:
+      - volume_polygon_list_report_data(...)
+      - emit_volume_polygon_list_report(...)
+
+    Rules
+    -----
+    - No extra validation or assumptions are introduced here.
+    - Volumes come from integrate_volume (via volume_polygon_list_report_data).
+    - Metadata comes from field inspection (via volume_polygon_list_report_data).
+
+    Returns
+    -------
+    The report dict returned by volume_polygon_list_report_data(...).
+    """
+    # Build report data (per-polygon volumes + totals)
+    report = volume_polygon_list_report_data(
+        field,
+        float(z1),
+        float(z2),
+        int(n_points),
+        do_debug_check=bool(do_debug_check),
+        debug_tol=float(debug_tol),
+    )
+
+    # Emit report to requested outputs (stdout/text/CSV)
+    emit_volume_polygon_list_report(
+        report,
+        outputs=outputs,
+        fmt_display=str(fmt_display),
+        w_tol=float(w_tol) if w_tol is not None else 0.0,
+    )
+
+    return report
+
+
+def emit_volume_polygon_list_report(
+    report: Dict[str, Any],
+    *,
+    outputs: List[Any] | None = None,
+    fmt_display: str = "0.6f",
+    w_tol: float = 0.0,
+) -> None:
+    """
+    Emit a volume polygon-list report (stdout/text/CSV) using the same formatting as actions.volume.
+
+    Parameters
+    ----------
+    report:
+        Object returned by volume_polygon_list_report_data(...).
+    outputs:
+        Output routing. If None/empty -> ["stdout"].
+        - "stdout" prints the report.
+        - any other string path:
+            * ".csv" writes the CSV with the same field names as actions.volume
+            * otherwise writes the text report.
+    fmt_display:
+        Numeric formatting string passed to built-in format(...).
+    w_tol:
+        Report header value (kept for backward compatibility; may be unused by the action logic).
+    """
+    if not outputs:
+        outputs = ["stdout"]
+
+    z1 = float(report["z1"])
+    z2 = float(report["z2"])
+    n_points = int(report["n_points"])
+    rows = list(report["rows"])
+    tot_occ = float(report["tot_occ"])
+    tot_hom = float(report["tot_hom"])
+
+    want_stdout = ("stdout" in outputs)
+    want_text_file = any((isinstance(o, str) and o != "stdout" and Path(o).suffix.lower() != ".csv") for o in outputs)
+    want_csv_file = any((isinstance(o, str) and o != "stdout" and Path(o).suffix.lower() == ".csv") for o in outputs)
+
+    report_blocks: List[str] = []
+    csv_rows: List[Dict[str, Any]] = []
+
+    def _fmt(v: Any) -> str:
+        if v is None:
+            return "None"
+        if isinstance(v, (int, float)):
+            try:
+                return format(float(v), fmt_display)
+            except Exception:
+                return str(v)
+        return str(v)
+
+    # Build report block if needed.
+    if want_stdout or want_text_file:
+        max_idx = max((int(r["id"]) for r in rows), default=0)
+        id_width = max(2, len(str(max_idx)))
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            print(f"VOLUME POLYGON LIST REPORT at z={_fmt(z1)} and z={_fmt(z2)}")
+            print("=" * 120)
+            print(f"n_points={int(n_points)}  w_tol={_fmt(float(w_tol) if w_tol is not None else 0.0)}")
+            print("")
+            print(
+                f"{'id':<6s} | {'s0.w':>12s} | {'s1.w':>12s} | {'weight_law':<18s} | "
+                f"{'s0.name':<18s} | {'s1.name':<18s} | {'Volume Occupied':>18s} | {'Homogenized Volume':>20s}"
+            )
+            print("-" * 120)
+
+            for r in rows:
+                i = int(r["id"])
+                id_str = f"[{i:0{id_width}d}]"
+
+                print(
+                    f"{id_str:<6s} | {_fmt(r['s0_w']):>12s} | {_fmt(r['s1_w']):>12s} | {str(r['weight_law']):<18s} | "
+                    f"{str(r['s0_name']):<18s} | {str(r['s1_name']):<18s} | {_fmt(r['volume_occupied']):>18s} | {_fmt(r['homogenized_volume_occupied']):>20s}"
+                )
+
+                if want_csv_file:
+                    csv_rows.append(
+                        {
+                            "z1": float(z1),
+                            "z2": float(z2),
+                            "id": int(i),
+                            "s0_w": float(r["s0_w"]),
+                            "s1_w": float(r["s1_w"]),
+                            "weight_law": str(r["weight_law"]),
+                            "s0_name": str(r["s0_name"]),
+                            "s1_name": str(r["s1_name"]),
+                            "volume_occupied": float(r["volume_occupied"]),
+                            "homogenized_volume_occupied": float(r["homogenized_volume_occupied"]),
+                            "n_points": int(n_points),
+                        }
+                    )
+
+            print("-" * 120)
+            print(f"Total Occupied Volume:           {_fmt(tot_occ)}")
+            print(f"Total Occupied Homogenized Volume: {_fmt(tot_hom)}")
+            print("")
+
+        report_blocks.append(buf.getvalue())
+
+    # If we need CSV but we didn't build rows inside the report path (e.g., file-only CSV),
+    # generate csv_rows now.
+    if want_csv_file and not csv_rows:
+        for r in rows:
+            i = int(r["id"])
+            csv_rows.append(
+                {
+                    "z1": float(z1),
+                    "z2": float(z2),
+                    "id": int(i),
+                    "s0_w": float(r["s0_w"]),
+                    "s1_w": float(r["s1_w"]),
+                    "weight_law": str(r["weight_law"]),
+                    "s0_name": str(r["s0_name"]),
+                    "s1_name": str(r["s1_name"]),
+                    "volume_occupied": float(r["volume_occupied"]),
+                    "homogenized_volume_occupied": float(r["homogenized_volume_occupied"]),
+                    "n_points": int(n_points),
+                }
+            )
+
+    # Emit outputs.
+    for outp in outputs:
+        if outp == "stdout":
+            for blk in report_blocks:
+                print(blk, end="" if blk.endswith("\n") else "\n")
+            continue
+
+        p = Path(outp)
+        if not p.parent.exists():
+            raise RuntimeError(f"Output directory does not exist: {p.parent}")
+
+        if p.suffix.lower() == ".csv":
+            fieldnames = [
+                "z1",
+                "z2",
+                "id",
+                "s0_w",
+                "s1_w",
+                "weight_law",
+                "s0_name",
+                "s1_name",
+                "volume_occupied",
+                "homogenized_volume_occupied",
+                "n_points",
+            ]
+            with open(p, "w", newline="", encoding="utf-8") as f:
+                w = csv.DictWriter(f, fieldnames=fieldnames)
+                w.writeheader()
+                for row in csv_rows:
+                    w.writerow(row)
+        else:
+            with open(p, "w", encoding="utf-8") as f:
+                for blk in report_blocks:
+                    f.write(blk)
+                    if not blk.endswith("\n"):
+                        f.write("\n")
+
 
 
 """
@@ -4276,7 +4215,6 @@ class Polygon:
 class Section:
     polygons: Tuple[Polygon, ...]
     z: float
-
     def __post_init__(self):
 
         seen_names = set()
@@ -4296,6 +4234,7 @@ class Section:
                 )
             
             seen_names.add(poly.name)
+            
 
         # Common error case: (poly) instead of (poly,)
         if isinstance(self.polygons, Polygon):
@@ -4404,157 +4343,230 @@ def get_edge_length(polygon: Polygon, edge_idx: int) -> float:
     
     return math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2)
 
-##################################################################################################################################
-
-
-
-def list_polygons_with_contents(csf: Any, z: float) -> List[Dict[str, Any]]:
+#-------------------------------------------------------------------------------------------------------------
+def list_polygons_with_contents(csf: ContinuousSectionField, z: float) -> List[Dict[str, Any]]:
     """
-    Return a per-polygon list with direct containment at coordinate z.
+    Return one record per polygon at coordinate z, including direct containment.
 
-    Output record fields:
+    Structural rules:
+    - polygon identity is strictly the local index in sec.polygons
+    - names are output labels only
+    - topology is consumed strictly as index-based data
+
+    Output fields:
       - idx (int): polygon index in the sampled section ordering at z
-      - name (str): polygon name
-      - container_name (str | None): immediate container polygon name (or None if root)
-      - direct_children (List[str]): polygon names directly contained in this polygon
-      - is_container (bool): True if it has direct children
+      - name (str | None): cleaned polygon label for output only
+      - container_idx (int | None): direct container index, or None for a root polygon
+      - container_name (str | None): cleaned label of the direct container, or None
+      - direct_children_idx (List[int]): direct child indices
+      - direct_children (List[str | None]): cleaned labels of the direct children
+      - is_container (bool): True if the polygon has at least one direct child
 
-    Notes:
-    - Direct children only (no grandchildren).
-    - Uses csf.build_direct_children_map(z) for containment; no geometry is recomputed.
-    - Validates: unique names at z, and hierarchy references only existing polygons.
+    Raises:
+    - TypeError / ValueError only for structural issues
     """
     if not isinstance(z, (int, float)):
-        raise TypeError(f"z must be a number (float), got {type(z).__name__}")
+        raise TypeError(f"z must be a number, got {type(z).__name__}")
 
     sec = csf.section(float(z))
     if sec is None:
-        raise ValueError("csf.section(z) returned None (invalid z or failed sampling).")
+        raise ValueError("csf.section(z) returned None.")
 
-    polygons = getattr(sec, "polygons", None)
-    if polygons is None:
+    if not hasattr(sec, "polygons"):
         raise ValueError("Sampled section has no 'polygons' attribute.")
-    from collections.abc import Sequence
 
-    # In CSF, polygons may be stored as a tuple for immutability; accept any Sequence.
-    # Reject strings/bytes explicitly to avoid treating them as sequences of characters.
-    if (not isinstance(polygons, Sequence)) or isinstance(polygons, (str, bytes)):
-        raise TypeError(
-            f"section.polygons must be a sequence (list/tuple), got {type(polygons).__name__}."
-        )
+    polygons = sec.polygons
 
-    # Collect polygon names in the section order; enforce uniqueness.
-    names: List[str] = []
-    seen = set()
-    for i, poly in enumerate(polygons):
-        name = getattr(poly, "name", None)
-        if not name or not isinstance(name, str):
-            raise ValueError(f"Polygon at index {i} has no valid string 'name'.")
-        if name in seen:
-            raise ValueError(f"Duplicate polygon name at z={z}: '{name}'.")
-        seen.add(name)
-        names.append(name)
+    labels_by_idx: Dict[int, Optional[str]] = {}
 
-    # Direct containment from CSF (parent -> [children]).
-    children_map = csf.build_direct_children_map(float(z))
-    if children_map is None:
-        raise ValueError("build_direct_children_map(z) returned None (expected dict).")
-    if not isinstance(children_map, dict):
-        raise TypeError(
-            f"build_direct_children_map(z) must return dict, got {type(children_map).__name__}."
-        )
+    # Read labels for output only.
+    # Labels are propagated as-is and never affect structural logic.
+    for idx, poly in enumerate(polygons):
+        if hasattr(poly, "name"):
+            labels_by_idx[idx] = poly.name
+        else:
+            labels_by_idx[idx] = None
 
-    # Invert to child -> parent map (one container or none).
-    parent_of: Dict[str, str] = {}
-    for parent, childs in children_map.items():
-        if not isinstance(parent, str) or not parent:
-            raise ValueError(f"Invalid parent name in children_map: {parent!r}")
-        if parent not in seen:
-            raise ValueError(
-                f"Hierarchy references parent '{parent}' not present in section at z={z}."
-            )
-        if not isinstance(childs, list):
+    children_idx_map = csf.build_direct_children_map(float(z))
+
+    if not isinstance(children_idx_map, dict):
+        raise TypeError("build_direct_children_map(z) must return a dict.")
+
+    parent_idx_of: Dict[int, int] = {}
+
+    # Validate the index-based hierarchy and build the inverse child -> parent map.
+    for parent_idx, child_idx_list in children_idx_map.items():
+        if not isinstance(parent_idx, int):
             raise TypeError(
-                f"children_map['{parent}'] must be a list, got {type(childs).__name__}."
+                f"Hierarchy parent index must be int, got {type(parent_idx).__name__}."
             )
-        for child in childs:
-            if not isinstance(child, str) or not child:
-                raise ValueError(f"Invalid child name under '{parent}': {child!r}")
-            if child not in seen:
-                raise ValueError(
-                    f"Hierarchy references child '{child}' not present in section at z={z}."
-                )
-            if child in parent_of:
-                raise ValueError(
-                    f"Polygon '{child}' has multiple containers: '{parent_of[child]}' and '{parent}'."
-                )
-            parent_of[child] = parent
 
-    # Assemble records in the section ordering.
+        if not (0 <= parent_idx < len(polygons)):
+            raise ValueError(
+                f"Hierarchy parent index {parent_idx} is outside polygon range."
+            )
+
+        if not isinstance(child_idx_list, list):
+            raise TypeError(
+                f"Hierarchy children for parent idx={parent_idx} must be a list."
+            )
+
+        for child_idx in child_idx_list:
+            if not isinstance(child_idx, int):
+                raise TypeError(
+                    f"Hierarchy child index under parent idx={parent_idx} must be int, "
+                    f"got {type(child_idx).__name__}."
+                )
+
+            if not (0 <= child_idx < len(polygons)):
+                raise ValueError(
+                    f"Hierarchy child index {child_idx} under parent idx={parent_idx} "
+                    f"is outside polygon range."
+                )
+
+            if child_idx == parent_idx:
+                raise ValueError(
+                    f"Polygon idx={child_idx} cannot be parent of itself."
+                )
+
+            if child_idx in parent_idx_of:
+                previous_parent_idx = parent_idx_of[child_idx]
+                raise ValueError(
+                    f"Polygon idx={child_idx} has multiple direct containers: "
+                    f"idx={previous_parent_idx} and idx={parent_idx}."
+                )
+
+            parent_idx_of[child_idx] = parent_idx
+
     out: List[Dict[str, Any]] = []
-    for idx, name in enumerate(names):
-        direct_children = children_map.get(name, [])
-        if direct_children and not isinstance(direct_children, list):
-            raise TypeError(f"children_map['{name}'] must be a list.")
+
+    for idx in range(len(polygons)):
+        if idx in parent_idx_of:
+            container_idx = parent_idx_of[idx]
+        else:
+            container_idx = None
+
+        if idx in children_idx_map:
+            direct_children_idx = list(children_idx_map[idx])
+        else:
+            direct_children_idx = []
+
+        if container_idx is None:
+            container_name = None
+        else:
+            container_name = labels_by_idx[container_idx]
+
+        direct_children_labels: List[Optional[str]] = []
+        for child_idx in direct_children_idx:
+            direct_children_labels.append(labels_by_idx[child_idx])
 
         out.append(
             {
                 "idx": idx,
-                "name": name,
-                "container_name": parent_of.get(name),
-                "direct_children": list(direct_children),
-                "is_container": bool(direct_children),
+                "name": labels_by_idx[idx],
+                "container_idx": container_idx,
+                "container_name": container_name,
+                "direct_children_idx": direct_children_idx,
+                "direct_children": direct_children_labels,
+                "is_container": len(direct_children_idx) > 0,
             }
         )
 
     return out
 
+#-------------------------------------------------------------------------------------------------------------
+
 
 def polygon_surface_w1_inners0(self: Any, z: float) -> List[Dict[str, Any]]:
     """
-    Args:
-        z (float): longitudinal coordinate.
+    Compute the local occupied surface for every polygon at coordinate z using the rule:
+      - w(polygon) = 1
+      - w(direct inners) = 0
 
-    Returns:
-        List[Dict[str, Any]]: one record per polygon with:
-          - idx (int)
-          - name (str)
-          - container_name (str | None)
-          - direct_inners (List[str])
-          - w (float): effective weight w_eff(p,z)
-          - A (float): occupied surface with w(p)=1 and w(inners)=0 (signed)
-          - A_w (float): A * w
+    And its weighted counterpart:
+      - A_w = A * w_eff
+
+    Structural rules:
+    - all topology, validation, and calculations are strictly index-based
+    - names are output labels only
+    - names must never trigger errors or logic branches
+
+    Required upstream structural fields:
+    - list_polygons_with_contents(self, z):
+        * idx
+        * container_idx
+        * direct_children_idx
+    - self.inspect_section_entities(z):
+        * idx
+        * area_signed
+        * weight_at_z
+
+    Output fields:
+      - idx (int)
+      - name (str | None)
+      - container_name (str | None)
+      - direct_inners (List[str | None])
+      - w (float)
+      - A (float)
+      - A_w (float)
     """
     if not isinstance(z, (int, float)):
         raise TypeError(f"z must be a number (float), got {type(z).__name__}")
     z = float(z)
 
-    # 1) Hierarchy (direct inners).
     rows = list_polygons_with_contents(self, z)
     if not isinstance(rows, list):
-        raise TypeError("list_polygons_with_contents(...) must return a list.")
+        raise TypeError("list_polygons_with_contents(self, z) must return a list.")
 
-    container_of: Dict[str, str | None] = {}
-    direct_inners_of: Dict[str, List[str]] = {}
+    container_of: Dict[int, Optional[int]] = {}
+    direct_inners_of: Dict[int, List[int]] = {}
 
-    for r in rows:
+    # Optional labels for output only.
+    row_by_idx: Dict[int, Dict[str, Any]] = {}
+
+    for row_index, r in enumerate(rows):
         if not isinstance(r, dict):
-            raise TypeError("list_polygons_with_contents(...) must return list of dicts.")
-        name = r.get("name")
-        if not isinstance(name, str) or not name:
-            raise ValueError("Hierarchy row has missing/invalid 'name'.")
-        if name in container_of:
-            raise ValueError(f"Duplicate polygon name in hierarchy rows at z={z}: '{name}'.")
+            raise TypeError(
+                f"list_polygons_with_contents(self, z) must return a list of dicts. "
+                f"Invalid item at position {row_index}."
+            )
 
-        container_of[name] = r.get("container_name")  # may be None
+        if "idx" not in r:
+            raise ValueError(f"Hierarchy row at position {row_index} has no 'idx' field.")
+        idx = r["idx"]
+        if not isinstance(idx, int):
+            raise TypeError(f"Hierarchy row 'idx' must be int, got {type(idx).__name__}.")
 
-        # Helper still uses 'direct_children' internally; we expose 'direct_inners'.
-        inners = r.get("direct_children", [])
-        if inners and not isinstance(inners, list):
-            raise TypeError(f"direct_children for '{name}' must be a list.")
-        direct_inners_of[name] = list(inners)
+        if idx in container_of:
+            raise ValueError(f"Duplicate polygon idx in hierarchy rows at z={z}: {idx}")
 
-    # 2) Signed areas + relative weights from CSF inspection.
+        if "container_idx" not in r:
+            raise ValueError(f"Hierarchy row idx={idx} has no 'container_idx' field.")
+        container_idx = r["container_idx"]
+        if container_idx is not None and not isinstance(container_idx, int):
+            raise TypeError(
+                f"Hierarchy row idx={idx} has invalid 'container_idx' type: "
+                f"{type(container_idx).__name__}"
+            )
+
+        if "direct_children_idx" not in r:
+            raise ValueError(f"Hierarchy row idx={idx} has no 'direct_children_idx' field.")
+        direct_children_idx = r["direct_children_idx"]
+        if not isinstance(direct_children_idx, list):
+            raise TypeError(
+                f"Hierarchy row idx={idx} has invalid 'direct_children_idx' type: "
+                f"{type(direct_children_idx).__name__}"
+            )
+        for child_idx in direct_children_idx:
+            if not isinstance(child_idx, int):
+                raise TypeError(
+                    f"Hierarchy row idx={idx} contains non-int child index: {child_idx!r}"
+                )
+
+        container_of[idx] = container_idx
+        direct_inners_of[idx] = list(direct_children_idx)
+        row_by_idx[idx] = r
+
     if not hasattr(self, "inspect_section_entities"):
         raise AttributeError("Expected self.inspect_section_entities(z) to exist.")
 
@@ -4562,85 +4574,139 @@ def polygon_surface_w1_inners0(self: Any, z: float) -> List[Dict[str, Any]]:
     if not isinstance(entities, list):
         raise TypeError("inspect_section_entities(z) must return a list of dict records.")
 
-    area_by_name: Dict[str, float] = {}
-    w_rel_by_name: Dict[str, float] = {}
+    area_by_idx: Dict[int, float] = {}
+    w_rel_by_idx: Dict[int, float] = {}
 
-    for e in entities:
+    # Optional labels for output only.
+    entity_by_idx: Dict[int, Dict[str, Any]] = {}
+
+    for entity_index, e in enumerate(entities):
         if not isinstance(e, dict):
-            raise TypeError("inspect_section_entities(z) must return a list of dict records.")
-        name = e.get("name")
-        if not isinstance(name, str) or not name:
-            raise ValueError("inspect_section_entities(z) returned an entity with missing/invalid 'name'.")
-        if name in area_by_name:
-            raise ValueError(f"Duplicate entity name from inspect_section_entities at z={z}: '{name}'.")
-
-        if "area_signed" not in e:
-            raise ValueError(f"Entity '{name}' has no 'area_signed' field.")
-        if "weight_at_z" not in e:
-            raise ValueError(f"Entity '{name}' has no 'weight_at_z' field.")
-
-        area_by_name[name] = float(e["area_signed"])
-        
-        w_rel_by_name[name] = float(e["weight_at_z"])
-        
-    # Ensure hierarchy names exist in inspection.
-    for name in container_of:
-        if name not in area_by_name:
-            raise ValueError(
-                f"Polygon '{name}' is in hierarchy but missing from inspect_section_entities at z={z}."
+            raise TypeError(
+                f"inspect_section_entities(z) must return a list of dict records. "
+                f"Invalid item at position {entity_index}."
             )
 
-    # 3) Reconstruct effective weights (w_eff) from the immediate-container chain.
-    w_eff_by_name: Dict[str, float] = {}
+        if "idx" not in e:
+            raise ValueError(f"Entity at position {entity_index} has no 'idx' field.")
+        idx = e["idx"]
+        if not isinstance(idx, int):
+            raise TypeError(f"Entity 'idx' must be int, got {type(idx).__name__}.")
 
-    # Initialize roots (no container).
-    for name, parent in container_of.items():
-        if parent is None:
-            w_eff_by_name[name] = w_rel_by_name[name]
+        if idx in area_by_idx:
+            raise ValueError(f"Duplicate entity idx from inspect_section_entities at z={z}: {idx}")
 
-    unresolved = set(container_of.keys()) - set(w_eff_by_name.keys())
+        if "area_signed" not in e:
+            raise ValueError(f"Entity idx={idx} has no 'area_signed' field.")
+        if "weight_at_z" not in e:
+            raise ValueError(f"Entity idx={idx} has no 'weight_at_z' field.")
+
+        area_by_idx[idx] = float(e["area_signed"])
+        w_rel_by_idx[idx] = float(e["weight_at_z"])
+        entity_by_idx[idx] = e
+
+    for idx in container_of:
+        if idx not in area_by_idx:
+            raise ValueError(
+                f"Polygon idx={idx} is in hierarchy but missing from inspect_section_entities at z={z}."
+            )
+
+    for idx, parent_idx in container_of.items():
+        if parent_idx is None:
+            continue
+        if parent_idx not in container_of:
+            raise ValueError(
+                f"Polygon idx={idx} references missing container idx={parent_idx} at z={z}."
+            )
+
+    for idx, inner_idx_list in direct_inners_of.items():
+        for inner_idx in inner_idx_list:
+            if inner_idx not in area_by_idx:
+                raise ValueError(
+                    f"Inner polygon idx={inner_idx} of polygon idx={idx} is missing "
+                    f"from inspect_section_entities at z={z}."
+                )
+
+    w_eff_by_idx: Dict[int, float] = {}
+
+    for idx, parent_idx in container_of.items():
+        if parent_idx is None:
+            if idx not in w_rel_by_idx:
+                raise ValueError(f"Root polygon idx={idx} has no relative weight at z={z}.")
+            w_eff_by_idx[idx] = w_rel_by_idx[idx]
+
+    unresolved = set(container_of.keys()) - set(w_eff_by_idx.keys())
     progress = True
+
     while unresolved and progress:
         progress = False
-        for name in list(unresolved):
-            parent = container_of[name]
-            if parent is None:
-                w_eff_by_name[name] = w_rel_by_name[name]
-                unresolved.remove(name)
+
+        for idx in list(unresolved):
+            parent_idx = container_of[idx]
+
+            if parent_idx is None:
+                if idx not in w_rel_by_idx:
+                    raise ValueError(f"Root polygon idx={idx} has no relative weight at z={z}.")
+                w_eff_by_idx[idx] = w_rel_by_idx[idx]
+                unresolved.remove(idx)
                 progress = True
                 continue
-            if parent not in w_eff_by_name:
+
+            if parent_idx not in w_eff_by_idx:
                 continue
-            w_eff_by_name[name] = w_rel_by_name[name] + w_eff_by_name[parent]
-            unresolved.remove(name)
+
+            if idx not in w_rel_by_idx:
+                raise ValueError(f"Polygon idx={idx} has no relative weight at z={z}.")
+
+            w_eff_by_idx[idx] = w_rel_by_idx[idx] + w_eff_by_idx[parent_idx]
+            unresolved.remove(idx)
             progress = True
 
     if unresolved:
-        missing = {name: container_of[name] for name in unresolved}
-        raise ValueError(f"Cannot resolve effective weights (cycle or missing container): {missing}")
+        unresolved_map: Dict[int, Optional[int]] = {}
+        for idx in unresolved:
+            unresolved_map[idx] = container_of[idx]
+        raise ValueError(
+            f"Cannot resolve effective weights at z={z} "
+            f"(cycle or missing container chain): {unresolved_map}"
+        )
 
-    # 4) Compute A and A*w for each polygon (local rule: w(p)=1, w(inners)=0).
     out: List[Dict[str, Any]] = []
-    for r in rows:
-        name = r["name"]
-        inners = direct_inners_of.get(name, [])
-        area_p = area_by_name[name]
 
+    for idx in sorted(container_of.keys()):
+        direct_inners_idx = direct_inners_of[idx]
+
+        area_p = area_by_idx[idx]
         inners_sum = 0.0
-        for inner_name in inners:
-            if inner_name not in area_by_name:
-                raise ValueError(f"Inner polygon '{inner_name}' missing from inspection at z={z}.")
-            inners_sum += area_by_name[inner_name]
+        for inner_idx in direct_inners_idx:
+            inners_sum += area_by_idx[inner_idx]
 
         A = area_p - inners_sum
-        w_eff = w_eff_by_name[name]
-        #print(f"DEBUG { ["idx"]} name {name} {area_by_name[name]} {w_rel_by_name[name]}: {float(w_eff)} : {float(A)} inners_sum: {inners_sum}")
+        w_eff = w_eff_by_idx[idx]
+
+        direct_inners_labels: List[Optional[str]] = []
+        for inner_idx in direct_inners_idx:
+            if inner_idx in row_by_idx and "name" in row_by_idx[inner_idx]:
+                direct_inners_labels.append(row_by_idx[inner_idx]["name"])
+            else:
+                direct_inners_labels.append(None)
+
+        if idx in row_by_idx and "name" in row_by_idx[idx]:
+            name = row_by_idx[idx]["name"]
+        else:
+            name = None
+
+        if idx in row_by_idx and "container_name" in row_by_idx[idx]:
+            container_name = row_by_idx[idx]["container_name"]
+        else:
+            container_name = None
+
         out.append(
             {
-                "idx": int(r["idx"]),
+                "idx": idx,
                 "name": name,
-                "container_name": r.get("container_name"),
-                "direct_inners": list(inners),
+                "container_name": container_name,
+                "direct_inners": direct_inners_labels,
                 "w": float(w_eff),
                 "A": float(A),
                 "A_w": float(A * w_eff),
@@ -4649,37 +4715,45 @@ def polygon_surface_w1_inners0(self: Any, z: float) -> List[Dict[str, Any]]:
 
     return out
 
+#---------------------------------------------------------------------------------------------------------------
 
-def polygon_surface_w1_inners0_single(self: Any, z: float, idx: int) -> Dict[str, Any]:
+def polygon_surface_w1_inners0_single(
+    self: ContinuousSectionField,
+    z: float,
+    idx: int
+) -> Dict[str, Any]:
     """
-    Compute the *net occupied surface* for ONE polygon at coordinate z, using the local rule:
+    Compute the local occupied surface for one polygon at coordinate z using the rule:
       - w(polygon) = 1
       - w(direct inners) = 0
 
     And its weighted counterpart:
-      - A_w = A_net * w_eff(z)
+      - A_w = A * w_eff
 
-    This is a specialized version of polygon_surface_w1_inners0(...):
-    it reproduces the SAME math, but only for the requested polygon idx, avoiding
-    computing A/A_w for every polygon when you only need one.
+    Structural rules:
+    - all topology, validation, and calculations are strictly index-based
+    - names are output labels only
+    - names must never trigger errors or logic branches
 
-    Inputs:
-        z   : longitudinal coordinate (absolute).
-        idx : polygon index (0-based).
+    Required upstream structural fields:
+    - list_polygons_with_contents(self, z):
+        * idx
+        * container_idx
+        * direct_children_idx
+    - self.inspect_section_entities(z):
+        * idx
+        * area_signed
+        * weight_at_z
 
-    Returns:
-        Dict[str, Any] with:
-          - idx (int)
-          - name (str)
-          - container_name (str | None)
-          - direct_inners (List[str])
-          - w (float): effective weight w_eff(p,z)
-          - A (float): occupied surface with w(p)=1 and w(inners)=0 (signed)
-          - A_w (float): A * w
+    Output fields:
+      - idx (int)
+      - name (str | None)
+      - container_name (str | None)
+      - direct_inners (List[str | None])
+      - w (float)
+      - A (float)
+      - A_w (float)
     """
-    # -------------------------------------------------------------------------
-    # 0) Basic validation
-    # -------------------------------------------------------------------------
     if not isinstance(z, (int, float)):
         raise TypeError(f"z must be a number (float), got {type(z).__name__}")
     z = float(z)
@@ -4689,59 +4763,60 @@ def polygon_surface_w1_inners0_single(self: Any, z: float, idx: int) -> Dict[str
     if idx < 0:
         raise ValueError(f"idx must be >= 0 (0-based), got {idx}")
 
-    # -------------------------------------------------------------------------
-    # 1) Hierarchy at z: for the target polygon we need:
-    #    - its container (possibly None for root)
-    #    - its direct inners (names)
-    #    For w_eff we also need the container chain up to the root.
-    # -------------------------------------------------------------------------
     rows = list_polygons_with_contents(self, z)
     if not isinstance(rows, list):
-        raise TypeError("list_polygons_with_contents(...) must return a list.")
+        raise TypeError("list_polygons_with_contents(self, z) must return a list.")
 
-    # Build name -> container_name map (needed to walk the container chain for w_eff).
-    container_of: Dict[str, str | None] = {}
+    container_of: Dict[int, Optional[int]] = {}
+    direct_inners_of: Dict[int, List[int]] = {}
+    row_by_idx: Dict[int, Dict[str, Any]] = {}
 
-    target_row: Dict[str, Any] | None = None
-    for r in rows:
+    for row_index, r in enumerate(rows):
         if not isinstance(r, dict):
-            raise TypeError("list_polygons_with_contents(...) must return list of dicts.")
+            raise TypeError(
+                f"list_polygons_with_contents(self, z) must return a list of dicts. "
+                f"Invalid item at position {row_index}."
+            )
 
-        name = r.get("name")
-        if not isinstance(name, str) or not name:
-            raise ValueError("Hierarchy row has missing/invalid 'name'.")
-        if name in container_of:
-            raise ValueError(f"Duplicate polygon name in hierarchy rows at z={z}: '{name}'.")
-
-        container_of[name] = r.get("container_name")  # may be None
-
-        # Identify the target polygon by idx (0-based).
         if "idx" not in r:
-            raise ValueError("Hierarchy row missing required 'idx' field.")
-        if int(r["idx"]) == idx:
-            target_row = r
+            raise ValueError(f"Hierarchy row at position {row_index} has no 'idx' field.")
+        row_idx = r["idx"]
+        if not isinstance(row_idx, int):
+            raise TypeError(f"Hierarchy row 'idx' must be int, got {type(row_idx).__name__}.")
 
-    if target_row is None:
+        if row_idx in container_of:
+            raise ValueError(f"Duplicate polygon idx in hierarchy rows at z={z}: {row_idx}")
+
+        if "container_idx" not in r:
+            raise ValueError(f"Hierarchy row idx={row_idx} has no 'container_idx' field.")
+        container_idx = r["container_idx"]
+        if container_idx is not None and not isinstance(container_idx, int):
+            raise TypeError(
+                f"Hierarchy row idx={row_idx} has invalid 'container_idx' type: "
+                f"{type(container_idx).__name__}"
+            )
+
+        if "direct_children_idx" not in r:
+            raise ValueError(f"Hierarchy row idx={row_idx} has no 'direct_children_idx' field.")
+        direct_children_idx = r["direct_children_idx"]
+        if not isinstance(direct_children_idx, list):
+            raise TypeError(
+                f"Hierarchy row idx={row_idx} has invalid 'direct_children_idx' type: "
+                f"{type(direct_children_idx).__name__}"
+            )
+        for child_idx in direct_children_idx:
+            if not isinstance(child_idx, int):
+                raise TypeError(
+                    f"Hierarchy row idx={row_idx} contains non-int child index: {child_idx!r}"
+                )
+
+        container_of[row_idx] = container_idx
+        direct_inners_of[row_idx] = list(direct_children_idx)
+        row_by_idx[row_idx] = r
+
+    if idx not in container_of:
         raise ValueError(f"Polygon idx={idx} not found in hierarchy rows at z={z}.")
 
-    target_name = target_row.get("name")
-    if not isinstance(target_name, str) or not target_name:
-        raise ValueError(f"Target polygon idx={idx} has missing/invalid 'name' at z={z}.")
-
-    # Expose "direct_inners" but hierarchy helper still uses "direct_children".
-    inners = target_row.get("direct_children", [])
-    if inners and not isinstance(inners, list):
-        raise TypeError(f"direct_children for '{target_name}' must be a list.")
-    direct_inners = list(inners)
-
-    container_name = target_row.get("container_name")  # may be None
-
-    # -------------------------------------------------------------------------
-    # 2) Signed areas + relative weights at z (single point of truth):
-    #    We rely on inspect_section_entities(z) which must provide:
-    #      - area_signed (signed geometric area)
-    #      - weight_at_z (relative weight: W_rel = W_abs(child) - W_abs(container))
-    # -------------------------------------------------------------------------
     if not hasattr(self, "inspect_section_entities"):
         raise AttributeError("Expected self.inspect_section_entities(z) to exist.")
 
@@ -4749,296 +4824,543 @@ def polygon_surface_w1_inners0_single(self: Any, z: float, idx: int) -> Dict[str
     if not isinstance(entities, list):
         raise TypeError("inspect_section_entities(z) must return a list of dict records.")
 
-    area_by_name: Dict[str, float] = {}
-    w_rel_by_name: Dict[str, float] = {}
+    area_by_idx: Dict[int, float] = {}
+    w_rel_by_idx: Dict[int, float] = {}
 
-    for e in entities:
+    for entity_index, e in enumerate(entities):
         if not isinstance(e, dict):
-            raise TypeError("inspect_section_entities(z) must return a list of dict records.")
-        name = e.get("name")
-        if not isinstance(name, str) or not name:
-            raise ValueError("inspect_section_entities(z) returned an entity with missing/invalid 'name'.")
-        if name in area_by_name:
-            raise ValueError(f"Duplicate entity name from inspect_section_entities at z={z}: '{name}'.")
+            raise TypeError(
+                f"inspect_section_entities(z) must return a list of dict records. "
+                f"Invalid item at position {entity_index}."
+            )
+
+        if "idx" not in e:
+            raise ValueError(f"Entity at position {entity_index} has no 'idx' field.")
+        entity_idx = e["idx"]
+        if not isinstance(entity_idx, int):
+            raise TypeError(f"Entity 'idx' must be int, got {type(entity_idx).__name__}.")
+
+        if entity_idx in area_by_idx:
+            raise ValueError(
+                f"Duplicate entity idx from inspect_section_entities at z={z}: {entity_idx}"
+            )
 
         if "area_signed" not in e:
-            raise ValueError(f"Entity '{name}' has no 'area_signed' field.")
+            raise ValueError(f"Entity idx={entity_idx} has no 'area_signed' field.")
         if "weight_at_z" not in e:
-            raise ValueError(f"Entity '{name}' has no 'weight_at_z' field.")
+            raise ValueError(f"Entity idx={entity_idx} has no 'weight_at_z' field.")
 
-        area_by_name[name] = float(e["area_signed"])
-        w_rel_by_name[name] = float(e["weight_at_z"])
+        area_by_idx[entity_idx] = float(e["area_signed"])
+        w_rel_by_idx[entity_idx] = float(e["weight_at_z"])
 
-    # Ensure the target polygon exists in inspection.
-    if target_name not in area_by_name:
+    if idx not in area_by_idx:
         raise ValueError(
-            f"Polygon '{target_name}' (idx={idx}) is in hierarchy but missing from inspect_section_entities at z={z}."
+            f"Polygon idx={idx} is in hierarchy but missing from inspect_section_entities at z={z}."
         )
 
-    # Ensure inners exist in inspection.
-    for inner_name in direct_inners:
-        if inner_name not in area_by_name:
-            raise ValueError(f"Inner polygon '{inner_name}' missing from inspection at z={z}.")
+    direct_inners_idx = direct_inners_of[idx]
+    for inner_idx in direct_inners_idx:
+        if inner_idx not in area_by_idx:
+            raise ValueError(
+                f"Inner polygon idx={inner_idx} of polygon idx={idx} is missing "
+                f"from inspect_section_entities at z={z}."
+            )
 
-    # -------------------------------------------------------------------------
-    # 3) Reconstruct effective weight w_eff for the target polygon only:
-    #    w_eff(target) = w_rel(target) + w_rel(parent) + ... + w_rel(root)
-    #    (root has container=None).
-    # -------------------------------------------------------------------------
+    visited: set[int] = set()
     w_eff = 0.0
-    cur = target_name
-    visited: set[str] = set()
+    cur_idx = idx
 
     while True:
-        if cur in visited:
-            raise ValueError(f"Cannot resolve effective weight: cycle detected in container chain at z={z}: {cur}")
-        visited.add(cur)
+        if cur_idx in visited:
+            raise ValueError(
+                f"Cannot resolve effective weight at z={z}: cycle detected in container chain at idx={cur_idx}."
+            )
+        visited.add(cur_idx)
 
-        if cur not in w_rel_by_name:
-            raise ValueError(f"Polygon '{cur}' missing 'weight_at_z' in inspection at z={z}.")
-        w_eff += w_rel_by_name[cur]
+        if cur_idx not in w_rel_by_idx:
+            raise ValueError(f"Polygon idx={cur_idx} has no relative weight at z={z}.")
+        w_eff += w_rel_by_idx[cur_idx]
 
-        parent = container_of.get(cur)
-        if parent is None:
+        if cur_idx not in container_of:
+            raise ValueError(f"Polygon idx={cur_idx} is missing from hierarchy rows at z={z}.")
+
+        parent_idx = container_of[cur_idx]
+        if parent_idx is None:
             break
-        if parent not in container_of:
-            raise ValueError(f"Container '{parent}' for polygon '{cur}' missing from hierarchy rows at z={z}.")
-        cur = parent
 
-    # -------------------------------------------------------------------------
-    # 4) Compute net occupied surface A and the weighted A_w for the target polygon:
-    #    A = area(target) - sum(area(direct_inners))
-    # -------------------------------------------------------------------------
-    area_p = area_by_name[target_name]
+        if parent_idx not in container_of:
+            raise ValueError(
+                f"Container idx={parent_idx} for polygon idx={cur_idx} is missing "
+                f"from hierarchy rows at z={z}."
+            )
+
+        cur_idx = parent_idx
+
+    area_p = area_by_idx[idx]
     inners_sum = 0.0
-    for inner_name in direct_inners:
-        inners_sum += area_by_name[inner_name]
+    for inner_idx in direct_inners_idx:
+        inners_sum += area_by_idx[inner_idx]
+
+    direct_inners_labels: List[Optional[str]] = []
+    for inner_idx in direct_inners_idx:
+        if inner_idx in row_by_idx and "name" in row_by_idx[inner_idx]:
+            direct_inners_labels.append(row_by_idx[inner_idx]["name"])
+        else:
+            direct_inners_labels.append(None)
+
+    if idx in row_by_idx and "name" in row_by_idx[idx]:
+        name = row_by_idx[idx]["name"]
+    else:
+        name = None
+
+    if idx in row_by_idx and "container_name" in row_by_idx[idx]:
+        container_name = row_by_idx[idx]["container_name"]
+    else:
+        container_name = None
 
     A = area_p - inners_sum
     A_w = A * w_eff
 
     return {
-        "idx": int(idx),
-        "name": target_name,
+        "idx": idx,
+        "name": name,
         "container_name": container_name,
-        "direct_inners": direct_inners,
+        "direct_inners": direct_inners_labels,
         "w": float(w_eff),
         "A": float(A),
         "A_w": float(A_w),
     }
 
+# -------------------------------------------------------------------------------------------------------------
 
+def export_polygon_vertices_csv(section: Section, field: ContinuousSectionField,    zpos: float=None, put=print, fmt="{:.16g}"):
+    """
+    Export CSV with ALL coordinates.
 
-##################################################################################################################################
+    One row per vertex (recommended for CSV):
+    idx_polygon, idx_container, s0_name, s1_name, w, vertex_i, x, y
 
+    Sources:
+    - geometry: section.polygons -> poly.name, poly.vertices (Pt has .x .y)
+    - container + names: entities[*] by polygon name
+    - w: area_w["groups"][*]["w"] mapped by polygon name
 
-
-class ContinuousSectionField:
-
+    Parameters
+    ----------
+    fmt : str
+        Python format string for floats, e.g. "{:.6f}", "{:.6g}", "{:.16g}".
+        Applied to: w, x, y (when they are not None).
+    """
     
 
+    def build_w_by_idx(named_polys: dict) -> dict[int, float]:
+        """
+        Build {idx: effective_weight_at_z} from polygons metadata.
+
+        Rule:
+            w_by_idx[idx] = weight_at_z(idx) - weight_at_z(container_idx)
+
+        If container_idx is None or missing from the dataset,
+        the container contribution is assumed equal to 0.
+        """
+        polys_by_idx = {}
+
+        for poly in named_polys.values():
+            idx = poly["idx"]
+            polys_by_idx[idx] = poly
+
+        w_by_idx = {}
+
+        for poly in polys_by_idx.values():
+            idx = poly["idx"]
+            weight_at_z = poly["weight_at_z"]
+            container_idx = poly["container_idx"]
+
+            if container_idx is None:
+                container_weight_at_z = 0.0
+            else:
+                container_poly = polys_by_idx.get(container_idx)
+                container_weight_at_z = 0.0 if container_poly is None else container_poly["weight_at_z"]
+
+            w_by_idx[idx] = weight_at_z + container_weight_at_z
+
+        return w_by_idx
+
+    def strip_wall_cell_suffix(name: str) -> str:
+        """
+        Remove the first occurrence of '@wall', '@cell', or '@closed'
+        and everything after it.
+        """
+        if not name:
+            return name
+
+        low = name.lower()
+        idxs = [
+            i for i in (
+                low.find("@cell"),
+                low.find("@wall"),
+                low.find("@closed"),
+            )
+            if i >= 0
+        ]
+
+        if not idxs:
+            return name
+
+        return name[:min(idxs)]    
+    
+    
+    # --- Input validation: mutually exclusive modes -----------------------------
+
+    # Mode A: explicit section provided
+    has_section = section is not None
+
+    # Mode B: field + zpos provided
+    has_field_mode = (field is not None) and (zpos is not None)
+
+    if not has_section and not has_field_mode:
+        raise ValueError(
+            "You must provide either 'section' OR both 'field' and 'zpos'."
+        )
+    # --- Resolve section ---------------------------------------------------------
+
+    if not has_section:
+        # Build section from field at given z
+        section = field.section(float(zpos))
+    else:
+        # If section is given, ignore zpos and infer z if available
+        if zpos is None:
+            zpos = getattr(section, "z", None)
+        if zpos != section.z:
+               raise ValueError(
+                    f"You must provide either 'section' OR ('field' and 'zpos') consistent {zpos}. and  {section.z}"
+                )
+    
+    z=section.z
 
 
+    area_w=field.section_area_by_weight(
+            z=z,
+            w_tol= 0.0,
+            include_per_polygon = False,
+        )
+
+    entities = field.inspect_section_entities(z)
+    ent_by_name = {e["name"]: e for e in entities}
+    #print(f"DEBUG ent_by_name {ent_by_name}")
+    # name -> w from area_w groups
+    #w_by_name = {}
+
+    w_by_idx = build_w_by_idx(ent_by_name)
+
+    #for g in area_w.get("groups", []):
+    #    gw = g.get("w")
+    #
+    #    for pname in g.get("polygons", []):
+    #        w_by_name[pname] = gw
+    #        #print(f"DEBUG export_polygon_vertices_csv >>>>>>>>>>>>>>>>>>>>>>>>>><{pname} {gw} {w_by_name[pname]}")            
+
+    def esc(v):
+        # Minimal CSV escaping
+        if v is None:
+            s = ""
+        else:
+            s = str(v)
+        if any(ch in s for ch in [",", '"', "\n", "\r"]):
+            s = '"' + s.replace('"', '""') + '"'
+        return s
+
+    def fmt_num(v):
+        # Format numbers with `fmt`.
+        # Supports:
+        # - full format string: "{:.5g}"
+        # - format specifier:  ".5g"
+        if v is None:
+            return None
+        if isinstance(v, bool):
+            return v
+        if isinstance(v, int):
+            return v
+
+        def _apply_fmt(x: float) -> str:
+            if isinstance(fmt, str) and "{" in fmt:
+                return fmt.format(x)      # e.g. "{:.5g}"
+            return format(x, fmt)         # e.g. ".5g"
+
+        if isinstance(v, float):
+            return _apply_fmt(v)
+
+        try:
+            fv = float(v)
+        except Exception:
+            return v
+        return _apply_fmt(fv)
+
+
+        
+    z_hdr = fmt.format(float(z))
+    put("## GEOMETRY EXPORT ##")
+    put(f"# z={z}")   
+    cols = ["idx_polygon", "idx_container", "s0_name", "s1_name", "w", "vertex_i", "x", "y"]
+    put(",".join(cols))
+
+    for poly in section.polygons:
+        
+        name = poly.name
+        #print(f"\nDEBUG #####################################  {poly}\n")        
+        ent = ent_by_name.get(name, {})
+
+        idx_polygon = ent.get("idx")
+        idx_container = ent.get("container_idx")
+
+        s0_name = ent.get("s0_name")
+        s1_name = ent.get("s1_name")
+
+        # w ONLY from area_w groups (as requested)
+        w = w_by_idx.get(idx_polygon)
+        #w = w_by_name.get(name)
+        #print(f"DEBUG export_polygon_vertices_csv :::::::::::::::::::::::::::..{w} {name}")            
+
+        for i, pt in enumerate(poly.vertices):
+            x = float(pt.x)
+            y = float(pt.y)
+
+            row = [
+                idx_polygon,
+                idx_container,
+                s0_name,
+                s1_name,
+                fmt_num(w),
+                i,
+                fmt_num(x),
+                fmt_num(y),
+            ]
+            put(",".join(esc(fmt_num(v)) for v in row))
+            #put(",".join(esc(v) for v in row))
+#--------------------------------------------------------------------------------
+class ContinuousSectionField:
+
+
+    
     def inspect_section_entities(self, z: float) -> List[Dict[str, Any]]:
         """
-        Performs a sterile, comprehensive inspection of all polygonal entities at a 
-        specific longitudinal coordinate z, including parent-child relationships.
-        
-        This function discloses the complete genealogy and mechanical state of each 
-        polygon. For each entity, it reports both its descendants (if any) and its 
-        ancestor (the immediate container).
-        
-        Fields returned include:
-        - Positional data (idx, name)
-        - Endpoint references (s0_name, s1_name, s0_weight, s1_weight)
-        - Interpolated state (weight_at_z, weight_law)
-        - Geometric property (area_signed, unaltered)
-        - Descendant info (is_container, direct_children)
-        - Ancestor info (container_idx, container_name) <-- NEW
-        
-        Args:
-            z (float): Longitudinal coordinate for section sampling.
-                    
-        Returns:
-            List[Dict[str, Any]]: List of entity records with fields:
-            
-            - idx (int): Position in section at z.
-            - name (str): Polygon identifier.
-            - s0_name, s1_name (str): Endpoint polygon names.
-            - s0_weight, s1_weight (float): Reference weights at ends.
-            - weight_at_z (float): Interpolated weight at z.
-            - weight_law (str | None): Weight law formula string.
-            - area_signed (float): Raw geometric area (shoelace, signed).
-            - is_container (bool): True if this polygon has children.
-            - direct_children (List[str]): Names of contained polygons.
-            - container_idx (int | None): Index of parent polygon (if nested).
-            - container_name (str | None): Name of parent polygon (if nested).
+        Perform a sterile inspection of all polygon entities at longitudinal coordinate z.
+
+        Structural rules:
+        - topology is strictly index-based
+        - names are labels only
+        - no structural branch depends on polygon names or tags
+
+        Returned fields:
+        - idx (int)
+        - name (str | None)
+        - s0_name (str | None)
+        - s1_name (str | None)
+        - s0_weight (float)
+        - s1_weight (float)
+        - weight_at_z (float)
+        - weight_law (str | None)
+        - area_signed (float)
+        - is_container (bool)
+        - direct_children (List[str | None])
+        - container_idx (int | None)
+        - container_name (str | None)
+
+        Raises:
+        - TypeError / ValueError only for structural issues
         """
-        # --- 1) Sample section and get hierarchy ---
-        sec = self.section(z)
-        children_map = self.build_direct_children_map(z)
-        
-        # --- 2) Build child -> parent inverse mapping ---
-        # children_map is {parent_name: [child1, child2, ...]}
-        # We invert it to {child_name: parent_name} for O(1) lookup
-        parent_of: Dict[str, str] = {}
-        for parent_name, child_list in children_map.items():
-            for child_name in child_list:
-                parent_of[child_name] = parent_name
-        
-        # --- 3) Pre-compute name -> index mapping for current section ---
-        # This allows us to find the container's index quickly
-        name_to_idx: Dict[str, int] = {
-            getattr(poly, "name", f"unnamed_{i}"): i 
-            for i, poly in enumerate(sec.polygons)
-        }
-        
-        # --- 4) Compile records ---
-        records = []
-        
-        for idx, poly in enumerate(sec.polygons):
-            name = getattr(poly, "name", f"unnamed_{idx}")
-            weight_at_z = float(getattr(poly, "weight", 0.0))
-            
-            # Endpoint data
-            s0_poly = self.s0.polygons[idx]
-            s1_poly = self.s1.polygons[idx]
-            s0_name = getattr(s0_poly, "name", name)
-            s1_name = getattr(s1_poly, "name", name)
-            s0_weight = float(getattr(s0_poly, "weight", 0.0))
-            s1_weight = float(getattr(s1_poly, "weight", 0.0))
-            
-            # Weight law
+        if not isinstance(z, (int, float)):
+            raise TypeError(f"z must be a number, got {type(z).__name__}")
+
+        sec = self.section(float(z))
+        if sec is None:
+            raise ValueError("self.section(z) returned None.")
+
+        if not hasattr(sec, "polygons"):
+            raise ValueError("Section object has no 'polygons' attribute.")
+
+        polygons = sec.polygons
+
+        s0_polygons = self.s0.polygons
+        s1_polygons = self.s1.polygons
+
+        children_map = self.build_direct_children_map(float(z))
+
+        if not isinstance(children_map, dict):
+            raise TypeError("build_direct_children_map(z) must return a dict.")
+
+        parent_of: Dict[int, int] = {}
+
+
+        for parent_idx, child_idx_list in children_map.items():
+            for child_idx in child_idx_list:
+                if child_idx in parent_of:
+                    raise ValueError(
+                        f"Polygon idx={child_idx} has multiple parents: "
+                        f"{parent_of[child_idx]} and {parent_idx}"
+                    )
+                parent_of[child_idx] = parent_idx
+
+        records: List[Dict[str, Any]] = []
+
+        for idx, poly in enumerate(polygons):
+            if not hasattr(poly, "weight"):
+                raise ValueError(f"Polygon idx={idx} has no 'weight' attribute.")
+
+            weight_at_z = float(poly.weight)
+
+            s0_poly = s0_polygons[idx]
+            s1_poly = s1_polygons[idx]
+
+            if not hasattr(s0_poly, "weight"):
+                raise ValueError(f"S0 polygon idx={idx} has no 'weight' attribute.")
+            if not hasattr(s1_poly, "weight"):
+                raise ValueError(f"S1 polygon idx={idx} has no 'weight' attribute.")
+
+            s0_weight = float(s0_poly.weight)
+            s1_weight = float(s1_poly.weight)
+
             weight_law = None
             if self.weight_laws is not None:
                 if (idx + 1) in self.weight_laws:
                     weight_law = str(self.weight_laws[idx + 1])
-                elif name in self.weight_laws:
-                    weight_law = str(self.weight_laws[name])
 
-            area_signed, _ = _polygon_signed_area_and_centroid(poly) #no weighted
+            area_signed, _ = _polygon_signed_area_and_centroid(poly)
+
+            if idx in children_map:
+                direct_children_idx = list(children_map[idx])
+            else:
+                direct_children_idx = []
+
+            direct_children_labels: List[Optional[str]] = []
+            for child_idx in direct_children_idx:
+                child_poly = polygons[child_idx]
+                if hasattr(child_poly, "name"):
+                    direct_children_labels.append(child_poly.name)
+                else:
+                    direct_children_labels.append(None)
+
+            if idx in parent_of:
+                container_idx = parent_of[idx]
+                container_poly = polygons[container_idx]
+                if hasattr(container_poly, "name"):
+                    container_name = container_poly.name
+                else:
+                    container_name = None
+            else:
+                container_idx = None
+                container_name = None
+
+            if hasattr(poly, "name"):
+                name = poly.name
+            else:
+                name = None
+
+            if hasattr(s0_poly, "name"):
+                s0_name = s0_poly.name
+            else:
+                s0_name = None
+
+            if hasattr(s1_poly, "name"):
+                s1_name = s1_poly.name
+            else:
+                s1_name = None
             
-            # Hierarchy: Descendants (am I a container?)
-            is_container = name in children_map
-            direct_children = children_map.get(name, [])
-            
-            # Hierarchy: Ancestor (do I have a container?)
-            container_name = parent_of.get(name)  # Returns None if not present (outermost)
-            container_idx = name_to_idx.get(container_name) if container_name else None
-            
-            records.append({
-                "idx": idx,
-                "name": name,
-                "s0_name": s0_name,
-                "s1_name": s1_name,
-                "s0_weight": s0_weight,
-                "s1_weight": s1_weight,
-                "weight_at_z": weight_at_z,
-                "weight_law": weight_law,
-                "area_signed": area_signed,
-                "is_container": is_container,
-                "direct_children": direct_children,
-                "container_idx": container_idx,      # <-- NEW
-                "container_name": container_name     # <-- NEW
-            })
-        
+            records.append(
+                {
+                    "idx": idx,
+                    "name": name,
+                    "s0_name": s0_name,
+                    "s1_name": s1_name,
+                    "s0_weight": s0_weight,
+                    "s1_weight": s1_weight,
+                    "weight_at_z": weight_at_z,
+                    "weight_law": weight_law,
+                    "area_signed": area_signed,
+                    "is_container": len(direct_children_idx) > 0,
+                    "direct_children": direct_children_labels,
+                    "container_idx": container_idx,
+                    "container_name": container_name,
+                }
+            )
         return records
 
+    #---------------------------------------------------------------------------------------------------
 
-    def build_direct_children_map(self, z: float) -> Dict[str, List[str]]:
+    
+    def build_direct_children_map(self, z: float) -> Dict[int, List[int]]:
         """
-        Builds a direct parent-to-children mapping for polygons at a given z-section.
-        
-        This function analyzes the containment hierarchy at section coordinate `z` 
-        and returns a mapping where each parent polygon is associated with its 
-        immediate (direct) children only. This excludes nested descendants 
-        (grandchildren are not listed under grandparents).
-        
-        The hierarchy is determined from the stable S0 section topology and applied 
-        to the section at `z` via polygon names.
-        
-        Args:
-            z: Longitudinal coordinate where to sample the section.
-            
-        Returns:
-            Dict[str, List[str]]: A dictionary mapping parent polygon names to 
-            a list of their direct children names. 
-            
-            Example:
-            {
-                "outer_flange": ["web", "hole_1"],
-                "web": ["inner_cutout"]  # Only direct child, not grandchildren
-            }
-            
-            Polygons with no children will not appear as keys in the dictionary.
-            
+        Build the direct parent-to-children mapping for polygons at coordinate z.
+
+        Structural rules:
+        - polygon identity is strictly the polygon index in self.s0.polygons
+        - names are never used
+        - topology is expressed strictly as indices
+
+        Output:
+        - Dict[parent_idx, List[child_idx]]
+
+        Notes:
+        - The section at z is evaluated only to validate that z is admissible.
+        - The containment topology is taken from the stable S0 polygon ordering.
+        - Only direct children are returned.
+        - Polygons with no children do not appear as keys.
+
         Raises:
-            ValueError: If polygon names are missing, empty, or duplicated.
-            CSFError: If section at z cannot be computed.
+        - TypeError if z is not numeric or if self.s0.polygons is not a valid sequence
+        - ValueError for invalid topology or invalid container indices
         """
-        # --- 1) Validate section at z (ensures coordinate is valid) ---
-        sec = self.section(z)
-        
-        # --- 2) Build stable name mapping from S0 ---
+        if not isinstance(z, (int, float)):
+            raise TypeError(f"z must be a number, got {type(z).__name__}")
+
+        sec = self.section(float(z))
+        if sec is None:
+            raise ValueError("self.section(z) returned None.")
+
+        if not hasattr(self.s0, "polygons"):
+            raise ValueError("self.s0 has no 'polygons' attribute.")
+
         s0_polys = self.s0.polygons
-        if not s0_polys:
-            return {}
-        
-        s0_names: List[str] = []
-        seen_names = set()
-        
-        for poly in s0_polys:
-            name = getattr(poly, "name", None)
-            if not name:
-                raise ValueError(
-                    f"Polygon at index {len(s0_names)} in S0 has no name. "
-                    f"All polygons must have unique names."
-                )
-            if name in seen_names:
-                raise ValueError(f"Duplicate polygon name in S0: '{name}'")
-            seen_names.add(name)
-            s0_names.append(name)
-        
-        # --- 3) Determine immediate container for each polygon (child -> parent) ---
-        container_of: Dict[str, Optional[str]] = {}
-        
-        for idx, poly in enumerate(s0_polys):
-            child_name = s0_names[idx]
-            parent_idx = self.get_container_polygon_index(poly, idx)
-            
-            # Safety: prevent self-containment loops
-            if parent_idx == idx:
-                parent_idx = None
-                
+
+        children_map: Dict[int, List[int]] = {}
+        parent_of: Dict[int, int] = {}
+
+        for child_idx, poly in enumerate(s0_polys):
+            parent_idx = self.get_container_polygon_index(poly, child_idx)
+
             if parent_idx is None:
-                parent_name = None
-            else:
-                if not (0 <= parent_idx < len(s0_polys)):
-                    raise ValueError(
-                        f"Invalid container index {parent_idx} returned for "
-                        f"polygon '{child_name}'"
-                    )
-                parent_name = s0_names[parent_idx]
-                # Defensive: name-level self-containment check
-                if parent_name == child_name:
-                    parent_name = None
-                    
-            container_of[child_name] = parent_name
-        
-        # --- 4) Invert mapping: parent -> list of direct children ---
-        children_map: Dict[str, List[str]] = {}
-        
-        for child_name, parent_name in container_of.items():
-            if parent_name is not None:
-                if parent_name not in children_map:
-                    children_map[parent_name] = []
-                children_map[parent_name].append(child_name)
-        
+                continue
+
+            if not isinstance(parent_idx, int):
+                raise TypeError(
+                    f"Container index for polygon idx={child_idx} must be int or None, "
+                    f"got {type(parent_idx).__name__}"
+                )
+
+            if not (0 <= parent_idx < len(s0_polys)):
+                raise ValueError(
+                    f"Invalid container index {parent_idx} for polygon idx={child_idx}"
+                )
+
+            if parent_idx == child_idx:
+                raise ValueError(
+                    f"Polygon idx={child_idx} cannot be the container of itself."
+                )
+
+            if child_idx in parent_of:
+                raise ValueError(
+                    f"Polygon idx={child_idx} has multiple direct containers: "
+                    f"{parent_of[child_idx]} and {parent_idx}"
+                )
+
+            parent_of[child_idx] = parent_idx
+
+            if parent_idx not in children_map:
+                children_map[parent_idx] = []
+
+            children_map[parent_idx].append(child_idx)
+
         return children_map
-
-
-
-
 
 
     def get_container_polygon_index(self, poly: "Polygon", i: int):
@@ -5074,7 +5396,7 @@ class ContinuousSectionField:
         # We only trust 'i' if it points to the same name; otherwise we search by name.
         self_idx = None
         poly_name = getattr(poly, "name", None)
-
+        '''
         if 0 <= i < n_polys and getattr(polys[i], "name", None) == poly_name:
             self_idx = i
         else:
@@ -5084,7 +5406,7 @@ class ContinuousSectionField:
                         self_idx = k
                         break
             _dbg(f"[get_container_polygon_index] index mismatch: given i={i}, inferred self_idx={self_idx}, name={poly_name!r}")
-
+        '''
         # Linear tolerance (allow per-instance override, fallback to module default)
         eps_l = float(getattr(self, "eps_l", EPS_L))
         eps_a = eps_l * eps_l  # area-like tolerance derived from eps_l
@@ -5231,6 +5553,8 @@ class ContinuousSectionField:
         # If multiple immediate candidates exist (should be rare), pick the smallest-area one.
         best_idx, best_area = min(immediate, key=lambda t: t[1])
         _dbg(f"[get_container_polygon_index] result best_idx={best_idx} name={getattr(polys[best_idx],'name',None)!r} a={best_area:.16g}")
+        
+        #print(f"DEBUG get_container_polygon_index {i} {best_idx}")
         return best_idx
 
 
@@ -5398,6 +5722,7 @@ class ContinuousSectionField:
         zero_w_eps: float = 0.0,
         group_mode: str = "weight",
     ) -> None:
+    
         """
         Print an accountant-style area listing at section z, grouped by ABSOLUTE weight (w_abs),
         and include the two requested totals:
@@ -5467,6 +5792,7 @@ class ContinuousSectionField:
                 raise ValueError(f"Polygon index out of range in report: idx={idx}")
 
             w_abs_raw = float(rec["w_abs"])
+            #print(f"DEBUG idx {idx} w_abs_raw {w_abs_raw}")
             w_group = _bin_weight(w_abs_raw) if (w_tol and w_tol > 0.0) else w_abs_raw
 
             # A_net is the sterile signed area (no abs)
@@ -5506,7 +5832,7 @@ class ContinuousSectionField:
         )
         print("-" * 90)
 
-        # Print W only when the group changes (blank otherwise), like your sample
+        # Print W only when the group changes (blank otherwise)
         last_w = None
         for r in rows:
             w_disp = r["w_group"]
@@ -5525,8 +5851,9 @@ class ContinuousSectionField:
         # Totals block (accountant-style, as requested)
         print(f"Occupied Total Surface: {occupied_total_surface:.12g}")
         print(f"Homogenized area:       {homogenized_area:.12g}")
+    # --------------------------------------------------------------------------------------
 
-
+  
         
 
 
@@ -5566,6 +5893,23 @@ class ContinuousSectionField:
             - groups: List of weight groups with accumulated geometric areas
             - per_polygon: (Optional) Detailed polygon data
         """
+
+
+
+        def _strip_csf_tags(name: str) -> str:
+            """
+            Return the polygon identity name with CSF tags removed.
+            Convention: everything after the first '@' is treated as tag payload.
+            Examples:
+            'P1@cell@t=2.0' -> 'P1'
+            'Outer@wall'    -> 'Outer'
+            """
+            if name is None:
+                return ""
+            s = str(name)
+            i = s.find("@")
+            return s if i < 0 else s[:i]
+
         # --- 1) Sample section at z ---
         sec = self.section(z)
 
@@ -5584,6 +5928,8 @@ class ContinuousSectionField:
             return out
 
         # --- 3) Build container hierarchy from S0 (stable reference) ---
+        # remove @cell/@wall from name
+
         s0_polys = self.s0.polygons
         if not s0_polys:
             raise ValueError("S0 has no polygons; cannot establish container map.")
@@ -5592,7 +5938,7 @@ class ContinuousSectionField:
         s0_names: List[str] = []
         seen_names = set()
         for p in s0_polys:
-            nm = getattr(p, "name", None)
+            nm = _strip_csf_tags(getattr(p, "name", None))
             if not nm:
                 raise ValueError("All S0 polygons must have a unique name.")
             if nm in seen_names:
@@ -5623,7 +5969,7 @@ class ContinuousSectionField:
         # --- 4) Map current section polygons with raw data ---
         poly_data: Dict[str, Dict[str, Any]] = {}
         for idx, poly in enumerate(sec.polygons):
-            name = getattr(poly, "name", None)
+            name = _strip_csf_tags(getattr(poly, "name", None))
             if not name:
                 raise ValueError(f"Polygon at index {idx} has no name.")
             if name in poly_data:
@@ -6525,10 +6871,8 @@ class ContinuousSectionField:
                 return f"{base}@closed@t={_fmt_t(t_value)}"
 
             raise CSFError(f"Unsupported topology tag '{topology_tag}' for polygon '{base}'.")
+        ### end helpers 
 
-
-
-        ### end helpers ----------------------------------------------------------------------------
         # in input z is absol   ute
         origz=z-self.z0 # make origz relative
         #t = self._to_t(z) # normalize z 
@@ -6538,9 +6882,9 @@ class ContinuousSectionField:
         polys: List[Polygon] = []
        
         for i, (p0, p1) in enumerate(zip(self.s0.polygons, self.s1.polygons)):
-            
+                        
             verts = tuple(v0.lerp(v1, origz,lenght) for v0, v1 in zip(p0.vertices, p1.vertices))
-            #print(f"DEBUG t {verts}")
+            #print(f"DEBUG t {p0.name} {p1.name}")
             # keep weight/name from p0 by default
             # polys.append(Polygon(vertices=verts, weight=p0.weight, name=p0.name))
 
@@ -6606,28 +6950,24 @@ class ContinuousSectionField:
             # (including mandatory @t for @cell and optional @t for @wall),
             # then compose a normalized name for the interpolated section.
             # This centralizes tag logic in section(z) 
-
+                
             topology_tag, t_value = _resolve_topology_and_t_from_names(
                 p0_name=p0.name,
                 p1_name=p1.name,
-                z=z,          # oppure origz con coerenza al tuo resolver
+                z=z,          
                 z0=self.z0,
                 z1=self.z1,
             )
-
             poly_name = _build_interpolated_polygon_name(
                 p0_name=p0.name,
                 p1_name=p1.name,
                 topology_tag=topology_tag,
                 t_value=t_value,
             )
-
+            
+            
             poly = Polygon(vertices=verts, weight=interp_weight_relative, name=poly_name)
-
-
-
-
-
+            
             # --------------------------
        
             if not re.search(r'(?i)@(cell|wall|closed)\b', str(poly.name or "")) and  polygon_has_self_intersections(poly):
@@ -6714,7 +7054,7 @@ def section_data(field: ContinuousSectionField, z: float) -> dict:
     props = section_properties(section)
 
     return {
-        "section": section,     # geometria completa
+        "section": section,     # 
         "properties": props,    # A, Cx, Cy, Ix, Iy, Ixy, J
     }
 
@@ -7105,7 +7445,8 @@ class Visualizer:
         """
 
         if keys_to_plot is not None:
-            keys_to_plot = list(dict.fromkeys(keys_to_plot))       
+            keys_to_plot = list(dict.fromkeys(keys_to_plot))      
+        keys_to_plot = [k for k in keys_to_plot if str(k).lower() != "geometry"]             
         
         # Z bounds from field endpoints
         z_start = self.field.s0.z
@@ -7215,12 +7556,25 @@ class Visualizer:
             t_start_txt = None
             t_end_txt = None
             if has_right:
-                idx_right = np.where(finite_right)[0]
-                if idx_right.size > 0:
-                    i0 = int(idx_right[0])    # first finite right sample
-                    i1 = int(idx_right[-1])   # last finite right sample
-                    t_start_txt = float(y_right[i0])
-                    t_end_txt = float(y_right[i1])
+                ax_r = ax.twinx()
+                ax_r.plot(z_values, y_right, linestyle="--", linewidth=1.5)
+                ax_r.set_ylabel("thickness t", fontweight="bold")
+                ax_r.grid(False)
+
+                # Console min/max for right channel
+                y_rf = y_right[finite_right]
+                z_rf = z_values[finite_right]
+                i_min_r = int(np.argmin(y_rf))
+                i_max_r = int(np.argmax(y_rf))
+                v_min_r = float(y_rf[i_min_r])
+                v_max_r = float(y_rf[i_max_r])
+                z_min_r = float(z_rf[i_min_r])
+                z_max_r = float(z_rf[i_max_r])
+
+                print(
+                    f"{key} [right]: min={v_min_r:.12g} at z={z_min_r:.12g} | "
+                    f"max={v_max_r:.12g} at z={z_max_r:.12g}"
+                )
 
             # ---------------------------------------------------------------------
             # Case A: no valid left data
@@ -7497,36 +7851,21 @@ class Visualizer:
         # -------------------------------------------------------------------------
         # 2) Compute container mapping (S0-aware, then remapped to current section)
         # -------------------------------------------------------------------------
-        sec_name_to_idx = {getattr(p, "name", None): i for i, p in enumerate(sec.polygons)}
-        s0_name_to_idx = {getattr(p, "name", None): i for i, p in enumerate(self.field.s0.polygons)}
 
-        container_id_by_sec = [None] * len(sec.polygons)
-        child_s0_idx_by_sec = [None] * len(sec.polygons)
+        children_map = self.field.build_direct_children_map(z)
 
-        for idx, poly in enumerate(sec.polygons):
-            container_id = None
-            child_s0_idx = None
+        parent_of = {}
+        for parent_idx, child_idx_list in children_map.items():
+            for child_idx in child_idx_list:
+                parent_of[child_idx] = parent_idx
 
-            try:
-                child_name = getattr(poly, "name", None)
-                child_s0_idx = s0_name_to_idx.get(child_name)
+        container_id_by_sec = []
+        for idx in range(len(sec.polygons)):
+            if idx in parent_of:
+                container_id_by_sec.append(parent_of[idx])
+            else:
+                container_id_by_sec.append(None)
 
-                if child_s0_idx is not None:
-                    parent_s0_idx = self.field.get_container_polygon_index(
-                        self.field.s0.polygons[child_s0_idx],
-                        child_s0_idx,
-                    )
-                    if parent_s0_idx is not None:
-                        parent_name = getattr(self.field.s0.polygons[parent_s0_idx], "name", None)
-                        container_id = sec_name_to_idx.get(parent_name)
-
-            except Exception:
-                # Keep plotting resilient even if containment query fails.
-                container_id = None
-                child_s0_idx = None
-
-            container_id_by_sec[idx] = container_id
-            child_s0_idx_by_sec[idx] = child_s0_idx
 
         # -------------------------------------------------------------------------
         # 3) Reconstruct absolute weights at z from relative weights + container chain
@@ -7548,6 +7887,7 @@ class Visualizer:
         _ = w_abs_z  # currently used by optional legend blocks only
         legend_handles = []
         legend_labels = []
+        show_legenda=True
         if show_legenda:
             # -------------------------------------------------------------------------
             # 4) Build legend entries (relative weights + container id)
