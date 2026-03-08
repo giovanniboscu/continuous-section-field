@@ -37,3 +37,7 @@ include = ["csf*"]
 examples = [
     "pycba"
 ]
+sp = [
+    "shapely",
+    "sectionproperties"
+]
