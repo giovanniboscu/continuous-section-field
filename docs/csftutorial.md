@@ -330,18 +330,28 @@ This is useful when you only need a few keys (for plots, checking, exporting).
 
 ```yaml
 CSF_ACTIONS:
+  version: 0.1
+
   stations:
-    z_list: [0.0, 10.0] #<= this list is also valid
+    stations_example:
+      - 0.0
+      - 1.0
+      - 10.0
 
   actions:
-    - section_selected_analysis:
-        stations: [z_list]
-        output: [stdout, out/selected.csv, out/selected.txt]
-        properties: [A,Cx,Ix,Iy,Ip,I1,I2,Cy,rx,ry,Ixy,Wx,Wy,K_torsion,Q_na,J_sv_cell,J_sv_wall,J_s_vroark,J_s_vroark_fidelity]
+    - plot_volume_3d:
         params:
-          fmt_display: ".12f"
+          line_percent: 100.0
+          title: "Ruled volume"
+    - section_selected_analysis:
+        stations: stations_example
+        output:
+          - stdout
+          - out/results.csv
+          - out/report.txt          
+        properties: [A,Cx,Ix,Iy,Ip,I1,I2,Cy,rx,ry,Ixy,Wx,Wy,K_torsion,Q_na,J_sv_cell,J_sv_wall,J_s_vroark,J_s_vroark_fidelity]
 ```
-
+mkdir out
 **CLI**
 
 ```bash
