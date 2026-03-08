@@ -10,8 +10,6 @@ CSF_ACTIONS:
         stations: station_3pt
         output:
           - stdout
-          - out/rectangle.csv
-          - out/rectangle.txt
         properties: [A, Cx, Cy, Ix, Iy]
 
     - plot_section_2d:
