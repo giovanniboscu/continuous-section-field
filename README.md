@@ -25,6 +25,14 @@ CSF models a member as a continuous field along the axis `z`, combining:
 - **Weight field**: per-polygon custom participation factor w(z) along z that scales each region’s effective contribution (not self-weight). [see Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case.
 
 
+### Conceptual Model
+
+CSF treats section properties as integrals of a continuous geometry–material field, rather than assuming the classical separable product between geometry and material.
+
+See the conceptual explanation:  
+[geometric material decomposition](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/geometric_material_decomposition.md)
+
+
 From this continuous description, CSF evaluates section properties and stiffness fields along `z` (e.g., `A(z)`, `I(z)`, `C(z)`, `EA(z)`, `EI(z)`, `GJ(z)`) and can export solver-ready station data (e.g., OpenSees `forceBeamColumn` stationing or SAP2000-ready tabular property packs).
 
         
