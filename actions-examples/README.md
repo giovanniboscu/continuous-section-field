@@ -1,4 +1,4 @@
-# CSF YAML Examples (No Python Coding Required)
+# CSF YAML Examples (No  Coding Required)
 
 1. **`write_opensees_geometry`**  
    Exports CSF section data along `z` into an OpenSees-ready Tcl geometry file, using sampled stations and reference material parameters (`E_ref`, `nu`).
@@ -16,7 +16,7 @@
    Minimal CSF case based on a rectangular section, intended for quick setup, validation, and first checks of area/inertia/torsion trends along the member length.
 
 ---
-This directory contains **ready-to-run CSF examples** that require **no Python programming**.
+This directory contains **ready-to-run CSF examples** that require **no  programming**.
 Each example is defined by **two YAML files**:
 
 - `geometry.yaml` — defines the cross-sections at the end stations (e.g., `S0`, `S1`) using explicit polygons.
@@ -60,7 +60,7 @@ Some actions use explicit `stations`, while others sample internally and do **no
 From this directory:
 
 ```bash
-python CSFActions.py geometry.yaml actions.yaml
+ -m csf.CSFActions geometry.yaml actions.yaml
 ```
 
 Outputs (plots, CSV/TXT reports, exported YAML, templates, etc.) are written to the paths listed under each action’s `output`.
