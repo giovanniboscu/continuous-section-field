@@ -115,7 +115,8 @@ A linearly tapered rectangle along z:
 ### Interpretation
 - With a strong taper, stiffness varies significantly because $I \\propto h^3$.  
 - Uniform piecewise needs enough segments to approximate that variation well.
-- CSF uses **10 stations** (often Gauss–Lobatto non-uniform) → tends to achieve a given accuracy with fewer “wasted” points than uniform segmentation.
+- CSF uses **10 stations** (often Gauss–Lobatto non-uniform) → CSF can concentrate sampling where stiffness variation is larger
+depending on the chosen station distribution.
 
 Relative error vs CSF:
 - `N=5`  → ~**1.27%**
