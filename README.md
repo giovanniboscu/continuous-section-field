@@ -27,10 +27,9 @@ CSF models a member as a continuous field along the axis `z`, combining:
 
 ### Conceptual Model
 
-CSF treats section properties as integrals of a continuous geometry-material field, rather than assuming the classical separable product of geometry and material.
+CSF represents section properties as integrals of a continuous geometry-material field along the member axis.
 
-See the conceptual explanation:  
-[geometric material decomposition](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/geometric_material_decomposition.md)
+[property(z) = material(z) × geometry](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/geometric_material_decomposition.md)
 
 
 From this continuous description, CSF evaluates section properties and stiffness fields along `z` (e.g., `A(z)`, `I(z)`, `C(z)`, `EA(z)`, `EI(z)`, `GJ(z)`) and can export solver-ready station data (e.g., OpenSees `forceBeamColumn` stationing or SAP2000-ready tabular property packs).
