@@ -121,6 +121,12 @@ w(x,y,z) = m(x)
 
 which restores separability.
 
+**Note.** Some section properties (e.g., the Saint-Venant torsional constant `J_sv`) are not obtained from a direct geometric integral with a fixed kernel `f(y,z)`.  
+They require solving an auxiliary field problem on the cross-section domain.  
+However, they still depend only on the geometry and can be written formally as a functional of the section domain:
+
+`J_sv = F(Ω)`
+
 ---
 
 # 4. Continuous Section Field (CSF)
