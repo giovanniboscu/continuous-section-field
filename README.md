@@ -17,8 +17,9 @@
 
 ## Continuous Section Field (CSF)
 
-**CSF** is a Python engine for **non-prismatic** and **polygon-resolved non-homogeneous** beam-like members, designed as a *continuous pre-processor* where each polygon can carry its own longitudinal  $w_i(z)$ 
-to generate solver-ready property fields.
+**CSF** is a Python engine for **non-prismatic** and **polygon-resolved non-homogeneous** beam-like members, 
+designed as a continuous pre-processor where the cross-section is described by polygonal regions,
+each of which can carry its own longitudinal law $w_i(z)$ .
 CSF models a member as a continuous field along the axis `z`, combining:
 
 - **Geometry field**: arbitrary polygonal sections at stations ( `S0`, `S1`) with interpolation for tapered / varying shapes.
