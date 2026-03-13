@@ -768,6 +768,9 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 
 **Concept**  
 Plots interpolated polygon weights along the member (one curve per polygon).
+**Note**
+
+If no additional law is specified, the longitudinal variation of section properties is **linear**, as defined by the interpolation of the geometry between the stations declared in the `geometry` file.
 
 **YAML**
 
@@ -878,10 +881,6 @@ CSF_ACTIONS:
 ```bash
 python3 -m csf.CSFActions geometry.yaml actions.yaml
 ```
-
-**Note**
-
-If no additional law is specified, the longitudinal variation of section properties is **linear**, as defined by the interpolation of the geometry between the stations declared in the `geometry` file.
 
 ```
 
