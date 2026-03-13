@@ -764,7 +764,168 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 - If you omit `stdout` from output, the plot is not shown (file-only).
 ---
 
-### 6.6 `plot_weight` (stations FORBIDDEN)
+### 6.6 `section_area_by_weight`
+
+**Concept**
+
+Produces an **accountant-style geometric area listing** at selected stations.
+
+The report lists each declared polygon with:
+
+- its **geometric area** `A_net`
+- its **absolute weight** `W`
+- the weighted contribution `A*w`
+- the **topological nesting** (container / inner polygons)
+
+Two totals are reported:
+
+- **Occupied Total Surface** = sum of geometric polygon areas
+- **Homogenized area** = sum of `A_net * w_abs`
+
+This action is **purely geometric/accounting oriented** and does not compute
+mechanical section properties.
+
+---
+
+### Example geometry
+
+```yaml
+CSF:
+  # Parallelepiped with constant section from S0 to S1.
+  # Three nested squares:
+  # 1) outer square   -> weight = 2.0
+  # 2) inner square   -> weight = 1.0
+  # 3) inner hole     -> weight = 0.0
+
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+
+        square_outer:
+          weight: 2.0
+          vertices:
+            - [-1.5, -1.5]
+            - [ 1.5, -1.5]
+            - [ 1.5,  1.5]
+            - [-1.5,  1.5]
+
+        square_inner_1:
+          weight: 1.0
+          vertices:
+            - [-1.0, -1.0]
+            - [ 1.0, -1.0]
+            - [ 1.0,  1.0]
+            - [-1.0,  1.0]
+
+        square_inner_2:
+          weight: 0.0
+          vertices:
+            - [-0.5, -0.5]
+            - [ 0.5, -0.5]
+            - [ 0.5,  0.5]
+            - [-0.5,  0.5]
+
+    S1:
+      z: 10.0
+      polygons:
+
+        square_outer:
+          weight: 2.0
+          vertices:
+            - [-1.5, -1.5]
+            - [ 1.5, -1.5]
+            - [ 1.5,  1.5]
+            - [-1.5,  1.5]
+
+        square_inner_1:
+          weight: 1.0
+          vertices:
+            - [-1.0, -1.0]
+            - [ 1.0, -1.0]
+            - [ 1.0,  1.0]
+            - [-1.0,  1.0]
+
+        square_inner_2:
+          weight: 0.0
+          vertices:
+            - [-0.5, -0.5]
+            - [ 0.5, -0.5]
+            - [ 0.5,  0.5]
+            - [-0.5,  0.5]
+```
+
+---
+
+### Example action file
+
+```yaml
+CSF_ACTIONS:
+  version: 0.1
+
+  stations:
+    stations_example:
+      - 0.0
+    stations_edges:
+      - 0.0
+      - 10.0
+
+  actions:
+
+    - plot_section_2d:
+        stations: stations_example
+        show_ids: true
+        show_vertex_ids: true
+        output:
+          - [stdout, out/boxes.jpg]
+
+    - section_area_by_weight:
+        stations: stations_example
+        output:
+          - [stdout, out/boxesarea.csv, out/boxesarea.txt]
+        params:
+          w_tol: 0.0
+          include_per_polygon: True
+```
+
+---
+
+### Meaning of parameters
+
+| Parameter | Meaning |
+|-----------|--------|
+| `w_tol` | grouping tolerance for weight bins (purely for reporting) |
+| `include_per_polygon` | prints one line per polygon with nesting information |
+
+---
+
+### Example output (conceptual)
+
+```
+W | id | polygon | A_net | A*w | inners | container
+---------------------------------------------------
+0 | [02] square_inner_2 | 1 | 0 | [] | square_inner_1
+1 | [01] square_inner_1 | 3 | 3 | [square_inner_2] | square_outer
+2 | [00] square_outer   | 5 | 10 | [square_inner_1] | ROOT
+```
+
+Totals:
+
+```
+Occupied Total Surface: 9
+Homogenized area:      13
+```
+
+---
+
+### Notes
+
+- `A_net` is the **geometric area of the declared polygon**, not the composed net section.
+- `W` is the **absolute polygon weight**.
+- `A*w` represents the **weighted contribution** used for accounting or material estimation.
+
+---
+### 6.7 `plot_weight` (stations FORBIDDEN)
 
 **Concept**  
 Plots interpolated polygon weights along the member (one curve per polygon).
@@ -854,7 +1015,7 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 
 ---
 
-### 6.7 `weight_lab_zrelative` (stations REQUIRED; text-only)
+### 6.8 `weight_lab_zrelative` (stations REQUIRED; text-only)
 
 **Concept**  
 Evaluates user weight-law expressions at **relative z** values (your station list is interpreted as relative).  
@@ -890,7 +1051,7 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 
 ---
 
-### 6.8 `export_yaml` (stations REQUIRED; FILE-ONLY)
+### 6.9 `export_yaml` (stations REQUIRED; FILE-ONLY)
 
 **Concept**  
 Exports a new CSF geometry YAML built from **exactly two** stations (z0 and z1).
@@ -927,7 +1088,7 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 
 ---
 
-### 6.9 `write_opensees_geometry` (stations FORBIDDEN; FILE-ONLY)
+### 6.10 `write_opensees_geometry` (stations FORBIDDEN; FILE-ONLY)
 
 **Concept**  
 Writes a Tcl file with stations + Elastic sections for downstream OpenSees workflows.
@@ -964,7 +1125,7 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 
 ---
 
-### 6.10 `write_sap2000_geometry` (stations FORBIDDEN; FILE-ONLY)
+### 6.11 `write_sap2000_geometry` (stations FORBIDDEN; FILE-ONLY)
 
 **Concept**  
 Writes a “template pack” text file that helps you build a SAP2000 model by copy/paste.
