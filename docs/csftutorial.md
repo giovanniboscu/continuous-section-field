@@ -791,64 +791,101 @@ mechanical section properties.
 
 ```yaml
 CSF:
-  # Parallelepiped with constant section from S0 to S1.
-  # Three nested squares:
-  # 1) outer square   -> weight = 2.0
-  # 2) inner square   -> weight = 1.0
-  # 3) inner hole     -> weight = 0.0
+  # Constant-section prismatic member from S0 to S1.
+  #
+  # The section is made of three concentric nested squares:
+  #
+  # - square_outer:
+  #   outermost square, absolute weight = 2.0
+  #
+  # - square_inner_1:
+  #   square fully inside square_outer, absolute weight = 1.0
+  #
+  # - square_inner_2:
+  #   square fully inside square_inner_1, absolute weight = 0.0
+  #
+  # Geometrically, all three polygons are declared explicitly.
+  # Therefore:
+  # - the occupied geometric area/volume includes all declared polygons
+  # - the homogenized contribution of each polygon is its own geometry
+  #   multiplied by its own absolute weight
+  #
+  # Since S0 and S1 are identical, the member is a parallelepiped
+  # with constant cross-section along z.
 
   sections:
     S0:
+      # Start section at z = 0
       z: 0.0
       polygons:
 
         square_outer:
+          # Outermost square
+          # Absolute weight = 2.0
+          # Side = 3.0
           weight: 2.0
           vertices:
+            # CCW vertices
             - [-1.5, -1.5]
             - [ 1.5, -1.5]
             - [ 1.5,  1.5]
             - [-1.5,  1.5]
 
         square_inner_1:
+          # Intermediate square, fully contained in square_outer
+          # Absolute weight = 1.0
+          # Side = 2.0
           weight: 1.0
           vertices:
+            # CCW vertices
             - [-1.0, -1.0]
             - [ 1.0, -1.0]
             - [ 1.0,  1.0]
             - [-1.0,  1.0]
 
         square_inner_2:
+          # Innermost square, fully contained in square_inner_1
+          # Absolute weight = 0.0
+          # Side = 1.0
           weight: 0.0
           vertices:
+            # CCW vertices
             - [-0.5, -0.5]
             - [ 0.5, -0.5]
             - [ 0.5,  0.5]
             - [-0.5,  0.5]
 
     S1:
+      # End section at z = 10
+      # Geometry is identical to S0, so there is no shape variation along z
       z: 10.0
       polygons:
 
         square_outer:
+          # Same outer square as S0
           weight: 2.0
           vertices:
+            # CCW vertices
             - [-1.5, -1.5]
             - [ 1.5, -1.5]
             - [ 1.5,  1.5]
             - [-1.5,  1.5]
 
         square_inner_1:
+          # Same intermediate square as S0
           weight: 1.0
           vertices:
+            # CCW vertices
             - [-1.0, -1.0]
             - [ 1.0, -1.0]
             - [ 1.0,  1.0]
             - [-1.0,  1.0]
 
         square_inner_2:
+          # Same inner square as S0
           weight: 0.0
           vertices:
+            # CCW vertices
             - [-0.5, -0.5]
             - [ 0.5, -0.5]
             - [ 0.5,  0.5]
@@ -902,20 +939,21 @@ CSF_ACTIONS:
 ### Example output (conceptual)
 
 ```
-W | id | polygon | A_net | A*w | inners | container
----------------------------------------------------
-0 | [02] square_inner_2 | 1 | 0 | [] | square_inner_1
-1 | [01] square_inner_1 | 3 | 3 | [square_inner_2] | square_outer
-2 | [00] square_outer   | 5 | 10 | [square_inner_1] | ROOT
-```
+SECTION AREA LIST REPORT at z = 0.000000
+================================================================================
+group_mode=weight  w_tol=0.000000
 
-Totals:
+         W | id     | s0.name            | s1.name            |        A_net |          A*w | inners pols            | Container
+--------------------------------------------------------------------------------
+  0.000000 | [02]   | square_inner_2     | square_inner_2     |     1.000000 |     0.000000 | []                     | square_inner_1
+  1.000000 | [01]   | square_inner_1     | square_inner_1     |     3.000000 |     3.000000 | ['square_inner_2']     | square_outer
+  2.000000 | [00]   | square_outer       | square_outer       |     5.000000 |    10.000000 | ['square_inner_1']     | [ROOT]
+--------------------------------------------------------------------------------
+Occupied Total Surface: 9.000000
+Homogenized area:        13.000000
+
 
 ```
-Occupied Total Surface: 9
-Homogenized area:      13
-```
-
 ---
 
 ### Notes
