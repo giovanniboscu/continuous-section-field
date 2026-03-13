@@ -250,9 +250,11 @@ output: [stdout]
 
 ### 4.1 File-only behavior
 
-If `output:` exists but does **not** contain `stdout`, the run becomes **file-only** for that action:
+If `output:` exists but does **not** contain `stdout`, the action runs in **file-only mode**:
 - no on-screen output
 - only files are written
+
+When file outputs are specified, the **output format is inferred from the file extension** (for example `.csv` for CSV tables, `.txt` for plain text reports).
 
 Example:
 
@@ -271,15 +273,15 @@ CSF_ACTIONS:
         params:
           line_percent: 100.0
           title: "Ruled volume"
+
     - section_selected_analysis:
         stations: stations_example
         output:
           - stdout
-          - out/results.csv
-          - out/report.txt          
+          - out/results.csv   # CSV table output
+          - out/report.txt    # plain text report
         properties: [A, Cx, Cy, Ix, Iy]
-        
-        
+
 ```
 
 
