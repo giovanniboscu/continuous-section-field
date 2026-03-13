@@ -8,10 +8,13 @@
 ![License](https://img.shields.io/github/license/giovanniboscu/continuous-section-field)
 ![Repo Size](https://img.shields.io/github/repo-size/giovanniboscu/continuous-section-field)
 
+
+
 **[Key Features](#key-features)** • **[Installation & setup](#setup-environment-linux--windows)** • **[Worked Example](#worked-example-continuously-tapered-t-beam)** • **[Validation: Cylinder](#csf-numerical-validation-circular-hollow-section)** • **[Case Study: NREL 5-MW](#csf-validation--numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
 
 - [CSF Programmer Guide](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/programmer-guide) — Python API (developer-oriented)
 - [CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md) — step-by-step YAML workflow (no Python programming required)
+
 
 ---
 
@@ -24,6 +27,10 @@ CSF models a member as a continuous field along the axis `z`, combining:
 
 - **Geometry field**: arbitrary polygonal sections at stations ( `S0`, `S1`) with interpolation for tapered / varying shapes.
 - **Weight field**: per-polygon custom participation factor $w_i(z)$ along z that scales each region’s effective contribution (not self-weight). [see Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case.
+
+<p align="center">        
+<img src="https://github.com/user-attachments/assets/67a8f973-abf6-4715-9302-ce3ab2e21fae" alt="morphing" width="35%">
+</p>
 
 
 ### [Conceptual Model](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/geometric_material_decomposition.md)
@@ -38,9 +45,6 @@ CSF represents section properties as integrals of a continuous geometry-material
 
 From this continuous description, CSF evaluates section properties and stiffness fields along `z` (e.g., `A(z)`, `I(z)`, `C(z)`, `EA(z)`, `EI(z)`, `GJ(z)`) and can export solver-ready station data (e.g., OpenSees `forceBeamColumn` stationing or SAP2000-ready tabular property packs).
 
-<p align="center">        
-<img src="https://github.com/user-attachments/assets/67a8f973-abf6-4715-9302-ce3ab2e21fae" alt="morphing" width="35%">
-</p>
 
 ---
 ## Key Features
