@@ -287,7 +287,7 @@ CSF_ACTIONS:
 The output directory (e.g. out/) is not created automatically and must already exist.
 
 ---
-### 4.2 Geometry export in `properties`
+## 4.2 Geometry export in `properties`
 
 The keyword `geometry` can be added to the `properties` list to export
 the **section geometry at each evaluated station**.
