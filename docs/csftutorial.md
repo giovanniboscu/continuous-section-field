@@ -286,13 +286,71 @@ CSF_ACTIONS:
 
 The output directory (e.g. out/) is not created automatically and must already exist.
 
+---
+### 4.2 Geometry export in `properties`
 
-### 4.2 Actions that forbid stdout
+The keyword `geometry` can be added to the `properties` list to export
+the **section geometry at each evaluated station**.
 
-Some actions are strictly file-only and will reject `stdout` with a friendly error:
-- `export_yaml`
-- `write_opensees_geometry`
-- `write_sap2000_geometry` (and alias `write_samp2000_geometry`)
+When `geometry` is present, CSF exports the polygon vertices
+corresponding to the evaluated section together with the requested
+section properties. This keeps the **numerical results and the geometry
+that generated them** in the same output.
+
+The use of `geometry` is **optional**.\
+If only section properties are required, it can simply be omitted.
+
+Example:
+
+``` yaml
+CSF_ACTIONS:
+  actions:
+    - section_selected_analysis:
+        stations: stations_example
+        output:
+          - stdout
+          - out/results.csv
+          - out/report.txt
+        properties: [geometry, A, Cx, Cy, Ix, Iy]
+```
+
+------------------------------------------------------------------------
+
+### Example output
+
+#### `out/report.txt`
+
+    ### SECTION SELECTED ANALYSIS @ z = 0.0 ###
+    A                   : 1.00000000  [Total net cross-sectional area]
+    Cx                  : 0.00000000  [Horizontal centroid (X)]
+    Cy                  : 0.50000000  [Vertical centroid (Y)]
+    Ix                  : 0.08333333  [Second moment about centroidal X-axis]
+    Iy                  : 0.08333333  [Second moment about centroidal Y-axis]
+
+    ## GEOMETRY EXPORT ##
+    # z=0.0
+    idx_polygon,idx_container,s0_name,s1_name,w,vertex_i,x,y
+    0,,rect,rect,1.00000000,0,-0.50000000,0.00000000
+    0,,rect,rect,1.00000000,1,0.50000000,0.00000000
+    0,,rect,rect,1.00000000,2,0.50000000,1.00000000
+    0,,rect,rect,1.00000000,3,-0.50000000,1.00000000
+
+------------------------------------------------------------------------
+
+#### `out/results.csv`
+
+    z,A,Cx,Cy,Ix,Iy
+    0.00000000,1.00000000,0.00000000,0.50000000,0.08333333,0.08333333
+    1.00000000,1.10000000,0.00000000,0.55000000,0.11091667,0.09166667
+    10.00000000,2.00000000,0.00000000,1.00000000,0.66666667,0.16666667
+
+    ## GEOMETRY EXPORT ##
+    # z=0.0
+    idx_polygon,idx_container,s0_name,s1_name,w,vertex_i,x,y
+    0,,rect,rect,1.00000000,0,-0.50000000,0.00000000
+    0,,rect,rect,1.00000000,1,0.50000000,0.00000000
+    0,,rect,rect,1.00000000,2,0.500000000,1.00000000
+    0,,rect,rect,1.00000000,3,-0.50000000,1.00000000
 
 ---
 
