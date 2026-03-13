@@ -925,6 +925,108 @@ Homogenized area:      13
 - `A*w` represents the **weighted contribution** used for accounting or material estimation.
 
 ---
+
+### 6.6.1 `volume`
+
+**Concept**  
+Computes the geometric and homogenized volume of the member between the selected edge stations.
+
+The action reports:
+
+- **Occupied Volume**: geometric volume of each declared polygon
+- **Homogenized Volume**: occupied volume multiplied by the polygon absolute weight `w`
+
+This action is intended for **geometric/accounting summaries**, not for mechanical section-property evaluation.
+
+---
+
+### YAML
+
+```yaml
+CSF_ACTIONS:
+  version: 0.1
+
+  stations:
+    stations_example:
+      - 0.0
+    stations_edges:
+      - 0.0
+      - 10.0
+
+  actions:
+    - plot_section_2d:
+        stations: stations_example
+        show_ids: true
+        show_vertex_ids: true
+        output:
+          - [stdout, out/boxes.jpg]
+
+    - volume:
+        stations: stations_edges
+        output:
+          - stdout
+          - [out/boxesvolume.txt]
+        params:
+          n_points: 200
+          fmt_display: ".6f"
+          w_tol: 0.0
+```
+
+---
+
+### CLI
+
+```bash
+mkdir -p out
+python3 -m csf.CSFActions geometry.yaml actions.yaml
+```
+
+---
+
+### Meaning of parameters
+
+- `stations`: must contain the two edge stations that define the integration interval
+- `n_points`: number of Gauss-Legendre integration points
+- `fmt_display`: numeric format used in the printed report
+- `w_tol`: currently accepted for interface consistency, but ignored by this action
+
+---
+
+### Expected output (conceptual)
+
+```text
+VOLUME POLYGON LIST REPORT at z=0.000000 and z=10.000000
+========================================================================================================================
+n_points=200  w_tol=0.000000
+
+id     |         s0.w |         s1.w | weight_law         | s0.name            | s1.name            |    Volume Occupied |   Homogenized Volume
+------------------------------------------------------------------------------------------------------------------------
+[00]   |     2.000000 |     2.000000 | none               | square_outer       | square_outer       |          50.000000 |           100.000000
+[01]   |     1.000000 |     1.000000 | none               | square_inner_1     | square_inner_1     |          30.000000 |            30.000000
+[02]   |     0.000000 |     0.000000 | none               | square_inner_2     | square_inner_2     |          10.000000 |             0.000000
+------------------------------------------------------------------------------------------------------------------------
+Total Occupied Volume:           90.000000
+Total Occupied Homogenized Volume: 130.000000
+
+```
+
+---
+
+### Notes
+
+- `Volume Occupied` is the geometric volume of the declared polygon.
+- `Homogenized Volume` is computed using the polygon **absolute weight**.
+- A polygon with `w = 0` still contributes to the occupied geometric volume, but contributes `0` to the homogenized volume.
+- The output directory is not created automatically.
+
+---
+
+### Pitfalls
+
+- `stations` should identify the start and end of the volume interval.
+- `w_tol` is currently unused and may appear only as a header/report parameter.
+- Do not interpret this report as a composed mechanical result; it is a per-polygon geometric/homogenized volume report.
+---
 ### 6.7 `plot_weight` (stations FORBIDDEN)
 
 **Concept**  
