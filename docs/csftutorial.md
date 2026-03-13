@@ -1310,19 +1310,22 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 
 > “Envelope fields” (`stations`, `output`, `params`) apply to all actions, with per-action rules.
 
+
 | Action | Stations | Extra required keys (outside `params`) | Params (type → default) | Output behavior |
 |---|---|---|---|---|
-| `section_full_analysis` | REQUIRED | — | `fmt_diplay` (str → `.8f`) | stdout report; `.csv` table; other text file |
-| `section_selected_analysis` | REQUIRED | `properties` (list, non-empty) | `fmt_diplay` (str → `.8f`) | compact stdout; `.csv` (z + selected keys); other text file |
+| `section_full_analysis` | REQUIRED | — | `fmt_display` (str → `.8f`) | stdout report; `.csv` table; other text file |
+| `section_selected_analysis` | REQUIRED | `properties` (list, non-empty) | `fmt_display` (str → `.8f`) | compact stdout; `.csv` (z + selected keys); other text file |
 | `plot_section_2d` | REQUIRED | — | `show_ids` (bool → true), `show_weights` (bool → true), `show_vertex_ids` (bool → false), `title` (str → null), `dpi` (int → 150) | stdout shows at end; image files saved if provided |
 | `plot_volume_3d` | FORBIDDEN | — | `show_end_sections` (bool → true), `line_percent` (float → 100.0), `seed` (int → 0), `title` (str → "Ruled volume (vertex-connection lines)") | display-only (stdout); no file saving by design |
 | `plot_properties` | FORBIDDEN | `properties` (list, non-empty) | `num_points` (int → 100) | stdout display unless file-only; image saved if path given |
 | `plot_weight` | FORBIDDEN | — | `num_points` (int → 100) | stdout display unless file-only; image saved if path given |
-| `weight_lab_zrelative` | REQUIRED | `weith_law` (list[str], non-empty) | — | text-only; stdout and/or text files |
+| `weight_law_zrelative` | REQUIRED | `weight_law` (list[str], non-empty) | — | text-only; stdout and/or text files |
 | `export_yaml` | REQUIRED (exactly 2 z) | — | — | file-only; exactly one `.yaml`/`.yml`; stdout forbidden |
 | `write_opensees_geometry` | FORBIDDEN | — | `n_points` (int, required), `E_ref` (float, required), `nu` (float, required) | file-only; exactly one `.tcl`; stdout forbidden |
 | `write_sap2000_geometry` | FORBIDDEN | — | `n_intervals` (int, required), `E_ref` (float, required), `nu` (float, required), `material_name` (str → `"S355"`), `mode` (str → `"BOTH"`), `include_plot` (bool → true), `plot_filename` (str → `"section_variation.png"`) | file-only; exactly one `.txt`; stdout forbidden |
 | `write_samp2000_geometry` | FORBIDDEN | — | same as `write_sap2000_geometry` | alias (typo tolerance) |
+| `volume` | REQUIRED (typically 2 edge stations) | — | `n_points` (int → 200), `fmt_display` (str → `.6f`), `w_tol` (float → `0.0`) | stdout report and/or text file; per‑polygon occupied and homogenized volumes |
+| `section_area_by_weight` | REQUIRED | — | `w_tol` (float → `0.0`), `include_per_polygon` (bool → true) | stdout report and/or `.csv`/text; accountant‑style per‑polygon area listing |
 
 ---
 
