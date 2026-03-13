@@ -284,13 +284,7 @@ CSF_ACTIONS:
 
 ```
 
-
-
-
-
-
-
-
+The output directory (e.g. out/) is not created automatically and must already exist.
 
 
 ### 4.2 Actions that forbid stdout
