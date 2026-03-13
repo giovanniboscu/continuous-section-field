@@ -257,10 +257,39 @@ If `output:` exists but does **not** contain `stdout`, the run becomes **file-on
 Example:
 
 ```yaml
-output:
-  - out/results.csv
-  - out/report.txt
+CSF_ACTIONS:
+  version: 0.1
+
+  stations:
+    stations_example:
+      - 0.0
+      - 1.0
+      - 10.0
+
+  actions:
+    - plot_volume_3d:
+        params:
+          line_percent: 100.0
+          title: "Ruled volume"
+    - section_selected_analysis:
+        stations: stations_example
+        output:
+          - stdout
+          - out/results.csv
+          - out/report.txt          
+        properties: [A, Cx, Cy, Ix, Iy]
+        
+        
 ```
+
+
+
+
+
+
+
+
+
 
 ### 4.2 Actions that forbid stdout
 
