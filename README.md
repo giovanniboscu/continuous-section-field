@@ -26,7 +26,7 @@ each of which can carry its own longitudinal law $w_i(z)$ .
 
 
 <p align="center">        
-<img src="https://github.com/user-attachments/assets/67a8f973-abf6-4715-9302-ce3ab2e21fae" alt="morphing" width="50%">
+<img src="https://github.com/user-attachments/assets/67a8f973-abf6-4715-9302-ce3ab2e21fae" alt="morphing" width="55%">
 </p>
 
 CSF models a member as a continuous field along the axis `z`, combining:
