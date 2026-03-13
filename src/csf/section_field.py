@@ -981,10 +981,8 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
     current_verts = tuple(
         v0.lerp(v1, z,l_total) for v0, v1 in zip(p0.vertices, p1.vertices)
     )
-    p_z = Polygon(vertices=current_verts, weight=p0.weight, name=p0.name)
-   
+    #p_z = Polygon(vertices=current_verts, weight=p0.weight, name=p0.name)
     t=(zt-z0)/(z1-z0)
-    #print(f"DEBUG z0 {z0} z1 {z1} zt {zt} t{t}")
     # 3. Define the external file lookup helper
     z=zt-z0
     def E_lookup(filename: str) -> float:
@@ -2089,15 +2087,16 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
     - INNER loop is the remaining tail after OUTER closure.
     - INNER explicit repeated endpoint is optional; implicit closure is accepted.
     """
+    
     TOKEN_CELL = "@cell"
     TOKEN_CLOSED = "@closed"
     TOKEN_T = "@t="
-    REQUIRE_EXPLICIT_T = True
-
+    REQUIRE_EXPLICIT_T = False
+    
     polys = getattr(section, "polygons", None)
     if not polys:
         return 0.0
-
+    
     # -------------------------------------------------------------------------
     # 0) Select @cell polygons
     # -------------------------------------------------------------------------
@@ -2107,10 +2106,10 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         low = nm.lower()
         if (TOKEN_CELL in low) or (TOKEN_CLOSED in low):
             cell_polys.append(p)
-
+    
     if not cell_polys:
         return 0.0
-
+    
     # -------------------------------------------------------------------------
     # 1) Local helpers
     # -------------------------------------------------------------------------
@@ -2359,6 +2358,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         # Thickness from @t=... (strict by policy).
         t = _parse_t(nm)
         if t is None:
+            
             if REQUIRE_EXPLICIT_T:
                 raise CSFError(
                     f"compute_saint_venant_J_cell(v3): polygon '{nm}' is @cell/@closed but missing '@t=...'."
@@ -3231,14 +3231,15 @@ def volume_polygon_list_report_data(
         s0_name = str(r1.get("s0_name"))
         s1_name = str(r1.get("s1_name"))
 
-        w1 = float(r1.get("weight_at_z"))
-        w2 = float(r2.get("weight_at_z"))
+        w1 = float(r1.get("weight_abs_z")) #weight_at_z
+        w2 = float(r2.get("weight_abs_z"))  #weight_at_z
 
         law = r1.get("weight_law")
         law_str = "none" if law is None else str(law)
 
         # Volumes (no local integration here).
         v = integrate_volume(field, z_int0, z_int1, int(n_points), idx=int(i))
+
 
         # idx-mode returns a (V_geom, V_weighted) tuple by contract.
         v_occ = float(v[0])
@@ -3603,18 +3604,23 @@ def integrate_volume(
         fall back to computing the full list and selecting the requested idx.
         """
         # Try the specialized single function if available in the module namespace.
-        fn = globals().get("polygon_surface_w1_inners0_single")
+        #fn = globals().get("polygon_surface_w1_inners0_single")
+        rec = polygon_surface_w1_inners0_single(field, z_abs, idx)  # type: ignore[misc]
+
+        return float(rec["A"]), float(rec["A_w"])
+        '''
         if callable(fn):
             rec = fn(field, z_abs, idx)  # type: ignore[misc]
             return float(rec["A"]), float(rec["A_w"])
-
+        '''
+        '''
         # Fallback: compute full list once at this z and pick the record by idx.
         rows = polygon_surface_w1_inners0(field, z_abs)
         for r in rows:
             if int(r.get("idx", -1)) == idx:
                 return float(r["A"]), float(r["A_w"])
         raise ValueError(f"Polygon idx={idx} not found at z={z_abs}.")
-
+        '''
     # --- integration loop ---
     for x, w in zip(xi, wi):
         # Map x in [-1,1] to z in [z0,z1] (using midpoint + half-length)
@@ -4159,8 +4165,9 @@ class Pt:
 @dataclass(frozen=True)
 class Polygon:
     vertices: Tuple[Pt, ...]
-    weight: float = 1.0   # Homogenization coefficient, can be negative for holes
+    weight: float = 1.0   # relative Homogenization coefficient,  negative for holes
     name: str = ""        # Optional label / ID
+    weightabs: float = 1.0 # absolute  Homogenization coefficient, 0 for holes
 
     def __post_init__(self) -> None:
         """
@@ -4955,13 +4962,7 @@ def export_polygon_vertices_csv(section: Section, field: ContinuousSectionField,
 
     def build_w_by_idx(named_polys: dict) -> dict[int, float]:
         """
-        Build {idx: effective_weight_at_z} from polygons metadata.
-
-        Rule:
-            w_by_idx[idx] = weight_at_z(idx) - weight_at_z(container_idx)
-
-        If container_idx is None or missing from the dataset,
-        the container contribution is assumed equal to 0.
+        Build {idx: w_by_idx} from polygons metadata.
         """
         polys_by_idx = {}
 
@@ -4973,17 +4974,7 @@ def export_polygon_vertices_csv(section: Section, field: ContinuousSectionField,
 
         for poly in polys_by_idx.values():
             idx = poly["idx"]
-            weight_at_z = poly["weight_at_z"]
-            container_idx = poly["container_idx"]
-
-            if container_idx is None:
-                container_weight_at_z = 0.0
-            else:
-                container_poly = polys_by_idx.get(container_idx)
-                container_weight_at_z = 0.0 if container_poly is None else container_poly["weight_at_z"]
-
-            w_by_idx[idx] = weight_at_z + container_weight_at_z
-
+            w_by_idx[idx]=poly["weight_abs_z"]
         return w_by_idx
 
     def strip_wall_cell_suffix(name: str) -> str:
@@ -5159,6 +5150,7 @@ class ContinuousSectionField:
         - s0_weight (float)
         - s1_weight (float)
         - weight_at_z (float)
+        - weight_abs_z (float)
         - weight_law (str | None)
         - area_signed (float)
         - is_container (bool)
@@ -5208,7 +5200,7 @@ class ContinuousSectionField:
                 raise ValueError(f"Polygon idx={idx} has no 'weight' attribute.")
 
             weight_at_z = float(poly.weight)
-
+            weight_abs_z = float(poly.weightabs)
             s0_poly = s0_polygons[idx]
             s1_poly = s1_polygons[idx]
 
@@ -5274,7 +5266,8 @@ class ContinuousSectionField:
                     "s1_name": s1_name,
                     "s0_weight": s0_weight,
                     "s1_weight": s1_weight,
-                    "weight_at_z": weight_at_z,
+                    "weight_at_z": weight_at_z, 
+                    "weight_abs_z": weight_abs_z,                                        
                     "weight_law": weight_law,
                     "area_signed": area_signed,
                     "is_container": len(direct_children_idx) > 0,
@@ -5385,9 +5378,104 @@ class ContinuousSectionField:
         """
         debug = bool(getattr(self, "debug_container", False))
 
+
+        def _get_coincident_previous_polygon_index(i: int):
+            """
+            Return the index of a polygon coincident with polygon i, considering
+            only previous polygons (idx < i).
+
+            If no previous coincident polygon exists, return None.
+
+            Coincidence is geometric boundary coincidence, even if the two polygons
+            have different numbers of vertices.
+            """
+            polys = self.s0.polygons
+            eps_l = float(getattr(self, "eps_l", EPS_L))
+
+            def _strip_closure(verts):
+                # Drop duplicated closing vertex if present.
+                if len(verts) >= 2 and verts[0] == verts[-1]:
+                    return verts[:-1]
+                return verts
+
+            def _point_on_segment(px, py, ax, ay, bx, by) -> bool:
+                # Robust point-on-segment test with degenerate segment handling.
+                abx, aby = (bx - ax), (by - ay)
+                apx, apy = (px - ax), (py - ay)
+                ab2 = abx * abx + aby * aby
+
+                if ab2 <= eps_l * eps_l:
+                    dx = px - ax
+                    dy = py - ay
+                    return (dx * dx + dy * dy) <= eps_l * eps_l
+
+                cross = abx * apy - aby * apx
+                if abs(cross) > eps_l:
+                    return False
+
+                dot = apx * abx + apy * aby
+                if dot < -eps_l:
+                    return False
+                if dot > ab2 + eps_l:
+                    return False
+
+                return True
+
+            def _point_on_polygon_boundary(pt, verts) -> bool:
+                # Return True if pt lies on any polygon edge.
+                n = len(verts)
+                for k in range(n):
+                    a = verts[k]
+                    b = verts[(k + 1) % n]
+                    if _point_on_segment(pt.x, pt.y, a.x, a.y, b.x, b.y):
+                        return True
+                return False
+
+            def _poly_coincident_general(verts_a, verts_b) -> bool:
+                """
+                Return True if two polygons represent the same boundary, even if
+                they have different numbers of vertices.
+                """
+                va = _strip_closure(verts_a)
+                vb = _strip_closure(verts_b)
+
+                if len(va) < 3 or len(vb) < 3:
+                    return False
+
+                for p in va:
+                    if not _point_on_polygon_boundary(p, vb):
+                        return False
+
+                for p in vb:
+                    if not _point_on_polygon_boundary(p, va):
+                        return False
+
+                return True
+
+            if not (0 <= i < len(polys)):
+                return None
+
+            verts_i = _strip_closure(polys[i].vertices)
+            if len(verts_i) < 3:
+                return None
+
+            # Search only previous polygons.
+            for j in range(i - 1, -1, -1):
+                verts_j = _strip_closure(polys[j].vertices)
+                if len(verts_j) < 3:
+                    continue
+                if _poly_coincident_general(verts_i, verts_j):
+                    return j
+            return None
+
         def _dbg(msg: str) -> None:
             if debug:
                 print(msg)
+
+        coincident_prev_idx = _get_coincident_previous_polygon_index(i)
+        if coincident_prev_idx is not None:
+            return coincident_prev_idx
+
 
         polys = self.s0.polygons
         n_polys = len(polys)
@@ -5853,12 +5941,242 @@ class ContinuousSectionField:
         print(f"Homogenized area:       {homogenized_area:.12g}")
     # --------------------------------------------------------------------------------------
 
-  
+
+
+    def section_area_by_weight(
+        self,
+        z: float,
+        w_tol: float = 0.0,
+        include_per_polygon: bool = False,
+        debug: bool = False,
+        zero_w_eps: float = 0.0,
+    ) -> Dict[str, Any]:
+        """
+        Compute area breakdown at section z grouped by ABSOLUTE weight (w_abs).
+
+        This implementation is strictly index-based:
+        - polygon identity is the polygon index
+        - names are never used for topology, matching, or grouping
+        - direct-children topology is taken from S0 through build_direct_children_map(z)
+
+        Geometric reporting rule:
+        - For each polygon i, the reported geometric area is:
+            area_geom_net[i] = area_geom[i] - sum(area_geom[j] for j in direct_children[i])
+        - This subtraction is purely geometric and does not depend on weight.
+        - Children are subtracted even if their weight is zero.
+
+        Effective area rule:
+        - The effective homogenized area is computed from the net geometric area
+        of each polygon multiplied by its absolute weight sampled on the section:
+            total_area = sum(area_geom_net[i] * w_abs[i])
+
+        Args:
+            z: Longitudinal coordinate where the section is sampled.
+            w_tol: Grouping tolerance for absolute weights. If > 0, weights are rounded
+                to the nearest multiple of w_tol for grouping purposes only.
+            include_per_polygon: If True, includes detailed per-polygon data in output.
+            debug: If True, prints debug information to stdout.
+            zero_w_eps: Threshold for considering an absolute weight as zero when
+                        computing total_area_nonzero. If |w_abs| <= zero_w_eps,
+                        that polygon contribution is excluded from the nonzero sum.
+
+        Returns:
+            Dictionary containing:
+            - z: Coordinate (float)
+            - total_area: Effective homogenized area = sum(area_net * w_abs)
+            - total_area_nonzero: Effective homogenized area excluding |w_abs| <= zero_w_eps
+            - total_area_geometric: Total net geometric surface = sum(area_net)
+            - groups: List of absolute-weight groups with accumulated net geometric areas
+            - per_polygon: (Optional) Detailed per-polygon data
+        """
+
+        # --- 1) Sample section at z ---
+        sec = self.section(z)
+
+        if not hasattr(sec, "polygons") or sec.polygons is None:
+            raise ValueError(f"Section at z={z} has no polygons.")
+
+        if not hasattr(self.s0, "polygons") or self.s0.polygons is None:
+            raise ValueError("self.s0 has no polygons.")
+
+        n_sec = len(sec.polygons)
+        n_s0 = len(self.s0.polygons)
+
+        # This report uses the S0 index topology and therefore requires that
+        # the sampled section preserves the same polygon indexing contract.
+        if n_sec != n_s0:
+            raise ValueError(
+                f"Section at z={z} has {n_sec} polygons, but S0 has {n_s0}. "
+                f"Index-based reporting requires matching polygon counts."
+            )
+
+        # --- 2) Get direct-children topology from S0 ---
+        # The topology is stable and index-based. The function returns only
+        # polygons that actually have direct children as keys.
+        direct_children_map = self.build_direct_children_map(z)
+
+        # Normalize the map so every polygon index exists as a key, including
+        # polygons with no direct children.
+        direct_children: Dict[int, List[int]] = {idx: [] for idx in range(n_s0)}
+
+        for parent_idx, child_list in direct_children_map.items():
+            if not isinstance(parent_idx, int):
+                raise TypeError(
+                    f"Parent index in direct-children map must be int, got {type(parent_idx).__name__}"
+                )
+            if not (0 <= parent_idx < n_s0):
+                raise ValueError(f"Invalid parent index in direct-children map: {parent_idx}")
+
+            for child_idx in child_list:
+                if not isinstance(child_idx, int):
+                    raise TypeError(
+                        f"Child index in direct-children map must be int, got {type(child_idx).__name__}"
+                    )
+                if not (0 <= child_idx < n_s0):
+                    raise ValueError(f"Invalid child index in direct-children map: {child_idx}")
+                direct_children[parent_idx].append(child_idx)
+
+        # Build the direct parent map from the children map.
+        # A polygon can have at most one direct parent.
+        parent_idx_map: Dict[int, Optional[int]] = {idx: None for idx in range(n_s0)}
+
+        for parent_idx, child_list in direct_children.items():
+            for child_idx in child_list:
+                if parent_idx_map[child_idx] is not None:
+                    raise ValueError(
+                        f"Polygon idx={child_idx} has multiple direct parents: "
+                        f"{parent_idx_map[child_idx]} and {parent_idx}"
+                    )
+                parent_idx_map[child_idx] = parent_idx
+
+        # --- 3) Read section data directly from sampled polygons ---
+        # weightabs is taken directly from the sampled section polygon.
+        # No recursive reconstruction is performed.
+        area_geom: Dict[int, float] = {}
+        w_rel_map: Dict[int, float] = {}
+        w_abs_map: Dict[int, float] = {}
+
+        for idx, poly in enumerate(sec.polygons):
+            if not hasattr(poly, "weight"):
+                raise ValueError(f"Polygon idx={idx} at z={z} has no 'weight' attribute.")
+            if not hasattr(poly, "weightabs"):
+                raise ValueError(f"Polygon idx={idx} at z={z} has no 'weightabs' attribute.")
+
+            signed_area, (_, _) = _polygon_signed_area_and_centroid(poly)
+
+            area_geom[idx] = float(signed_area)
+            w_rel_map[idx] = float(poly.weight)
+            w_abs_map[idx] = float(poly.weightabs)
+
+        # --- 4) Compute the net geometric area of each polygon ---
+        # Each polygon contributes with its own geometric area minus the geometric
+        # areas of its direct children, regardless of weight.
+        area_geom_net: Dict[int, float] = {}
+
+        for idx in range(n_sec):
+            area_children = sum(area_geom[child_idx] for child_idx in direct_children[idx])
+            area_geom_net[idx] = area_geom[idx] - area_children
+
+        # --- 5) Group net geometric areas by absolute weight ---
+        def bin_weight(w: float) -> float:
+            """Apply optional grouping tolerance to the absolute weight."""
+            if w_tol and w_tol > 0.0:
+                return round(w / w_tol) * w_tol
+            return w
+
+        groups: Dict[float, Dict[str, Any]] = {}
+        per_polygon_records: List[Dict[str, Any]] = []
+
+        for idx in range(n_sec):
+            w_abs_raw = w_abs_map[idx]
+            w_abs_grouped = bin_weight(w_abs_raw)
+            area_net = area_geom_net[idx]
+
+            if w_abs_grouped not in groups:
+                groups[w_abs_grouped] = {
+                    "w": w_abs_grouped,
+                    "area": 0.0,
+                    "polygons": [],
+                }
+
+            groups[w_abs_grouped]["area"] += area_net
+            groups[w_abs_grouped]["polygons"].append(idx)
+
+            per_polygon_records.append(
+                {
+                    "idx": idx,
+                    "container_idx": parent_idx_map[idx],
+                    "children_idx": list(direct_children[idx]),
+                    "w_rel": w_rel_map[idx],
+                    "w_abs": w_abs_raw,
+                    "area_geom": area_geom[idx],
+                    "area": area_net,
+                }
+            )
+
+        # --- 6) Compute totals ---
+        total_effective = sum(
+            area_geom_net[idx] * w_abs_map[idx]
+            for idx in range(n_sec)
+        )
+
+        total_effective_nonzero = sum(
+            area_geom_net[idx] * w_abs_map[idx]
+            for idx in range(n_sec)
+            if abs(w_abs_map[idx]) > float(zero_w_eps)
+        )
+
+        total_geometric = sum(area_geom_net[idx] for idx in range(n_sec))
+
+        groups_list = sorted(groups.values(), key=lambda d: d["w"])
+        effective_denom = total_effective if total_effective != 0.0 else 1.0
+
+        for group in groups_list:
+            if group["w"] != 0.0:
+                group["area_fraction"] = (group["area"] * group["w"]) / effective_denom
+            else:
+                group["area_fraction"] = 0.0
+
+        # --- 7) Optional debug output ---
+        if debug:
+            print("=" * 60)
+            print(f"section_area_by_weight at z={z}")
+            print("-" * 60)
+            for rec in sorted(per_polygon_records, key=lambda x: x["idx"]):
+                print(
+                    f"  [{rec['idx']}] "
+                    f"parent={rec['container_idx']} "
+                    f"children={rec['children_idx']} "
+                    f"w_rel={rec['w_rel']:+.6f} "
+                    f"w_abs={rec['w_abs']:+.6f} "
+                    f"area_geom={rec['area_geom']:+.6e} "
+                    f"area_net={rec['area']:+.6e}"
+                )
+            print("-" * 60)
+            print(f"Total geometric net surface: {total_geometric:+.6e}")
+            print(f"Total effective area:        {total_effective:+.6e}")
+            print(f"Total effective nonzero:     {total_effective_nonzero:+.6e}")
+            print("=" * 60)
+
+        # --- 8) Assemble output ---
+        result: Dict[str, Any] = {
+            "z": float(z),
+            "total_area": float(total_effective),
+            "total_area_nonzero": float(total_effective_nonzero),
+            "total_area_geometric": float(total_geometric),
+            "groups": groups_list,
+        }
+
+        if include_per_polygon:
+            result["per_polygon"] = per_polygon_records
+
+        return result
+
         
 
 
     # --------------------------------------------------------------------------------------
-    def section_area_by_weight(
+    def section_area_by_weight2remove(
         self,
         z: float,
         w_tol: float = 0.0,
@@ -6006,6 +6324,7 @@ class ContinuousSectionField:
             else:
                 w_abs = w_rel + get_w_abs(parent)
             w_abs_cache[poly_name] = w_abs
+
             return w_abs
 
         for name in container_of.keys():
@@ -6733,13 +7052,13 @@ class ContinuousSectionField:
                     f"Resolved non-positive thickness t={t_val} "
                     f"from '{p0_name}' -> '{p1_name}' at z={z}."
                 )
-
+            '''
             # Mandatory thickness for @cell
             if topology == "@cell" and t_val is None:
                 raise CSFError(
                     f"Missing @t for @cell between '{p0_name}' and '{p1_name}'."
                 )
-
+            '''
             return topology, t_val
 
 
@@ -6816,10 +7135,7 @@ class ContinuousSectionField:
             raise CSFError(
                 f"Unsupported topology tag '{topology_tag}' for polygon '{base}'."
             )
-
-
-
-
+        
         def _build_interpolated_polygon_name(
             p0_name: str,
             p1_name: str,
@@ -6854,7 +7170,7 @@ class ContinuousSectionField:
 
             if topology_tag is None:
                 return base
-
+    
             if topology_tag == "@cell":
                 if t_value is None:
                     raise CSFError(f"Missing @t for @cell polygon '{base}'.")
@@ -6893,7 +7209,6 @@ class ContinuousSectionField:
             # Support for both List (by index) and Dictionary (by index or by name).
             current_law = None
             idx = i + 1 
-
             
     
             if isinstance(self.weight_laws, list):
@@ -6917,22 +7232,22 @@ class ContinuousSectionField:
             polparent0 = None
             polparent1 = None
             parent_law = None
+
             interp_weight_parent = 0 # default value when for parent is not found
             if idx_pol_parent is not None:
                 polparent0 = self.s0.polygons[idx_pol_parent]
                 polparent1 = self.s1.polygons[idx_pol_parent]
+                
 
                 # Get parent law with same conventions used elsewhere (list/dict, 1-based index)
                 if isinstance(self.weight_laws, list):
-                    # If your list is 1-based (because you use idx=i+1), keep that convention:
-                    parent_key = idx_pol_parent + 1
+                    # list is 1-based (because you use idx=i+1), keep that convention:
+                    parent_key = idx_pol_parent #+ 1
                     if 0 <= idx_pol_parent < len(self.weight_laws):
                         parent_law = self.weight_laws[parent_key]
                 elif isinstance(self.weight_laws, dict):
-                   
                     parent_key = idx_pol_parent + 1  # same 1-based convention
                     parent_law = self.weight_laws.get(parent_key, None)
-                    
                     interp_weight_parent = self._interpolate_weight(polparent0.weight, polparent1.weight, origz, polparent0, polparent1, parent_law)
                 else:
                     interp_weight_parent = self._interpolate_weight(polparent0.weight, polparent1.weight, origz, polparent0, polparent1, parent_law)
@@ -6941,10 +7256,7 @@ class ContinuousSectionField:
             #print (f"DEBUG idx_pol_parent {idx_pol_parent}-{i} interp_weight_child {interp_weight_child} interp_weight_parent {interp_weight_parent} interp_weight_relative {interp_weight_relative} ")
             #print ("------------------------------------------------------")
             #print(f"DEBUG z {z} child {i} : name {p0.name}  interp_weight_child {interp_weight_child}  : idx_pol_parent {idx_pol_parent} parent_law {parent_law} : interp_weight_parent {interp_weight_parent} : interp_weight_relative {interp_weight_relative}")
-
             #poly = Polygon(vertices=verts, weight=interp_weight_relative, name=p0.name)
-
-
             # Build runtime polygon metadata from both reference names.
             # We first resolve topology and thickness consistently along z
             # (including mandatory @t for @cell and optional @t for @wall),
@@ -6965,8 +7277,8 @@ class ContinuousSectionField:
                 t_value=t_value,
             )
             
-            
-            poly = Polygon(vertices=verts, weight=interp_weight_relative, name=poly_name)
+            nterp_weight_child=3
+            poly = Polygon(vertices=verts, weight=interp_weight_relative,weightabs=interp_weight_child,name=poly_name)
             
             # --------------------------
        
@@ -7334,28 +7646,30 @@ class Visualizer:
         n_plot = len(plot_indices)
 
         print("\n=== START WEIGHT MIN/MAX REPORT ===")
+
+
         for start in range(0, n_plot, MAX_PLOTS_PER_FIG):
             # Take up to MAX_PLOTS_PER_FIG polygon indices for this figure
             chunk = plot_indices[start : start + MAX_PLOTS_PER_FIG]
 
-            # Always create exactly MAX_PLOTS_PER_FIG axes to keep window layout identical
-            fig_w, axes_w = plt.subplots(
-                MAX_PLOTS_PER_FIG, 1, figsize=FIGSIZE, sharex=True
-            )
-            axes_w = list(np.ravel(axes_w))
+            # Create a single full-height axis when only one polygon remains.
+            if len(chunk) == 1:
+                fig_w, ax_single = plt.subplots(1, 1, figsize=FIGSIZE, sharex=True)
+                axes_w = [ax_single]
+            else:
+                fig_w, axes_w = plt.subplots(
+                    MAX_PLOTS_PER_FIG, 1, figsize=FIGSIZE, sharex=True
+                )
+                axes_w = list(np.ravel(axes_w))
 
-            for ax_pos in range(MAX_PLOTS_PER_FIG):
+            for ax_pos in range(len(chunk)):
                 ax = axes_w[ax_pos]
-
-                # If the last chunk has only 1 polygon, disable the unused axis (but keep the window size/layout)
-                if ax_pos >= len(chunk):
-                    ax.axis("off")
-                    continue
 
                 i = chunk[ax_pos]
                 p0 = self.field.s0.polygons[i]
                 p1 = self.field.s1.polygons[i]
                 y = np.asarray(poly_w_series[i], dtype=float)
+
 
                 idx_min = int(np.argmin(y))
                 idx_max = int(np.argmax(y))
@@ -7413,6 +7727,17 @@ class Visualizer:
                 fontweight="bold"
             )
             fig_w.tight_layout(rect=[0, 0.04, 1, 0.96])
+
+
+
+
+
+
+
+
+
+
+
 
         print("=== END WEIGHT MIN/MAX REPORT ===")
         # plt.show()
@@ -7961,14 +8286,7 @@ class Visualizer:
         # -------------------------------------------------------------------------
         fig.canvas.draw()
 
-
-
-
         return ax
-
-
-
-
 
 
     def plot_volume_3d(self, show_end_sections: bool = True, line_percent: float = 100.0,
