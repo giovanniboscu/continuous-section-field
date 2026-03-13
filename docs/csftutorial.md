@@ -936,7 +936,7 @@ CSF_ACTIONS:
 
 ---
 
-### Example output (conceptual)
+### Example output 
 
 ```
 SECTION AREA LIST REPORT at z = 0.000000
@@ -1030,7 +1030,7 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 
 ---
 
-### Expected output (conceptual)
+### Expected output
 
 ```text
 VOLUME POLYGON LIST REPORT at z=0.000000 and z=10.000000
