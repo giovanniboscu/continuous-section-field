@@ -712,7 +712,6 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 - This is display-oriented; do not expect file output.
 
 ---
-
 ### 6.5 `plot_properties` (stations FORBIDDEN)
 
 **Concept**  
@@ -721,13 +720,30 @@ Plots selected properties along the member, sampling `num_points` between endpoi
 **YAML**
 
 ```yaml
+
 CSF_ACTIONS:
+  version: 0.1
+
+  stations:
+    stations_example:
+      - 0.0
+      - 1.0
+      - 10.0
+    stations_edges:
+      - 0.0
+      - 10.0
+
   actions:
+    - plot_volume_3d:
+        params:
+          line_percent: 100.0
+          title: " - mycase 3D -"
     - plot_properties:
         output: [stdout, out/properties.png]
-        properties: [A, Ix, Iy, J]
+        properties: [A, Ix, Iy]
         params:
-          num_points: 100
+          num_points: 100          
+
 ```
 
 **CLI**
@@ -746,7 +762,6 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 **Pitfalls**
 - `properties` missing → error.
 - If you omit `stdout` from output, the plot is not shown (file-only).
-
 ---
 
 ### 6.6 `plot_weight` (stations FORBIDDEN)
