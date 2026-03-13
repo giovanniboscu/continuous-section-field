@@ -773,12 +773,65 @@ Plots interpolated polygon weights along the member (one curve per polygon).
 
 ```yaml
 CSF_ACTIONS:
+  version: 0.1
+  # station not required neither for  plot_volume_3d nor plot_weight
+  stations:
+    stations_example:
+      - 0.0
+      - 1.0
+      - 10.0
+    stations_edges:
+      - 0.0
+      - 10.0
+
   actions:
+
+        
     - plot_weight:
-        output: [stdout, out/weight.png]
+        output:
+          - stdout
+          - out/weight.jpg        
         params:
-          num_points: 120
+            num_points: 200
 ```
+
+geometry
+
+```yaml
+
+CSF:
+  # Two stations defining a linearly tapered solid rectangle along z.
+  # Rectangle width is constant; height changes from S0 to S1.
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        rect:
+          weight: 1.0
+          vertices:
+            # CCW vertices
+            - [-0.5, 0.0]
+            - [ 0.5, 0.0]
+            - [ 0.5, 1.0]
+            - [-0.5, 1.0]
+
+    S1:
+      z: 10.0
+      polygons:
+        rect:
+          weight: 1.0
+          vertices:
+            # CCW vertices
+            - [-0.5, 0.0]
+            - [ 0.5, 0.0]
+            - [ 0.5, 2.0]
+            - [-0.5, 2.0]
+  weight_laws:
+    - 'rect,rect: 1.0 - 0.3*(z/L)*(z/L)'     
+    
+```
+
+
 
 **CLI**
 
@@ -826,11 +879,10 @@ CSF_ACTIONS:
 python3 -m csf.CSFActions geometry.yaml actions.yaml
 ```
 
-**Expected output snippet**
+**Note**
 
-```
-LAW #1: 1.0
-  z=0.0 -> ...
+If no additional law is specified, the longitudinal variation of section properties is **linear**, as defined by the interpolation of the geometry between the stations declared in the `geometry` file.
+
 ```
 
 **Pitfalls**
