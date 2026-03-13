@@ -354,6 +354,10 @@ CSF_ACTIONS:
 
 ---
 
+**Note**
+
+- The exported `w` value is the **absolute polygon weight at that station**.
+
 ## 5. Useful CLI options
 
 ### 5.1 Validate only (no execution)
