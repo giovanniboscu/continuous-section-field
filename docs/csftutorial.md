@@ -598,46 +598,81 @@ thin‑wall models are explicitly defined in the geometry.
 ### 6.3 `plot_section_2d` (stations REQUIRED)
 
 **Concept**  
-Plots the 2D section geometry at each station.  
-If you save an image and request multiple stations, CSFActions can create one **stacked composite image**.
-mkdir out 
-out dir is required
-**YAML**
+Plots the 2D section geometry at each requested station.  
+If you save an image and request multiple stations, CSFActions can generate one **stacked composite image**.
+
+The output directory (for example `out/`) must already exist.
+
+---
+
+### YAML
 
 ```yaml
 CSF_ACTIONS:
+  version: 0.1
+
   stations:
-    z_list: [0.0, 10.0]
+    stations_example:
+      - 0.0
+      - 1.0
+      - 10.0
+    stations_edges:
+      - 0.0
+      - 10.0
 
   actions:
-    - plot_section_2d:
-        stations: stations_example
-        output: stdout, out/sections.jpg
+    - plot_volume_3d:
         params:
-          show_ids: true
-          show_weights: true
-          show_vertex_ids: false
-          title: "Section at z={z}"
-          dpi: 150
+          line_percent: 100.0
+          title: " - mycase 3D -"
+
+    - section_selected_analysis:
+        stations: stations_example
+        output:
+          - stdout
+          - out/results.csv
+          - out/report.txt
+        properties: [A, Cx, Ix, Iy, Ip, I1, I2, Cy, rx, ry, Ixy, Wx, Wy, K_torsion, Q_na, J_sv_cell, J_sv_wall, J_s_vroark, J_s_vroark_fidelity]
+
+    - plot_weight:
+        output:
+          - stdout
+          - out/weight.jpg
+
+    - plot_section_2d:
+        stations: stations_edges
+        show_ids: true
+        show_vertex_ids: true
+        output:
+          - [stdout, out/sections.png]
 ```
 
-**CLI**
+---
+
+### CLI
 
 ```bash
+mkdir -p out
 python3 -m csf.CSFActions geometry.yaml actions.yaml
 ```
 
-**Expected output snippet**
+---
 
-```
+### Expected output snippet
+
+```text
 [OK] plot_section_2d: created 2 plot(s)
 [OK] saved image: out/sections.png
 ```
 
-**Pitfalls**
-- `out/` missing → file write error.
-- Headless environments: if you rely on interactive display, use file output instead.
+---
 
+### Pitfalls
+
+- `stations` is required.
+- The output directory (for example `out/`) is not created automatically.
+- In headless environments, prefer file output instead of interactive display only.
+```
 ---
 
 ### 6.4 `plot_volume_3d` (stations FORBIDDEN)
