@@ -39,7 +39,7 @@ CSF represents section properties as integrals of a continuous geometry-material
 From this continuous description, CSF evaluates section properties and stiffness fields along `z` (e.g., `A(z)`, `I(z)`, `C(z)`, `EA(z)`, `EI(z)`, `GJ(z)`) and can export solver-ready station data (e.g., OpenSees `forceBeamColumn` stationing or SAP2000-ready tabular property packs).
 
         
-![torsionmdel](https://github.com/user-attachments/assets/85882b4e-6173-4630-84c5-fd703c54cad4)
+![morphing](https://github.com/user-attachments/assets/67a8f973-abf6-4715-9302-ce3ab2e21fae)
 
 
 [README – Mixed Torsion Didactic Case](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/openandthin/README_mixed_torsion_didactic_case.md)
