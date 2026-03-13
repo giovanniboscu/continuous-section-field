@@ -357,7 +357,116 @@ CSF_ACTIONS:
 **Note**
 
 - The exported `w` value is the **absolute polygon weight at that station**.
+---
 
+# 4.3 Minimal example: geometry, weight law, and action file
+
+This example shows:
+
+- where to place the `weight_laws` section in the geometry YAML
+- a simple quadratic weight law along the member
+- an action YAML to visualize the member, inspect selected stations, and plot the weight variation
+
+## Geometry YAML
+
+```yaml
+CSF:
+  # Two stations defining a linearly tapered solid rectangle along z.
+  # Rectangle width is constant; height changes from S0 to S1.
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        rect:
+          weight: 1.0
+          vertices:
+            # CCW vertices
+            - [-0.5, 0.0]
+            - [ 0.5, 0.0]
+            - [ 0.5, 1.0]
+            - [-0.5, 1.0]
+
+    S1:
+      z: 10.0
+      polygons:
+        rect:
+          weight: 1.0
+          vertices:
+            # CCW vertices
+            - [-0.5, 0.0]
+            - [ 0.5, 0.0]
+            - [ 0.5, 2.0]
+            - [-0.5, 2.0]
+
+  weight_laws:
+    - 'rect,rect: 1.0 - 0.3*(z/L)*(z/L)'
+```
+
+## Meaning of the weight law
+
+```text
+rect,rect: 1.0 - 0.3*(z/L)*(z/L)
+```
+
+- `rect,rect` identifies the polygon pair between `S0` and `S1`
+- `z` is the longitudinal coordinate
+- `L` is the element length
+- the law defines an absolute polygon weight `w`
+
+In this example:
+
+- at `z = 0`, `w = 1.0`
+- at `z = L`, `w = 0.7`
+
+## Action YAML
+
+```yaml
+CSF_ACTIONS:
+  version: 0.1
+
+  stations:
+    stations_example:
+      - 0.0
+      - 1.0
+      - 10.0
+
+  actions:
+    - plot_volume_3d:
+        params:
+          line_percent: 100.0
+          title: "Ruled volume"
+
+    - section_selected_analysis:
+        stations: stations_example
+        output:
+          - stdout
+          - out/results.csv
+          - out/report.txt
+        properties: [geometry, A, Cx, Cy, Ix, Iy]
+
+    - plot_weight:
+        output:
+          - stdout
+          - out/weight.jpg
+```
+
+## What these actions do
+
+- `plot_volume_3d` plots the ruled member volume
+- `section_selected_analysis` evaluates the selected stations and writes:
+  - section properties
+  - geometry export if `geometry` is included in `properties`
+  - optional CSV and text outputs
+- `plot_weight` plots the longitudinal weight variation
+
+## Notes
+
+- `geometry` is optional in `properties`
+- the exported `w` value is the absolute polygon weight at each station
+- output directories such as `out/` are not created automatically
+
+
+---
 ## 5. Useful CLI options
 
 ### 5.1 Validate only (no execution)
