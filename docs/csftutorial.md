@@ -569,6 +569,7 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 **Concept**  
 Shows a 3D ruled “volume” between end sections. This action uses the **endpoints** only.
 
+
 **YAML**
 
 ```yaml
@@ -604,7 +605,7 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 ### 6.5 `plot_properties` (stations FORBIDDEN)
 
 **Concept**  
-Plots selected properties along the member, sampling `num_points` between endpoints.
+Plots selected properties along the member, sampling `num_points` between endpoints (stations are not allowed because the plot uses continuous sampling).
 
 **YAML**
 
@@ -640,7 +641,7 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 ### 6.6 `plot_weight` (stations FORBIDDEN)
 
 **Concept**  
-Plots interpolated polygon weight(s) along the member.
+Plots interpolated polygon weights along the member (one curve per polygon).
 
 **YAML**
 
