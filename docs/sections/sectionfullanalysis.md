@@ -233,18 +233,6 @@ They compute **model-based** torsion constants under thin-walled assumptions, re
 > Intermediate sections use **linear interpolation** of `t` along `z`.
 
 
-### Thickness tag `@t=` along `z`
-
-For intermediate sections:
-- if both endpoint values are present and different, `t` is linearly interpolated along `z`;
-- if only one endpoint value is present, `t` is treated as constant along `z`.
-
-For torsion paths:
-- `@cell`: `@t=` is mandatory;
-- `@wall`: `@t=` is optional (fallback thickness may be estimated at section level from geometry).
-
-
-
 ![softwarex_props](https://github.com/user-attachments/assets/c4b03d5c-544c-4d18-9821-e05facd651b7)
 
 
@@ -291,11 +279,56 @@ If no `@cell` polygons are present, the current implementation returns `0`.
 
 ## Required parameters (user-specified)
 
-### Thickness is required (current default)
+### Thickness 
 
-For each `@cell` / `@closed` polygon, an explicit thickness **must** be provided:
+## Important: Thickness Rule for `@cell` Polygons
 
-- `@t=<value>`
+The thickness parameter `t` follows the rules below.
+
+### 1. `@cell` without `t`
+
+If no thickness is provided, it is **deduced from geometry**:
+
+`t = 2A / P`
+
+where:
+
+-   `A` = polygonal cell area
+-   `P` = total cell perimeter (outer + inner boundaries)
+
+This rule assumes a **thin‑walled closed cell with uniform thickness**.
+
+
+###  Variation along the member axis
+
+###  `t` provided in both sections
+
+If thickness is specified in **both** sections (`S0` and `S1`), it is **linearly interpolated** along the member axis:
+
+`t(z) = t0 + (t1 - t0) * (z - z0) / (z1 - z0)`
+
+where
+
+- `t0`, `t1` are the thickness values at sections `S0` and `S1`
+- `z0`, `z1` are the corresponding axial coordinates
+
+###. `t` provided in only one section
+
+If thickness is specified in **only one section**, it is assumed **constant** along the member:
+
+`t(z) = t_provided`
+
+---
+
+### Summary
+
+| Case | Behavior |
+|-----|-----|
+| `t` not provided in S0 and S1 | `t(z) = 2A(z) / P(z)` |
+| `t` provided in both sections | linear interpolation |
+| `t` provided in only one section | constant thickness |
+
+
 
 ## `@cell` Polygon Encoding Requirements
 
@@ -318,17 +351,6 @@ Example:
 ```yaml
 poly@cell@t=0.5
 ```
-
-### Thickness must be explicit
-Thickness must be provided as:
-
-- `@t=<positive float>`
-
-Example:
-
-- `poly@cell@t=0.5`
-
-If `@t=` is missing (and strict mode is enabled), CSF should raise an error rather than guessing thickness.
 
 ---
 
@@ -356,7 +378,7 @@ For consistency with CSF conventions, use:
 This is an **input convention**. The routine may internally normalize orientation for midline construction, but you should keep the encoding consistent to avoid confusion and reduce failure modes.
 
 ---
-## Minimal YAML example 
+## Minimal YAML examples
 
 ```yaml
 CSF:
@@ -377,6 +399,28 @@ CSF:
             - [xo1, yo1]
             ...
 ```
+
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0
+      polygons:
+        poly@cell:
+          weight: 1
+          vertices:
+            # INNER loop (CW) - explicitly closed
+            - [xi0, yi0]
+            - [xi1, yi1]
+             .....
+             .....
+            # OUTER loop (CCW) - explicitly closed
+            - [xo0, yo0]
+            - [xo1, yo1]
+            ...
+```
+
+
 
 Notes:
 
