@@ -18,7 +18,9 @@ In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept:
 ### Automatic Mapping
 
 Example: Defining a Composite Beam
-***Program format***
+
+***Program format ***
+
 ```
     poly_top_start = Polygon(
         vertices=(
