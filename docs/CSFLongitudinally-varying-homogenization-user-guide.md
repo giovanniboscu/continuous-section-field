@@ -288,12 +288,7 @@ The name **`weight`** was chosen for two scientific reasons:
 
 ---
 
-### ⚠️ Final Summary for Voids
-| Context | Solid Value | Void Value (user input) | Result in Overlap (effective in CSF) |
-| :--- | :--- | :--- | :--- |
-| **Normalized** | `1.0` | `0.0` | `0.0` (Absolute Void) |
-| **Half-Stiffness** | `0.5` | `0.0` | `0.0` (Absolute Void) |
-| **Real E (Concrete)** | `30000` | `0.0` | `0.0` (Absolute Void) |
+## ⚠️ Final Summary for Voids
 
 **Warning:** A void must be declared with `weight = 0.0`. If you use a non-zero weight, that region will retain residual stiffness/property.
 ---
