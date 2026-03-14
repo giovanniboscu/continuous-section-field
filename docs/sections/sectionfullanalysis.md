@@ -717,8 +717,3 @@ To make interpretation robust, include these plots together:
 This combination avoids misreading isolated curves.
 
 ---
-
-## Final note
-
-A sharp point in `I2` (or a related indicator) may be a legitimate geometric-transition signature.  
-The correct criterion is continuity testing, not visual smoothness alone.
