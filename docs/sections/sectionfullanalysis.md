@@ -300,7 +300,7 @@ where
 - `t0`, `t1` are the thickness values at sections `S0` and `S1`
 - `z0`, `z1` are the corresponding axial coordinates
 
-###. `t` provided in only one section
+### `t` provided in only one section
 
 If thickness is specified in **only one section**, it is assumed **constant** along the member:
 
