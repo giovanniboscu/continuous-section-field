@@ -589,7 +589,6 @@ CSF:
 
 Notes:
 
-- Single loop, explicitly closed (repeat the first point).
 - For more complex open sections, use multiple `@wall` polygons.
 
 ---
