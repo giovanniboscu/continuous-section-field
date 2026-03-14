@@ -214,7 +214,7 @@ So `w(z)` is always defined at section level, either interpolated or constant (s
 
 #### `@cell` path (closed thin-walled cell)
 
-- `@t=` is mandatory.
+- `@t=` is not mandatory.
 - Thickness is read from the section polygon tags used by the `@cell` workflow.
 - If both ends provide thickness information, thickness evolves along `z` with the same section interpolation logic.
 - If only one value is available, it is treated as constant along `z`.
