@@ -281,7 +281,7 @@ If no `@cell` polygons are present, the current implementation returns `0`.
 
 ### Thickness 
 
-## Important: Thickness Rule for `@cell` Polygons
+## Important: Thickness Rule for `@cell` and @wall Polygons
 
 The thickness parameter `t` follows the rules below.
 
