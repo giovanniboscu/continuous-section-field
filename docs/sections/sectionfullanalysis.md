@@ -492,36 +492,6 @@ A polygon is handled by the `@wall` path if its name contains (case-insensitive)
 
 ---
 
-## 3) Thickness definition per wall polygon
-
-### 3.1 Explicit thickness (recommended)
-
-Provide thickness in the polygon name:
-
-- `@t=<positive float>`
-
-Example:
-
-- `web@wall@t=0.012`
-
-This is the preferred mode because it avoids geometric guessing.
-
-### Estimated thickness
-If `@t=` is not present, thickness is estimated as:
-
-$$
-t = \frac{2A}{P}
-$$
-
-where:
-
-- $A$ is the polygon area (absolute)
-- $P$ is the polygon perimeter.
-
-**Important:** this estimate is only reliable when the polygon is a **thin strip** (high aspect ratio). For “bulky” polygons $2A/P$ behaves like a hydraulic-radius-type measure and is not a good wall thickness.
-
----
-
 ## Geometry requirements (non-obvious constraints)
 
 The `@wall` routine does **not** reconstruct cells and does **not** support multi-loop encodings. It treats each `@wall` polygon as a single material patch.
