@@ -18,7 +18,7 @@ In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept:
 ### Automatic Mapping
 
 Example: Defining a Composite Beam
-
+***Program format***
 ```
     poly_top_start = Polygon(
         vertices=(
@@ -68,6 +68,37 @@ Example: Defining a Composite Beam
 
 
 ```
+***yaml format**
+```
+CSF:
+  sections:
+    S0:
+      z: 0.0
+
+      polygons:
+
+        pol:
+          weight: 1.0
+          vertices:
+            - [-0.25, -0.5]
+            - [ 0.25, -0.5]
+            - [ 0.25,  0.5]
+            - [-0.25,  0.5]
+
+    S1:
+      z: 30.0
+
+      polygons:
+        pol:
+          weight: 1.0
+          vertices:
+            - [-0.5, -0.1]
+            - [ 0.5, -0.1]
+            - [ 0.5,  0.1]
+            - [-0.5,  0.1]
+  
+```
+
 
 The engine connects sections based on their **creation order**. The first polygon defined at the start automatically matches the first polygon defined at the end.
 
