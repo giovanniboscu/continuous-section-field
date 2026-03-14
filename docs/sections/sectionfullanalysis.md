@@ -386,43 +386,50 @@ This is an **input convention**. The routine may internally normalize orientatio
 ## Minimal YAML examples
 
 ```yaml
-CSF:
-  sections:
-    S0:
-      z: 0
-      polygons:
-        poly@cell@t=0.5:
-          weight: 1
-          vertices:
-            # INNER loop (CW) - explicitly closed
-            - [xi0, yi0]
-            - [xi1, yi1]
-             .....
-             .....
-            # OUTER loop (CCW) - explicitly closed
-            - [xo0, yo0]
-            - [xo1, yo1]
-            ...
-```
 
-```yaml
 CSF:
   sections:
     S0:
-      z: 0
+      z: 0.000000
       polygons:
-        poly@cell:
-          weight: 1
+        box1@cell:
+          weight: 1.000000
           vertices:
-            # INNER loop (CW) - explicitly closed
-            - [xi0, yi0]
-            - [xi1, yi1]
-             .....
-             .....
-            # OUTER loop (CCW) - explicitly closed
-            - [xo0, yo0]
-            - [xo1, yo1]
-            ...
+            # OUTER loop (CCW)
+            - [0.0, 0.0]
+            - [10.0, 0.0]
+            - [10.0, 6.0]
+            - [0.0, 6.0]
+            - [0.0, 0.0]
+            # bridge to inner start
+            - [1.0, 1.0]
+            # INNER loop (CW)
+            - [1.0, 5.0]
+            - [9.0, 5.0]
+            - [9.0, 1.0]
+            - [1.0, 1.0]
+
+    S1:
+      z: 10.000000
+      polygons:
+        box1@cell:
+          weight: 1.000000
+          vertices:
+            # OUTER loop (CCW)
+            - [0.0, 0.0]
+            - [10.0, 0.0]
+            - [10.0, 6.0]
+            - [0.0, 6.0]
+            - [0.0, 0.0]
+            # bridge to inner start
+            - [1.0, 1.0]
+            # INNER loop (CW)
+            - [1.0, 5.0]
+            - [9.0, 5.0]
+            - [9.0, 1.0]
+            - [1.0, 1.0]
+
+
 ```
 
 
