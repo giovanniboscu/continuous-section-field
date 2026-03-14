@@ -19,7 +19,7 @@ In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept:
 
 Example: Defining a Composite Beam
 
-***Program format ***
+***Program format***
 
 ```
     poly_top_start = Polygon(
@@ -70,7 +70,7 @@ Example: Defining a Composite Beam
 
 
 ```
-***yaml format**
+***yaml format***
 ```
 CSF:
   sections:
