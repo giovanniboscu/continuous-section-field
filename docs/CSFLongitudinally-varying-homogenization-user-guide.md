@@ -287,13 +287,16 @@ section_field.set_weight_laws([
 
 ### 📊 Weight Law Variables Reference
 
+
 | Variable | Meaning | Example Law Expression |
 | :--- | :--- | :--- |
-| **`z`** | Real position from start to end   | `w0 * (1 + 0.2 * z / L)` |
-| **`w0`** | Weight (stiffness) at the start section ($z=0$) | `w0 * 1.5` |
-| **`w1`** | Weight (stiffness) at the end section ($z=L$) | `w1 / 2` |
-| **`L`** | Total physical length of the member | `w0 + (z * L * 0.01)` |
-| **`np`** | Access to NumPy | `e.g., np.sin, np.exp, np.sqrt.` |
+| **`z`** | Physical coordinate along the member (from start to end) | `w0 * (1 + 0.2 * z / L)` |
+| **`t`** | Normalized coordinate in `[0, 1]` | `w0 + (w1 - w0) * t` |
+| **`w0`** | Weight at the start section (`z = z0`) | `w0 * 1.5` |
+| **`w1`** | Weight at the end section (`z = z1`) | `w1 / 2` |
+| **`L`** | Total physical length of the member | `w0 + (z / L) * 0.1` |
+| **`np`** | NumPy namespace | `np.sin(...)`, `np.exp(...)`, `np.sqrt(...)` |
+
 
 ---
 
