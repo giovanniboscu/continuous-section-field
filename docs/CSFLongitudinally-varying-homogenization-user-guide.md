@@ -416,7 +416,7 @@ section_field.set_weight_laws([
     "lowerpart,lowerpart : E_lookup('material_data.txt') * w0"
 ])
 ```
-## 🟢 Meet the "CSF Weight Law Inspector" 
+##  Meet the "CSF Weight Law Inspector" 
 
 Defining mathematical laws for structural members shouldn't feel like "guessing and hoping." To make your workflow smoother and error-free, we've introduced the **Safe Evaluation Engine**.
 
@@ -436,12 +436,12 @@ When something goes wrong, you don't get a crash. You get this:
 
 ```text
 ════════════════════════════════════════════════════════════════════════
-                🔴  CSF WEIGHT LAW INSPECTOR  |  ERROR
+                  CSF WEIGHT LAW INSPECTOR  |  ERROR
 ════════════════════════════════════════════════════════════════════════
   FORMULA:     np.maximum(w0 * 0.01, E_lookup('experimental_data.txt'))
   POSITION Z:  50.0000
 ------------------------------------------------------------------------
-  RESULT W:    ❌ [ABORTED]
+  RESULT W:     [ABORTED]
 ------------------------------------------------------------------------
   CATEGORY:    File System Error
   DETAIL:      Required lookup file 'experimental_data.txt' is missing.
@@ -470,11 +470,6 @@ weight_value, report_data = safe_evaluate_weight(formula_test, p_start, p_end, 1
 # CALL THE PRINTER HERE
 print_evaluation_report(weight_value, report_data)
 ```
-
-
-
-
-
 ---
 
 # OpenSees integration: how CSF stiffness samples are consumed
