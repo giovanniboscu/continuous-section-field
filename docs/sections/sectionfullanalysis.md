@@ -265,20 +265,6 @@ Parsing rules (both functions):
 
 ---
 
-## 16. `compute_saint_venant_J_cell(section)`
-
-**Key:** `J_sv_cell`  
-
-## Purpose
-
-Compute a **closed single-cell** torsional constant using a **Bredt–Batho** style formula
-for a **thin-walled closed section** with (assumed) **constant thickness**.
-
-This function only uses polygons tagged `@cell` or `@closed`.
-
-If no `@cell` polygons are present, the current implementation returns `0`.
-
-
 ## Required parameters (user-specified)
 
 ### Thickness 
@@ -331,6 +317,23 @@ If thickness is specified in **only one section**, it is assumed **constant** al
 | `t` provided in only one section | constant thickness |
 
 
+
+
+
+
+
+## 16. `compute_saint_venant_J_cell(section)`
+
+**Key:** `J_sv_cell`  
+
+## Purpose
+
+Compute a **closed single-cell** torsional constant using a **Bredt–Batho** style formula
+for a **thin-walled closed section** with (assumed) **constant thickness**.
+
+This function only uses polygons tagged `@cell` or `@closed`.
+
+If no `@cell` polygons are present, the current implementation returns `0`.
 
 ## `@cell` Polygon Encoding Requirements
 
