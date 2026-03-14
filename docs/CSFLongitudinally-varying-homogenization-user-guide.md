@@ -308,9 +308,8 @@ section_field.set_weight_laws([
 
 ### ⚠️ Vertex Indexing Rule
 When using the distance function `d(i, j)` in your weight laws:
-* **1-Based Numbering**: Vertex indices start at **1**, not 0.
-* **The first point** is `1`, the **second point** is `2`, etc.
-* **Pro Tip**: If you use `0` as an index, the calculation will fail.
+* **0-Based Numbering**: Vertex indices start at **0**
+
 
 ### Data-Driven Modeling: E_lookup data from external text file 
 
