@@ -242,6 +242,7 @@ def csf_weight_catalog_by_pair(field: Any, *, include_default_linear: bool = Tru
             return None if v is None else str(v)
 
         # Rare case: list; your field.section() attempts 1-based access (laws[idx1]).
+        
         if isinstance(laws, list):
             v = None
             if 0 <= idx1 < len(laws):

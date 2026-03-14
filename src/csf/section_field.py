@@ -975,13 +975,15 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
     # This allows the formula to access distances at the current evaluation point.
     #   
     # z is absolute
+    
     z = zt  
     # z must be absolute for interpolationg the poligons sections
     l_total=z1-z0
     current_verts = tuple(
         v0.lerp(v1, z,l_total) for v0, v1 in zip(p0.vertices, p1.vertices)
     )
-    #p_z = Polygon(vertices=current_verts, weight=p0.weight, name=p0.name)
+    p0_z = Polygon(vertices=current_verts, weight=p0.weight, name=p0.name)
+    
     t=(zt-z0)/(z1-z0)
     # 3. Define the external file lookup helper
     z=zt-z0
@@ -996,10 +998,10 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
         
     # 4. Define local distance helpers for the context
     # These are used in the formula as d(i,j), d0(i,j), d1(i,j)
-    d  = lambda i, j: get_points_distance(p_z, i, j)
+    d  = lambda i, j: get_points_distance(p0_z, i, j)
     di = lambda i, j: get_points_distance(p0, i, j)
     de = lambda i, j: get_points_distance(p1, i, j)
-
+    
     # 5. Build the evaluation context (Environment)
     #t = z / l_total if abs(l_total) > EPS_L else 0.0
     context = {
@@ -1017,7 +1019,7 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
         "T_lookup": T_lookup    # File-based data lookup
     }
 
-
+    
     # Define minimal safe builtins
     SAFE_BUILTINS = {
     # numeric / conversion
@@ -1046,10 +1048,13 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
         "any": any,
         "all": all,
     }
-
+    
     # 6. Execute evaluation in a clean sandbox
     # We disable __builtins__ for safety to ensure only provided tools are used.
-    return float(eval(formula, {"__builtins__": SAFE_BUILTINS}, context))
+    
+    law_value = float(eval(formula, {"__builtins__": SAFE_BUILTINS}, context))
+    
+    return law_value
  
 def execute_string_to_float(code_string, z_val, t_val):
     """
@@ -1110,7 +1115,7 @@ def evaluate_weight_formula_zrelative( formula: str, p0: Polygon, p1: Polygon, z
         Raises:
             Exception: Propagates any error encountered during evaluation.
         """
-
+        
         #evaluate_weight_formula( formula, p0, p1, l_total, z)
         '''
         # 2. Generate a temporary for the 'd(i,j)' helper.
@@ -2257,22 +2262,39 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
         return inner_xy
 
+
     def _split_outer_inner_loops(
         xy: List[Tuple[float, float]], nm: str
     ) -> Tuple[List[Tuple[float, float]], List[Tuple[float, float]], int]:
         """
-        Split slit-encoded polygon into OUTER and INNER loop candidates.
+        Split slit-encoded polygon into the two real geometric loops.
 
-        OUTER:
-            xy[0:i_outer_end], where i_outer_end is the first repetition of xy[0].
-        INNER:
-            extracted from remaining tail with implicit closure support.
+        The returned loops must not contain bridge segments.
         """
         keys = [_key(pt) for pt in xy]
         i_outer_end = _find_outer_bridge_index(xy, nm)
 
         loop_a = xy[0:i_outer_end]
+
+        # Build inner loop from encoded tail.
         loop_b = _extract_inner_loop_after_outer(xy, keys, i_outer_end, nm)
+
+        # Drop duplicated closure point if present.
+        if len(loop_a) >= 2 and _key(loop_a[0]) == _key(loop_a[-1]):
+            loop_a = loop_a[:-1]
+
+        if len(loop_b) >= 2 and _key(loop_b[0]) == _key(loop_b[-1]):
+            loop_b = loop_b[:-1]
+
+        # Remove bridge endpoint accidentally kept in inner loop.
+        # In slit encoding the inner loop must not start/end on the outer bridge node.
+        outer_start_key = _key(xy[0])
+
+        if len(loop_b) >= 1 and _key(loop_b[0]) == outer_start_key:
+            loop_b = loop_b[1:]
+
+        if len(loop_b) >= 1 and _key(loop_b[-1]) == outer_start_key:
+            loop_b = loop_b[:-1]
 
         if len(loop_a) < 3 or len(loop_b) < 3:
             raise CSFError(
@@ -2357,24 +2379,9 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
         # Thickness from @t=... (strict by policy).
         t = _parse_t(nm)
-        if t is None:
-            
-            if REQUIRE_EXPLICIT_T:
-                raise CSFError(
-                    f"compute_saint_venant_J_cell(v3): polygon '{nm}' is @cell/@closed but missing '@t=...'."
-                )
-            A_poly_fallback = abs(float(polygon_area_centroid(p)[0]))
-            P_poly_fallback = _perimeter_xy(xy)
-            if P_poly_fallback < EPS_L:
-                raise CSFError(
-                    f"compute_saint_venant_J_cell(v3): polygon '{nm}' has near-zero perimeter."
-                )
-            t = 2.0 * A_poly_fallback / P_poly_fallback
-
-        if t < EPS_L:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' invalid thickness t={t}."
-            )
+        '''
+        # define t
+        '''       
 
         # Split loops (inner explicit closure is optional).
         loop_a, loop_b, i_outer_end = _split_outer_inner_loops(xy, nm)
@@ -2411,6 +2418,35 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
         s_outer_after = _signed_area_xy(outer_xy)
         s_inner_after = _signed_area_xy(inner_xy)
+        if t is None:
+            
+            if REQUIRE_EXPLICIT_T:
+                raise CSFError(
+                    f"compute_saint_venant_J_cell(v3): polygon '{nm}' is @cell/@closed but missing '@t=...'."
+                )
+            A_poly_fallback = abs(float(polygon_area_centroid(p)[0]))
+
+
+            P_outer = _perimeter_xy(outer_xy)
+            P_inner = _perimeter_xy(inner_xy) 
+
+            P_poly_fallback= P_outer + P_inner
+            #P_poly_fallback = _perimeter_xy(xy)
+
+           
+            
+            if P_poly_fallback < EPS_L:
+                raise CSFError(
+                    f"compute_saint_venant_J_cell(v3): polygon '{nm}' has near-zero perimeter."
+                )
+            
+            t = 2.0 * A_poly_fallback / P_poly_fallback
+        # end t calculation            
+
+        if t < EPS_L:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' invalid thickness t={t}."
+            )
         '''
         print(
             f"[CELL-ORIENT][idx={i_cell}][z={z_sec}][{nm}] "
@@ -2649,6 +2685,7 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
             continue
         
         A = _poly_area_abs(p)
+        
         if A < EPS_A:
             t=0
             continue
@@ -2675,7 +2712,7 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
         J_i = (A * (t ** 2)) / 3.0
 
         J_i_wall = J_i
-
+        #print(f"DEBUG Area poly {p} A={A} J_i={J_i}")    
 
         P_dbg = _poly_perimeter(p)
 
@@ -4313,17 +4350,19 @@ def get_points_distance(polygon: Polygon, i: int, j: int) -> float:
     This can measure sides (if i, j are consecutive) or diagonals/distances 
     between any two nodes of the polygon.
     """
+    
     verts = polygon.vertices
     n = len(verts)
 
     # Validate indices to prevent Out of Range errors
-    if not (1 <= i <= n) or not (1 <= j <= n):
+    if not (0 <= i <= n) or not (1 <= j <= n):
         raise IndexError(f"Vertex indices {i, j} out of range for polygon with {n} vertices.")
 
     # Convert 1-based indices to 0-based for Python list access
-    p1 = verts[i - 1]
-    p2 = verts[j - 1]
-
+    
+    p1 = verts[i]
+    p2 = verts[j]
+    
     # Euclidean distance formula: sqrt((x2-x1)^2 + (y2-y1)^2)
     dist = math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2)
     
@@ -6176,245 +6215,6 @@ class ContinuousSectionField:
 
 
     # --------------------------------------------------------------------------------------
-    def section_area_by_weight2remove(
-        self,
-        z: float,
-        w_tol: float = 0.0,
-        include_per_polygon: bool = False,
-        debug: bool = False,
-        zero_w_eps: float = 0.0,
-    ) -> Dict[str, Any]:
-        """
-        Compute area breakdown at section z grouped by ABSOLUTE weight (w_abs).
-        
-        This is a sterile implementation:
-        - Polygon areas preserve their signed value from the shoelace formula (no abs).
-        - Effective area (material area) is computed as sum(area * w_rel).
-        - No data clipping (max(0, ...)) is applied unless explicitly requested.
-        
-        Args:
-            z: Longitudinal coordinate where the section is sampled.
-            w_tol: Grouping tolerance for weights. If > 0, weights are rounded to 
-                   the nearest multiple of w_tol for grouping purposes only.
-            include_per_polygon: If True, includes detailed per-polygon data in output.
-            debug: If True, prints debug information to stdout.
-            zero_w_eps: Threshold for considering an absolute weig  ht as zero when
-                        computing total_area_nonzero. If |w_abs| <= zero_w_eps, 
-                        that polygon's contribution is excluded from the nonzero sum.
-                        
-        Returns:
-            Dictionary containing:
-            - z: Coordinate (float)
-            - total_area: Effective area = sum(area * w_rel) for all polygons
-            - total_area_nonzero: Effective area excluding |w_abs| <= zero_w_eps
-            - total_area_geometric: Raw geometric sum = sum(area) (sterile, signed)
-            - groups: List of weight groups with accumulated geometric areas
-            - per_polygon: (Optional) Detailed polygon data
-        """
-
-
-
-        def _strip_csf_tags(name: str) -> str:
-            """
-            Return the polygon identity name with CSF tags removed.
-            Convention: everything after the first '@' is treated as tag payload.
-            Examples:
-            'P1@cell@t=2.0' -> 'P1'
-            'Outer@wall'    -> 'Outer'
-            """
-            if name is None:
-                return ""
-            s = str(name)
-            i = s.find("@")
-            return s if i < 0 else s[:i]
-
-        # --- 1) Sample section at z ---
-        sec = self.section(z)
-
-        # --- 2) Geometric helpers (sterile, sign-preserving) ---
-        def _extract_vertices(poly) -> List[Tuple[float, float]]:
-            """Extract vertices as list of (x, y) tuples."""
-            verts = getattr(poly, "vertices", None)
-            if verts is None:
-                raise ValueError(f"Polygon '{getattr(poly, 'name', None)}' has no vertices.")
-            out = []
-            for v in verts:
-                if isinstance(v, (list, tuple)) and len(v) >= 2:
-                    out.append((float(v[0]), float(v[1])))
-                else:
-                    out.append((float(getattr(v, "x")), float(getattr(v, "y"))))
-            return out
-
-        # --- 3) Build container hierarchy from S0 (stable reference) ---
-        # remove @cell/@wall from name
-
-        s0_polys = self.s0.polygons
-        if not s0_polys:
-            raise ValueError("S0 has no polygons; cannot establish container map.")
-
-        # Map index to name for S0
-        s0_names: List[str] = []
-        seen_names = set()
-        for p in s0_polys:
-            nm = _strip_csf_tags(getattr(p, "name", None))
-            if not nm:
-                raise ValueError("All S0 polygons must have a unique name.")
-            if nm in seen_names:
-                raise ValueError(f"Duplicate polygon name in S0: '{nm}'")
-            seen_names.add(nm)
-            s0_names.append(nm)
-
-        # Map child_name -> parent_name (None if outermost)
-        container_of: Dict[str, Optional[str]] = {}
-        for idx, poly in enumerate(s0_polys):
-            child_name = s0_names[idx]
-            parent_idx = self.get_container_polygon_index(poly, idx)
-            
-            # Prevent self-containment
-            if parent_idx == idx:
-                parent_idx = None
-                
-            if parent_idx is None:
-                parent_name = None
-            else:
-                if not (0 <= parent_idx < len(s0_polys)):
-                    raise ValueError(f"Invalid container index {parent_idx} for '{child_name}'")
-                parent_name = s0_names[parent_idx]
-                if parent_name == child_name:
-                    parent_name = None
-            container_of[child_name] = parent_name
-
-        # --- 4) Map current section polygons with raw data ---
-        poly_data: Dict[str, Dict[str, Any]] = {}
-        for idx, poly in enumerate(sec.polygons):
-            name = _strip_csf_tags(getattr(poly, "name", None))
-            if not name:
-                raise ValueError(f"Polygon at index {idx} has no name.")
-            if name in poly_data:
-                raise ValueError(f"Duplicate polygon name in section at z={z}: '{name}'")
-            
-            w_rel = float(getattr(poly, "weight"))
-            verts = _extract_vertices(poly)
-            
-            area_geom,(_,_) =_polygon_signed_area_and_centroid(poly)# Sterile: preserves sign with no weght
-            
-            #print(f"DEBUG area_geom {area_geom}")
-            poly_data[name] = {
-                "idx": idx,
-                "w_rel": w_rel,          # Relative weight (may be negative for voids)
-                "area_geom": area_geom,   # Raw geometric area (signed)
-            }
-
-        # Verify all S0 polygons exist in current section
-        for name in container_of.keys():
-            if name not in poly_data:
-                raise ValueError(f"Polygon '{name}' from S0 not found in section at z={z}")
-
-        # --- 5) Compute absolute weights (w_abs) via recursive chain ---
-        w_abs_cache: Dict[str, float] = {}
-        
-        def get_w_abs(poly_name: str) -> float:
-            """Compute absolute weight: w_rel + w_abs(parent)."""
-            if poly_name in w_abs_cache:
-                return w_abs_cache[poly_name]
-            parent = container_of[poly_name]
-            w_rel = poly_data[poly_name]["w_rel"]
-            if parent is None:
-                w_abs = w_rel
-            else:
-                w_abs = w_rel + get_w_abs(parent)
-            w_abs_cache[poly_name] = w_abs
-
-            return w_abs
-
-        for name in container_of.keys():
-            get_w_abs(name)
-
-        # --- 6) Group by absolute weight (with optional binning) ---
-        def bin_weight(w: float) -> float:
-            """Optional weight binning for grouping tolerance."""
-            if w_tol and w_tol > 0.0:
-                return round(w / w_tol) * w_tol
-            return w
-
-        groups: Dict[float, Dict[str, Any]] = {}
-        per_polygon_records = []
-
-        for name in container_of.keys():
-            w_abs_raw = w_abs_cache[name]
-            w_abs_grouped = bin_weight(w_abs_raw) if w_tol > 0 else w_abs_raw
-            area_geom = poly_data[name]["area_geom"]
-            
-            # Accumulate geometric area in groups (sterile sum, preserves sign)
-            if w_abs_grouped not in groups:
-                groups[w_abs_grouped] = {"w": w_abs_grouped, "area": 0.0, "polygons": []}
-            groups[w_abs_grouped]["area"] += area_geom
-            groups[w_abs_grouped]["polygons"].append(name)
-
-            # Record for per-polygon output
-            per_polygon_records.append({
-                "idx": poly_data[name]["idx"],
-                "name": name,
-                "container": container_of[name],
-                "w_rel": poly_data[name]["w_rel"],
-                "w_abs": w_abs_raw,  # Store original, not binned
-                "area": area_geom,
-            })
-
-        # --- 7) Compute totals (sterile calculations) ---
-        
-        # Effective mechanical area: sum of (geometric area * relative weight)
-        # This accounts for voids (negative w_rel) and material ratios.
-        total_effective = sum(
-            poly_data[name]["area_geom"] * poly_data[name]["w_rel"]
-            for name in container_of.keys()
-        )
-        
-        # Effective area excluding near-zero absolute weights
-        total_effective_nonzero = sum(
-            poly_data[name]["area_geom"] * poly_data[name]["w_rel"]
-            for name in container_of.keys()
-            if abs(w_abs_cache[name]) > float(zero_w_eps)
-        )
-        
-        # Pure geometric sum (sterile, includes signs from orientation)
-        total_geometric = sum(g["area"] for g in groups.values())
-
-        # Prepare groups list with fractions
-        groups_list = sorted(groups.values(), key=lambda d: d["w"])
-        effective_denom = total_effective if total_effective != 0 else 1.0
-        for g in groups_list:
-            # Fraction relative to effective area (can be >1 or negative if mixed signs)
-            g["area_fraction"] = (g["area"] * g["w"]) / effective_denom if g["w"] != 0 else 0.0
-
-        # --- 8) Debug output ---
-        if debug:
-            print("=" * 60)
-            print(f"section_area_by_weight (sterile) at z={z}")
-            print("-" * 60)
-            for rec in sorted(per_polygon_records, key=lambda x: x["idx"]):
-                print(f"  [{rec['idx']}] {rec['name']:<15} "
-                      f"w_rel={rec['w_rel']:+.3f} w_abs={rec['w_abs']:+.3f} "
-                      f"area={rec['area']:+.6e}")
-            print("-" * 60)
-            print(f"Geometric Sum:   {total_geometric:+.6e}")
-            print(f"Homogenized orea (|w|>0):  {total_effective:+.6e}")
-            print(f"Geometric Total Surface: {total_effective_nonzero:+.6e}")
-            print("=" * 60)
-
-        # --- 9) Assemble output ---
-        result: Dict[str, Any] = {
-            "z": float(z),
-            "total_area": float(total_effective),           # Area omogeneizzata effettiva
-            "total_area_nonzero": float(total_effective_nonzero),
-            "total_area_geometric": float(total_geometric),  # Somma geometrica pura
-            "groups": groups_list,
-        }
-        
-        if include_per_polygon:
-            result["per_polygon"] = per_polygon_records
-            
-        return result
 
     
     def _determine_magnitude(self) -> None:
@@ -6690,7 +6490,7 @@ class ContinuousSectionField:
         If a polygon name is not found or homology fails, it raises an error 
         to prevent falling back to default linear behavior.
         """
-        #print("set_weight_laws")
+
         if not isinstance(laws, (list, dict)):
             raise ValueError("weight_laws must be a list or a dictionary.")
         
@@ -6704,7 +6504,7 @@ class ContinuousSectionField:
         # Reset current laws 
         self.weight_laws = {}
         normalized_map = {}
-
+        
         # 1. PARSING & STRICT TRANSLATION
         if isinstance(laws, list):
             for i, item in enumerate(laws):
@@ -6769,6 +6569,7 @@ class ContinuousSectionField:
             
 
             if isinstance(formula, str):
+                
                 try:
                     # Endpoint polygon references for distance calculations
                     p0_test = self.s0.polygons[idx-1]
@@ -6780,23 +6581,25 @@ class ContinuousSectionField:
                     
                     # 1. Calculate the total length of the field
                     l_total = abs(self.s1.z - self.s0.z)
+                    
                     try:
                         # We test the formula at mid-span (t=0.5) to verify syntax and logic
                         we = evaluate_weight_formula(formula, p0_test, p1_test,z0=self.s0.z,z1=self.s1.z,zt=z_mid)
+                        
                     except Exception as e:                      
                         raise ValueError(
                             f"VALIDATION FAILED: The formula for '{p0_test.name}' is not valid.\n"
                             f"Formula: '{formula}'\n"
                             f"Error encountered at the midpoint::: {e}"
                         )
-
+                    
                 except Exception as e:
                     raise ValueError(
                         f":VALIDATION FAILED: The formula for '{valid_names0[idx-1]}' is not valid.\n"
                         f"Formula: '{formula}'\n"
                         f"Error encountered at the midpoint:- {e}"
                     )
-                
+        
         # -------------------------------------------
         # 2. EFFECTIVE ASSIGNMENT (Bypassing FrozenInstanceError)
         for idx, formula in normalized_map.items():
@@ -7118,8 +6921,10 @@ class ContinuousSectionField:
                 return base
 
             if topology_tag == "@cell":
+                
                 if t_value is None:
                     raise CSFError(f"Missing @t for @cell polygon '{base}'.")
+                
                 return f"{base}@cell@t={_fmt_t(t_value)}"
 
             if topology_tag == "@wall":
@@ -7136,57 +6941,6 @@ class ContinuousSectionField:
                 f"Unsupported topology tag '{topology_tag}' for polygon '{base}'."
             )
         
-        def _build_interpolated_polygon_name(
-            p0_name: str,
-            p1_name: str,
-            topology_tag: Optional[str],
-            t_value: Optional[float],
-        ) -> str:
-            """
-            Build runtime polygon name from resolved metadata.
-
-            Notes
-            -----
-            - This helper only formats the name.
-            - It does not validate/interpolate z-dependent values.
-            - Different base names between S0/S1 are allowed by design.
-            """
-
-            def _left_of_at(name: str) -> str:
-                s = str(name or "").strip()
-                k = s.find("@")
-                return s[:k] if k >= 0 else s
-
-            def _fmt_t(t: float) -> str:
-                return f"{float(t):.12g}"
-
-            base0 = _left_of_at(p0_name)
-            base1 = _left_of_at(p1_name)
-
-            # Use S0 base as canonical runtime name; fallback to S1 if needed.
-            base = base0 if base0 else base1
-            if not base:
-                raise CSFError(f"Invalid polygon base name(s): '{p0_name}' / '{p1_name}'")
-
-            if topology_tag is None:
-                return base
-    
-            if topology_tag == "@cell":
-                if t_value is None:
-                    raise CSFError(f"Missing @t for @cell polygon '{base}'.")
-                return f"{base}@cell@t={_fmt_t(t_value)}"
-
-            if topology_tag == "@wall":
-                if t_value is None:
-                    return f"{base}@wall"
-                return f"{base}@wall@t={_fmt_t(t_value)}"
-
-            if topology_tag == "@closed":
-                if t_value is None:
-                    return f"{base}@closed"
-                return f"{base}@closed@t={_fmt_t(t_value)}"
-
-            raise CSFError(f"Unsupported topology tag '{topology_tag}' for polygon '{base}'.")
         ### end helpers 
 
         # in input z is absol   ute
@@ -7270,18 +7024,18 @@ class ContinuousSectionField:
                 z0=self.z0,
                 z1=self.z1,
             )
-            poly_name = _build_interpolated_polygon_name(
-                p0_name=p0.name,
-                p1_name=p1.name,
-                topology_tag=topology_tag,
-                t_value=t_value,
-            )
-            
-            nterp_weight_child=3
+            if t_value:
+                poly_name = _build_interpolated_polygon_name(
+                    p0_name=p0.name,
+                    p1_name=p1.name,
+                    topology_tag=topology_tag,
+                    t_value=t_value,
+                )
+            else:
+                poly_name=p0.name+":"+p1.name # add both for debugging purposes
             poly = Polygon(vertices=verts, weight=interp_weight_relative,weightabs=interp_weight_child,name=poly_name)
             
-            # --------------------------
-       
+            
             if not re.search(r'(?i)@(cell|wall|closed)\b', str(poly.name or "")) and  polygon_has_self_intersections(poly):
                 #silent
                 None
@@ -8146,7 +7900,7 @@ class Visualizer:
 
             # Optional vertex numbering inside axes.
             if show_vertex_ids:
-                for v_idx, v in enumerate(poly.vertices, start=1):
+                for v_idx, v in enumerate(poly.vertices, start=0):
                     ax.text(
                         v.x,
                         v.y,
