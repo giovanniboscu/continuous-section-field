@@ -66,7 +66,7 @@ From this continuous description, CSF evaluates section properties and stiffness
 
 - **Thin-walled topology handling**:
   - open-section layouts
-  - closed-cell and multi-cell layouts
+  - closed-cell 
 
 - **Continuous geometric interpolation between stations**: corresponding vertices are interpolated along z (geometric field), while polygon weights $w_i(z)$  are independently defined/evaluated (weight field), yielding the resulting section/stiffness property fields along the member.
 
