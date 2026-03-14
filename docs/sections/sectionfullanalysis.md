@@ -392,7 +392,7 @@ CSF:
     S0:
       z: 0.000000
       polygons:
-        box1@cell:
+        box1@cell: #or  box1@cell@t=1
           weight: 1.000000
           vertices:
             # OUTER loop (CCW)
@@ -412,7 +412,7 @@ CSF:
     S1:
       z: 10.000000
       polygons:
-        box1@cell:
+        box1@cell:#or  box1@cell@t=1
           weight: 1.000000
           vertices:
             # OUTER loop (CCW)
