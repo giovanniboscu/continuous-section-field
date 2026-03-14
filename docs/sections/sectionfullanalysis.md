@@ -219,7 +219,9 @@ evaluated consistently with the same weighted section model.
 ## 16 - 17 Torsion constant methods for tagged polygons (`@cell` / `@wall`)
 **Key:** `J_sv_cell`   `J_sv_wall` 
 
-[CSF Torsional Model Documentation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/torsional_model.md)
+### Torsional contribution of `@cell` and `@wall` polygons
+
+The torsional stiffness is computed as the sum of the contributions of all polygons participating in the torsion path.
 
 This note documents the *implemented* methods used by:
 
