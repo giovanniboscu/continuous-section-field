@@ -265,11 +265,12 @@ Parsing rules (both functions):
 
 ---
 
-## Required parameters (user-specified)
+## Thickness 
+### Required parameters (user-specified)
 
-### Thickness 
 
-## Important: Thickness Rule for `@cell` and @wall Polygons
+
+### Important: Thickness Rule for `@cell` and @wall Polygons
 
 The thickness parameter `t` follows the rules below.
 
