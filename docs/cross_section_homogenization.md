@@ -24,6 +24,12 @@ For each patch, a material reference or an absolute property value is defined.
 
 Each material patch may be assigned one or more user-defined **homogenization fields**:
 
+Throughout this document, the terms *homogenization field*, *homogenization factor*,
+and *weight law* refer to the same quantity: the per-polygon scalar function $w_i(z)$
+in the CSF integral formulation. The term *homogenization* emphasises the physical
+interpretation --- scaling material contributions to produce equivalent section
+properties --- while *weight law* emphasises the mathematical role in the integral.
+
 Multiple homogenization factors may coexist within the same cross-section, each acting independently on a different portion of the geometry.
 
 ---
