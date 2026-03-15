@@ -102,27 +102,6 @@ Area decreases from 12.06 at `z=0` to a minimum of 3.53 near `z=39`. The profile
 
 All three quantities vary smoothly with no steps or discontinuities, confirming that CSF correctly interpolates the geometry at every z station without any prismatic approximation.
 
-
----
-
-## Theoretical Background
-
-### Geometric Properties - Shoelace and Steiner
-
-For a polygon with n vertices $(x_i, y_i)$, area and first moments follow from the Shoelace formula:
-
-$$A = \frac{1}{2} \sum_i (x_i y_{i+1} - x_{i+1} y_i)$$
-
-Centroid coordinates follow from the first moments divided by $A$. Second moments about the origin extend the same integral; the Parallel Axis Theorem (Steiner) then translates to the centroidal frame:
-
-$$I_{xx,c} = I_{xx,O} - A C_y^2 \qquad I_{yy,c} = I_{yy,O} - A C_x^2 \qquad I_{xy,c} = I_{xy,O} - A C_x C_y$$
-
-Principal moments $I_1$, $I_2$ are obtained from Mohr's circle:
-
-$$I_{1,2} = \frac{I_{xx} + I_{yy}}{2} \pm \sqrt{\left(\frac{I_{xx} - I_{yy}}{2}\right)^2 + I_{xy}^2}$$
-
-Radii of gyration follow as $r_x = \sqrt{I_{xx}/A}$ and $r_y = \sqrt{I_{yy}/A}$.
-
 ---
 
 ## Properties Computed
@@ -130,8 +109,6 @@ Radii of gyration follow as $r_x = \sqrt{I_{xx}/A}$ and $r_y = \sqrt{I_{yy}/A}$.
 At each of the 19 z stations, CSF outputs: cross-sectional area, centroid coordinates ($C_x$, $C_y$), second moments of area ($I_{xx}$, $I_{yy}$, $I_{xy}$), principal moments ($I_1$, $I_2$), and radii of gyration ($r_x$, $r_y$).
 
 At the symmetric endpoints (z=0 and z=40) the section has equal principal moments and zero product of inertia, as expected from the geometry. The intermediate stations reflect the progressive symmetry breaking introduced by the simultaneous shape morphing and twist.
-
-
 
 
 ---
