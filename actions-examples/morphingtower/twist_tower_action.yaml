@@ -1,0 +1,66 @@
+CSF_ACTIONS:
+  stations:
+    station_midle:
+      - 20
+    station_edge:
+      - 0
+      - 40
+    station_3:
+      - 0
+      - 15
+      - 40
+    station_5:
+      - 0
+      - 10
+      - 20
+      - 30
+      - 40
+    station_precise:
+      - 0
+      - 5
+      - 10
+      - 15
+      - 20
+      - 24
+      - 26
+      - 28
+      - 29
+      - 30
+      - 31
+      - 32
+      - 33
+      - 34
+      - 35
+      - 36
+      - 37
+      - 38
+      - 40
+  
+  actions:
+    - plot_volume_3d:
+        params:
+          title: "Morphing Section"
+          line_percent: 100.0
+    - section_selected_analysis:
+        stations: station_precise 
+        output:
+          - [out/twist_tower.txt]
+        properties: [geometry,A,Cx,Cy,Ix,Iy,Ixy,Ip,I1,I2,rx,ry,Wx,Wy,J_sv_cell,Q_na]        
+    - plot_section_2d:
+        stations:
+          - station_5
+        show_ids: false
+        show_vertex_ids: False
+        output:
+          - [stdout,out/twist_tower_sections.jpg]
+
+    - plot_properties:
+        output:
+          - stdout
+          - out/twist_tower_props.jpg
+        params:
+          num_points: 100
+        properties: [J_sv_cell,Ix,A]
+     
+        
+
