@@ -14,7 +14,7 @@ The most general expression for a section property is:
 
 $$P(z) = \sum_i w_i(z) \cdot \iint_{\Omega_i(z)} f(x, y, z) \, dA$$
 
-The cross-section at each station $z$ is partitioned into sub-domains $\Omega_i(z)$, each carrying its own independent weight law $w_i(z)$. Unlike classical formulations where a single material function scales the entire section, here each polygon is assigned its own longitudinal law - independently of all others and independently of the geometry field. This is the key degree of freedom that makes the formulation general: the same integral structure accommodates uniform sections, graded materials, localised degradation, and any combination of these, without changing the form of the equation. The classical separable formulation is recovered as a special case when $w_i(z) = m(z)$ is uniform across all sub-domains.
+The cross-section at each station $z$ is partitioned into sub-domains $\Omega_i(z)$, each carrying its own independent weight law $w_i(z)$. Unlike semplified formulations where a single material function scales the entire section, here each polygon is assigned its own longitudinal law - independently of all others and independently of the geometry field. This is the key degree of freedom that makes the formulation general: the same integral structure accommodates uniform sections, graded materials, localised degradation, and any combination of these, without changing the form of the equation. The classical separable formulation is recovered as a special case when $w_i(z) = m(z)$ is uniform across all sub-domains.
 
 ## What CSF Does
 
