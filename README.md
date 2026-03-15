@@ -25,9 +25,7 @@ designed as a continuous pre-processor where the cross-section is described by p
 each of which can carry its own longitudinal law $w_i(z)$ .
 
 
-<p align="center">        
-  https://github.com/giovanniboscu/continuous-section-field/blob/main/images/twist_tower.jpg
-  
+<p align="center">          
 <img src="https://github.com/giovanniboscu/continuous-section-field/blob/main/images/twist_tower.jpg" alt="morphing" width="55%">
 </p>
 
