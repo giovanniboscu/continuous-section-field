@@ -95,9 +95,9 @@ The three plots show how the main cross-sectional properties evolve continuously
 Both quantities decrease monotonically from `z=0` to the end of the member. $J_{sv,cell}$ drops from 278.6 at `z=0` down to 20.69 at `z=40`, a reduction of roughly 13×. The dashed curve (right axis) shows $t = 2A/P$, the effective wall thickness estimated from the polygon geometry. The two curves track each other closely, which is expected: in the Bredt-Batho formulation $J \propto A_m^2 \cdot t / b_m$, and when all geometric dimensions scale together the torsional stiffness is strongly sensitive to the wall thickness. The slight divergence between $J$ and $t$ in the middle zone reflects the non-linear coupling between enclosed area, perimeter, and thickness as the shape morphs — this is discussed further in the validation study.
 
 **Middle — Second moment of area $I_x$.**
-$I_x$ decreases from 139.1 at `z=0` to a minimum of 12.63 near `z=39`, following a smooth nonlinear curve. The shape at `z=0` is a large circular annulus (diameter 10, $I_x = I_y$ by symmetry); as the section shrinks and transitions toward the compact rounded rectangle, bending stiffness drops accordingly. The curve is smooth throughout, with no discontinuities — a direct consequence of the ruled-surface interpolation used by CSF.
+$I_x$ decreases from 139.1 at `z=0` to a minimum of 12.63 near `z=39`, following a smooth nonlinear curve. The shape at `z=0` is a large circular annulus (diameter 10, $I_x = I_y$ by symmetry); as the section shrinks and transitions toward the compact rounded rectangle, bending stiffness drops accordingly. The curve is smooth throughout, with no discontinuities - a direct consequence of the ruled-surface interpolation used by CSF.
 
-**Bottom — Cross-sectional area $A$.**
+**Bottom - Cross-sectional area $A$.**
 Area decreases from 12.06 at `z=0` to a minimum of 3.53 near `z=39`. The profile is concave, meaning the section loses material faster in the early part of the member and flattens out toward the end. This reflects the combined effect of the reducing outer diameter and the thinner wall at the head section (`tg_head = 0.2` vs `tg_base = 0.40`).
 
 All three quantities vary smoothly with no steps or discontinuities, confirming that CSF correctly interpolates the geometry at every z station without any prismatic approximation.
@@ -107,7 +107,7 @@ All three quantities vary smoothly with no steps or discontinuities, confirming 
 
 ## Theoretical Background
 
-### Geometric Properties — Shoelace and Steiner
+### Geometric Properties - Shoelace and Steiner
 
 For a polygon with n vertices $(x_i, y_i)$, area and first moments follow from the Shoelace formula:
 
