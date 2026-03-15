@@ -1,23 +1,25 @@
-# twist_tower - Geometric Properties Study
+# twisted Tower
 <p align="center">          
 <img src="https://github.com/giovanniboscu/continuous-section-field/blob/main/images/twist_tower.jpg" alt="morphing" width="55%">
 </p>
+
+This example is part of the **[CSF — Continuous Section Field](https://github.com/giovanniboscu/continuous-section-field)** project, a Python engine for non-prismatic and polygon-resolved structural members. CSF treats any beam-like member as a continuous field along its axis: the cross-section is described by arbitrary polygonal regions, each of which can carry its own longitudinal law $w_i(z)$.
+
+If you work with sections that change shape, taper, rotate, or vary in material composition along their length — and you need accurate cross-sectional properties ($A(z)$, $I(z)$, $EA(z)$, $EI(z)$, $GJ(z)$) without discretising into stepped prismatic segments — CSF is built for that.
 
 ---
 
 ## Overview
 
-This document describes the geometry generation and cross-sectional property computation for the **twist_tower** model: a hollow tubular member whose cross-section morphs continuously along its longitudinal axis from a circular annulus at `z=0` to a rounded-rectangle annulus at `z=40`, with a continuous angular twist of 45°.
-
-Geometric properties (area, centroid, moments of inertia, principal moments, radii of gyration) are computed by CSF using closed-form polygon integrals (Shoelace / Green / Steiner) at 19 stations along z.
+The **twist_tower** model is designed to stress-test the full interpolation engine of CSF. It is not a simple taper: the cross-section simultaneously **changes shape** (circle → rounded rectangle) and **rotates** by 45° along the longitudinal axis. Every geometric quantity — area, centroid position, moments of inertia, wall thickness — varies continuously and non-trivially with z.
 
 ---
 
 ## Model Description
 
-The member transitions smoothly between two cross-section types. At `z=0` the section is a symmetric circular annulus. At `z=40` it has morphed into a rounded-rectangle annulus. Between these two endpoints every geometric property — area, centroid, moments of inertia, wall thickness — varies continuously and smoothly with z. Minimum area occurs near z=29, where the section is most compact.
+The member spans from `z=0` to `z=40`. At `z=0` it is a symmetric circular hollow annulus. At `z=40` it has morphed into a hollow rounded-rectangle annulus. Between these two endpoints every geometric property varies continuously and smoothly with z, driven by CSF's ruled-surface interpolation. Minimum cross-sectional area occurs near z=29, where the section is most compact.
 
-Outer and inner contours are discretised as **128-sided polygons**. The continuous shape transition exercises the full interpolation engine of CSF.
+Outer and inner contours are discretised as **128-sided polygons**, sufficient to represent smooth curved boundaries with negligible polygonal error.
 
 ---
 
@@ -80,11 +82,28 @@ Once the geometry files are generated, the cross-sectional properties are comput
 ```bash
 python3 -m csf.CSFActions twist_tower.yaml twist_tower_action.yaml
 ```
+![twist_tower cross-sectional properties](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/morphingtower/twist_tower_props.jpg)
+
+The three plots show how the main cross-sectional properties evolve continuously from `z=0` (circular section) to `z=40` (rounded rectangle).
+
+**Top — Torsional constant $J_{sv,cell}$ and wall thickness $t = 2A/P$.**
+Both quantities decrease monotonically from `z=0` to the end of the member. $J_{sv,cell}$ drops from 278.6 at `z=0` down to 20.69 at `z=40`, a reduction of roughly 13×. The dashed curve (right axis) shows $t = 2A/P$, the effective wall thickness estimated from the polygon geometry. The two curves track each other closely, which is expected: in the Bredt-Batho formulation $J \propto A_m^2 \cdot t / b_m$, and when all geometric dimensions scale together the torsional stiffness is strongly sensitive to the wall thickness. The slight divergence between $J$ and $t$ in the middle zone reflects the non-linear coupling between enclosed area, perimeter, and thickness as the shape morphs — this is discussed further in the validation study.
+
+**Middle — Second moment of area $I_x$.**
+$I_x$ decreases from 139.1 at `z=0` to a minimum of 12.63 near `z=39`, following a smooth nonlinear curve. The shape at `z=0` is a large circular annulus (diameter 10, $I_x = I_y$ by symmetry); as the section shrinks and transitions toward the compact rounded rectangle, bending stiffness drops accordingly. The curve is smooth throughout, with no discontinuities — a direct consequence of the ruled-surface interpolation used by CSF.
+
+**Bottom — Cross-sectional area $A$.**
+Area decreases from 12.06 at `z=0` to a minimum of 3.53 near `z=39`. The profile is concave, meaning the section loses material faster in the early part of the member and flattens out toward the end. This reflects the combined effect of the reducing outer diameter and the thinner wall at the head section (`tg_head = 0.2` vs `tg_base = 0.40`).
+
+All three quantities vary smoothly with no steps or discontinuities, confirming that CSF correctly interpolates the geometry at every z station without any prismatic approximation.
+
 
 The two input files are:
 
 - **`twist_tower.yaml`** — geometry definition (generated by the script above)
 - **`twist_tower_action.yaml`** — action specification (sections to analyse, properties to compute, output format)
+
+No Python programming is required to run this workflow. For a full walkthrough of the YAML-based interface see the [CSF Tutorial](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md).
 
 ---
 
@@ -110,12 +129,19 @@ Radii of gyration follow as $r_x = \sqrt{I_{xx}/A}$ and $r_y = \sqrt{I_{yy}/A}$.
 
 ## Properties Computed
 
-At each of the 19 z stations, CSF outputs the following cross-sectional properties: cross-sectional area, centroid coordinates ($C_x$, $C_y$), second moments of area ($I_{xx}$, $I_{yy}$, $I_{xy}$), principal moments ($I_1$, $I_2$), and radii of gyration ($r_x$, $r_y$).
+At each of the 19 z stations, CSF outputs: cross-sectional area, centroid coordinates ($C_x$, $C_y$), second moments of area ($I_{xx}$, $I_{yy}$, $I_{xy}$), principal moments ($I_1$, $I_2$), and radii of gyration ($r_x$, $r_y$).
 
-At the symmetric endpoints (z=0 and z=40) the section has equal principal moments and zero product of inertia, as expected. The intermediate stations reflect the progressive symmetry breaking introduced by the twist and the shape morphing.
+At the symmetric endpoints (z=0 and z=40) the section has equal principal moments and zero product of inertia, as expected from the geometry. The intermediate stations reflect the progressive symmetry breaking introduced by the simultaneous shape morphing and twist.
 
 
 
-![twist_tower cross-sectional properties](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/morphingtower/twist_tower_props.jpg)
 
+---
+
+## Learn More
+
+- [CSF main repository](https://github.com/giovanniboscu/continuous-section-field) — overview, key features, validation studies
+- [CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md) — step-by-step guide, no Python required
+- [CSF Programmer Guide](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/programmer-guide) — Python API for developers
+- [NREL 5-MW validation](https://github.com/giovanniboscu/continuous-section-field) — real-world benchmark against official reference data
 
