@@ -1,4 +1,4 @@
-# twist_tower — Geometric Properties Study
+# twist_tower - Geometric Properties Study
 <p align="center">          
 <img src="https://github.com/giovanniboscu/continuous-section-field/blob/main/images/twist_tower.jpg" alt="morphing" width="55%">
 </p>
