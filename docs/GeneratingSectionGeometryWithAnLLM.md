@@ -144,7 +144,7 @@ from the same script with different parameter sets.
 > S1 at z=12000 is a rounded rectangle with width W=800mm, height H=600mm,
 > corner radius Rc=80mm, thickness t=16mm.
 > Use 256 points per contour, uniformly distributed along the perimeter.
-> Polygon pairing must be consistent: outer contour index 0, inner void index 1."
+> Polygon pairing must be consistent: outer contour index 0, inner void index 1." and polygons with CCW vertex order 
 
 The script handles the parametric geometry, the uniform sampling, and the YAML
 formatting. Vertex resolution is a free parameter --- increase n for smoother
