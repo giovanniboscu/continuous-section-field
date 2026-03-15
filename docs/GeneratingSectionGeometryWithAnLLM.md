@@ -4,7 +4,7 @@ CSF section geometry is defined as lists of polygon vertices in YAML format.
 While simple sections can be written by hand, complex or high-resolution geometries
 benefit from programmatic generation. A large language model (LLM) with code and
 vision capabilities can generate CSF-ready YAML directly from images, analytical
-descriptions, or parametric scripts --- with arbitrary vertex resolution.
+descriptions, or parametric scripts - with arbitrary vertex resolution.
 
 ---
 
@@ -159,11 +159,11 @@ When asking an LLM to generate CSF geometry, always specify:
 - **CCW vertex order** --- counterclockwise is required
 - **Polygon pairing is index-based** --- S0 and S1 must have the same number of
   polygons in the same order
-- **Uniform perimeter sampling** --- for morphing, uniform distribution along the
+- **Uniform perimeter sampling** - for morphing, uniform distribution along the
   perimeter gives the best interpolation quality
-- **Weight assignment** --- solid regions use `weight: 1.0`, voids use `weight: 0.0`,
+- **Weight assignment** - solid regions use `weight: 1.0`, voids use `weight: 0.0`,
   multi-material regions use the appropriate scalar
-- **Units** --- specify the unit system explicitly (meters, millimeters) to avoid
+- **Units** - specify the unit system explicitly (meters, millimeters) to avoid
   scaling errors
 
 ---
