@@ -29,6 +29,8 @@ each of which can carry its own longitudinal law $w_i(z)$ .
 <img src="https://github.com/giovanniboscu/continuous-section-field/blob/main/images/twist_tower.jpg" alt="morphing" width="55%">
 </p>
 
+![Tower](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/morphingtower)
+
 CSF models a member as a continuous field along the axis `z`, combining:
 
 - **Geometry field**: arbitrary polygonal sections at stations ( `S0`, `S1`) with interpolation for tapered / varying shapes.
