@@ -62,6 +62,9 @@ From this continuous description, CSF evaluates section properties and stiffness
 
 - **Polygonal approximation of curved boundaries**: curved outlines (e.g., circular shells/towers) are represented through discretized polygons with user-selected vertex count.
 
+Section vertices can be generated from any CAD tool or script 
+that can sample points along a curve and export their coordinates.
+
 - **Thin-walled topology handling**:
   - open-section layouts
   - closed-cell 
