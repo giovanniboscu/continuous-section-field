@@ -268,4 +268,4 @@ The benchmark confirms that:
 
 No anomalies or systematic errors were detected.
 
-This validation highlights both the **accuracy** and the **conceptual elegance** of the **Continuous Section Field** approach, where section properties are derived directly from a continuously evolving parametric geometry.
+
