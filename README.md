@@ -29,7 +29,8 @@ each of which can carry its own longitudinal law $w_i(z)$ .
 <img src="https://github.com/giovanniboscu/continuous-section-field/blob/main/images/twist_tower.jpg" alt="morphing" width="55%">
 </p>
 
-![Tower](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/morphingtower)
+
+![Twisted Tower CSF Analysis](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/morphingtower)
 
 CSF models a member as a continuous field along the axis `z`, combining:
 
