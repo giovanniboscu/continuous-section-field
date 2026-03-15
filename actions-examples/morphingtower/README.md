@@ -87,6 +87,14 @@ Once the geometry files are generated, the cross-sectional properties are comput
 ```bash
 python3 -m csf.CSFActions twist_tower.yaml twist_tower_action.yaml
 ```
+---
+
+## Properties Computed
+
+At each of the 19 z stations, CSF outputs: cross-sectional area, centroid coordinates ($C_x$, $C_y$), second moments of area ($I_{xx}$, $I_{yy}$, $I_{xy}$), principal moments ($I_1$, $I_2$), and radii of gyration ($r_x$, $r_y$).
+
+At the symmetric endpoints (z=0 and z=40) the section has equal principal moments and zero product of inertia, as expected from the geometry. The intermediate stations reflect the progressive symmetry breaking introduced by the simultaneous shape morphing and twist.
+
 ![twist_tower cross-sectional properties](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/morphingtower/twist_tower_props.jpg)
 
 The three plots show how the main cross-sectional properties evolve continuously from `z=0` (circular section) to `z=40` (rounded rectangle).
@@ -101,15 +109,6 @@ $I_x$ decreases from 139.1 at `z=0` to a minimum of 12.63 near `z=39`, following
 Area decreases from 12.06 at `z=0` to a minimum of 3.53 near `z=39`. The profile is concave, meaning the section loses material faster in the early part of the member and flattens out toward the end. This reflects the combined effect of the reducing outer diameter and the thinner wall at the head section (`tg_head = 0.2` vs `tg_base = 0.40`).
 
 All three quantities vary smoothly with no steps or discontinuities, confirming that CSF correctly interpolates the geometry at every z station without any prismatic approximation.
-
----
-
-## Properties Computed
-
-At each of the 19 z stations, CSF outputs: cross-sectional area, centroid coordinates ($C_x$, $C_y$), second moments of area ($I_{xx}$, $I_{yy}$, $I_{xy}$), principal moments ($I_1$, $I_2$), and radii of gyration ($r_x$, $r_y$).
-
-At the symmetric endpoints (z=0 and z=40) the section has equal principal moments and zero product of inertia, as expected from the geometry. The intermediate stations reflect the progressive symmetry breaking introduced by the simultaneous shape morphing and twist.
-
 
 ---
 
