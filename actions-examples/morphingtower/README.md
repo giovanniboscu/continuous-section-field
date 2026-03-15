@@ -112,3 +112,7 @@ At each of the 19 z stations, CSF outputs the following cross-sectional properti
 At the symmetric endpoints (z=0 and z=40) the section has equal principal moments and zero product of inertia, as expected. The intermediate stations reflect the progressive symmetry breaking introduced by the twist and the shape morphing.
 
 
+
+![twist_tower cross-sectional properties](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/morphingtower/twist_tower_props.jpg)
+
+
