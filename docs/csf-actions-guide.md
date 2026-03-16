@@ -23,7 +23,6 @@ This document is written for people who:
 
 These actions are implemented and described in this guide:
 
-- `section_full_analysis` — compute analysis at one or more stations; print a readable report and/or export a CSV table.
 - `plot_section_2d` — plot 2D sections at one or more stations; optionally save a single composite image.
 - `plot_volume_3d` — plot a 3D ruled volume between end sections; **does not use stations**.
 
