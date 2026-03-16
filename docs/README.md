@@ -12,6 +12,14 @@ This folder contains the documentation for **Continuous Section Field (CSF)** - 
 
 ---
 
+## API Reference & Programmig
+
+| File | Description |
+|------|-------------|
+| [api.md](api.md) | Complete Python API reference: geometry primitives (`Pt`, `Polygon`, `Section`), `ContinuousSectionField` and all its methods, section analysis functions, polygon utilities, torsion routines, volume integration, element stiffness assembly, export functions, and weight law utilities. |
+| [user_guide.md](user_guide.md) | Python API user guide: constructing `Polygon`, `Section`, and `ContinuousSectionField`, retrieving intermediate sections, and computing section properties along Z. |
+
+
 ## Geometry
 
 | File | Description |
@@ -39,15 +47,6 @@ This folder contains the documentation for **Continuous Section Field (CSF)** - 
 | [OpenSeesIntegrationNumericalStrategy.md](OpenSeesIntegrationNumericalStrategy.md) | Detailed numerical strategy for consuming CSF station data in OpenSees: export file format (`geometry.tcl`), material conventions, centroid axis topology, integration strategies (member-level Lobatto vs segmented endpoint), and torsion export policy. |
 | [csf_openseespy_builder.md](csf_openseespy_builder.md) | Documentation for `csf_openseespy_builder.py`: OpenSeesPy checker/builder that reads `geometry.tcl`, builds a reference + centroid axis model, and runs a cantilever verification. Covers integration modes (`auto`, `member_lobatto`, `segment_endpoints`) and limitations. |
 | [write_opensees_builder_tcl.md](write_opensees_builder_tcl.md) | Documentation for `write_opensees_builder_tcl.py`: generates a standalone OpenSees Tcl script that reads `geometry.tcl` as a data file and builds a 3D beam model without requiring OpenSeesPy. Covers material modes, Gauss–Lobatto segment behavior, and limitations. |
-
----
-
-## API Reference & Programmig
-
-| File | Description |
-|------|-------------|
-| [api.md](api.md) | Complete Python API reference: geometry primitives (`Pt`, `Polygon`, `Section`), `ContinuousSectionField` and all its methods, section analysis functions, polygon utilities, torsion routines, volume integration, element stiffness assembly, export functions, and weight law utilities. |
-| [user_guide.md](user_guide.md) | Python API user guide: constructing `Polygon`, `Section`, and `ContinuousSectionField`, retrieving intermediate sections, and computing section properties along Z. |
 
 
 ---
