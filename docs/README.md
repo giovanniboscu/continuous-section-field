@@ -1,6 +1,6 @@
 # CSF Documentation
 
-This folder contains the documentation for **Continuous Section Field (CSF)** - a Python engine for continuous geometric and structural modeling of non-prismatic members.
+This folder contains the documentation for **Continuous Section Field (CSF)** 
 
 ---
 ## Actions Runner (No-Code Workflow)
