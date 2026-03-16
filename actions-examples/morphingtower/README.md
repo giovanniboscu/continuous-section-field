@@ -3,8 +3,6 @@
 <img src="https://github.com/giovanniboscu/continuous-section-field/blob/main/images/twist_tower.jpg" alt="morphing" width="55%">
 </p>
 
-This example is part of the **[CSF - Continuous Section Field](https://github.com/giovanniboscu/continuous-section-field)** project, a Python engine for non-prismatic and polygon-resolved structural members. CSF treats any beam-like member as a continuous field along its axis: the cross-section is described by arbitrary polygonal regions, each of which can carry its own longitudinal law $w_i(z)$.
-
 If you work with sections that change shape, taper, rotate, or vary in material composition along their length - and you need accurate cross-sectional properties ($A(z)$, $I(z)$, $EA(z)$, $EI(z)$, $GJ(z)$) without discretising into stepped prismatic segments - CSF is built for that.
 
 ---
