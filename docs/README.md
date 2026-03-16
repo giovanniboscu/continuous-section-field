@@ -3,17 +3,7 @@
 This folder contains the documentation for **Continuous Section Field (CSF)** - a Python engine for continuous geometric and structural modeling of non-prismatic members.
 
 ---
-
 ## Actions Runner (No-Code Workflow)
-
-| File | Description |
-|------|-------------|
-| [csf-actions-guide.md](csf-actions-guide.md) | Complete guide to `CSFActions.py`: YAML-based runner for CSF workflows. Covers the three implemented actions (`section_full_analysis`, `plot_section_2d`, `plot_volume_3d`), station sets, output rules, and a YAML primer for beginners. |
-
-
----
-
-## Getting Started
 
 | File | Description |
 |------|-------------|
