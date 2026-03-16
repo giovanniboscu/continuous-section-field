@@ -11,12 +11,13 @@ This folder contains the documentation for **Continuous Section Field (CSF)** - 
 | [QuickStartGuide.md](QuickStartGuide.md) | End-to-end practical workflow: geometry file, actions file, degradation law `w(z)`, running CSF, and interpreting outputs. Start here. |
 
 ---
-
+https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/programmer-guide
 ## API Reference & Programmig
 
 | File | Description |
 |------|-------------|
 | [api.md](api.md) | Complete Python API reference: geometry primitives (`Pt`, `Polygon`, `Section`), `ContinuousSectionField` and all its methods, section analysis functions, polygon utilities, torsion routines, volume integration, element stiffness assembly, export functions, and weight law utilities. |
+| [programmer-guide](programmer-guide) |This is a practical programmer guide for CSF.. |
 | [user_guide.md](user_guide.md) | Python API user guide: constructing `Polygon`, `Section`, and `ContinuousSectionField`, retrieving intermediate sections, and computing section properties along Z. |
 
 
