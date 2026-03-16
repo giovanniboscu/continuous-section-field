@@ -1,4 +1,15 @@
-# README — Polygon Modeling in CSF with `@wall@t=` and `@cell@t=`
+# CSF Analysis
+
+To run the CSF analysis, execute the following commands:
+
+```bash
+python3 -m csf.CSFActions  ipe600.yaml ipe600_actions.yaml
+python3 -m csf.CSFActions  ipe600.yaml ipe600_actions.yaml
+python3 -m csf.CSFActions  mixedthin.yaml mixedthin_action.yaml
+```
+
+
+# Polygon Modeling in CSF with `@wall@t=` and `@cell@t=`
 
 This document is a practical guide to model cross-sections in **CSF (Continuous Section Field)** using polygon tags, with a focus on:
 
