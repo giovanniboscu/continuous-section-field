@@ -1,5 +1,7 @@
 # CSF Example: Closed-Cell CHS with Splash-Zone Weight Law
-
+```
+python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
+```
 This example demonstrates a **reproducible CSF workflow** for a circular hollow steel member (CHS), using:
 
 - `@cell` closed-cell torsion (`J_sv_cell`, Bredt-Batho),
