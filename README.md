@@ -127,7 +127,7 @@ pip install -e .
 python3 example\nrel_5mw_tower.py 
 python3 example\cylinder_withcheck.py
 python3 example\csf_rotated_validation_benchmark.py
-python3 .\example\tsection_opensees.py
+python3 .\example\tsection_lab.py
 
 cd actions-examples\stell_degradated_model
 
