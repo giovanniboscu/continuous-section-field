@@ -23,7 +23,51 @@ Outer and inner contours are discretised as **128-sided polygons**, sufficient t
 
 ## Geometry Generation
 
-The geometry is built by the shell script:
+## Requirements
+
+**Windows**
+- Windows 10 / 11
+- Python 3 installed
+
+**Linux / macOS**
+- Python 3 installed
+
+---
+
+## Geometry Generation
+
+### Windows
+
+**First-time setup (once only)**
+
+Open PowerShell and paste:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+Unblock the file (every time you download it from GitHub):
+```powershell
+Unblock-File .\run_writegeometry_v6_twist.ps1
+```
+
+Run:
+```powershell
+.\run_writegeometry_v6_twist.ps1
+```
+
+---
+
+### Linux / macOS
+
+Make the script executable (once only):
+```bash
+chmod +x run_writegeometry_v6_twist.sh
+```
+
+Run:
+```bash
+./run_writegeometry_v6_twist.sh
+```
 
 ```bash
 run_writegeometry_v6_twist.sh
