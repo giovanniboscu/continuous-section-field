@@ -4,6 +4,15 @@ This folder contains the documentation for **Continuous Section Field (CSF)** - 
 
 ---
 
+## Actions Runner (No-Code Workflow)
+
+| File | Description |
+|------|-------------|
+| [csf-actions-guide.md](csf-actions-guide.md) | Complete guide to `CSFActions.py`: YAML-based runner for CSF workflows. Covers the three implemented actions (`section_full_analysis`, `plot_section_2d`, `plot_volume_3d`), station sets, output rules, and a YAML primer for beginners. |
+
+
+---
+
 ## Getting Started
 
 | File | Description |
@@ -30,14 +39,6 @@ This folder contains the documentation for **Continuous Section Field (CSF)** - 
 |------|-------------|
 | [CSFLongitudinally-varying-homogenization-user-guide.md](CSFLongitudinally-varying-homogenization-user-guide.md) | Technical guide for defining custom weight laws `w(z)`: conventions, syntax, available variables, lookup functions (`E_lookup`, `T_lookup`), validation rules, and OpenSees export mapping. |
 | [weight_law_example.md](weight_law_example.md) | Library of ready-to-use `w(z)` and `w(z,t)` functions in NumPy syntax: linear, polynomial, step, periodic, Gaussian, decay, lookup-based, and hybrid laws. |
-
----
-
-## Actions Runner (No-Code Workflow)
-
-| File | Description |
-|------|-------------|
-| [csf-actions-guide.md](csf-actions-guide.md) | Complete guide to `CSFActions.py`: YAML-based runner for CSF workflows. Covers the three implemented actions (`section_full_analysis`, `plot_section_2d`, `plot_volume_3d`), station sets, output rules, and a YAML primer for beginners. |
 
 ---
 
