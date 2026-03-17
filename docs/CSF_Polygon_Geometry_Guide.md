@@ -363,5 +363,5 @@ This script builds multi-section YAML definitions automatically, including twist
 
 - Polygon pairing between sections is **index-based** (list order), not name-based.
 - The same vertex count must be maintained at every reference section for each polygon.
-- Always verify geometry with a **section plot** before running analysis.
+
 - CSF does not auto-correct geometry. Invalid orientation or topology must be fixed by the user.
