@@ -56,7 +56,7 @@ CSF:
   weight_laws:
   - 'startsection,endsection:1.0 - 0.28 * (1 - (z / 10.0)**2)'            
 ```
-actions.ymal file
+actions.yaml file
 
 ```yaml
 CSF_ACTIONS:
