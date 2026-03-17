@@ -67,6 +67,20 @@ Example: Defining a Composite Beam
         weight=0.9,# <-- Weight changed
         name="lowerpart",
     )
+    # -------------------------------------------------------
+    # Section field instantiation
+    # -------------------------------------------------------
+    # Define start/end sections and create the continuous field.
+    L = 10.0
+
+    s0 = Section(polygons=(poly_top_start, poly_bottom_start), z=0.0)
+    s1 = Section(polygons=(poly_top_end,   poly_bottom_end),   z=L)
+
+    section_field = ContinuousSectionField(section0=s0, section1=s1)
+
+    section_field.set_weight_laws([
+        "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
+    ])
 
 
 ```
