@@ -125,7 +125,6 @@ that can sample points along a curve and export their coordinates.
   - open-section layouts
   - closed-cell 
 
-- **Continuous geometric interpolation between stations**: corresponding vertices are interpolated along z (geometric field), while polygon weights $w_i(z)$  are independently defined/evaluated (weight field), yielding the resulting section/stiffness property fields along the member.
 
 > **Geometric scope and limitations**  
 > CSF is not a FEM solver: it provides a geometric formulation for non-prismatic members and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
