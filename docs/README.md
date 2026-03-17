@@ -1,5 +1,9 @@
 # CSF Documentation
 
+- [CSF Programmer Guide](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/programmer-guide) — Python API (developer-oriented)
+- [CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md) — step-by-step YAML workflow (no Python programming required)
+
+
 This folder contains the documentation for **Continuous Section Field (CSF)** 
 
 ---
