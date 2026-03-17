@@ -282,6 +282,8 @@ The following table reports the full output of the validation script, comparing 
 
 ## 512-sided polygons
 
+> CSF is listed as a third-party tool in the [OpenFAST documentation](https://openfast.readthedocs.io/en/main/source/user/fast_farm/WorkingWithOpenFAST.html#third-party-tools).
+
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
 
 **CSF** computes continuous sectional properties along the tower height \(z\) - \(A(z)\), \(EI(z)\), \(GJ(z)\), etc. - compatible with OpenFAST ElastoDyn/SubDyn distributed property requirements and validated against NREL 5‑MW reference data.
