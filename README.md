@@ -89,7 +89,7 @@ then run
 
 **This is a minimal working CSF model:** two sections, one polygon per section, one weight law, and automatic evaluation of the resulting continuous properties along the member axis.
 
-[Full Python API example — Tapered T-beam](##-Worked-Example:-Continuously-Tapered-T-Beam)
+ **[Full Python API example — Tapered T-beam](#setup-environment-linux--windows)**
 
 ---
 
