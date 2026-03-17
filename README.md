@@ -113,7 +113,7 @@ CSF models a member as a continuous field along the axis `z`, combining:
 
   - non-linear expressions
   - access to `w0`, `w1`
-  - access to distances `d(i,j)`, `di(i,j)`, `de(i,j)`
+  - access to distances `d(i,j)`, `di(i,j)`, `de(i,j)` [Custom Weight Laws](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
   - `math` functions available in expressions  
   [Longitudinally varying homogenization factors](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cross_section_homogenization.md)  
   [ContinuousSectionField (CSF) | Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
