@@ -193,10 +193,6 @@ python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_a
 ```
 ---
 
-## CSF Technical Methodology & Integration Schemes
-
-The engine employs a **multi-pass analysis** combined with **Gaussian integration schemes** to extract structural parameters. Specifically engineered for **tapered and non-homogeneous members**, it is ideal for applications where sectional properties vary continuously along the longitudinal axis.
-    
 ## Cross-sectional properties 
 
 Section properties (area, inertia) are computed from geometry as:
@@ -365,9 +361,6 @@ This benchmark uses the following reference documents:
   - [NREL wind research portal](https://www.nrel.gov/wind/)
     
 ---
-
-## Code Structure and Internal Documentation
-
 
 The library is designed with a **"self-documenting code"** approach. For developers and engineers who wish to dive deeper into the mathematical implementations or extend the library's functionality:
 
