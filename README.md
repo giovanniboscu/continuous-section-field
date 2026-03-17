@@ -203,9 +203,9 @@ $$
 
 
 
-![properties](https://github.com/user-attachments/assets/c399c6e8-7e85-4039-ac81-2edc5e2d5011)
 
- 
+ ![twist_tower_props](https://github.com/user-attachments/assets/dba77c34-967a-42af-8762-18861901cb52)
+
  [CSF – Section Full Analysis Output](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md)
  
 
