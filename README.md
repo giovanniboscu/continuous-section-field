@@ -249,7 +249,7 @@ $$
 
 ### 1) Force-Based Formulation (OpenSees `forceBeamColumn`)
 The OpenSees model uses the `forceBeamColumn` element family, which integrates section flexibility along the member length and is suitable for non-prismatic members when section properties vary longitudinally.
-CSF bridges continuous geometric modeling and structural analysis by exporting a **solver-ready stiffness field** that OpenSees can integrate using a **force-based beam formulation**.
+CSF exports a solver-ready stiffness field consumed by OpenSees via force-based beam formulation.
 
 * [OpenSees example](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/corona)
 * [OpenSees Integration Technical Details](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/openseesIntegration.md)
@@ -376,8 +376,6 @@ Density = 8500 kg/m3
 - All discrepancies are **well below 0.05%**.
 - Differences are attributable to **rounding and numerical precision**.
 - The generated CSF tower properties **faithfully reproduce** the NREL 5-MW reference.
-
-This comparison confirms the library's ability to accurately handle **continuously varying tapered sections** in high-stakes engineering applications.
 
 ## NREL 5-MW Reference Source
 
