@@ -272,10 +272,7 @@ The following table reports the full output of the validation script, comparing 
 ## CSF Validation : Numerical Case Study: NREL 5-MW Reference Wind Turbine Tower
 Official research portal of the National Renewable Energy Laboratory providing authoritative wind energy data, reference turbine models, technical reports, and validated simulation tools. It serves as a primary source for benchmark wind turbine definitions, including the NREL 5-MW reference model.
 
-## NREL 5-MW Reference Source
-
 This benchmark uses the following reference documents:
-
 - NREL 5-MW reference turbine report:
   Jonkman, J., Butterfield, S., Musial, W., and Scott, G.  
   "Definition of a 5-MW Reference Wind Turbine for Offshore System Development,"  
