@@ -336,6 +336,16 @@ cell_right@cell@t=0.02
 Polygon pairing between sections remains index-based, as for all other polygons.
 
 > **Note:** CSF computes Bredt–Batho torsion independently for each cell. If two cells share a physical wall, the shared wall must be modeled explicitly in the geometry — it cannot be inferred from two adjacent `@cell` polygons.
+
+
+## Multiple @wall polygons
+
+A section will typically contain more than one `@wall` polygon — one per physical strip (web, flange, stiffener).
+
+There is no limit on the number of `@wall` polygons in a section. The C-section example above uses three.
+
+Use a distinct base name for each
+
 ---
 
 ## Automated Geometry Generation
