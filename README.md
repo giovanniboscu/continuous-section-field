@@ -16,6 +16,10 @@
 
 ## Continuous Section Field (CSF)
 
+### The Engineering Challenge
+In standard FEM, a tapered beam is often approximated as a series of stepped prismatic segments. **CSF** instead treats the member as a **continuous ruled solid**, capturing the exact cubic variation of the moment of inertia $I(z)$ and the shift of the elastic centroid $C_y(z)$ without discretization errors.
+
+
 **CSF**  computes continuous sectional properties - $A(z)$, $I(z)$, $EI(z)$, $GJ(z)$ - for tapered and non-homogeneous members, ready to feed into OpenSees, SAP2000, or any beam solver.
 
 
@@ -406,9 +410,6 @@ The library is designed with a **"self-documenting code"** approach. For develop
 
 ## Worked Example: Continuously Tapered T-Beam
 This section demonstrates how to model a structural member where the geometry transitions smoothly between two different T-profiles.
-
-### The Engineering Challenge
-In standard FEM, a tapered beam is often approximated as a series of stepped prismatic segments. **CSF** instead treats the member as a **continuous ruled solid**, capturing the exact cubic variation of the moment of inertia $I(z)$ and the shift of the elastic centroid $C_y(z)$ without discretization errors.
 
 <img width="456" height="469" alt="tsec3d" src="https://github.com/user-attachments/assets/03884190-0e15-43b4-a45d-b0ba9cacbbb7" />
 
