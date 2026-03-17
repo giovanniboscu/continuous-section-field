@@ -51,11 +51,75 @@ From this continuous description, CSF evaluates section properties and stiffness
 
 
 ---
+
+geometry.yaml file 
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        startsection:
+          weight: 1.0
+          vertices:
+            - [-0.4, -0.4]
+            - [0.4, -0.4]
+            - [0.4, 0.4]
+            - [-0.4, 0.4]
+    S1:
+      z: 10.0
+      polygons:
+        endsection:
+          weight: 1.0
+          vertices:
+            - [-0.2, -0.2]
+            - [0.2, -0.2]
+            - [0.2, 0.2]
+            - [-0.2, 0.2]
+  weight_laws:
+  - 'startsection,endsection:1.0 - 0.28 * (1 - (z / 10.0)**2)'            
+```
+actions.ymal file
+
+```yaml
+CSF_ACTIONS:
+  stations:
+    station_edge:
+      - 0
+      - 10
+  actions:  
+    - plot_volume_3d:
+        params:
+          title: "Not prismatic"          
+    - plot_weight:
+        output:
+          - stdout
+    - plot_properties:
+        properties: [A,Ix,Iy,Ip]
+    - plot_section_2d:
+        stations:
+          - station_edge
+    - section_selected_analysis:
+        stations:
+          - station_edge
+        properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy]
+                                   
+
+```
+then run 
+
+**python3 -m csf.CSFActions model.yaml actions.yaml**
+
+
+
+
 ## Key Features
 
 - **Polygon-based section representation (algebraic composition)**: The element is geometrically defined by its end cross-sections, each represented as an algebraic composition of 2D polygons; intermediate sections are generated from these definitions along z.
 
 - **Per-polygon longitudinal weight laws $w_i(z)$**: property contributions can vary along the member axis independently of geometric interpolation. Weight laws can be defined analytically or via lookup-based expressions.
+
+
   - non-linear expressions
   - access to `w0`, `w1`
   - access to distances `d(i,j)`, `di(i,j)`, `de(i,j)`
