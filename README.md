@@ -89,6 +89,8 @@ then run
 
 **This is a minimal working CSF model:** two sections, one polygon per section, one weight law, and automatic evaluation of the resulting continuous properties along the member axis.
 
+[Full Python API example — Tapered T-beam](##-Worked-Example:-Continuously-Tapered-T-Beam)
+
 ---
 
 
@@ -402,7 +404,7 @@ The library is designed with a **"self-documenting code"** approach. For develop
 
 ---
 
-##  Worked Example: Continuously Tapered T-Beam
+## Worked Example: Continuously Tapered T-Beam
 This section demonstrates how to model a structural member where the geometry transitions smoothly between two different T-profiles.
 
 ### The Engineering Challenge
