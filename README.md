@@ -530,14 +530,14 @@ plt.show()
 <summary>Click for BibTeX citation</summary>
 
 ```bibtex
-@software{boscu_continuous_2025,
+@software{boscu_continuous_2026,
   author = {Boscu, Giovanni},
   title = {Continuous Section Field (CSF): A geometric and mechanical engine for non-prismatic structural members},
-  year = {2025},
+  year = {2026},
   publisher = {Zenodo},
-  version = {v1.0.0},
-  doi = {10.5281/zenodo.18063427},
-  url = {https://doi.org/10.5281/zenodo.18063427}
+  version = {v2.0.0},
+  doi = {10.5281/zenodo.19076181},
+  url = {https://doi.org/10.5281/zenodo.19076181}
 }
 ```
 </details>
