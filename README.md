@@ -272,6 +272,19 @@ The following table reports the full output of the validation script, comparing 
 ## CSF Validation : Numerical Case Study: NREL 5-MW Reference Wind Turbine Tower
 Official research portal of the National Renewable Energy Laboratory providing authoritative wind energy data, reference turbine models, technical reports, and validated simulation tools. It serves as a primary source for benchmark wind turbine definitions, including the NREL 5-MW reference model.
 
+## NREL 5-MW Reference Source
+
+This benchmark uses the following reference documents:
+
+- NREL 5-MW reference turbine report:
+  Jonkman, J., Butterfield, S., Musial, W., and Scott, G.  
+  "Definition of a 5-MW Reference Wind Turbine for Offshore System Development,"  
+  NREL/TP-500-38060, February 2009.
+  - [Download PDF (NREL)](https://www.nrel.gov/docs/fy09osti/38060.pdf)
+  - [OpenFAST documentation](https://openfast.readthedocs.io/en/main/)
+  - [NREL wind research portal](https://www.nrel.gov/wind/)
+    
+
 ## 512-sided polygons
 
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
@@ -345,18 +358,7 @@ Density = 8500 kg/m3
 - Differences are attributable to **rounding and numerical precision**.
 - The generated CSF tower properties **faithfully reproduce** the NREL 5-MW reference.
 
-## NREL 5-MW Reference Source
 
-This benchmark uses the following reference documents:
-
-- NREL 5-MW reference turbine report:
-  Jonkman, J., Butterfield, S., Musial, W., and Scott, G.  
-  "Definition of a 5-MW Reference Wind Turbine for Offshore System Development,"  
-  NREL/TP-500-38060, February 2009.
-  - [Download PDF (NREL)](https://www.nrel.gov/docs/fy09osti/38060.pdf)
-  - [OpenFAST documentation](https://openfast.readthedocs.io/en/main/)
-  - [NREL wind research portal](https://www.nrel.gov/wind/)
-    
 ---
 
 ## Worked Example: Continuously Tapered T-Beam
