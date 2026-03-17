@@ -201,9 +201,6 @@ $$
 \text{Property}(z) = \sum_k w_k \, \text{Property}_k(z)
 $$
 
-- Geometry is the primary input.
-- Section properties are automatically derived.
-
 
 
 ![properties](https://github.com/user-attachments/assets/c399c6e8-7e85-4039-ac81-2edc5e2d5011)
