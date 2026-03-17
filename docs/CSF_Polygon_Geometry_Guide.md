@@ -326,6 +326,16 @@ CSF:
 | Section is open (C, I, L, angle) | `@wall` (one polygon per strip) |
 | Mixed: closed cell + open stiffeners | Both tags in the same section |
 
+## Multiple @cell polygons (multi-cell sections)
+
+A section may contain more than one `@cell` polygon. Each polygon defines an independent closed cell.
+
+Use a distinct base name for each cell:
+cell_left@cell@t=0.02
+cell_right@cell@t=0.02
+Polygon pairing between sections remains index-based, as for all other polygons.
+
+> **Note:** CSF computes Bredt–Batho torsion independently for each cell. If two cells share a physical wall, the shared wall must be modeled explicitly in the geometry — it cannot be inferred from two adjacent `@cell` polygons.
 ---
 
 ## Automated Geometry Generation
