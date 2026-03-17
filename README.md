@@ -113,9 +113,8 @@ CSF models a member as a continuous field along the axis `z`, combining:
 
   - non-linear expressions
   - access to `w0`, `w1`
-  - access to distances `d(i,j)`, `di(i,j)`, `de(i,j)` [Custom Weight Laws](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md) | [Custom Weight Laws User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
-  - `math` functions available in expressions  
-  
+  - access to distances `d(i,j)`, `di(i,j)`, `de(i,j)` [Custom Weight Laws](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md) 
+ 
 
 - **Polygonal approximation of curved boundaries**: curved outlines (e.g., circular shells/towers) are represented through discretized polygons with user-selected vertex count.
 
