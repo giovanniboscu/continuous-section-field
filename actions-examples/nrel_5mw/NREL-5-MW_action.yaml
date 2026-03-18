@@ -1,45 +1,132 @@
+# =============================================================================
+# CSF ACTIONS FILE — NREL 5-MW Reference Tower
+# =============================================================================
+# Source: Jonkman, J. et al. (2009). Definition of a 5-MW Reference Wind
+#         Turbine for Offshore System Development. NREL/TP-500-38060.
+#         Tower properties: Section 6, Table 6-1 (p. 15) and Table 6-2 (p. 16).
+#
+# Geometry:
+#   The tower is a linearly tapered circular steel tube.
+#   Base (z = 0.00 m): outer diameter 6.000 m, wall thickness 35.10 mm
+#   Head (z = 87.60 m): outer diameter 3.870 m, wall thickness 24.70 mm
+#   (NREL/TP-500-38060, Section 6, p. 15 — values scaled +30% from DOWEC
+#    to place first tower frequencies between 1P and 3P.)
+#
+# Material (NREL/TP-500-38060, Section 6, p. 15):
+#   E = 210 GPa  (Young's modulus, structural steel)
+#   G = 80.8 GPa (Shear modulus)
+#   rho = 8500 kg/m³ (effective density, includes paint, bolts, welds, flanges)
+#
+# Total tower mass (integrated): 347,460 kg — Table 6-2, p. 16.
+# Tower height above ground:     87.60 m   — Table 6-2, p. 16.
+#                                           (= yaw bearing elevation, Table 4-1, p. 13)
+# =============================================================================
+
 CSF_ACTIONS:
+
   stations:
+
+    # -------------------------------------------------------------------------
+    # station_edges — boundary sections of the CSF continuous field.
+    # S0 at z = 0.00 m : tower base  (D_ext = 6.000 m, t = 35.10 mm)
+    # S1 at z = 87.60 m: tower head  (D_ext = 3.870 m, t = 24.70 mm)
+    # These two sections fully define the linearly tapered geometry.
+    # -------------------------------------------------------------------------
     station_edges:
       - 0.00
-      - 87.60    
-    station_precise:
-      - 0.00
-      - 8.76
-      - 17.52
-      - 26.28
-      - 35.04
-      - 43.80
-      - 52.56
-      - 61.32
-      - 70.08
-      - 78.84
       - 87.60
+
+    # -------------------------------------------------------------------------
+    # station_precise — the 11 reference elevations from NREL Table 6-1 (p. 15).
+    # HtFract spacing: 0.0, 0.1, 0.2, ..., 1.0 over the 87.60 m tower height.
+    # Used to extract section properties for direct comparison with the
+    # tabulated FAST/ElastoDyn input values (TMassDen, TwFAStif, TwGJStif, ...).
+    # -------------------------------------------------------------------------
+    station_precise:
+      - 0.00    # HtFract = 0.0  — tower base
+      - 8.76    # HtFract = 0.1
+      - 17.52   # HtFract = 0.2
+      - 26.28   # HtFract = 0.3
+      - 35.04   # HtFract = 0.4
+      - 43.80   # HtFract = 0.5  — mid-height
+      - 52.56   # HtFract = 0.6
+      - 61.32   # HtFract = 0.7
+      - 70.08   # HtFract = 0.8
+      - 78.84   # HtFract = 0.9
+      - 87.60   # HtFract = 1.0  — tower head / yaw bearing elevation
+
   actions:
+
+    # -------------------------------------------------------------------------
+    # 3-D volume render of the full tower.
+    # Visualises the linear taper from base (D = 6.0 m) to head (D = 3.87 m).
+    # line_percent controls the density of longitudinal surface lines.
+    # -------------------------------------------------------------------------
     - plot_volume_3d:
         params:
-          title: "NREL"
+          title: "NREL 5-MW Reference Tower — H = 87.60 m"
           line_percent: 20.0
+
+    # -------------------------------------------------------------------------
+    # Section analysis at the 11 NREL Table 6-1 stations.
+    #
+    # Output quantities (all in SI units, cross-section geometry only):
+    #   A      — net cross-sectional area [m²]      → TMassDen = rho * A
+    #   Cx, Cy — centroid coordinates [m]           → both = 0 (circular symmetry)
+    #   Ix, Iy — second moments about centroidal axes [m⁴] → TwFAStif = E * Ix
+    #   Ixy    — product of inertia [m⁴]            → 0 (circular symmetry)
+    #   Ip     — polar second moment Ix + Iy [m⁴]   → equals J for circular section
+    #   I1, I2 — principal second moments [m⁴]      → I1 = I2 = Ix (circular)
+    #   rx, ry — radii of gyration [m]
+    #   Wx, Wy — elastic section moduli [m³]
+    #   J_sv_cell — Saint-Venant torsional constant [m⁴], computed via
+    #               Bredt-Batho closed thin-walled cell formula (@cell tag,
+    #               automatic thickness t = 2A/P at each elevation).
+    #               Tuple format: (J [m⁴], t_used [m])
+    #               → TwGJStif = G * J_sv_cell[0]
+    #   Q_na   — first moment of area at neutral axis [m³]  (shear check)
+    # -------------------------------------------------------------------------
     - section_selected_analysis:
-        stations: station_precise 
+        stations: station_precise
         output:
           - [out/nrel_tower.txt]
-        properties: [A,Cx,Cy,Ix,Iy,Ixy,Ip,I1,I2,rx,ry,Wx,Wy,J_sv_cell,Q_na]        
+        properties:
+          [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy, J_sv_cell, Q_na]
+
+    # -------------------------------------------------------------------------
+    # 2-D cross-section plots at the two boundary stations only.
+    # Shows the circular annulus geometry at base and head.
+    # Vertex IDs suppressed for clarity (N = 2048 polygon points per loop).
+    # -------------------------------------------------------------------------
     - plot_section_2d:
         stations:
           - station_edges
         show_ids: false
-        show_vertex_ids: False
+        show_vertex_ids: false
         output:
-          - [stdout,out/nrel_tower_sections.jpg]
+          - [stdout, out/nrel_tower_sections.jpg]
 
+    # -------------------------------------------------------------------------
+    # Continuous property plots along the full tower height.
+    # Evaluated at num_points = 100 equally spaced elevations — the curves are
+    # smooth continuous functions, not piecewise-linear interpolations between
+    # the 11 NREL stations.
+    #
+    # Plotted properties:
+    #   J_sv_cell — torsional constant [m⁴] (left axis)
+    #               Non-linear quartic decay: J ∝ R_ext⁴ − R_int⁴
+    #   A         — cross-sectional area [m²]
+    #               Quadratic decay in z (product of two linear radii)
+    #   Ix        — second moment of area [m⁴]
+    #               Quartic decay, identical to Iy (circular symmetry)
+    #
+    # The secondary axis (dashed) shows the wall thickness t(z) = 2A(z)/P(z),
+    # a rational function of z — not a straight line between t_base and t_head.
+    # -------------------------------------------------------------------------
     - plot_properties:
         output:
           - stdout
           - out/nrel_tower_props.jpg
         params:
           num_points: 100
-        properties: [J_sv_cell,A,Ix]
-     
-        
-
+        properties: [J_sv_cell, A, Ix]
