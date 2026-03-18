@@ -16,7 +16,7 @@
 
 ## Continuous Section Field (CSF)
 
-### The Engineering Challenge
+### Motivation 
 
 CSF complements standard FEM workflows by offering a continuous ruled-solid representation for non-prismatic members. It allows for the direct evaluation of section-property fields, ensuring a smooth transition of stiffness parameters without the need for manual multi-segment discretization
 
