@@ -12,7 +12,7 @@ The workflow consists of two steps:
 ## Prerequisites
 
 - Python 3.x installed and accessible as `python` in the terminal
-- CSF library installed (`pip install csf` or equivalent)
+- CSF library installe
 - PowerShell available (Windows) for Step 1
 - Files present in the working directory:
   - `nrel.ps1`
