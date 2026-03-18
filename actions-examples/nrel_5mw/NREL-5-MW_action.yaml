@@ -1,0 +1,45 @@
+CSF_ACTIONS:
+  stations:
+    station_edges:
+      - 0.00
+      - 87.60    
+    station_precise:
+      - 0.00
+      - 8.76
+      - 17.52
+      - 26.28
+      - 35.04
+      - 43.80
+      - 52.56
+      - 61.32
+      - 70.08
+      - 78.84
+      - 87.60
+  actions:
+    - plot_volume_3d:
+        params:
+          title: "NREL"
+          line_percent: 20.0
+    - section_selected_analysis:
+        stations: station_precise 
+        output:
+          - [out/nrel_tower.txt]
+        properties: [A,Cx,Cy,Ix,Iy,Ixy,Ip,I1,I2,rx,ry,Wx,Wy,J_sv_cell,Q_na]        
+    - plot_section_2d:
+        stations:
+          - station_edges
+        show_ids: false
+        show_vertex_ids: False
+        output:
+          - [stdout,out/nrel_tower_sections.jpg]
+
+    - plot_properties:
+        output:
+          - stdout
+          - out/nrel_tower_props.jpg
+        params:
+          num_points: 100
+        properties: [J_sv_cell,A,Ix]
+     
+        
+
