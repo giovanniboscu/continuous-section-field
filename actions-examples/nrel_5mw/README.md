@@ -132,7 +132,8 @@ Material constants used:
 | Steel density ρ | 8 500 | kg/m³ |
 
 ---
-
+[![J_sv_cell and thickness t along tower height](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/nrel_5mw/nrel_properties.jpeg)](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/nrel_5mw/nrel_properties.jpeg)
+---
 ## 5. Comparison Tables
 
 ### 5.1 TMassDen - Linear Mass Density ρ·A [kg/m]
