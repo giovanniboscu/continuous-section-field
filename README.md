@@ -104,7 +104,7 @@ CSF_ACTIONS:
 ```
 then run 
 
-**python3 -m csf.CSFActions model.yaml actions.yaml**
+**python3 -m csf.CSFActions geometry.yaml actions.yaml**
 
 **This is a minimal working CSF model:** two sections, one polygon per section, one weight law, and automatic evaluation of the resulting continuous properties along the member axis.
 
