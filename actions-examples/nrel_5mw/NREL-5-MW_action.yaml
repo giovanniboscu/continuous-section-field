@@ -96,7 +96,7 @@ CSF_ACTIONS:
     # -------------------------------------------------------------------------
     # 2-D cross-section plots at the two boundary stations only.
     # Shows the circular annulus geometry at base and head.
-    # Vertex IDs suppressed for clarity (N = 2048 polygon points per loop).
+    # Vertex IDs suppressed for clarity
     # -------------------------------------------------------------------------
     - plot_section_2d:
         stations:
