@@ -297,6 +297,8 @@ The following table reports the full output of the validation script, comparing 
 
 ## 512-sided polygons
 
+[NREL 5-MW Tower — CSF Actions Example](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/nrel_5mw)
+
 > CSF is listed as a third-party tool in the [OpenFAST documentation](https://openfast.readthedocs.io/en/main/source/working.html#third-part-tools).
 
 <img width="423" height="609" alt="NREL-5-MW" src="https://github.com/user-attachments/assets/712ec7c1-3b7c-4a99-aa7d-791dbbc6eb53" />
