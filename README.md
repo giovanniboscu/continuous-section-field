@@ -36,6 +36,13 @@ CSF complements standard FEM workflows by offering a continuous ruled-solid repr
 
 geometry.yaml file 
 ```yaml
+# geometry.yaml
+# Defines the cross-sectional geometry of the structural member.
+# - sections: end cross-sections (S0, S1) with polygon vertices at each z-station
+# - polygons: 2D closed polygons (CCW vertex order) that compose each cross-section
+# - weight_laws: longitudinal participation laws w(z) that scale each polygon's
+#   contribution along the member axis (independent of geometric interpolation)
+
 CSF:
   sections:
     S0:
@@ -65,6 +72,11 @@ CSF:
 actions.yaml file
 
 ```yaml
+# actions.yaml
+# Defines the post-processing operations to run on the CSF model.
+# - stations: named z-coordinate sets used as analysis points
+# - actions: ordered list of operations (3D plots, section analysis, property export, etc.)
+
 CSF_ACTIONS:
   stations:
     station_edge:
