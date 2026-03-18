@@ -132,7 +132,20 @@ To verify the results against the NREL reference values (NREL/TP-500-38060, Tabl
 
 **On the geometry model.** The YAML file produced by `nrel.ps1` is not a configuration file - it is the structural model itself. It contains the polygon vertex coordinates of the two boundary sections S0 and S1. From these two sections, CSF constructs a continuous section field over the full 87.60 m height. All section properties - at the 11 NREL stations, at the 100 plot points, or at any arbitrary elevation - are derived from this single geometric definition.
 
-**On the torsional constant.** The `@cell` polygon tag activates the Bredt-Batho closed thin-walled cell formula. Because no explicit `@t=` thickness token is provided, CSF computes the wall thickness automatically as t(z) = 2A(z)/P(z) at each queried elevation - a continuous function of z, not a linear interpolation between endpoint values.
+**On the torsional constant - YAML vs Python API encoding.** The two approaches encode the annulus geometry differently, and this determines which torsion formula is applicable:
+
+| Encoding | Polygon structure | Torsion formula | Applicable to |
+|----------|------------------|-----------------|---------------|
+| YAML (`writegeometry_v6_twist.py`) | One `@cell` polygon - two loops concatenated (outer CCW + bridge + inner CW) | Bredt-Batho `J_sv_cell` | Any closed thin-walled cell |
+| Python API (`nrel_5mw_tower.py`) | Two **separate** polygons - outer (`weight=1.0`) + inner (`weight=0.0`) | `res['Ip']` = Ix + Iy | Circular sections only |
+
+In the Python API model the section is defined as two independent polygons. This is the correct representation for computing area, centroids, and second moments, but `J_sv_cell` is not applicable because there is no `@cell` polygon present. For a circular annulus the equivalence J = Ip = 2·Ix holds exactly, so `G * res['Ip']` gives the correct torsional stiffness. For non-circular closed sections this equivalence does not hold and the `@cell` encoding must be used.
+
+For full details on `@cell` and `@wall` polygon encoding, loop orientation, bridge construction, and thickness rules, see:
+
+[**CSF Polygon Geometry Guide - `@cell` and `@wall`**](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Polygon_Geometry_Guide.md)
+
+**On the `@cell` automatic thickness.** When the `@cell` tag is used without an explicit `@t=` token, CSF computes the wall thickness at each queried elevation as t(z) = 2A(z)/P(z) - a continuous function of z derived from the interpolated polygon geometry, not a linear interpolation between endpoint values.
 
 **On the output tuple format.** `J_sv_cell` returns a tuple `(J [m⁴], t_used [m])`. The first element is the torsional constant used to derive TwGJStif = G · J. The second element is the wall thickness used internally by the Bredt-Batho formula at that elevation.
 
