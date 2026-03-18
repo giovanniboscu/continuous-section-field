@@ -33,6 +33,7 @@ CSF complements standard FEM workflows by offering a continuous ruled-solid repr
 
 
 ---
+## CSF accepts two input files: geometry.yaml (cross-section definition) and actions.yaml (post-processing pipeline).
 
 geometry.yaml file 
 ```yaml
