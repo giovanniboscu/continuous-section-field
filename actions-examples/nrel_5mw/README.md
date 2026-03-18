@@ -132,8 +132,7 @@ Material constants used:
 | Steel density ρ | 8 500 | kg/m³ |
 
 ---
-[![J_sv_cell and thickness t along tower height](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/nrel_5mw/nrel_properties.jpeg)](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/nrel_5mw/nrel_properties.jpeg)
----
+
 ## 5. Comparison Tables
 
 ### 5.1 TMassDen - Linear Mass Density ρ·A [kg/m]
@@ -317,7 +316,55 @@ All deviations are below **0.015%**. The dominant source of residual error at N=
 
 ---
 
-## 10. References
+## 11. The Continuous Section Field Concept
+
+### 11.1 From discrete stations to a continuous field
+
+The conventional approach to beam structural modelling - as used in FAST/OpenFAST and most aeroelastic codes - represents the cross-section properties as a **finite table of values at discrete stations**. For the NREL 5-MW tower this means 11 rows in Table 6-1, each describing the section at a specific elevation. Properties between stations are recovered by the solver through linear interpolation of the tabulated values.
+
+CSF takes a fundamentally different approach. The geometry is defined by **two boundary sections** (S0 at z = 0 and S1 at z = H), and the library constructs a **continuous field function** over the entire height:
+
+```
+P(z)  for any z ∈ [z₀, z₁]
+```
+
+where P is any section property - area A, second moments Ix and Iy, torsional constant J, wall thickness t, section moduli, radii of gyration, and so on. Each property is a smooth function of the axial coordinate z, evaluated by interpolating the polygon vertices between S0 and S1 and computing the section analysis at that exact elevation.
+
+### 11.2 Practical consequence
+
+The plot of J_sv_cell and t(z) shown below is not a piecewise-linear curve through 11 points - it is computed on **100 equally spaced stations** along the height, each independently evaluated from the interpolated geometry. The result is a smooth, continuous curve that reflects the true variation of the cross-section properties along the member axis.
+
+[![J_sv_cell and wall thickness t as continuous functions of elevation z](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/nrel_5mw/nrel_properties.jpeg)](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/nrel_5mw/nrel_properties.jpeg)
+
+*Figure 1. J_sv_cell (left axis, solid purple) and wall thickness t (right axis, dashed blue) as continuous functions of elevation z, evaluated at 100 stations. Values at the 11 NREL reference stations are marked. The continuity of t(z) reflects the local computation of 2A(z)/P(z) at each elevation, not a linear interpolation between endpoint values.*
+
+For the NREL tower - a linearly tapered circular annulus - the continuous field produces:
+
+- **A(z)**: varies as a quadratic function of z (product of two linearly varying radii)
+- **Ix(z), J(z)**: vary as a quartic function of z (fourth power of linearly varying radii)
+- **t(z)**: varies as a rational function of z (ratio of quadratic area to linear perimeter)
+
+None of these are linear in z, yet all are captured exactly by the continuous field without any piecewise approximation.
+
+### 11.3 Advantages over discrete station tables
+
+The continuous field representation offers several practical advantages:
+
+**Arbitrary station density.** Properties can be extracted at any number of elevations without re-running the geometry definition. The 11 NREL stations are simply 11 queries to the same continuous function. A solver requiring 100 or 1000 stations receives the same geometric fidelity without any modification to the model.
+
+**No interpolation artefacts.** In discrete station models, the solver must interpolate between tabulated values. For quantities that vary non-linearly with z (such as J ∝ R⁴), linear interpolation between stations introduces a systematic error. The continuous field evaluates the exact geometry at every requested elevation, eliminating this source of error entirely.
+
+**Consistent derived quantities.** When properties are extracted at any z, all quantities - A, Ix, J, t, section moduli - are mutually consistent because they are derived from the same interpolated geometry. In a discrete table, rounding or truncation of individual columns can introduce small inconsistencies between related quantities.
+
+**Natural support for tapered and morphing sections.** The vertex-interpolation scheme extends naturally to sections that change shape along the member axis - not just scale. The twist tower example (circle at base → rounded rectangle at head, with angular twist) is handled by the same framework with no change to the analysis pipeline.
+
+### 11.4 Relation to the FAST/OpenFAST input format
+
+The 11-station table produced in this verification (Section 5) is one particular sampling of the continuous field at the elevations specified by NREL. It is provided for direct compatibility with the FAST ElastoDyn tower input format. The underlying CSF model, however, is not limited to these stations and can produce output at any resolution required by the downstream application.
+
+---
+
+## 12. References
 
 1. Jonkman, J., Butterfield, S., Musial, W., Scott, G. (2009). *Definition of a 5-MW Reference Wind Turbine for Offshore System Development*. NREL/TP-500-38060. National Renewable Energy Laboratory, Golden, CO.
 
