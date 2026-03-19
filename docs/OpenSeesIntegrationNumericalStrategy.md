@@ -219,9 +219,7 @@ section Elastic <tag> <E> <A> <Iz> <Iy> <G> <J> <Cx> <Cy>  # torsion=<selected_k
 CSF may compute multiple torsion candidates at each station (different modeling paths), for example:
 - `J_sv_cell` : closed thin-walled cell (Bredt–Batho / midline)
 - `J_sv_wall` : open thin-walled wall
-- `J_sv`      : general Saint-Venant torsion estimate (fallback)
 
-OpenSees cannot store multiple torsion models in `section Elastic`, so **the exporter must select exactly one value** per station.
 
 ### Export selection policy (current)
 
