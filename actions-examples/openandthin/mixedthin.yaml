@@ -11,6 +11,36 @@
 # - The two wall polygons are identical rectangles (left/right), symmetric about y-axis.
 # - The cell polygon is a centered rectangle (closed contour).
 # - S0 and S1 are identical (constant along z) to simplify debugging.
+#
+# Torsional constant (De Saint-Venant) - additivity hypothesis:
+# - The total torsional constant J is computed as the SUM of the contributions
+#   of each independent component:
+#
+#       J = J_cell + J_left_web + J_right_web
+#
+#   where:
+#       J_cell     = 4*A^2 / (sum(ds/t))   [Bredt formula, closed cell]
+#       J_left_web = b*t^3 / 3              [thin open wall]
+#       J_right_web= b*t^3 / 3              [thin open wall]
+#
+# - This additivity is valid under the following hypotheses:
+#   1. The cell and the walls DO NOT interact torsionally
+#      (no shared closed contour, no continuity of the Prandtl stress function
+#       across the junction between cell and walls).
+#   2. All components share the same unit twist theta' (kinematic compatibility),
+#      i.e. they rotate together as a rigid body about the same axis.
+#   3. Each wall is an open thin-walled rectangle: the tangential flow reverses
+#      at the free ends and never circulates around a closed cavity.
+#   4. The junction effects (stress concentration at corners) are neglected,
+#      consistently with the thin-wall assumption.
+#
+# - Under these hypotheses the total resisting torque is:
+#
+#       M_t = G * theta' * J = G * theta' * (J_cell + J_left_web + J_right_web)
+#
+# - Note: if the walls were physically connected to the cell (e.g. welded flanges
+#   of a box girder), interaction would occur and simple additivity would NOT hold.
+#   In that case a full multi-cell / mixed open-closed analysis would be required.
 
 CSF:
   sections:
