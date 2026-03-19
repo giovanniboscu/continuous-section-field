@@ -54,7 +54,7 @@ CSF:
     S1:
       z: 85
       polygons:
-        MP1_inner:
+        MP1_outer:
           weight: 0
           vertices:
             - [-0.85, 1.04094977928e-16]
@@ -72,7 +72,7 @@ CSF:
             - [-0.898915910585, 0.0441609068947]
             - [-0.9, 1.10218211923e-16]
   weight_laws:
-  - 'MP1_outer,MP1_inner: 1.0 - 0.28 * np.exp(-((z - 0.0)**2) / (2.0 * 1.5**2))'
+  - 'MP1_outer,MP1_outer: 1.0 - 0.28 * np.exp(-((z - 0.0)**2) / (2.0 * 1.5**2))'
 ```
 
 To create a ring polygon (outer contour + inner hole), you can use:
