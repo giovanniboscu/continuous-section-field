@@ -1,0 +1,114 @@
+SAP2000 TEMPLATE PACK (from CSF)
+==============================================================================
+
+DISCLAIMER
+------------------------------------------------------------------------------
+This template is a data pack intended to help build a SAP2000 import file. It may require adaptation depending on SAP2000 version/table format.
+
+MODEL METADATA
+------------------------------------------------------------------------------
+z_start      : 0
+z_end        : 30
+length (L)   : 30
+stations     : 31
+mode         : BOTH
+material     : S355
+E_ref        : 2.1e+11
+nu           : 0.3
+
+STATIONS (CORE) J_tors = J_sv_cell + J_sv_wall
+------------------------------------------------------------------------------
+Columns: id, z, Cx, Cy, A, Ix, Iy, Ixy, Ip,J_tors, method
+   1  0  0  0  1.40690578  0.477302345  0.477302345  0  0.954604689 0 J_tors skip
+   2  1  0  0  1.42689416  0.484083536  0.484083536  0  0.968167072 0 J_tors skip
+   3  2  0  0  1.480463  0.502257129  0.502257129  0  1.00451426 0 J_tors skip
+   4  3  0  0  1.55801789  0.528568152  0.528568152  0  1.0571363 0 J_tors skip
+   5  4  0  0  1.6499644  0.559761633  0.559761633  0  1.11952327 0 J_tors skip
+   6  5  0  0  1.74670813  0.592582599  0.592582599  0  1.1851652 0 J_tors skip
+   7  6  0  0  1.83865465  0.62377608  0.62377608  0  1.24755216 0 J_tors skip
+   8  7  0  0  1.91620954  0.650087103  0.650087103  0  1.30017421 0 J_tors skip
+   9  8  0  0  1.96977838  0.668260696  0.668260696  0  1.33652139 0 J_tors skip
+  10  9  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  11  10  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  12  11  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  13  12  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  14  13  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  15  14  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  16  15  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  17  16  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  18  17  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  19  18  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  20  19  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  21  20  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  22  21  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  23  22  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  24  23  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  25  24  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  26  25  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  27  26  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  28  27  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  29  28  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  30  29  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+  31  30  0  0  1.98976675  0.675041887  0.675041887  0  1.35008377 0 J_tors skip
+
+SECTION NAMES
+------------------------------------------------------------------------------
+SEC0001 @ z=0
+SEC0002 @ z=1
+SEC0003 @ z=2
+SEC0004 @ z=3
+SEC0005 @ z=4
+SEC0006 @ z=5
+SEC0007 @ z=6
+SEC0008 @ z=7
+SEC0009 @ z=8
+SEC0010 @ z=9
+SEC0011 @ z=10
+SEC0012 @ z=11
+SEC0013 @ z=12
+SEC0014 @ z=13
+SEC0015 @ z=14
+SEC0016 @ z=15
+SEC0017 @ z=16
+SEC0018 @ z=17
+SEC0019 @ z=18
+SEC0020 @ z=19
+SEC0021 @ z=20
+SEC0022 @ z=21
+SEC0023 @ z=22
+SEC0024 @ z=23
+SEC0025 @ z=24
+SEC0026 @ z=25
+SEC0027 @ z=26
+SEC0028 @ z=27
+SEC0029 @ z=28
+SEC0030 @ z=29
+SEC0031 @ z=30
+
+CANDIDATE TABLE BLOCKS (EDIT/ADAPT FOR YOUR SAP2000 VERSION)
+------------------------------------------------------------------------------
+1) Frame Section Property Definitions
+   - Create one section per station using the core properties above.
+   - Map section names with section_prefix + station id.
+
+2) Joint Coordinates (if using segmented model)
+   - Build joints along the member axis with joint_prefix and z station coordinates.
+
+3) Connectivity and Section Assignment
+   - Create frame objects with frame_prefix and assign station-based sections.
+
+MODE BLOCK: CENTROIDAL_LINE
+------------------------------------------------------------------------------
+Use Cx, Cy at each station to define centroidal alignment if needed.
+
+MODE BLOCK: REFERENCE_LINE
+------------------------------------------------------------------------------
+Keep a fixed geometric/reference axis and assign varying station properties.
+
+CHECKLIST
+------------------------------------------------------------------------------
+[] Confirm units consistency (geometry, E, inertia, torsion).
+[] Confirm SAP2000 table schema/version for import.
+[] Confirm local axis conventions and sign conventions.
+[] Confirm material definition exists in model.
+[] Confirm section assignment strategy (per object/per segment).

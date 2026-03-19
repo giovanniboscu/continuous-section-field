@@ -1,8 +1,6 @@
-
 ### SECTION SELECTED ANALYSIS @ z = 15.0 ###
-torsion_alpha_sv     : 1  [Solid J_sv scaling factor]
-A                   : 2.0099  [Total net cross-sectional area]
+A                   : 1.9898  [Total net cross-sectional area]
 Cx                  : 0  [Horizontal centroid (X)]
 Cy                  : 0  [Vertical centroid (Y)]
-Ix                  : 0.68186  [Second moment about centroidal X-axis]
-Iy                  : 0.68186  [Second moment about centroidal Y-axis]
+Ix                  : 0.67504  [Second moment about centroidal X-axis]
+Iy                  : 0.67504  [Second moment about centroidal Y-axis]

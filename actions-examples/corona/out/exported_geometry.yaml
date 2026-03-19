@@ -3,8 +3,8 @@ CSF:
     S0:
       z: 0.0
       polygons:
-        pol_j_sv_start:
-          weight: 1.0
+        pol_j_sv_start:pol_j_sv_end:
+          weight: 0.7
           vertices:
             - [1.0, 0.0]
             - [0.995185, 0.098017]
@@ -70,8 +70,8 @@ CSF:
             - [0.95694, -0.290285]
             - [0.980785, -0.19509]
             - [0.995185, -0.098017]
-        pol_j_sv_hole_start:
-          weight: -1.0
+        pol_j_sv_hole_start:pol_j_sv_hole_end:
+          weight: -0.7
           vertices:
             - [0.6, 0.0]
             - [0.597108, 0.058812]
@@ -140,8 +140,8 @@ CSF:
     S1:
       z: 30.0
       polygons:
-        pol_j_sv_start:
-          weight: 1.0
+        pol_j_sv_start:pol_j_sv_end:
+          weight: 0.99
           vertices:
             - [1.0, 0.0]
             - [0.995185, 0.098017]
@@ -207,8 +207,8 @@ CSF:
             - [0.95694, -0.290285]
             - [0.980785, -0.19509]
             - [0.995185, -0.098017]
-        pol_j_sv_hole_start:
-          weight: -1.0
+        pol_j_sv_hole_start:pol_j_sv_hole_end:
+          weight: -0.99
           vertices:
             - [0.6, 0.0]
             - [0.597108, 0.058812]
@@ -275,4 +275,5 @@ CSF:
             - [0.588474, -0.117054]
             - [0.597108, -0.058812]
   weight_laws:
-    - 'pol_j_sv_start,pol_j_sv_start: 1'
+    - 'pol_j_sv_start,pol_j_sv_start: 0.7 + 0.29*(3*(min(t/0.3,1.0))*(min(t/0.3,1.0))
+      - 2*(min(t/0.3,1.0))*(min(t/0.3,1.0))*(min(t/0.3,1.0)))'
