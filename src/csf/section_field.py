@@ -551,7 +551,7 @@ def write_sap2000_template_pack(
                 torsion_method = "J_sv_cell"
 
         else:
-            torsion_method = "J_tors not available."
+            torsion_method = "J_tors skip"
             J_tors=0
             warnings.warn(
                 "No valid Saint-Venant torsion contribution "
@@ -1493,7 +1493,7 @@ def write_opensees_geometry(
                         torsion_method = "J_sv_cell"
 
                 else:
-                    torsion_method = "J_tors not available"
+                    torsion_method = "J_tors skip"
                     J_tors=0
                     warnings.warn(
                         "No valid Saint-Venant torsion contribution "
