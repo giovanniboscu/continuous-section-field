@@ -1,4 +1,4 @@
-## Continuous Section Field
+## Continuous Section Field (CSF)
 ### Continuous sectional properties for non-prismatic members via independent geometry and weight fields
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19076181.svg)](https://doi.org/10.5281/zenodo.19076181)
@@ -13,8 +13,6 @@
 **[Key Features](#key-features)** • **[Installation & setup](#setup-environment-linux--windows)** • **[Worked Example](#worked-example-continuously-tapered-t-beam)** • **[Validation: Cylinder](#csf-numerical-validation-circular-hollow-section)** • **[Case Study: NREL 5-MW](#csf-validation--numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
 
 ---
-
-## Continuous Section Field (CSF)
 
 ### Motivation 
 
