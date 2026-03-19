@@ -213,24 +213,6 @@ $$
  [CSF – Section Full Analysis Output](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md)
  
 
-
----
- 
-## OpenSees & CSF Integration
-
-
-### 1) Force-Based Formulation (OpenSees `forceBeamColumn`)
-The OpenSees model uses the `forceBeamColumn` element family, which integrates section flexibility along the member length and is suitable for non-prismatic members when section properties vary longitudinally.
-CSF exports a solver-ready stiffness field consumed by OpenSees via force-based beam formulation.
-
-* [OpenSees example](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/corona)
-* [OpenSees Integration Technical Details](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/openseesIntegration.md)
-* [OpenSees Integration and Numerical Strategy](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/OpenSeesIntegrationNumericalStrategy.md)
-
-### 2) SAP2000 (tabular property export)
-CSF can also export **SAP2000-ready tabular packs** (station-based section properties and stiffness fields) to support non-prismatic members via discrete property stations.
-* [SAP2000 export action](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_actions.md)
- 
 ---
 
 # CSF Numerical Validation: Circular Hollow Section
