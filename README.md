@@ -127,7 +127,13 @@ CSF models a member as a continuous field along the axis `z`, combining:
 
 ## Key Features
 
-- **Polygon-based section representation (algebraic composition & curved boundary approximation)**: The element is geometrically defined by its end cross-sections, each represented as an algebraic composition of 2D polygons; intermediate sections are interpolated along z. Curved outlines (e.g., circular shells/towers) are handled via discretized polygons with user-selected vertex count.
+-  **Per-polygon longitudinal weight laws $w_i(z)$**: property contributions can vary along 
+  the member axis independently of geometric interpolation. Weight laws can be defined 
+  analytically or via lookup-based expressions.
+  Each polygon carries its own independent weight law - even polygons sharing the same 
+  nominal material can follow distinct degradation profiles along z (e.g., differentiated 
+  deterioration between a concrete core and a concrete shell).
+  - non-linear expressions.
 
 - **Per-polygon longitudinal weight laws $w_i(z)$**: property contributions can vary along the member axis independently of geometric interpolation. Weight laws can be defined analytically or via lookup-based expressions.
   - non-linear expressions
