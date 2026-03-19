@@ -217,6 +217,9 @@ evaluated consistently with the same weighted section model.
 
 ---
 ## 16 - 17 Torsion constant methods for tagged polygons (`@cell` / `@wall`)
+
+[De Saint-Venant Torsional Constant — CSF Documentation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md)
+
 **Key:** `J_sv_cell`   `J_sv_wall` 
 
 ### Torsional contribution of `@cell` and `@wall` polygons
