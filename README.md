@@ -126,19 +126,14 @@ CSF models a member as a continuous field along the axis `z`, combining:
 
 
 ## Key Features
-
--  **Per-polygon longitudinal weight laws $w_i(z)$**: property contributions can vary along 
-  the member axis independently of geometric interpolation. Weight laws can be defined 
-  analytically or via lookup-based expressions.
-  Each polygon carries its own independent weight law - even polygons sharing the same 
-  nominal material can follow distinct degradation profiles along z (e.g., differentiated 
-  deterioration between a concrete core and a concrete shell).
-  - non-linear expressions.
-
-- **Per-polygon longitudinal weight laws $w_i(z)$**: property contributions can vary along the member axis independently of geometric interpolation. Weight laws can be defined analytically or via lookup-based expressions.
+- **Per-polygon longitudinal weight laws $w_i(z)$**: Each polygon carries its own independent
+  weight law - even polygons sharing the same nominal material can follow distinct degradation
+  profiles along z (e.g., differentiated deterioration between a concrete core and a concrete
+  shell). Weight laws can be defined analytically or via lookup-based expressions, supporting:
   - non-linear expressions
   - access to `w0`, `w1`
   - access to distances `d(i,j)`, `di(i,j)`, `de(i,j)` — [Custom Weight Laws](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
+ 
 
 Section vertices can be generated from any CAD tool or script 
 that can sample points along a curve and export their coordinates.
