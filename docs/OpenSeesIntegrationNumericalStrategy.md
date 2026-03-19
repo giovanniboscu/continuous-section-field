@@ -304,7 +304,7 @@ Example (excerpt):
 # NOTE: Section lines append 'Cx Cy' as CSF-only fields (not OpenSees syntax).
 #
 # CSF_EXPORT_MODE: E=E_ref ; A/I/J are station-wise CSF results (already weighted)
-# CSF_TORSION_SELECTION: J_eff = max(J_sv_cell, J_sv_wall) if any >0 else J_sv if >0 else ERROR
+# CSF_TORSION_SELECTION: J_eff = J_sv_cell + J_sv_wall
 #
 # CSF_Z_STATIONS: 0 ... 10
 
