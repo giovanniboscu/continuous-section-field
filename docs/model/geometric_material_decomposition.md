@@ -43,7 +43,7 @@ Nothing exotic here either:
 | | Assumption | What it means in practice |
 |---|---|---|
 | A | Euler-Bernoulli | Sections stay plane; works for slender elements |
-| B | Fixed topology | Vertex count per zone is constant along $z$; if a zone disappears, drive its area or weight to zero |
+| B | Fixed topology | Vertex count per zone is constant along $z$ |
 | C | Linear elastic homogenization | All materials referred to a reference modulus via modular ratio $\alpha_i(z)$ — standard transformed section method |
 | D | Perfect bond | No slip between zones — standard assumption for composite sections |
 
