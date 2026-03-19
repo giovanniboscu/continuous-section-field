@@ -229,7 +229,7 @@ Per station:
 
 1) If any thin-walled torsion candidate is available, export:
 
-- `J_eff = max(J_sv_cell, J_sv_wall)`
+- `J_tor = J_sv_cell + J_sv_wall
 
 and record the selected key as:
 
