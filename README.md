@@ -127,18 +127,12 @@ CSF models a member as a continuous field along the axis `z`, combining:
 
 ## Key Features
 
-- **Polygon-based section representation (algebraic composition)**: The element is geometrically defined by its end cross-sections, each represented as an algebraic composition of 2D polygons; intermediate sections are generated from these definitions along z.
+- **Polygon-based section representation (algebraic composition)**: The element is geometrically defined by its end cross-sections, each represented as an algebraic composition of 2D polygons; intermediate sections are generated from these definitions along z. Curved outlines (e.g., circular shells/towers) are represented through discretized polygons with user-selected vertex count.
 
 - **Per-polygon longitudinal weight laws $w_i(z)$**: property contributions can vary along the member axis independently of geometric interpolation. Weight laws can be defined analytically or via lookup-based expressions.
-
-
-  - non-linear expressions
-  - access to `w0`, `w1`
-  - access to distances `d(i,j)`, `di(i,j)`, `de(i,j)` [Custom Weight Laws](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md) 
+  - > Weight expressions have access to `w0`, `w1` (weights at sections s0/s1) and distance functions `d(i,j)`, `di(i,j)`, `de(i,j)` between polygon points.
+    > [Custom Weight Laws](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md) 
  
-
-- **Polygonal approximation of curved boundaries**: curved outlines (e.g., circular shells/towers) are represented through discretized polygons with user-selected vertex count.
-
 Section vertices can be generated from any CAD tool or script 
 that can sample points along a curve and export their coordinates.
 
