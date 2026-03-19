@@ -1,5 +1,5 @@
 ## Continuous Section Field
-### A Weight-Field Manifold for Non-Prismatic Structural Analysis
+### Continuous sectional properties for non-prismatic members via independent geometry and weight fields
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19076181.svg)](https://doi.org/10.5281/zenodo.19076181)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
