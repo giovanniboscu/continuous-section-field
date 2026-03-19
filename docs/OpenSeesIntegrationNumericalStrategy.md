@@ -235,17 +235,9 @@ and record the selected key as:
 
 - `# torsion=J_sv_cell` or `# torsion=J_sv_wall`
 
-2) If both thin-walled candidates are missing or non-positive, export:
 
-- `J_eff = J_sv`
+3) If no torsion candidate is available, the export report J_tors skip
 
-and record:
-
-- `# torsion=J_sv`
-
-3) If no torsion candidate is available, the export fails fast (`ERROR`).
-
-This keeps the file self-describing: the `J` value is always accompanied by the exact CSF key used to produce it.
 
 ---
 
