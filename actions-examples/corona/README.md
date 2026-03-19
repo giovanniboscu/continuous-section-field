@@ -76,10 +76,10 @@ The summation above is **valid if and only if** all of the following conditions 
 
 | Section type | Additivity | Notes |
 |---|---|---|
-| Thin open section (flat plates, T, L, I, channel) | ✅ Valid | Classic result; walls meet at a node but never close |
-| Multiple **separate** closed cells (no shared walls) | ✅ Valid | Each cell contributes independently via Bredt |
-| **Separate** closed cell + **separate** open walls (not connected) | ✅ Valid | No interaction; H1 satisfied by geometry |
-| Closed cell + open walls **modelled as non-interacting** (CSF assumption) | ✅ Valid as model | Acceptable approximation when wall thickness $\ll$ cell thickness |
+| Thin open section (flat plates, T, L, I, channel) |  Valid | Classic result; walls meet at a node but never close |
+| Multiple **separate** closed cells (no shared walls) |  Valid | Each cell contributes independently via Bredt |
+| **Separate** closed cell + **separate** open walls (not connected) |  Valid | No interaction; H1 satisfied by geometry |
+| Closed cell + open walls **modelled as non-interacting** (CSF assumption) |  Valid as model | Acceptable approximation when wall thickness $\ll$ cell thickness |
 
 ---
 
