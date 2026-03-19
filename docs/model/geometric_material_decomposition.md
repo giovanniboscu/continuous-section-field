@@ -1,4 +1,4 @@
-# CSF Section Model — A Continuous, Zone-Based Formulation
+# CSF Section Model - A Continuous, Zone-Based Formulation
 
 ---
 
