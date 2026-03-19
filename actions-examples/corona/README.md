@@ -24,7 +24,7 @@ python3 -m csf.CSFActions annulus.yaml annulus_action.yaml
 
 ## 1. Background
 
-The De Saint-Venant torsional constant $J$ (also written $I_t$) governs the torsional stiffness of a cross-section in the Saint-Venant torsion theory:
+The De Saint-Venant torsional constant $J$  governs the torsional stiffness of a cross-section in the Saint-Venant torsion theory:
 
 $$M_t = G \cdot J \cdot \vartheta'$$
 
