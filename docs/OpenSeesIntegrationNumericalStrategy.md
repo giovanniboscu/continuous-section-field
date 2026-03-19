@@ -500,7 +500,7 @@ A robust CSF → OpenSees builder typically:
 # NOTE: Section lines append 'Cx Cy' as CSF-only fields (not OpenSees syntax).
 #
 # CSF_EXPORT_MODE: E=E_ref ; A/I/J are station-wise CSF results (already weighted)
-# CSF_TORSION_SELECTION: J_eff = max(J_sv_cell, J_sv_wall) if any >0 else J_sv if >0 else ERROR
+# CSF_TORSION_SELECTION: J_eff = J_sv_cell + J_sv_wall
 
 # CSF_Z_STATIONS: 0 0.402330459168 1.30613067447 2.61037525095 4.17360521167 5.82639478833 7.38962474905 8.69386932553 9.59766954083 10
 
