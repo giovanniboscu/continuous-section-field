@@ -4,7 +4,7 @@
 ---
 
 ## 1. Executive Summary and Model Intent
-The intent of this formulation is to define a ** Engineering Contract** for structural elements where both geometry and material properties vary along the longitudinal axis $z$. 
+The intent of this formulation is to define a **Engineering Contract** for structural elements where both geometry and material properties vary along the longitudinal axis $z$. 
 This model maintains a **Functional Representation**. The section is not a static data point but a result of analytical laws and lookup tables, ensuring that at any coordinate $z$, the structural response $(EA, EI)$ is deterministic, traceable, and independent of the solver's mesh density.
 
 ---
