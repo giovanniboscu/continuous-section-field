@@ -1,133 +1,128 @@
-# Mathematical Formulation of CSF Section Evaluation
-
-## 1. Geometric domain and coordinates
-
-Let z ∈ [0, L] denote the longitudinal coordinate of a structural member.  
-Two planar sections are defined on parallel planes:
-
-- Initial plane: Π₀ : z = 0  
-- Final plane: Πᴸ : z = L  
-
-The x and y axes are identically oriented on both planes.
-
-A normalized coordinate is introduced:
-
-t = z / L ∈ [0,1]
+# Geometric-Material Decomposition and the Role of CSF
+## Non-Homogeneous Zonal Polygon Model with Transverse and Longitudinal Variability
 
 ---
 
-## 2. Polygonal section definition
+## 1. Executive Summary and Model Intent
 
-For each object o, CSF defines a finite set of polygons:
-
-{Pᶦ₍ₒ,ₖ₎, Pᶠ₍ₒ,ₖ₎},  k = 1,…, nₒ
-
-Each polygon is represented by an ordered sequence of vertices:
-
-Pᶦ₍ₒ,ₖ₎ = (pᶦ₍ₒ,ₖ,₁₎,…,pᶦ₍ₒ,ₖ,ₘ₎)  
-Pᶠ₍ₒ,ₖ₎ = (pᶠ₍ₒ,ₖ,₁₎,…,pᶠ₍ₒ,ₖ,ₘ₎)
-
-with p ∈ ℝ².
-
-Required conditions:
-
-- the number of polygons nₒ is constant;  
-- corresponding polygons have the same number of vertices;  
-- vertex-to-vertex correspondence is explicit;  
-- vertices are ordered counter-clockwise (CCW).  
-
-Polygons may be concave or self-intersecting.
+The intent of this formulation is to define a **Engineering Contract** for structural elements where both geometry and material properties vary along the longitudinal axis $z$.
+This model maintains a **Functional Representation**. The section is not a static data point but a result of analytical laws and lookup tables, ensuring that at any coordinate $z$, the structural response $(EA, EI)$ is deterministic, traceable, and independent of the solver's mesh density.
 
 ---
 
-## 3. Deterministic polygon evaluation along z
+## 2. Fundamental Assumptions
 
-For each vertex:
+### A. Kinematic Assumption (Euler-Bernoulli)
+We assume that the cross-sections remain plane and perpendicular to the neutral axis after deformation. However, since the section is non-homogeneous, the "Neutral Axis" position $Y_{G,tot}(z)$ is not fixed but is a function of the local distribution of the elastic weights $\alpha_i(z)$.
 
-p₍ₒ,ₖ,ⱼ₎(z) = (1 − t) · pᶦ₍ₒ,ₖ,ⱼ₎ + t · pᶠ₍ₒ,ₖ,ⱼ₎
+### B. Topological Constancy
+The model assumes that each zone $i$ maintains the same number of vertices $m$ from $z=0$ to $z=L$. This ensures a continuous "ruled surface" transition. If a zone "disappears" (e.g., a reinforcement ending), its area $A_i(z)$ or its elastic weight $\alpha_i(z)$ must be driven to zero, rather than changing the vertex count.
 
-The polygon at coordinate z is:
+### C. Material Linearity and Homogenization
+Non-homogeneity is handled via the **Method of Equivalent Sections**. All materials are transformed into a "Reference Material" (with $E_{ref}$) using the modular ratio $\alpha_i(z)$. The model assumes linear elastic behavior within the infinitesimal step $dz$.
 
-P₍ₒ,ₖ₎(z) = (p₍ₒ,ₖ,₁₎(z),…,p₍ₒ,ₖ,ₘ₎(z))
-
-The mapping is deterministic for all z ∈ [0,L], regardless of discretization.  
-Twist or self-intersection may occur but do not invalidate the mapping.
-
----
-
-## 4. Oriented area and positivity constraint
-
-The oriented area of a polygon P = (p₁,…,pₘ), pⱼ=(xⱼ,yⱼ), is:
-
-A(P) = ½ Σⱼ (xⱼ yⱼ₊₁ − xⱼ₊₁ yⱼ),   pₘ₊₁ = p₁
-
-CSF enforces:
-
-A(P₍ₒ,ₖ₎(z)) ≥ 0
-
-Negative geometric areas are not permitted.
+### D. Perfect Bond
+It is assumed that all zones $i$ are perfectly bonded. There is no relative slip between, for example, a concrete slab and a steel girder, allowing the use of the Parallel Axis Theorem (Steiner) for the combined section.
 
 ---
 
-## 5. Weights and material representation
+## 3. Geometric Definition: The Ruled Polygon
 
-Each polygon is associated with a scalar weight function:
+Each zone $i$ is a closed polygon. The position of its $j$-th vertex is defined by:
 
-w₍ₒ,ₖ₎ : [0,L] → ℝ
+$$V_{j,i}(z) = \begin{bmatrix} x_{j,i}(z) \\ y_{j,i}(z) \end{bmatrix}$$
 
-Weights may be positive, zero, or negative.
+For a linear transition (tapered elements), we define the trajectory as:
 
-Holes are modeled exclusively through negative weights,  
-not through negative geometry.
+$$x_{j,i}(z) = x_{j,i}^{start} + \frac{z}{L} \Delta x_{j,i} \qquad ; \qquad y_{j,i}(z) = y_{j,i}^{start} + \frac{z}{L} \Delta y_{j,i}$$
 
----
-
-## 6. Weighted section quantities
-
-Let Q(P) be any quantity linear in area  
-(area, first moments, second moments).
-
-The transformed quantity at coordinate z is:
-
-Q_tr(z) = Σₒ Σₖ w₍ₒ,ₖ₎(z) · Q(P₍ₒ,ₖ₎(z))
-
-This formulation supports homogenization and exclusion  
-of overlapping regions.
+where $\Delta = (Value^{end} - Value^{start})$. This creates a ruled surface for each edge of the section.
 
 ---
 
-## 7. User responsibility
+## 4. Material Mapping: Analytical vs. Lookup
 
-CSF does not impose topological or semantic constraints.  
-Interpretation of polygons (solid, void, reinforcement)  
-and the choice of weight functions are the responsibility of the user.
+The weighting factor $\alpha_i(z)$ defines the mechanical "importance" of zone $i$.
 
----
+### Option 1: The Analytical Function
+Used for continuous variations (e.g., concrete hardening, temperature gradients):
 
-## 8. Geometric validity checks
+$$\alpha_i(z) = \alpha_{i,0} \cdot e^{-\lambda z} \quad \text{or} \quad \alpha_i(z) = a + bz + cz^2$$
 
-CSF detects geometric anomalies such as:
+### Option 2: The Lookup Table (Tabular Control)
+Used for discrete engineering data (e.g., commercial plate thicknesses, measured material classes):
 
-- edge–edge self-intersections;  
-- degenerate configurations.
-
-Such cases generate warnings, not fatal errors.
+$$\alpha_i(z) = \mathcal{L}_i(z) \xrightarrow{\text{Interpolation}} \{ (z_0, \alpha_0), (z_1, \alpha_1), \dots, (z_k, \alpha_k) \}$$
 
 ---
 
-## 9. Diagnostic visualization
+## 5. Mathematical Integration of Properties
 
-CSF may generate a 3D swept volume for inspection of:
+### I. Zonal Geometry (Green's Theorem)
+For each zone $i$ at coordinate $z$:
 
-- twist effects;  
-- self-intersections;  
-- global inconsistencies.
+**Area:**
+$$A_i(z) = \frac{1}{2} \left| \sum_{j=0}^{m-1} (x_j y_{j+1} - x_{j+1} y_j) \right|$$
+
+**Local Static Moment ($Q_x$):**
+$$Q_{x,i}(z) = \frac{1}{6} \sum_{j=0}^{m-1} (y_j + y_{j+1}) (x_j y_{j+1} - x_{j+1} y_j)$$
+
+**Local Moment of Inertia ($I_{xx}$):**
+$$I_{xx,i}(z) = \frac{1}{12} \sum_{j=0}^{m-1} (y_j^2 + y_j y_{j+1} + y_{j+1}^2) (x_j y_{j+1} - x_{j+1} y_j)$$
+
+### II. Global Homogenization (Steiner Extension)
+Since the section is non-homogeneous, we calculate the **Equivalent Centroid** first:
+
+$$Y_{G,tot}(z) = \frac{\sum_{i=1}^{n} \alpha_i(z) \cdot Q_{x,i}(z)}{\sum_{i=1}^{n} \alpha_i(z) \cdot A_i(z)}$$
+
+Then, the **Equivalent Flexural Stiffness** (referred to $E_{ref}$):
+
+$$(EI)_{eq}(z) = E_{ref} \cdot \sum_{i=1}^{n} \alpha_i(z) \cdot \left[ I_{xx,i}(z) + A_i(z) \cdot (y_{G,i}(z) - Y_{G,tot}(z))^2 \right]$$
+
+where $y_{G,i}(z) = Q_{x,i}(z) / A_i(z)$.
 
 ---
 
-## 10. Summary
+## 6. Extended Applications (Lookup Table Utility)
 
-- Sections are evaluated as functions of z.  
-- Geometry is deterministic; validity is checked but not enforced.  
-- Areas are always positive; subtraction is achieved via weights.  
-- Discretization samples the model without redefining it.
+The lookup table is not limited to $\alpha$. It can govern any property $\Psi_i(z)$:
+
+- **Mass per unit length:** $w(z) = \sum \text{Lookup}_{\rho,i}(z) \cdot A_i(z)$
+- **Thermal Curvature:** $\chi_{\Delta T}(z) = \dfrac{\sum \alpha_i(z) A_i(z) \beta_i(z) \Delta T_i(z) (y_{G,i} - Y_{G,tot})}{(EI)_{eq}/E_{ref}}$
+
+---
+
+## 7. General Formulation
+
+In standard beam models, sectional stiffness properties follow a simple multiplicative structure:
+
+$$EA(z) = E(z) \cdot A, \qquad EI(z) = E(z) \cdot I, \qquad GJ(z) = G(z) \cdot J$$
+
+This holds as long as the cross-section geometry is constant along the axis and the material is uniform across the section. Under these conditions, the geometric quantities $A$, $I$, $J$ are computed once, and longitudinal variation is carried entirely by the material functions $E(z)$, $G(z)$, $\rho(z)$.
+
+This separability breaks down as soon as either condition is relaxed — material varying within the section, multiple materials, tapering geometry, or any combination of these. In the general case, sectional properties become coupled geometric-material integrals that cannot be reduced to a product of independent terms.
+
+The most general expression for a section property is:
+
+$$P(z) = \sum_i w_i(z) \cdot \iint_{\Omega_i(z)} f(x, y, z) \, dA$$
+
+The cross-section at each station $z$ is partitioned into sub-domains $\Omega_i(z)$, each carrying its own independent weight law $w_i(z)$. Unlike simplified formulations where a single material function scales the entire section, here each polygon is assigned its own longitudinal law — independently of all others and independently of the geometry field. This is the key degree of freedom that makes the formulation general: the same integral structure accommodates uniform sections, graded materials, localised degradation, and any combination of these, without changing the form of the equation. The classical separable formulation is recovered as a special case when $w_i(z) = m(z)$ is uniform across all sub-domains.
+
+---
+
+## 8. What CSF Does
+
+CSF evaluates this integral continuously along $z$. The cross-section is defined as a collection of polygons at two end stations; intermediate geometries are obtained by vertex interpolation along ruled surfaces. Each polygon carries an independent weight law $w_i(z)$, defined analytically or via lookup expressions.
+
+The geometry field $\Omega_i(z)$ and the weight field $w_i(z)$ are fully decoupled, which allows CSF to represent any combination of:
+
+- material variation only — fixed geometry, varying $w_i(z)$
+- geometry variation only — morphing polygons, constant weights
+- both simultaneously — the fully general case
+
+From this continuous description, CSF evaluates $A(z)$, $I(z)$, $EA(z)$, $EI(z)$, $GJ(z)$ at any $z$ and exports solver-ready station data for OpenSees and SAP2000.
+
+> **Note.** Some properties — such as the Saint-Venant torsional constant $J_{\mathrm{sv}}$ — are not obtained from a direct integral with a fixed kernel $f$. They require solving an auxiliary field problem on the section domain and are formally a functional of the geometry: $J_{\mathrm{sv}} = \mathcal{F}(\Omega)$. The treatment of $J_{\mathrm{sv}}$ in CSF is described in the following section.
+
+---
+
