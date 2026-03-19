@@ -113,6 +113,8 @@ from typing import Any, Dict, List, Optional, Tuple
 # Plot helper
 # -----------------------------------------------------------------------------
 
+
+
 def plot_section_variation(
     stations_data: Sequence[Dict[str, Any]],
     filename: str = "section_variation.png",
@@ -164,9 +166,9 @@ def plot_section_variation(
     ax1.set_title('Variation of Geometric Properties along Z (Absolute)')
 
     # Plot Inertia and Torsion
-    ax2.plot(z, i33, 's-', color='red', label='I33 (Strong Axis) [m⁴]')
-    ax2.plot(z, i22, 'd-', color='green', label='I22 (Weak Axis) [m⁴]')
-    ax2.plot(z, j, 'x--', color='purple', label='J (Torsion) [m⁴]')
+    ax2.plot(z, i33, 's-', color='red', label='I33 (Ix) [m⁴]')
+    ax2.plot(z, i22, 'd-', color='green', label='I22 (Iy) [m⁴]')
+    ax2.plot(z, j, 'x--', color='purple', label='J_sv_cell + J_sv_wall) [m⁴]')
     ax2.set_xlabel('Z coordinate [m]')
     ax2.set_ylabel('Inertia / Torsion [m⁴]')
     ax2.grid(True, linestyle='--')
@@ -424,6 +426,7 @@ def write_sap2000_template_pack(
     str:
         The template file path written.
     """
+
     if mode not in ("BOTH", "CENTROIDAL_LINE", "REFERENCE_LINE"):
         raise ValueError("mode must be one of: BOTH, CENTROIDAL_LINE, REFERENCE_LINE")
 
@@ -523,23 +526,40 @@ def write_sap2000_template_pack(
     lines.append("STATIONS (CORE) J_tors = J_sv_cell + J_sv_wall")
     lines.append("-" * 78)
     lines.append(
-        "Columns: id, z, Cx, Cy, A, Ix, Iy, Ixy, Ip,J_tors"
+        "Columns: id, z, Cx, Cy, A, Ix, Iy, Ixy, Ip,J_tors, method"
     )
+
+
 
 
     for d in stations_data:
   
-        J_cell = d["analysis_raw"]["J_sv_cell"]
-        J_wall = d["analysis_raw"]["J_sv_wall"]
+        # Always take the first value, whether scalar or array
+        J_cell = np.atleast_1d(d["analysis_raw"]["J_sv_cell"])[0]
+        J_wall = np.atleast_1d(d["analysis_raw"]["J_sv_wall"])[0]
 
         J_tors = J_cell + J_wall
 
-        if J_cell and J_wall:
+        torsion_method=""
+        if J_cell != 0  or J_wall != 0:
+
+            if J_cell !=0  and J_wall !=0:
+                torsion_method = "J_sv_cell+J_sv_wall"
+            elif  J_cell ==0:
+                torsion_method = "J_sv_wall"
+            else:
+                torsion_method = "J_sv_cell"
+
+        else:
+            torsion_method = "J_tors not available."
             J_tors=0
             warnings.warn(
                 "No valid Saint-Venant torsion contribution "
                 "(J_sv_cell or J_sv_wall) available for export."
             )
+
+
+
 
 
         lines.append(
@@ -553,6 +573,7 @@ def write_sap2000_template_pack(
             f"{format(d['Ixy'], float_fmt)}  "
             f"{format(d['Ip'], float_fmt)} "
             f"{format(J_tors, float_fmt)} "
+            f"{torsion_method}"
         )
     lines.append("")
 
@@ -1418,7 +1439,7 @@ def write_opensees_geometry(
             f.write("# NOTE: Section lines append 'Cx Cy' as CSF-only fields (not OpenSees syntax).\n")
             f.write("#\n")
             f.write("# CSF_EXPORT_MODE: E=E_ref ; A/I/J are station-wise CSF results (already weighted)\n")
-            f.write("# CSF_TORSION_SELECTION: J_eff = max(J_sv_cell, J_sv_wall) if any >0 else J if >0 else ERROR")
+            f.write("# CSF_TORSION_SELECTION: J_tors = J_sv_cell + J_sv_wall")
 
             # ---- Exact z stations ----
             f.write("\n\n# CSF_Z_STATIONS: " + " ".join(f"{z:.12g}" for z in z_coords) + "\n\n")
@@ -1456,24 +1477,23 @@ def write_opensees_geometry(
                 #        - "J_sv_wall" if only wall is present
                 #
                 # -------------------------------------------------------------------------
-                cell_ok = _is_pos(res.get("J_sv_cell"), 0.0)
-                wall_ok = _is_pos(res.get("J_sv_wall"), 0.0)
 
-                if cell_ok or wall_ok:
-                    J_cell = float(res["J_sv_cell"]) if cell_ok else 0.0
-                    J_wall = float(res["J_sv_wall"]) if wall_ok else 0.0
-
+                # Always take the first value, whether scalar or array
+                J_cell = np.atleast_1d(res["J_sv_cell"])[0]
+                J_wall = np.atleast_1d(res["J_sv_wall"])[0]
+                J_tors = 0
+                if J_cell != 0  or J_wall != 0:
                     J_tors = J_cell + J_wall
 
-                    if cell_ok and wall_ok:
+                    if J_cell !=0  and J_wall !=0:
                         torsion_method = "J_sv_cell+J_sv_wall"
-                    elif cell_ok:
-                        torsion_method = "J_sv_cell"
-                    else:
+                    elif  J_cell ==0:
                         torsion_method = "J_sv_wall"
+                    else:
+                        torsion_method = "J_sv_cell"
 
                 else:
-                    torsion_method = "Not available for export."
+                    torsion_method = "J_tors not available"
                     J_tors=0
                     warnings.warn(
                         "No valid Saint-Venant torsion contribution "

@@ -2,6 +2,10 @@ CSF_ACTIONS:
   stations:
     station_midle:
       - 10
+    station_3:
+      - 0
+      - 10
+      - 20
     station_edge:
       - 0
       - 20
@@ -21,4 +25,24 @@ CSF_ACTIONS:
         properties: [A, Cx, Cy, Ix, Iy, J_sv_wall,J_sv_cell]
         params:
           fmt_display: ".9g"         
+    - write_opensees_geometry:
+        output: 
+          - out/mixedthin_geometry.tcl # required, file-only (no stdout)
+        params:
+          n_points: 10 # required int
+          E_ref: 2.1e+11 # required float
+          nu: 0.30 # required float          
+  
+    - write_sap2000_geometry:
+        stations: station_3
+        output: [out/mixedthin_template_pack.txt]
+        params:
+          n_intervals: 7
+          material_name: "S355"
+          E_ref: 2.1e+11
+          nu: 0.30
+          mode: "BOTH"
+          include_plot: True
+          plot_filename: "out/mixedthin_variation.jpg"
+
                       
