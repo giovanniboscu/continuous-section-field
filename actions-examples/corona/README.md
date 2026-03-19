@@ -3,7 +3,24 @@
 python3 -m csf.CSFActions j_sv_geometry.yaml j_sv_action.yaml
 
 python3 -m csf.CSFActions annulus.yaml annulus_action.yaml
+
+
+
 # De Saint-Venant Torsional Constant — Additivity in Cross-Section Solvers (CSF)
+
+## How CSF Computes J
+
+> When exporting a cross-section model to **OpenSees** or **SAP2000**, the CSF must provide a single scalar value for the De Saint-Venant torsional constant $J$. In this context, the CSF computes $J$ by **direct summation** of the contributions of each independent component in the section:
+>
+> $$J_{\mathrm{CSF}} = \sum_{k} J_{\mathrm{cell},k} + \sum_{i} J_{\mathrm{wall},i}$$
+>
+> where each closed cell contributes via the Bredt formula and each open wall via the thin-wall rectangle formula.
+>
+> This single value is then passed directly to the beam/frame element definition in the target solver (e.g. `J` in SAP2000 section properties, or `GJ` stiffness in OpenSees ).
+>
+> This approach is **exact within the model assumptions** — but its validity depends on a set of hypotheses about the non-interaction of components. These hypotheses, and the cases where they break down, are documented in the sections below.
+
+---
 
 ## 1. Background
 
