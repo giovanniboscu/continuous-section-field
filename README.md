@@ -135,10 +135,6 @@ CSF models a member as a continuous field along the axis `z`, combining:
 Section vertices can be generated from any CAD tool or script 
 that can sample points along a curve and export their coordinates.
 
-- **Thin-walled topology handling**:
-  - open-section layouts
-  - closed-cell 
-
 
 > **Geometric scope and limitations**  
 > CSF is not a FEM solver: it provides a geometric formulation for non-prismatic members and returns sectional properties (and derived stiffness fields) for beam-based analysis or external solvers.  
