@@ -1,0 +1,58 @@
+SAP2000 TEMPLATE PACK (from CSF)
+==============================================================================
+
+DISCLAIMER
+------------------------------------------------------------------------------
+This template is a data pack intended to help build a SAP2000 import file. It may require adaptation depending on SAP2000 version/table format.
+
+MODEL METADATA
+------------------------------------------------------------------------------
+z_start      : 0
+z_end        : 20
+length (L)   : 20
+stations     : 3
+mode         : BOTH
+material     : S355
+E_ref        : 2.1e+11
+nu           : 0.3
+
+STATIONS (CORE) J_tors = J_sv_cell + J_sv_wall
+------------------------------------------------------------------------------
+Columns: id, z, Cx, Cy, A, Ix, Iy, Ixy, Ip,J_tors
+   1  0  0  0  0.00715957063  4.42909194e-06  1.18422119e-05  0  1.62713039e-05 0 
+   2  10  0  0  0.00602261063  2.94378142e-06  7.80752946e-06  0  1.07513109e-05 0 
+   3  20  0  0  0.00500533063  1.87914332e-06  4.91555728e-06  0  6.79470059e-06 0 
+
+SECTION NAMES
+------------------------------------------------------------------------------
+SEC0001 @ z=0
+SEC0002 @ z=10
+SEC0003 @ z=20
+
+CANDIDATE TABLE BLOCKS (EDIT/ADAPT FOR YOUR SAP2000 VERSION)
+------------------------------------------------------------------------------
+1) Frame Section Property Definitions
+   - Create one section per station using the core properties above.
+   - Map section names with section_prefix + station id.
+
+2) Joint Coordinates (if using segmented model)
+   - Build joints along the member axis with joint_prefix and z station coordinates.
+
+3) Connectivity and Section Assignment
+   - Create frame objects with frame_prefix and assign station-based sections.
+
+MODE BLOCK: CENTROIDAL_LINE
+------------------------------------------------------------------------------
+Use Cx, Cy at each station to define centroidal alignment if needed.
+
+MODE BLOCK: REFERENCE_LINE
+------------------------------------------------------------------------------
+Keep a fixed geometric/reference axis and assign varying station properties.
+
+CHECKLIST
+------------------------------------------------------------------------------
+[] Confirm units consistency (geometry, E, inertia, torsion).
+[] Confirm SAP2000 table schema/version for import.
+[] Confirm local axis conventions and sign conventions.
+[] Confirm material definition exists in model.
+[] Confirm section assignment strategy (per object/per segment).
