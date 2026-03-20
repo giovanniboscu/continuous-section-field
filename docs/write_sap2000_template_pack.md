@@ -351,8 +351,9 @@ as the SAP2000 section label. Units must be consistent with the CSF export.
 
 - The file is **not** a direct SAP2000 import file — it requires manual or scripted
   mapping to the specific SAP2000 table format for the installed version.
-- `G_ref` is always constant along z (isotropic material assumption). If the material
-  varies along the member, `G_ref` should be treated as a reference value only.
+- `G_ref` is a scalar reference shear modulus derived from the user-supplied `E_ref`
+and `nu`. It is intended as a solver input only — it does not reflect any material
+variation along z that may be encoded in the CSF weight laws.
 - The `mode` parameter (`BOTH`, `CENTROIDAL_LINE`, `REFERENCE_LINE`) is retained for
   API compatibility but does not affect the output in the current implementation.
 - For torsion: always check `J_s_vroark_fidelity` before using `J_s_vroark`. For
