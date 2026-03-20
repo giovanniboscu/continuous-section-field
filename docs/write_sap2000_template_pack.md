@@ -25,8 +25,6 @@ def write_sap2000_template_pack(
     *,
     mode: _Mode = "BOTH",
     section_prefix: str = "SEC",
-    #joint_prefix: str = "J",
-    #frame_prefix: str = "F",
     material_name: str = "S355",
     E_ref: Optional[float] = None,
     nu: Optional[float] = None,
