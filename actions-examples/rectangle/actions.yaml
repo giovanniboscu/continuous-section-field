@@ -10,16 +10,17 @@ CSF_ACTIONS:
         stations: station_3pt
         output:
           - stdout
-        properties: [A, Cx, Cy, Ix, Iy]
+           - out/sel_properties.jpg]
+        properties: [geometry,A,Cx,Cy,Ix,Iy,Ixy,Ip,I1,I2,rx,ry,Wx,Wy,J_sv_cell,Q_na,J_s_vroark,J_s_vroark_fidelity]
 
     - plot_section_2d:
         stations: [station_3pt]
-        output: [stdout, out/sections.bmp]
+        output: [stdout, out/sections2d.jpg]
 
     - plot_properties:
         # This action samples internally between z0 and z1; stations are not used.
         output: [stdout, out/properties.png]
-        properties: [geometry,A,Cx,Cy,Ix,Iy,Ixy,Ip,I1,I2,rx,ry,Wx,Wy,J_sv_cell,Q_na]
+        properties: [A,,Ix,Ip]
         params:
           num_points: 80
 
