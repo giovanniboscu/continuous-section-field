@@ -7,7 +7,7 @@ In these tutorials, the working directory is set **immediately after cloning** t
 ```bash
 # Clone the repository
 git clone https://github.com/giovanniboscu/continuous-section-field.git
-cd continuous-section-field
+cd continuous-section-fieldsap200
 
 # Create and activate virtual environment
 python3 -m venv venv
@@ -1265,10 +1265,30 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 
 ---
 
-### 6.11 `write_sap2000_geometry` (stations FORBIDDEN; FILE-ONLY)
 
-**Concept**  
-Writes a “template pack” text file that helps you build a SAP2000 model by copy/paste.
+# `write_sap2000_geometry` — Action Reference
+
+### 6.11 `write_sap2000_geometry`
+
+**Concept**
+
+Exports a CSF field to a structured plain-text file containing four fixed-width
+tables of section properties evaluated at the requested stations. The output is a
+**general-purpose solver export** — it can be used as input for SAP2000, OpenSeesPy,
+or any beam solver that accepts tabular section data.
+
+For full documentation of the output format, column definitions, and downstream use,
+see: [`write_sap2000_template_pack` — Reference Documentation](write_sap2000_template_pack.md).
+
+**Station generation**
+
+Two modes are available:
+
+- **`z_values` provided** — stations are evaluated at the explicit list of z-coordinates.
+  `n_intervals` is ignored. Values must be strictly increasing and within field bounds.
+- **`z_values` not provided** — stations are the `n_intervals + 1` Gauss-Lobatto nodes
+  over `[z_start, z_end]`. These are the correct integration points for
+  `forceBeamColumn` elements in OpenSeesPy.
 
 **YAML**
 
@@ -1286,6 +1306,47 @@ CSF_ACTIONS:
           include_plot: true
           plot_filename: "out/section_variation.png"
 ```
+
+To use explicit stations instead of Lobatto:
+
+```yaml
+        params:
+          z_values: [0.0, 2.5, 5.0, 7.5, 10.0]
+          material_name: "S355"
+          E_ref: 2.1e+11
+          nu: 0.30
+```
+
+**CLI**
+
+```bash
+python3 -m csf.CSFActions geometry.yaml actions.yaml
+```
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `n_intervals` | `int` | `20` | Gauss-Lobatto intervals; stations = `n_intervals + 1`. Ignored when `z_values` is provided. |
+| `material_name` | `str` | `"S355"` | Informational material label written to the file header. |
+| `E_ref` | `float` | — | Reference Young's modulus. Required with `nu` to populate the `G_ref` column. |
+| `nu` | `float` | — | Poisson's ratio. Used to derive `G_ref = E_ref / (2*(1+nu))`. |
+| `mode` | `str` | `"BOTH"` | Retained for API compatibility; not used in output. |
+| `include_plot` | `bool` | `True` | If `True`, saves a plot of section property variation along z. |
+| `plot_filename` | `str` | `"section_variation.png"` | Output path for the property plot. |
+| `show_plot` | `bool` | `False` | If `True`, displays the plot interactively. |
+| `z_values` | `list` | — | Explicit station list. Overrides `n_intervals` when provided. |
+| `float_fmt` | `str` | `".9g"` | Format spec for all numeric output fields. |
+
+**Notes**
+
+- `E_ref` and `nu` must be provided **together** to populate the `G_ref` column.
+  If either is missing, `G_ref` is blank in the output — the file is still valid
+  for SAP2000 (material defined separately) but requires `MATERIAL_INPUT_MODE='override'`
+  in `csf_template_pack_opensees.py`.
+- `E_ref` and `nu` are solver input parameters only, independent of the CSF weight
+  laws `w_i(z)` which encode material variation through the modular ratio `α_i(z)`.
+
 
 **CLI**
 
