@@ -1,0 +1,42 @@
+CSF:
+  # Linearly tapered solid rectangle along z.
+  # Width is constant (1.0 m); height grows linearly from 1.0 m (S0) to 2.0 m (S1).
+  # A single polygon per station — no composite section, no material variation by zone.
+  # The weight law applies uniformly to the entire cross-section.
+  sections:
+    S0:
+      z: 0.0          # base station
+      polygons:
+        rect_d:
+          weight: 1.0
+          vertices:
+            # CCW — solid rectangle 1.0 x 1.0 m
+            - [-0.5, 0.0]
+            - [ 0.5, 0.0]
+            - [ 0.5, 1.0]
+            - [-0.5, 1.0]
+    S1:
+      z: 5.0          # top station
+      polygons:
+        rect_u:
+          weight: 1.0
+          vertices:
+            # CCW — solid rectangle 1.0 x 2.0 m
+            - [-0.5, 0.0]
+            - [ 0.5, 0.0]
+            - [ 0.5, 2.0]
+            - [-0.5, 2.0]
+
+  weight_laws:
+    # Option 3: Uniform weight — no degradation, standard prismatic behaviour.
+    - 'rect_d,rect_u: 1.0'  
+    # Three alternative weight laws — uncomment one at a time.
+    #
+    # Option 1: Gaussian degradation centred at z=5 (tip) — exponential bell.
+    #- 'rect_d,rect_u: 1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))'
+    #
+    # Option 2: Lookup table — symmetric degradation, min at extremes, max at mid-span.
+    #           See w_variation.txt for the tabulated values.
+    #- 'rect_d,rect_u: T_lookup("w_variation.txt")'
+    #
+    #- 'rect_d,rect_u: 1.0'  
