@@ -598,7 +598,7 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
             "- plot_filename : output filename/path for the preview plot.\n"
             "\n"
             "Material/weight contract (important)\n"
-            "- CSF properties are assumed to be already *modular/weighted*; E_ref should not be applied twice.\n"
+            "- CSF properties are assumed to be already *modular/weighted*;\n"
             "\n"
             "Modeling note (scope)\n"
             "- Intended for slender-beam (Euler–Bernoulli) member workflows (no local/shear effects)."

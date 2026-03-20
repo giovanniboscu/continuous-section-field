@@ -48,11 +48,25 @@ from contextlib import redirect_stdout
 # - detects collinear overlap,
 # while still allowing you to ignore adjacent edges (handled by caller).
 
-EPS_L = 1e-12  # default Use this for: orientation tests, point-on-segment, segment intersection, etc.
-EPS_A = 1e-12  # EPS_A: area tolerance. Must scale as S^2. Use this for: "area nearly zero" checks, summed areas, etc.
-EPS_K = 1e-12 # Numerical/matrix tolerances.
-EPS_K_RTOL = 1e-10
-EPS_K_ATOL = 1e-12
+
+# Unit system must be consistent throughout the model (e.g. all metres or all mm).
+# Mixing units is not supported. Tolerances are recomputed at runtime by _determine_magnitude().
+# Default values below assume S ≈ 1.0 (metre-scale geometry).
+
+EPS_L = 1e-12       # Linear/length tolerance. Scales as S.
+                    # Use for: orientation tests, point-on-segment, segment intersection.
+
+EPS_A = 1e-12       # Area tolerance. Scales as S².
+                    # Use for: "area nearly zero" checks, summed areas, section integrals.
+
+EPS_K_RTOL = 1e-10  # Relative numerical tolerance. Scale-free.
+                    # Primary guard for matrix/inertia comparisons.
+
+EPS_K_ATOL = 1e-12  # Absolute numerical tolerance. Scales as S⁴.
+                    # Fallback for near-zero inertia cases.
+
+EPS_K = EPS_K_ATOL  # Alias for backward compatibility.
+
 DDEBUG = False
 
 Point = Tuple[float, float]
@@ -168,7 +182,7 @@ def plot_section_variation(
     # Plot Inertia and Torsion
     ax2.plot(z, i33, 's-', color='red', label='I33 (Ix) [m⁴]')
     ax2.plot(z, i22, 'd-', color='green', label='I22 (Iy) [m⁴]')
-    ax2.plot(z, j, 'x--', color='purple', label='J_sv_cell + J_sv_wall) [m⁴]')
+    ax2.plot(z, j, 'x--', color='purple', label='J_tors [m⁴]')
     ax2.set_xlabel('Z coordinate [m]')
     ax2.set_ylabel('Inertia / Torsion [m⁴]')
     ax2.grid(True, linestyle='--')
@@ -334,14 +348,369 @@ def _compute_station_data(
         )
 
     return out
+#------------------------------------------------------------------------------
+
+def write_sap2000_template_pack(
+    field: Any,
+    n_intervals: int = 20,
+    template_filename: str = "export_template_pack.txt",
+    *,
+    mode: _Mode = "BOTH",
+    section_prefix: str = "SEC",
+    #joint_prefix: str = "J",
+    #frame_prefix: str = "F",
+    material_name: str = "S355",
+    E_ref: Optional[float] = None,
+    nu: Optional[float] = None,
+    include_plot: bool = True,
+    plot_filename: str = "section_variation.png",
+    show_plot: bool = False,
+    z_values: Optional[List[float]] = None,
+    float_fmt: str = ".9g",
+) -> str:
+    """
+    Export a CSF field to a structured text pack for SAP2000 / OpenSees input.
+
+    Produces four compact tables:
+      1. SOLVER INPUT    — properties consumed directly by SAP2000 / OpenSees.
+      2. SECTION QUALITY — derived verification properties (principal axes, moduli).
+      3. TORSION QUALITY — torsion breakdown with fidelity indicator.
+      4. STATION NAMES   — section name list for frame property assignment.
+
+    All section data comes from section_full_analysis() evaluated at the requested
+    stations — no interpolation, no silent fallback values.
+
+    Parameters
+    ----------
+    field            : ContinuousSectionField with .s0.z, .s1.z, .section(z).
+    n_intervals      : Gauss-Lobatto intervals; stations = n_intervals + 1.
+                       Ignored when z_values is provided.
+    template_filename: Output file path.
+    mode             : Retained for API compatibility; not used in output.
+    section_prefix   : Prefix for section name labels ("SEC" -> "SEC0001").
+    material_name    : Informational label written to the file header.
+    E_ref            : Reference Young's modulus; G_ref = E_ref / (2*(1+nu)).
+                       Written to header only if provided.
+    nu               : Poisson's ratio; used to derive G_ref when E_ref is given.
+    include_plot     : If True and matplotlib is available, saves a property plot.
+    plot_filename    : Path for the optional plot image.
+    show_plot        : If True, display the plot interactively.
+    z_values         : Explicit station list (strictly increasing, within field bounds).
+                       No sorting or deduplication — invalid input raises ValueError.
+    float_fmt        : Format spec for all numeric output fields.
+
+    Returns
+    -------
+    str : Path of the file written.
+
+    Raises
+    ------
+    ValueError : On invalid z_values.
+    KeyError   : If section_full_analysis() does not return an expected key.
+    """
+    _Mode = Literal["BOTH", "CENTROIDAL_LINE", "REFERENCE_LINE"]
+    if mode not in ("BOTH", "CENTROIDAL_LINE", "REFERENCE_LINE"):
+        raise ValueError("mode must be one of: BOTH, CENTROIDAL_LINE, REFERENCE_LINE")
+
+    # Extract CSF absolute bounds exactly as before.
+    z_start = float(getattr(field.s0, "z"))
+    z_end = float(getattr(field.s1, "z"))
+    L = z_end - z_start
+
+    # -------------------------------------------------------------------------
+    # Station generation / selection
+    # -------------------------------------------------------------------------
+    # Minimal-impact rule:
+    # - keep the original Lobatto path untouched when z_values is not provided;
+    # - add a small explicit branch for user-provided stations.
+    if z_values is None:
+        # Original behavior (fully preserved).
+        station_z = get_lobatto_intervals(z_start, z_end, int(n_intervals)).tolist()
+    else:
+        # Explicit-stations behavior (new, opt-in).
+        if not isinstance(z_values, list) or len(z_values) == 0:
+            raise ValueError("z_values must be a non-empty list of numeric z coordinates.")
+
+        station_z = []
+        for i, v in enumerate(z_values):
+            try:
+                z = float(v)
+            except Exception as e:
+                raise ValueError(f"z_values[{i}] is not numeric: {v!r}") from e
+
+            # Finite check without extra imports:
+            # NaN fails z == z; infinities are caught by bound checks below.
+            if z != z:
+                raise ValueError(f"z_values[{i}] is NaN.")
+
+            # Range check in absolute coordinates.
+            if z < z_start or z > z_end:
+                raise ValueError(
+                    f"z_values[{i}]={z} is outside field bounds [{z_start}, {z_end}]."
+                )
+
+            station_z.append(z)
+
+        # Strict monotonic increase:
+        # no sorting/dedup on purpose (explicit input policy, no silent fixes).
+        for i in range(1, len(station_z)):
+            if not (station_z[i] > station_z[i - 1]):
+                raise ValueError(
+                    "z_values must be strictly increasing (no duplicates, no descending values)."
+                )
+
+    # Compute section data at selected stations (unchanged downstream flow).
+    stations_data = _compute_station_data(field, station_z)
+
+    # Optional plot (best-effort).
+    plot_path_written: Optional[str] = None
+    if include_plot and plt is not None:
+        try:
+            plot_path_written = plot_section_variation(
+                stations_data,
+                filename=plot_filename,
+                show=show_plot,
+            )
+        except Exception:
+            # Plotting must never prevent template creation.
+            plot_path_written = None
+
+    # -------------------------------------------------------------------------
+    # Derive G_ref and collect per-station records.
+    # _t fields (Bredt-Batho wall thickness) exist only for single-polygon
+    # @cell/@wall sections; optional columns are emitted only when at least one
+    # station carries the value — avoids empty columns in the common case.
+    # -------------------------------------------------------------------------
+    G_ref = (
+        float(E_ref) / (2.0 * (1.0 + float(nu)))
+        if (E_ref is not None and nu is not None)
+        else None
+    )
+
+    records = []
+    any_cell_t = False
+    any_wall_t = False
+
+    for d in stations_data:
+        res = d["analysis_raw"]
+
+        # Fail fast — no silent defaults for missing keys.
+        for k in ("A", "Cx", "Cy", "Ix", "Iy", "Ixy", "Ip",
+                  "I1", "I2", "theta_deg",
+                  "rx", "ry", "Wx", "Wy", "K_torsion", "Q_na",
+                  "J_sv_cell", "J_sv_wall",
+                  "J_s_vroark", "J_s_vroark_fidelity"):
+            if k not in res:
+                raise KeyError(
+                    f"section_full_analysis() missing key '{k}' at z={d['z']}."
+                )
+
+        # J_sv_* may be a scalar float or a (J, t) tuple depending on whether
+        # the section is single-polygon; extract both components defensively.
+        arr_cell = np.atleast_1d(res["J_sv_cell"])
+        j_cell   = float(arr_cell[0])
+        t_cell   = float(arr_cell[1]) if len(arr_cell) >= 2 else None
+
+        arr_wall = np.atleast_1d(res["J_sv_wall"])
+        j_wall   = float(arr_wall[0])
+        t_wall   = float(arr_wall[1]) if len(arr_wall) >= 2 else None
+
+        if t_cell is not None:
+            any_cell_t = True
+        if t_wall is not None:
+            any_wall_t = True
+
+        # Torsion selection: additive Saint-Venant contributions.
+        # Zero only when both are absent — explicit warning, no silent fallback.
+        has_cell = j_cell != 0.0
+        has_wall = j_wall != 0.0
+
+        if has_cell and has_wall:
+            j_tors = j_cell + j_wall
+            method = "J_sv_cell+J_sv_wall"
+        elif has_cell:
+            j_tors = j_cell
+            method = "J_sv_cell"
+        elif has_wall:
+            j_tors = j_wall
+            method = "J_sv_wall"
+        else:
+            j_tors = 0.0
+            method = "J_tors skip"
+            warnings.warn(
+                "No valid Saint-Venant torsion contribution "
+                "(J_sv_cell or J_sv_wall) available for export."
+            )
+
+        records.append({
+            "id":                  d["id"],
+            "z":                   d["z"],
+            "A":                   float(res["A"]),
+            "Cx":                  float(res["Cx"]),
+            "Cy":                  float(res["Cy"]),
+            "Ix":                  float(res["Ix"]),
+            "Iy":                  float(res["Iy"]),
+            "Ixy":                 float(res["Ixy"]),
+            "Ip":                  float(res["Ip"]),
+            "I1":                  float(res["I1"]),
+            "I2":                  float(res["I2"]),
+            "theta_deg":           float(res["theta_deg"]),
+            "rx":                  float(res["rx"]),
+            "ry":                  float(res["ry"]),
+            "Wx":                  float(res["Wx"]),
+            "Wy":                  float(res["Wy"]),
+            "K_torsion":           float(res["K_torsion"]),
+            "Q_na":                float(res["Q_na"]),
+            "J_sv_cell":           j_cell,
+            "J_sv_cell_t":         t_cell,
+            "J_sv_wall":           j_wall,
+            "J_sv_wall_t":         t_wall,
+            "J_s_vroark":          float(res["J_s_vroark"]),
+            "J_s_vroark_fidelity": float(res["J_s_vroark_fidelity"]),
+            "J_tors":              j_tors,
+            "method":              method,
+        })
+
+    N = len(records)
+
+    # -------------------------------------------------------------------------
+    # Build output text — four compact tables.
+    # Uniform column width W keeps tables both machine-parseable and
+    # human-readable without requiring a CSV parser.
+    # -------------------------------------------------------------------------
+    W = 20
+    lines: List[str] = []
+
+    def _fmt(v) -> str:
+        """Format float using float_fmt; return empty string when value is None."""
+        if v is None:
+            return ""
+        return format(float(v), float_fmt)
+
+    def _header(*labels):
+        """Emit a fixed-width header row followed by a separator line."""
+        lines.append("  " + "".join(lbl.ljust(W) for lbl in labels))
+        lines.append("  " + "-" * (W * len(labels)))
+
+    def _row(*vals):
+        """Emit a fixed-width data row."""
+        lines.append("  " + "".join(str(v).ljust(W) for v in vals))
+
+    # ---- File header --------------------------------------------------------
+    lines.append("# CSF SECTION EXPORT")
+    lines.append(f"# z_start      : {_fmt(z_start)}")
+    lines.append(f"# z_end        : {_fmt(z_end)}")
+    lines.append(f"# length       : {_fmt(L)}")
+    lines.append(f"# stations     : {N}")
+    lines.append(f"# station_mode : {'user' if z_values is not None else 'lobatto'}")
+    lines.append(f"# stations_list: {' '.join(_fmt(z) for z in station_z)}")
+    lines.append(f"# material     : {material_name}")
+    if E_ref is not None:
+        lines.append(f"# E_ref        : {_fmt(E_ref)}")
+    if nu is not None:
+        lines.append(f"# nu           : {_fmt(nu)}")
+    if G_ref is not None:
+        lines.append(f"# G_ref        : {_fmt(G_ref)}")
+    if plot_path_written is not None:
+        lines.append(f"# plot         : {plot_path_written}")
+    lines.append(f"# doc          : docs/sections/sectionfullanalysis.md")
+    lines.append("")
+
+    # ---- TABLE 1: Solver input ----------------------------------------------
+    # Direct input for SAP2000 and OpenSees beam elements.
+    # J_tors = J_sv_cell + J_sv_wall; see TABLE 3 for per-method breakdown.
+    # Cx, Cy: centroid offsets in the section plane.
+    # G_ref column is empty when E_ref / nu are not provided.
+    lines.append("# TABLE 1 — SOLVER INPUT")
+    lines.append("# z  A  Ix  Iy  Ixy  Ip  J_tors  G_ref  Cx  Cy  method")
+    _header("z", "A", "Ix", "Iy", "Ixy", "Ip", "J_tors", "G_ref", "Cx", "Cy", "method")
+    for r in records:
+        _row(_fmt(r["z"]), _fmt(r["A"]),
+             _fmt(r["Ix"]), _fmt(r["Iy"]), _fmt(r["Ixy"]), _fmt(r["Ip"]),
+             _fmt(r["J_tors"]), _fmt(G_ref),
+             _fmt(r["Cx"]), _fmt(r["Cy"]),
+             r["method"])
+    lines.append("")
+
+    # ---- TABLE 2: Section quality -------------------------------------------
+    # Verification properties — not consumed directly by solvers.
+    # theta_deg: principal axis rotation (0 for symmetric sections).
+    # K_torsion: semi-empirical A^4/(40*Ip), low fidelity, included for completeness.
+    lines.append("# TABLE 2 — SECTION QUALITY")
+    lines.append("# z  I1  I2  theta_deg  rx  ry  Wx  Wy  Q_na  K_torsion")
+    _header("z", "I1", "I2", "theta_deg", "rx", "ry", "Wx", "Wy", "Q_na", "K_torsion")
+    for r in records:
+        _row(_fmt(r["z"]),
+             _fmt(r["I1"]), _fmt(r["I2"]), _fmt(r["theta_deg"]),
+             _fmt(r["rx"]), _fmt(r["ry"]),
+             _fmt(r["Wx"]), _fmt(r["Wy"]),
+             _fmt(r["Q_na"]), _fmt(r["K_torsion"]))
+    lines.append("")
+
+    # ---- TABLE 3: Torsion quality -------------------------------------------
+    # Per-method torsion breakdown.
+    # _t columns (Bredt-Batho wall thickness) appear only when at least one
+    # station carries the value (single-polygon @cell/@wall sections).
+    # J_s_vroark_fidelity: CSF polygon-based reliability index.
+    #   >= 0.6 reliable | 0.3-0.6 borderline | < 0.3 outside validity domain.
+    t3_headers = ["z", "J_sv_cell"]
+    if any_cell_t:
+        t3_headers.append("J_sv_cell_t")
+    t3_headers.append("J_sv_wall")
+    if any_wall_t:
+        t3_headers.append("J_sv_wall_t")
+    t3_headers += ["J_s_vroark", "J_s_vroark_fidelity", "J_tors", "method"]
+
+    lines.append("# TABLE 3 — TORSION QUALITY")
+    lines.append("# J_s_vroark_fidelity: >=0.6 reliable | 0.3-0.6 borderline | <0.3 do not use")
+    _header(*t3_headers)
+    for r in records:
+        vals = [_fmt(r["z"]), _fmt(r["J_sv_cell"])]
+        if any_cell_t:
+            vals.append(_fmt(r["J_sv_cell_t"]))
+        vals.append(_fmt(r["J_sv_wall"]))
+        if any_wall_t:
+            vals.append(_fmt(r["J_sv_wall_t"]))
+        vals += [
+            _fmt(r["J_s_vroark"]),
+            _fmt(r["J_s_vroark_fidelity"]),
+            _fmt(r["J_tors"]),
+            r["method"],
+        ]
+        _row(*vals)
+    lines.append("")
+
+    # ---- TABLE 4: Station names ---------------------------------------------
+    # Section name list for SAP2000 frame property assignment.
+    lines.append("# TABLE 4 — STATION NAMES")
+    _header("id", "z", "section_name")
+    for r in records:
+        _row(str(r["id"]), _fmt(r["z"]), f"{section_prefix}{r['id']:04d}")
+    lines.append("")
+
+    # -------------------------------------------------------------------------
+    # Write file
+    # -------------------------------------------------------------------------
+    out_path = Path(template_filename)
+    if out_path.parent and not out_path.parent.exists():
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines).rstrip() + "\n")
+
+    return str(out_path)
+
+
+
+
 
 
 # -----------------------------------------------------------------------------
 # Template pack writer
 # -----------------------------------------------------------------------------
-_Mode = Literal["BOTH", "CENTROIDAL_LINE", "REFERENCE_LINE"]
+#_Mode = Literal["BOTH", "CENTROIDAL_LINE", "REFERENCE_LINE"]
 
-def write_sap2000_template_pack(
+def write_sap2000_template_pack2(
     field: Any,
     n_intervals: int = 20,
     template_filename: str = "template.txt",
@@ -555,7 +924,7 @@ def write_sap2000_template_pack(
             J_tors=0
             warnings.warn(
                 "No valid Saint-Venant torsion contribution "
-                "(J_sv_cell or J_sv_wall) available for export."
+                "(J_sv_cell or J_sv_wall) skipped"
             )
 
 
@@ -6320,7 +6689,7 @@ class ContinuousSectionField:
         # If your matrices scale strongly with geometry/material, you can scale ATOL too,
         # but RTOL is the primary guard.
         EPS_K_RTOL = 1e-10
-        EPS_K_ATOL = 1e-12
+        EPS_K_ATOL = 1e-12 * (S ** 4)  # scales as S⁴, consistent with moment of inertia units
 
         # Optional: if you want a single "EPS_K" name as you wrote,
         # keep it as the absolute tolerance, and still keep RTOL separately.
