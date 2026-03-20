@@ -105,6 +105,9 @@ then run
 
 **This is a minimal working CSF model:** two sections, one polygon per section, one weight law, and automatic evaluation of the resulting continuous properties along the member axis.
 
+[full actions list/](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/rectangle)  Complete worked example covering all available actions on a tapered rectangular section
+
+
 [Full Python API example - Tapered T-beam](#worked-example-continuously-tapered-t-beam)
 
 ---
