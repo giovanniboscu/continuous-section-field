@@ -628,8 +628,14 @@ General-purpose torsional constant estimate obtained by mapping the composite se
 
 Notes:
 - Tag-free: independent of `@cell/@wall`.
-- Not a thin-walled closed-cell (Bredt–Batho) formulation; closed/open thin-walled torsion is handled by the dedicated `@cell/@wall` paths.
-- The equivalent-rectangle mapping is a heuristic procedure internal to CSF. Only the final torsion formula is from Roark; no literature reference exists for the mapping step itself.
+- Not a thin-walled closed-cell (Bredt–Batho) formulation; closed/open thin-walled 
+  torsion is handled by the dedicated `@cell/@wall` paths.
+- The equivalent-rectangle mapping is a heuristic procedure internal to CSF. 
+  Only the final torsion formula is from Roark; no literature reference exists 
+  for the mapping step itself.
+- Intended for compact solid sections (e.g. solid piles, filled profiles) where 
+  `@cell/@wall` tagging is not applicable. Check `J_s_vroark_fidelity` before use: 
+  reliable only when fidelity >= 0.6.
 
 ---
 
