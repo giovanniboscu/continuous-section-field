@@ -1,4 +1,5 @@
 # CSF Actions Reference (`CSFActions.py`)
+> **[rectangle/](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/rectangle)  Complete worked example covering all available actions on a tapered rectangular section — plots, reports, solver exports, and three weight law alternatives. Run with `python3 -m csf.CSFActions geometry.yaml actions.yaml`.**
 
 This document describes the **Actions YAML** contract implemented by `CSFActions.py` and provides **one worked YAML example per action**.
 
