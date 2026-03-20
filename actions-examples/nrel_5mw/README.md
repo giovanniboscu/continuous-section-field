@@ -316,9 +316,9 @@ All deviations are below **0.015%**. The dominant source of residual error at N=
 
 ---
 
-## 11. The Continuous Section Field Concept
+## 10. The Continuous Section Field Concept
 
-### 11.1 From discrete stations to a continuous field
+### 10.1 From discrete stations to a continuous field
 
 The conventional approach to beam structural modelling - as used in FAST/OpenFAST and most aeroelastic codes - represents the cross-section properties as a **finite table of values at discrete stations**. For the NREL 5-MW tower this means 11 rows in Table 6-1, each describing the section at a specific elevation. Properties between stations are recovered by the solver through linear interpolation of the tabulated values.
 
@@ -330,7 +330,7 @@ P(z)  for any z ∈ [z₀, z₁]
 
 where P is any section property - area A, second moments Ix and Iy, torsional constant J, wall thickness t, section moduli, radii of gyration, and so on. Each property is a smooth function of the axial coordinate z, evaluated by interpolating the polygon vertices between S0 and S1 and computing the section analysis at that exact elevation.
 
-### 11.2 Practical consequence
+### 10.2 Practical consequence
 
 The plot of J_sv_cell and t(z) shown below is not a piecewise-linear curve through 11 points - it is computed on **100 equally spaced stations** along the height, each independently evaluated from the interpolated geometry. The result is a smooth, continuous curve that reflects the true variation of the cross-section properties along the member axis.
 
@@ -346,7 +346,7 @@ For the NREL tower - a linearly tapered circular annulus - the continuous field 
 
 None of these are linear in z, yet all are captured exactly by the continuous field without any piecewise approximation.
 
-### 11.3 Advantages over discrete station tables
+### 10.3 Advantages over discrete station tables
 
 The continuous field representation offers several practical advantages:
 
@@ -364,7 +364,7 @@ The 11-station table produced in this verification (Section 5) is one particular
 
 ---
 
-## 12. References
+## 11. References
 
 1. Jonkman, J., Butterfield, S., Musial, W., Scott, G. (2009). *Definition of a 5-MW Reference Wind Turbine for Offshore System Development*. NREL/TP-500-38060. National Renewable Energy Laboratory, Golden, CO.
 
