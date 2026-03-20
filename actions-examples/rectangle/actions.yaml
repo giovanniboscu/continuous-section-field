@@ -1,36 +1,140 @@
 CSF_ACTIONS:
-  # Station sets are lists of absolute z coordinates [m].
+  # ---------------------------------------------------------------------------
+  # STATION SETS
+  # Named lists of absolute z coordinates [m] used by analysis actions.
+  # Multiple sets allow different sampling densities for different purposes.
+  # ---------------------------------------------------------------------------
   stations:
-    station_ends:  [0.0, 5.0]
-    station_mid:   [2.5]
-    station_3pt:   [0.0, 2.5, 5.0]
+    station_ends:  [0.0, 5.0]          # boundary sections only
+    station_mid:   [2.5]               # mid-span single point
+    station_3pt:   [0.0, 2.5, 5.0]    # base, mid, top
+    station_5pt:   [0.0, 1, 1.5, 2.5, 3, 3.5, 5.0]  # irregular sampling for detail zones
 
   actions:
+    # -------------------------------------------------------------------------
+    # 3D ruled-surface visualization of the interpolated solid volume.
+    # line_percent controls the density of longitudinal rulings.
+    # -------------------------------------------------------------------------  
+    - plot_volume_3d:
+          params:
+            line_percent: 100.0
+            title: "Ruled volume" 
+
+    # -------------------------------------------------------------------------
+    # 2D cross-section outlines at the specified stations.
+    # Useful for visual verification of polygon geometry and orientation.
+    # -------------------------------------------------------------------------               
+    - plot_section_2d:
+        stations: [station_ends]
+        output: [stdout, out/sections2d.jpg]
+    # -------------------------------------------------------------------------
+    # Full section analysis at selected stations.
+    # 'geometry' exports polygon vertices (CSV) compatible with sectionproperties.
+    # All other keys are section property keys from section_full_analysis().
+    # -------------------------------------------------------------------------        
     - section_selected_analysis:
         stations: station_3pt
         output:
           - stdout
-          - out/sel_properties.jpg
+          - out/sel_properties.txt
+        # geometry exports each station geometry with its sections properties  
         properties: [geometry,A,Cx,Cy,Ix,Iy,Ixy,Ip,I1,I2,rx,ry,Wx,Wy,J_sv_cell,Q_na,J_s_vroark,J_s_vroark_fidelity]
 
-    - plot_section_2d:
-        stations: [station_3pt]
-        output: [stdout, out/sections2d.jpg]
-
+    # -------------------------------------------------------------------------
+    # Continuous property variation plot along z.
+    # Samples internally between z0 and z1 — station sets are not used here.
+    # num_points controls the sampling density of the continuous field.
+    # -------------------------------------------------------------------------
     - plot_properties:
         # This action samples internally between z0 and z1; stations are not used.
         output: [stdout, out/properties.png]
         properties: [A,Iy,Ix,Ip]
         params:
           num_points: 80
-
+    # -------------------------------------------------------------------------
+    # Per-polygon weight law w(z) plot along the member axis.
+    # Shows the continuous variation of each polygon's participation factor.
+    # ----------------------------------------------------------------------          
+    - plot_weight:
+        output: [stdout,out/rectangle_weights.jpg]
+        params: {num_points: 120}  
+    # -------------------------------------------------------------------------
+    # Export the CSF model back to YAML format.
+    # Useful for archiving a specific geometry state or sharing with other tools.
+    # Must contain exactly two z values (boundary stations only).
+    # -------------------------------------------------------------------------        
+        
     - export_yaml:
         # Must contain exactly two z values.
         stations: [station_ends]
-        output: [out/exported_geometry.yaml]
-        
-
-    - plot_volume_3d:
+        output: [out/ectangle_geometry.yaml]
+    # -------------------------------------------------------------------------
+    # Area report broken down by polygon weight group.
+    # Reports both occupied area and homogenized (weight-adjusted) area.
+    # w_tol filters out polygons below the weight threshold.
+    # -------------------------------------------------------------------------        
+    - section_area_by_weight:
+        stations: station_ends
+        output:
+         - stdout
+         - out/rectangle_weight.txt
+        params:
+          w_tol: 0.0
+          include_per_polygon: false
+          fmt_display: ".6g"  
+    # -------------------------------------------------------------------------
+    # Volume report integrated along z using Gauss-Legendre quadrature.
+    # Reports both occupied and homogenized (weight-adjusted) volume.
+    # n_points controls the integration accuracy.
+    # -------------------------------------------------------------------------          
+    - volume:
+          stations: station_ends
+          output: [stdout, out/rectangle.txt]   # optional; if omitted -> [stdout]
           params:
-            line_percent: 100.0
-            title: "Ruled volume"    
+            n_points: 20           # optional (Gauss–Legendre points)
+            fmt_display: ".6f"     # optional
+            w_tol: 0.0             # optional; currently not used (kept for compatibility)
+    # -------------------------------------------------------------------------
+    # Evaluate and display the weight law at the specified stations.
+    # z-relative mode: t = (z - z0) / (z1 - z0) normalised to [0, 1].
+    # Useful for verifying lookup table interpolation before running the model.
+    # -------------------------------------------------------------------------
+    - weight_lab_zrelative:
+        stations:
+         - station_mid
+        weith_law:
+           - "T_lookup('w_variation.txt')"
+    # -------------------------------------------------------------------------
+    # Export to OpenSees TCL-compatible DATA file.
+    # Output is a plain-text file parseable by csf_opensees_check.py or
+    # any custom TCL/Python builder. NOT a Tcl script — do not source it.
+    # n_points defines the number of Gauss-Lobatto integration stations.
+    # -------------------------------------------------------------------------  
+    - write_opensees_geometry:
+        output: 
+          - out/rectangle_geometry.tcl # required, file-only (no stdout)
+        params:
+          n_points: 10 # required int
+          E_ref: 2.1e+11 # required float
+          nu: 0.30 # required float          
+    # -------------------------------------------------------------------------
+    # Export to general-purpose solver pack (SAP2000 / OpenSeesPy / other).
+    # Produces four fixed-width tables: solver input, section quality,
+    # torsion quality, station names. Also generates a property variation plot.
+    # n_intervals defines the number of Gauss-Lobatto intervals (stations = n+1).
+    # For full format documentation see: write_sap2000_template_pack.md
+    # -------------------------------------------------------------------------          
+    - write_sap2000_geometry:
+        #stations: station_3
+        output: [out/rectangle_template_pack.txt]
+        params:
+          n_intervals: 10
+          material_name: "S355"
+          E_ref: 2.2e+11
+          nu: 0.30
+          mode: "BOTH"
+          include_plot: True
+          plot_filename: "out/rectangle_variation.jpg"
+  
+  
+      
