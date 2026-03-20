@@ -10,7 +10,7 @@ CSF_ACTIONS:
         stations: station_3pt
         output:
           - stdout
-           - out/sel_properties.jpg]
+          - out/sel_properties.jpg
         properties: [geometry,A,Cx,Cy,Ix,Iy,Ixy,Ip,I1,I2,rx,ry,Wx,Wy,J_sv_cell,Q_na,J_s_vroark,J_s_vroark_fidelity]
 
     - plot_section_2d:
