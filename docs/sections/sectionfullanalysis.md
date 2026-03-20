@@ -624,11 +624,12 @@ By design, this routine:
 
 **Key:** `J_s_vroark`
 
-General-purpose torsional constant estimate obtained by mapping the composite section to an **equivalent solid rectangle** (from effective area and principal inertias) and applying **Roark’s torsion formula for a solid rectangle**.
+General-purpose torsional constant estimate obtained by mapping the composite section to an **equivalent solid rectangle** (from effective area and principal inertias) and applying **Roark's torsion formula for a solid rectangle**.
 
 Notes:
 - Tag-free: independent of `@cell/@wall`.
 - Not a thin-walled closed-cell (Bredt–Batho) formulation; closed/open thin-walled torsion is handled by the dedicated `@cell/@wall` paths.
+- The equivalent-rectangle mapping is a heuristic procedure internal to CSF. Only the final torsion formula is from Roark; no literature reference exists for the mapping step itself.
 
 ---
 
