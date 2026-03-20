@@ -619,7 +619,7 @@ By design, this routine:
 - is not intended for compact solids or general thick-walled regions.
 
 ---
-
+**
 ## 18. Torsional Constant (Roark – Equivalent Rectangle)
 
 **Key:** `J_s_vroark`
@@ -724,6 +724,6 @@ To make interpretation robust, include these plots together:
 3. `J_s_vroark(z)`
 4. `J_s_vroark_fidelity(z)`
 
-This combination avoids misreading isolated curves.
+This combination avoids misreading isolated curves.**
 
 ---
