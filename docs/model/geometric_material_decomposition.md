@@ -4,11 +4,11 @@
 
 ## What CSF Does
 
-There is nothing new in the mathematics behind CSF. Homogenization of composite sections (concrete/steel), area and moment integrals via Green's theorem, the Steiner parallel axis theorem - these are all standard tools, covered in any undergraduate structural engineering course.
+There is nothing new in the mathematics behind CSF. Homogenization of composite sections (concrete/steel), area and moment integrals via Green's theorem, the Steiner parallel axis theorem - these are all standard tools.
 
 What CSF contributes is not new theory but a specific **organisational model**: geometry and material are treated as two fully independent fields along $z$, and every zone carries its own weight law - separately from all others and separately from the geometry. This simple structure is what makes the formulation general without adding complexity.
 
-In practice, CSF evaluates all structural quantities — $A(z)$, $I(z)$, $EA(z)$, $EI(z)$, $GJ(z)$ — continuously along the element. The result is deterministic and traceable at every point, independent of the solver's mesh density.
+In practice, CSF evaluates all structural quantities - $A(z)$, $Ix(z)$, $Iy(z)$,... - continuously along the element. The result is deterministic and traceable at every point, independent of the solver's mesh density.
 
 ---
 
