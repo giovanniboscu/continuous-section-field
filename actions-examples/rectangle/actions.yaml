@@ -19,7 +19,7 @@ CSF_ACTIONS:
     - plot_properties:
         # This action samples internally between z0 and z1; stations are not used.
         output: [stdout, out/properties.png]
-        properties: [A, Ix, Iy, Cx, Cy]
+        properties: [geometry,A,Cx,Cy,Ix,Iy,Ixy,Ip,I1,I2,rx,ry,Wx,Wy,J_sv_cell,Q_na]
         params:
           num_points: 80
 
