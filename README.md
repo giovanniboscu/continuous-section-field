@@ -267,9 +267,6 @@ pip install "csfpy[sp]"
 
 ---
 
-
----
-
 ## Cross-sectional properties 
 
 Section properties (area, inertia) are computed from geometry as:
@@ -277,7 +274,6 @@ Section properties (area, inertia) are computed from geometry as:
 $$
 \text{Property}(z) = \sum_k w_k \, \text{Property}_k(z)
 $$
-
 
 
 
