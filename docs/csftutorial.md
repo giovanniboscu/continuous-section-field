@@ -96,7 +96,7 @@ CSF:
 From inside `my_case/`:
 
 ```bash
-python3 -m csf.CSFActions geometry.yaml  action.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 ### 1.2 Expected output
