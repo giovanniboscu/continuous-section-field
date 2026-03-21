@@ -2,6 +2,10 @@
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
+[project.urls]
+Homepage = "https://github.com/giovanniboscu/continuous-section-field"
+Repository = "https://github.com/giovanniboscu/continuous-section-field"
+
 [project]
 name = "csfpy"
 version = "0.1.0"
@@ -22,9 +26,13 @@ dependencies = [
     "numpy",
     "matplotlib",
     "PyYAML>=6.0",
-    "opensees; sys_platform == 'win32'",
-    "openseespy; sys_platform != 'win32'"
+    "openseespy"
 ]
+
+
+[project.scripts]
+csf-actions = "csf.CSFActions:main"
+
 
 [tool.setuptools]
 package-dir = {"" = "src"}
