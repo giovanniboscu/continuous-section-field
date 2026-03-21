@@ -150,52 +150,127 @@ CSFStacked is a container that stacks multiple `ContinuousSectionField` segments
 It adds a practical layer on top of multiple CSF segments: junctions are handled deterministically and you can query sections/properties anywhere with a single global API (section(z), section_full_analysis(z))
 
 ---
-## 🛠 Installation & Quick Start
+## 🛠 Installation
 
-To use the **CSF** engine, it is recommended to work inside a virtual environment.
-
-### Environment Setup (Linux & Windows)
+### Option A — Install directly from GitHub
 
 ```bash
-LINUX
-# Clone the repository
+python3 -m venv .venv
+source .venv/bin/activate
+pip install git+https://github.com/giovanniboscu/continuous-section-field.git
+```
+
+### Option B — Clone the repository and install locally
+
+```bash
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
+python3 -m venv .venv
+source .venv/bin/activate
+pip install .
+```
 
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate
+### Option C — Local editable install (development)
 
-# Install in editable mode
+```bash
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -e .
-python3 example/nrel_5mw_tower.py 
+```
+
+---
+
+## Optional Features
+
+Some tools require additional dependencies and are not installed by default.
+
+### SectionProperties-based tools (`csf_sp`)
+
+```bash
+pip install "csfpy[sp]"
+```
+
+> `csf_sp` is an optional tool and depends on external libraries such as `shapely` and `sectionproperties`.
+
+---
+
+## Basic Usage
+
+### Run the core YAML-driven workflow
+
+> The paths `geometry.yaml` and `actions.yaml` are resolved relative to the current working directory.
+
+```bash
+python3 -m csf.CSFActions geometry.yaml actions.yaml
+```
+
+### Run a verified example from the repository
+
+
+> This example requires the repository to be cloned locally (see Installation Option B or C).
+
+```bash
+cd  actions-examples/rectangle/
+mkdir -p out
+python -m csf.CSFActions geometry.yaml actions.yaml
+```
+
+## Tested Examples
+
+### Linux / macOS
+
+```bash
+python3 example/nrel_5mw_tower.py
 python3 example/cylinder_withcheck.py
 python3 example/csf_rotated_validation_benchmark.py
+
 cd actions-examples/stell_degradated_model
-
+mkdir -p out
 python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
+```
 
-WINDOWS
+---
 
+### Windows
+
+```powershell
 # Clone the repository
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 
 # Create and activate virtual environment
-python3 -m venv venv
+python -m venv venv
 .\venv\Scripts\activate
 
 # Install in editable mode
 pip install -e .
-python3 example\nrel_5mw_tower.py 
-python3 example\cylinder_withcheck.py
-python3 example\csf_rotated_validation_benchmark.py
-python3 .\example\tsection_lab.py
 
+# Run examples
+python .\example\nrel_5mw_tower.py
+python .\example\cylinder_withcheck.py
+python .\example\csf_rotated_validation_benchmark.py
+python .\example\tsection_lab.py
+
+# Run CSFActions example
 cd actions-examples\stell_degradated_model
-
-python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
+mkdir -p out
+python -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 ```
+
+---
+
+## Package Notes
+
+- Distribution name for installation: `csfpy`
+- Python import name: `csf`
+- Repository directory used in the commands above: `continuous-section-field`
+
+```python
+import csf
+```
+
 ---
 
 ## Cross-sectional properties 
