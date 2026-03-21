@@ -4,3 +4,4 @@ venv/
 .env
 *.py[cod]
 #fine
+dist/

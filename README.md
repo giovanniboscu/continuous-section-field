@@ -152,7 +152,15 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 ---
 ## 🛠 Installation
 
-### Option A — Install directly from GitHub
+### Option A — Install from PyPI (recommended)
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install csfpy
+```
+
+### Option B — Install directly from GitHub
 
 ```bash
 python3 -m venv .venv
@@ -160,7 +168,7 @@ source .venv/bin/activate
 pip install git+https://github.com/giovanniboscu/continuous-section-field.git
 ```
 
-### Option B — Clone the repository and install locally
+### Option C — Clone the repository and install locally
 
 ```bash
 git clone https://github.com/giovanniboscu/continuous-section-field.git
@@ -170,7 +178,7 @@ source .venv/bin/activate
 pip install .
 ```
 
-### Option C — Local editable install (development)
+### Option D — Local editable install (development)
 
 ```bash
 git clone https://github.com/giovanniboscu/continuous-section-field.git
@@ -208,14 +216,15 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 
 ### Run a verified example from the repository
 
-
 > This example requires the repository to be cloned locally (see Installation Option B or C).
 
 ```bash
-cd  actions-examples/rectangle/
+cd actions-examples/rectangle/
 mkdir -p out
 python -m csf.CSFActions geometry.yaml actions.yaml
 ```
+
+---
 
 ## Tested Examples
 
@@ -236,24 +245,19 @@ python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_a
 ### Windows
 
 ```powershell
-# Clone the repository
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 
-# Create and activate virtual environment
 python -m venv venv
 .\venv\Scripts\activate
 
-# Install in editable mode
 pip install -e .
 
-# Run examples
 python .\example\nrel_5mw_tower.py
 python .\example\cylinder_withcheck.py
 python .\example\csf_rotated_validation_benchmark.py
 python .\example\tsection_lab.py
 
-# Run CSFActions example
 cd actions-examples\stell_degradated_model
 mkdir -p out
 python -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
