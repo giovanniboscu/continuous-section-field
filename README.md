@@ -100,6 +100,14 @@ CSF_ACTIONS:
 
 ```
 then run 
+linux /Mac 
+```
+python3 -m venv venv
+source venv/bin/activate
+pip install csfpy
+csf-actions geometry.yaml actions.yaml
+```
+Windows
 ```
 python3 -m venv venv
 source venv/bin/activate
@@ -155,6 +163,7 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 
 ---
 ## 🛠 Installation
+Linux / Mac
 
 ### Option A — Install from PyPI (recommended)
 
