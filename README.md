@@ -101,14 +101,14 @@ CSF_ACTIONS:
 ```
 then run 
 
-linux /Mac 
+**linux /Mac**
 ```
 python3 -m venv venv
 source venv/bin/activate
 pip install csfpy
 csf-actions geometry.yaml actions.yaml
 ```
-Windows
+**Windows**
 ```
 python3 -m venv venv
 source venv/bin/activate
