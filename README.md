@@ -101,8 +101,8 @@ CSF_ACTIONS:
 ```
 then run 
 ```
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 pip install csfpy
 csf-actions geometry.yaml actions.yaml
 ```
