@@ -30,13 +30,13 @@ It computes continuous section property fields - $A(z)$, $Ix(z)$, $Iy(z)$...  - 
 
 ---
 
+CSF combines:
 
-CSF combins:
+- **Geometry field**: arbitrary polygonal sections defined at stations (`S0`, `S1`) with continuous interpolation for tapered or varying shapes.
 
-- **Geometry field**: arbitrary polygonal sections at stations ( `S0`, `S1`) with interpolation for tapered / varying shapes.
-- **Weight field**: per-polygon custom participation factor $w_i(z)$ along z that scales each region’s effective contribution (not self-weight). [see Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case.
-
-
+- **Weight field**: per-polygon participation factor $w_i(z)$ along the longitudinal axis, scaling each region’s effective contribution to section properties (not physical weight or self-weight).  
+  See [Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case.
+  
 ---
 ## CSF accepts two input files: geometry.yaml (cross-section definition) and actions.yaml (post-processing pipeline).
 
