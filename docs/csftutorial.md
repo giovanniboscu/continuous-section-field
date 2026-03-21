@@ -5,19 +5,6 @@ In these tutorials, the working directory is set **immediately after cloning** t
 > **[rectangle/](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/rectangle)  Complete worked example covering all available actions on a tapered rectangular section — plots, reports, solver exports, and three weight law alternatives. Run with `python3 -m csf.CSFActions geometry.yaml actions.yaml`.**
 
 
-```bash
-# Clone the repository
-git clone https://github.com/giovanniboscu/continuous-section-field.git
-cd continuous-section-fieldsap200
-
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install in editable mode
-pip install -e .
-```
-
 After the installation, create your case folder structure (outside or inside the repo, depending on your workflow), for example:
 
 ```text
