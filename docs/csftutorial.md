@@ -102,6 +102,7 @@ csf-actions geometry.yaml actions.yaml
 ### 1.2 Expected output
 
 what you will see
+
 ![Figure_1](https://github.com/user-attachments/assets/2f4daf1a-e309-4834-9499-d43fa3d9d087)
 
 ```
