@@ -162,27 +162,13 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 python3 -m venv venv
 source venv/bin/activate
 pip install csfpy
+
+ # you need both geometry.yaml and actions.yaml files
+csf-actions geometry.yaml actions.yaml
+
 ```
 
-### Option B — Install directly from GitHub
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install git+https://github.com/giovanniboscu/continuous-section-field.git
-```
-
-### Option C — Clone the repository and install locally
-
-```bash
-git clone https://github.com/giovanniboscu/continuous-section-field.git
-cd continuous-section-field
-python3 -m venv venv
-source venv/bin/activate
-pip install .
-```
-
-### Option D — Local editable install (development)
+### Option B — Local editable install (development)
 
 ```bash
 git clone https://github.com/giovanniboscu/continuous-section-field.git
@@ -190,6 +176,15 @@ cd continuous-section-field
 python3 -m venv venv
 source venv/bin/activate
 pip install -e .
+
+python3 example/nrel_5mw_tower.py
+python3 example/cylinder_withcheck.py
+python3 example/csf_rotated_validation_benchmark.py
+
+cd actions-examples/stell_degradated_model
+mkdir -p out
+python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
+
 ```
 
 ---
@@ -208,45 +203,22 @@ pip install "csfpy[sp]"
 
 ---
 
-## Basic Usage
-
-### Run the core YAML-driven workflow
-
-> The paths `geometry.yaml` and `actions.yaml` are resolved relative to the current working directory.
-
-```bash
-python3 -m csf.CSFActions geometry.yaml actions.yaml
-```
-
-### Run a verified example from the repository
-
-> This example requires the repository to be cloned locally (see Installation Option B or C).
-
-```bash
-cd actions-examples/rectangle/
-mkdir -p out
-python -m csf.CSFActions geometry.yaml actions.yaml
-```
-
----
-
-## Tested Examples
-
-### Linux / macOS
-
-```bash
-python3 example/nrel_5mw_tower.py
-python3 example/cylinder_withcheck.py
-python3 example/csf_rotated_validation_benchmark.py
-
-cd actions-examples/stell_degradated_model
-mkdir -p out
-python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
-```
-
----
-
 ### Windows
+
+
+### Option 1 — Install from PyPI (recommended)
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install csfpy
+
+ # you need both geometry.yaml and actions.yaml files
+csf-actions geometry.yaml actions.yaml
+
+```
+
+### Option 2 — Local editable install (development)
 
 ```powershell
 git clone https://github.com/giovanniboscu/continuous-section-field.git
@@ -263,7 +235,7 @@ python .\example\csf_rotated_validation_benchmark.py
 python .\example\tsection_lab.py
 
 cd actions-examples\stell_degradated_model
-mkdir -p out
+
 python -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 ```
 
