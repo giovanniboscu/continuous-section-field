@@ -101,7 +101,7 @@ CSF_ACTIONS:
 ```
 then run 
 
-**linux /Mac**
+**linux / Mac**
 ```
 python3 -m venv venv
 source venv/bin/activate
