@@ -28,6 +28,14 @@ It computes continuous section property fields - $A(z)$, $Ix(z)$, $Iy(z)$...  - 
 
 ![Twisted Tower CSF Analysis](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/morphingtower)
 
+---
+
+
+CSF models a member as a continuous field along the axis `z`, combining:
+
+- **Geometry field**: arbitrary polygonal sections at stations ( `S0`, `S1`) with interpolation for tapered / varying shapes.
+- **Weight field**: per-polygon custom participation factor $w_i(z)$ along z that scales each region’s effective contribution (not self-weight). [see Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case.
+
 
 ---
 ## CSF accepts two input files: geometry.yaml (cross-section definition) and actions.yaml (post-processing pipeline).
@@ -131,19 +139,10 @@ It can be imported and used programmatically to define geometries, evaluate sect
 
 [Full Python API example - Tapered T-beam](#worked-example-continuously-tapered-t-beam)
 
+
 ---
 
-
-
-CSF models a member as a continuous field along the axis `z`, combining:
-
-- **Geometry field**: arbitrary polygonal sections at stations ( `S0`, `S1`) with interpolation for tapered / varying shapes.
-- **Weight field**: per-polygon custom participation factor $w_i(z)$ along z that scales each region’s effective contribution (not self-weight). [see Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case.
-
-
-
-### [Conceptual Model](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/geometric_material_decomposition.md)
-
+## [Conceptual Model](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/geometric_material_decomposition.md)
 
 
 ## Key Features
