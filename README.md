@@ -36,7 +36,11 @@ CSF combines:
 
 - **Weight field**: per-polygon participation factor $w_i(z)$ along the longitudinal axis, scaling each region’s effective contribution to section properties (not physical weight or self-weight).  
   See [Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case.
+
   
+## [Conceptual Model](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/geometric_material_decomposition.md)
+
+
 ---
 ## CSF accepts two input files: geometry.yaml (cross-section definition) and actions.yaml (post-processing pipeline).
 
@@ -139,11 +143,7 @@ It can be imported and used programmatically to define geometries, evaluate sect
 
 [Full Python API example - Tapered T-beam](#worked-example-continuously-tapered-t-beam)
 
-
 ---
-
-## [Conceptual Model](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/geometric_material_decomposition.md)
-
 
 ## Key Features
 
