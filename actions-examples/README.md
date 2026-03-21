@@ -60,9 +60,8 @@ Some actions use explicit `stations`, while others sample internally and do **no
 From this directory:
 
 ```bash
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
-
 Outputs (plots, CSV/TXT reports, exported YAML, templates, etc.) are written to the paths listed under each action’s `output`.
 
 ---
