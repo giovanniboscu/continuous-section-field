@@ -17,12 +17,12 @@ mycase/
   out/                # create this folder yourself
 ```
 
-1. **`geometry.yaml`** — defines the member geometry as a continuous field along the axis `z`  
+1. **`geometry.yaml`** - defines the member geometry as a continuous field along the axis `z`  
    - end (or intermediate) sections as **arbitrary polygons**  
    - optional multi-polygon sections (multi-cell shapes)  
    - per-polygon metadata (e.g., weights for multi-material / void logic)
 
-2. **`actions.yaml`** — declares *what CSF must do* (no code required)  
+2. **`actions.yaml`** - declares *what CSF must do* (no code required)  
    - compute section properties and derived stiffness/mass fields  
    - produce plots/visualizations and reports  
    - export solver-ready station data (e.g., for force-based beam formulations)
@@ -1255,7 +1255,7 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 ---
 
 
-# `write_sap2000_geometry` — Action Reference
+# `write_sap2000_geometry` - Action Reference
 
 ### 6.11 `write_sap2000_geometry`
 
@@ -1263,19 +1263,19 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 
 Exports a CSF field to a structured plain-text file containing four fixed-width
 tables of section properties evaluated at the requested stations. The output is a
-**general-purpose solver export** — it can be used as input for SAP2000, OpenSeesPy,
+**general-purpose solver export** - it can be used as input for SAP2000, OpenSeesPy,
 or any beam solver that accepts tabular section data.
 
 For full documentation of the output format, column definitions, and downstream use,
-see: [`write_sap2000_template_pack` — Reference Documentation](write_sap2000_template_pack.md).
+see: [`write_sap2000_template_pack` - Reference Documentation](write_sap2000_template_pack.md).
 
 **Station generation**
 
 Two modes are available:
 
-- **`z_values` provided** — stations are evaluated at the explicit list of z-coordinates.
+- **`z_values` provided** - stations are evaluated at the explicit list of z-coordinates.
   `n_intervals` is ignored. Values must be strictly increasing and within field bounds.
-- **`z_values` not provided** — stations are the `n_intervals + 1` Gauss-Lobatto nodes
+- **`z_values` not provided** - stations are the `n_intervals + 1` Gauss-Lobatto nodes
   over `[z_start, z_end]`. These are the correct integration points for
   `forceBeamColumn` elements in OpenSeesPy.
 
@@ -1318,19 +1318,19 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 |-----------|------|---------|-------------|
 | `n_intervals` | `int` | `20` | Gauss-Lobatto intervals; stations = `n_intervals + 1`. Ignored when `z_values` is provided. |
 | `material_name` | `str` | `"S355"` | Informational material label written to the file header. |
-| `E_ref` | `float` | — | Reference Young's modulus. Required with `nu` to populate the `G_ref` column. |
-| `nu` | `float` | — | Poisson's ratio. Used to derive `G_ref = E_ref / (2*(1+nu))`. |
+| `E_ref` | `float` | - | Reference Young's modulus. Required with `nu` to populate the `G_ref` column. |
+| `nu` | `float` | - | Poisson's ratio. Used to derive `G_ref = E_ref / (2*(1+nu))`. |
 | `mode` | `str` | `"BOTH"` | Retained for API compatibility; not used in output. |
 | `include_plot` | `bool` | `True` | If `True`, saves a plot of section property variation along z. |
 | `plot_filename` | `str` | `"section_variation.png"` | Output path for the property plot. |
 | `show_plot` | `bool` | `False` | If `True`, displays the plot interactively. |
-| `z_values` | `list` | — | Explicit station list. Overrides `n_intervals` when provided. |
+| `z_values` | `list` | - | Explicit station list. Overrides `n_intervals` when provided. |
 | `float_fmt` | `str` | `".9g"` | Format spec for all numeric output fields. |
 
 **Notes**
 
 - `E_ref` and `nu` must be provided **together** to populate the `G_ref` column.
-  If either is missing, `G_ref` is blank in the output — the file is still valid
+  If either is missing, `G_ref` is blank in the output - the file is still valid
   for SAP2000 (material defined separately) but requires `MATERIAL_INPUT_MODE='override'`
   in `csf_template_pack_opensees.py`.
 - `E_ref` and `nu` are solver input parameters only, independent of the CSF weight
@@ -1363,19 +1363,19 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 
 | Action | Stations | Extra required keys (outside `params`) | Params (type → default) | Output behavior |
 |---|---|---|---|---|
-| `section_full_analysis` | REQUIRED | — | `fmt_display` (str → `.8f`) | stdout report; `.csv` table; other text file |
+| `section_full_analysis` | REQUIRED | - | `fmt_display` (str → `.8f`) | stdout report; `.csv` table; other text file |
 | `section_selected_analysis` | REQUIRED | `properties` (list, non-empty) | `fmt_display` (str → `.8f`) | compact stdout; `.csv` (z + selected keys); other text file |
-| `plot_section_2d` | REQUIRED | — | `show_ids` (bool → true), `show_weights` (bool → true), `show_vertex_ids` (bool → false), `title` (str → null), `dpi` (int → 150) | stdout shows at end; image files saved if provided |
-| `plot_volume_3d` | FORBIDDEN | — | `show_end_sections` (bool → true), `line_percent` (float → 100.0), `seed` (int → 0), `title` (str → "Ruled volume (vertex-connection lines)") | display-only (stdout); no file saving by design |
+| `plot_section_2d` | REQUIRED | - | `show_ids` (bool → true), `show_weights` (bool → true), `show_vertex_ids` (bool → false), `title` (str → null), `dpi` (int → 150) | stdout shows at end; image files saved if provided |
+| `plot_volume_3d` | FORBIDDEN | - | `show_end_sections` (bool → true), `line_percent` (float → 100.0), `seed` (int → 0), `title` (str → "Ruled volume (vertex-connection lines)") | display-only (stdout); no file saving by design |
 | `plot_properties` | FORBIDDEN | `properties` (list, non-empty) | `num_points` (int → 100) | stdout display unless file-only; image saved if path given |
-| `plot_weight` | FORBIDDEN | — | `num_points` (int → 100) | stdout display unless file-only; image saved if path given |
-| `weight_law_zrelative` | REQUIRED | `weight_law` (list[str], non-empty) | — | text-only; stdout and/or text files |
-| `export_yaml` | REQUIRED (exactly 2 z) | — | — | file-only; exactly one `.yaml`/`.yml`; stdout forbidden |
-| `write_opensees_geometry` | FORBIDDEN | — | `n_points` (int, required), `E_ref` (float, required), `nu` (float, required) | file-only; exactly one `.tcl`; stdout forbidden |
-| `write_sap2000_geometry` | FORBIDDEN | — | `n_intervals` (int, required), `E_ref` (float, required), `nu` (float, required), `material_name` (str → `"S355"`), `mode` (str → `"BOTH"`), `include_plot` (bool → true), `plot_filename` (str → `"section_variation.png"`) | file-only; exactly one `.txt`; stdout forbidden |
-| `write_samp2000_geometry` | FORBIDDEN | — | same as `write_sap2000_geometry` | alias (typo tolerance) |
-| `volume` | REQUIRED (typically 2 edge stations) | — | `n_points` (int → 200), `fmt_display` (str → `.6f`), `w_tol` (float → `0.0`) | stdout report and/or text file; per‑polygon occupied and homogenized volumes |
-| `section_area_by_weight` | REQUIRED | — | `w_tol` (float → `0.0`), `include_per_polygon` (bool → true) | stdout report and/or `.csv`/text; accountant‑style per‑polygon area listing |
+| `plot_weight` | FORBIDDEN | - | `num_points` (int → 100) | stdout display unless file-only; image saved if path given |
+| `weight_law_zrelative` | REQUIRED | `weight_law` (list[str], non-empty) | - | text-only; stdout and/or text files |
+| `export_yaml` | REQUIRED (exactly 2 z) | - | - | file-only; exactly one `.yaml`/`.yml`; stdout forbidden |
+| `write_opensees_geometry` | FORBIDDEN | - | `n_points` (int, required), `E_ref` (float, required), `nu` (float, required) | file-only; exactly one `.tcl`; stdout forbidden |
+| `write_sap2000_geometry` | FORBIDDEN | - | `n_intervals` (int, required), `E_ref` (float, required), `nu` (float, required), `material_name` (str → `"S355"`), `mode` (str → `"BOTH"`), `include_plot` (bool → true), `plot_filename` (str → `"section_variation.png"`) | file-only; exactly one `.txt`; stdout forbidden |
+| `write_samp2000_geometry` | FORBIDDEN | - | same as `write_sap2000_geometry` | alias (typo tolerance) |
+| `volume` | REQUIRED (typically 2 edge stations) | - | `n_points` (int → 200), `fmt_display` (str → `.6f`), `w_tol` (float → `0.0`) | stdout report and/or text file; per‑polygon occupied and homogenized volumes |
+| `section_area_by_weight` | REQUIRED | - | `w_tol` (float → `0.0`), `include_per_polygon` (bool → true) | stdout report and/or `.csv`/text; accountant‑style per‑polygon area listing |
 
 ---
 
