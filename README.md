@@ -159,16 +159,16 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 ### Option A — Install from PyPI (recommended)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 pip install csfpy
 ```
 
 ### Option B — Install directly from GitHub
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 pip install git+https://github.com/giovanniboscu/continuous-section-field.git
 ```
 
@@ -177,8 +177,8 @@ pip install git+https://github.com/giovanniboscu/continuous-section-field.git
 ```bash
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 pip install .
 ```
 
@@ -187,8 +187,8 @@ pip install .
 ```bash
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 pip install -e .
 ```
 
