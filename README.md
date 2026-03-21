@@ -166,7 +166,7 @@ It adds a practical layer on top of multiple CSF segments: junctions are handled
 ## 🛠 Installation
 Linux / Mac
 
-### Option A — Install from PyPI (recommended)
+### Option A - Install from PyPI (recommended)
 
 ```bash
 python3 -m venv venv
@@ -178,7 +178,7 @@ csf-actions geometry.yaml actions.yaml
 
 ```
 
-### Option B — Local editable install (development)
+### Option B - Local editable install (development)
 
 ```bash
 git clone https://github.com/giovanniboscu/continuous-section-field.git
@@ -201,7 +201,7 @@ python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_a
 ### Windows
 
 
-### Option 1 — Install from PyPI (recommended)
+### Option 1 - Install from PyPI (recommended)
 
 ```bash
 python3 -m venv venv
@@ -213,7 +213,7 @@ csf-actions geometry.yaml actions.yaml
 
 ```
 
-### Option 2 — Local editable install (development)
+### Option 2 - Local editable install (development)
 
 ```powershell
 git clone https://github.com/giovanniboscu/continuous-section-field.git
