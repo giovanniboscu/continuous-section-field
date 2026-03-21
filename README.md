@@ -31,7 +31,7 @@ It computes continuous section property fields - $A(z)$, $Ix(z)$, $Iy(z)$...  - 
 ---
 
 
-CSF models a member as a continuous field along the axis `z`, combining:
+CSF combins:
 
 - **Geometry field**: arbitrary polygonal sections at stations ( `S0`, `S1`) with interpolation for tapered / varying shapes.
 - **Weight field**: per-polygon custom participation factor $w_i(z)$ along z that scales each region’s effective contribution (not self-weight). [see Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case.
