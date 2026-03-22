@@ -222,6 +222,80 @@ evaluated consistently with the same weighted section model.
 
 **Key:** `J_sv_cell`   `J_sv_wall` 
 
+### Thin-walled torsion tags: `@cell` and `@wall`
+
+In CSF, `@cell` and `@wall` are **tags applied to polygon names**.\
+They classify specific polygons for dedicated thin-walled torsion
+calculations.
+
+-   `@cell` → polygon is treated as a **closed thin-walled cell**
+-   `@wall` → polygon is treated as an **open thin-walled wall**
+
+These tags are **not geometric operations**: they do not modify the
+shape.\
+They only define which polygons are included in the corresponding
+torsional path.
+
+Polygons without these tags are **ignored** in `J_sv` computations.
+
+------------------------------------------------------------------------
+
+### Behavior
+
+`J_sv` (both `@cell` and `@wall`) is computed exclusively from the
+tagged polygons:
+
+-   only their **midline geometry** and **thickness** are used
+-   each tagged polygon is treated as an **independent entity**
+-   **no interaction** with other polygons (including
+    nesting/composition)
+
+Any additional polygons or inclusions (e.g. rebars, inner shapes):
+
+-   do **not** modify the wall path
+-   do **not** contribute to `J_sv`
+-   may still contribute to homogenized/global properties (`A`, `Ix`,
+    `Iy`, ...)
+
+------------------------------------------------------------------------
+
+### Example
+
+``` yaml
+polygons:
+  - name: outer_shell@cell
+    points: [...]
+    t: 0.30
+
+  - name: inner_void
+    points: [...]
+    w: 0.0
+
+  - name: rebar_row_1
+    points: [...]
+    w: 7.85
+
+  - name: rebar_row_2
+    points: [...]
+    w: 7.85
+```
+
+Interpretation:
+
+-   `outer_shell@cell` → used to compute `J_sv_cell`
+-   `inner_void` → ignored in `J_sv_cell` (even if inside)
+-   `rebar_row_*` → ignored in `J_sv_cell`, but included in `A`, `Ix`,
+    `Iy`
+
+------------------------------------------------------------------------
+---
+
+### Key point
+
+`@cell` / `@wall` define **which polygons enter the torsional model**,\
+not how the global geometry is composed.
+
+
 ### Torsional contribution of `@cell` and `@wall` polygons
 
 The torsional stiffness is computed as the sum of the contributions of all polygons participating in the torsion path.
