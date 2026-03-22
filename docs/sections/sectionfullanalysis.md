@@ -287,7 +287,6 @@ Interpretation:
 -   `rebar_row_*` → ignored in `J_sv_cell`, but included in `A`, `Ix`,
     `Iy`
 
-------------------------------------------------------------------------
 ---
 
 ### Key point
