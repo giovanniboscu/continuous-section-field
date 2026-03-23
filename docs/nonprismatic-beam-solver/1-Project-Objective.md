@@ -1,4 +1,4 @@
-# 1. Project Objective
+# 1. Project scope and objectives
 
 This project aims to develop a numerical solver based on the non-prismatic beam model introduced by **Giuseppe Balduzzi** and co-authors, with explicit recognition of the originality and importance of their formulation for tapered and non-prismatic members.
 
