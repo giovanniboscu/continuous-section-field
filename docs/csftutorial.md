@@ -752,7 +752,41 @@ csf-actions geometry.yaml actions.yaml
 - `properties` missing → error.
 - If you omit `stdout` from output, the plot is not shown (file-only).
 ---
+## Area and Volume Reports in CSF
 
+In CSF reports, polygon areas and volumes are always **net of contained elements**.
+
+This means that:
+- inner elements (e.g. rebars, voids, inclusions) are **geometrically removed** from their container
+- the container polygon represents a **true net domain** (with actual holes)
+
+As a consequence:
+
+- reported values are always **absolute geometric quantities**
+- each polygon is treated as an **independent contribution**
+
+The global quantities are therefore computed as:
+
+```
+Total = Σ (A_i * w_i)
+```
+
+or
+
+```
+Total = Σ (V_i * w_i)
+```
+
+where:
+- `A_i`, `V_i` are **net (true) geometric measures**
+- `w_i` are the **absolute weights assigned in the input model**
+
+This guarantees:
+- no double counting
+- direct interpretability of reports
+- consistency between geometry and weighting
+
+---
 ### 6.6 `section_area_by_weight`
 
 **Concept**
