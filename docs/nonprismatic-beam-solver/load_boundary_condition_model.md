@@ -2,6 +2,7 @@
 
 **Status:** first draft  
 **Scope:** preliminary description of the load model and boundary-condition model underlying the original Balduzzi 2016 planar formulation.  
+
 ## 1. Purpose
 
 This document defines the external actions and boundary conditions applied to the reduced 2D beam domain in the original Balduzzi 2016 formulation.
@@ -54,26 +55,13 @@ These are obtained from the distributed body load over the reduced cross-section
 - `m(x) = -∫_{A(x)} y f_x(x,y) dy`
 - `p(x) = ∫_{A(x)} f_y(x,y) dy`
 
+`f(x,y)` = distributed body load over the reduced 2D beam domain
 
- `f(x,y)` = distributed body load over the reduced 2D beam domain
- 
- `f_x(x,y)` = horizontal component of `f(x,y)`
- 
- `f_y(x,y)` = vertical component of `f(x,y)`
+`f_x(x,y)` = horizontal component of `f(x,y)`
+
+`f_y(x,y)` = vertical component of `f(x,y)`
 
 These quantities already belong to the reduced beam formulation. They are not the full external actions of the original 2D problem, but their projection onto the beam model.
-
-## 6. Scope of this document
-
-At the current stage, the load / boundary-condition model includes:
-
-- the partition of the boundary into constrained and loaded parts;
-- the prescribed displacement field on the constrained boundary;
-- the body load over the reduced 2D domain;
-- the boundary traction on the loaded boundary;
-- the resulting reduced beam loads `q(x)`, `m(x)`, and `p(x)`.
-
-The explicit use of generalized beam unknowns and the numerical enforcement of boundary conditions belong to later documents.
 
 ## Main reference
 
