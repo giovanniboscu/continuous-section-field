@@ -42,7 +42,7 @@ python3 stacked_csf_example.py
 This is useful when a member is naturally described by **multiple consecutive CSF fields** (e.g., left taper + constant middle + right taper, segmented blades, repairs/patch segments, etc.).
 
 ---
-## 6) PyCBA integration 
+## PyCBA integration 
 
 CSFStacked integration with **PyCBA**: sample `EI(z)` (or other section properties) from the stacked CSF along the global axis and feed them into a 1D beam model to run fast deflection checks on members with **piecewise-varying stiffness**.  
 The example uses midpoint sampling per solver element to avoid ambiguity at segment junctions and to keep the mapping `z → segment → properties` deterministic.
