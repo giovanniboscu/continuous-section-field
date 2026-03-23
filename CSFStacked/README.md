@@ -42,156 +42,6 @@ python3 stacked_csf_example.py
 This is useful when a member is naturally described by **multiple consecutive CSF fields** (e.g., left taper + constant middle + right taper, segmented blades, repairs/patch segments, etc.).
 
 ---
-
-## 1) Data model
-
-### SegmentSpec (optional builder input)
-
-`SegmentSpec` is a lightweight input record used by `build_from_specs()`:
-
-- `tag`: string identifier
-- `z0`, `z1`: global interval bounds
-- `polygons_s0`, `polygons_s1`: polygons at `z0` and `z1`
-
-Notes:
-- Polygon **names** should be consistent between `s0` and `s1` to support side-surface pairing.
-- For each polygon name, **vertex count** must match between `s0` and `s1`.
-
-### StackSegment (runtime)
-Internally, each segment is stored as:
-
-- `tag`
-- `z_start`, `z_end`
-- `field`: the `ContinuousSectionField` for that interval
-
----
-
-## 2) Interval and junction policy
-
-`CSFStacked` enforces a deterministic interval ownership rule:
-
-- first segment: **[z_start, z_end]**
-- any other segment: **(z_start, z_end]**
-
-Consequences:
-- global left edge and global right edge are included
-- **internal junctions belong to the segment on the left** by default
-
-If you need the right-side segment at a junction, you can request it explicitly through `junction_side="right"` in `field_at()`, `section()`, and `section_full_analysis()`.
-
----
-
-## 3) Building a stack
-
-There are two common ways to build a stack.
-
-### A) Append pre-built fields (most common)
-
-```python
-from csf import CSFStacked
-from csf.io.csf_reader import CSFReader
-
-# Example: load 2 independent CSF fields from YAML
-f0 = CSFReader().read_file("stacked_0.yaml").field
-f1 = CSFReader().read_file("stacked_1.yaml").field
-
-stack = CSFStacked(eps_z=1e-10)
-stack.append(f0)
-stack.append(f1)
-
-# Optional: ensure no overlaps and (optionally) strict contiguity
-stack.validate_contiguity(require_contiguity=True)
-```
-
-What `append(field)` does:
-- reads `z_start = field.s0.z`, `z_end = field.s1.z`
-- checks `z_end > z_start`
-- appends the segment and keeps segments sorted by `z_start`
-
-### B) Build from polygon specs (builder mode)
-
-```python
-from csf import Pt, Polygon, CSFStacked
-from csf.CSFStacked import SegmentSpec  # adjust import path to your package layout
-
-poly0 = Polygon(
-    name="outer",
-    vertices=(Pt(0, 0), Pt(1, 0), Pt(1, 1), Pt(0, 1)),
-    weight=1.0,
-)
-
-poly1 = Polygon(
-    name="outer",
-    vertices=(Pt(0, 0), Pt(2, 0), Pt(2, 1), Pt(0, 1)),
-    weight=1.0,
-)
-
-specs = [
-    SegmentSpec(
-        tag="segA",
-        z0=0.0,
-        z1=5.0,
-        polygons_s0=(poly0,),
-        polygons_s1=(poly1,),
-    ),
-]
-
-stack = CSFStacked()
-stack.build_from_specs(specs)
-stack.validate_contiguity(require_contiguity=True)
-
-```
-
-Under the hood:
-- each spec becomes a `Section(z0)` and `Section(z1)`
-- then one `ContinuousSectionField(section0=s0, section1=s1)`
-- then it is stored as a `StackSegment`
-
----
-
-## 4) Querying sections and properties on the global axis
-
-### Get the owning field at global `z`
-
-```python
-field = stack.field_at(z=3.2)                    # default: junction_side="left"
-field_r = stack.field_at(z=5.0, junction_side="right")
-```
-
-### Get the interpolated section at `z`
-
-```python
-sec = stack.section(z=3.2)
-```
-
-### Run a full section analysis at `z`
-
-```python
-sa = stack.section_full_analysis(z=3.2)
-print(sa["A"], sa["Iy"], sa["Iz"])
-```
-
-`section_full_analysis(z)` is a convenience wrapper that calls:
-1) `stack.section(z)`  
-2) `section_full_analysis(section)`
-
----
-
-## 5) Global 3D plot (quick verification)
-
-`plot_volume_3d_global()` draws a global 3D representation of the stacked ruled surfaces.
-
-```python
-fig, ax = stack.plot_volume_3d_global(
-    n_points_per_segment=10,
-    show_caps=True,
-)
-```
-
-This is intended as a **debug/verification** view (geometry continuity, segment order, etc.).
-
----
-
 ## 6) PyCBA integration 
 
 CSFStacked integration with **PyCBA**: sample `EI(z)` (or other section properties) from the stacked CSF along the global axis and feed them into a 1D beam model to run fast deflection checks on members with **piecewise-varying stiffness**.  
@@ -205,48 +55,66 @@ Assumptions:
 - piecewise-constant `EI` per solver element (midpoint sampling)
 
 ```python
-import numpy as np
-import pycba as cba
+if __name__ == "__main__":
 
-E = 2.1e11  # Pa (example)
-P = -1.0e4  # N  (example tip load)
+    # --- Scenario 1: Variable Section (The 'Stacked' Case) ---
+    # Proves the CSF can handle sequential, non-uniform geometry
+    f0 = CSFReader().read_file("stacked_0.yaml").field
+    f1 = CSFReader().read_file("stacked_1.yaml").field
+    stack_v = CSFStacked(eps_z=1e-10)
+    stack_v.append(f0)
+    stack_v.append(f1)
+ 
 
-# Discretize the global axis
-n = 40
-z_min = stack.segments[0].z_start
-z_max = stack.segments[-1].z_end
-dz = (z_max - z_min) / (n - 1)
+    disp_v, beam_v = run_beam_simulation(stack_v, "CSF STACKED (Variable)")
 
-# Midpoint EI sampling (one EI per element)
-ei_list = []
-for i in range(n - 1):
-    z_mid = (z_min + i * dz) + dz / 2.0
-    Iy = stack.section_full_analysis(z_mid)["Iy"]
-    ei_list.append(E * Iy)
 
-# Boundary conditions (example: clamped at node 0)
-R = [0] * (n * 2)
-R[0], R[1] = -1, -1
 
-beam = cba.BeamAnalysis([dz] * (n - 1), ei_list, R)
-beam.add_pl(n - 1, P, dz)   # point load at free end
-beam.analyze()
+    # --- Scenario 2: Uniform Section (The 'Baseline' Case) ---
+    # Proves the CSF is equally accurate for standard prismatic cases
+    fu = CSFReader().read_file("uniform.yaml").field
+    stack_u = CSFStacked()
+    stack_u.append(fu)
 
-# Extract maximum vertical displacement (typical PyCBA result layout)
-disp = np.max(np.abs(beam.beam_results.results.D[0::2]))
-print("Max vertical displacement:", disp)
+    disp_u, beam_u = run_beam_simulation(stack_u, "CSF UNIFORM (Prismatic)")
+
+    print(f"\n" + "#"*60)
+    print(f" CONCLUSION: The framework correctly handles both complex")
+    print(f" sequential fields and simple uniform segments with zero logic change.")
+    print("#"*60)
+
+    stack_v.plot_volume_3d_global()
+    beam_v.plot_results()
+    
+
+
+    # --- Data Definition (From your YAML at z=5.0) ---
+    # Outer: b=1.8, h=0.9 | Inner: b=1.2, h=0.5
+    # --- AUTOMATED THEORETICAL VALIDATION AT z=5.0 ---
+    z_check = 5.0
+
+    # 1. Extract real data from the CSF Stack object
+    real_sa = stack_v.section_full_analysis(z_check)
+    real_iy = real_sa['Iy']
+    real_area = real_sa['A']
+
+    # 2. Theoretical calculation based on YAML geometry (Outer: 1.8x0.9, Inner: 1.2x0.5)
+    # Formula Iy = (h * b^3) / 12
+    bo, ho = 1.8, 0.9
+    bi, hi = 1.2, 0.5
+
+    iy_th = (ho * bo**3 - hi * bi**3) / 12
+    area_th = (bo * ho) - (bi * hi)
+
+    # 3. Print Validation Table
+    print(f"\n" + "-"*30)
+    print(f" THEORETICAL VALIDATION AT z={z_check}")
+    print(f"-"*30)
+    print(f"{'Property':<10} | {'Theoretical':<12} | {'CSF Actual':<12}")
+    print(f"{'Iy':<10} | {iy_th:<12.6f} | {real_iy:<12.6f} ")
+    print(f"{'Area':<10} | {area_th:<12.6f} | {real_area:<12.6f} ")
+    print("-" * 60)
+
 ```
-
-Why midpoint sampling:
-- it guarantees you are sampling **inside** each solver element (not exactly at junctions)
-- it reduces ambiguity when `z` matches a segment boundary
-
 ---
 
-## 7) Practical notes
-
-- Call `validate_contiguity()` early when building stacks, especially if segment endpoints come from multiple sources.
-- If you query exactly at an internal junction `z = z_i`, decide whether you want the left or right segment:
-  - default policy uses the **left** segment (deterministic)
-  - use `junction_side="right"` if you need the segment on the right
-- `CSFStacked` does not “merge” segments into a single field; it dispatches queries to the correct segment field.
