@@ -1,6 +1,6 @@
 # NREL 5-MW Reference Tower - Structural Properties Verification Report
 
-[writegeometry_v6_twist.py](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/nrel_5mw/VerificationTestInstructions.md)
+[NREL veridication test](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/nrel_5mw/VerificationTestInstructions.md)
 
 **Document:** CSF Cross-Section Field Library - Verification against NREL/TP-500-38060  
 **Tower height:** H = 87.60 m  
