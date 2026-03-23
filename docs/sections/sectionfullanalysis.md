@@ -11,7 +11,6 @@ Whenever a quantity depends on **a specific modelling choice or policy** defined
 
 [CSF sectionproperties mapping table](#csf-sectionproperties-mapping-table)
 
-## CSF sectionproperties mapping table
 
 ---
 
