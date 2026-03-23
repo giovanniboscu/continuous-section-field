@@ -8,7 +8,7 @@ It is intended as a **clear, engineering-oriented reference** for users who want
 - understand **the validity domain and limitations** of each quantity.
 
 Whenever a quantity depends on **a specific modelling choice or policy** defined elsewhere (e.g. torsion selection rules), this is marked with **double asterisks `**`** and explicitly noted.
-## [CSF–sectionproperties mapping table](##-CSF–sectionproperties-mapping-table)
+### [CSF sectionproperties mapping table](##-CSF–sectionproperties-mapping-table)
 ---
 
 ## General Notes
