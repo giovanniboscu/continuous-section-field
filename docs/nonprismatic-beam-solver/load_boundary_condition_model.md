@@ -17,7 +17,7 @@ The boundary of the reduced 2D beam domain `Omega` in the global Cartesian `(x, 
 
 In the original 2016 formulation, the upper and lower boundaries of the beam domain in the `(x, y)` plane are treated as traction boundaries.
 
-At least one of the two end cross-sections must belong to the displacement-constrained boundary in order to ensure uniqueness of the solution.
+At least one of the two end cross-sections, `A(0)` or `A(l)`, must belong to the displacement-constrained boundary in order to ensure uniqueness of the solution.
 
 ## 3. Prescribed boundary conditions
 
