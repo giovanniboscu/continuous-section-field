@@ -797,6 +797,27 @@ To make interpretation robust, include these plots together:
 3. `J_s_vroark(z)`
 4. `J_s_vroark_fidelity(z)`
 
+---
+## Correct mapping table
+
+| CSF | SP field | Type | Notes |
+|---|---|---|---|
+| `A` | `e.a` | homogenized | do **not** map to `area` |
+| `Cx` | `cx` | centroid | geometric centroid coordinate |
+| `Cy` | `cy` | centroid | geometric centroid coordinate |
+| `Ix` | `e.ixx_c` | homogenized | centroidal second moment |
+| `Iy` | `e.iyy_c` | homogenized | centroidal second moment |
+| `Ixy` | `e.ixy_c` | homogenized | centroidal product of inertia |
+| `Ip` | `e.ixx_c + e.iyy_c` | derived homogenized | this is **not** `e.j` |
+| `I1` | `e.i11_c` | homogenized | principal second moment |
+| `I2` | `e.i22_c` | homogenized | principal second moment |
+| `rx` | `rx` | homogenized-derived | typically consistent with `sqrt(e.ixx_c / e.a)` |
+| `ry` | `ry` | homogenized-derived | typically consistent with `sqrt(e.iyy_c / e.a)` |
+| `Wx` | `e.zxx+`, `e.zxx-` | homogenized | section modulus about `x`; `+` and `-` may differ |
+| `Wy` | `e.zyy+`, `e.zyy-` | homogenized | section modulus about `y`; `+` and `-` may differ |
+| `J_sv_cell/wall` | `e.j` | torsion comparison | useful comparison, not a strict identity |
+| `Q_na` | — | CSF-only | no evident direct SP counterpart |
+
 This combination avoids misreading isolated curves.**
 
 ---
