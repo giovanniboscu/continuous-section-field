@@ -52,8 +52,6 @@ Below is a minimal pattern used in `stacked_csf_example.py`: extract `EI(z)` fro
 
 Assumptions:
 - Euler–Bernoulli bending with `EI = E * Iy`
-- piecewise-constant `EI` per solver element (midpoint sampling)
-
 ```python
 if __name__ == "__main__":
 
