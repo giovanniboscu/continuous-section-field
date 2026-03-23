@@ -798,7 +798,7 @@ To make interpretation robust, include these plots together:
 4. `J_s_vroark_fidelity(z)`
 
 ---
-## Correct mapping table
+## CSF Sectionproperties mapping table
 
 | CSF | SP field | Type | Notes |
 |---|---|---|---|
