@@ -64,6 +64,14 @@ In the original 2016 model, `c(x)` is introduced as a prescribed geometric funct
 | `h_u(x)` | Upper boundary | Upper geometric limit of the reduced cross-section, defined as `h_u(x) = c(x) + h(x)/2` |
 | `A(x)` | Reduced cross-section | Vertical cross-section associated with the axial coordinate `x`, defined as `A(x) = { y : y in [h_l(x), h_u(x)] }` |
 
+
+### Independent material quantities
+
+| Quantity | Role | Definition |
+|---|---|---|
+| `E` | Young's modulus | Elastic modulus of the homogeneous isotropic material |
+| `G` | Shear modulus | Shear modulus of the homogeneous isotropic material |
+
 ### 3.1 Consequence of this choice
 
 The geometric description is simple and effective, but also restrictive.
