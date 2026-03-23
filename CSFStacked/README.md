@@ -1,18 +1,29 @@
 # CSFStacked — Stack multiple `ContinuousSectionField` segments
 
-run
+if you want to only try CSFStacked then run 
+
+**linux / Mac**
+```
+python3 -m venv venv
+source venv/bin/activate
+```
+**Windows**
+```
+python3 -m venv venv
+.\venv\Scripts\activate 
+```
+get the source from the repository  (not full clone)
 
 ```
-if you want to only try CSFStacked
-
 git clone --filter=blob:none --no-checkout https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 git sparse-checkout init --cone
 git sparse-checkout set CSFStacked
 git checkout main
-
-pip install pycba
-
+```
+install and run 
+```
+pip install pycba,csfpy
 python3 stacked_csf_example.py
 
 ```
