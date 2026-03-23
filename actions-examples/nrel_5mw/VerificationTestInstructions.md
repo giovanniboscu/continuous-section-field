@@ -66,7 +66,8 @@ Written: NREL-5-MW.yaml
 Execute the CSF actions pipeline on the generated geometry:
 
 ```bash
-python3 -m csf.CSFActions NREL-5-MW.yaml NREL-5-MW_action.yaml
+mkdir out
+csf-actions NREL-5-MW.yaml NREL-5-MW_action.yaml
 ```
 
 **Arguments:**
