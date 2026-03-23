@@ -16,7 +16,7 @@
 
 ### Motivation 
 
-CSF complements standard FEM workflows by offering a continuous ruled-solid representation for non-prismatic members. It allows for the direct evaluation of section-property fields, ensuring a smooth transition of stiffness parameters without the need for manual multi-segment discretization
+CSF complements standard FEM workflows by providing a continuous geometric representation of non-prismatic members. It enables direct evaluation of section-property fields along z, avoiding manual multi-segment discretization and supplying consistent sectional data for downstream analysis.
 
 
 It computes continuous section property fields - $A(z)$, $Ix(z)$, $Iy(z)$...  - for tapered and non-homogeneous members, exported as **CSV** and **YAML** for direct integration with any beam solver (OpenSees, SAP2000, and others) or section analysis tools (e.g. [sectionproperties](https://github.com/robbievanleeuwen/section-properties)).
