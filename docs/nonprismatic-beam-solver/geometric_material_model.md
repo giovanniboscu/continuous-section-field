@@ -169,34 +169,6 @@ The following items belong to the current geometric / material model definition:
 - `G`
 - optionally `nu`, if `G` is derived rather than prescribed directly
 
-## 9. What does not belong here
-
-The following items do **not** belong to the geometric / material model document:
-
-- distributed loads
-- concentrated forces and moments
-- support conditions
-- boundary conditions
-- generalized loads `p(x)`, `q(x)`, `m(x)`
-- reduced constitutive coefficients for the solver
-- numerical discretization or integration strategy
-
-These belong to later documents in the project flow.
-
-## 10. Immediate next step
-
-The next document should define the **load / boundary-condition model**, still independently from the solver.
-
-Only after both blocks are fixed can the project define the actual **reduced model input data required by the Balduzzi formulation**.
-
-## 11. Open notes for future refinement
-
-This first draft leaves some points intentionally open for later clarification:
-
-- whether the implementation should follow exactly the original `c(x), h(x)` description, or adopt `h_l(x), h_u(x)` as the primary representation;
-- how to represent geometric data numerically in a way that preserves the bounded-slope assumptions;
-- how far the original geometric description can be pushed before a true reformulation becomes necessary;
-- how this document should evolve once the multilayer extension is introduced.
 
 ## Main reference
 
