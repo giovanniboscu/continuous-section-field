@@ -54,9 +54,12 @@ These are obtained from the distributed body load over the reduced cross-section
 - `m(x) = -∫_{A(x)} y f_x(x,y) dy`
 - `p(x) = ∫_{A(x)} f_y(x,y) dy`
 
-- `f(x,y)` = distributed body load over the reduced 2D beam domain
-- `f_x(x,y)` = horizontal component of `f(x,y)`
-- `f_y(x,y)` = vertical component of `f(x,y)`
+
+ `f(x,y)` = distributed body load over the reduced 2D beam domain
+ 
+ `f_x(x,y)` = horizontal component of `f(x,y)`
+ 
+ `f_y(x,y)` = vertical component of `f(x,y)`
 
 These quantities already belong to the reduced beam formulation. They are not the full external actions of the original 2D problem, but their projection onto the beam model.
 
