@@ -4,12 +4,13 @@ This project aims to develop a numerical solver based on the non-prismatic beam 
 
 The immediate objective is **not** to replace or reinterpret the original theory, but to make it operational within a practical computational workflow. In particular, the project focuses on:
 
-- implementing a solver consistent with the **Balduzzi beam formulation** for planar non-prismatic members;
+- implementing a numerical solver consistent with the **Balduzzi beam formulation** for planar non-prismatic members;
 - defining a clear separation between:
   - the **model input data** required by the formulation, and
   - the **numerical solver** that uses those data;
-- adopting a fully **numerical perspective**, avoiding any requirement for closed-form geometric or constitutive expressions;
+- adopting a fully **numerical perspective**, without requiring closed-form geometric or constitutive expressions;
 - preparing the ground for integration with **continuous geometric-sectional descriptions**, so that realistic non-prismatic members can be analyzed without reducing the problem to a few manually segmented idealized parts.
+
 
 A second, more advanced objective is to explore the **generalization of the Balduzzi framework to non-rectangular and more general cross-sections**. This is recognized from the outset as a substantially harder step, likely deserving independent treatment. It is therefore considered a future development, separate from the first implementation of the original model.
 
