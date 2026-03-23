@@ -2,7 +2,7 @@
 Although CSF is implemented as a Python engine, it can be used **without programming** through the **CSFReader** tool.
 In these tutorials, the working directory is set **immediately after cloning** the repository.
 
-> **[rectangle/](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/rectangle)  Complete worked example covering all available actions on a tapered rectangular section — plots, reports, solver exports, and three weight law alternatives. Run with `python3 -m csf.CSFActions geometry.yaml actions.yaml`.**
+> **[rectangle/](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/rectangle)  Complete worked example covering all available actions on a tapered rectangular section — plots, reports, solver exports, and three weight law alternatives. Run with `csf-actions geometry.yaml actions.yaml`.**
 
 
 After the installation, create your case folder structure (outside or inside the repo, depending on your workflow), for example:
@@ -461,7 +461,7 @@ CSF_ACTIONS:
 ### 5.1 Validate only (no execution)
 
 ```bash
-python3 -m csf.CSFActions geometry.yaml actions.yaml --validate-only
+csf-actions geometry.yaml actions.yaml
 ```
 
 Expected snippet:
@@ -474,7 +474,7 @@ Validation-only mode: no actions executed.
 ### 5.2 Print built-in help for actions
 
 ```bash
- python3 -m csf.CSFActions --help-actions
+ csf-actions geometry.yaml actions.yaml
 ```
 
 This prints:
@@ -545,7 +545,7 @@ CSF_ACTIONS:
 
 ```bash
 mkdir -p out
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 ---
@@ -642,7 +642,7 @@ CSF_ACTIONS:
 
 ```bash
 mkdir -p out
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 ---
@@ -687,7 +687,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -738,7 +738,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -1005,7 +1005,7 @@ CSF_ACTIONS:
 
 ```bash
 mkdir -p out
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 ---
@@ -1129,7 +1129,7 @@ CSF:
 **CLI**
 
 ```bash
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -1169,7 +1169,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 ```
@@ -1201,7 +1201,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -1238,7 +1238,7 @@ CSF_ACTIONS:
 **CLI**
 
 ```bash
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
@@ -1309,7 +1309,7 @@ To use explicit stations instead of Lobatto:
 **CLI**
 
 ```bash
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 **Parameters**
@@ -1340,7 +1340,7 @@ python3 -m csf.CSFActions geometry.yaml actions.yaml
 **CLI**
 
 ```bash
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 **Expected output snippet**
