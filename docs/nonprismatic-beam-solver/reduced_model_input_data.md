@@ -1,44 +1,32 @@
 # Reduced Model Input Data
 
 **Status:** first draft  
-**Scope:** definition of the reduced input data required to drive the original Balduzzi 2016 beam formulation, after the geometric/material model and the load / boundary-condition model have been specified.  
-
+**Scope:** definition of the reduced input data required to drive the original Balduzzi 2016 beam formulation.  
+**Out of scope:** numerical discretization, solver implementation, and future generalization to richer sectional geometries.
 
 ## 1. Purpose
 
-This document defines the **reduced model input data** required by the Balduzzi 2016 beam formulation.
+This document defines the reduced quantities that enter the Balduzzi beam formulation after the upstream model definition has been completed.
 
-These quantities are not the full upstream descriptions of geometry, material, loads, and boundary conditions. They are the reduced quantities that actually enter the beam model once the previous modeling steps have been completed.
-
-In other words:
-
-- the **geometric / material model** defines the structural member;
-- the **load / boundary-condition model** defines how that member is loaded and constrained;
-- the **reduced model input data** collect only the quantities required to drive the beam formulation.
-
-## 2. Position in the document flow
-
-This document sits between:
+It follows:
 
 - `geometric_material_model.md`
 - `load_boundary_condition_model.md`
 
-and the later document describing the Balduzzi solver itself.
+and precedes the solver document.
 
-Its role is to identify the exact interface between the upstream model definition and the downstream numerical solution.
+## 2. Reduced input blocks
 
-## 3. Reduced input structure
+The reduced model input data are grouped into four blocks:
 
-For the original 2016 formulation, the reduced model input data are grouped into four blocks:
+1. geometry
+2. material
+3. loads
+4. boundary conditions
 
-1. reduced geometric quantities;
-2. reduced material quantities;
-3. reduced load quantities;
-4. reduced boundary-condition data.
+## 3. Geometry
 
-## 4. Reduced geometric quantities
-
-The beam formulation is driven by the following geometric functions:
+The reduced geometric input of the original 2016 formulation is:
 
 | Quantity | Role | Type |
 |---|---|---|
@@ -47,26 +35,18 @@ The beam formulation is driven by the following geometric functions:
 | `c'(x)` | Derivative of the beam center-line | derived |
 | `h'(x)` | Derivative of the cross-section height | derived |
 
-At the reduced-model level, `c(x)` and `h(x)` are treated as input functions of the formulation.
+## 4. Material
 
-Their first derivatives are not independent inputs, but derived geometric quantities required by the model.
-
-## 5. Reduced material quantities
-
-The original 2016 formulation assumes a homogeneous, isotropic, linear-elastic material.
-
-The reduced material input is therefore:
+The reduced material input is:
 
 | Quantity | Role |
 |---|---|
 | `E` | Young's modulus |
 | `G` | Shear modulus |
 
-At this level, both are treated as model parameters.
+## 5. Loads
 
-## 6. Reduced load quantities
-
-The reduced beam formulation uses the following resulting loads along the longitudinal axis:
+The reduced beam formulation uses the following load quantities:
 
 | Quantity | Role |
 |---|---|
@@ -74,41 +54,70 @@ The reduced beam formulation uses the following resulting loads along the longit
 | `m(x)` | Bending resulting load |
 | `p(x)` | Vertical resulting load |
 
-These quantities are obtained from the distributed body load over the reduced cross-section:
+These are the reduced load functions introduced in `load_boundary_condition_model.md`.
 
-- `q(x) = ∫_{A(x)} f_x(x,y) dy`
-- `m(x) = -∫_{A(x)} y f_x(x,y) dy`
-- `p(x) = ∫_{A(x)} f_y(x,y) dy`
+## 6. Boundary conditions
 
-At the reduced-model level, `q(x)`, `m(x)`, and `p(x)` are treated as the load input functions of the beam formulation.
+The reduced beam problem must include boundary conditions at the beam ends, i.e. at `x = 0` and/or `x = l`.
 
-## 7. Reduced boundary-condition data
+At the reduced-model level, boundary conditions are no longer expressed on the full 2D boundary `∂Omega_s`, but on the beam variables of the 1D formulation.
 
-The reduced beam problem must also include boundary conditions expressed at the beam ends.
+The relevant beam variables are:
 
-At this level, the relevant boundary-condition data are not the original 2D boundary partition or the full prescribed displacement field on `∂Omega_s`, but the end conditions required by the reduced beam problem.
+| Quantity | Role | Type of boundary condition |
+|---|---|---|
+| `u(x)` | Axial displacement | kinematic |
+| `v(x)` | Vertical displacement | kinematic |
+| `phi(x)` | Cross-section rotation | kinematic |
+| `H(x)` | Axial resultant force | static |
+| `M(x)` | Bending moment resultant | static |
+| `V(x)` | Shear resultant force | static |
 
-These conditions are to be expressed at `x = 0` and/or `x = l` in terms of beam variables.
+Accordingly, the reduced boundary-condition input consists of prescribed end conditions on suitable subsets of these variables at `x = 0` and/or `x = l`.
 
-For the original formulation, the relevant beam variables are:
+### Kinematic end conditions
 
-- `u(x)`
-- `phi(x)`
-- `v(x)`
-- `H(x)`
-- `M(x)`
-- `V(x)`
+These prescribe the beam motion at an end:
 
-Accordingly, the reduced boundary-condition input consists of prescribed conditions on suitable subsets of these quantities at the beam ends.
+- prescribed `u`
+- prescribed `v`
+- prescribed `phi`
 
-Examples include:
+Examples:
 
-- kinematic conditions, such as prescribed `u`, `v`, or `phi`;
-- static conditions, such as prescribed `H`, `M`, or `V`.
+- `u(0) = 0`
+- `v(0) = 0`
+- `phi(0) = 0`
 
-The detailed numerical enforcement of these conditions belongs to the solver document, not to the present one.
+### Static end conditions
 
-## 8. Summary table
+These prescribe the internal resultants at an end:
+
+- prescribed `H`
+- prescribed `M`
+- prescribed `V`
+
+Examples:
+
+- `H(l) = 0`
+- `M(l) = 0`
+- `V(l) = 0`
+
+### Interpretation
+
+A complete reduced beam problem is obtained by assigning a consistent set of end conditions on these variables.
+
+Typical examples are:
+
+- **clamped end**: prescribed `u`, `v`, `phi`
+- **free end**: prescribed `H`, `M`, `V`
+- **mixed case**: combination of kinematic and static conditions, depending on the structural problem
+
+At this stage, the document only identifies the variables on which reduced boundary conditions are imposed. The detailed enforcement of those conditions belongs to the solver document.
+
+
+
+## 7. Summary table
 
 | Block | Reduced input data |
 |---|---|
@@ -116,18 +125,6 @@ The detailed numerical enforcement of these conditions belongs to the solver doc
 | Material | `E`, `G` |
 | Loads | `q(x)`, `m(x)`, `p(x)` |
 | Boundary conditions | end conditions on `u`, `phi`, `v`, `H`, `M`, `V` |
-
-## 9. Interpretation
-
-This reduced input set is the first level at which the problem becomes solver-ready.
-
-It is already detached from the full upstream descriptions of the 2D domain, distributed loads, and boundary partition, but it is still independent of any specific numerical implementation.
-
-For this reason, it defines the natural interface between:
-
-- model definition;
-- beam formulation;
-- solver implementation.
 
 ## Main reference
 
