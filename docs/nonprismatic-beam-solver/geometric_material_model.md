@@ -14,27 +14,19 @@ The present version is based on a first re-reading of Balduzzi et al. (2016) and
 
 ## 2. Reference formulation
 
-The starting point is the planar non-prismatic beam model introduced by:
 
-> Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). *Non-prismatic beams: A simple and effective Timoshenko-like model*. *International Journal of Solids and Structures*, 90, 236–250. https://doi.org/10.1016/j.ijsolstr.2016.02.017
+At the level of the original 2016 planar formulation, the geometric model is defined on a longitudinal domain:
 
-The 2016 formulation addresses a **2D non-prismatic beam** under:
-- small displacements;
-- plane stress state;
-- homogeneous, isotropic, linear-elastic material.
+`x in [0, l]`
 
-## 3. Geometric description in the original 2016 model
+where `l` is the beam length.
 
-In the original Balduzzi 2016 formulation, the beam is described on a longitudinal axis:
+The beam geometry is described through the following primary functions:
 
-`L = { x in [0, l] }`
-
-The geometry is defined through two primary scalar functions:
-
-- `c(x)` = beam center-line
+- `c(x)` = prescribed geometric center-line of the 2D beam domain
 - `h(x)` = cross-section height, with `h(x) > 0`
 
-The lower and upper section limits are then defined as:
+From these, the lower and upper section boundaries are defined as:
 
 - `h_l(x) = c(x) - h(x) / 2`
 - `h_u(x) = c(x) + h(x) / 2`
@@ -43,7 +35,32 @@ At each axial coordinate `x`, the cross-section is therefore reduced to the vert
 
 `A(x) = { y : y in [h_l(x), h_u(x)] }`
 
-This means that the original model does **not** describe a general 2D section. Instead, it uses a strongly reduced planar geometry in which the section is represented only by its upper and lower boundaries.
+This means that, in the original formulation, the section is not described as a general planar domain, but as a segment bounded by an upper and a lower geometric limit.
+
+The geometric model therefore consists of:
+
+- beam length `l`
+- axial coordinate `x`
+- center-line `c(x)`
+- section height `h(x)`
+- lower boundary `h_l(x)`
+- upper boundary `h_u(x)`
+
+The first derivatives of the geometric functions are also part of the geometric description whenever required by the formulation. In particular, the slopes of the section boundaries are relevant quantities in the original model.
+
+For this reason, the following derivatives must be considered part of the geometric input whenever the formulation requires them:
+
+- `c'(x)`
+- `h'(x)`
+- equivalently, `h_l'(x)` and `h_u'(x)`
+
+In the original 2016 model, `c(x)` is introduced as a prescribed geometric function. It is not defined at this stage as a centroid extracted from a more general sectional description.
+| Quantity | Role | Definition |
+|---|---|---|
+| `c(x)` | Beam center-line | Prescribed geometric center-line of the 2D beam domain |
+| `h(x)` | Section height | Cross-section height at axial coordinate `x`, with `h(x) > 0` |
+| `h_l(x)` | Lower boundary | `h_l(x) = c(x) - h(x)/2` |
+| `h_u(x)` | Upper boundary | `h_u(x) = c(x) + h(x)/2` |
 
 ### 3.1 Consequence of this choice
 
