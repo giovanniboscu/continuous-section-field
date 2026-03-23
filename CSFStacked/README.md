@@ -1,4 +1,4 @@
-# CSFStacked — Stack multiple `ContinuousSectionField` segments
+# CSFStacked - Stack multiple `ContinuousSectionField` segments
 
 if you want to only try CSFStacked then run 
 
