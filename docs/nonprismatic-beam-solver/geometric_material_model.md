@@ -55,12 +55,14 @@ For this reason, the following derivatives must be considered part of the geomet
 - equivalently, `h_l'(x)` and `h_u'(x)`
 
 In the original 2016 model, `c(x)` is introduced as a prescribed geometric function. It is not defined at this stage as a centroid extracted from a more general sectional description.
+
 | Quantity | Role | Definition |
 |---|---|---|
 | `c(x)` | Beam center-line | Prescribed geometric center-line of the 2D beam domain |
 | `h(x)` | Section height | Cross-section height at axial coordinate `x`, with `h(x) > 0` |
-| `h_l(x)` | Lower boundary | `h_l(x) = c(x) - h(x)/2` |
-| `h_u(x)` | Upper boundary | `h_u(x) = c(x) + h(x)/2` |
+| `h_l(x)` | Lower boundary | Lower geometric limit of the reduced cross-section, defined as `h_l(x) = c(x) - h(x)/2` |
+| `h_u(x)` | Upper boundary | Upper geometric limit of the reduced cross-section, defined as `h_u(x) = c(x) + h(x)/2` |
+| `A(x)` | Reduced cross-section | Vertical cross-section associated with the axial coordinate `x`, defined as `A(x) = { y : y in [h_l(x), h_u(x)] }` |
 
 ### 3.1 Consequence of this choice
 
