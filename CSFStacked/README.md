@@ -25,6 +25,7 @@ install and run
 ```
 pip install pycba
 pip install csfpy
+cd CSFStacked
 python3 stacked_csf_example.py
 
 ```
