@@ -1,5 +1,23 @@
 # CSFStacked — Stack multiple `ContinuousSectionField` segments
 
+run
+
+```
+if you want to only try CSFStacked
+
+git clone --filter=blob:none --no-checkout https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
+git sparse-checkout init --cone
+git sparse-checkout set CSFStacked
+git checkout main
+
+pip install pycba
+
+python3 stacked_csf_example.py
+
+```
+
+ python3 stacked_csf_example.py
 `CSFStacked` is a small container that **impila (stacks)** multiple `ContinuousSectionField` objects along the **global** member axis `z`, providing:
 
 - deterministic **global z → segment dispatch**
