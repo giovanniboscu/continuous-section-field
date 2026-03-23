@@ -813,8 +813,8 @@ To make interpretation robust, include these plots together:
 | `I2` | `e.i22_c` | homogenized | principal second moment |
 | `rx` | `rx` | homogenized-derived | typically consistent with `sqrt(e.ixx_c / e.a)` |
 | `ry` | `ry` | homogenized-derived | typically consistent with `sqrt(e.iyy_c / e.a)` |
-| `Wx` | `e.zxx+`, `e.zxx-` | homogenized | section modulus about `x`; `+` and `-` may differ |
-| `Wy` | `e.zyy+`, `e.zyy-` | homogenized | section modulus about `y`; `+` and `-` may differ |
+| `Wx` | `e.zxx+`, `e.zxx-` | homogenized | CSF computes `Wx = Ix / c_y,max`, so it corresponds to the controlling modulus, i.e. `min(e.zxx+, e.zxx-)` |
+| `Wy` | `e.zyy+`, `e.zyy-` | homogenized | CSF computes `Wy = Iy / c_x,max`, so it corresponds to the controlling modulus, i.e. `min(e.zyy+, e.zyy-)` |
 | `J_sv_cell/wall` | `e.j` | torsion comparison | useful comparison, not a strict identity |
 | `Q_na` | — | CSF-only | no evident direct SP counterpart |
 
