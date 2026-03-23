@@ -28,7 +28,7 @@ Whenever a quantity depends on **a specific modelling choice or policy** defined
 **Key:** `A`
 
 **Definition**  
-Total **net cross-sectional area**, including the effect of polygon weights.
+Total **cross-sectional area**, including the effect of polygon weights.
 
 Plain-text formula:
 
