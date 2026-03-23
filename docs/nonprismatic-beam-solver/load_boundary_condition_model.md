@@ -10,14 +10,14 @@ Its purpose is to describe how the structural member is loaded and constrained, 
 
 ## 2. Boundary partition
 
-The boundary of the reduced 2D domain is divided into:
+The boundary of the reduced 2D beam domain `Omega` in the global Cartesian `(x, y)` plane is divided into:
 
 - `∂Omega_s` = displacement-constrained boundary
 - `∂Omega_t` = loaded boundary
 
-The original formulation assumes that the upper and lower boundaries of the beam belong to the loaded part of the boundary.
+In the original 2016 formulation, the upper and lower boundaries of the beam domain in the `(x, y)` plane are treated as traction boundaries.
 
-At least one of the two end sections must belong to the displacement-constrained boundary in order to ensure uniqueness of the solution.
+At least one of the two end cross-sections must belong to the displacement-constrained boundary in order to ensure uniqueness of the solution.
 
 ## 3. Prescribed boundary conditions
 
