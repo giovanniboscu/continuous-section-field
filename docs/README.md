@@ -34,7 +34,6 @@ This folder contains the documentation for **Continuous Section Field (CSF)**
 | [QuickStartGuide.md](QuickStartGuide.md) | End-to-end practical workflow: geometry file, actions file, degradation law `w(z)`, running CSF, and interpreting outputs. Start here. |
 
 ---
-https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/programmer-guide
 ## API Reference & Programmig
 
 | File | Description |
