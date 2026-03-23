@@ -23,7 +23,8 @@ git checkout main
 ```
 install and run 
 ```
-pip install pycba,csfpy
+pip install pycba
+pip install csfpy
 python3 stacked_csf_example.py
 
 ```
