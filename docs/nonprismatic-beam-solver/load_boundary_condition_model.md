@@ -2,8 +2,6 @@
 
 **Status:** first draft  
 **Scope:** preliminary description of the load model and boundary-condition model underlying the original Balduzzi 2016 planar formulation.  
-**Out of scope:** geometric/material model, reduced solver coefficients, and numerical solution strategy.
-
 ## 1. Purpose
 
 This document defines the external actions and boundary conditions applied to the reduced 2D beam domain in the original Balduzzi 2016 formulation.
