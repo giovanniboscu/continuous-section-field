@@ -2,7 +2,6 @@
 
 **Status:** first draft  
 **Scope:** definition of the reduced input data required to drive the original Balduzzi 2016 beam formulation.  
-**Out of scope:** numerical discretization, solver implementation, and future generalization to richer sectional geometries.
 
 ## 1. Purpose
 
@@ -34,6 +33,10 @@ The reduced geometric input of the original 2016 formulation is:
 | `h(x)` | Cross-section height | independent |
 | `c'(x)` | Derivative of the beam center-line | derived |
 | `h'(x)` | Derivative of the cross-section height | derived |
+
+At this level, `c(x)` and `h(x)` are treated as the independent geometric input functions of the formulation.
+
+The quantities `c'(x)` and `h'(x)` are required by the model, but they are not independent inputs. They are derived geometric quantities.
 
 ## 4. Material
 
@@ -113,9 +116,7 @@ Typical examples are:
 - **free end**: prescribed `H`, `M`, `V`
 - **mixed case**: combination of kinematic and static conditions, depending on the structural problem
 
-At this stage, the document only identifies the variables on which reduced boundary conditions are imposed. The detailed enforcement of those conditions belongs to the solver document.
-
-
+The detailed enforcement of those conditions belongs to the solver document.
 
 ## 7. Summary table
 
