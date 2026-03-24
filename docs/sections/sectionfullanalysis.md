@@ -814,8 +814,8 @@ To make interpretation robust, include these plots together:
 | `Ip` | `e.ixx_c + e.iyy_c` | derived homogenized | this is **not** `e.j` |
 | `I1` | `e.i11_c` | homogenized | principal second moment |
 | `I2` | `e.i22_c` | homogenized | principal second moment |
-| `rx` | `rx` | homogenized-derived | typically consistent with `sqrt(e.ixx_c / e.a)` |
-| `ry` | `ry` | homogenized-derived | typically consistent with `sqrt(e.iyy_c / e.a)` |
+| `rx` | `rx` | homogenized-derived | consistent with `sqrt(e.ixx_c / e.a)` |
+| `ry` | `ry` | homogenized-derived |  consistent with `sqrt(e.iyy_c / e.a)` |
 | `Wx` | `e.zxx+`, `e.zxx-` | homogenized | CSF computes `Wx = Ix / c_y,max`, so it corresponds to the controlling modulus, i.e. `min(e.zxx+, e.zxx-)` |
 | `Wy` | `e.zyy+`, `e.zyy-` | homogenized | CSF computes `Wy = Iy / c_x,max`, so it corresponds to the controlling modulus, i.e. `min(e.zyy+, e.zyy-)` |
 | `J_sv_cell/wall` | `e.j` | torsion cell/wall polygon |  [De Saint-Venant Torsional Constant](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md) |
