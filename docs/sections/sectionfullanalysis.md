@@ -819,7 +819,7 @@ To make interpretation robust, include these plots together:
 | `Wx` | `e.zxx+`, `e.zxx-` | homogenized | CSF computes `Wx = Ix / c_y,max`, so it corresponds to the controlling modulus, i.e. `min(e.zxx+, e.zxx-)` |
 | `Wy` | `e.zyy+`, `e.zyy-` | homogenized | CSF computes `Wy = Iy / c_x,max`, so it corresponds to the controlling modulus, i.e. `min(e.zyy+, e.zyy-)` |
 | `J_sv_cell/wall` | `e.j` | torsion cell/wall polygon |  [De Saint-Venant Torsional Constant](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md) |
-| `Q_na` | — | CSF-only | no evident direct SP counterpart |
+| `Q_na` | — | CSF-only |First Moment of Area |
 
 This combination avoids misreading isolated curves.**
 
