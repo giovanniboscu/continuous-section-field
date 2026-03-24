@@ -19,7 +19,6 @@ Whenever a quantity depends on **a specific modelling choice or policy** defined
 - All quantities are computed **purely from geometry and polygon weights**.
 - No assumptions are made about profile families (I, H, box, tube, etc.).
 - Polygon `weight` is treated as a **scalar field multiplier** (e.g. modular ratio, material factor).
-- Negative weights are allowed and represent **subtractive domains**.
 
 ---
 
