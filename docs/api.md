@@ -53,17 +53,18 @@
    - [write_sap2000_template_pack()](#write_sap2000_template_pack)
    - [export_to_opensees_tcl()](#export_to_opensees_tcl)
    - [export_polygon_vertices_csv()](#export_polygon_vertices_csv)
-9. [Quadrature Utilities](#9-quadrature-utilities)
+   - export_polygon_vertices_csv_file
+10. [Quadrature Utilities](#9-quadrature-utilities)
    - [get_lobatto_intervals()](#get_lobatto_intervals)
-10. [Weight Law Utilities](#10-weight-law-utilities)
+11. [Weight Law Utilities](#10-weight-law-utilities)
     - [evaluate_weight_formula()](#evaluate_weight_formula)
     - [safe_evaluate_weight_zrelative()](#safe_evaluate_weight_zrelative)
     - [lookup_homogenized_elastic_modulus()](#lookup_homogenized_elastic_modulus)
-11. [Visualization](#11-visualization)
+12. [Visualization](#11-visualization)
     - [Visualizer](#visualizer)
-12. [Exceptions](#12-exceptions)
+13. [Exceptions](#12-exceptions)
     - [CSFError](#csferror)
-13. [Module-level Constants](#13-module-level-constants)
+14. [Module-level Constants](#13-module-level-constants)
 
 ---
 
