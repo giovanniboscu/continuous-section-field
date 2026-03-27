@@ -126,7 +126,7 @@ $$
 
 ---
 
-## 7. Why this example is excellent for teaching
+## 7. Why this example is for teaching
 
 This single model lets students see, in one place:
 
