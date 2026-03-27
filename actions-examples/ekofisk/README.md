@@ -8,7 +8,7 @@ python3 csf_polygon_hole_builder_v2.py
 ```
 start CSF 
 ```
-csf-actions csf.CSFActions ekofisk_geometry_m.yaml ekofisk_action.yaml
+csf-actions ekofisk_geometry_m.yaml ekofisk_action.yaml
 
 ```
 ![ekofisk_sections](https://github.com/user-attachments/assets/78078a19-9619-4d9c-a7c3-179e472a011b)
