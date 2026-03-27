@@ -14,7 +14,7 @@ from csf import (
 # INPUT PARAMETERS
 # =========================
 H = 87.6        # TOTAL HEIGHT(m)
-N_LATI = 64   # Number of edges
+N_LATI = 512   # Number of edges
 DENSITY = 8500  # kg/m^3
 
 deltaz=0
