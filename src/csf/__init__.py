@@ -30,7 +30,8 @@ from .section_field import (
     list_polygons_with_contents,
     polygon_surface_w1_inners0,
     volume_polygon_list_report,
-    export_polygon_vertices_csv
+    export_polygon_vertices_csv,
+    export_polygon_vertices_csv_file
 )
 
 # 
@@ -56,5 +57,6 @@ __all__ = [
     "list_polygons_with_contents",
     "polygon_surface_w1_inners0",
     "volume_polygon_list_report",
-    "export_polygon_vertices_csv"
+    "export_polygon_vertices_csv",
+    "export_polygon_vertices_csv_file"
 ]

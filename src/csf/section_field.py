@@ -357,8 +357,6 @@ def write_sap2000_template_pack(
     *,
     mode: _Mode = "BOTH",
     section_prefix: str = "SEC",
-    #joint_prefix: str = "J",
-    #frame_prefix: str = "F",
     material_name: str = "S355",
     E_ref: Optional[float] = None,
     nu: Optional[float] = None,
@@ -1075,13 +1073,13 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
     )
     p0_z = Polygon(vertices=current_verts, weight=p0.weight, name=p0.name)
     
-    t=(zt-z0)/(z1-z0)
+    t = zt/(z1-z0)
+    
     # 3. Define the external file lookup helper
-    z=zt-z0
     def E_lookup(filename: str) -> float:
         # in this case z is abosolute
         # we need to go in relative z
-        return lookup_homogenized_elastic_modulus(filename, z)
+        return lookup_homogenized_elastic_modulus(filename, zt)
     
     def T_lookup(filename: str) -> float:
         # only for T_lookup zt is normalized
@@ -1144,7 +1142,6 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
     # We disable __builtins__ for safety to ensure only provided tools are used.
     
     law_value = float(eval(formula, {"__builtins__": SAFE_BUILTINS}, context))
-    
     return law_value
  
 def execute_string_to_float(code_string, z_val, t_val):
@@ -1455,7 +1452,7 @@ def write_opensees_geometry(
     # 1) Exact sampling stations provided by CSF.
     #    We do not assume formulas here; we trust the field.
     # -------------------------------------------------------------------------
-    z_coords = field.get_opensees_integration_points(n_points)
+    z_coords = field.get_lobatto_integration_points(n_points)
     z_coords = [float(z) for z in z_coords]
 
     # -------------------------------------------------------------------------
@@ -4318,7 +4315,7 @@ class Polygon:
         # If a2 is negative, the winding order is Clockwise (CW).
         if a2 <= 0:
             raise ValueError(
-                f"GEOMETRIC ERROR: Polygon '{self.name}' has area {a2}. "
+                f"GEOMETRIC ERROR:: Polygon '{self.name}' has area {a2}. "
                 f"Polygons must have a positive area and be defined in Counter-Clockwise (CCW) order. "
                 f"An area of 0 means the polygon is degenerate (e.g., only 2 sides)."
             )
@@ -5068,8 +5065,69 @@ def polygon_surface_w1_inners0_single(
     }
 
 # -------------------------------------------------------------------------------------------------------------
+from pathlib import Path
+from typing import Optional, List
 
-def export_polygon_vertices_csv(section: Section, field: ContinuousSectionField,    zpos: float=None, put=print, fmt="{:.16g}"):
+
+def export_polygon_vertices_csv_file(
+    section: Section = None,
+    field: ContinuousSectionField = None,
+    zpos: float = None,
+    exp_filename: str = "csv_export.txt",
+    z_values: Optional[List[float]] = None,
+    fmt: str = "{:.16g}",
+):
+    """
+    File wrapper for export_polygon_vertices_csv().
+
+    Modes
+    -----
+    1) Single export:
+       - section=...
+       or
+       - field=... and zpos=...
+
+    2) Multiple export:
+       - field=... and z_values=[...]
+    """
+
+    out_path = Path(exp_filename)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Prevent ambiguous mixed usage
+    if z_values is not None and section is not None:
+        raise ValueError("section cannot be used together with z_values.")
+
+    if z_values is not None and field is None:
+        raise ValueError("field is required when z_values is provided.")
+
+    with open(out_path, "w", encoding="utf-8") as f:
+        def put_line(s: str) -> None:
+            f.write(s)
+            f.write("\n")
+
+        # Multiple export mode
+        if z_values is not None:
+            for z in z_values:
+                export_polygon_vertices_csv(
+                    section=None,
+                    field=field,
+                    zpos=float(z),
+                    put=put_line,
+                    fmt=fmt,
+                )
+            return
+
+        # Single export mode
+        export_polygon_vertices_csv(
+            section=section,
+            field=field,
+            zpos=zpos,
+            put=put_line,
+            fmt=fmt,
+        )
+
+def export_polygon_vertices_csv(section: Section=None, field: ContinuousSectionField=None,    zpos: float=None, put=print, fmt="{:.16g}"):
     """
     Export CSV with ALL coordinates.
 
@@ -5487,6 +5545,22 @@ class ContinuousSectionField:
 
     def get_container_polygon_index(self, poly: "Polygon", i: int):
         """
+        Return the index (0-based) of the immediate container of `poly` in self.s0.polygons.
+
+        Cached by polygon index because topology is assumed fixed.
+        """
+        if not hasattr(self, "_container_polygon_index_cache"):
+            self._container_polygon_index_cache = {}
+
+        if i in self._container_polygon_index_cache:
+            return self._container_polygon_index_cache[i]
+
+        result = self._get_container_polygon_index_uncached(poly, i)
+        self._container_polygon_index_cache[i] = result
+        return result
+
+    def _get_container_polygon_index_uncached(self, poly: "Polygon", i: int):
+        """
         Return the index (0-based) of the *immediate container* of `poly` in self.s0.polygons.
         Returns the index of the immediate container polygon (smallest-area polygon that contains `poly`),
         not the outermost/global container.
@@ -5506,7 +5580,6 @@ class ContinuousSectionField:
             Index of the immediate container polygon, or None if no container exists.
         """
         debug = bool(getattr(self, "debug_container", False))
-
 
         def _get_coincident_previous_polygon_index(i: int):
             """
@@ -6465,7 +6538,7 @@ class ContinuousSectionField:
     """
 
 
-    def get_opensees_integration_points(self, n_points: int = 5, L: float = None) -> List[float]:
+    def get_lobatto_integration_points(self, n_points: int = 5, L: float = None) -> List[float]:
         """
         Calculates the global Z-coordinates for OpenSees integration points using 
         the Gauss-Lobatto quadrature rule.
@@ -6498,9 +6571,6 @@ class ContinuousSectionField:
             raise ValueError("Number of integration points must be at least 2 for Gauss-Lobatto.")
 
         # 1. Physical boundaries
-        
-        
-        
         
         # Usiamo section0 e section1 come definito nel costruttore field = ContinuousSectionField(section0=s0, section1=s1)
         
@@ -6725,7 +6795,7 @@ class ContinuousSectionField:
 
 
     def _interpolate_weight(self, w0: float, w1: float, z: float, p0: Polygon, p1: Polygon, law: Optional[str]) -> float:
-        #
+        
         L_val = abs(self.s1.z - self.s0.z)
         
         if isinstance(law, str) and law.strip():
@@ -6736,14 +6806,15 @@ class ContinuousSectionField:
             # Since p_current is not in the signature, we interpolate vertices 
             # locally to allow the d(i, j) helper to work at height z
             #
+            
+            
             current_verts = tuple(v0.lerp(v1, z,L_val) for v0, v1 in zip(p0.vertices, p1.vertices))
             p_current = Polygon(vertices=current_verts, weight=w0, name=p0.name) ## w0 is dummy value
-           
+            
             try:
                 # We test the formula at t and verify syntax and logic
                 
                 wcust = evaluate_weight_formula(law, p0, p1, self.s0.z,self.s1.z,zt=z)  
-                
                 return wcust
             except Exception as e:                  
                 raise ValueError(
@@ -6753,6 +6824,7 @@ class ContinuousSectionField:
                 )
             
         # Default fallback: Linear Interpolation
+        #
         return w0 + (w1 - w0)/L_val * z
 
   
@@ -7412,16 +7484,17 @@ class Visualizer:
             If provided, only indices in this list are considered, after removing zero-flat polygons.
             Indices out of range are ignored.
         """
+        
         import numpy as np
         import matplotlib.pyplot as plt
-
+        
         z_start = self.field.s0.z
         z_end = self.field.s1.z
         z_values = np.linspace(z_start, z_end, num_points)
 
         num_polys = len(self.field.s0.polygons)
         poly_w_series = {i: [] for i in range(num_polys)}
-
+        
         # Evaluate weights for every polygon index at every sampled z
         for z in z_values:
             for i in range(num_polys):
@@ -7432,10 +7505,13 @@ class Visualizer:
                     current_law = self.field.weight_laws[i + 1]
                 else:
                     current_law = None
+                
+                zlocal= z - self.field.s0.z
 
                 w_val = self.field._interpolate_weight(
-                    p0.weight, p1.weight, z, p0, p1, current_law
+                    p0.weight, p1.weight, zlocal, p0, p1, current_law
                 )
+                
                 poly_w_series[i].append(float(w_val))
 
         # Split polygons: zero-flat vs plottable (non-zero)
@@ -7489,8 +7565,7 @@ class Visualizer:
 
         n_plot = len(plot_indices)
 
-        print("\n=== START WEIGHT MIN/MAX REPORT ===")
-
+        #print("\n=== START WEIGHT MIN/MAX REPORT ===")
 
         for start in range(0, n_plot, MAX_PLOTS_PER_FIG):
             # Take up to MAX_PLOTS_PER_FIG polygon indices for this figure
@@ -7519,13 +7594,13 @@ class Visualizer:
                 idx_max = int(np.argmax(y))
                 w_min, w_max = float(y[idx_min]), float(y[idx_max])
                 z_min, z_max = float(z_values[idx_min]), float(z_values[idx_max])
-
+                '''
                 print(
                     f"[{i}] s0:{p0.name} -> s1:{p1.name} | "
                     f"min w={w_min:.12g} at z={z_min:.12g} | "
                     f"max w={w_max:.12g} at z={z_max:.12g}"
                 )
-
+                '''
                 # Main curve
                 ax.plot(z_values, y, linewidth=1.5, label=f"s0 {p0.name} - s1 {p1.name}")
 
@@ -7570,26 +7645,16 @@ class Visualizer:
                 f"Individual Polygon Weight (w) Distributions (Interpolated # {num_points} points)",
                 fontweight="bold"
             )
+            
             fig_w.tight_layout(rect=[0, 0.04, 1, 0.96])
 
-
-
-
-
-
-
-
-
-
-
-
-        print("=== END WEIGHT MIN/MAX REPORT ===")
+        #print("=== END WEIGHT MIN/MAX REPORT ===")
         # plt.show()
 
 
 
     # ----------------------------------------------------------------------------
-    def plot_properties(self, keys_to_plot=None, alpha=1, num_points=100):
+    def plot_properties(self, keys_to_plot=None, alpha=1,title: String="Plot Properties",num_points=100):
         """
         Plot the evolution of selected section properties along the Z-axis.
 
@@ -7700,14 +7765,15 @@ class Visualizer:
         # -------------------------------------------------------------------------
         num_keys = len(keys_to_plot)
         fig, axes = plt.subplots(num_keys, 1, figsize=(10, 2.2 * num_keys), sharex=True)
+        fig.suptitle(str(title), fontsize=14, fontweight="bold", y=0.995)
         if num_keys == 1:
             axes = [axes]
 
         colors = plt.cm.viridis(np.linspace(0, 0.9, num_keys))
 
         # Console report header
-        print("\n=== PROPERTIES MIN/MAX REPORT ===")
-        print(f"z range: [{z_start:.6f}, {z_end:.6f}] | sampled points: {num_points}")
+        #print("\n=== PROPERTIES MIN/MAX REPORT ===")
+        #print(f"z range: [{z_start:.6f}, {z_end:.6f}] | sampled points: {num_points}")
 
         for i, (key, color) in enumerate(zip(keys_to_plot, colors)):
             ax = axes[i]
@@ -7911,12 +7977,15 @@ class Visualizer:
                     f"max={v_max_r:.12g} at z={z_max_r:.12g}"
                 )
 
-        print("=== END PROPERTIES MIN/MAX REPORT ===\n")
+        #print("=== END PROPERTIES MIN/MAX REPORT ===\n")
 
         axes[-1].set_xlabel(f"Z coordinate")
 
-        # Reserve top margin for top-left/top-right text lines
-        plt.tight_layout(rect=[0, 0, 1, 0.95])
+
+        # Reserve top margin for:
+        # - centered figure title (suptitle)
+        # - top-left / top-right per-axis summary texts
+        plt.tight_layout(rect=[0, 0, 1, 0.94])
         #plt.show()
 
 
@@ -8057,7 +8126,7 @@ class Visualizer:
         legend_handles = []
         legend_labels = []
         show_legenda=True
-        if show_legenda:
+        if show_legenda and len(sec.polygons) < 20:
             # -------------------------------------------------------------------------
             # 4) Build legend entries (relative weights + container id)
             # -------------------------------------------------------------------------
@@ -8133,75 +8202,182 @@ class Visualizer:
         return ax
 
 
-    def plot_volume_3d(self, show_end_sections: bool = True, line_percent: float = 100.0,
-                       seed: int = 0, title: str = "Ruled volume (vertex-connection lines)", ax=None):
+
+    def plot_volume_3d(
+        self,
+        show_end_sections: bool = True,
+        line_percent: float = 100.0,
+        seed: int = 0,
+        title: str = "Ruled volume (vertex-connection lines)",
+        ax=None,
+        equalize_z: bool = False,
+    ):
         """
         Draw the 3D ruled "skeleton":
         - endpoint section outlines (optional)
         - straight lines connecting corresponding vertices (ruled generators)
         - ability to display only a percentage of those lines for readability
 
-        line_percent:
-          0..100 : percentage of connection lines shown (random subsample).
+        Parameters
+        ----------
+        equalize_z : bool, default False
+            If True, the visual box is proportional to the real data ranges
+            (1 unit along Z = 1 unit along X/Y).  Achieved by passing the
+            actual data ranges to ``set_box_aspect`` — no coordinates or
+            axis limits are modified.  When False the plot is identical to
+            the original.
         """
+        import math
+        from collections import defaultdict
+
         if not (0.0 <= line_percent <= 100.0):
             raise ValueError("line_percent must be within [0, 100].")
-            
-        # 2. AXES INITIALIZATION
-        # If no existing axis is provided, create a new 3D figure with a default perspective.
+
+        # ------------------------------------------------------------------
+        # Axes initialization
+        # ------------------------------------------------------------------
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111, projection="3d")
             ax.view_init(elev=15, azim=120)
 
-        # 3. GEOMETRY EXTRACTION
-        # Get endpoint sections at the field's start (z0) and end (z1).
+        # ------------------------------------------------------------------
+        # Geometry extraction
+        # ------------------------------------------------------------------
         z0, z1 = self.field.z0, self.field.z1
         s0 = self.field.section(z0)
         s1 = self.field.section(z1)
 
-        # 4. DRAW END SECTIONS
-        # If show_end_sections is True, plot the perimeter of all polygons at Z0 and Z1.
-        # This helps visualize the boundary transition of the ruled
+        # ------------------------------------------------------------------
+        # Read the active color cycle once
+        # ------------------------------------------------------------------
+        cycle_colors = [c["color"] for c in plt.rcParams["axes.prop_cycle"]]
+        n_colors = len(cycle_colors)
+        color_counter = 0
+
+        # ------------------------------------------------------------------
+        # End sections
+        # ------------------------------------------------------------------
         if show_end_sections:
             for sec in (s0, s1):
                 for poly in sec.polygons:
-                    xs = [p.x for p in poly.vertices] + [poly.vertices[0].x]
-                    ys = [p.y for p in poly.vertices] + [poly.vertices[0].y]
+                    verts = poly.vertices
+                    xs = [p.x for p in verts] + [verts[0].x]
+                    ys = [p.y for p in verts] + [verts[0].y]
                     zs = [sec.z] * len(xs)
                     ax.plot(xs, ys, zs)
-        # 5. BUILD GENERATOR LINES
-        # Create a list of all straight lines (ruled generators) connecting
-        # each vertex in the start section to its corresponding vertex in the end section.
-            all_lines = []
+                    color_counter += 1
+
+        # ------------------------------------------------------------------
+        # Build generator lines (once)
+        # ------------------------------------------------------------------
+        lines_by_polygon: list[list[tuple]] = []
         for p0, p1 in zip(s0.polygons, s1.polygons):
-            for v0, v1 in zip(p0.vertices, p1.vertices):
-                all_lines.append((v0, v1))
+            lines_by_polygon.append(list(zip(p0.vertices, p1.vertices)))
 
-        # 6. SUBSAMPLING (Visual Clarity)
-        # If line_percent < 100, we randomly select a subset of lines to avoid visual clutter.
-        # Using a fixed 'seed' ensures the same set of lines is picked every time (reproducibility).
-        if line_percent < 100.0:
-            rng = random.Random(seed)
-            k = int(math.ceil(len(all_lines) * (line_percent / 100.0)))
-            k = max(0, min(k, len(all_lines)))
-            all_lines = rng.sample(all_lines, k)
+        all_lines: list[tuple] = [
+            line for poly_lines in lines_by_polygon for line in poly_lines
+        ]
 
-        # 7. PLOTTING
-        # Draw the connection lines between the two Z-planes.
-        for v0, v1 in all_lines:
-            ax.plot([v0.x, v1.x], [v0.y, v1.y], [z0, z1],linewidth=0.7)
+        # ------------------------------------------------------------------
+        # Subsampling (logic unchanged)
+        # ------------------------------------------------------------------
+        if line_percent < 100.0 and all_lines:
+            total_lines = len(all_lines)
+            k_total = max(0, min(int(math.ceil(total_lines * line_percent / 100.0)), total_lines))
 
-        # Draw axes labels
+            selected_lines: list[tuple] = []
+            eligible_polygons: list[list[tuple]] = []
+            eligible_counts: list[int] = []
+
+            for poly_lines in lines_by_polygon:
+                n = len(poly_lines)
+                if n < 11:
+                    selected_lines.extend(poly_lines)
+                else:
+                    eligible_polygons.append(poly_lines)
+                    eligible_counts.append(n)
+
+            forced_count = len(selected_lines)
+            remaining_quota = max(0, k_total - forced_count)
+            eligible_total = sum(eligible_counts)
+
+            if eligible_total > 0 and remaining_quota > 0:
+                raw_quotas = [
+                    (count * remaining_quota) / eligible_total
+                    for count in eligible_counts
+                ]
+                keep_counts = [int(math.floor(q)) for q in raw_quotas]
+
+                remaining = remaining_quota - sum(keep_counts)
+                order = sorted(
+                    range(len(eligible_polygons)),
+                    key=lambda i: raw_quotas[i] - keep_counts[i],
+                    reverse=True,
+                )
+                for i in order[:remaining]:
+                    keep_counts[i] += 1
+
+                for poly_lines, keep in zip(eligible_polygons, keep_counts):
+                    n = len(poly_lines)
+                    if keep <= 0:
+                        continue
+                    if keep >= n:
+                        selected_lines.extend(poly_lines)
+                        continue
+                    indices = [int(math.floor(j * n / keep)) for j in range(keep)]
+                    selected_lines.extend(poly_lines[idx] for idx in indices)
+
+            all_lines = selected_lines
+
+        # ------------------------------------------------------------------
+        # Plotting — batch by color
+        # ------------------------------------------------------------------
+        if all_lines:
+            nan = float("nan")
+            batches: dict[str, dict] = defaultdict(lambda: {"xs": [], "ys": [], "zs": []})
+
+            for idx, (v0, v1) in enumerate(all_lines):
+                color = cycle_colors[(color_counter + idx) % n_colors]
+                buf = batches[color]
+                buf["xs"].extend((v0.x, v1.x, nan))
+                buf["ys"].extend((v0.y, v1.y, nan))
+                buf["zs"].extend((z0,   z1,   nan))
+
+            for color, buf in batches.items():
+                ax.plot(buf["xs"], buf["ys"], buf["zs"], linewidth=0.7, color=color)
+
+        # ------------------------------------------------------------------
+        # Labels and title
+        # ------------------------------------------------------------------
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
         ax.set_zlabel("Z")
         ax.set_title(title)
 
-        # Improve scaling
-        _set_axes_equal_3d(ax)
+        # ------------------------------------------------------------------
+        # Axis scaling
+        #
+        # equalize_z=False → _set_axes_equal_3d, identical to original
+        # equalize_z=True  → let Matplotlib keep its own limits (correct tick
+        #                    values, no manual interference), then override
+        #                    only the visual box proportions via set_box_aspect
+        #                    using the real data ranges.
+        # ------------------------------------------------------------------
+        if equalize_z:
+            all_verts = [
+                v for sec in (s0, s1) for poly in sec.polygons for v in poly.vertices
+            ]
+            x_range = max(max(v.x for v in all_verts) - min(v.x for v in all_verts), 1e-12)
+            y_range = max(max(v.y for v in all_verts) - min(v.y for v in all_verts), 1e-12)
+            z_range = max(abs(z1 - z0), 1e-12)
+            ax.set_box_aspect((x_range, y_range, z_range))
+        else:
+            _set_axes_equal_3d(ax)
+
         return ax
 
+   
 
 # ============================================================
 # Example: Continuous Section Field – Static Properties Demo

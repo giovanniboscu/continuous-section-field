@@ -230,30 +230,28 @@ def register(
                 images.append(im)
 
         # ----------------------------
-        # 5) Save composite image (if requested)
+        # 5) Save raster output(s)
         # ----------------------------
         if file_outputs:
             if not images:
                 raise RuntimeError("No images were generated for file output.")
 
-            if len(images) == 1:
-                composite = images[0]
-            else:
-                max_w = max(im.width for im in images)
-                total_h = sum(im.height for im in images) + spacing_px * (len(images) - 1)
-
-                composite = Image.new("RGB", (max_w, total_h), (255, 255, 255))
-                y = 0
-                for im in images:
-                    composite.paste(im, (0, y))
-                    y += im.height + spacing_px
-
             for out_path in file_outputs:
                 p = Path(out_path)
                 if not p.parent.exists():
                     raise RuntimeError(f"Output directory does not exist: {p.parent}")
-                composite.save(str(p), dpi=(dpi, dpi))
-                print(f"[OK] plot_section_2d wrote: {p}")
+
+                if len(images) == 1:
+                    images[0].save(str(p), dpi=(dpi, dpi))
+                    #print(f"[OK] plot_section_2d wrote: {p}")
+                else:
+                    stem = p.stem
+                    suffix = p.suffix or ".png"
+
+                    for idx, im in enumerate(images, start=1):
+                        p_i = p.with_name(f"{stem}_{idx:03d}{suffix}")
+                        im.save(str(p_i), dpi=(dpi, dpi))
+                        #print(f"[OK] plot_section_2d wrote: {p_i}")
 
         # ----------------------------
         # 6) Defer showing (always)
