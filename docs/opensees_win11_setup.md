@@ -67,18 +67,11 @@ C:\Users\Gio\test_csf\continuous-section-field\venv312\Scripts\python.exe
 ```powershell
 .\venv312\Scripts\python.exe -m pip install -e .
 ```
-
-### 8. If additional packages such as `numpy` or `matplotlib` are needed
-
-```powershell
-.\venv312\Scripts\python.exe -m pip install numpy matplotlib
-```
-
 ---
 
 ## Final verification
 
-### 9. Verify that OpenSeesPy imports correctly
+### 8. Verify that OpenSeesPy imports correctly
 
 ```powershell
 .\venv312\Scripts\python.exe -c "import openseespy.opensees as ops; print(ops.version())"
