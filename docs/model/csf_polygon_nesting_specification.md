@@ -22,7 +22,7 @@ The rule is:
 W_eff_child(z) = W_abs_child(z) − W_abs_parent(z)
 ```
 
-where `W_parent(z)` is the absolute weight of the **immediate container** (direct parent)
+where `W_abs_parent(z)` is the absolute weight of the **immediate container** (direct parent)
 of the polygon in the containment hierarchy.
 
 Root polygons (no container) have `W_eff = W_abs`.
