@@ -4,7 +4,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19076181.svg)](https://doi.org/10.5281/zenodo.19076181)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![Math](https://img.shields.io/badge/Engine-Analytical_Mechanics-red.svg)
-![Integration](https://img.shields.io/badge/Integration-Gaussian_Quadrature-green.svg)
 ![License](https://img.shields.io/github/license/giovanniboscu/continuous-section-field)
 ![Repo Size](https://img.shields.io/github/repo-size/giovanniboscu/continuous-section-field)
 
