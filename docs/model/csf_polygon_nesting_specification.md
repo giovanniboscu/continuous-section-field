@@ -19,7 +19,7 @@ by computing an **effective weight** for each polygon.
 The rule is:
 
 ```
-W_eff_child(z) = W_abs_child(z) − W_parent(z)
+W_eff_child(z) = W_abs_child(z) − W_abs_parent(z)
 ```
 
 where `W_parent(z)` is the absolute weight of the **immediate container** (direct parent)
