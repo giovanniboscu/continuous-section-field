@@ -4,7 +4,7 @@
 
 ## What CSF Does
 
-There is nothing new in the mathematics behind CSF. Homogenization of composite sections (concrete/steel), area and moment integrals via Green's theorem, the Steiner parallel axis theorem - these are all standard tools.
+Homogenization of composite sections (concrete/steel), area and moment integrals via Green's theorem, the Steiner parallel axis theorem - these are all standard tools.
 
 What CSF contributes is not new theory but a specific **organisational model**: geometry and material are treated as two fully independent fields along $z$, and every zone carries its own weight law - separately from all others and separately from the geometry. This simple structure is what makes the formulation general without adding complexity.
 
