@@ -202,7 +202,7 @@ sf = ContinuousSectionField(section0=s0, section1=s1)
 
 # Optional: apply a degradation law to concrete only
 sf.set_weight_laws([
-    "concrete,concrete : E_concrete * np.exp(-0.03 * z)",
+    f"concrete,concrete : {E_concrete} * np.exp(-0.03 * z)",
 ])
 # The steel bar's effective weight will automatically account
 # for the varying concrete weight at each z.
