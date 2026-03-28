@@ -1,15 +1,13 @@
 # `write_sap2000_template_pack` - Reference Documentation
 
-## Overview
+**## Overview
 
 `write_sap2000_template_pack` exports a **CSF (Continuous Section Field)** model to a
 structured plain-text file that can be used as input data for beam solvers such as
 **SAP2000** and **OpenSeesPy**, as well as for section verification and quality review.
 
 Despite its name, the function produces a **solver-agnostic export pack** — the output
-format is readable by any tool that can parse fixed-width text tables, including custom
-Python scripts and the companion `csf_template_pack_opensees.py` runner.
-
+format is readable by any tool that can parse fixed-width text tables.
 The function also optionally generates a **plot of the geometric property variation**
 along the member axis.
 
