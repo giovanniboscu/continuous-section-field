@@ -24,7 +24,8 @@ CSF handles the general case by splitting the section into zones, each with its 
 
 $$P(z) = \sum_i w_i(z) \cdot \iint_{\Omega_i(z)} f(x, y, z) \, dA$$
 
-Geometry ($\Omega_i$) and material weight ($w_i$) are fully decoupled — you can vary one without touching the other. The standard separable formulation is just the special case where all $w_i(z)$ are the same function.
+Geometry ($\Omega_i$) and material weight ($w_i$) are fully decoupled -
+you can vary one without touching the other. The standard separable formulation is just the special case where all $w_i(z)$ are the same function.
 
 ---
 
@@ -32,7 +33,7 @@ Geometry ($\Omega_i$) and material weight ($w_i$) are fully decoupled — you ca
 
 You define the section as a set of polygons at two end stations. CSF interpolates the vertices linearly between them, producing a smooth tapered geometry at any $z$.
 
-Each polygon gets its own weight law $w_i(z)$ — either an analytical expression (polynomial, exponential) or a lookup table of discrete values. That's it.
+Each polygon gets its own weight law $w_i(z)$ - either an analytical expression (polynomial, exponential) or a lookup table of discrete values. That's it.
 
 ---
 
