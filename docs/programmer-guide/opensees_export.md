@@ -6,10 +6,33 @@ This section explains how the CSF OpenSees export example works and how to reuse
 
 The example is split into two scripts:
 
-- `csf_opensees_lab.py`: builds a `ContinuousSectionField` and writes the OpenSees geometry data file.
-- `csf_opensees_check.py`: shows how to read that exported file and use it as input for an OpenSeesPy model.
+- `example/csf_opensees_lab.py`: builds a `ContinuousSectionField` and writes the OpenSees geometry data file.
+- `example/csf_opensees_check.py`: shows how to read that exported file and use it as input for an OpenSeesPy model.
 
 In the provided check example, the structural verification problem is a **cantilever beam with a concentrated tip load**. The goal of `csf_opensees_check.py` is not to define the only valid OpenSees workflow, but to provide a **clear template for reading `geometry.tcl` and building a model from it**.
+
+---
+
+## Win11 note: installing OpenSeesPy before running the check script
+
+If you are using **Windows 11** and `openseespy` is not installed yet, `csf_opensees_check.py` cannot run, because the script imports OpenSeesPy directly:
+
+```python
+import openseespy.opensees as ops
+```
+
+Before running the check example, install OpenSeesPy by following this setup guide:
+
+[OpenSeesPy setup for Win11](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/opensees_win11_setup.md)
+
+Typical commands on Windows 11 are:
+
+```powershell
+py -m pip install openseespy
+py csf_opensees_check.py
+```
+
+If you are working inside a virtual environment, activate that environment first and then run the same commands inside it.
 
 ---
 
