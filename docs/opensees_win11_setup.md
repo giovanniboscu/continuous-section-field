@@ -141,4 +141,4 @@ This solution is stable **as long as**:
 * you do not change the Python version
 * you do not mix packages across different environments
 
-It is not a universal guarantee for every future configuration, but it is the correct and verified procedure for this project on this PC.
+It is not a universal guarantee for every future configuration.
