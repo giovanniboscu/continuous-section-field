@@ -20,19 +20,27 @@ The real cause was that the environment was using **Python 3.14**, while in the 
 py install 3.12
 ```
 
-### 2. Go to the project folder
+### 2. Clone the repository
+
+```powershell
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+```
+
+### 3. Go to the project folder
 
 ```powershell
 cd C:\Users\Gio\test_csf\continuous-section-field
 ```
 
-### 3. Create a new virtual environment with Python 3.12
+If you cloned the repository in a different location, use that path instead.
+
+### 4. Create a new virtual environment with Python 3.12
 
 ```powershell
 py -V:3.12 -m venv venv312
 ```
 
-### 4. Verify that the Python executable from the new environment is the correct one
+### 5. Verify that the Python executable from the new environment is the correct one
 
 ```powershell
 .\venv312\Scripts\python.exe --version
@@ -43,35 +51,38 @@ Expected output similar to:
 
 ```text
 Python 3.12.10
-C:\Users\Gio\test_csf\continuous-section-field\venv312\Scripts\python.exe
+cd continuous-section-field\venv312\Scripts\python.exe
 ```
 
 ---
 
 ## Install packages in the correct virtual environment
 
-### 5. Upgrade `pip`
+### 6. Upgrade `pip`
 
 ```powershell
 .\venv312\Scripts\python.exe -m pip install --upgrade pip
 ```
 
-### 6. Install `openseespy`
+### 7. Install `openseespy`
 
 ```powershell
 .\venv312\Scripts\python.exe -m pip install openseespy
 ```
 
-### 7. Install the local project and its dependencies
+### 8. Install the local project and its dependencies
 
 ```powershell
 .\venv312\Scripts\python.exe -m pip install -e .
 ```
+
+This step installs the project in editable mode and should also install the dependencies declared by the project.
+
 ---
 
 ## Final verification
 
-### 8. Verify that OpenSeesPy imports correctly
+### 9. Verify that OpenSeesPy imports correctly
 
 ```powershell
 .\venv312\Scripts\python.exe -c "import openseespy.opensees as ops; print(ops.version())"
@@ -116,7 +127,24 @@ Or, for a quick check:
 ## Essential summary
 
 ```powershell
-cd C:\Users\Gio\test_csf\continuous-section-field
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
 py -V:3.12 -m venv venv312
 .\venv312\Scripts\python.exe -m pip install --upgrade pip
+.\venv312\Scripts\python.exe -m pip install openseespy
+.\venv312\Scripts\python.exe -m pip install -e .
+.\venv312\Scripts\python.exe example\csf_opensees_check.py
 ```
+
+---
+
+## Practical note
+
+This solution is stable **as long as**:
+
+* you use `venv312`
+* you run scripts with `.\venv312\Scripts\python.exe`
+* you do not change the Python version
+* you do not mix packages across different environments
+
+It is not a universal guarantee for every future configuration, but it is the correct and verified procedure for this project on this PC.
