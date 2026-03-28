@@ -25,12 +25,7 @@ Before running the check example, install OpenSeesPy by following this setup gui
 
 [OpenSeesPy setup for Win11](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/opensees_win11_setup.md)
 
-Typical commands on Windows 11 are:
 
-```powershell
-py -m pip install openseespy
-py csf_opensees_check.py
-```
 
 If you are working inside a virtual environment, activate that environment first and then run the same commands inside it.
 
