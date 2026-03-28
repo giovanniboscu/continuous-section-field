@@ -48,6 +48,6 @@ opensees_export.md
 4. [04_plotting weight](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/04_plotting_weight.md)
 5. [04_plotting weight](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/04_plotting_weight.md)
 6. [06_opensees export](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/opensees_export.md)
-8. `07_errors_and_diagnostics.md`
+8. `09_solver_integration.md`
 9. `08_validation_and_benchmarks.md`
-10. `09_solver_integration.md`
+10. `...`
