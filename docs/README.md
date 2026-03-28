@@ -68,8 +68,7 @@ This folder contains the documentation for **Continuous Section Field (CSF)**
 |------|-------------|
 | [Opensees on win11](opensees_win11_setup.md) |OpenSeesPy on Win11 with a Python 3.12 virtual environment |
 | [OpenSeesIntegrationNumericalStrategy.md](OpenSeesIntegrationNumericalStrategy.md) | Detailed numerical strategy for consuming CSF station data in OpenSees: export file format (`geometry.tcl`), material conventions, centroid axis topology, integration strategies (member-level Lobatto vs segmented endpoint), and torsion export policy. |
-| [csf_openseespy_builder.md](csf_openseespy_builder.md) | Documentation for `csf_openseespy_builder.py`: OpenSeesPy checker/builder that reads `geometry.tcl`, builds a reference + centroid axis model, and runs a cantilever verification. Covers integration modes (`auto`, `member_lobatto`, `segment_endpoints`) and limitations. |
-| [csf_openseespy_builder.md](write_sap2000_template_pack.md) | Documentation for `csf_openseespy_builder.py`: OpenSeesPy checker/builder that reads `geometry.tcl`, builds a reference + centroid axis model, and runs a cantilever verification. Covers integration modes (`auto`, `member_lobatto`, `segment_endpoints`) and limitations. |
+| [Solver sap200 and generic](write_sap2000_template_pack.md) | write_sap2000_template_pack exports a CSF (Continuous Section Field) model to a structured plain-text file that can be used as input data for beam solvers such as SAP2000 and OpenSeesPy, as well as for section verification and quality review. |
 | [write_opensees_builder_tcl.md](write_opensees_builder_tcl.md) | Documentation for `write_opensees_builder_tcl.py`: generates a standalone OpenSees Tcl script that reads `geometry.tcl` as a data file and builds a 3D beam model without requiring OpenSeesPy. Covers material modes, Gauss–Lobatto segment behavior, and limitations. |
 
 
