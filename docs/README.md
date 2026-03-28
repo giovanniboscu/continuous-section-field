@@ -66,6 +66,7 @@ This folder contains the documentation for **Continuous Section Field (CSF)**
 
 | File | Description |
 |------|-------------|
+| [Opensees on win11](opensees_win11_setup.md) |OpenSeesPy on Win11 with a Python 3.12 virtual environment |
 | [openseesIntegration.md](openseesIntegration.md) | Overview of CSF → OpenSees integration: `forceBeamColumn` formulation, Gauss–Lobatto stationing, `beamIntegration UserDefined`, torsional constant selection, and variable centroid axis handling with `rigidLink`. |
 | [OpenSeesIntegrationNumericalStrategy.md](OpenSeesIntegrationNumericalStrategy.md) | Detailed numerical strategy for consuming CSF station data in OpenSees: export file format (`geometry.tcl`), material conventions, centroid axis topology, integration strategies (member-level Lobatto vs segmented endpoint), and torsion export policy. |
 | [csf_openseespy_builder.md](csf_openseespy_builder.md) | Documentation for `csf_openseespy_builder.py`: OpenSeesPy checker/builder that reads `geometry.tcl`, builds a reference + centroid axis model, and runs a cantilever verification. Covers integration modes (`auto`, `member_lobatto`, `segment_endpoints`) and limitations. |
