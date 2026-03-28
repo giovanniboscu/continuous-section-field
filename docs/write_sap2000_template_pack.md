@@ -138,7 +138,7 @@ The plot contains two panels:
 Each station is marked with a point. The figure is saved to `plot_filename` and
 optionally displayed interactively with `show_plot=True`.
 
-Plot generation is **best-effort** — if it fails for any reason (missing matplotlib,
+Plot generation is **best-effort** - if it fails for any reason (missing matplotlib,
 backend issues), file creation continues normally without interruption.
 
 ---
@@ -167,7 +167,7 @@ parser.
 # doc          : docs/sections/sectionfullanalysis.md
 ```
 
-`stations_list` provides all z-coordinates on a single line — useful for a quick
+`stations_list` provides all z-coordinates on a single line - useful for a quick
 overview without scrolling through the tables.
 
 `E_ref`, `nu`, and `G_ref` are written only when provided. `doc` points to the
@@ -175,7 +175,7 @@ CSF section analysis reference documentation.
 
 ---
 
-### TABLE 1 — SOLVER INPUT
+### TABLE 1 - SOLVER INPUT
 
 Direct input for SAP2000 and OpenSeesPy beam elements.
 
@@ -195,9 +195,9 @@ Direct input for SAP2000 and OpenSeesPy beam elements.
 
 ---
 
-### TABLE 2 — SECTION QUALITY
+### TABLE 2 - SECTION QUALITY
 
-Derived verification properties — not consumed directly by solvers.
+Derived verification properties - not consumed directly by solvers.
 
 | Column | Description | Notes |
 |--------|-------------|-------|
