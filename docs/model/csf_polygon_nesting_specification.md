@@ -59,7 +59,7 @@ A void is a polygon declared with `weight = 0.0`.
 CSF treats it as a hole: the void's effective contribution is:
 
 ```
-W_eff_void(z) = 0.0 − W_parent(z) = −W_parent(z)
+W_eff_void(z) = 0.0 − W_abs_parent(z) = −W_abs_parent(z)
 ```
 
 This subtracts the parent material from the region of the hole, regardless of how
