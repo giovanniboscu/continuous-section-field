@@ -44,6 +44,7 @@ Each polygon gets its own weight law $w_i(z)$ - either an analytical expression 
 | A | Fixed topology | Vertex count per zone is constant along z - sections with openings that appear or disappear are not supported |
 | B | Linear vertex interpolation | Zone geometry is interpolated linearly between the two end station |
 | C | Polygonal representation | Curved boundaries must be approximated by polygon discretisation |
+ D | Straight element axis | CSF models a single element along a straight z-axis -curved members are not supported |
 ---
 
 ## Note on the Torsional Constant
