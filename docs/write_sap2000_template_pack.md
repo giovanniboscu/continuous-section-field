@@ -42,7 +42,7 @@ def write_sap2000_template_pack(
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `field` | `Any` | - | A `ContinuousSectionField` object with `.s0.z`, `.s1.z`, and `.section(z)`. |
-| `n_intervals` | `int` | `20` | Number of Gauss-Lobatto intervals. Stations = `n_intervals + 1`. Ignored when `z_values` is provided. |
+| `n_intervals` | `int` | `20` | Number of Gauss-Lobatto intervals. Stations = `n_intervals + 1`. Ignored when `z_values` is provided. Not used when `z_values` is provided |
 | `template_filename` | `str` | `"export_template_pack.txt"` | Output file path. |
 | `mode` | `str` | `"BOTH"` | Retained for API compatibility; not used in the output. |
 | `section_prefix` | `str` | `"SEC"` | Prefix for section name labels in TABLE 4 (e.g. `"SEC"` → `"SEC0001"`). |
