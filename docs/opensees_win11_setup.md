@@ -47,13 +47,6 @@ py -V:3.12 -m venv venv312
 .\venv312\Scripts\python.exe -c "import sys; print(sys.executable)"
 ```
 
-Expected output similar to:
-
-```text
-Python 3.12.10
-cd continuous-section-field\venv312\Scripts\python.exe
-```
-
 ---
 
 ## Install packages in the correct virtual environment
@@ -101,6 +94,7 @@ Expected output:
 ### 10. Run the script explicitly using the Python executable from the new virtual environment
 
 ```powershell
+.\venv312\Scripts\python.exe example\csf_opensees_lab.py
 .\venv312\Scripts\python.exe example\csf_opensees_check.py
 ```
 
