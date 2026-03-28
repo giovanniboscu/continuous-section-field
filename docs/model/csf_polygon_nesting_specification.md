@@ -63,7 +63,7 @@ W_eff_void(z) = 0.0 − W_abs_parent(z) = −W_abs_parent(z)
 ```
 
 This subtracts the parent material from the region of the hole, regardless of how
-`W_parent(z)` varies along `z`. The user does not need to replicate the parent's law
+`W_abs_parent(z)` varies along `z`. The user does not need to replicate the parent's law
 with a negative sign - CSF handles it automatically.
 
 > **This is the key advantage of the nesting model**: a void in a region with a
