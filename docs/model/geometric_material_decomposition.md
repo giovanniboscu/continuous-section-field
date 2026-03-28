@@ -45,6 +45,7 @@ Each polygon gets its own weight law $w_i(z)$ - either an analytical expression 
 | B | Linear vertex interpolation | Zone geometry is interpolated linearly between the two end station |
 | C | Polygonal representation | Curved boundaries must be approximated by polygon discretisation |
  D | Straight element axis | CSF models a single element along a straight z-axis -curved members are not supported |
+ > CSF operates in absolute coordinates, allowing multiple straight elements to be composed in sequence - each with its own geometry and material field - to represent members of arbitrary length and varying cross-sectional evolution.
 ---
 
 ## Note on the Torsional Constant
