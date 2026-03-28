@@ -7,15 +7,6 @@ The guide uses a single thread: **learn by examples**.
 
 ---
 
-##  Environment Setup
-
-Before running any CSF example, install:
-
-- Python (recommended: Python 3.10+)
-- Git
-
----
-
 ##  Get the Project and Create a Virtual Environment
 
 ```bash
