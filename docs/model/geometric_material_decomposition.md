@@ -41,8 +41,8 @@ Each polygon gets its own weight law $w_i(z)$ - either an analytical expression 
 
 | | Assumption | What it means in practice |
 |---|---|---|
-| A | Fixed topology | Vertex count per zone is constant along z — sections with openings that appear or disappear are not supported |
-| B | Linear vertex interpolation | Zone geometry is interpolated linearly between the two end stations — nonlinear tapers require intermediate stations |
+| A | Fixed topology | Vertex count per zone is constant along z - sections with openings that appear or disappear are not supported |
+| B | Linear vertex interpolation | Zone geometry is interpolated linearly between the two end station |
 | C | Polygonal representation | Curved boundaries must be approximated by polygon discretisation |
 ---
 
