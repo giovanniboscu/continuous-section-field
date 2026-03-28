@@ -39,15 +39,11 @@ Each polygon gets its own weight law $w_i(z)$ - either an analytical expression 
 
 ## Assumptions
 
-Nothing exotic here either:
-
 | | Assumption | What it means in practice |
 |---|---|---|
-| A | Euler-Bernoulli | Sections stay plane; works for slender elements |
-| B | Fixed topology | Vertex count per zone is constant along $z$ |
-| C | Linear elastic homogenization | All materials referred to a reference modulus via modular ratio $\alpha_i(z)$ — standard transformed section method |
-| D | Perfect bond | No slip between zones — standard assumption for composite sections |
-
+| A | Fixed topology | Vertex count per zone is constant along z — sections with openings that appear or disappear are not supported |
+| B | Linear vertex interpolation | Zone geometry is interpolated linearly between the two end stations — nonlinear tapers require intermediate stations |
+| C | Polygonal representation | Curved boundaries must be approximated by polygon discretisation |
 ---
 
 ## Note on the Torsional Constant
