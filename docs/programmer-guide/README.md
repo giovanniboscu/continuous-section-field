@@ -1,4 +1,4 @@
-# CSF User Guide — Modeling and Sectional Analysis
+# CSF User Guide - Modeling and Sectional Analysis
 
 Programmer-oriented documentation for building, validating, and integrating **Continuous Section Field (CSF)** models.
 
