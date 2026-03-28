@@ -29,7 +29,7 @@ git clone https://github.com/giovanniboscu/continuous-section-field.git
 ### 3. Go to the project folder
 
 ```powershell
-cd C:\Users\Gio\test_csf\continuous-section-field
+cd continuous-section-field
 ```
 
 If you cloned the repository in a different location, use that path instead.
