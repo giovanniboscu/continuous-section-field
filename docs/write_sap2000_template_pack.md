@@ -85,6 +85,8 @@ before using member-level integration.
 
 ### User-defined stations
 
+`n_intervals` not used
+
 ```python
 write_sap2000_template_pack(field, z_values=[0, 2.5, 5.0, 7.5, 10.0], E_ref=2.1e11, nu=0.3, ...)
 ```
