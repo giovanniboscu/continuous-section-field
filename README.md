@@ -9,7 +9,7 @@
 
 
 
-**[Key Features](#key-features)** • **[Installation & setup](#setup-environment-linux--windows)** • **[Worked Example](#worked-example-continuously-tapered-t-beam)** • **[Validation: Cylinder](#csf-numerical-validation-circular-hollow-section)** • **[Case Study: NREL 5-MW](#csf-validation--numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
+**[Key Features](#key-features)** • **[Installation & setup](###-Option-A)** • **[Worked Example](#worked-example-continuously-tapered-t-beam)** • **[Validation: Cylinder](#csf-numerical-validation-circular-hollow-section)** • **[Case Study: NREL 5-MW](#csf-validation--numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
 
 ---
 
