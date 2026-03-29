@@ -38,7 +38,7 @@ A linearly tapered solid rectangle along z:
 ## How to run
 
 ```bash
-python3 -m csf.CSFActions geometry.yaml actions.yaml
+csf-action geometry.yaml actions.yaml
 ```
 
 All outputs are written to the `out/` directory.
