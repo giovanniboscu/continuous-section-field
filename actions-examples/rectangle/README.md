@@ -1,4 +1,4 @@
-# CSF Rectangle Example — `actions-examples/rectangle`
+# CSF Rectangle Example - `actions-examples/rectangle`
 
 A self-contained example demonstrating the full **CSF Actions** pipeline on a
 linearly tapered solid rectangular section. Every available action is exercised
@@ -38,7 +38,7 @@ A linearly tapered solid rectangle along z:
 ## How to run
 
 ```bash
-csf-action geometry.yaml actions.yaml
+csf-actions geometry.yaml actions.yaml
 ```
 
 All outputs are written to the `out/` directory.
