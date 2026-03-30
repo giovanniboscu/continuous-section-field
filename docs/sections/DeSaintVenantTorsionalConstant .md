@@ -1,4 +1,4 @@
-un# De Saint-Venant Torsional Constant - Cell and Wall Contributions in CSF
+# De Saint-Venant Torsional Constant - Cell and Wall Contributions in CSF
 
 ## How CSF Reports and Exports J
 
