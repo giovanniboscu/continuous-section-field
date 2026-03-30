@@ -48,7 +48,7 @@ CSF:
     S0:
       z: 0
       polygons:
-        MP1_outer@cell@t=0.05:
+        MP1_outer@cell:
           weight: 1
           vertices:
             - [-0.85, 1.04094977928e-16]
@@ -313,7 +313,7 @@ CSF:
       z: 85
       polygons:
         MP1_inner:
-          weight: 0
+          weight: 1
           vertices:
             - [-0.85, 1.04094977928e-16]
             - [-0.848976137774, 0.0417075231783]
