@@ -75,12 +75,6 @@ CSF:
   - 'MP1_outer,MP1_outer: 1.0 - 0.28 * np.exp(-((z - 0.0)**2) / (2.0 * 1.5**2))'
 ```
 
-To create a ring polygon (outer contour + inner hole), you can use:
-```
-../../src/csf/utils/csf_polygon_hole_builder_v2.py
-```
-
-This script contains the geometric parameters used to generate the YAML model geometry directly (dimensions and section setup are defined inside the code).
 
 ---
 
