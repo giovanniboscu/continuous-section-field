@@ -9,7 +9,7 @@ section_field.set_weight_laws([
     "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
 ])
 ```
-
+Before proceeding, it is necessary to understand how polygons are constructed and identified, because the specified mathematical variation is defined between them.
 
 
 ## Identify your Polygons (Naming is Key)
