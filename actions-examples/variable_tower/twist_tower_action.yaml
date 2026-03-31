@@ -1,0 +1,95 @@
+CSF_ACTIONS:
+  stations:
+    station_s0:
+      - 0
+      - 20
+    station_s1:
+      - 20
+      - 50
+      
+    station_midle:
+      - 25
+    station_edge:
+      - 0
+      - 50
+    station_3:
+      - 0
+      - 25
+      - 50
+    station_5:
+      - 0
+      - 10
+      - 20
+      - 30
+      - 40
+      - 50
+    station_precise:
+      - 0
+      - 5
+      - 10
+      - 15
+      - 20
+      - 24
+      - 26
+      - 28
+      - 29
+      - 30
+      - 31
+      - 32
+      - 33
+      - 34
+      - 35
+      - 36
+      - 37
+      - 38
+      - 40
+      - 41
+      - 42
+      - 43
+      - 44
+      - 45
+      - 46
+      - 47
+      - 48
+      - 49
+      - 50
+      
+  actions:
+    - plot_volume_3d:
+        params:
+          title: "Morphing Section"
+          line_percent: 100.0
+    - section_selected_analysis:
+        stations: station_precise 
+        output:
+          - [out/twist_tower.txt]
+        properties: [geometry,A,Cx,Cy,Ix,Iy,Ixy,Ip,I1,I2,rx,ry,Wx,Wy,J_sv_cell,Q_na]        
+    - plot_section_2d:
+        stations:
+          - station_s0
+        show_ids: false
+        show_vertex_ids: False
+        output:
+          - [stdout,out/twist_tower_sections.jpg]
+
+#    - plot_properties:
+#        output:
+#          - stdout
+#          - out/twist_tower_props.jpg
+#        params:
+#          num_points: 100
+#        properties: [J_sv_cell,Ix,A]
+##    - plot_weight:
+#        output:
+#          - out/twist_tower_weight.jpg
+#        params:
+#          num_points: 500
+#    - export_yaml:
+#        # Must contain exactly two z values.
+#        stations: [station_s0]
+#        output: [yaml/tower_0-20.yaml]        
+#    - export_yaml:
+#        # Must contain exactly two z values.
+#        stations: [station_s1]
+#        output: [yaml/tower_20-40.yaml]        
+#
