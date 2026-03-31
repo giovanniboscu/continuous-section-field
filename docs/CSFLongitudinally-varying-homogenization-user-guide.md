@@ -12,13 +12,13 @@ section_field.set_weight_laws([
 Before proceeding, it is necessary to understand how polygons are constructed and identified, because the specified mathematical variation is defined between them.
 
 
-## Identify your Polygons (Naming is Key)
-### Identifying the Target Component
+## Identifying the Target Component
 
-To ensure the engine correctly identifies the transition along the height, **you must identify the structural component to which the material property variation law $W(z)$ will be applied.**
-### Unique Identification
-To avoid using confusing numerical indices for the connections (like "Pair #227"), each polygon must have a **unique name** within its section. This name acts as a human-readable label for the entire component's evolution. It makes it much easier to assign physical laws $w(z)$ to a specific structural member, such as a "Web" or "Flange," as it spans from the start to the end of the section field.
-While using the same name for both is not a technical requirement for the geometry, it is highly recommended for clarity and to ensure the correct physical properties are tracked along the height.
+
+In practice, it is very simple: you just draw the polygons and keep them in the same order in `S0` and `S1`.
+
+To avoid relying on unclear numerical connections such as “Pair #227,” each polygon should have its own unique name within the section. The name is simply a human-readable way to identify the same component from the start section to the end section. This is especially useful when assigning a weight law  $W(z)$  to a specific part. For example, a polygon named `flange` can represent the flange region, while another named `web` can represent the web region. Using the same names in both sections is not strictly required for the geometry itself, but it is strongly recommended for clarity and for following the correct physical variation along the height.
+
 
 In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept:  
 
