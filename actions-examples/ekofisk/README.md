@@ -8,6 +8,14 @@ python3 csf_polygon_hole_builder.py
 
 ```
 
+## Script parameter customization
+
+The Python generator can be adjusted by editing the input parameters defined in the `__main__` section.
+
+This allows you to modify the main geometric values, station positions, polygon resolution, names, default weights, and the optional weight-law expression without changing the internal script logic.
+
+In practice, the script is intended to be customized through its parameters, then executed again to produce an updated CSF `ekofisk_geometry_m.yaml`.
+
 
 start CSF 
 ```
