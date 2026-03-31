@@ -1,6 +1,15 @@
 #  🛠  ContinuousSectionField (CSF) - Custom Weight Laws
 
-This document provides the technical specifications for implementing and using **Custom Weight Laws** to define the variation of the Elastic Modulus ratio (`weight`) along a structural member.
+A Custom Weight Law defines how the weight, i.e. the Elastic Modulus ratio, varies along `z` for a specific structural component of the member.
+
+For example, the following law assigns a smooth variation to the component defined between two polygons, both named "lowerpart", changing its weight from `w0` at the base to `w1` at the top:
+
+```python
+section_field.set_weight_laws([
+    "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
+])
+```
+
 
 
 ## Identify your Polygons (Naming is Key)
