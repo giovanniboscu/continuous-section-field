@@ -306,6 +306,7 @@ section_field.set_weight_laws([
 | **`d0(i, j)`** | Distance between vertex $i$ and $j$ at **start** ($z=0$) | `w0 * (d(1,2) / d0(1,2))` |
 | **`d1(i, j)`** | Distance between vertex $i$ and $j$ at **end** ($z=L$) | `w1 * (d(1,2) / d1(1,2))` |
 | **`E_lookup(file)`** | Interpolated value from an external text file | `E_lookup('stiffness.txt')` |
+| **`T_lookup(file)`** |  Interpolated value from an external text file, evaluated against normalized `t` in `[0, 1]` | `T_lookup('t_stiffness.txt')` |
 
 ### ⚠️ Vertex Indexing Rule
 When using the distance function `d(i, j)` in your weight laws:
