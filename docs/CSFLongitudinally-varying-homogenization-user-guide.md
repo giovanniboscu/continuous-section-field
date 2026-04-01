@@ -75,10 +75,7 @@ Example: Defining a Composite Beam
         ),
         weight=0.9,# <-- Weight changed
         name="lowerpart",
-    )
-    # -------------------------------------------------------
-    # Section field instantiation
-    # -------------------------------------------------------
+
     # Define start/end sections and create the continuous field.
 
     # --- SECTION AND FIELD DEFINITION ---
