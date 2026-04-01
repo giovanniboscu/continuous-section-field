@@ -90,9 +90,6 @@ Example: Defining a Composite Beam
     s0 = Section(polygons=(poly_bottom_start, poly_top_start), z=0.0)
     s1 = Section(polygons=(poly_bottom_end,  poly_top_end),  z=L)
 
-    s0 = Section(polygons=(poly_top_start, poly_bottom_start), z=0.0)
-    s1 = Section(polygons=(poly_top_end,   poly_bottom_end),   z=L)
-
     section_field = ContinuousSectionField(section0=s0, section1=s1)
 
     section_field.set_weight_laws([
