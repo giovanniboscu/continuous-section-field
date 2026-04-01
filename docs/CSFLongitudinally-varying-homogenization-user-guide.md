@@ -93,6 +93,14 @@ Example: Defining a Composite Beam
 
 
 ```
+
+> **Example: Order matters**  
+> The pairing is determined by creation order, not by polygon name.  
+> In this example, `poly_bottom_start` is paired with `poly_bottom_end`,  
+> and `poly_top_start` with `poly_top_end`, because they appear  
+> in the same position in their respective sections.
+>
+> 
 ***yaml format***
 ```
 CSF:
