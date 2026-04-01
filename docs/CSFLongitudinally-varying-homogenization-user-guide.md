@@ -20,7 +20,7 @@ In practice, it is very simple: you just draw the polygons and keep them in the 
 To avoid relying on unclear numerical connections such as “Pair #227,” each polygon should have its own unique name within the section. The name is the  used to link two polygons to the weight law. If a name is mistyped or missing, the engine will catch it immediately. For example, a polygon named `flange` can represent the flange region, while another named `web` can represent the web region. Using the same names in both sections is not required for the geometry itself.
 
 
-In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept:  
+In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept
 
 
 
@@ -126,9 +126,6 @@ CSF:
       - 'pol,pol: 1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))'
 
 ```
-
-
-The engine connects sections based on their **creation order**. The first polygon defined at the start automatically matches the first polygon defined at the end.
 
 > **Note**  
 > Creation order defines the **geometric pairing**. Polygon names are used to **assign and track physical laws** (e.g., `W(z)`) along the section field.
@@ -244,7 +241,7 @@ The effective contribution is derived automatically from the containment relatio
 
 ---
 
-### 4. Why "Weight" and not "E"?
+### Why "Weight" and not "E"?
 You might wonder: *"If it represents the Elastic Modulus, why not call it E?"*
 
 The name **`weight`** was chosen for two scientific reasons:
