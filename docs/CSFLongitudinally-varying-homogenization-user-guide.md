@@ -20,7 +20,7 @@ In practice, it is very simple: you just draw the polygons and keep them in the 
 To avoid relying on unclear numerical connections such as “Pair #227,” each polygon should have its own unique name within the section. The name is the  used to link two polygons to the weight law. If a name is mistyped or missing, the engine will catch it immediately. For example, a polygon named `flange` can represent the flange region, while another named `web` can represent the web region. Using the same names in both sections is not required for the geometry itself.
 
 
-In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept
+In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept.
 
 
 
