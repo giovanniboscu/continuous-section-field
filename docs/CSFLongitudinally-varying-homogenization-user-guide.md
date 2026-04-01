@@ -229,7 +229,9 @@ CSF resolves, for each polygon, its **immediate container** (direct parent) in t
 This allows the engine to compute two distinct quantities per polygon:
 
 - **Absolute weight** `W(z)`: the weight assigned to the polygon by the user-defined law.
-- **Effective weight** `W_eff(z)`: the net local contribution of the polygon after removing the parent domain's weight:
+- **Effective weight** `W_eff(z)`: the net local contribution of the polygon after removing the parent domain's weight.
+
+  
 
 
 This prevents double-counting of the overlapping domain between a nested polygon and its immediate parent.
