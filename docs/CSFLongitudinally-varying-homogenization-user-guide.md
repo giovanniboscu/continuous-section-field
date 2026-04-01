@@ -228,8 +228,7 @@ When polygons are nested, CSF automatically detects the immediate container of e
 From this internal containment logic, CSF assembles the contribution of each region consistently during section-property evaluation.
 
 The value assigned by the user remains the polygon’s absolute weight `W(z)`, while CSF internally derives the effective local contribution `W_eff(z)` relative to the containing domain.
-
-No manual correction is required from the user.
+No manual subtraction or containment correction is required from the user.
 
 ### Example: embedded steel reinforcement in concrete
 
