@@ -445,6 +445,8 @@ weight_value, report_data = safe_evaluate_weight(formula_test, p_start, p_end, 1
 print_evaluation_report(weight_value, report_data)
 ```
 
+full example see
+[csf_weights_lab.py](https://github.com/giovanniboscu/continuous-section-field/blob/main/example/csf_weights_lab.py)
 
 
 
