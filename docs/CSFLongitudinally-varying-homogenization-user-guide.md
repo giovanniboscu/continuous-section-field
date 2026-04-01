@@ -269,8 +269,8 @@ To override the default behavior, use the `set_weight_laws()` method. This metho
 section_field = ContinuousSectionField(section0=s0, section1=s1)
 
 section_field.set_weight_laws([
-    "poly_bottom_start,poly_bottom_end : w0 * np.exp(-z / L)",  # Exponential decay over the member length
-    "poly_top_start,poly_top_start : w0 / 100",
+    "name_of_bottom_start,name_of_bottom_end : w0 * np.exp(-z / L)",  # Exponential decay over the member length
+    "name_of_top_start,name_of_top_end : w0 / 100",
 ])
 ```
 
