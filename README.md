@@ -495,6 +495,9 @@ poly1_end = Polygon(
 # All polygons defined at Z=0.0 are grouped into s0, and those at Z=10.0 into s1.
 # ----------------------------------------------------------------------------------
 
+# Order matters: poly0_start pairs with poly0_end,
+# and poly1_start pairs with poly1_end,
+
 s0 = Section(polygons=(poly0_start, poly1_start), z=0.0)
 s1 = Section(polygons=(poly0_end, poly1_end), z=10.0)
 
