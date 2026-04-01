@@ -209,7 +209,6 @@ The reinforcement is defined using its **absolute** material property:
 
 - `E_steel = 210 000`
 
-CSF automatically computes the effective contribution based on containment:
 
 - `W_effective = E_steel − E_concrete = 180 000`
 
@@ -232,8 +231,11 @@ This makes it possible to distinguish between two quantities:
 - **Effective weight** `W_eff(z)`: the actual local contribution of that polygon relative to its immediate container.
 
 This correction is handled automatically by the engine and is not something the user needs to compute manually.
+This automatic nesting logic is especially important when multiple embedded domains vary simultaneously along `z`, because it ensures that the effective contribution of each polygon is computed consistently from its local containment hierarchy.
 
 It prevents double-counting in nested domains.
+
+CSF automatically computes the effective contribution based on containment.
 
 ### Example: embedded steel reinforcement in concrete
 
