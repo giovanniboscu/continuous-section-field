@@ -151,7 +151,7 @@ Example
 
 By default, the variation of weight between the start and end sections is linear. If you do not specify a custom law, the software automatically interpolates the value based on the longitudinal position z.
 
-# Important — what is `weight`?
+# What is `weight`?
 
 > In CSF, `weight` is a **scalar field** used to scale section properties (a generalized multiplier of the geometric area).  
 > It can represent an **E-modulus ratio** (dimensionless) *or* the **Young’s modulus E** (e.g., MPa).  
