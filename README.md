@@ -496,7 +496,8 @@ poly1_end = Polygon(
 # ----------------------------------------------------------------------------------
 
 # Order matters: poly0_start pairs with poly0_end,
-# and poly1_start pairs with poly1_end,
+# and poly1_start pairs with poly1_end
+# because they appear in the same position in their respective sections.
 
 s0 = Section(polygons=(poly0_start, poly1_start), z=0.0)
 s1 = Section(polygons=(poly0_end, poly1_end), z=10.0)
