@@ -223,7 +223,7 @@ The subtraction of the parent material is handled internally by CSF.
 
 ## Nesting Hierarchy and Effective Weight
 
-When polygons are nested, CSF automatically detects the immediate container of each polygon.
+When polygons are nested, you define the polygons and the assigned weights; CSF handles the containment logic internally.
 
 This allows the engine to distinguish between:
 
