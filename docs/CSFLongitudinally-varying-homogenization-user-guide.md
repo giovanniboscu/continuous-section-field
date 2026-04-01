@@ -326,6 +326,23 @@ Intermediate values are interpolated linearly.
 ```
 
 E_lookup(file) returns the value interpolated at the current longitudinal coordinate (z) for the active integration point.
+### Data-Driven Modeling: `T_lookup` data from external text file
+
+If you want to drive the law using a **normalized coordinate**, you can use `T_lookup(file)`.
+
+In this case, the first column in the lookup file is the normalized coordinate `t` in `[0, 1]`, not the physical coordinate `z`.
+
+Intermediate values are interpolated linearly.
+
+```text
+# t   Value
+0.0   210000
+0.2   205000
+0.5   180000
+1.0   150000
+```
+
+`T_lookup(file)` returns the value interpolated at the current normalized coordinate `t` for the active integration point.
 
 ---
 ### 3. Mathematical Operations with `E_lookup`
