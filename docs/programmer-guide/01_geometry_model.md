@@ -92,6 +92,11 @@ if __name__ == "__main__":
     # Define start/end sections and create the continuous field.
     L = 10.0
 
+    # Order matters: poly_bottom_start pairs with poly_bottom_end,
+    # and poly_top_start pairs with poly_top_end,
+    # because they appear in the same position in their respective sections.
+
+
     s0 = Section(polygons=(poly_bottom_start, poly_top_start), z=0.0)
     s1 = Section(polygons=(poly_bottom_end,   poly_top_end),   z=L)
 
