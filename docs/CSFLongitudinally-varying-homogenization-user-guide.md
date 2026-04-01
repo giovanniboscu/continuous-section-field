@@ -345,8 +345,6 @@ Intermediate values are interpolated linearly.
 `T_lookup(file)` returns the value interpolated at the current normalized coordinate `t` for the active integration point.
 
 ---
-### 3. Mathematical Operations with `E_lookup`
-The `E_lookup('file.txt')` function is designed to return a **numeric value** (float) based on an external data file. Because it returns a number, you can perform any standard NumPy mathematical operation on it.
 
 ### 🛡️ Numerical Robustness & Validation Rules
 
