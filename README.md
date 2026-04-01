@@ -12,7 +12,9 @@
 **[Key Features](#key-features)** • **[Installation & setup](#option-a---install-from-pypi-recommended)** • **[Worked Example](#worked-example-continuously-tapered-t-beam)** • **[Validation: Cylinder](#csf-numerical-validation-circular-hollow-section)** • **[Case Study: NREL 5-MW](#csf-validation--numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
 
 ---
+📚 [Full Documentation](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs) - Guides, references, and examples for all CSF features.
 
+---
 ### Motivation 
 
 CSF complements standard FEM workflows by providing a continuous geometric representation of non-prismatic members. It enables direct evaluation of section-property fields along z, avoiding manual multi-segment discretization and supplying consistent sectional data for downstream analysis.
