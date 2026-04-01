@@ -24,7 +24,7 @@ In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept:
 
 
 
-### Automatic Mapping
+### Polygon Pairing by Creation Order
 
 Example: Defining a Composite Beam
 
