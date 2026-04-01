@@ -257,9 +257,10 @@ The name **`weight`** was chosen for two scientific reasons:
 
 ---
 
-### ⚠️ Final Summary for Voids
+### Final Summary for Voids
 
-**Warning:** A void must be declared with `weight = 0.0`. If you use a non-zero weight, that region will retain residual stiffness/property.
+A void must be declared with `weight = 0.0`. If you use a non-zero weight, that region will retain residual stiffness/property.
+
 ---
 
 
