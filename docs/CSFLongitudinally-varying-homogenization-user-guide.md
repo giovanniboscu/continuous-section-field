@@ -192,7 +192,7 @@ If you place a void polygon (`W = 0.0`) over a solid region (`W = 1.0`), CSF aut
 
 ---
 
-### 2. Multi-Material Logic: Scaled Weights (Example Only)
+###  Multi-Material Logic: Scaled Weights (Example Only)
 
 > **This section is an illustrative example, not a mandatory rule.**  
 > The numeric values below are chosen only to demonstrate the concept of using a reference material and relative scaling.
