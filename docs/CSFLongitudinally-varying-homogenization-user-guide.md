@@ -38,8 +38,8 @@ Example: Defining a Composite Beam
             Pt( b/2,  h/2),
             Pt(-b/2,  h/2),
         ),
-        weight=1, # 
-        name="upperpart", # <-- Weight
+        weight=1,# <-- Weight
+        name="upperpart", 
     )
 
 
@@ -50,8 +50,8 @@ Example: Defining a Composite Beam
             Pt( b/2,  0.0),
             Pt(-b/2,  0.0),
         ),
-        weight=1,
-        name="lowerpart", # <-- Weight
+        weight=1,# <-- Weight
+        name="lowerpart", 
     )
 
 
