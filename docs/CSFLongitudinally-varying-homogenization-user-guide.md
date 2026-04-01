@@ -17,7 +17,7 @@ Before proceeding, it is necessary to understand how polygons are constructed an
 
 In practice, it is very simple: you just draw the polygons and keep them in the same order in `S0` and `S1`.
 
-To avoid relying on unclear numerical connections such as “Pair #227,” each polygon should have its own unique name within the section. The name is simply a human-readable way to identify the same component from the start section to the end section. This is especially useful when assigning a weight law  $W(z)$  to a specific part. For example, a polygon named `flange` can represent the flange region, while another named `web` can represent the web region. Using the same names in both sections is not strictly required for the geometry itself, but it is strongly recommended for clarity and for following the correct physical variation along the height.
+To avoid relying on unclear numerical connections such as “Pair #227,” each polygon should have its own unique name within the section. The name is the  used to link two polygons to the weight law. If a name is mistyped or missing, the engine will catch it immediately. For example, a polygon named `flange` can represent the flange region, while another named `web` can represent the web region. Using the same names in both sections is not required for the geometry itself.
 
 
 In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept:  
