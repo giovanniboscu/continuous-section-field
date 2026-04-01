@@ -173,61 +173,7 @@ By default, the variation of weight between the start and end sections is linear
 
  CSF supports two different (but equally valid) interpretations. You must pick one and
  keep it consistent across your workflow and exports:
-
-## Convention A — `weight` as a dimensionless stiffness ratio 
-
-This convention preserves physical meaning, numerical stability, and clean interoperability with OpenSees.
-
-- `weight = E / E_ref` (dimensionless)
-- Choose one reference modulus `E_ref` (e.g., steel, concrete, etc.)
-- Softer regions have `0 < weight < 1`, stiffer have `weight > 1`.
-- Voids are represented by `weight = 0` (see "Voids" below).
-
-In this convention, CSF computes **modular (weighted) section properties**:
-
-$$
-A^{\ast}(z) = \sum_{i} w_{i}(z)\,A_{i}(z), \qquad
-I^{\ast}(z) = \sum_{i} w_{i}(z)\,I_{i}(z)
-$$
-
-so that the stiffness products match:
-
-$$
-E_{ref}\,A^{\ast}(z) = \sum_{i} E_{i}(z)\,A_{i}(z), \qquad
-E_{ref}\,I^{\ast}(z) = \sum_{i} E_{i}(z)\,I_{i}(z)
-$$
- #### Convention B — `weight` as a real-valued field (e.g. Young’s modulus)
- - `weight = E` in your chosen units (MPa, Pa, etc.)
- - This allows data-driven modeling directly in physical units (e.g., from `E_lookup()`).
-
- With this convention, the section integrals become stiffness-like quantities directly
- (e.g., \(\int E\,dA\)). This is valid, but you must then export to OpenSees using a
- stiffness-encoded contract (see OpenSees mapping below).
-
-### Voids: use `0` in input (CSF handles the effective subtraction)
-
-A void/hole is a region where the target material property is **zero**.  
-Therefore, in your input data you should simply use:
-
-```math
-w_{void} = 0
-```
-
-CSF does not model material superposition.
-When a void polygon overlaps a solid polygon, the overlap is interpreted as a
-containment relationship, not as overlapping matter.
-
-CSF internally converts this containment into an
-effective (delta) representation, so that the overlapped region contributes zero
-to the weighted integrals.
-
-You should not enter negative weights for voids in the user model
-
-# 📑 Deep Dive: The Logic of "Weight" (W) and Voids
-
-In CSF, the parameter `weight` (W) is a generalized multiplier of the geometric area. Understanding its scale is fundamental to obtaining correct structural results.
-In this guide we use weight primarily as E-modulus (or E-ratio), but the same mechanism can represent other per-area properties.
-
+ 
 ---
 ### 1. Normalized Logic: The Unitary Material (W = 1.0)
 When working with a single material, we use **1.0** to represent "Full Material".
@@ -251,7 +197,6 @@ If your section includes materials with different stiffness (or other properties
 - **Timber (softer):** `weight = 0.5` | **Void within Timber:** `weight = 0.0`
 
 
-**Crucial rule (user-side):**
 A void is always declared as **zero**. CSF performs the internal bookkeeping needed to remove the underlying material contribution in the overlap.
 
 ---
@@ -300,8 +245,6 @@ The user declares only the absolute material property of each polygon.
 The effective contribution is derived automatically from the containment relationship.
 
 > **Note:** only the *immediate* parent is considered, not ancestors higher in the nesting hierarchy.
-
-
 
 ---
 
