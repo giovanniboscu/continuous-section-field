@@ -223,19 +223,16 @@ The subtraction of the parent material is handled internally by CSF.
 
 ## Nesting Hierarchy and Effective Weight
 
-When polygons are nested, CSF automatically identifies, for each polygon, its immediate container (direct parent).
+When polygons are nested, CSF automatically detects the immediate container of each polygon.
 
-This makes it possible to distinguish between two quantities:
+This allows the engine to distinguish between:
 
-- **Absolute weight** `W(z)`: the weight directly assigned to the polygon by the user-defined law.
-- **Effective weight** `W_eff(z)`: the actual local contribution of that polygon relative to its immediate container.
+- **Absolute weight** `W(z)`: the value directly assigned by the user-defined law.
+- **Effective weight** `W_eff(z)`: the actual local contribution of that polygon relative to its containing domain.
 
-This correction is handled automatically by the engine and is not something the user needs to compute manually.
-This automatic nesting logic is especially important when multiple embedded domains vary simultaneously along `z`, because it ensures that the effective contribution of each polygon is computed consistently from its local containment hierarchy.
+This is handled internally by CSF. The user does not need to compute or adjust anything manually.
 
-It prevents double-counting in nested domains.
-
-CSF automatically computes the effective contribution based on containment.
+This automatic containment logic is particularly useful when multiple embedded domains vary simultaneously along `z`, because it keeps the effective contribution of each region consistent throughout the section assembly.
 
 ### Example: embedded steel reinforcement in concrete
 
