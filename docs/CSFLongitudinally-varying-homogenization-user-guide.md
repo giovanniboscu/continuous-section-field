@@ -223,16 +223,13 @@ The subtraction of the parent material is handled internally by CSF.
 
 ## Nesting Hierarchy and Effective Weight
 
-When polygons are nested, you define the polygons and the assigned weights; CSF handles the containment logic internally.
+When polygons are nested, CSF automatically detects the immediate container of each polygon.
 
-This allows the engine to distinguish between:
+From this internal containment logic, CSF assembles the contribution of each region consistently during section-property evaluation.
 
-- **Absolute weight** `W(z)`: the value directly assigned by the user-defined law.
-- **Effective weight** `W_eff(z)`: the actual local contribution of that polygon relative to its containing domain.
+The value assigned by the user remains the polygon’s absolute weight `W(z)`, while CSF internally derives the effective local contribution `W_eff(z)` relative to the containing domain.
 
-This is handled internally by CSF. The user does not need to compute or adjust anything manually.
-
-This automatic containment logic is particularly useful when multiple embedded domains vary simultaneously along `z`, because it keeps the effective contribution of each region consistent throughout the section assembly.
+No manual correction is required from the user.
 
 ### Example: embedded steel reinforcement in concrete
 
