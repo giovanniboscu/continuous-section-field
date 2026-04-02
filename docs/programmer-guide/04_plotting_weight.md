@@ -160,7 +160,7 @@ The polygon names are not required to be the same.
 
 ```python
 section_field.set_weight_laws([
-    "lowerpart,lowerpart: put your funciont w(z) or w(t) here",
+    "lowerpart,lowerpart: put your funcion w(z) or w(t) here",
 ])
 ```
 The independent variable can be either `z` (physical coordinate) or `t` (normalized coordinate in `[0, 1]`).
