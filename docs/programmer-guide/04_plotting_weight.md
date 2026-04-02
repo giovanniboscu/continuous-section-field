@@ -200,6 +200,7 @@ The following helper functions are available in weight-law expressions.
 
 ```python
 
+
     # -------------------------------------------------------
     # Section field instantiation
     # -------------------------------------------------------
@@ -210,6 +211,11 @@ The following helper functions are available in weight-law expressions.
     s1 = Section(polygons=(poly_bottom_end,   poly_top_end),   z=L)
 
     section_field = ContinuousSectionField(section0=s0, section1=s1)
+
+    section_field.set_weight_laws([
+        "lowerpart,lowerpart :np.where(t < 1/3, w0, np.where(t < 2/3, 0.5*(w0 + w1), w1))", 
+    ])  
+
 
 ```
 
