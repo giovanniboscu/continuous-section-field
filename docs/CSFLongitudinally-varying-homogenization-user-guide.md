@@ -29,7 +29,7 @@ In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept.
 Example: Defining a Composite Beam
 
 ***Program format***
-
+a
 ```
     poly_top_start = Polygon(
         vertices=(
@@ -133,7 +133,7 @@ CSF:
             - [-0.5,  0.1]
 
   weight_laws:
-      - 'pol,pol: 1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))'
+    - 'pol,pol: 1.0 - 0.40*np.exp(-((z-5.0)**2)/(2*(2.0**2)))'
 
 ```
 
