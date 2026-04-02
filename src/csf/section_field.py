@@ -6697,47 +6697,39 @@ class ContinuousSectionField:
                             raise KeyError(f"Critical Error: Polygon '{n0}' not found.")
                         normalized_map[valid_names0.index(n0) + 1] = formula
                 else:
-                    # Positional list case
-                    if i < num_polygons:
-                        normalized_map[i + 1] = item
-
-        elif isinstance(laws, dict):
-            for key, law in laws.items():
-                target_idx = None
-                if isinstance(key, int):
-                    target_idx = key
-                elif isinstance(key, str):
-                    if key not in valid_names0:
-                        raise KeyError(f"Critical Error: No polygon named '{key}' found.")
-                    target_idx = valid_names0.index(key) + 1
+                   if n0 not in valid_names0:
+                       raise KeyError(f"Critical Error: Polygon '{n0}' not found.")
+                   normalized_map[valid_names0.index(n0) + 1] = formula
                 
-                if target_idx is not None:
-                    if target_idx < 1 or target_idx > num_polygons:
-                        raise IndexError(f"Index {target_idx} out of range (1-{num_polygons}).")
-                    normalized_map[target_idx] = law
+                   # Positional list case
+                   # if i < num_polygons:
+                   #     normalized_map[i + 1] = item
+
+        else:
+           raise ValueError(
+               "dict is not supported in set_weight_laws(); use a list of strings"
+           )
+
+  
 
         z0, z1 = self.s0.z, self.s1.z
-        z_mid = (z0 + z1) / 2.0 # Actual RELATIVE Z value halfway between the sections
         L_val = z1 - z0
+        z_mid = L_val / 2.0 # Actual RELATIVE Z value halfway between the sections
+
 
         # Compute t consistently with the interpolation formula
         # If L_val is 0 (coincident sections), t is forced to 0 to avoid division by zero
         #t_mid = (z_mid - z0) / L_val if L_val != 0 else 0.0
-        
 
         for idx, formula in normalized_map.items():
-            
-
             if isinstance(formula, str):
-                
                 try:
                     # Endpoint polygon references for distance calculations
                     p0_test = self.s0.polygons[idx-1]
                     p1_test = self.s1.polygons[idx-1]
-                    
                     # Generation of midpoint vertices for p_mid (required for d(i,j) helper)
-                    current_verts = tuple(v0.lerp(v1,z_mid,L_val) for v0, v1 in zip(p0_test.vertices, p1_test.vertices))
-                    p_mid = Polygon(vertices=current_verts, weight=p0_test.weight, name=p0_test.name)
+                    #current_verts = tuple(v0.lerp(v1,z_mid,L_val) for v0, v1 in zip(p0_test.vertices, p1_test.vertices))
+                    #p_mid = Polygon(vertices=current_verts, weight=p0_test.weight, name=p0_test.name)
                     
                     # 1. Calculate the total length of the field
                     l_total = abs(self.s1.z - self.s0.z)
