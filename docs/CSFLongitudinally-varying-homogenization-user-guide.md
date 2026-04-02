@@ -6,7 +6,7 @@ For example, the following law assigns a smooth variation to the component defin
 
 ```python
 section_field.set_weight_laws([
-    "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
+    "lowerpart,lowerpart: w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
 ])
 ```
 Before proceeding, it is necessary to understand how polygons are constructed and identified, because the specified mathematical variation is defined between them.
@@ -90,7 +90,7 @@ a
     section_field = ContinuousSectionField(section0=s0, section1=s1)
 
     section_field.set_weight_laws([
-        "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
+        "lowerpart,lowerpart: w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
     ])
 
 
@@ -271,7 +271,7 @@ A void must be declared with `weight = 0.0`. If you use a non-zero weight, that 
 To override the default behavior, use the `set_weight_laws()` method. This method accepts a list of strings where each string maps a start-section polygon to its corresponding end-section polygon using a specific formula.
 
 **Format:**
-`"StartPolygonName, EndPolygonName : <Python_Formula_Expression>"`
+`"StartPolygonName,EndPolygonName : <Python_Formula_Expression>"`
 
 
 #### Example
