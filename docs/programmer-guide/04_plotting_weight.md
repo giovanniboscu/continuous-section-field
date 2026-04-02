@@ -257,7 +257,7 @@ example
 
 ```python
 section_field.set_weight_laws([
-    "lowerpart,lowerpart: T_lookup('w_profile.txt') * z / L",
+    "lowerpart,lowerpart: E_lookup('put the file name here') * z / L",
 ])
 ```
 
