@@ -213,7 +213,7 @@ The following helper functions are available in weight-law expressions.
     section_field = ContinuousSectionField(section0=s0, section1=s1)
 
     section_field.set_weight_laws([
-        "lowerpart,lowerpart :np.where(t < 1/3, w0, np.where(t < 2/3, 0.5*(w0 + w1), w1))", 
+       "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
     ])  
 
 
@@ -227,6 +227,17 @@ This represents a half-cosine smooth degradation law (also called a cosine ramp 
 
 This is a **3-step piecewise law** on normalized `t` (`0..1`):
 ```python
+    # -------------------------------------------------------
+    # Section field instantiation
+    # -------------------------------------------------------
+    # Define start/end sections and create the continuous field.
+    L = 10.0
+
+    s0 = Section(polygons=(poly_bottom_start, poly_top_start), z=0.0)
+    s1 = Section(polygons=(poly_bottom_end,   poly_top_end),   z=L)
+
+    section_field = ContinuousSectionField(section0=s0, section1=s1)
+
    section_field.set_weight_laws([
         "lowerpart,lowerpart :np.where(t < 1/3, w0, np.where(t < 2/3, 0.5*(w0 + w1), w1))", 
     ])  
