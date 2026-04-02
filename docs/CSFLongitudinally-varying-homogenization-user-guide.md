@@ -449,7 +449,10 @@ Simply pass your formulas as strings. Whether you are using basic math, NumPy fu
 formula_test = "np.maximum(w0 * 0.01, E_lookup('experimental_data.txt'))"
 
 # Instead of printing the raw tuple, we use the printer:
-weight_value, report_data = safe_evaluate_weight(formula_test, p_start, p_end, 10.0, 0.5)
+zrel=104
+w = safe_evaluate_weight_zrelative(formula, p0=poly_start,p1=poly_end, z0=100,z1=110 , z=zrel,print=True)
+
+  
 
 # CALL THE PRINTER HERE
 print_evaluation_report(weight_value, report_data)
