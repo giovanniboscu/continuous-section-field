@@ -347,11 +347,6 @@ this is the function you need to set up
     # Extract one section and print
     # -------------------------------------------------------
     # Here z = 10.0, so this is exactly the end section (S1).
-    zsec_val = 10.0
-    sec_at_z = section_field.section(zsec_val)
-
- 
-
     section_field.set_weight_laws([
             f"lowerpart,lowerpart: T_lookup('wnormlookup.txt' )" 
         ])
