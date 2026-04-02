@@ -216,7 +216,7 @@ The reinforcement is defined using its **absolute** material property:
 
 - `E_steel = 210 000`
 
-
+CSF internally derives the effective contribution:
 - `W_effective = E_steel − E_concrete = 180 000`
 
 The user only specifies the reinforcement property.  
