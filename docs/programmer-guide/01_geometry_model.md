@@ -151,19 +151,6 @@ FULL MODEL ANALYSIS REPORT - SECTION EVALUATION
 ==================================================================================================================================
 ```
 
-
-> **Note on `J_sv = 0.01015` (with `alpha = 1`)**
->
-> In this run, `J_sv` is the torsional value produced by the global/default CSF torsion path for the current section state.
->
-> With `alpha = 1`, no extra scaling is applied, so `J_sv` is reported directly as computed by that baseline model.
->
-> This value is **not** coming from thin-walled specialized paths:
-> - `J_sv_cell = 0.00000` -> no active/valid `@cell` contribution in this section
-> - `J_sv_wall = 0.00000` -> no active/valid `@wall` contribution in this section
->
-> Therefore, `J_sv = 0.01015` should be interpreted as the reference torsional constant for this specific configuration and solver path.
-
 ---
 
 ## Read Available Analysis Keys and Print Only Area
