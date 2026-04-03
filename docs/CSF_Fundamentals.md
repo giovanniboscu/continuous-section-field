@@ -386,6 +386,8 @@ CSF:
             - [ 2.750, -4.430]
             - [-2.750, -4.430]
 ```
+> **Note on `@t=` suffix**
+> If the `@t=` thickness suffix is specified on only one of the two reference sections (`S0` or `S1`), CSF treats that thickness value as **constant along the entire element length**.
 
 
 ## 7. Material Building Block
@@ -488,5 +490,3 @@ CSF:
     - 'web,web:1.0 - 0.30 * (z / 10.0)'                                        
 ```
 
-> **Note on `@t=` suffix**
-> If the `@t=` thickness suffix is specified on only one of the two reference sections (`S0` or `S1`), CSF treats that thickness value as **constant along the entire element length**.
