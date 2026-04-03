@@ -177,3 +177,23 @@ In this example, the element is formed as the union of the volume generated betw
 > **Note**  
 > Also in this YAML representation, the spatial connection order used to generate the element is determined by the ordered list of polygons in each section.
 
+### 6. Polygon Classification Suffixes
+
+In CSF, the polygon name can be extended with classification suffixes such as:
+
+- `@cell`
+- `@cell@t=?`
+- `@wall`
+- `@wall@t=?`
+
+These suffixes are used by CSF to classify the polygon and to activate the corresponding calculation procedure.
+
+More specifically:
+
+- polygons classified with `@cell` are treated as closed-cell polygons
+- polygons classified with `@wall` are treated as thin-wall polygons
+- the optional suffix `@t=?` assigns the thickness value to that polygon
+
+When one of these classifications is present, CSF applies the corresponding torsional contribution method described in the *De Saint-Venant Torsional Constant* section [De Saint-Venant Torsional Constant - Cell and Wall Contributions in CSF](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md)
+
+The classification suffix is not considered part of the polygon base name.
