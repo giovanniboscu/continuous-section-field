@@ -114,8 +114,5 @@ In this example, the outer area contributes +9, while the inner area contributes
     │
   0 ┼────────────────────┬─────────────────────────────┬────────> x
      0         1         2         3         4         5
-
-     0         1         2         3         4         5
-
 ```
 
