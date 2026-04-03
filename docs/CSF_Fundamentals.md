@@ -200,3 +200,6 @@ This guide covers the geometric construction of tagged polygons in CSF. [CSF Pol
 
 
 **The classification suffix is not considered part of the polygon base name.**
+
+The purpose of the nine-point polygon can now be made explicit.  
+It is a single geometric representation of what would otherwise be described as two separate entities: an outer rectangle and an inner rectangle. By encoding both within one ordered polygon stream, CSF can treat them as one tagged geometric object.
