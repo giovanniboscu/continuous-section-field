@@ -86,7 +86,7 @@ In this example, the outer area contributes +9, while the inner area contributes
 - `7 -> [3, 4]`
 - `8 -> [4, 4]`
 - `9 -> [4, 3]` 
-
+- `10 -> [3, 3]` 
 
 
 ```text
@@ -100,8 +100,8 @@ In this example, the outer area contributes +9, while the inner area contributes
     │                    │          │        |         │
     │                    │          │        |         │
     │                    │   6(3,3) │        |         │
-  3 ┤    5(2,3) - 0(2,3) ● ─────────●........●         │
-    │                    |                   9(4,3)    |
+  3 ┤    5(2,3) - 0(2,3) ● ─────────●────────●         │
+    │                    |   10(3,3)         9(4,3)    |
     │                    |                             |
     │                    |                             |
   2 ┤             1(2,2) ●─────────────────────────────● 2(5,2)
