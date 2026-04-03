@@ -33,11 +33,19 @@ For sections composed of both closed cells and open walls, the CSF decomposes $J
 
 ### 2.1 Closed-cell contribution — $J_{\mathrm{sv,cell}}$
 
-Each closed cell $k$ contributes via the **Bredt formula**:
+Each closed cell $k$ contributes through the following CSF closed-cell approximation:
 
-$$J_{\mathrm{sv,cell},k} = \frac{4 A_k^2}{\displaystyle\oint_k \frac{ds}{t}}$$
+$$J_{\mathrm{sv,cell},k} = \frac{4 A_{m,k}^2 \, t_k}{b_{m,k}}$$
 
-where $A_k$ is the area enclosed by the mid-line of cell $k$.
+where the global mean quantities are defined as:
+
+$$A_{m,k} = \frac{A_{\mathrm{outer},k} + A_{\mathrm{inner},k}}{2}$$
+
+$$b_{m,k} = \frac{P_{\mathrm{outer},k} + P_{\mathrm{inner},k}}{2}$$
+
+and $t_k$ is the wall thickness of the cell.
+
+This means that, in the current CSF implementation, the closed-cell contribution is obtained from global average quantities derived from the outer and inner loops, rather than from an explicit geometric reconstruction of the mid-line.
 
 The total closed-cell contribution is:
 
@@ -67,9 +75,10 @@ The CSF reports the two contributions **separately** before combining them:
 
 | Quantity | Formula | Description |
 |---|---|---|
-| $J_{\mathrm{sv,cell}}$ | $\sum_k \dfrac{4A_k^2}{\oint ds/t}$ | Sum over all closed cells |
+| $J_{\mathrm{sv,cell}}$ | $\sum_k \dfrac{4 A_{m,k}^2 \, t_k}{b_{m,k}}$ | Sum over all closed cells using global mean quantities, with $A_{m,k} = (A_{\mathrm{outer},k}+A_{\mathrm{inner},k})/2$ and $b_{m,k} = (P_{\mathrm{outer},k}+P_{\mathrm{inner},k})/2$ |
 | $J_{\mathrm{sv,wall}}$ | $\sum_i \dfrac{b_i t_i^3}{3}$ | Sum over all open walls |
 | $J_{\mathrm{sv}}$ | $J_{\mathrm{sv,cell}} + J_{\mathrm{sv,wall}}$ | **Total — used for export** |
+
 
 This breakdown allows the user to verify that each component is physically meaningful and to assess the relative importance of cells vs. walls in the torsional response.
 
@@ -117,8 +126,11 @@ The sum $J_{\mathrm{sv}} = J_{\mathrm{sv,cell}} + J_{\mathrm{sv,wall}}$ is **val
 
 ```
 CSF reports separately:
-  J_sv_cell  =  Σ_k  4·A_k² / ∮(ds/t)     [Bredt, closed cells]
-  J_sv_wall  =  Σ_i  b_i·t_i³ / 3          [thin open walls]
+  J_sv_cell  =  Σ_k  4·A_m,k²·t_k / b_m,k   [closed-cell approximation]
+              with A_m,k = (A_outer,k + A_inner,k)/2
+              and  b_m,k = (P_outer,k + P_inner,k)/2
+
+  J_sv_wall  =  Σ_i  b_i·t_i³ / 3           [thin open walls]
 
 CSF exports (OpenSees, SAP2000):
   J_sv  =  J_sv_cell  +  J_sv_wall
