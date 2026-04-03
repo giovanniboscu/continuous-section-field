@@ -51,7 +51,6 @@ Start here: these three guides cover everything you need to work with CSF effect
 |------|-------------|
 | [CSF_Polygon_Geometry_Guide.md](CSF_Polygon_Geometry_Guide.md) | Geometric construction of tagged polygons: `@cell` (closed thin-walled cell, two-loop encoding) and `@wall` (open thin-walled strip, single loop). Includes YAML examples and checklists. |
 | [GeneratingSectionGeometryWithAnLLM.md](GeneratingSectionGeometryWithAnLLM.md) | Workflows for generating CSF-ready YAML geometry using an LLM: from images, analytical descriptions, and parametric scripts. Includes prompt examples and vertex resolution guidelines. |
-| [cross_section_homogenization.md](cross_section_homogenization.md) | Conceptual overview of the CSF framework: continuous description of non-prismatic and multi-material members via longitudinally varying homogenization fields. |
 
 ---
 
