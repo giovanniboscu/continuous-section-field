@@ -134,6 +134,7 @@ csf-actions geometry.yaml actions.yaml
 
 [Example list](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/rectangle)  Complete worked example covering all available actions on a tapered rectangular section
 
+[CSF Geometry, Sections, Polygon Tags, and Weight Laws Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md) 
 
 ---
 ### Using CSF as a Python Library
