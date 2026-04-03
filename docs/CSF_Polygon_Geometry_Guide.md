@@ -353,7 +353,7 @@ Use a distinct base name for each
 For complex or morphing sections (e.g. towers with varying geometry from base to top), geometry can be generated programmatically.
 
 See the example script:  
-[`writegeometry_v6_twist.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/morphingtower/writegeometry_v6_twist.py)
+[Parametric CSF Geometry Guide](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/variable_tower)
 
 This script builds multi-section YAML definitions automatically, including twist along the member axis.
 
