@@ -19,3 +19,20 @@ Once geometry is defined, CSF introduces one additional building block:
 * **Weight**: a scalar factor assigned to a polygon to scale its contribution to the section properties. Each polygon can therefore contribute differently, even when the geometry is explicitly defined.
 
 In this way, geometry defines **where** a region is, while weight defines **how much** that region contributes.
+### 3. Vertex Details
+
+A vertex is defined in the section plane by its coordinates, usually `(x, y)`.
+
+This means that each vertex belongs to a **2D local reference system** used to describe the cross-section. The longitudinal axis of the member is treated separately, so the vertex does not define the position along the member, only the position within the section plane.
+
+In practical terms, a vertex tells CSF where one point of the polygon boundary is located inside the section geometry.
+
+### 4. Polygon Details
+
+A polygon is defined by an ordered sequence of vertices.
+
+This means that a polygon is not described only by the set of its points, but also by the order in which those points are connected. The vertex order defines the boundary of the region and therefore its geometric meaning.
+
+In practical terms, a polygon tells CSF which region of the section is being described.
+
+For the polygon to be interpreted as a valid geometric region, its area must be positive.
