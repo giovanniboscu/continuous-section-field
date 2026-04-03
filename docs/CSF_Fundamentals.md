@@ -404,4 +404,24 @@ This means that, for the same polygon:
 - at `S1`, the weight is `w1`
 - at any intermediate section `z`, the weight is an interpolated value between `w0` and `w1`
 
+
+### 8. Custom Weight Functions
+
+The linear interpolation between `w0` in `S0` and `w1` in `S1` is the simplest way to describe the variation of the polygon weight `w` between the two reference sections.
+
+To represent a more flexible variation law for the property `w` of a given polygon from section `S0` to section `S1`, CSF also allows the user to define custom functions written in Python.
+
+These functions are associated with a specific polygon through the pair of corresponding polygon names defined in `S0` and `S1`.
+
+In other words, the association is not made by position in the list, but by the pair of polygon names that identify the same polygonal component in the two reference sections.
+
+This means that:
+
+- a polygon is first defined in `S0` with its name
+- the corresponding polygon is then defined in `S1` with its name
+- the custom weight function is associated with that polygon pair through the two names
+
+In this way, CSF can apply a user-defined variation law to a specific polygon between `S0` and `S1`, instead of using only the default linear interpolation between `w0` and `w1`.
 In this way, CSF describes not only the geometric transition between `S0` and `S1`, but also the transition of the polygon weight along the element.
+
+For more details, see [ContinuousSectionField (CSF) - Custom Weight Laws](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
