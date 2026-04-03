@@ -1,8 +1,11 @@
 
 # CSF Documentation
 Start here: these three guides cover everything you need to work with CSF effectively.
+https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md
+
 | Resource | Description |
 |----------|-------------|
+| [CSF Building Blocks Fundamentals](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md) | CSF Geometry, Sections, Polygon Tags, and Weight Laws Guide |
 | [CSF Programmer Guide](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/programmer-guide) | Python API reference — developer-oriented. |
 | [CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md) | Step-by-step YAML workflow — no Python programming required. |
 | [CSFLongitudinally-varying-homogenization-user-guide.md](CSFLongitudinally-varying-homogenization-user-guide.md) | Technical guide for defining custom weight laws `w(z)`: conventions, syntax, available variables, lookup functions (`E_lookup`, `T_lookup`), validation rules, and OpenSees export mapping. |
