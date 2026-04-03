@@ -69,7 +69,7 @@ Area = 9
      0         1         2         3         4         5
 
 ```
-This is a more complex polygon defined by a single ordered vertex sequence. The first part is traversed in counter-clockwise (CCW) direction up to point 5. From point 5 to point 6, the path continues into a second part, which is traversed in clockwise (CW) direction up to point 9. CSF automatically closes the polygon
+This is a more complex polygon defined by a single ordered vertex sequence. The first part is traversed in counter-clockwise (CCW) direction up to point 5. From point 5 to point 6, the path continues into a second part, which is traversed in clockwise (CW) direction up to point 10. CSF automatically closes the polygon. An additional overlapping point may be introduced, but it is not required, because CSF automatically closes the polygon.
 
 Area = 8
 
