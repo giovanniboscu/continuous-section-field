@@ -29,7 +29,6 @@ In practical terms, a vertex tells CSF where one point of the polygon boundary i
 
 ### 4. Polygon Details
 
-
 A polygon is defined by an ordered sequence of vertices.
 This means that a polygon is not described only by the set of its points, but also by the order in which its vertices are connected, from vertex 0 to vertex n. The vertex order defines the boundary and geometric meaning of the region, and for the polygon to be interpreted as a valid geometric region in CSF, its area must be positive. As a general guideline, this is usually obtained by listing the vertices counter-clockwise.
 
