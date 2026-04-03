@@ -360,7 +360,7 @@ CSF:
             - [-2.750, -4.430]
 
     S1:
-      z: 2000.0   # cm (20 m)
+      z: 5000.0   # cm (20 m)
       polygons:
         web@wall:
           weight: 1.0
