@@ -63,7 +63,7 @@ This is just an example of a polygon with an intermediate point along one side. 
     │
     │
     │
-  0 ┼────────────────────────────────────────────────────────> x
+  0 ┼────────────────────┬─────────────────────────────┬────────> x
      0         1         2         3         4         5
 
 ```
