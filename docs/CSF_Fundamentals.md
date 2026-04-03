@@ -69,11 +69,12 @@ Area = 9
      0         1         2         3         4         5
 
 ```
-
-
-more complex polygon diveded in two parts
+This is a more complex polygon defined by a single ordered vertex sequence. The first part is traversed in counter-clockwise (CCW) direction up to point 5. From point 5 to point 6, the path continues into a second part, which is traversed in clockwise (CW) direction up to point 9. CSF automatically closes the polygon
 
 Area = 8
+
+In this example, the outer area contributes +9, while the inner area contributes -1.
+
 
 - `0 -> [2, 3]`
 - `1 -> [2, 2]`
