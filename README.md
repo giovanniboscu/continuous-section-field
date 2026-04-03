@@ -78,7 +78,7 @@ CSF:
             - [0.2, 0.2]
             - [-0.2, 0.2]
   weight_laws:
-    # parabolic reduction: full section at base (z=0), 72% at mid-span, full at top (z=10)
+    # parabolic increase: 72% at base (z=0), full section at top (z=10)
   - 'startsection,endsection:1.0 - 0.28 * (1 - (z / 10.0)**2)'            
 ```
 actions.yaml file
