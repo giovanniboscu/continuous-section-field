@@ -126,3 +126,8 @@ In CSF, two sections are defined:
 - **S0**: the first ordered polygon list
 - **S1**: the second ordered polygon list
 
+Each section has a z-coordinate. The difference between the z-coordinates of S0 and S1 defines the element length.
+
+The element is formed as the union of the individual volumes generated between the corresponding polygons in sections S0 and S1.
+
+
