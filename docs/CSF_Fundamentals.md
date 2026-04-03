@@ -487,3 +487,6 @@ CSF:
     # linear reduction for the web: from 1.0 at z=0 to 0.70 at z=10
     - 'web,web:1.0 - 0.30 * (z / 10.0)'                                        
 ```
+
+> **Note on `@t=` suffix**
+> If the `@t=` thickness suffix is specified on only one of the two reference sections (`S0` or `S1`), CSF treats that thickness value as **constant along the entire element length**.
