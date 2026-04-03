@@ -400,7 +400,7 @@ section_field.set_weight_laws([
     "lowerpart,lowerpart : E_lookup('material_data.txt') * w0"
 ])
 ```
-##  Meet the "CSF Weight Law Inspector" 
+##  "CSF Weight Law Inspector" 
 
 Defining mathematical laws for structural members shouldn't feel like "guessing and hoping." To make your workflow smoother and error-free, we've introduced the **Safe Evaluation Engine**.
 
