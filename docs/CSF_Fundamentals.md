@@ -201,5 +201,189 @@ This guide covers the geometric construction of tagged polygons in CSF. [CSF Pol
 
 **The classification suffix is not considered part of the polygon base name.**
 
-The purpose of the nine-point polygon can now be made explicit.  
+The purpose of the 10-point polygon can now be made explicit.  
 It is a single geometric representation of what would otherwise be described as two separate entities: an outer rectangle and an inner rectangle. By encoding both within one ordered polygon stream, CSF can treat them as one tagged geometric object.
+
+
+---
+
+
+This YAML example defines the same thin-walled closed-cell polygon in both reference sections,
+
+`S0` and `S1`, at `z = 0.0` and `z = 10.0`. 
+
+The polygon is tagged as `@cell`, has weight `1.0`, and is described by a single ordered vertex sequence that contains both the outer and inner loops. The outer loop is a `3 x 3` rectangle written in counter-clockwise (CCW) order and explicitly closed by repeating the point `[2.0, 3.0]`. The inner loop is written in clockwise (CW) order, offset inward by about `0.1`, and is also explicitly closed by repeating the point `[2.1, 3.0]`. Using the same polygon name in `S0` and `S1` preserves the correspondence between the two sections and defines a prismatic thin-walled cell along the element length.
+
+```
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        outer@cell:
+          weight: 1.0
+          # Thin-walled slit-cell example.
+          # The outer loop is a 3x3 rectangle written in CCW order.
+          # The repeated point [2.0, 3.0] explicitly closes the outer loop.
+          # After that, the vertex stream continues with the inner loop.
+          # The bridge is intentionally kept very close to the outer boundary
+          # so that the section represents a genuinely thin profile.
+          # The inner loop is written in CW order.
+          vertices:
+            # Outer loop (CCW)
+            - [2.0, 3.0]
+            - [2.0, 2.0]
+            - [5.0, 2.0]
+            - [5.0, 5.0]
+            - [2.0, 5.0]
+            - [2.0, 3.0]
+
+            # Inner loop (CW), offset inward by about 0.1
+            - [2.1, 3.0]
+            - [2.1, 4.9]
+            - [4.9, 4.9]
+            - [4.9, 2.1]
+            - [2.1, 2.1]
+            - [2.1, 3.0]
+    S1:
+      z: 10.0
+      polygons:
+        outer@cell:
+          weight: 1.0
+          # Same thin-walled cell at the end section.
+          # Using the same polygon name keeps the correspondence between S0 and S1.
+          vertices:
+            # Outer loop (CCW)
+            - [2.0, 3.0]
+            - [2.0, 2.0]
+            - [5.0, 2.0]
+            - [5.0, 5.0]
+            - [2.0, 5.0]
+            - [2.0, 3.0]
+
+            # Inner loop (CW)
+            - [2.1, 3.0]
+            - [2.1, 4.9]
+            - [4.9, 4.9]
+            - [4.9, 2.1]
+            - [2.1, 2.1]
+            - [2.1, 3.0]
+```
+---
+
+This example shows a simplified open thin-walled `I`-section representation in which the polygons are explicitly classified with the `@wall` suffix, and the wall thickness is assigned directly in the polygon name through the `@t=` suffix.
+
+In this model, three wall polygons are defined:
+
+- `web@wall@t=0.41`
+- `top_flange@wall@t=0.57`
+- `bottom_flange@wall@t=0.57`
+
+The `@wall` suffix tells CSF to treat these polygons as thin-wall components, while `@t=` provides the wall thickness to be used for the corresponding torsional contribution. This avoids relying on the automatic geometric estimate `t_est = 2A / P`, which is only an approximation and may underestimate the intended wall thickness when the strip is not extremely thin.
+
+The example therefore represents a simplified three-wall `IPE100`-type section composed of one web and two flanges, with nominal thickness values assigned explicitly in the polygon names. In this way, the wall classification and the thickness used by CSF are both declared directly in the geometry definition.
+
+```
+# Explicit thickness override for thin-wall torsion (@wall):
+#
+# Why @t is needed
+# ----------------
+# The automatic thickness estimate uses:
+#     t_est = 2A / P
+# where A is polygon area and P is polygon perimeter.
+#
+# For a rectangular wall strip (length b, thickness t):
+#     A = b*t
+#     P = 2(b+t)
+# so:
+#     t_est = 2A/P = (b*t)/(b+t)
+#
+# This is NOT exactly t.
+# It approaches t only in the very thin-strip limit (b >> t):
+#     (b*t)/(b+t) ≈ t
+# Otherwise it underestimates thickness, and this directly affects torsion.
+#
+# Impact on J_sv_wall
+# -------------------
+# In open thin-walled Saint-Venant torsion, each wall contribution scales with t^3
+# (equivalently J_i ~ A*t^2/3 in the implemented form).
+# Therefore, even a moderate thickness underestimation causes a large drop in J.
+#
+# IPE100 simplified model choice
+# ------------------------------
+# To keep the torsion model aligned with nominal section dimensions,
+# we force thickness explicitly in polygon names:
+#   - web thickness    tw = 4.1 mm  = 0.41 cm
+#   - flange thickness tf = 5.7 mm  = 0.57 cm
+#
+# This removes ambiguity from geometry-based t estimation and makes J_sv_wall
+# consistent with the intended open thin-walled analytical formulation for
+# the simplified 3-wall IPE representation (web + 2 flanges).
+#
+# Note
+# ----
+# Remaining difference vs tabulated rolled IPE torsional constants is expected:
+# this simplified model does not include full rolled-shape details (e.g. root
+# fillets and local transitions), and tabulated values are based on the real profile.
+
+web@wall@t=0.41:
+top_flange@wall@t=0.57:
+bottom_flange@wall@t=0.57:
+
+CSF:
+  sections:
+    S0:
+      z: 0.0   # cm
+      polygons:
+        web@wall@t=0.41:
+          weight: 1.0
+          vertices:
+            - [-0.205, -4.430]
+            - [ 0.205, -4.430]
+            - [ 0.205,  4.430]
+            - [-0.205,  4.430]
+
+        top_flange@wall@t=0.57:
+          weight: 1.0
+          vertices:
+            - [-2.750,  4.430]
+            - [ 2.750,  4.430]
+            - [ 2.750,  5.000]
+            - [-2.750,  5.000]
+
+        bottom_flange@wall@t=0.57:
+          weight: 1.0
+          vertices:
+            - [-2.750, -5.000]
+            - [ 2.750, -5.000]
+            - [ 2.750, -4.430]
+            - [-2.750, -4.430]
+
+    S1:
+      z: 2000.0   # cm (20 m)
+      polygons:
+        web@wall:
+          weight: 1.0
+          vertices:
+            - [-0.205, -4.430]
+            - [ 0.205, -4.430]
+            - [ 0.205,  4.430]
+            - [-0.205,  4.430]
+
+        top_flange@wall:
+          weight: 1.0
+          vertices:
+            - [-2.750,  4.430]
+            - [ 2.750,  4.430]
+            - [ 2.750,  5.000]
+            - [-2.750,  5.000]
+
+        bottom_flange@wall:
+          weight: 1.0
+          vertices:
+            - [-2.750, -5.000]
+            - [ 2.750, -5.000]
+            - [ 2.750, -4.430]
+            - [-2.750, -4.430]
+```
+
