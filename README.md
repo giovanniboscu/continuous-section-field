@@ -132,9 +132,11 @@ csf-actions geometry.yaml actions.yaml
 
 **This is a minimal working CSF model:** two sections, one polygon per section, one weight law, and automatic evaluation of the resulting continuous properties along the member axis.
 
+[CSF Geometry, Sections, Polygon Tags, and Weight Laws Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md) 
+
 [Example list](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/rectangle)  Complete worked example covering all available actions on a tapered rectangular section
 
-[CSF Geometry, Sections, Polygon Tags, and Weight Laws Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md) 
+
 
 ---
 ### Using CSF as a Python Library
