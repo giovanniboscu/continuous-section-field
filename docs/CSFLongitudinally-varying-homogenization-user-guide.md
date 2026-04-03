@@ -29,7 +29,7 @@ In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept.
 
 ### Polygon Pairing by Creation Order
 
-Example: Defining a Composite Beam
+: Defining a Composite Beam
 
 ***Program format***
 
@@ -99,12 +99,15 @@ Example: Defining a Composite Beam
 
 ```
 
-> **Example: Order matters**  
-> The pairing is determined by creation order, not by polygon name.  
-> In this example, `poly_bottom_start` is paired with `poly_bottom_end`,  
-> and `poly_top_start` with `poly_top_end`, because they appear  
-> in the same position in their respective sections.
->
+**Order matters**  
+
+The geometric pairing between polygons in `S0` and `S1` is determined by their creation order, not by their names.
+
+In this example, `poly_bottom_start` is geometrically paired with `poly_bottom_end`, and `poly_top_start` with `poly_top_end`, because they occupy the same position in the two polygon lists.
+
+> **Polygon**  
+> Do not confuse the **user-facing role of polygon names** with the **geometric pairing rule**.  
+> Polygon names are used by the user to define weight laws `w(z)`, while geometric pairing between `S0` and `S1` is determined by polygon order in the two lists.
 > 
 ***yaml format***
 ```
