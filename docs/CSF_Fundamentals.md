@@ -425,3 +425,62 @@ In this way, CSF can apply a user-defined variation law to a specific polygon be
 In this way, CSF describes not only the geometric transition between `S0` and `S1`, but also the transition of the polygon weight along the element.
 
 For more details, see [ContinuousSectionField (CSF) - Custom Weight Laws](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
+---
+### Examples
+The variation law is identified by the following syntax:
+
+```text
+<name_polygon_i_s0>,<name_polygon_i_s1>: <function of z>
+```
+
+For example:
+
+```text
+- 'flange,flange:1.0 - 0.28 * (1 - (z / 10.0)**2)'
+```
+
+In this example, the custom weight law is associated with the polygon named `flange` in `S0` and with the corresponding polygon named `flange` in `S1`.
+
+
+```
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        flange:
+          weight: 1.0
+          vertices:
+            - [-1.0, -0.2]
+            - [ 1.0, -0.2]
+            - [ 1.0,  0.2]
+            - [-1.0,  0.2]
+        web:
+          weight: 1.0
+          vertices:
+            - [-0.2, -1.0]
+            - [ 0.2, -1.0]
+            - [ 0.2, -0.2]
+            - [-0.2, -0.2]
+
+    S1:
+      z: 10.0
+      polygons:
+        flange:
+          weight: 1.0
+          vertices:
+            - [-1.0, -0.2]
+            - [ 1.0, -0.2]
+            - [ 1.0,  0.2]
+            - [-1.0,  0.2]
+        web:
+          weight: 1.0
+          vertices:
+            - [-0.2, -2.5]
+            - [ 0.2, -2.5]
+            - [ 0.2, -0.2]
+            - [-0.2, -0.2]
+  weight_laws:
+    # parabolic reduction: full section at base (z=0), 72% at mid-span, full at top (z=10)
+  - 'flange,flange:1.0 - 0.28 * (1 - (z / 10.0)**2)'                        
+```
