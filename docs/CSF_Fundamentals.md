@@ -59,7 +59,7 @@ This is just an example of a polygon with an intermediate point along one side. 
     │                    |                             |
   2 ┤             1(2,2) ●─────────────────────────────● 2(5,2)
     │
-    ┤
+    │
     │
     │
     │
