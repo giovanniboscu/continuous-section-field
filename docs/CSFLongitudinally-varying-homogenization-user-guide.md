@@ -29,7 +29,7 @@ In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept.
 
 ### Polygon Pairing by Creation Order
 
-: Defining a Composite Beam
+Defining a Composite Beam
 
 ***Program format***
 
