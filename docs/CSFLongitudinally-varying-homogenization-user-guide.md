@@ -106,8 +106,9 @@ The geometric pairing between polygons in `S0` and `S1` is determined by their c
 In this example, `poly_bottom_start` is geometrically paired with `poly_bottom_end`, and `poly_top_start` with `poly_top_end`, because they occupy the same position in the two polygon lists.
 
 > **Polygon**  
-> Do not confuse the **user-facing role of polygon names** with the **geometric pairing rule**.  
-> Polygon names are used by the user to define weight laws `w(z)`, while geometric pairing between `S0` and `S1` is determined by polygon order in the two lists.
+> For the user, polygon names are the way to refer to components when defining weight laws `w(z)`.  
+> Internally, the geometric pairing between `S0` and `S1` is established by polygon order.  
+> In a consistent model, these two refer to the same polygonal component.
 > 
 ***yaml format***
 ```
