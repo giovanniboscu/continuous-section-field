@@ -109,7 +109,11 @@ In this example, `poly_bottom_start` is geometrically paired with `poly_bottom_e
 > For the user, polygon names are the way to refer to components when defining weight laws `w(z)`.  
 > Internally, the geometric pairing between `S0` and `S1` is established by polygon order.  
 > In a consistent model, these two refer to the same polygonal component.
-> 
+>
+> **Note**  
+> Mismatched polygon names are not accepted at input stage.  
+> If a name used in a weight law does not correspond to a valid polygon pairing in the model, the input is rejected.
+>
 ***yaml format***
 ```
 CSF:
