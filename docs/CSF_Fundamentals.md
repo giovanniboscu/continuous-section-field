@@ -387,3 +387,21 @@ CSF:
             - [-2.750, -4.430]
 ```
 
+
+## 7. Material Building Block
+
+### 7.1 Weight Variation Between `S0` and `S1`
+
+From the section representation, it can be seen that each polygon has a numerical weight `w` in `S0` and a numerical weight `w` in `S1`.
+
+For a given polygon, the weight may therefore change from a value `w0` in `S0` to a value `w1` in `S1`.
+
+Since CSF linearly interpolates the intermediate geometry between `S0` and `S1`, the weight of that polygon is also interpolated between `w0` and `w1` at each intermediate section `z`.
+
+This means that, for the same polygon:
+
+- at `S0`, the weight is `w0`
+- at `S1`, the weight is `w1`
+- at any intermediate section `z`, the weight is an interpolated value between `w0` and `w1`
+
+In this way, CSF describes not only the geometric transition between `S0` and `S1`, but also the transition of the polygon weight along the element.
