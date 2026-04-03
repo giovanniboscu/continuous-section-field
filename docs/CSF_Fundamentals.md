@@ -128,7 +128,7 @@ In CSF, two sections are defined:
 
 Each section has a z-coordinate. The difference between the z-coordinates of S0 and S1 defines the element length.
 
-he element is formed as the union of the individual volumes generated between the corresponding polygons in sections `S0` and `S1`.
+the element is formed as the union of the individual volumes generated between the corresponding polygons in sections `S0` and `S1`.
 
 For example, a T-beam can be described schematically as follows:
 
