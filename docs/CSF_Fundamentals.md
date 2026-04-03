@@ -415,7 +415,7 @@ To represent a more flexible variation law for the property `w` of a given polyg
 
 These functions are associated with a specific polygon through the pair of corresponding polygon names defined in `S0` and `S1`.
 
-In other words, the association is not made by position in the list, but by the pair of polygon names that identify the same polygonal component in the two reference sections.
+In other words, for the user, the association needed to define the weight law w(z) is specified through the pair of polygon names identifying the same polygonal component in the two reference sections.
 
 This means that:
 
