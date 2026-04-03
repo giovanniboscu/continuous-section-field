@@ -33,6 +33,8 @@ A polygon is defined by an ordered sequence of vertices. Each vertex is connecte
 
 This is just an example of a polygon with an intermediate point along one side. To obtain a positive signed area, the vertices must be ordered in counter-clockwise (CCW) direction.
 
+Area = 9
+
 - `0 -> [2, 3]`
 - `1 -> [2, 2]`
 - `2 -> [5, 2]`
@@ -69,9 +71,20 @@ This is just an example of a polygon with an intermediate point along one side. 
 ```
 
 
-more complex polygon diveded in tow parts
+more complex polygon diveded in two parts
 
+Area = 8
 
+- `0 -> [2, 3]`
+- `1 -> [2, 2]`
+- `2 -> [5, 2]`
+- `3 -> [5, 5]`
+- `4 -> [2, 5]`
+- `5 -> [2, 3]`            
+- `6 -> [3, 3]`
+- `7 -> [3, 4]`
+- `8 -> [4, 4]`
+- `9 -> [4, 3]` 
 
 
 ```text
