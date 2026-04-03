@@ -31,8 +31,4 @@ In practical terms, a vertex tells CSF where one point of the polygon boundary i
 
 A polygon is defined by an ordered sequence of vertices.
 
-This means that a polygon is not described only by the set of its points, but also by the order in which those points are connected. The vertex order defines the boundary of the region and therefore its geometric meaning.
-
-In practical terms, a polygon tells CSF which region of the section is being described.
-
-For the polygon to be interpreted as a valid geometric region, its area must be positive.
+This means that a polygon is not described only by the set of its points, but also by the order in which those points are connected. The vertex order defines the boundary and geometric meaning of the region, and for the polygon to be interpreted as a valid geometric region in CSF, its area must be positive.
