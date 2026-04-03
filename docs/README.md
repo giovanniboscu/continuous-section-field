@@ -1,7 +1,7 @@
 
 # CSF Documentation
 Start here: these three guides cover everything you need to work with CSF effectively.
-https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md
+
 
 | Resource | Description |
 |----------|-------------|
