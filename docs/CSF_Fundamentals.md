@@ -31,6 +31,14 @@ In practical terms, a vertex tells CSF where one point of the polygon boundary i
 
 A polygon is defined by an ordered sequence of vertices. Each vertex is connected to the next one, from vertex 0 to vertex n, and this ordering defines the polygon boundary region. CSF automatically connects the last vertex back to the first one to close the polygon. The resulting region must have a positive area. As a general guideline, this is usually obtained by listing the vertices counter-clockwise.
 
+
+- `0 -> [2, 3]`
+- `1 -> [2, 2]`
+- `2 -> [5, 2]`
+- `3 -> [5, 5]`
+- `4 -> [2, 5]`
+- 
+
 ```text
 y
 ^
