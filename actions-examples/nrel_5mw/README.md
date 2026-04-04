@@ -358,7 +358,7 @@ The continuous field representation offers several practical advantages:
 
 **Consistent derived quantities.** When properties are extracted at any z, all quantities - A, Ix, J, t, section moduli - are mutually consistent because they are derived from the same interpolated geometry. In a discrete table, rounding or truncation of individual columns can introduce small inconsistencies between related quantities.
 
-**Natural support for tapered and morphing sections.** The vertex-interpolation scheme extends naturally to sections that change shape along the member axis - not just scale. The twist tower example (circle at base → rounded rectangle at head, with angular twist) is handled by the same framework with no change to the analysis pipeline.
+
 
 ### 11.4 Relation to the FAST/OpenFAST input format
 
