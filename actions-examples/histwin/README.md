@@ -34,5 +34,6 @@ on Windows
 pip install csfpy
 
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+powershell -ExecutionPolicy Bypass -File create_yaml_histwin.ps1
 .\create_yaml-histwin.sh
 ```
