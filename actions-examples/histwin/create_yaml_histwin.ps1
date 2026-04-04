@@ -122,8 +122,8 @@ $s0_t_cell = "0.0"    # Cell thickness tag written in the polygon name (0 = omit
 
 # Head section S1 [m]
 # For a circular tower, again set dx = dy = external diameter and R = diameter / 2.
-$s1_dx = "2.955"      # External diameter at the top
-$s1_dy = "2.955"      # External diameter at the top (same as dx for a circle)
+$s1_dx = "3"      # External diameter at the top
+$s1_dy = "3"      # External diameter at the top (same as dx for a circle)
 $s1_R  = "1.4775"     # Top radius used by the rounded-rectangle generator
 $s1_tg = "0.012"      # Wall thickness at the top
 $s1_x  = "0.0"        # Top section center X coordinate
