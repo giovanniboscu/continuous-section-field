@@ -35,10 +35,12 @@ powershell -ExecutionPolicy Bypass -File create_yaml_histwin.ps1
 .\create_yaml-histwin.sh
 
 ```
-run
+##run
 ```
-csf-actions.exe .\histwin_tower.yaml .\action.yaml
+csf-actions.exe histwin_tower.yaml action.yaml
 ```
+
+the `out` directory will contain the generated reports
 # HISTWIN Tower Example
 
 ## Overview
