@@ -119,7 +119,7 @@ In this example, the outer area contributes +9, while the inner area contributes
 ### 5. Section Details
 
 A **section** is an ordered list of polygons.  
-Each polygon in the list is associated with a name and a numerical weight `w`.
+Each polygon in the list is associated with a unique name within its section and a numerical weight w.
 
 In CSF, two sections are defined:
 
