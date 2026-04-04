@@ -166,8 +166,7 @@ Names are free descriptive strings. Recommended conventions:
 | `rebar_row1_1` … `rebar_row1_N` | Bars of outer reinforcement row |
 | `rebar_row2_1` … `rebar_row2_N` | Bars of inner reinforcement row |
 
-Polygon names must match exactly between S0 and S1 - matching drives the
-ruled-surface interpolation.
+Polygon names must be unique on its own section S0 and S1.
 
 ### 2.5 Vertex winding convention
 
