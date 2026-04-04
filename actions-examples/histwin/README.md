@@ -36,12 +36,13 @@ install and run
 
 on Linux 
 ```
+cd continuous-section-field/actions-examples/histwin
 chmod +x create_yaml-histwin.sh
 ./create_yaml-histwin.sh
 ```
 on Windows
 ```
-
+cd continuous-section-field\actions-examples\histwin
 powershell -ExecutionPolicy Bypass -File create_yaml_histwin.ps1
 .\create_yaml-histwin.sh
 
