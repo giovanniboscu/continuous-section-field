@@ -38,7 +38,7 @@ git sparse-checkout set actions-examples/histwin
 git checkout main
 ```
 
-### Option B — Full clone
+### Option B - Full clone
 
 Use this if you want the full repository.
 
