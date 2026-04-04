@@ -7,7 +7,7 @@
 
 ## Overview
 
-A CSF YAML file describes a **Continuous Section Field** — a ruled solid defined
+A CSF YAML file describes a **Continuous Section Field** - a ruled solid defined
 by two polygonal end sections and a set of weight laws that modulate the stiffness
 contribution of each polygon along the member axis.
 
@@ -25,15 +25,15 @@ The file is both human-readable and machine-parseable. It contains:
 **Separation of geometry and physics.** The polygon geometry (vertices) describes
 shape only. The structural role is carried by two independent fields:
 
-- `weight` — stiffness ratio relative to the reference material
-- `type` — structural classification of the polygon
+- `weight` - stiffness ratio relative to the reference material
+- `type` - structural classification of the polygon
 
 **No internal tags in names.** Polygon names are free descriptive identifiers.
 Internal implementation tags such as `@cell` or `@wall` do not belong in the
 name field and carry no semantic meaning in the schema.
 
 **Self-contained.** A CSF file contains everything needed to reconstruct the
-section field — geometry, weights, and laws — without external references
+section field - geometry, weights, and laws - without external references
 other than optional lookup data files.
 
 ---
@@ -166,7 +166,7 @@ Names are free descriptive strings. Recommended conventions:
 | `rebar_row1_1` … `rebar_row1_N` | Bars of outer reinforcement row |
 | `rebar_row2_1` … `rebar_row2_N` | Bars of inner reinforcement row |
 
-Polygon names must match exactly between S0 and S1 — matching drives the
+Polygon names must match exactly between S0 and S1 - matching drives the
 ruled-surface interpolation.
 
 ### 2.5 Vertex winding convention
@@ -174,7 +174,7 @@ ruled-surface interpolation.
 - **Material polygons** (`shell`, `outer`, `bar`, `hollow_cell` outer loop): **counter-clockwise (CCW)**
 - **Void polygons** (`inner_void`, `hollow_cell` inner loop): **clockwise (CW)**
 
-Vertices form a closed loop — the last vertex connects back to the first.
+Vertices form a closed loop - the last vertex connects back to the first.
 A minimum of 3 vertices is required.
 
 ### 2.6 Weight reference values
@@ -381,7 +381,7 @@ A valid CSF file must satisfy all of the following:
 
 ---
 
-## 6. Homogenization — critical note for solver integration
+## 6. Homogenization - critical note for solver integration
 
 All CSF section properties (A, Ix, Iy, J, ...) are **homogenized** with respect
 to the reference material:
@@ -400,7 +400,7 @@ EIx = reference_E × Ix_CSF
 GJ  = G_reference × J_CSF
 ```
 
-Do not add material contributions separately in the solver — they are already
+Do not add material contributions separately in the solver - they are already
 encoded in the weight field.
 
 ---
@@ -431,6 +431,6 @@ coordinate_system:      # future: local axis orientation
 
 ---
 
-*CSF YAML Schema v1.0 — proposal*
+*CSF YAML Schema v1.0 - proposal*
 *giovanniboscu/continuous-section-field*
 *April 2026*
