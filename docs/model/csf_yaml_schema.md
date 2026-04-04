@@ -1,4 +1,4 @@
-# CSF YAML Schema — Formal Specification
+# CSF YAML Schema - Formal Specification
 
 **Version:** 1.0 (proposal)
 **Repository:** [giovanniboscu/continuous-section-field](https://github.com/giovanniboscu/continuous-section-field)
