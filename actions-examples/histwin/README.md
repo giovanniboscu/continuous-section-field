@@ -9,6 +9,7 @@ source venv/bin/activate
 ```
 python3 -m venv venv
 .\venv\Scripts\activate 
+pip install csfpy
 ```
 get the source from the repository  (not full clone)
 
