@@ -430,8 +430,8 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
             ParamSpec(
                 name="seed",
                 required=False,
-                typ="int",
-                default=0,
+                typ="str|int",
+                default="0",
                 description="Random seed used when line_percent < 100.",
             ),
             ParamSpec(
@@ -1080,8 +1080,10 @@ def _validate_action_params(
 
     # Check required params and types
     def _type_ok(v: Any, typ: str) -> bool:
+        if typ == "str|int":
+            return isinstance(v, str) or type(v) is int or v is None
         if typ == "str":
-            return isinstance(v, str) or v is None
+            return isinstance(v, str) or v is None            
         if typ == "int":
             return type(v) is int
         if typ == "float":
@@ -1745,6 +1747,7 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
         # Special rule: plot_volume_3d is interactive-only. It must not write image files.
         # The plot is shown from the GUI window at the very end of the run (deferred plt.show()).
         if action_name == "plot_volume_3d":
+            
             non_stdout = [o for o in output_list if isinstance(o, str) and o != "stdout"]
             if non_stdout:
                 ln = _find_key_line(text, action_name) or ln_actions
@@ -1762,6 +1765,7 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                 )
             # Always normalize to stdout to match the intended behavior.
             output_list = ["stdout"]
+            
         # Special rule: export_yaml is FILE-ONLY and must write exactly one YAML file.
         # We enforce this here (validation), so users get a friendly message rather than a runtime failure.
         if action_name == "export_yaml":
@@ -3513,7 +3517,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 context={"filepath": str(actions_path)},
             )
         ]
-        print(CSFIssues.format_report(issues))
+        #print(CSFIssues.format_report(issues))
         return 2
     except Exception as e:
         issues = [

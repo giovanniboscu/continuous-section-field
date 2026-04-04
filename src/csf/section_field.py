@@ -30,8 +30,10 @@ from datetime import datetime
 from typing import overload, Union, Literal
 from pathlib import Path
 import io
+from collections import defaultdict
+from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from contextlib import redirect_stdout
-
+import random as _random
 #
 # Your current implementation uses a "strict proper intersection" test:
 #     (o1 * o2 < 0) and (o3 * o4 < 0)
@@ -2805,12 +2807,12 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
 
         b_est = (A / t) if t > EPS_L else 0.0
         
-        '''
+        
         print(
             f"[J_WALL] nm={nm}  A={A:.6f}  P={P_dbg:.6f}  t={t:.6f} ({t_source})  "
             f"b_est=A/t={b_est:.6f}  J_i={J_i_wall:.6f}  w={w:.6f} "
         )
-        '''
+        
 
         # Keep torsional stiffness non-negative
         J += w * J_i
@@ -6688,8 +6690,9 @@ class ContinuousSectionField:
                         # STRICT CHECK: Homology (must be the same polygon)
                         if idx0 != idx1:
                             raise ValueError(f"Homology Mismatch: '{n0}' (pos {idx0}) and '{n1}' (pos {idx1}) must match.")
-                        #print(f"DEBUB idx0 {idx0} idx1 {idx1}")
+                        
                         normalized_map[idx0] = formula
+                        #print(f"DEBUG idx0 {idx0} idx1 {idx1} formula {formula}")
                     
                     elif len(raw_names) == 1:
                         n0 = raw_names[0]
@@ -6705,53 +6708,66 @@ class ContinuousSectionField:
                    # if i < num_polygons:
                    #     normalized_map[i + 1] = item
 
-        else:
-           raise ValueError(
-               "dict is not supported in set_weight_laws(); use a list of strings"
-           )
-
-  
+        elif isinstance(laws, dict):
+            for key, law in laws.items():
+                target_idx = None
+                if isinstance(key, int):
+                    target_idx = key
+                elif isinstance(key, str):
+                    if key not in valid_names0:
+                        raise KeyError(f"Critical Error: No polygon named '{key}' found.")
+                    target_idx = valid_names0.index(key) + 1
+                
+                if target_idx is not None:
+                    if target_idx < 1 or target_idx > num_polygons:
+                        raise IndexError(f"Index {target_idx} out of range (1-{num_polygons}).")
+                    normalized_map[target_idx] = law
+               
 
         z0, z1 = self.s0.z, self.s1.z
         L_val = z1 - z0
         z_mid = L_val / 2.0 # Actual RELATIVE Z value halfway between the sections
-
-
+        
         # Compute t consistently with the interpolation formula
         # If L_val is 0 (coincident sections), t is forced to 0 to avoid division by zero
         #t_mid = (z_mid - z0) / L_val if L_val != 0 else 0.0
-
+        
+        z_mid=5
         for idx, formula in normalized_map.items():
+               
+            
             if isinstance(formula, str):
-                try:
-                    # Endpoint polygon references for distance calculations
-                    p0_test = self.s0.polygons[idx-1]
-                    p1_test = self.s1.polygons[idx-1]
-                    # Generation of midpoint vertices for p_mid (required for d(i,j) helper)
-                    #current_verts = tuple(v0.lerp(v1,z_mid,L_val) for v0, v1 in zip(p0_test.vertices, p1_test.vertices))
-                    #p_mid = Polygon(vertices=current_verts, weight=p0_test.weight, name=p0_test.name)
+
                     
-                    # 1. Calculate the total length of the field
-                    l_total = abs(self.s1.z - self.s0.z)
                     
                     try:
-                        # We test the formula at mid-span (t=0.5) to verify syntax and logic
-                        we = evaluate_weight_formula(formula, p0_test, p1_test,z0=self.s0.z,z1=self.s1.z,zt=z_mid)
+                        # Endpoint polygon references for distance calculations
+                        p0_test = self.s0.polygons[idx-1]
+                        p1_test = self.s1.polygons[idx-1]
                         
-                    except Exception as e:                      
+                        # Generation of midpoint vertices for p_mid (required for d(i,j) helper)
+                        current_verts = tuple(v0.lerp(v1,z_mid,L_val) for v0, v1 in zip(p0_test.vertices, p1_test.vertices))
+                        
+                        # 1. Calculate the total length of the field
+                        l_total = abs(self.s1.z - self.s0.z)
+                        
+                        try:
+                            # We test the formula at mid-span (t=0.5) to verify syntax and logic
+                            we = evaluate_weight_formula(formula, p0_test, p1_test,z0=self.s0.z,z1=self.s1.z,zt=z_mid)
+                            
+                        except Exception as e:                      
+                            raise ValueError(
+                                f"VALIDATION FAILED: The formula for '{p0_test.name}' is not valid.\n"
+                                f"Formula: '{formula}'\n"
+                                f"Error encountered at the midpoint::: {e}"
+                            )
+                        
+                    except Exception as e:
                         raise ValueError(
-                            f"VALIDATION FAILED: The formula for '{p0_test.name}' is not valid.\n"
+                            f":VALIDATION FAILED: The formula for '{valid_names0[idx-1]}' is not valid.\n"
                             f"Formula: '{formula}'\n"
-                            f"Error encountered at the midpoint::: {e}"
+                            f"Error encountered at the midpoint:- {e}"
                         )
-                    
-                except Exception as e:
-                    raise ValueError(
-                        f":VALIDATION FAILED: The formula for '{valid_names0[idx-1]}' is not valid.\n"
-                        f"Formula: '{formula}'\n"
-                        f"Error encountered at the midpoint:- {e}"
-                    )
-        
         # -------------------------------------------
         # 2. EFFECTIVE ASSIGNMENT (Bypassing FrozenInstanceError)
         for idx, formula in normalized_map.items():
@@ -7153,7 +7169,7 @@ class ContinuousSectionField:
                     parent_key = idx_pol_parent #+ 1
                     if 0 <= idx_pol_parent < len(self.weight_laws):
                         parent_law = self.weight_laws[parent_key]
-                elif isinstance(self.weight_laws, dict):
+                elif isinstance (self.weight_laws, dict):
                     parent_key = idx_pol_parent + 1  # same 1-based convention
                     parent_law = self.weight_laws.get(parent_key, None)
                     interp_weight_parent = self._interpolate_weight(polparent0.weight, polparent1.weight, origz, polparent0, polparent1, parent_law)
@@ -7163,7 +7179,7 @@ class ContinuousSectionField:
             interp_weight_relative = interp_weight_child - interp_weight_parent #this is very important 
             #print (f"DEBUG idx_pol_parent {idx_pol_parent}-{i} interp_weight_child {interp_weight_child} interp_weight_parent {interp_weight_parent} interp_weight_relative {interp_weight_relative} ")
             #print ("------------------------------------------------------")
-            #print(f"DEBUG z {z} child {i} : name {p0.name}  interp_weight_child {interp_weight_child}  : idx_pol_parent {idx_pol_parent} parent_law {parent_law} : interp_weight_parent {interp_weight_parent} : interp_weight_relative {interp_weight_relative}")
+            #print(f"DEBUG z {z} child {i} : name {p0.name}  interp_weight_child {interp_weight_child} current_law {current_law} : idx_pol_parent {idx_pol_parent} parent_law {parent_law} : interp_weight_parent {interp_weight_parent} : interp_weight_relative {interp_weight_relative}")
             #poly = Polygon(vertices=verts, weight=interp_weight_relative, name=p0.name)
             # Build runtime polygon metadata from both reference names.
             # We first resolve topology and thickness consistently along z
@@ -7187,6 +7203,7 @@ class ContinuousSectionField:
                 )
             else:
                 poly_name=p0.name+":"+p1.name # add both for debugging purposes
+            
             poly = Polygon(vertices=verts, weight=interp_weight_relative,weightabs=interp_weight_child,name=poly_name)
             
             
@@ -8012,7 +8029,7 @@ class Visualizer:
         - No clipping/cut-off of legend text.
         - Works with different font sizes, DPI, and label lengths.
         """
-        #print(f"DEBUG show_vertex_ids {show_vertex_ids} show_ids {show_ids} ")
+        #print(f"DEBUG plot_section_2d {show_vertex_ids} show_ids {show_ids} ")
         # Local imports keep the method self-contained as a drop-in replacement.
         import matplotlib.pyplot as plt
         from matplotlib.lines import Line2D
@@ -8193,13 +8210,13 @@ class Visualizer:
 
         return ax
 
-
+    #----------------------------
 
     def plot_volume_3d(
         self,
         show_end_sections: bool = True,
         line_percent: float = 100.0,
-        seed: int = 0,
+        seed: int | str = 0,
         title: str = "Ruled volume (vertex-connection lines)",
         ax=None,
         equalize_z: bool = False,
@@ -8219,11 +8236,150 @@ class Visualizer:
             axis limits are modified.  When False the plot is identical to
             the original.
         """
-        import math
-        from collections import defaultdict
+        thickness_line = 10
+        resolution = 100
+        end_factor = 1
+        # alpha controls line transparency: 1.0 = fully opaque, 0.0 = fully transparent.
+        alpha = 0.8
+        #print(f"DEBUG plot_volume_3d :<{seed}>")
+        
 
-        if not (0.0 <= line_percent <= 100.0):
-            raise ValueError("line_percent must be within [0, 100].")
+        if isinstance(seed, str):
+            seed_str = seed.strip()
+            seed_lower = seed_str.lower()
+
+            if seed_lower == "w":
+                # seed="w"  -> mode="w", resolution unchanged (default 100)
+                mode = "w"
+                seed_numeric = 1
+
+            elif seed_lower.startswith("w") and seed_lower[1:].isdigit():
+                # seed="w100", "w500", "w10000"  -> mode="w", resolution=number after w
+                mode = "w"
+                resolution = int(seed_lower[1:])
+                seed_numeric = 1
+
+            else:
+                raise ValueError(
+                    f"Unknown plot_volume_3d string mode: {seed!r}. "
+                    f"Allowed formats: 'w'  or  'wN' where N is an integer (e.g. 'w100', 'w10000')."
+                )
+
+        else:
+            # seed is numeric -> classic mode, color by polygon
+            resolution=1
+            mode = None
+            seed_numeric = int(seed)
+
+        
+        print(
+            f"DEBUG plot_volume_3d seed_numeric: {seed_numeric} "
+            f"seed command: {seed} mode: {mode} resolution {resolution}"
+        )
+        
+        def _thickness_line_from_section_points(
+            section,
+            min_thickness=0.15,
+            max_thickness=1.5,
+            ref_points=20,
+            exponent=0.5,
+        ):
+            """
+            Compute line thickness from the total number of points in a section.
+
+            More points -> thinner line.
+            Fewer points -> thicker line.
+
+            Parameters
+            ----------
+            section : Section
+                Section object containing polygons.
+            min_thickness : float
+                Lower clamp for the line thickness.
+            max_thickness : float
+                Upper clamp for the line thickness.
+            ref_points : int
+                Reference number of points for max_thickness scaling.
+            exponent : float
+                Controls how fast thickness decreases as point count grows.
+            """
+            total_points = sum(len(poly.vertices) for poly in section.polygons)
+
+            if total_points <= 0:
+                return max_thickness
+
+            thickness = max_thickness * (ref_points / total_points) ** exponent
+            return max(min_thickness, min(thickness, max_thickness))
+
+        def _auto_resolution_for_polygon(
+            z_planes,
+            weights,
+            min_resolution=2,
+            max_resolution=resolution,
+            slope_tol=1.0,
+            n=2.0,
+        ):
+            z_values = []
+            values = []
+
+            # Keep only numeric samples.
+            # weights[i] is associated with the slice starting at z_planes[i].
+            for z, w in zip(z_planes[:-1], weights):
+                w_float = _to_float_or_none(w)
+                if w_float is not None:
+                    z_values.append(float(z))
+                    values.append(w_float)
+
+            if len(values) < 2:
+                return min_resolution
+
+            max_slope = 0.0
+
+            # Use the maximum slope among all consecutive portions.
+            for i in range(len(values) - 1):
+                dz = z_values[i + 1] - z_values[i]
+                if abs(dz) <= EPS_L:
+                    continue
+
+                slope = abs((values[i + 1] - values[i]) / dz)
+                if slope > max_slope:
+                    max_slope = slope
+
+            # Zero slope gives the minimum resolution.
+            if max_slope <= EPS_L:
+                return min_resolution
+
+            # Convert the maximum slope to a normalized percentage.
+            # Here slope_tol is the slope corresponding to 100%.
+            slope_percent = 100.0 * max_slope / slope_tol
+
+            # Rule:
+            # - if the maximum slope percentage is above 10%, use n * max_resolution
+            # - otherwise use max_resolution
+            if slope_percent > 10.0:
+                resolution_local = int(np.ceil(n * max_resolution))
+            else:
+                resolution_local = max_resolution
+
+            return resolution_local
+
+        def _add_generator_segment(v0, v1, z_a, z_b, thickness_line, segment_color) -> None:
+
+            # Interpolate the segment endpoints for the current z-slice.
+            x_a, y_a, z_a_draw = _interpolate_vertex(v0, v1, z_a)
+            x_b, y_b, z_b_draw = _interpolate_vertex(v0, v1, z_b)
+
+            # Draw the 3D line segment.
+            _add_edge(
+                x_a,
+                y_a,
+                z_a_draw,
+                x_b,
+                y_b,
+                z_b_draw,
+                thickness_line,
+                segment_color,
+            )
 
         # ------------------------------------------------------------------
         # Axes initialization
@@ -8239,13 +8395,93 @@ class Visualizer:
         z0, z1 = self.field.z0, self.field.z1
         s0 = self.field.section(z0)
         s1 = self.field.section(z1)
+        thickness_line = _thickness_line_from_section_points(s0)
 
-        # ------------------------------------------------------------------
-        # Read the active color cycle once
-        # ------------------------------------------------------------------
-        cycle_colors = [c["color"] for c in plt.rcParams["axes.prop_cycle"]]
+        _rng = _random.Random(seed_numeric)
+        cycle_colors = [
+            (0.121, 0.466, 0.705),
+            (1.000, 0.498, 0.054),
+            (0.172, 0.627, 0.172),
+            (0.839, 0.153, 0.157),
+            (0.580, 0.404, 0.741),
+            (0.549, 0.337, 0.294),
+            (0.890, 0.467, 0.761),
+            (0.498, 0.498, 0.498),
+            (0.737, 0.741, 0.133),
+            (0.090, 0.745, 0.811),
+        ]
+        _rng.shuffle(cycle_colors)
         n_colors = len(cycle_colors)
         color_counter = 0
+
+        # ------------------------------------------------------------------
+        # Edge batch accumulator
+        # ------------------------------------------------------------------
+        edges_by_style: dict[tuple, dict] = defaultdict(
+            lambda: {"x": [], "y": [], "z": []}
+        )
+
+        def _add_edge(x0, y0, z0_, x1, y1, z1_, lw: float, color) -> None:
+            # Color can be a hex string or an RGB/RGBA tuple — both are hashable.
+            key = (lw, color)
+            buf = edges_by_style[key]
+            buf["x"].extend((x0, x1, float("nan")))
+            buf["y"].extend((y0, y1, float("nan")))
+            buf["z"].extend((z0_, z1_, float("nan")))
+
+        def _add_polygon_boundary(vertices_xyz, lw: float, color) -> None:
+            n = len(vertices_xyz)
+            for i in range(n):
+                j = (i + 1) % n
+                p, q = vertices_xyz[i], vertices_xyz[j]
+                _add_edge(p[0], p[1], p[2], q[0], q[1], q[2], lw, color)
+
+        def _interpolate_vertex(v0, v1, z_value):
+            # Generator lines are straight in 3D, so x and y are interpolated
+            # linearly between the endpoint sections.
+            if z1 == z0:
+                return v0.x, v0.y, z_value
+
+            t = (z_value - z0) / (z1 - z0)
+            x = v0.x + t * (v1.x - v0.x)
+            y = v0.y + t * (v1.y - v0.y)
+            return x, y, z_value
+
+        def _to_float_or_none(value):
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return None
+
+        def _normalize_weight(weight_value, weight_min, weight_max):
+            value = _to_float_or_none(weight_value)
+            if value is None:
+                return 0.5
+            if weight_max <= weight_min:
+                return 1.0
+            return max(0.0, min((value - weight_min) / (weight_max - weight_min), 1.0))
+
+        def _get_semantic_color(base_color, weight_value, weight_min, weight_max, mode_name):
+            ratio = _normalize_weight(weight_value, weight_min, weight_max)
+            
+            if abs(weight_max - weight_min) <= EPS_L:
+                if abs(weight_max) <= EPS_L:
+                    return (0.5, 0.5, 0.5, 0.9)   # void 
+                else:
+                    
+                    return (0.0, 0.0, 0.0, 1)     # costant non-void -> nero
+
+            # Keep the mapping fully opaque.
+            # The old mode labels are treated as semantic selectors only.
+            if mode_name == "gray":
+                return (ratio, ratio, ratio)
+
+            # In this view, negative weights are rendered with inverted progression.
+            if weight_value < 0:
+                ratio = 1.0 - ratio
+
+            # Continuous opaque blue-to-red mapping.
+            return (ratio, 0.0, 1.0 - ratio, alpha)
 
         # ------------------------------------------------------------------
         # End sections
@@ -8254,43 +8490,56 @@ class Visualizer:
             for sec in (s0, s1):
                 for poly in sec.polygons:
                     verts = poly.vertices
-                    xs = [p.x for p in verts] + [verts[0].x]
-                    ys = [p.y for p in verts] + [verts[0].y]
-                    zs = [sec.z] * len(xs)
-                    ax.plot(xs, ys, zs)
+                    pts = [(v.x, v.y, sec.z) for v in verts]
+                    color = cycle_colors[color_counter % n_colors]
+                    _add_polygon_boundary(pts, lw=1.0, color=color)
                     color_counter += 1
 
         # ------------------------------------------------------------------
-        # Build generator lines (once)
+        # Build generator lines grouped by polygon.
         # ------------------------------------------------------------------
         lines_by_polygon: list[list[tuple]] = []
-        for p0, p1 in zip(s0.polygons, s1.polygons):
-            lines_by_polygon.append(list(zip(p0.vertices, p1.vertices)))
+        polygon_base_colors: list[tuple] = []
 
-        all_lines: list[tuple] = [
-            line for poly_lines in lines_by_polygon for line in poly_lines
+        for poly_idx, (p0, p1) in enumerate(zip(s0.polygons, s1.polygons)):
+            poly_lines = []
+            for v0, v1 in zip(p0.vertices, p1.vertices):
+                poly_lines.append((v0, v1))
+
+            lines_by_polygon.append(poly_lines)
+            polygon_base_colors.append(cycle_colors[(color_counter + poly_idx) % n_colors])
+
+        # ------------------------------------------------------------------
+        # Prepare the selected lines grouped by polygon.
+        # ------------------------------------------------------------------
+        selected_lines_by_polygon: list[list[tuple]] = [
+            list(poly_lines) for poly_lines in lines_by_polygon
         ]
 
         # ------------------------------------------------------------------
-        # Subsampling (logic unchanged)
+        # Subsampling
         # ------------------------------------------------------------------
-        if line_percent < 100.0 and all_lines:
-            total_lines = len(all_lines)
-            k_total = max(0, min(int(math.ceil(total_lines * line_percent / 100.0)), total_lines))
+        total_lines = sum(len(poly_lines) for poly_lines in lines_by_polygon)
 
-            selected_lines: list[tuple] = []
-            eligible_polygons: list[list[tuple]] = []
+        if line_percent < 100.0 and total_lines > 0:
+            k_total = max(
+                0,
+                min(int(math.ceil(total_lines * line_percent / 100.0)), total_lines),
+            )
+
+            selected_lines_by_polygon = [[] for _ in lines_by_polygon]
+            eligible_polygon_indices: list[int] = []
             eligible_counts: list[int] = []
 
-            for poly_lines in lines_by_polygon:
+            for poly_idx, poly_lines in enumerate(lines_by_polygon):
                 n = len(poly_lines)
-                if n < 11:
-                    selected_lines.extend(poly_lines)
+                if n < 2:
+                    selected_lines_by_polygon[poly_idx].extend(poly_lines)
                 else:
-                    eligible_polygons.append(poly_lines)
+                    eligible_polygon_indices.append(poly_idx)
                     eligible_counts.append(n)
 
-            forced_count = len(selected_lines)
+            forced_count = sum(len(poly_lines) for poly_lines in selected_lines_by_polygon)
             remaining_quota = max(0, k_total - forced_count)
             eligible_total = sum(eligible_counts)
 
@@ -8300,44 +8549,206 @@ class Visualizer:
                     for count in eligible_counts
                 ]
                 keep_counts = [int(math.floor(q)) for q in raw_quotas]
-
                 remaining = remaining_quota - sum(keep_counts)
                 order = sorted(
-                    range(len(eligible_polygons)),
+                    range(len(eligible_polygon_indices)),
                     key=lambda i: raw_quotas[i] - keep_counts[i],
                     reverse=True,
                 )
                 for i in order[:remaining]:
                     keep_counts[i] += 1
 
-                for poly_lines, keep in zip(eligible_polygons, keep_counts):
+                for local_idx, keep in enumerate(keep_counts):
+                    poly_idx = eligible_polygon_indices[local_idx]
+                    poly_lines = lines_by_polygon[poly_idx]
                     n = len(poly_lines)
+
                     if keep <= 0:
                         continue
                     if keep >= n:
-                        selected_lines.extend(poly_lines)
+                        selected_lines_by_polygon[poly_idx].extend(poly_lines)
                         continue
+
                     indices = [int(math.floor(j * n / keep)) for j in range(keep)]
-                    selected_lines.extend(poly_lines[idx] for idx in indices)
-
-            all_lines = selected_lines
+                    for idx in indices:
+                        selected_lines_by_polygon[poly_idx].append(poly_lines[idx])
 
         # ------------------------------------------------------------------
-        # Plotting — batch by color
+        # Build the z slices used to draw the generator lines.
         # ------------------------------------------------------------------
-        if all_lines:
-            nan = float("nan")
-            batches: dict[str, dict] = defaultdict(lambda: {"xs": [], "ys": [], "zs": []})
+        '''
+        if z1 == z0 or resolution <= 1:
+            z_planes = [z0, z1]
+        else:
+        '''    
+        dz = (z1 - z0) / resolution
+        z_planes = [z0 + i * dz for i in range(resolution)]
+        z_planes.append(z1)
 
-            for idx, (v0, v1) in enumerate(all_lines):
-                color = cycle_colors[(color_counter + idx) % n_colors]
-                buf = batches[color]
-                buf["xs"].extend((v0.x, v1.x, nan))
-                buf["ys"].extend((v0.y, v1.y, nan))
-                buf["zs"].extend((z0,   z1,   nan))
+        # ------------------------------------------------------------------
+        # Precompute semantic weights per polygon and per slice.
+        # ------------------------------------------------------------------
+        section_cache = {}
+        z_planes_by_polygon: list[list[float]] = [[] for _ in selected_lines_by_polygon]
+        weights_by_polygon: list[list] = [[] for _ in selected_lines_by_polygon]
+        weight_range_by_polygon: list[tuple[float, float]] = [
+            (0.0, 0.0) for _ in selected_lines_by_polygon
+        ]
+      
+        if mode is not None and len(z_planes) > 2:
+            for slice_idx in range(len(z_planes) - 1):
+                z_a = z_planes[slice_idx]
+                if z_a not in section_cache:
+                    section_cache[z_a] = self.field.section(z_a)
 
-            for color, buf in batches.items():
-                ax.plot(buf["xs"], buf["ys"], buf["zs"], linewidth=0.7, color=color)
+            for poly_idx, poly_lines in enumerate(selected_lines_by_polygon):
+
+                '''
+                if z1 == z0 or resolution <= 1:
+                    z_planes_probe = [z0, z1]
+                else:
+                    dz_probe = (z1 - z0) / resolution
+                    z_planes_probe = [z0 + i * dz_probe for i in range(resolution)]
+                    z_planes_probe.append(z1)
+                '''
+                #poly_weights_probe = []
+                poly_numeric_weights = []
+                '''
+                for slice_idx in range(len(z_planes_probe) - 1):
+                    z_a = z_planes_probe[slice_idx]
+                    if z_a not in section_cache:
+                        section_cache[z_a] = self.field.section(z_a)
+
+                    poly_weight = getattr(section_cache[z_a].polygons[poly_idx], "weight", None)
+                    poly_weights_probe.append(poly_weight)
+
+                    poly_weight_float = _to_float_or_none(poly_weight)
+                    if poly_weight_float is not None:
+                        poly_numeric_weights.append(poly_weight_float)
+                '''
+                resolution_local = resolution#_auto_resolution_for_polygon(z_planes_probe, poly_weights_probe)
+                dz_local = (z1 - z0) / resolution_local
+                z_planes_local = [z0 + i * dz_local for i in range(resolution_local)]
+                z_planes_local.append(z1)
+
+                z_planes_by_polygon[poly_idx] = z_planes_local
+
+                poly_weights = []
+                
+                for slice_idx in range(len(z_planes_local) - 1):
+                    z_a = z_planes_local[slice_idx]
+                    if z_a not in section_cache:
+                        section_cache[z_a] = self.field.section(z_a)
+
+                    #poly_weight = getattr(section_cache[z_a].polygons[poly_idx], "weight", None)
+                    poly_weight = getattr(section_cache[z_a].polygons[poly_idx], "weightabs", None)
+                    
+                    #poly_name_debug =getattr(section_cache[z_a].polygons[poly_idx], "name", None)
+                    #print(f"DEBUG poly_weight: {poly_weight} poly_name_debug: {poly_name_debug}")
+                    poly_weights.append(poly_weight)
+                    
+
+                    poly_weight_float = _to_float_or_none(poly_weight)
+                    if poly_weight_float is not None:
+                    
+                        poly_numeric_weights.append(poly_weight_float)                    
+                
+                weights_by_polygon[poly_idx] = poly_weights
+
+                if poly_numeric_weights:
+                    weight_range_by_polygon[poly_idx] = (
+                        min(poly_numeric_weights),
+                        max(poly_numeric_weights),
+                    )
+                else:
+                    weight_range_by_polygon[poly_idx] = (0.0, 0.0)
+
+        # ------------------------------------------------------------------
+        # Accumulate generator segments slice-by-slice and polygon-by-polygon.
+        # ------------------------------------------------------------------
+
+        
+        if mode is None or len(z_planes) <= 2:
+
+            for slice_idx in range(len(z_planes) - 1):
+                z_a = z_planes[slice_idx]
+                z_b = z_planes[slice_idx + 1]
+
+                for poly_idx, poly_lines in enumerate(selected_lines_by_polygon):
+                    if not poly_lines:
+                        continue
+
+                    base_color = polygon_base_colors[poly_idx]
+                    segment_color = base_color
+
+                    for v0, v1 in poly_lines:
+                        _add_generator_segment(
+                            v0,
+                            v1,
+                            z_a,
+                            z_b,
+                            thickness_line,
+                            segment_color,
+                        )
+        else:
+            max_slices = max(
+                (len(zp) - 1 for zp in z_planes_by_polygon if zp),
+                default=0,
+            )
+
+            for slice_idx in range(max_slices):
+                for poly_idx, poly_lines in enumerate(selected_lines_by_polygon):
+                    if not poly_lines:
+                        continue
+
+                    z_planes_local = z_planes_by_polygon[poly_idx]
+                    if slice_idx >= len(z_planes_local) - 1:
+                        continue
+                    if slice_idx >= len(weights_by_polygon[poly_idx]):
+                        continue
+
+                    z_a = z_planes_local[slice_idx]
+                    z_b = z_planes_local[slice_idx + 1]
+
+                    base_color = polygon_base_colors[poly_idx]
+                    poly_weight = weights_by_polygon[poly_idx][slice_idx]
+                    poly_weight_min, poly_weight_max = weight_range_by_polygon[poly_idx]
+                    
+                    segment_color = _get_semantic_color(
+                        base_color=base_color,
+                        weight_value=poly_weight,
+                        weight_min=poly_weight_min,
+                        weight_max=poly_weight_max,
+                        mode_name=mode,
+                    )
+
+                    for v0, v1 in poly_lines:
+                        _add_generator_segment(
+                            v0,
+                            v1,
+                            z_a,
+                            z_b,
+                            thickness_line,
+                            segment_color,
+                        )
+        # ------------------------------------------------------------------
+        # Render phase — one ax.plot per (lw, color) bucket
+        # ------------------------------------------------------------------
+        for (lw, color), buf in edges_by_style.items():
+            if buf["x"]:
+                ax.plot(buf["x"], buf["y"], buf["z"], lw=lw, color=color)
+
+        # ------------------------------------------------------------------
+        # Explicit limits
+        # ------------------------------------------------------------------
+        all_verts = [
+            v for sec in (s0, s1) for poly in sec.polygons for v in poly.vertices
+        ]
+        xs = [v.x for v in all_verts]
+        ys = [v.y for v in all_verts]
+        ax.set_xlim(min(xs), max(xs))
+        ax.set_ylim(min(ys), max(ys))
+        ax.set_zlim(z0, z1)
 
         # ------------------------------------------------------------------
         # Labels and title
@@ -8349,26 +8760,15 @@ class Visualizer:
 
         # ------------------------------------------------------------------
         # Axis scaling
-        #
-        # equalize_z=False → _set_axes_equal_3d, identical to original
-        # equalize_z=True  → let Matplotlib keep its own limits (correct tick
-        #                    values, no manual interference), then override
-        #                    only the visual box proportions via set_box_aspect
-        #                    using the real data ranges.
         # ------------------------------------------------------------------
         if equalize_z:
-            all_verts = [
-                v for sec in (s0, s1) for poly in sec.polygons for v in poly.vertices
-            ]
-            x_range = max(max(v.x for v in all_verts) - min(v.x for v in all_verts), 1e-12)
-            y_range = max(max(v.y for v in all_verts) - min(v.y for v in all_verts), 1e-12)
+            x_range = max(max(xs) - min(xs), 1e-12)
+            y_range = max(max(ys) - min(ys), 1e-12)
             z_range = max(abs(z1 - z0), 1e-12)
             ax.set_box_aspect((x_range, y_range, z_range))
         else:
             _set_axes_equal_3d(ax)
-
         return ax
-
    
 
 # ============================================================

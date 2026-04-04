@@ -174,38 +174,83 @@ def _run(
     # This mirrors plot_section_2d / plot_properties behavior.
     if file_outputs:
         dpi = 150  # stable default; can be made configurable later if needed
-        spacing_px = 10
 
-        images: List[Image.Image] = []
-        for fig in figs:
-            buf = io.BytesIO()
-            fig.savefig(buf, format="png", dpi=dpi, bbox_inches="tight")
-            buf.seek(0)
-            im = Image.open(buf).convert("RGB")
-            im.load()  # force full decode before closing buffer
-            buf.close()
-            images.append(im)
+        if not figs:
+            raise RuntimeError("No figures were generated for plot_weight file output.")
 
-        if not images:
-            raise RuntimeError("No images were generated for plot_weight file output.")
+        def _sanitize_filename_fragment(text: str) -> str:
+            """Return a filesystem-safe fragment for output filenames."""
+            cleaned = "".join(
+                ch if ch.isalnum() or ch in ("-", "_") else "_"
+                for ch in text.strip()
+            )
+            cleaned = cleaned.strip("_")
+            return cleaned or "polygon"
 
-        if len(images) == 1:
-            composite = images[0]
-        else:
-            max_w = max(im.width for im in images)
-            total_h = sum(im.height for im in images) + spacing_px * (len(images) - 1)
-            composite = Image.new("RGB", (max_w, total_h), (255, 255, 255))
-            y = 0
-            for im in images:
-                composite.paste(im, (0, y))
-                y += im.height + spacing_px
+        def _axis_tag(ax: Any, idx: int) -> str:
+            """Try to derive a polygon-related tag from axis metadata; fallback to index."""
+            candidates = [
+                ax.get_title().strip() if hasattr(ax, "get_title") else "",
+                ax.get_ylabel().strip() if hasattr(ax, "get_ylabel") else "",
+                ax.get_xlabel().strip() if hasattr(ax, "get_xlabel") else "",
+            ]
+
+            if getattr(ax, "lines", None):
+                for line in ax.lines:
+                    label = str(line.get_label()).strip()
+                    if label and not label.startswith("_"):
+                        candidates.append(label)
+
+            for text in candidates:
+                if text:
+                    return _sanitize_filename_fragment(text)
+
+            return f"poly_{idx:03d}"
 
         for out_path in file_outputs:
             outp = Path(out_path)
             if not outp.parent.exists():
                 raise RuntimeError(f"Output directory does not exist: {outp.parent}")
-            composite.save(str(outp), dpi=(dpi, dpi))
-            print(f"[OK] plot_weight wrote: {outp}")
+
+            suffix = outp.suffix or ".png"
+            stem = outp.stem if outp.suffix else outp.name
+
+            if len(figs) == 1 and len(figs[0].axes) > 1:
+                fig = figs[0]
+
+                # Force a draw so tight bounding boxes are available.
+                fig.canvas.draw()
+                renderer = fig.canvas.get_renderer()
+
+                target_paths = []
+                for i, ax in enumerate(fig.axes, start=1):
+                    tag = _axis_tag(ax, i)
+                    target_path = outp.with_name(f"{stem}__{tag}{suffix}")
+                    target_paths.append(target_path)
+
+                #print(f"DEBUG plot_weight axis export targets: {[str(p) for p in target_paths]}")
+
+                for i, ax in enumerate(fig.axes, start=1):
+                    bbox = ax.get_tightbbox(renderer).expanded(1.03, 1.08)
+                    bbox_inches = bbox.transformed(fig.dpi_scale_trans.inverted())
+
+                    tag = _axis_tag(ax, i)
+                    target_path = outp.with_name(f"{stem}__{tag}{suffix}")
+
+                    fig.savefig(str(target_path), dpi=dpi, bbox_inches=bbox_inches)
+                    #print(f"[OK] plot_weight wrote: {target_path}")
+
+            else:
+                target_paths = [
+                    outp.with_name(f"{stem}__fig_{i:03d}{suffix}")
+                    for i, _fig in enumerate(figs, start=1)
+                ]
+
+                #print(f"DEBUG plot_weight figure export targets: {[str(p) for p in target_paths]}")
+
+                for fig, target_path in zip(figs, target_paths):
+                    fig.savefig(str(target_path), dpi=dpi, bbox_inches="tight")
+                    #print(f"[OK] plot_weight wrote: {target_path}")
 
 
 # -----------------------------------------------------------------------------

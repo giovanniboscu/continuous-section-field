@@ -1,3 +1,4 @@
+
 """
 csf_rough_validator.py
 =====================
@@ -128,6 +129,32 @@ def _make_context_snippet(text: str, line_no: int, col_no: Optional[int] = None)
             caret_pos = len(f"{prefix} {ln:4d} | ") + (col_no - 1)
             out.append(" " * caret_pos + "^")
     return "\n".join(out)
+
+
+# Detect the first top-level YAML key directly from raw text.
+# This is used only to provide a more precise diagnostic when the required
+# root key "CSF:" is missing or replaced by another key.
+_ROOT_KEY_RE = re.compile(r"^(?P<indent>[ \t]*)(?P<key>[^#\s][^:]*):(?:\s|$)")
+
+
+def _find_first_root_key_in_text(text: str) -> Tuple[Optional[str], Optional[int]]:
+    """
+    Return the first top-level YAML key found in raw text, skipping blank lines and comments.
+
+    Returns:
+        (key, line_no) or (None, None)
+    """
+    for i, raw in enumerate(text.splitlines(), start=1):
+        stripped = raw.strip()
+
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        m = _ROOT_KEY_RE.match(raw)
+        if m and not m.group("indent"):
+            return m.group("key").strip(), i
+
+    return None, None
 
 
 # -----------------------------
@@ -427,6 +454,24 @@ def validate_text(text: str, source: str = "<memory>") -> Tuple[bool, List[str]]
         report.append(f"[ERROR] YAML parse failed for {source}: {e.message}")
         if e.line is not None:
             report.append(_make_context_snippet(text, e.line, e.col))
+        return False, report
+
+    # Check the first top-level key directly in raw text so that a missing
+    # "CSF:" root can be reported with a clearer and more localized diagnostic.
+    first_root_key, first_root_line = _find_first_root_key_in_text(text)
+    if TOP_KEY not in doc:
+        report.append(f"[ERROR] Missing required root key '{TOP_KEY}:'.")
+
+        if first_root_key is not None and first_root_line is not None:
+            report.append(
+                f"First top-level key found at line {first_root_line}: '{first_root_key}:'"
+            )
+            report.append(_make_context_snippet(text, first_root_line, 1))
+            report.append(f"Hint: wrap the whole file under '{TOP_KEY}:'.")
+        else:
+            report.append("No top-level YAML key was found.")
+            report.append(f"Hint: the file must start with '{TOP_KEY}:'.")
+
         return False, report
 
     # 2) quoted-number scan (raw text)

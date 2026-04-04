@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-from typing import List, Sequence, Tuple
+from typing import List, Sequence, Tuple, Optional
 
 
 from .section_field import (
@@ -363,11 +363,152 @@ class CSFStacked:
         ax.set_ylim(ymin, ymax)
         ax.set_zlim(zmin, zmax)
         ax.set_box_aspect((dx, dy, dz))
+#-----------------------------------------------------------------------------------------------
+    def plot_weight(
+        self,
+        z: float,
+        poly_indices_to_plot=None,
+        num_points: int = 100,
+        tol: float = 1e-12,
+        junction_side: str = "left",        
+    ):
+        """
+        Plot the weight distributions for the segment selected by global ``z``.
+
+        Dispatch policy
+        ---------------
+        - The target segment is selected through ``field_at(...)`` using the same
+          ``z`` and ``junction_side`` policy used by the other stacked wrappers.
+        - Once the correct segment is identified, a ``Visualizer`` is instantiated
+          from that field and the plotting call is delegated to it.
+
+        Notes
+        -----
+        All plotting parameters are forwarded unchanged so that the stacked API
+        remains aligned with the single-field plotting API.
+        """
+        field = self.field_at(z=float(z), junction_side=junction_side)
+        vis = Visualizer(field)
+
+        return vis.plot_weight(
+            num_points=num_points,
+            tol=tol,
+            poly_indices_to_plot=poly_indices_to_plot,
+        )
 
 
+    def plot_properties(
+        self,
+        z: float,
+        keys_to_plot=None,
+        alpha: float = 1,
+        title: str = None,
+        num_points: int = 100,
+        junction_side: str = "left",
+    ):
+        """
+        Plot the property evolution for the segment selected by global ``z``.
+
+        The target field is selected through the stacked dispatch and the call is
+        delegated unchanged to the corresponding Visualizer instance.
+        """
+        field = self.field_at(z=float(z), junction_side=junction_side)
+        vis = Visualizer(field)
+        if title is None:            
+            field = self.field_at(z=float(z), junction_side=junction_side)
+            title = f"Plot Properties | z-range [{field.s0.z:g}, {field.s1.z:g}]"
+        return vis.plot_properties(
+            keys_to_plot=keys_to_plot,
+            title=title,
+            num_points=num_points,
+    )
 
 
+    def plot_section_2d(
+        self,
+        z: float,
+        junction_side: str = "left",
+        show_ids: bool = True,
+        show_weights: bool = True,
+        show_vertex_ids: bool = False,
+        show_legenda: bool = False,
+        title: Optional[str] = None,
+        ax=None,
+    ):
+        """
+        Plot the 2D section at global coordinate ``z`` using stacked dispatch.
 
+        Dispatch policy
+        ---------------
+        - The target segment is selected through ``field_at(...)`` using the same
+          ``z`` and ``junction_side`` policy already used by ``section()`` and
+          ``section_full_analysis()``.
+        - Once the correct segment is identified, a Visualizer is instantiated
+          from that field and the call is delegated to it.
+
+        Notes
+        -----
+        All plotting parameters are forwarded unchanged so that the stacked API
+        stays aligned with the single-field plotting API.
+        """
+        field = self.field_at(z=float(z), junction_side=junction_side)
+        vis = Visualizer(field)
+        field = self.field_at(z=float(z), junction_side=junction_side)
+        title = f"{title} z-range [{field.s0.z:g}, {field.s1.z:g}]"
+        return vis.plot_section_2d(
+            z=float(z),
+            show_ids=show_ids,
+            show_weights=show_weights,
+            show_vertex_ids=show_vertex_ids,
+            show_legenda=show_legenda,
+            title=title,
+            ax=ax,
+        )
+
+
+    def plot_volume_3d(
+        self,
+        z: float,
+        junction_side: str = "left",
+        show_end_sections: bool = True,
+        line_percent: float = 100.0,
+        seed: int = 0,
+        title: str = None,
+        ax=None,
+        equalize_z: bool = False,
+    ):
+        """
+        Plot the 3D ruled volume of the stacked segment selected by global ``z``.
+
+        Dispatch policy
+        ---------------
+        - The target segment is selected through ``field_at(...)`` using the same
+          ``z`` and ``junction_side`` policy already used by ``section()`` and
+          ``plot_section_2d()``.
+        - Once the correct segment is identified, a ``Visualizer`` is instantiated
+          from that field and the plotting call is delegated to it.
+
+        Notes
+        -----
+        All plotting parameters are forwarded unchanged so that the stacked API
+        remains aligned with the single-field plotting API.
+        """
+        field = self.field_at(z=float(z), junction_side=junction_side)
+        vis = Visualizer(field)
+
+        if title is None:            
+            field = self.field_at(z=float(z), junction_side=junction_side)
+            title = f"Plot volume | z-range [{field.s0.z:g}, {field.s1.z:g}]"
+
+        return vis.plot_volume_3d(
+            show_end_sections=show_end_sections,
+            line_percent=line_percent,
+            seed=seed,
+            title=title,
+            ax=ax,
+            equalize_z=equalize_z,
+        )
+#-----------------------------------------------------------------------------------------------
     def plot_volume_3d_global(
         self,
         title: String=None,

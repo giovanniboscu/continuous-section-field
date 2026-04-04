@@ -54,7 +54,7 @@ def register(
             "Params\n"
             "- show_end_sections : draw end-section outlines at z0 and z1.\n"
             "- line_percent      : percentage (0..100) of generator lines displayed (random subsample).\n"
-            "- seed              : RNG seed used when line_percent < 100.\n"
+            "- seed              : legacy integer seed or semantic string mode such as 'w'.\n"
             "- title             : window/figure title."
         ),
         params=(
@@ -75,9 +75,9 @@ def register(
             ParamSpec(
                 name="seed",
                 required=False,
-                typ="int",
+                typ="str|int",
                 default=0,
-                description="Random seed used when line_percent < 100.",
+                description="Legacy integer seed as string, or semantic mode string such as 'w'.",
             ),
             ParamSpec(
                 name="title",
@@ -120,7 +120,8 @@ def register(
         # Defaults are taken from SPEC params (robust against hub/catalog variations).
         show_end_sections = bool(params.get("show_end_sections", SPEC.params[0].default))
         line_percent = float(params.get("line_percent", SPEC.params[1].default))
-        seed = int(params.get("seed", SPEC.params[2].default))
+        
+        
         title_raw = params.get("title", SPEC.params[3].default)
         title = "" if title_raw is None else str(title_raw)
 
@@ -135,7 +136,16 @@ def register(
         # Create a dedicated figure with a 3D axes.
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
+        #seed = int(params.get("seed", SPEC.params[2].default))
 
+        seed = params.get("seed", SPEC.params[2].default)
+
+        try:
+            seed = int(seed)
+        except (TypeError, ValueError):
+            if isinstance(seed, str):
+                seed = seed.strip().lower()
+                
         viz.plot_volume_3d(
             show_end_sections=show_end_sections,
             line_percent=line_percent,
