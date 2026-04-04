@@ -12,7 +12,7 @@
 **[Key Features](#key-features)** • **[Installation & setup](#option-a---install-from-pypi-recommended)** • **[Worked Example](#worked-example-continuously-tapered-t-beam)** • **[Validation: Cylinder](#csf-numerical-validation-circular-hollow-section)** • **[Case Study: NREL 5-MW](#csf-validation--numerical-case-study-nrel-5-mw-reference-wind-turbine-tower)**
 
 ---
-📚 [Full Documentation](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs) - Guides, references, and examples for all CSF features.
+📚 [CSF Building Blocks Fundamentals](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md) - Guides, references, and examples for all CSF features.
 
 ---
 ### Motivation 
