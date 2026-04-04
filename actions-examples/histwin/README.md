@@ -12,7 +12,7 @@ pip install csfpy
 python3 -m venv venv
 .\venv\Scripts\activate 
 ```
-get the source from the repository  (not full clone)
+get the source from the repository  (if you do not need full clone)
 
 ```
 git clone --filter=blob:none --no-checkout https://github.com/giovanniboscu/continuous-section-field.git
@@ -21,6 +21,17 @@ git sparse-checkout init --cone
 git sparse-checkout set actions-examples/histwin
 git checkout main
 ```
+
+get the source from the repository  ( full clone)
+
+```
+git clone  https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field/actions-examples/histwin
+ 
+```
+
+
+
 install and run 
 
 on Linux 
