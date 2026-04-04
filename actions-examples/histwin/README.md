@@ -9,7 +9,6 @@ source venv/bin/activate
 ```
 python3 -m venv venv
 .\venv\Scripts\activate 
-pip install csfpy
 ```
 get the source from the repository  (not full clone)
 
@@ -31,7 +30,6 @@ on Windows
 ```
 pip install csfpy
 
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 powershell -ExecutionPolicy Bypass -File create_yaml_histwin.ps1
 .\create_yaml-histwin.sh
 ```
