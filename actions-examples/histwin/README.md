@@ -1,20 +1,36 @@
-if you want to only try histwin then run 
+# Quick Start - HISTWIN Example
 
-**linux / Mac**
-```
+If you only want to try the **HISTWIN** example, follow the steps below.
+
+---
+
+## 1. Create a virtual environment
+
+### Linux / macOS
+
+```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install csfpy
+```
 
-```
-**Windows**
-```
+### Windows
+
+```powershell
 python3 -m venv venv
-.\venv\Scripts\activate 
+.\venv\Scripts\Activate.ps1
+pip install csfpy
 ```
-get the source from the repository  (if you do not need full clone)
 
-```
+---
+
+## 2. Get the source from the repository
+
+### Option A - Sparse checkout (only the HISTWIN example)
+
+Use this if you do not need the full repository.
+
+```bash
 git clone --filter=blob:none --no-checkout https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 git sparse-checkout init --cone
@@ -22,40 +38,83 @@ git sparse-checkout set actions-examples/histwin
 git checkout main
 ```
 
-get the source from the repository  ( full clone)
+### Option B — Full clone
 
+Use this if you want the full repository.
+
+```bash
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
 ```
-git clone  https://github.com/giovanniboscu/continuous-section-field.git
-cd continuous-section-field/actions-examples/histwin
- 
+
+---
+
+## 3. Go to the HISTWIN example folder
+
+### Linux / macOS
+
+```bash
+cd actions-examples/histwin
 ```
 
+### Windows
 
-
-install and run 
-
-on Linux 
+```powershell
+cd actions-examples\histwin
 ```
-cd continuous-section-field/actions-examples/histwin
+
+---
+
+## 4. Generate the CSF input files
+
+### Linux / macOS
+
+```bash
 chmod +x create_yaml-histwin.sh
 ./create_yaml-histwin.sh
-```
-on Windows
-```
-cd continuous-section-field\actions-examples\histwin
-powershell -ExecutionPolicy Bypass -File create_yaml_histwin.ps1
-.\create_yaml-histwin.sh
-
+./create_yaml-histwin.sh -action
 ```
 
-run
+### Windows
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\create_yaml_histwin.ps1
+powershell -ExecutionPolicy Bypass -File .\create_yaml_histwin.ps1 -action
 ```
 
+This generates:
+
+- `histwin_tower.yaml`
+- `action.yaml`
+
+---
+
+## 5. Run the analysis
+
+### Linux / macOS
+
+```bash
 csf-actions histwin_tower.yaml action.yaml
-
 ```
 
-the `out` directory will contain the generated reports
+### Windows
+
+```powershell
+csf-actions.exe histwin_tower.yaml action.yaml
+```
+
+The `out` directory will contain the generated reports.
+
+---
+
+## Notes
+
+- `histwin_tower.yaml` contains the tower geometry.
+- `action.yaml` contains the analysis and post-processing actions.
+- The example is focused on the HISTWIN tower only.
+
+
+
 # HISTWIN Tower Example
 
 ## Overview
