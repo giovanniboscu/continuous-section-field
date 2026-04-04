@@ -16,7 +16,7 @@ get the source from the repository  (not full clone)
 git clone --filter=blob:none --no-checkout https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 git sparse-checkout init --cone
-git sparse-checkout set histwin
+git sparse-checkout set actions-examples/histwin
 git checkout main
 ```
 install and run 
