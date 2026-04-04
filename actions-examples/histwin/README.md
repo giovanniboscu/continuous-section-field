@@ -4,6 +4,8 @@ if you want to only try histwin then run
 ```
 python3 -m venv venv
 source venv/bin/activate
+pip install csfpy
+
 ```
 **Windows**
 ```
@@ -28,8 +30,10 @@ chmod +x create_yaml-histwin.sh
 ```
 on Windows
 ```
-pip install csfpy
 
 powershell -ExecutionPolicy Bypass -File create_yaml_histwin.ps1
 .\create_yaml-histwin.sh
+
 ```
+
+
