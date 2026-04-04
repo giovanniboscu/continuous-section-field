@@ -233,9 +233,9 @@ The present model uses the following values:
 
 ### Top section `S1`
 
-- `s1_dx = 2.955`
-- `s1_dy = 2.955`
-- `s1_R  = 1.4775`
+- `s1_dx = 3`
+- `s1_dy = 3`
+- `s1_R  = 1.5`
 - `s1_tg = 0.012`
 - `s1_x  = 0.0`
 - `s1_y  = 0.0`
