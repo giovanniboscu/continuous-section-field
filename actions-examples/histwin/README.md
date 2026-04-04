@@ -24,8 +24,6 @@ install and run
 
 on Linux 
 ```
-pip install csfpy
-
 chmod +x create_yaml-histwin.sh
 ./create_yaml-histwin.sh
 ```
