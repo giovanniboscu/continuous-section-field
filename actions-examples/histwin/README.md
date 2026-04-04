@@ -244,7 +244,7 @@ The present model uses the following values:
 ### Discretization
 
 - `twist_deg = 0`
-- `N = 256`
+- `N = 128`
 - `singlepolygon = True`
 
 ### Rebar placeholders
