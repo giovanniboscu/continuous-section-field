@@ -42,13 +42,13 @@ plt.show()
 ## `plot_volume_3d(...)`
 
 ```python
-    plot_volume_3d(
-        show_end_sections = True,
-        line_percent = 100.0,
-        seed = 0,
-        title = "Ruled volume (vertex-connection lines)",
-        ax=None
-    )
+plot_volume_3d(
+    show_end_sections=True,
+    line_percent=100.0,
+    seed=0,
+    title="Ruled volume (vertex-connection lines)",
+    ax=None
+)
 ```
 
 ### Parameters
@@ -59,17 +59,30 @@ plt.show()
   Percentage of vertex-connection lines to draw (`0..100`).  
   Out-of-range values raise `ValueError`.
 
-- `seed` (`int`, default `0`)  
-  Random seed for reproducible subsampling when `line_percent < 100`.
+- `seed` (`int | str`, default `0`)  
+  Controls line sampling and, optionally, line coloring.
+
+  - Integer values keep the standard seeded behavior for reproducible subsampling when `line_percent < 100`.
+  - String value `"w"` activates weight-based coloring of the generator lines using `w(z)`, with default weight-resolution `100`.
+  - String value `"w<number>"` activates the same weight-based coloring, with `<number>` interpreted as the weight-resolution used by the graphic engine.
 
 - `title` (`str`)  
   Plot title.
 
 - `ax` (matplotlib 3D axis or `None`)  
-  Reuse existing axis or create a new one.
+  Reuse an existing axis or create a new one.
 
 ### Returns
 - `ax`: the 3D axis used for plotting.
+
+### Notes
+- In weight-color mode (`seed="w"` or `seed="w<number>"`), the lines forming the ruled volume are colored according to the variation of `w(z)`.
+- `seed="w"` is equivalent to using weight-resolution `100`.
+- If `w(z)` is constant, the lines are drawn in **black**.
+- If `w(z)` varies:
+  - **red** = weight at full value (`w ≈ 1.0`, intact shell)
+  - **blue** = weight reduced relative to its maximum
+
 
 ### Notes
 - Sections are sampled at `self.field.z0` and `self.field.z1`.
