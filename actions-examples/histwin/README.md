@@ -1,8 +1,16 @@
 # Quick Start - HISTWIN Example
+After completing this guide, you can follow the step-by-step OpenFAST integration workflow here:
+
+[OpenFAST integration guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/openfastguide.md)
+---
+
 
 If you only want to try the **HISTWIN** example, follow the steps below.
 
 ---
+
+
+
 
 ## 1. Create a virtual environment
 
