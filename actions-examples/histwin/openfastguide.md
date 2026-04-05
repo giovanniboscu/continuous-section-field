@@ -139,12 +139,6 @@ These remain the user's responsibility:
 - non-tower machine data in `ElastoDyn.dat`,
 - any real physical machine data outside the tower model.
 
-The scripts include placeholder values only to let the pipeline run.
-
-
-
-
-
 The scripts include placeholder values for non-CSF machine data only to let the pipeline run as a technical end-to-end test.
 
 These values are sufficient to generate the required files, execute BModes, inject tower mode-shape coefficients into the ElastoDyn tower file, and verify that OpenFAST can read and run the case.
