@@ -119,7 +119,7 @@ The `out` directory will contain the generated reports.
 
 ## Overview
 
-This example reproduces a **HISTWIN-type monitored steel wind tower** in CSF as a **circular hollow tapered shell** with no rebars and an optional longitudinal degradation law for the steel shell.
+This example reproduces a **HISTWIN-type monitored steel wind tower** in CSF as a **circular hollow tapered shell**  and an optional longitudinal degradation law for the steel shell.
 
 The example is intended to generate:
 
