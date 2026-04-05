@@ -153,7 +153,7 @@ They are not intended to represent a real turbine configuration. All non-CSF mac
 
 There are only **two** workflows.
 
-### Workflow A — fully automatic
+### Workflow A - fully automatic
 
 Use this if BModes is available locally or through `BMODES_EXE`.
 
@@ -163,7 +163,7 @@ This path is:
 2. generate `Main.fst`, `ElastoDyn.dat`, `ElastoDyn_Blade.dat`
 3. run `openfast Main.fst`
 
-### Workflow B — manual BModes step
+### Workflow B - manual BModes step
 
 Use this if BModes exists but you want to launch it yourself.
 
@@ -179,15 +179,15 @@ This path is:
 
 ---
 
-## 6. Workflow A — fully automatic
+## 6. Workflow A - fully automatic
 
-### Step A1 — make the launcher executable
+### Step A1 - make the launcher executable
 
 ```bash
 chmod +x run_csf_to_elastodyn.sh
 ```
 
-### Step A2 — ensure BModes is discoverable
+### Step A2 - ensure BModes is discoverable
 
 Either:
 
@@ -199,7 +199,7 @@ or:
 export BMODES_EXE=/absolute/path/to/bmodes
 ```
 
-### Step A3 — run the main launcher
+### Step A3 - run the main launcher
 
 ```bash
 ./run_csf_to_elastodyn.sh histwin_tower.yaml
@@ -222,7 +222,7 @@ Expected result:
 - `histwin_tower_BModes_tower.bmi`
 - `histwin_tower_BModes_tower.out`
 
-### Step A4 — generate the OpenFAST structural-only case
+### Step A4 - generate the OpenFAST structural-only case
 
 ```bash
 python generate_openfast_case_templates.py \
@@ -236,7 +236,7 @@ Expected result:
 - `ElastoDyn.dat`
 - `ElastoDyn_Blade.dat`
 
-### Step A5 — run OpenFAST
+### Step A5 - run OpenFAST
 
 ```bash
 openfast Main.fst
@@ -248,11 +248,11 @@ Expected result:
 
 ---
 
-## 7. Workflow B — manual BModes step
+## 7. Workflow B - manual BModes step
 
 Use this when you do **not** want the launcher to run BModes automatically.
 
-### Step B1 — run the launcher
+### Step B1 - run the launcher
 
 ```bash
 chmod +x run_csf_to_elastodyn.sh
@@ -265,7 +265,7 @@ If BModes is not found, the launcher stops after generating:
 - `histwin_tower_BModes_tower.bmt`
 - `histwin_tower_BModes_tower.bmi`
 
-### Step B2 — run BModes yourself
+### Step B2 - run BModes yourself
 
 ```bash
 ./BModes/build/bmodes/bmodes histwin_tower_BModes_tower.bmi
@@ -275,7 +275,7 @@ Expected result:
 
 - `histwin_tower_BModes_tower.out`
 
-### Step B3 — inject BModes mode shapes into the ElastoDyn tower file
+### Step B3 - inject BModes mode shapes into the ElastoDyn tower file
 
 Recommended command:
 
@@ -297,7 +297,7 @@ python csf_to_elastodyn.py histwin_tower.yaml \
 
 This regenerates the tower files and rewrites `histwin_tower_ElastoDyn_Tower.dat` with the fitted BModes coefficients already injected.
 
-### Step B4 — generate the OpenFAST structural-only case
+### Step B4 - generate the OpenFAST structural-only case
 
 ```bash
 python generate_openfast_case_templates.py \
@@ -305,7 +305,7 @@ python generate_openfast_case_templates.py \
   --yaml histwin_tower.yaml
 ```
 
-### Step B5 — run OpenFAST
+### Step B5 - run OpenFAST
 
 ```bash
 openfast Main.fst
