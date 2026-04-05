@@ -9,6 +9,10 @@ This guide starts **from an existing CSF YAML tower model**, for example:
 It does **not** explain how that YAML was created.
 
 This guide explains only how to run and customize the pipeline **after the YAML already exists**.
+---
+For the complete CSF → BModes → ElastoDyn → OpenFAST integration workflow, see the detailed guide here:
+
+[OpenFAST integration guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/openfastguide.md)
 
 ---
 ## Purpose of This Guide
