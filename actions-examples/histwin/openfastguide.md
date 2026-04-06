@@ -642,12 +642,7 @@ and you want to update only the tower mode-shape coefficients in the ElastoDyn t
 
 ## Mode-shape coefficient fitting
 
-In the standard NREL/NLR workflow, the step between BModes output and
-ElastoDyn input is performed manually using the Excel spreadsheet
-`ModeShapePolyFitting.xls`: the user pastes BModes modal data into the
-sheet, reads back the polynomial coefficients, and copies them into the
-ElastoDyn tower `.dat` file by hand. The spreadsheet has no controls on
-mode selection or polynomial conditioning.
+In the standard NREL/NLR workflow, the step between BModes output and ElastoDyn input is commonly performed using the Excel spreadsheet ModeShapePolyFitting.xls: the user imports or pastes BModes modal data into the sheet, obtains the fitted polynomial coefficients, and then transfers those coefficients into the ElastoDyn tower input file. The spreadsheet provides several fitting methods, but it does not appear to provide automatic mode-identification logic or the additional screening controls implemented in this script.
 
 In this pipeline, that step is replaced by
 [`bmodes_out_to_elastodyn.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/bmodes_out_to_elastodyn.py),
