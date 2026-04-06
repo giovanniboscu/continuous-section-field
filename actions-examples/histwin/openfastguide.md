@@ -642,23 +642,14 @@ and you want to update only the tower mode-shape coefficients in the ElastoDyn t
 
 ## Mode-shape coefficient fitting
 
-In the standard NREL/NLR workflow, the step between BModes output and
-ElastoDyn input is performed manually using the Excel spreadsheet
-`ModeShapePolyFitting.xls`: the user pastes BModes modal data into the
-sheet, reads back the polynomial coefficients, and copies them into the
-ElastoDyn tower `.dat` file by hand.
+In the standard NREL/NLR workflow, the step between BModes output and ElastoDyn input is typically performed manually using the Excel spreadsheet ModeShapePolyFitting.xls: the user pastes BModes modal data into the sheet, reads back the polynomial coefficients, and copies them into the ElastoDyn tower .dat file.
 
 
 In this pipeline, that step is replaced by
 [`bmodes_out_to_elastodyn.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/bmodes_out_to_elastodyn.py),
-which automates the fit from the command line and adds two controls that
-the spreadsheet does not provide:
 
-- **Automatic mode identification** with twist-ratio filtering, so that
-  bending-dominated modes are preferred over mixed or torsional modes.
-- **Tip-displacement threshold filtering**, which rejects modes whose tip
-  displacement is too small relative to the best candidate, preventing
-  ill-conditioned polynomial fits.
+which automates the polynomial fit from the command line and adds two screening steps not documented for the spreadsheet workflow: automatic mode identification with twist-ratio filtering, to prefer bending-dominated modes over mixed or torsional ones, and tip-displacement threshold filtering, to reject candidates with near-zero tip response and reduce the risk of ill-conditioned fits
+
 
 #### Linux / macOS
 
