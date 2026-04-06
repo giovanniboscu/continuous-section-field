@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Update ElastoDyn tower mode-shape coefficients from a BModes .out file.
 This script only edits coefficient lines and does not rewrite the tower-file format.
