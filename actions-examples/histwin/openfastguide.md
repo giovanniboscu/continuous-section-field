@@ -132,11 +132,11 @@ Those values are **not** produced by CSF and must be replaced with real machine 
 
 ## 4. Prerequisites
 
-## 4.1 Linux / macOS
+### 4.1 Linux / macOS
 
 
 
-## Python and environment check
+### Python and environment check
 
 Before running the pipeline, verify that Python is available and that the required packages are installed in the environment you want to use.
 
@@ -640,7 +640,7 @@ Use it only if you already have:
 and you want to update only the tower mode-shape coefficients in the ElastoDyn tower file.
 
 
-## Mode-shape coefficient fitting
+### Mode-shape coefficient fitting
 
 In the standard NREL/NLR workflow, the step between BModes output and ElastoDyn input is typically performed manually using the Excel spreadsheet ModeShapePolyFitting.xls: the user pastes BModes modal data into the sheet, reads back the polynomial coefficients, and copies them into the ElastoDyn tower .dat file.
 
@@ -650,6 +650,7 @@ In this pipeline, that step is replaced by
 
 which automates the polynomial fit from the command line and adds two screening steps not documented for the spreadsheet workflow: automatic mode identification with twist-ratio filtering, to prefer bending-dominated modes over mixed or torsional ones, and tip-displacement threshold filtering, to reject candidates with near-zero tip response and reduce the risk of ill-conditioned fits
 
+### Automatic mode identification
 
 #### Linux / macOS
 
