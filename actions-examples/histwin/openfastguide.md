@@ -99,6 +99,8 @@ From `histwin_tower.yaml`, the pipeline computes the tower-side section properti
 - `Iy(z)`
 - `Jt(z)`
 
+[Torsional quantity policy for BModes export](#torsional-quantity-policy-for-bmodes-export)
+
 These are then used to generate:
 
 - `histwin_tower_ElastoDyn_Tower.dat`
@@ -279,7 +281,7 @@ export BMODES_EXE=/absolute/path/to/bmodes
 ```bash
 ./run_csf_to_elastodyn.sh histwin_tower.yaml
 ```
-[Torsional quantity policy for BModes export](#torsional-quantity-policy-for-bmodes-export)
+
 
 If BModes is found, this single command does all of the following:
 
