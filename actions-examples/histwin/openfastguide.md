@@ -818,7 +818,7 @@ Those values remain the user’s responsibility.
 
 ---
 ## Torsional quantity policy for BModes export
-
+[Saint Venant Torsional Constant](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md)
 ### Adopted choice
 
 The BModes export uses:
