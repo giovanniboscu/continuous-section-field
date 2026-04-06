@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Generate a minimal OpenFAST / ElastoDyn structural-only case around an existing
 ElastoDyn tower file generated from CSF.
