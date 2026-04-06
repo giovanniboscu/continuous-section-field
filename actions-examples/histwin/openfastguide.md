@@ -52,6 +52,24 @@ Main generated files:
 - `ElastoDyn_Blade.dat`
 
 ---
+> **Why this pipeline exists**
+>
+> Generating a distributed property table at high resolution - especially when
+> a longitudinal law such as a shell degradation field is active - is not
+> feasible manually. Computing `A(z)`, `Ix(z)`, `Iy(z)`, `Jt(z)` at 100
+> stations along a tower with a spatially varying wall contribution would
+> require per-point section analysis. CSF does this automatically from the
+> geometry model, making high-resolution BModes input a direct byproduct of
+> the parametric description rather than a manual task.
+
+> **Context**
+>
+> This pipeline provides an automated connection between a parametric tower
+> geometry - including non-circular, non-prismatic sections and arbitrary
+> longitudinal variation laws - and the BModes/ElastoDyn workflow in OpenFAST.
+> It requires no manual construction of distributed property tables.
+
+---
 
 ## 2. Minimum files that must already exist
 
