@@ -379,7 +379,7 @@ python3 csf_to_elastodyn.py histwin_tower.yaml \
   --cm-axial 1.75 \
   --bmodes-out histwin_tower_BModes_tower.out
 ```
-[Torsional quantity policy for BModes export](#torsional-quantity-policy-for-bmodes-export)
+
 
 This regenerates the tower files and rewrites `histwin_tower_ElastoDyn_Tower.dat` with the fitted BModes coefficients already injected.
 
@@ -510,7 +510,7 @@ python .\csf_to_elastodyn.py .\histwin_tower.yaml `
   --cm-axial 1.75 `
   --bmodes-out .\histwin_tower_BModes_tower.out
 ```
-[Torsional quantity policy for BModes export](#torsional-quantity-policy-for-bmodes-export)
+
 
 ### Meaning of each parameter
 
