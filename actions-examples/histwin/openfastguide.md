@@ -63,7 +63,6 @@ Main generated files:
 > a direct byproduct of the parametric description rather than a manual task.
 
 ---
----
 
 ## 2. Minimum files that must already exist
 
@@ -139,8 +138,6 @@ Those values are **not** produced by CSF and must be replaced with real machine 
 ### Python and environment check
 
 Before running the pipeline, verify that Python is available and that the required packages are installed in the environment you want to use.
-
-### Linux / macOS
 
 Check Python:
 
@@ -806,7 +803,7 @@ If you are working on Windows, follow the PowerShell sequence shown in Section 8
 ---
 
 ## 12. Final note
-
+The following two categories of data remain outside the pipeline by design and must be provided by the user:
 
 - RNA data for the BModes `.bmi`
 - non-tower machine data for the OpenFAST / ElastoDyn structural case
