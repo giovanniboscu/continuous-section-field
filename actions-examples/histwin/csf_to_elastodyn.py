@@ -114,32 +114,38 @@ def load_csf_field(yaml_path: str):
 
 def _extract_torsion_constant(sa: dict) -> float:
     """
-    Return a scalar torsional constant for BModes.
+    Return the torsional quantity for BModes export as:
 
-    Preference order:
-      1) J_sv_cell first component, if available and positive
-      2) J_sv_wall
-      3) J_s_vroark
-      4) K_torsion
-      5) Ip
+        J = J_sv_cell + J_sv_wall
+
+    where each available positive contribution is added.
+    Print a warning if the final value is zero.
     """
+    total = 0.0
+
     j_cell = sa.get("J_sv_cell")
     if isinstance(j_cell, (tuple, list)) and len(j_cell) >= 1:
         try:
             val = float(j_cell[0])
             if val > 0.0:
-                return val
-        except Exception:
+                total += val
+        except (TypeError, ValueError):
             pass
-    if isinstance(j_cell, (int, float)) and float(j_cell) > 0.0:
-        return float(j_cell)
+    elif isinstance(j_cell, (int, float)):
+        val = float(j_cell)
+        if val > 0.0:
+            total += val
 
-    for key in ("J_sv_wall", "J_s_vroark", "K_torsion", "Ip"):
-        val = sa.get(key)
-        if isinstance(val, (int, float)) and float(val) > 0.0:
-            return float(val)
+    j_wall = sa.get("J_sv_wall")
+    if isinstance(j_wall, (int, float)):
+        val = float(j_wall)
+        if val > 0.0:
+            total += val
 
-    return 0.0
+    if total == 0.0:
+        print("WARNING: torsional quantity is zero (J_sv_cell + J_sv_wall = 0.0)")
+
+    return total
 
 
 def compute_properties(field, z_stations: Iterable[float]):
@@ -149,6 +155,7 @@ def compute_properties(field, z_stations: Iterable[float]):
     Returns a list of dictionaries with keys:
       z, A, Ix, Iy, Jt
     """
+    
     results = []
     for z in z_stations:
         sa = section_full_analysis(field.section(float(z)))
