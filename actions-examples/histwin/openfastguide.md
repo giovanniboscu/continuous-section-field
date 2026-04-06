@@ -641,6 +641,31 @@ and you want to update only the tower mode-shape coefficients in the ElastoDyn t
 
 ### Automatic mode identification
 
+### Mode-shape coefficient fitting
+
+In the standard NREL/NLR workflow, the step between BModes output and
+ElastoDyn input is performed using the Excel spreadsheet
+`ModeShapePolyFitting.xls`: the user pastes BModes modal data into the
+sheet, reads back the polynomial coefficients, and copies them into the
+ElastoDyn tower `.dat` file by hand. The spreadsheet has no controls on
+mode selection or polynomial conditioning.
+
+In this pipeline, that step is replaced by
+[`bmodes_out_to_elastodyn.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/bmodes_out_to_elastodyn.py),
+which automates the fit from the command line and adds two controls that
+the spreadsheet does not provide:
+
+- **Automatic mode identification** with twist-ratio filtering, so that
+  bending-dominated modes are preferred over mixed or torsional modes.
+- **Tip-displacement threshold filtering**, which rejects modes whose tip
+  displacement in the relevant axis is less than 1% of the peak value
+  among all candidates. Without this filter, a mode with a near-zero tip
+  value is normalized by that small number, amplifying noise by a factor
+  of `1/tip` and producing an ill-conditioned polynomial fit with large
+  oscillating coefficients that satisfy `sum=1.0` formally but do not
+  represent the physical mode shape. OpenFAST accepts such a file without
+  errors, so the problem is silent.
+
 #### Linux / macOS
 
 ```bash
