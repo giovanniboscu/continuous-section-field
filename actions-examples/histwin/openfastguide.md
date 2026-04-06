@@ -702,6 +702,13 @@ Meaning:
 - `G`: shear modulus
 - `RHO`: density
 - `N`: number of sampled stations along tower height
+
+The parameter `N` controls the number of sampling stations that `csf_to_elastodyn.py`
+requests from CSF along the tower height. A higher value improves the fidelity
+of the distributed property table fed to BModes, which interpolates between
+these points internally. For a simple monotonic tower this value can be reduced.
+It is set to `100` here to demonstrate the parametric resolution capability of CSF.
+
 - `DAMP`: ElastoDyn tower damping ratio
 
 RNA test values used to generate `.bmi`:
