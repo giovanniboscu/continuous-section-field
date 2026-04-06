@@ -176,7 +176,6 @@ openfast
 
 ### Python
 
-Use a Python environment where these packages are installed:
 Before running the pipeline, verify that Python is available and that the required packages are installed in the environment you want to use.
 
 Check Python:
@@ -191,7 +190,7 @@ Python 3.14.2
 
 Check that the required packages are available:
 
-```bash
+```powershell
 python -c "import csf, yaml, numpy; print('OK')"
 ```
 
@@ -653,7 +652,7 @@ Use this only if the automatic mode identification is not what you want.
 #### Linux / macOS
 
 ```bash
-python bmodes_out_to_elastodyn.py \
+python3 bmodes_out_to_elastodyn.py \
   histwin_tower_BModes_tower.out \
   histwin_tower_ElastoDyn_Tower.dat \
   --fa1 1 --ss1 2 --fa2 3 --ss2 5
@@ -778,8 +777,6 @@ If you are working on Windows, follow the PowerShell sequence shown in Section 8
 
 ## 12. Final note
 
-
-However, two categories of data remain outside CSF by design:
 
 - RNA data for the BModes `.bmi`
 - non-tower machine data for the OpenFAST / ElastoDyn structural case
