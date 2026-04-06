@@ -2,6 +2,30 @@
 Update ElastoDyn tower mode-shape coefficients from a BModes .out file.
 This script only edits coefficient lines and does not rewrite the tower-file format.
 
+Role in the pipeline
+--------------------
+In the standard NREL/NLR workflow, the step between BModes output and
+ElastoDyn input is performed manually using the Excel spreadsheet
+ModeShapePolyFitting.xls: the user pastes BModes modal data into the
+sheet, reads back the polynomial coefficients, and copies them into the
+ElastoDyn tower .dat file by hand.
+
+This script replaces that manual step with an automated, scriptable
+equivalent that can be run from the command line or called from a
+launcher script.  It adds two controls that the spreadsheet does not
+provide:
+
+  - Automatic mode identification with twist-ratio filtering, so that
+    bending-dominated modes are preferred over mixed or torsional modes.
+  - Tip-displacement threshold filtering, which rejects modes whose tip
+    displacement in the relevant axis is less than 1% of the peak value
+    among all candidates.  Without this filter, a mode with a near-zero
+    tip value would be normalized by that small number, amplifying noise
+    by a factor of 1/tip and producing an ill-conditioned polynomial fit
+    with large oscillating coefficients (condition numbers above 1000,
+    coefficient magnitudes above 1000) that satisfy sum=1.0 formally but
+    do not represent the physical mode shape.
+
 This script is intentionally separate from csf_to_elastodyn.py.
 It only:
   1. parses BModes modal output (.out)
@@ -28,6 +52,9 @@ Notes
   normalization at x = 1 for the polynomial terms x^2..x^6.
 - Automatic selection prefers low-frequency bending-dominated modes and
   penalizes strong twist participation, but manual override is available.
+- If automatic selection fails or selects an unexpected mode, use the
+  --fa1/--fa2/--ss1/--ss2 flags to specify BModes mode numbers directly.
+
 """
 
 from __future__ import annotations
@@ -166,6 +193,24 @@ def choose_modes_automatic(modes: List[ModeShape]) -> SelectedModes:
     if len(fa_candidates) < 2 or len(ss_candidates) < 2:
         raise BmodesParseError(
             "Automatic selection failed: fewer than two FA or SS displacement modes found."
+        )
+
+    # Filter out modes whose tip displacement is too small relative to the
+    # best candidate in each axis.  A near-zero tip value causes the
+    # normalization step to amplify noise by 1/tip, making the subsequent
+    # polynomial fit ill-conditioned (condition numbers > 1000 and large
+    # oscillating coefficients).  The threshold of 1% of the peak tip
+    # displacement rejects clearly unsuitable modes while remaining loose
+    # enough not to discard legitimate higher modes.
+    fa_tip_max = max(abs(float(m.fa_disp[-1])) for m in fa_candidates)
+    ss_tip_max = max(abs(float(m.ss_disp[-1])) for m in ss_candidates)
+    fa_candidates = [m for m in fa_candidates if abs(float(m.fa_disp[-1])) >= 0.01 * fa_tip_max]
+    ss_candidates = [m for m in ss_candidates if abs(float(m.ss_disp[-1])) >= 0.01 * ss_tip_max]
+
+    if len(fa_candidates) < 2 or len(ss_candidates) < 2:
+        raise BmodesParseError(
+            "Automatic selection failed: fewer than two FA or SS modes passed the "
+            "tip-displacement threshold. Use --fa1/--fa2/--ss1/--ss2 to select manually."
         )
 
     # Sort first by twist penalty, then by frequency.
