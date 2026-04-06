@@ -417,7 +417,7 @@ Density = 8500 kg/m3
 - The generated CSF tower properties **faithfully reproduce** the NREL 5-MW reference.
 
 
-##OpenFAST Integration - CSF API Example
+## OpenFAST Integration - CSF API Example
 
 For a complete example of CSF integrated into the OpenFAST aeroelastic 
 simulation framework - from parametric tower geometry through BModes 
