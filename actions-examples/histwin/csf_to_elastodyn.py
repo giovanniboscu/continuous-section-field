@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Convert a CSF YAML tower model into BModes and ElastoDyn tower inputs.
 
@@ -49,7 +48,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--G", type=float, default=80.8e9, help="Shear modulus [Pa]")
     p.add_argument("--rho", type=float, default=8500.0, help="Density [kg/m3]")
     p.add_argument("--n", type=int, default=11, help="Number of output stations")
-    p.add_argument("--damp", type=float, default=1.0, help="Structural damping ratio [%]")
+    p.add_argument("--damp", type=float, default=1.0, help="Structural damping ratio [%%]")
     p.add_argument("--out", type=str, default=None, help="Output filename stem")
 
     # RNA tip-mass data for BModes .bmi generation.
