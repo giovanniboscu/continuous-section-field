@@ -184,7 +184,7 @@ openfast
 
 ---
 
-## 4.2 Windows (PowerShell)
+### 4.2 Windows (PowerShell)
 
 ### Python
 
@@ -705,7 +705,7 @@ OpenFAST.exe .\Main.fst
 ```
 
 
---
+---
 
 ## 10. What to customize
 
