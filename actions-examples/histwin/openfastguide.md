@@ -279,6 +279,7 @@ export BMODES_EXE=/absolute/path/to/bmodes
 ```bash
 ./run_csf_to_elastodyn.sh histwin_tower.yaml
 ```
+[Torsional quantity policy for BModes export](#torsional-quantity-policy-for-bmodes-export)
 
 If BModes is found, this single command does all of the following:
 
@@ -307,6 +308,8 @@ Expected result:
 > B3 in the manual workflow). Do not pass a zero-coefficient tower file to
 > OpenFAST - ElastoDyn requires non-zero mode-shape coefficients whose terms
 > sum to 1.0.
+
+
 
 ### Step A4 - generate the OpenFAST structural-only case
 
@@ -376,6 +379,7 @@ python3 csf_to_elastodyn.py histwin_tower.yaml \
   --cm-axial 1.75 \
   --bmodes-out histwin_tower_BModes_tower.out
 ```
+[Torsional quantity policy for BModes export](#torsional-quantity-policy-for-bmodes-export)
 
 This regenerates the tower files and rewrites `histwin_tower_ElastoDyn_Tower.dat` with the fitted BModes coefficients already injected.
 
@@ -506,6 +510,7 @@ python .\csf_to_elastodyn.py .\histwin_tower.yaml `
   --cm-axial 1.75 `
   --bmodes-out .\histwin_tower_BModes_tower.out
 ```
+[Torsional quantity policy for BModes export](#torsional-quantity-policy-for-bmodes-export)
 
 ### Meaning of each parameter
 
@@ -809,3 +814,44 @@ The following two categories of data remain outside the pipeline by design and m
 - non-tower machine data for the OpenFAST / ElastoDyn structural case
 
 Those values remain the user’s responsibility.
+
+
+---
+## Torsional quantity policy for BModes export
+
+### Adopted choice
+
+The BModes export uses:
+
+`J = J_sv_cell + J_sv_wall`
+
+where each available **positive** contribution is added.
+
+This means:
+
+- `J_sv_cell` contributes if present and positive
+- `J_sv_wall` contributes if present and positive
+- the exported torsional quantity is their sum
+
+---
+
+## Zero-value warning
+
+If the final sum is zero:
+
+`J_sv_cell + J_sv_wall = 0.0`
+
+the code prints a warning message.
+
+Recommended warning text:
+
+```text
+WARNING: torsional quantity is zero (J_sv_cell + J_sv_wall = 0.0)
+```
+
+This warning is useful because a zero torsional quantity means that the BModes export will write zero torsional data at that section:
+
+- `tw_iner = rho * J`
+- `tor_stff = G * J`
+
+So the warning makes the absence of torsional contribution explicit instead of leaving it silent.
