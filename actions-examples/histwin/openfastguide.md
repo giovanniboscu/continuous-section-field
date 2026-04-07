@@ -227,46 +227,24 @@ Use the Windows executable directly, for example:
 
 ---
 
-## 5. Linux / macOS workflow
 
-There are two Linux/macOS workflows.
 
-### Workflow A - fully automatic
 
-Use this if BModes is available locally or through `BMODES_EXE`.
 
-This path is:
 
-1. run `run_csf_to_elastodyn.sh`
-2. generate `Main.fst`, `ElastoDyn.dat`, `ElastoDyn_Blade.dat`
-3. run `openfast Main.fst`
 
-### Workflow B - manual BModes step
+## 5 Linux / macOS workflow
 
-Use this if you want to run BModes explicitly yourself.
-
-This path is:
-
-1. run `run_csf_to_elastodyn.sh`
-2. run BModes manually
-3. rerun `csf_to_elastodyn.py` with `--bmodes-out`
-4. generate `Main.fst`, `ElastoDyn.dat`, `ElastoDyn_Blade.dat`
-5. run `openfast Main.fst`
-
-Do not mix the two workflows halfway through unless you intentionally switch to the manual route.
-
----
-
-## 6. Linux / macOS - Workflow A (fully automatic)
 > **Start of execution (Linux / macOS)**  
 > The actual pipeline begins from this section.
-### Step A1 - make the launcher executable
+
+### Step 1 - make the launcher executable
 
 ```bash
 chmod +x run_csf_to_elastodyn.sh
 ```
 
-### Step A2 - ensure BModes is discoverable
+### Step 2 - ensure BModes is discoverable
 
 Either:
 
@@ -278,14 +256,17 @@ or:
 export BMODES_EXE=/absolute/path/to/bmodes
 ```
 
-### Step A3 - run the main launcher
+### Step 3 - run the launcher
 
 ```bash
 ./run_csf_to_elastodyn.sh histwin_tower.yaml
 ```
 
+This command always starts the Linux/macOS tower-side pipeline.
 
-If BModes is found, this single command does all of the following:
+#### If BModes is found
+
+The launcher continues automatically and does all of the following:
 
 1. samples the CSF tower,
 2. writes `histwin_tower_ElastoDyn_Tower.dat`,
@@ -302,61 +283,30 @@ Expected result:
 - `histwin_tower_BModes_tower.bmi`
 - `histwin_tower_BModes_tower.out`
 
+#### If BModes is not found
+
+The launcher stops after generating:
+
+- `histwin_tower_ElastoDyn_Tower.dat`
+- `histwin_tower_BModes_tower.bmt`
+- `histwin_tower_BModes_tower.bmi`
+
+You must then continue manually with the BModes step below.
+
 > **Note - why `TwFAM*Sh` and `TwSSM*Sh` are zero before BModes runs**
 >
 > After this step, the generated `histwin_tower_ElastoDyn_Tower.dat` contains
 > twenty zero coefficients at the bottom of the file (`TwFAM1Sh(2..6)`, etc.).
 > This is expected. `csf_to_elastodyn.py` writes `0.0` placeholders whenever
 > BModes output is not yet available. The real polynomial coefficients are
-> injected only after BModes produces its `.out` file (step A3 above, or step
-> B3 in the manual workflow). Do not pass a zero-coefficient tower file to
-> OpenFAST - ElastoDyn requires non-zero mode-shape coefficients whose terms
-> sum to 1.0.
+> injected only after BModes produces its `.out` file, either automatically
+> through the launcher or manually in the next step. Do not pass a
+> zero-coefficient tower file to OpenFAST - ElastoDyn requires non-zero
+> mode-shape coefficients whose terms sum to 1.0.
 
+### Step 4 - run BModes manually if needed
 
-
-### Step A4 - generate the OpenFAST structural-only case
-
-```bash
-python3 generate_openfast_case_templates.py \
-  histwin_tower_ElastoDyn_Tower.dat \
-  --yaml histwin_tower.yaml
-```
-
-Expected result:
-
-- `Main.fst`
-- `ElastoDyn.dat`
-- `ElastoDyn_Blade.dat`
-
-### Step A5 - run OpenFAST
-
-```bash
-openfast Main.fst
-```
-
-Expected result:
-
-- `OpenFAST terminated normally.`
-
----
-
-## 7. Linux / macOS - Workflow B (manual BModes step)
-
-### Step B1 - run the launcher
-
-```bash
-chmod +x run_csf_to_elastodyn.sh
-./run_csf_to_elastodyn.sh histwin_tower.yaml
-```
-
-If BModes is not found, the launcher stops after generating:
-
-- `histwin_tower_ElastoDyn_Tower.dat`
-- `histwin_tower_BModes_tower.bmt`
-- `histwin_tower_BModes_tower.bmi`
-
-### Step B2 - run BModes manually
+Run this step only if the launcher did not find BModes automatically.
 
 ```bash
 ./BModes/build/bmodes/bmodes histwin_tower_BModes_tower.bmi
@@ -366,7 +316,9 @@ Expected result:
 
 - `histwin_tower_BModes_tower.out`
 
-### Step B3 - inject BModes mode shapes into the ElastoDyn tower file
+### Step 5 - inject BModes mode shapes manually if needed
+
+Run this step only if BModes was executed manually in Step 4.
 
 ```bash
 python3 csf_to_elastodyn.py histwin_tower.yaml \
@@ -384,10 +336,9 @@ python3 csf_to_elastodyn.py histwin_tower.yaml \
   --bmodes-out histwin_tower_BModes_tower.out
 ```
 
-
 This regenerates the tower files and rewrites `histwin_tower_ElastoDyn_Tower.dat` with the fitted BModes coefficients already injected.
 
-### Step B4 - generate the OpenFAST structural-only case
+### Step 6 - generate the OpenFAST structural-only case
 
 ```bash
 python3 generate_openfast_case_templates.py \
@@ -395,7 +346,13 @@ python3 generate_openfast_case_templates.py \
   --yaml histwin_tower.yaml
 ```
 
-### Step B5 - run OpenFAST
+Expected result:
+
+- `Main.fst`
+- `ElastoDyn.dat`
+- `ElastoDyn_Blade.dat`
+
+### Step 7 - run OpenFAST
 
 ```bash
 openfast Main.fst
@@ -405,9 +362,28 @@ Expected result:
 
 - `OpenFAST terminated normally.`
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ---
 
-## 8. Windows workflow
+## 6. Windows workflow
 > **Start of execution (Windows)**  
 > The actual pipeline begins from this section.
 The Windows route shown here is the explicit PowerShell-based route using the same tower-side logic.
@@ -635,7 +611,7 @@ Expected result:
 
 ---
 
-## 9. Optional standalone coefficient update
+## 7. Optional standalone coefficient update
 
 This step is **not** part of the main workflows.
 
@@ -714,9 +690,9 @@ OpenFAST.exe .\Main.fst
 
 ---
 
-## 10. What to customize
+## 8. What to customize
 
-### 10.1 In the launcher scripts
+### 8.1 In the launcher scripts
 
 Main tower/material settings:
 
@@ -753,7 +729,7 @@ RNA test values used to generate `.bmi`:
 These values are not produced by CSF.
 Replace them with real machine data for physical runs.
 
-### 10.2 In `csf_to_elastodyn.py`
+### 8.2 In `csf_to_elastodyn.py`
 
 Command-line controls include:
 
@@ -775,7 +751,7 @@ Command-line controls include:
 
 Use `--ss-mode-ids` and `--fa-mode-ids` only if automatic BModes mode selection must be overridden.
 
-### 10.3 In `generate_openfast_case_templates.py`
+### 8.3 In `generate_openfast_case_templates.py`
 
 This script creates a **test structural case**.
 
@@ -786,7 +762,7 @@ It infers only:
 
 Everything else in the generated `ElastoDyn.dat` is still non-CSF machine data.
 
-### 10.4 In `histwin_tower.yaml`
+### 8.4 In `histwin_tower.yaml`
 
 This file controls the actual tower model.
 
@@ -801,7 +777,7 @@ The pipeline assumes that this YAML is already a valid CSF model.
 
 ---
 
-## 11. Recommended usage summary
+## 9. Recommended usage summary
 
 If you have BModes available locally on Linux/macOS, use the fully automatic route.
 
@@ -812,7 +788,7 @@ If you are working on Windows, follow the PowerShell sequence shown in Section 8
 
 ---
 
-## 12. Final note
+## 10. Final note
 The following two categories of data remain outside the pipeline by design and must be provided by the user:
 
 - RNA data for the BModes `.bmi`
