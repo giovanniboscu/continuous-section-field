@@ -1,14 +1,15 @@
 # CSF → BModes → ElastoDyn → OpenFAST Guide
 
 ## What this guide covers
-
-This guide starts **from an existing CSF YAML tower model**, for example:
+This guide starts from an existing CSF YAML tower model, for example:
 
 - `histwin_tower.yaml`
 
-It does **not** explain how that YAML was created.
+It does not explain how that YAML was created.
 
-It explains only how to run and customize the pipeline **after the YAML already exists**.
+It explains only how to run and customize the pipeline after the YAML already exists.
+
+To generate `histwin_tower.yaml`, follow the [HISTWIN example guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/README.md).
 
 ---
 
