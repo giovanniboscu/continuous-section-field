@@ -257,7 +257,8 @@ Do not mix the two workflows halfway through unless you intentionally switch to 
 ---
 
 ## 6. Linux / macOS - Workflow A (fully automatic)
-
+> **Start of execution (Linux / macOS)**  
+> The actual pipeline begins from this section.
 ### Step A1 - make the launcher executable
 
 ```bash
@@ -406,7 +407,8 @@ Expected result:
 ---
 
 ## 8. Windows workflow
-
+> **Start of execution (Windows)**  
+> The actual pipeline begins from this section.
 The Windows route shown here is the explicit PowerShell-based route using the same tower-side logic.
 
 ### Step W1 - run the CSF → BModes → ElastoDyn tower pipeline
