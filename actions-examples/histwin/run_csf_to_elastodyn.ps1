@@ -14,7 +14,7 @@ if (-not (Test-Path -LiteralPath $YAML)) {
 $E    = 210e9
 $G    = 80.8e9
 $RHO  = 8500
-$N    = 11
+$N    = 100
 $DAMP = 1.0
 
 # RNA tip-mass parameters
