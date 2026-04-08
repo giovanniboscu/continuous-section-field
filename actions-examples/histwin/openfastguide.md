@@ -317,7 +317,7 @@ python3 csf_to_elastodyn.py histwin_tower.yaml \
   --E 210e9 \
   --G 80.8e9 \
   --rho 8500 \
-  --n 11 \
+  --n 100 \
   --damp 1.0 \
   --mass-tip 350000 \
   --ixx-tip 2607890 \
@@ -473,7 +473,7 @@ python .\csf_to_elastodyn.py .\histwin_tower.yaml `
   --E 210e9 `
   --G 80.8e9 `
   --rho 8500 `
-  --n 11 `
+  --n 100`
   --damp 1.0 `
   --mass-tip 350000 `
   --ixx-tip 2607890 `
