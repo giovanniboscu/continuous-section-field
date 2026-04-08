@@ -52,16 +52,8 @@ Main generated files:
 - `ElastoDyn_Blade.dat`
 
 ---
-
-> This pipeline connects a parametric tower geometry - including non-circular,
-> non-prismatic sections, arbitrary longitudinal variation laws, and material
-> or degradation fields - directly to the BModes/ElastoDyn workflow in
-> OpenFAST. Generating the distributed property table manually at this level
-> of geometric detail is not feasible: computing `A(z)`, `Ix(z)`, `Iy(z)`,
-> `Jt(z)` at each station along a tower with spatially varying section
-> properties and degradation fields requires per-point section analysis. CSF
-> performs this automatically from the geometry model, making the BModes input
-> a direct byproduct of the parametric description rather than a manual task.
+> **Note**
+> This guide uses a circular tower as the reference example, but the same workflow can be extended with CSF to any geometry compatible with the CSF model, including non-circular, non-prismatic, and longitudinally varying sections.
 
 ---
 
