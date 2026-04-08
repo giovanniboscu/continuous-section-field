@@ -312,6 +312,7 @@ Expected result:
 
 Run this step only if BModes was executed manually in Step 4.
 
+
 ```bash
 python3 csf_to_elastodyn.py histwin_tower.yaml \
   --E 210e9 \
@@ -327,7 +328,8 @@ python3 csf_to_elastodyn.py histwin_tower.yaml \
   --cm-axial 1.75 \
   --bmodes-out histwin_tower_BModes_tower.out
 ```
-
+> **Important**
+> When `csf_to_elastodyn.py` is run again with `--bmodes-out`, the input parameters must remain consistent with those used in the first pass (whether through `run_csf_to_elastodyn.sh` or a manual call). In particular, use the same values for `E`, `G`, `rho`, `n`, and the RNA tip-mass parameters. Otherwise, the final `histwin_tower_ElastoDyn_Tower.dat` may combine distributed tower properties and fitted BModes coefficients generated from different models.
 This regenerates the tower files and rewrites `histwin_tower_ElastoDyn_Tower.dat` with the fitted BModes coefficients already injected.
 
 ### Step 6 - generate the OpenFAST structural-only case
@@ -483,7 +485,8 @@ python .\csf_to_elastodyn.py .\histwin_tower.yaml `
   --cm-axial 1.75 `
   --bmodes-out .\histwin_tower_BModes_tower.out
 ```
-
+> **Important**
+> When `csf_to_elastodyn.py` is run again with `--bmodes-out`, the input parameters must remain consistent with those used in the first pass (whether through `run_csf_to_elastodyn.sh` or a manual call). In particular, use the same values for `E`, `G`, `rho`, `n`, and the RNA tip-mass parameters. Otherwise, the final `histwin_tower_ElastoDyn_Tower.dat` may combine distributed tower properties and fitted BModes coefficients generated from different models.
 
 ### Meaning of each parameter
 
