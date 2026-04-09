@@ -5,7 +5,7 @@ This example shows how to use CSF with the HISTWIN steel wind-tower model. The t
 >[OpenFAST integration guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/openfastguide.md)
 
 
-If you only want to try the **HISTWIN** example, follow the steps below.
+If you  want to try the **HISTWIN** example, follow the steps below.
 
 ---
 
