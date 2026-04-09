@@ -626,7 +626,8 @@ In the standard NREL/NLR workflow, the step between BModes output and ElastoDyn 
 In this pipeline, that step is replaced by
 [`bmodes_out_to_elastodyn.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/bmodes_out_to_elastodyn.py),
 
-which automates the polynomial fit from the command line and adds two screening steps not documented for the spreadsheet workflow: automatic mode identification with twist-ratio filtering, to prefer bending-dominated modes over mixed or torsional ones, and tip-displacement threshold filtering, to reject candidates with near-zero tip response and reduce the risk of ill-conditioned fits
+which automates the polynomial fit from the command line and adds two additional screening steps: automatic mode identification with twist-ratio filtering, to prefer bending-dominated modes over mixed or torsional ones, and tip-displacement threshold filtering, to reject candidates with near-zero tip response and reduce the risk of ill-conditioned fits.
+If the automatic selection does not match the expected physical modes, the user can override it explicitly with `--fa1`, `--fa2`, `--ss1`, `--ss2`.
 
 ### Automatic mode identification
 
