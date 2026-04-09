@@ -79,7 +79,7 @@ Before running the analysis, understand what the `action.yaml` does and what res
 
 Use this link:
 
-[`action.yaml` file description](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/csf_action_yaml_summary.md)
+[description `action.yaml` ](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/csf_action_yaml_summary.md)
 
 ---
 ## 4. Generate the CSF input files
