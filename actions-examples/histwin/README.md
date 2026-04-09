@@ -1,16 +1,5 @@
 # Quick Start - HISTWIN Example
 
-<table>
-  <tr>
-    <td><img src="https://github.com/user-attachments/assets/9843a5b8-4836-4d0b-9e7e-6c9e0307e2d0" width="385" alt="3D volume plot"></td>
-    <td><img src="https://github.com/user-attachments/assets/122b66e7-96b0-4993-a606-5870746acf2b" width="500" alt="Properties plot"></td>
-  </tr>
-  <tr>
-    <td align="center"><b>3D tower volume</b></td>
-    <td align="center"><b>Continuous properties (A, I1, Ip, J)</b></td>
-  </tr>
-</table>
-
 After creating histwin_tower.yaml  you can follow the step-by-step OpenFAST integration workflow here:
 
 [OpenFAST integration guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/openfastguide.md)
@@ -92,6 +81,18 @@ Before running the analysis, understand what the `action.yaml` does and what res
 Use this link:
 
 [description `action.yaml` ](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/csf_action_yaml_summary.md)
+
+
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/9843a5b8-4836-4d0b-9e7e-6c9e0307e2d0" width="385" alt="3D volume plot"></td>
+    <td><img src="https://github.com/user-attachments/assets/122b66e7-96b0-4993-a606-5870746acf2b" width="500" alt="Properties plot"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>3D tower volume</b></td>
+    <td align="center"><b>Continuous properties (A, I1, Ip, J)</b></td>
+  </tr>
+</table>
 
 ---
 ## 4. Generate the CSF input files
