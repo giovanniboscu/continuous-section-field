@@ -1,5 +1,6 @@
 # Quick Start - HISTWIN Example
 After completing this guide, you can follow the step-by-step OpenFAST integration workflow here:
+<img width="385" height="602" alt="Screenshot 2026-04-04 at 20 59 48" src="https://github.com/user-attachments/assets/9843a5b8-4836-4d0b-9e7e-6c9e0307e2d0" />
 
 [OpenFAST integration guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/openfastguide.md)
 ---
