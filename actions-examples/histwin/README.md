@@ -1,5 +1,6 @@
 # Quick Start - HISTWIN Example
 <img width="385" height="602" alt="Screenshot 2026-04-04 at 20 59 48" src="https://github.com/user-attachments/assets/9843a5b8-4836-4d0b-9e7e-6c9e0307e2d0" />
+<img width="856" height="614" alt="Screenshot 2026-04-09 at 15 58 50" src="https://github.com/user-attachments/assets/122b66e7-96b0-4993-a606-5870746acf2b" />
 
 After creating histwin_tower.yaml  you can follow the step-by-step OpenFAST integration workflow here:
 
