@@ -71,7 +71,7 @@ cd actions-examples\histwin
 ---
 ### Expected Results
 
-Use this link:
+Before running the analysis, understand what the `action.yaml` does and what results to expect
 
 [Expected results for `csf-actions histwin_tower.yaml action.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/csf_expected_results.md)
 
