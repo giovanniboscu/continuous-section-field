@@ -9,9 +9,6 @@ If you only want to try the **HISTWIN** example, follow the steps below.
 
 ---
 
-
-
-
 ## 1. Create a virtual environment
 
 ### Linux / macOS
@@ -72,7 +69,19 @@ cd actions-examples\histwin
 ```
 
 ---
+### Expected Results
 
+Use this link:
+
+[Expected results for `csf-actions histwin_tower.yaml action.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/csf_expected_results.md)
+
+### action.yaml Description
+
+Use this link:
+
+[`action.yaml` file description](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/csf_action_yaml_summary.md)
+
+---
 ## 4. Generate the CSF input files
 
 ### Linux / macOS
