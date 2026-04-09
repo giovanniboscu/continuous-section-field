@@ -100,7 +100,7 @@ after performing
 csf-actions histwin_tower.yaml action.yaml
 ```
 
-you need to nderstand what the `action.yaml` does and what results to expect
+you need to understand what the `action.yaml` does and what results to expect
 
 [Expected results for `csf-actions histwin_tower.yaml action.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/csf_expected_results.md)
 
