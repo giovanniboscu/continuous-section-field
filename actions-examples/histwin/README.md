@@ -1,4 +1,4 @@
-# Quick Start - HISTWIN Example
+# HISTWIN Example
 
 After creating histwin_tower.yaml  you can follow the step-by-step OpenFAST integration workflow here:
 
