@@ -1,6 +1,6 @@
 # HISTWIN Example
 
-After creating histwin_tower.yaml  you can follow the step-by-step OpenFAST integration workflow here:
+This example shows how to use CSF with the HISTWIN steel wind-tower model. The tower geometry file, `histwin_tower.yaml`, is generated parametrically by the `create_yaml-histwin.sh` script, while the post-processing workflow is controlled by `action.yaml`, which defines the station sets, actions, and expected outputs produced by `csf-actions`.
 
 [OpenFAST integration guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/openfastguide.md)
 ---
