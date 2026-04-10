@@ -1,12 +1,5 @@
 # CSF -> OpenFAST Minimal Pipeline Guide
-## OpenFAST Analysis Description
 
-[OpenFAST_analysis_desc.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/csf_to_openfast/OpenFAST_analysis_desc.md)
-
-Describes the type of analysis performed by the generated OpenFAST case.
-Covers the role of ElastoDyn, the active degrees of freedom, the disabled
-modules (CompAero, CompInflow, CompSub), and the structural free-decay
-nature of the simulation driven by an initial tower-top displacement.
 ## What this process does
 
 This process converts a **CSF geometry YAML** into a minimal set of **OpenFAST** input files:
@@ -59,7 +52,7 @@ pip install csfpy
 ```
 
 Note: the pip package is named `csfpy` but the importable module is `csf`.  
-The script uses `from csf import ...` — this is correct and expected.
+The script uses `from csf import ...` - this is correct and expected.
 
 Other dependencies (`numpy`, `PyYAML`, `matplotlib`, `openseespy`) are installed automatically.
 
@@ -600,3 +593,13 @@ The point is to make OpenFAST consume tower properties coming from a **continuou
 That is why CSF is useful here.
 
 Its continuous-function API allows the script to evaluate structural properties along the tower height and automatically regenerate the distributed OpenFAST tower input whenever the geometry changes.
+
+---
+
+> **Note on mode-shape coefficients**
+> The tower mode-shape coefficients in this workflow are polynomial placeholders
+> (parabolic for mode 1, `x⁶` for mode 2). They satisfy the ElastoDyn sum-to-1
+> constraint and allow OpenFAST to run, but do not represent the real modal
+> properties of the tower. For physically accurate mode shapes, run BModes on
+> the generated tower file and inject the fitted coefficients - see
+> [openfastguide.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/openfastguide.md).
