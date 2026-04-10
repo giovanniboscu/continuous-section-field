@@ -94,6 +94,12 @@ From `histwin_tower.yaml`, the pipeline computes the tower-side section properti
 
 [Torsional quantity policy for BModes export](#torsional-quantity-policy-for-bmodes-export)
 
+Normally, these quantities are computed manually at each station - by hand or
+with section-analysis tools - and entered directly into the BModes and ElastoDyn
+input files. CSF replaces that step: given the tower geometry, it evaluates the
+section properties automatically at any number of stations along the height.
+If the geometry changes, re-running the script is sufficient.
+
 These are then used to generate:
 
 - `histwin_tower_ElastoDyn_Tower.dat`
