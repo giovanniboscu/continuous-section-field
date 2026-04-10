@@ -483,6 +483,9 @@ It allows direct inspection and verification of longitudinal weight laws `w(z)` 
 
 The action is documented and accessible at the following link:
 
+```
+weight_lab_zrelative
+```
 👉 https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_actions.md
 
 
