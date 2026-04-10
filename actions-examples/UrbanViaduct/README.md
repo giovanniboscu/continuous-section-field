@@ -3,6 +3,8 @@
 Parametric geometry model of a **50 m tall reinforced concrete bridge pier**
 for an urban elevated highway in seismic zone 2 (Italy).
 
+<img width="565" height="715" alt="immagine" src="https://github.com/user-attachments/assets/6db23d13-abb5-47fc-96d6-3b431ea6f629" />
+
 ---
 ## Usage
 ### Create a virtual environment
