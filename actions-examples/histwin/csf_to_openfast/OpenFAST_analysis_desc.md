@@ -20,17 +20,17 @@ This is a **pure structural case**.
 
 The aerodynamic and inflow modules are explicitly disabled:
 
-- `CompAero = 0` — no aerodynamic loads
-- `CompInflow = 0` — no inflow wind field
-- `CompSub = 0` — no sub-structural dynamics
-- `CompServo = 0` — no control or electrical-drive dynamics
+- `CompAero = 0` - no aerodynamic loads
+- `CompInflow = 0` - no inflow wind field
+- `CompSub = 0` - no sub-structural dynamics
+- `CompServo = 0` - no control or electrical-drive dynamics
 
 This means the structural response is driven entirely by **initial conditions**, not by wind loads.
 
 The initial conditions set in `ElastoDyn.dat` are:
 
-- `TTDspFA = 0.01 m` — a small fore-aft tower-top displacement used to excite tower motion
-- `TTDspSS = 0.0 m` — side-to-side displacement, initially at rest
+- `TTDspFA = 0.01 m` - a small fore-aft tower-top displacement used to excite tower motion
+- `TTDspSS = 0.0 m` - side-to-side displacement, initially at rest
 
 The simulation therefore computes the **free decay response** of the tower from this initial perturbation.
 
@@ -71,8 +71,8 @@ This means the workflow produces a case that is executed as a **time-marching dy
 
 The following tower DOFs are active in the current configuration:
 
-- `TwFADOF1 = True` — first fore-aft bending mode
-- `TwSSDOF1 = True` — first side-to-side bending mode
+- `TwFADOF1 = True` - first fore-aft bending mode
+- `TwSSDOF1 = True` - first side-to-side bending mode
 
 All blade, drivetrain, generator, yaw, and platform DOFs are disabled.
 
@@ -131,3 +131,13 @@ The description above is supported by:
 
 4. ElastoDyn theory documentation
    - ElastoDyn computes structural kinematics including positions, velocities, and accelerations.
+
+---
+
+> **Note on mode-shape coefficients**
+> The tower mode-shape coefficients in this workflow are polynomial placeholders
+> (parabolic for mode 1, `x⁶` for mode 2). They satisfy the ElastoDyn sum-to-1
+> constraint and allow OpenFAST to run, but do not represent the real modal
+> properties of the tower. For physically accurate mode shapes, run BModes on
+> the generated tower file and inject the fitted coefficients - see
+> [openfastguide.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/openfastguide.md).
