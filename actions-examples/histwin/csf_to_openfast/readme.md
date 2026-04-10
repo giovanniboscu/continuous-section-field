@@ -1,5 +1,12 @@
 # CSF -> OpenFAST Minimal Pipeline Guide
+## OpenFAST Analysis Description
 
+[OpenFAST_analysis_desc.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/csf_to_openfast/OpenFAST_analysis_desc.md)
+
+Describes the type of analysis performed by the generated OpenFAST case.
+Covers the role of ElastoDyn, the active degrees of freedom, the disabled
+modules (CompAero, CompInflow, CompSub), and the structural free-decay
+nature of the simulation driven by an initial tower-top displacement.
 ## What this process does
 
 This process converts a **CSF geometry YAML** into a minimal set of **OpenFAST** input files:
