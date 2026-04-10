@@ -1,5 +1,9 @@
 # CSF -> OpenFAST Minimal Pipeline Guide
+## Analysis description
 
+For a detailed description of the type of analysis performed by the generated OpenFAST case — including the role of ElastoDyn, the active degrees of freedom, and the structural free-decay nature of the simulation — see:
+
+[OpenFAST_analysis_desc.md](./OpenFAST_analysis_desc.md)
 ## What this process does
 
 This process converts a **CSF geometry YAML** into a minimal set of **OpenFAST** input files:
