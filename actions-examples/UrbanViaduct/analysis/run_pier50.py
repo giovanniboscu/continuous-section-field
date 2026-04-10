@@ -130,7 +130,7 @@ for i in range(n_sez):
 # =============================================================================
 
 
-csv_dir = os.path.join("..\out", "sections")
+csv_dir = os.path.join("../out", "sections")
 os.makedirs(csv_dir, exist_ok=True)
 
 print(f"\nExporting {n_sez} section CSV files to '{csv_dir}' ...")
