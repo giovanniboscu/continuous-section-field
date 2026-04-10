@@ -7,7 +7,7 @@ This example shows how to use CSF with the HISTWIN steel wind-tower model. The t
 >[Minimal structural pipeline: CSF → OpenFAST directly, no BModes](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin/csf_to_openfast)
 
 
-If you  want to try the **HISTWIN** example, follow the steps below.
+To generate `histwin_tower.yaml` first, follow the steps below.below.
 
 ---
 
