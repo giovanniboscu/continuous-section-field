@@ -710,9 +710,23 @@ Meaning:
 
 The parameter `N` controls the number of sampling stations that `csf_to_elastodyn.py`
 requests from CSF along the tower height. A higher value improves the fidelity
-of the distributed property table fed to BModes, which interpolates between
-these points internally. For a simple monotonic tower this value can be reduced.
-It is set to `100` here to demonstrate the parametric resolution capability of CSF.
+of the distributed property table fed to BModes.
+
+For a simple monotonic tower - where diameter and thickness vary smoothly from
+base to top - a small number of stations is sufficient. The geometry is regular
+and a coarse table already represents it well.
+
+If the tower model includes localized variations - such as the Gaussian
+degradation law `w(z)` available in this example, which introduces reductions
+with a characteristic width of about 2.3 m over a 76 m tower - then `N`
+matters significantly. With 11 stations, one point every 7.6 m, the peak of
+the Gaussian may not be sampled at all. With 100 stations, one point every
+0.76 m, the local variation is captured with several points and represented
+faithfully in the BModes input.
+
+`N` is set to `100` here because the degradation law is part of the example.
+For a plain geometric tower without weight laws, it can be reduced.
+
 
 - `DAMP`: ElastoDyn tower damping ratio
 
