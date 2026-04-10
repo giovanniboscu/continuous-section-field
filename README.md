@@ -28,7 +28,7 @@ It represents section geometry and material as continuous functions along z, com
 </p>
 
 
-![Tower Analysis](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/morphingtower)
+![Tower Analysis](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin)
 
 ---
 
