@@ -43,8 +43,22 @@ With this workflow, if the geometry changes, you regenerate the OpenFAST files f
 
 ---
 
-## continuous-function API of CSF
+## Installation
 
+Install the CSF Python package with:
+
+```bash
+pip install csfpy
+```
+
+Note: the pip package is named `csfpy` but the importable module is `csf`.  
+The script uses `from csf import ...` — this is correct and expected.
+
+Other dependencies (`numpy`, `PyYAML`, `matplotlib`, `openseespy`) are installed automatically.
+
+---
+
+## continuous-function API of CSF
 
 The script evaluates:
 
@@ -119,41 +133,110 @@ It:
 - samples the tower,
 - writes the OpenFAST files.
 
-### 3. `wind11.ps1`
-This is the launcher.
+### 3. Launcher script
+This is the platform-specific launcher.
 
 It passes the chosen parameters directly to the Python script.
 
-Important:
-- the PowerShell launcher uses **direct command-line arguments**
-- it does **not** use extra YAML config files
+| Platform | File | Shell |
+|----------|------|-------|
+| Linux / macOS | `wind11.sh` | bash |
+| Windows | `wind11.ps1` | PowerShell |
+
+Both launchers do the same thing: pass the CSF YAML and all case parameters to `csf_to_openfast.py` as direct command-line arguments. They do **not** use extra YAML config files.
 
 ---
 
-## How the PowerShell launcher works
+## How to run on Linux / macOS
 
-The `wind11.ps1` script takes the **CSF geometry YAML** as input parameter.
+### Launcher: `wind11.sh`
 
-Typical usage:
+Make the script executable once:
+
+```bash
+chmod +x wind11.sh
+```
+
+Then run:
+
+```bash
+./wind11.sh ../histwin_tower.yaml
+```
+
+Or without the executable bit:
+
+```bash
+bash wind11.sh ../histwin_tower.yaml
+```
+
+The CSF YAML is passed from the command line. All other parameters are set inside the script.
+
+### Structure of `wind11.sh`
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+YAML="$1"
+SCRIPT="./csf_to_openfast.py"
+OUT="histwin_tower"
+
+# Geometry / section
+E=210e9
+RHO=7850
+N_STATIONS=11
+
+# Machine / simulation
+RNA_MASS=350000
+RNA_IXX=4.0e7
+RNA_IYY=2.1e7
+RNA_IZZ=2.4e7
+RNA_CM_X=5.0
+RNA_CM_Z=2.0
+HUB_RAD=3.0
+OVERHANG=5.0
+TMAX=10.0
+DT=0.01
+
+python "$SCRIPT" "$YAML" \
+  --E "$E" \
+  --rho "$RHO" \
+  --n-stations "$N_STATIONS" \
+  --rna-mass "$RNA_MASS" \
+  --rna-ixx "$RNA_IXX" \
+  --rna-iyy "$RNA_IYY" \
+  --rna-izz "$RNA_IZZ" \
+  --rna-cm-x "$RNA_CM_X" \
+  --rna-cm-z "$RNA_CM_Z" \
+  --hub-rad "$HUB_RAD" \
+  --overhang "$OVERHANG" \
+  --tmax "$TMAX" \
+  --dt "$DT" \
+  --out "$OUT"
+```
+
+---
+
+## How to run on Windows
+
+### Launcher: `wind11.ps1`
+
+Run from PowerShell:
 
 ```powershell
 .\wind11.ps1 ..\histwin_tower.yaml
 ```
 
-So the CSF YAML is passed from the command line, while the other case parameters are written directly inside the `.ps1`.
+If script execution is blocked by policy, enable it for the current session first:
 
-This means:
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\wind11.ps1 ..\histwin_tower.yaml
+```
 
-- the **CSF YAML** controls the tower geometry
-- the **PowerShell script** controls material, discretization, RNA, and simulation values
+The CSF YAML is passed from the command line. All other parameters are set inside the script.
 
----
-
-## What should be changed in `wind11.ps1`
-
-The PowerShell script is the correct place to change **input values** without modifying the Python logic.
-
-Typical structure:
+### Structure of `wind11.ps1`
 
 ```powershell
 param(
@@ -180,32 +263,49 @@ $HUB_RAD   = 3.0
 $OVERHANG  = 5.0
 $TMAX      = 10.0
 $DT        = 0.01
+
+python $SCRIPT $YAML `
+  --E $E `
+  --rho $RHO `
+  --n-stations $N_STATIONS `
+  --rna-mass $RNA_MASS `
+  --rna-ixx $RNA_IXX `
+  --rna-iyy $RNA_IYY `
+  --rna-izz $RNA_IZZ `
+  --rna-cm-x $RNA_CM_X `
+  --rna-cm-z $RNA_CM_Z `
+  --hub-rad $HUB_RAD `
+  --overhang $OVERHANG `
+  --tmax $TMAX `
+  --dt $DT `
+  --out $OUT
 ```
 
 ---
 
-## When to modify the PowerShell file
+## What to change in the launcher
 
-Modify `wind11.ps1` when you want to change:
+The launcher script (`.sh` on Linux, `.ps1` on Windows) is the correct place to change **input values** without modifying the Python logic.
+
+Modify it when you want to change:
 
 - the CSF YAML path,
-- material stiffness,
-- density,
-- number of stations,
+- material stiffness (`E`),
+- density (`RHO`),
+- number of tower stations,
 - RNA values,
-- simulation time,
-- time step,
+- simulation time or time step,
 - output stem.
 
 This is the preferred place for **case-level customization**.
+
+The logic stays in `csf_to_openfast.py`. The case parameters stay in the launcher.
 
 ---
 
 ## All modifiable parameters in `csf_to_openfast.py`
 
 The real input parameters accepted by the Python script are the command-line arguments defined in `parse_args()`.
-
-These are all the modifiable parameters.
 
 ---
 
@@ -359,9 +459,8 @@ Outputs become:
 ### `--openfast-exe`
 Optional path to OpenFAST executable.
 
-Important:
-- this parameter exists in the Python file
-- but if your current workflow does not support automatic execution from the PowerShell side, you can simply ignore it
+If provided, the script will launch OpenFAST automatically after generating the files.  
+If omitted, only the input files are generated.
 
 ---
 
@@ -442,7 +541,7 @@ So the current file already includes a minimal perturbation for tower motion.
 
 Use this rule:
 
-### Modify `wind11.ps1` when:
+### Modify the launcher (`wind11.sh` or `wind11.ps1`) when:
 you are changing **input values**
 
 Examples:
@@ -466,20 +565,22 @@ Examples:
 
 This keeps the workflow clean:
 
-- `.ps1` = case configuration
+- `.sh` / `.ps1` = case configuration
 - `.py` = generation logic
 
 ---
 
-## Example command
+## Known warnings
 
-A typical call is:
+### `CSF_W_POLYGONS_MAP_COERCED`
 
-```powershell
-.\wind11.ps1 ..\histwin_tower.yaml
+```
+WARNING CSF_W_POLYGONS_MAP_COERCED - Polygons mapping was coerced to a list preserving insertion order.
 ```
 
-The PowerShell script then calls Python with direct CLI arguments.
+This warning is **non-blocking** and expected when the YAML uses a standard YAML mapping for the polygons block.  
+CSF converts it internally to a list while preserving insertion order.  
+The pipeline runs correctly and all outputs are valid.
 
 ---
 
