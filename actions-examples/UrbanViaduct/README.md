@@ -32,7 +32,7 @@ cd ../analysis
 # section CSVs        → out/sections/*.csv
 python3 run_pier50.py
 
-# sectionproperties per ogni sezione
+# sectionproperties for aech secitions
 bash run_csf_sp_all.sh > ../result/sectionproperties_par.txt
 
 # confronto CSF vs sectionproperties → result/comparison_report.txt
