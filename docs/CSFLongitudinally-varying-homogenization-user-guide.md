@@ -473,13 +473,17 @@ full example see
 [csf_weights_lab.py](https://github.com/giovanniboscu/continuous-section-field/blob/main/example/csf_weights_lab.py)
 
 
+### CSF Weight Law Inspector
 
+The **CSF Weight Law Inspector** is available as an action within the CSF framework.
 
+It allows direct inspection and verification of longitudinal weight laws `w(z)` assigned to polygons, enabling validation of their definition and behavior along the structure.
 
+### Availability
 
+The action is documented and accessible at the following link:
 
-
-
+👉 https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_actions.md
 
 
 
