@@ -94,21 +94,8 @@ From `histwin_tower.yaml`, the pipeline computes the tower-side section properti
 
 [Torsional quantity policy for BModes export](#torsional-quantity-policy-for-bmodes-export)
 
-Normally, these quantities are computed manually at each station - by hand or
-with section-analysis tools - and entered directly into the BModes and ElastoDyn
-input files. CSF replaces that step: given the tower geometry, it evaluates the
-section properties automatically at any number of stations along the height.
-If the geometry changes, re-running the script is sufficient.
-The standard approach in BModes and ElastoDyn workflows uses a fixed discrete
-table: properties are defined at a finite number of stations, and the solver
-interpolates linearly between them. The resolution of the model depends directly
-on how many stations are defined by the user.
-
-CSF works differently. The tower geometry is described as a continuous function
-of z. Section properties can be evaluated at any number of points along the
-height without redefining the model. The number of stations written to the
-BModes and ElastoDyn files is a sampling choice, not a property of the model
-itself.
+Normally, these quantities are computed manually at each station - by hand or with section-analysis tools - and entered directly into the BModes and ElastoDyn input files. The resolution of the distributed property table depends directly on how many stations the user defines.
+CSF works differently. The tower geometry is described as a continuous function of z, so section properties can be evaluated at any number of points along the height without redefining the model. The number of stations written to the BModes and ElastoDyn files is a sampling choice, not a property of the model itself. If the geometry changes, re-running the script is sufficient.
 
 These are then used to generate:
 
