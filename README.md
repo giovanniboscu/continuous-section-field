@@ -28,7 +28,7 @@ It represents section geometry and material as continuous functions along z, com
 </p>
 
 
-![Twisted Tower CSF Analysis](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/morphingtower)
+![Tower Analysis](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/morphingtower)
 
 ---
 
