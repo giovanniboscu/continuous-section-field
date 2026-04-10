@@ -8,9 +8,9 @@ Stack the three YAML geometry files and render the full 3D pier.
 Workflow
 --------
 1. Generate the three geometry YAML files:
-       .\geometry_pier_seg1.ps1   (Windows)
-       .\geometry_pier_seg2.ps1
-       .\geometry_pier_seg3.ps1
+       .\\geometry_pier_seg1.ps1   (Windows)
+       .\\geometry_pier_seg2.ps1
+       .\\geometry_pier_seg3.ps1
    or on Linux:
        ./geometry_pier_seg1.sh
        ./geometry_pier_seg2.sh
@@ -156,6 +156,13 @@ for i in range(n_sez):
         )
 
 print(f"Export complete — {n_sez} files written to '{csv_dir}'.")
+
+# =============================================================================
+# Close report file
+# =============================================================================
+
+_report_file.close()
+print(f"Report written to: '{report_path}'.")
 
 # =============================================================================
 # 3D visualisation
