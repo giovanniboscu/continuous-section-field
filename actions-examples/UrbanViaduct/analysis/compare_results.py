@@ -2,18 +2,17 @@
 compare_results.py
 ==================
 Pier50 — Urban Viaduct
-Confronto tabellare tra i risultati di due librerie di calcolo
-delle proprietà di sezione:
+Tabular comparison between the results of two section-property libraries:
 
   - SOURCE A (CSF)  :  result/UrbanViaduc_report.txt
   - SOURCE B (SP)   :  result/sectionproperties_par.txt
 
-Per ogni stazione z comune alle due sorgenti viene calcolata la
-differenza relativa percentuale:
+For every z station common to both sources, the relative percentage
+difference is computed:
 
     delta_rel [%] = (A - B) / |B| * 100
 
-dove A = valore CSF, B = valore sectionproperties.
+where A = CSF value, B = sectionproperties value.
 
 Output
 ------
