@@ -99,8 +99,14 @@ def parse_csf(path: Path) -> dict[float, dict]:
 def parse_sp(path: Path) -> dict[float, dict]:
     """
     Returns  {z_rounded: {sp_key: float, ...}, ...}
+    Handles both UTF-16 (PowerShell output) and UTF-8 (bash output).
     """
-    with open(path, encoding="utf-16") as fh:
+    # Detect encoding from BOM: UTF-16 files start with FF FE or FE FF
+    with open(path, "rb") as fh:
+        bom = fh.read(2)
+    enc = "utf-16" if bom in (b"\xff\xfe", b"\xfe\xff") else "utf-8"
+
+    with open(path, encoding=enc) as fh:
         content = fh.read()
 
     # Split into per-section blocks
@@ -115,9 +121,14 @@ def parse_sp(path: Path) -> dict[float, dict]:
         z = float(m_z.group(1))
         z_r = round(z, 4)
 
-        # Extract property table rows  | key | value |
+        # Extract property table rows.
+        # Handles both ASCII pipe "|" (PowerShell/UTF-16 output)
+        # and Unicode box-drawing "│" (bash/UTF-8 output).
         props = {}
-        for m in re.finditer(r'\|\s*([\w.+\-]+)\s*\|\s*([+-]?[\d.eE+\-]+)\s*\|', block):
+        for m in re.finditer(
+            r'[|│]\s*([\w.+\-]+)\s*[|│]\s*([+-]?[\d.eE+\-]+)\s*[|│]',
+            block
+        ):
             props[m.group(1).strip()] = float(m.group(2))
 
         data[z_r] = props
