@@ -28,7 +28,7 @@ pip install csfpy sectionproperties
 ```
 cd  actions-examples\UrbanViaduct\geometry
 
-# create the 3 segments geometry ymal files 
+# create the 3 segments geometry yaml files 
 powershell -ExecutionPolicy Bypass -File  geometry_pier_seg1.ps1
 powershell -ExecutionPolicy Bypass -File  geometry_pier_seg2.ps1
 powershell -ExecutionPolicy Bypass -File  geometry_pier_seg3.ps1
