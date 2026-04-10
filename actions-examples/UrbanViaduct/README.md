@@ -14,6 +14,29 @@ for an urban elevated highway in seismic zone 2 (Italy).
 ```bash
 python3 -m venv venv
 source venv/bin/activate
+pip install csfpy sectionproperties
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+
+mkdir continuous-section-field/actions-examples/UrbanViaduct/yaml
+
+cd continuous-section-field/actions-examples/UrbanViaduct/geometry
+
+# create the 3 segments geometry yaml files
+bash geometry_pier_seg1.sh
+bash geometry_pier_seg2.sh
+bash geometry_pier_seg3.sh
+
+cd ../analysis
+
+# full structure report → result/UrbanViaduc_report.txt
+# section CSVs        → out/sections/*.csv
+python3 run_pier50.py
+
+# sectionproperties per ogni sezione
+bash run_csf_sp_all.sh > ../result/sectionproperties_par.txt
+
+# confronto CSF vs sectionproperties → result/comparison_report.txt
+python3 compare_results.py
 
 ```
 
