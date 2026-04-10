@@ -26,6 +26,7 @@ pip install csfpy sectionproperties
 ```
 
 ```
+mkdir  actions-examples\UrbanViaduct\yaml
 cd  actions-examples\UrbanViaduct\geometry
 
 # create the 3 segments geometry yaml files 
