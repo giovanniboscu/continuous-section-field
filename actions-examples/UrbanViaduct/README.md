@@ -15,7 +15,7 @@ capabilities of the `csfpy` library:
 1. **Stacked field composition** - Three independently defined `CSFField`
    objects (base zone, main shaft, pier head) are assembled into a single
    continuous structural member via `CSFStacked`. Once stacked, the composite
-   object exposes a unified interface: section properties, CSV export, and 3D
+   object exposes a unified interface: section properties and 3D
    visualisation are all requested through `stack.*` calls without any
    knowledge of the internal segment boundaries.
 
