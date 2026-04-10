@@ -3,7 +3,7 @@
 This example shows how to use CSF with the HISTWIN steel wind-tower model. The tower geometry file, `histwin_tower.yaml`, is generated parametrically by the `create_yaml-histwin.sh` script, while the post-processing workflow is controlled by `action.yaml`, which defines the station sets, actions, and expected outputs produced by `csf-actions`.
 
 
->If you want to run a **structural analysis** of the HISTWIN tower,
+>If you want to run a **OpenFast analysis** of the HISTWIN tower,
 >two workflows are available. Both start from `histwin_tower.yaml`
 >and produce a time-domain structural simulation with OpenFAST and ElastoDyn.
 >Choose based on what you need:
