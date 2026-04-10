@@ -24,7 +24,9 @@ It represents section geometry and material as continuous functions along z, com
 
 <p align="center">          
 <img width="754" height="525" alt="Screenshot 2026-04-10 at 23 18 08" src="https://github.com/user-attachments/assets/deb4e7a8-29e4-48ce-bdcd-298cb815006c" />
-
+  
+Each lines is colored by its own normalized material participation factor w(z)
+a scalar field that scales the stiffness contribution
 </p>
 
 
