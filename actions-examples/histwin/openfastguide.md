@@ -99,6 +99,16 @@ with section-analysis tools - and entered directly into the BModes and ElastoDyn
 input files. CSF replaces that step: given the tower geometry, it evaluates the
 section properties automatically at any number of stations along the height.
 If the geometry changes, re-running the script is sufficient.
+The standard approach in BModes and ElastoDyn workflows uses a fixed discrete
+table: properties are defined at a finite number of stations, and the solver
+interpolates linearly between them. The resolution of the model depends directly
+on how many stations are defined by the user.
+
+CSF works differently. The tower geometry is described as a continuous function
+of z. Section properties can be evaluated at any number of points along the
+height without redefining the model. The number of stations written to the
+BModes and ElastoDyn files is a sampling choice, not a property of the model
+itself.
 
 These are then used to generate:
 
