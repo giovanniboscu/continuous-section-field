@@ -1,6 +1,6 @@
 # What this CSF `action.yaml` is for
 
-This `action.yaml` is a **post-processing and inspection workflow** for a CSF tower model.
+This `action.yaml` is a **post-processing and inspection workflow** for a CSF model.
 
 It does **not** define the tower geometry itself.  
 Instead, it tells CSF **which checks, reports, plots, and exports must be produced** once the geometry YAML already exists.
