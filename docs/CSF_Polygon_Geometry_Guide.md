@@ -95,8 +95,7 @@ box_section@cell@t=0.03
 wall_outer@cell@t=0.015
 ```
 
-The base name is used for polygon pairing across sections (index-based). Tags are metadata only.
-
+The base name is used to validate consistency across paired polygons. Polygon pairing across sections remains index-based. Tags are metadata only.
 ---
 
 ### Example 1 - Rectangular Hollow Box
