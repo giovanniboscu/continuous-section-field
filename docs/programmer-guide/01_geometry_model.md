@@ -1,4 +1,4 @@
-# 01 — Geometry Model
+# 01 - Geometry Model
 
 ## First API Example - Build a Simple Shape and Print Section Results
 
