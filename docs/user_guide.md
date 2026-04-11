@@ -1,4 +1,4 @@
-# CSF User Guide — Modeling and Sectional Analysis
+# CSF User Guide - Modeling and Sectional Analysis
 
 Continuous Section Field (CSF) models structural members whose cross-section **varies along the longitudinal axis `Z`.
 CSF is built around a simple idea:
@@ -26,7 +26,7 @@ pip install -e .
 ```
 ---
 
-## Core Concept — Anchor Sections
+## Core Concept - Anchor Sections
 
 CSF needs two *anchor* sections:
 
@@ -148,7 +148,7 @@ Define the End Section (Tapering)
 ```
 
 
-### `weight` — material/void scaling factor
+### `weight` - material/void scaling factor
 
 Each `Polygon` includes a scalar attribute `weight` that scales its contribution to the section properties.
 
@@ -181,7 +181,7 @@ poly_flange_start = Polygon(
 
 
 
-## Step 2 — Create the Section Containers
+## Step 2 - Create the Section Containers
 
 In CSF, a `Section` is a **container** that groups the polygons defining the cross-section at a specific longitudinal coordinate `z`.
 
@@ -266,7 +266,7 @@ Example:
     field = ContinuousSectionField(section0=s0, section1=s1)
 ```
 
-## Step 3 — Section properties as a function of `Z`
+## Step 3 - Section properties as a function of `Z`
 
 
 
@@ -292,10 +292,10 @@ In practice, the workflow is always:
 Use this when you only need core geometric values (fast).
 
 Typical outputs include:
-- `A` — net area (holes subtract area)
-- `Cx`, `Cy` — centroid coordinates (neutral axis location)
-- `Ix`, `Iy` — centroidal second moments of area about global axes
-- `Ixy` — centroidal product of inertia
+- `A` - net area (holes subtract area)
+- `Cx`, `Cy` - centroid coordinates (neutral axis location)
+- `Ix`, `Iy` - centroidal second moments of area about global axes
+- `Ixy` - centroidal product of inertia
 
 > Tip: if you are unsure about what the function returns in your version, print:
 > `print(props.keys())`
@@ -306,26 +306,26 @@ Use this when you need a complete report (includes derived and torsional quantit
 The example below prints these keys (all evaluated at the requested `Z`):
 
 1. **Primary integrated geometric properties**
-- `A` — net area  
-- `Cx`, `Cy` — centroid coordinates  
-- `Ix`, `Iy` — centroidal second moments of area  
-- `Ixy` — centroidal product of inertia  
-- `J` — **polar second moment about the centroidal axes** (by definition `J = Ix + Iy`)  
+- `A` - net area  
+- `Cx`, `Cy` - centroid coordinates  
+- `Ix`, `Iy` - centroidal second moments of area  
+- `Ixy` - centroidal product of inertia  
+- `J` - **polar second moment about the centroidal axes** (by definition `J = Ix + Iy`)  
   > Note: `J` is a geometric polar moment, **not** the Saint-Venant torsional constant for non-circular sections.
 
 2. **Principal properties**
-- `I1`, `I2` — principal second moments (`I1 ≥ I2`)  
+- `I1`, `I2` - principal second moments (`I1 ≥ I2`)  
   (principal axes are the orientation where the product of inertia is zero)
-- `rx`, `ry` — radii of gyration  
+- `rx`, `ry` - radii of gyration  
   `rx = sqrt(Ix / A)`, `ry = sqrt(Iy / A)`
 
 3. **Strength and torsion**
-- `Wx`, `Wy` — elastic section moduli (used for bending stress `σ = M / W`)  
+- `Wx`, `Wy` - elastic section moduli (used for bending stress `σ = M / W`)  
   Typically computed as:
   - `Wx = Ix / y_max`
   - `Wy = Iy / x_max`  
   where `x_max`, `y_max` are the extreme distances from centroid to the furthest fiber.
-- `K_torsion` — Saint-Venant torsional constant (used for torsional stiffness)
+- `K_torsion` - Saint-Venant torsional constant (used for torsional stiffness)
 
 > Tip: to see every available quantity in your build:
 > `print(sorted(full_analysis.keys()))`
