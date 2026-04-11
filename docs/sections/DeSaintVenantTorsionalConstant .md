@@ -121,7 +121,7 @@ The sum $J_{\mathrm{sv}} = J_{\mathrm{sv,cell}} + J_{\mathrm{sv,wall}}$ is **val
 | Box girder with welded protruding flanges | Flange and cell share a contour segment; simple sum over/underestimates $J_{\mathrm{sv}}$ |
 | Thick-walled sections | Thin-wall assumption breaks down; full Saint-Venant warping analysis required |
 
-> **Warning:** if cells and walls share contour segments in the geometry definition, the CSF summation is no longer valid. The solver should detect shared walls and switch to a coupled multi-cell formulation.
+> **Warning:** : if cells and walls share contour segments in the geometry definition, the simple summation is no longer physically valid. In that case, validity of the modelling assumptions remains the user's responsibility.
 
 ---
 
