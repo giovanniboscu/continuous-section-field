@@ -1,19 +1,34 @@
 #  🛠  ContinuousSectionField (CSF) - Custom Weight Laws
 > **Before you start**  
 > This guide builds on the core CSF concepts - geometric pairing and polygon naming - introduced in the [CSF Fundamentals](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md).  
-> A quick read of that page is enough to get the most out of this guide.
+> A quick read of that page is enough to get the most out of this guide.  
+> The purpose here is only to make the syntax of custom weight laws easy to read and use.
 
 A Custom Weight Law defines how the weight, i.e. the Elastic Modulus ratio, varies along `z` for a specific structural component of the member.
 
-For example, the following law assigns a smooth variation to the component defined between two polygons, both named "lowerpart", changing its weight from `w0` at the base to `w1` at the top:
+For example, the following law assigns a smooth variation to the component defined between two polygons, both named "lowerpart", changing its weight from `w0` at the base to `w1` at the top.
+
+**API version**
 
 ```python
 section_field.set_weight_laws([
     "lowerpart,lowerpart: w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
 ])
 ```
+
+The same kind of law can also be defined in an action YAML file. For example:
+
+```yaml
+weight_laws:
+  # parabolic increase: 72% at base (z=0), full section at top (z=10)
+  - 'startsection,endsection: 1.0 - 0.28 * (1 - (z / 10.0)**2)'
+```
+
 Before proceeding, it is necessary to understand how polygons are constructed and identified, because the specified mathematical variation is defined between them.
 
+In practice, CSF provides two ways to define `w(z)`:
+- through the API
+- through the action YAML syntax
 
 ## Identifying the Target Component
 
