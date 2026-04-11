@@ -1,4 +1,4 @@
-# CSF vs Piecewise in OpenSees/OpenSeesPy — Validation Notes and Practical Guidance
+# CSF vs Piecewise in OpenSees/OpenSeesPy - Validation Notes and Practical Guidance
 
 > **Scope.** This report summarizes a set of small benchmark tests used to validate a CSF-based pipeline against “classic” piecewise (prismatic segments) beam modeling in OpenSees/OpenSeesPy.  
 > **Goal.** Show that the observed discrepancies are explainable (discretization/integration choices), not stiffness bugs; and provide a pragmatic recommendation on when CSF is worth using.
@@ -96,7 +96,7 @@ If `xc,yc` vary, the centroid axis is a **polyline** (station-by-station). Repre
 
 ---
 
-## 5) Example: Rectangular Taper (Piecewise) — Why N Matters
+## 5) Example: Rectangular Taper (Piecewise) - Why N Matters
 
 ### Setup
 A linearly tapered rectangle along z:
@@ -214,14 +214,14 @@ conda run -n opensees OpenSees tapered_piecewise_standalone.tcl
 
 ---
 
-## Appendix A — Why “one element + global stations” may not capture tilt geometry
+## Appendix A - Why “one element + global stations” may not capture tilt geometry
 Using a single element with all CSF stations as integration points captures stiffness variation *along the element*, but does not discretize a varying centroid axis as a polyline (unless additional geometric constraints/nodes are introduced). For tilt-heavy problems, station-by-station nodes + rigid links is the more direct representation.
 
 
 
 
 
-# CSF vs Piecewise — Comparison Summary (with tables)
+# CSF vs Piecewise - Comparison Summary (with tables)
 
 This file summarizes the **numerical comparisons observed in the logs**.  
 All tip displacements are reported as **magnitudes** (i.e., `abs(Uy)`), because sign depends only on the load direction convention.
@@ -245,7 +245,7 @@ Notes:
 
 ---
 
-## Case A — Constant section (benchmark vs theory)
+## Case A - Constant section (benchmark vs theory)
 
 **Geometry**
 - Rectangle: `b = 0.30`, `h = 0.40`
@@ -261,7 +261,7 @@ Euler–Bernoulli cantilever tip deflection:
 
 | Model / source | Elements / stations | Tip \|Uy\| (mm) | Notes |
 |---|---:|---:|---|
-| Theory (Euler–Bernoulli) | — | 45.093795 | Reference |
+| Theory (Euler–Bernoulli) | - | 45.093795 | Reference |
 | OpenSees FE (Tcl) | `NE=20` (uniform) | 45.093795 | Matches theory within roundoff |
 | CSF OpenSees (Gauss/Lobatto stations) | `N=10 stations` | 45.093795 | Matches theory within roundoff |
 | CSF OpenSeesPy | `N=10 stations` | 45.093795 | Matches theory within roundoff |
@@ -270,7 +270,7 @@ Euler–Bernoulli cantilever tip deflection:
 
 ---
 
-## Case B — Linear taper + tilt (moderate taper)
+## Case B - Linear taper + tilt (moderate taper)
 
 **Geometry**
 - `b(z) = 0.30` constant
@@ -295,7 +295,7 @@ Reference chosen here: **CSF OpenSeesPy** (station model)
 
 ---
 
-## Case C — Linear taper + larger tilt (stronger taper)
+## Case C - Linear taper + larger tilt (stronger taper)
 
 **Geometry**
 - `b(z) = 0.30` constant
