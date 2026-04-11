@@ -1,4 +1,4 @@
-# Expected results when running `csf-actions histwin_tower.yaml action.yaml`
+## Expected results when running `csf-actions histwin_tower.yaml action.yaml`
 
 This note explains **what should be expected from the execution** of:
 
