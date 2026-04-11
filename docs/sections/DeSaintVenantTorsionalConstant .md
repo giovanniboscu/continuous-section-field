@@ -2,6 +2,9 @@
 
 ## How CSF Reports and Exports J
 
+In the current CSF implementation, `J_sv_cell` and `J_sv_wall` are computed only from polygons explicitly tagged `@cell` and `@wall`; untagged polygons, including nested ones, are ignored in these two calculations.
+
+
 > When presenting a cross-section, the CSF reports the De Saint-Venant torsional constant $J$ broken down into **two separate contributions**:
 >
 > - $J_{\mathrm{sv,cell}}$ — contribution from all closed cells (Bredt formula)
@@ -31,7 +34,7 @@ For sections composed of both closed cells and open walls, the CSF decomposes $J
 
 ## 2. The Two Contributions
 
-### 2.1 Closed-cell contribution — $J_{\mathrm{sv,cell}}$
+### 2.1 Closed-cell contribution - $J_{\mathrm{sv,cell}}$
 
 Each closed cell $k$ contributes through the following CSF closed-cell approximation:
 
