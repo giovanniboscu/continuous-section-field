@@ -1,5 +1,5 @@
 # CSF YAML Tutorial (CSFActions.py)
-Although CSF is implemented as a Python engine, it can be used **without programming** through the **CSFReader** tool.
+Although CSF is implemented as a Python engine, it can be used **without programming** through the **CSFAction** tool.
 In these tutorials, the working directory is set **immediately after cloning** the repository.
 
 > **[rectangle/](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/rectangle)  Complete worked example covering all available actions on a tapered rectangular section — plots, reports, solver exports, and three weight law alternatives. Run with `csf-actions geometry.yaml actions.yaml`.**
