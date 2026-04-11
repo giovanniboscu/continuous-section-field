@@ -240,6 +240,9 @@ torsional path.
 
 Polygons without these tags are **ignored** in `J_sv` computations.
 
+
+In section-analysis outputs, `J_sv_cell` and `J_sv_wall` may carry the torsional contribution together with the associated thickness parameter `t` when the tagged geometry is represented by a single polygon. Document the exact output structure in the API reference.
+
 ------------------------------------------------------------------------
 
 ### Behavior
