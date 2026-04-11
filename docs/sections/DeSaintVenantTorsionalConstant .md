@@ -2,7 +2,7 @@
 
 ## How CSF Reports and Exports J
 
-In the current CSF implementation, `J_sv_cell` and `J_sv_wall` are computed only from polygons explicitly tagged `@cell` and `@wall`; untagged polygons, including nested ones, are ignored in these two calculations.
+In the current CSF implementation, `J_sv_cell` and `J_sv_wall` are computed from polygons explicitly tagged `@cell` and `@wall`. Untagged polygons do not contribute to these two quantities.
 
 
 > When presenting a cross-section, the CSF reports the De Saint-Venant torsional constant $J$ broken down into **two separate contributions**:
