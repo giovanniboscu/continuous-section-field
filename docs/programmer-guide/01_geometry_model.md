@@ -1,6 +1,6 @@
 # 01 — Geometry Model
 
-## First API Example — Build a Simple Shape and Print Section Results
+## First API Example - Build a Simple Shape and Print Section Results
 
 This example is organized into three essential steps:
 
@@ -265,6 +265,70 @@ sec = field.section(2.5)
 out = section_full_analysis(sec)
 
 print(f"A: {out['A']}")
+```
+---
+## Same API Pipeline, YAML-Loaded Model
+
+This example shows that only the data source changes.  
+Once the CSF model is loaded from YAML, the API workflow remains the same.
+
+Here `A` is printed only as a simple example of a standard sectional property.
+
+```python
+# Load CSF model from YAML
+res = CSFReader().read_file("../actions-examples/openandthin/ipe100.yaml")
+field = res.field
+
+# Same API flow as before
+sec = field.section(2.5)
+out = section_full_analysis(sec)
+
+print(f"A: {out['A']}")
+```
+
+## Special case: `@cell` and `@wall`
+
+The only special case is the Saint-Venant torsional result for single-polygon sections tagged as `@cell` or `@wall`.
+
+In that case, the returned result is not just a single scalar:
+it contains two values:
+
+1. `J_sv_cell` or `J_sv_wall`
+2. `t`
+
+So the output is conceptually:
+
+```python
+(J_sv_cell, t)
+```
+
+or
+
+```python
+(J_sv_wall, t)
+```
+
+## Example
+
+```python
+# Load a YAML model containing a single polygon tagged as @cell
+res = CSFReader().read_file("tower_cell.yaml")
+field = res.field
+
+sec = field.section(10.0)
+out = section_full_analysis(sec)
+
+# Standard property example
+print(f"A: {out['A']}")
+
+# Special torsional case:
+# returned values are:
+#   first  -> J_sv_cell (or J_sv_wall)
+#   second -> t
+j_sv, t = out["J"]
+
+print(f"J_sv: {j_sv}")
+print(f"t: {t}")
 ```
 ---
 
