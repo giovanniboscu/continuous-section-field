@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-PY_SCRIPT="$SCRIPT_DIR/../../src/csf/utils/writegeometry_rio_v2.py"
-
 # -------------------------
 # Global coordinates
 # -------------------------
@@ -55,7 +52,7 @@ rebar_weight="5.71"
 # -------------------------
 bars_row1_law="np.maximum(0.2, 1.0 - 0.8*(z/L))"
 bars_row2_law="np.maximum(0.2, 1.0 - 0.8*(z/L))"
-s0_law="" # Example: w0 +  0.5 * (1.0 + np.cos(2.0 * np.pi * (t - 0.5)))
+s0_law=""
 s1_law=""
 
 # -------------------------
@@ -75,7 +72,7 @@ fi
 
 # Build the argument list.
 args=(
-    "$PY_SCRIPT"
+    -m csf.utils.writegeometry_rio_v2
     --z0 "$z0"
     --z1 "$z1"
     --s0-t-cell "$s0_t_cell"
@@ -126,6 +123,6 @@ fi
 "$PYTHON_CMD" "${args[@]}"
 status=$?
 if [[ $status -ne 0 ]]; then
-    echo "Python script failed with exit code $status" >&2
+    echo "Python command failed with exit code $status" >&2
     exit $status
 fi
