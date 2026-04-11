@@ -50,7 +50,7 @@ Each polygon gets its own weight law $w_i(z)$ - either an analytical expression 
 
 $J_{\mathrm{sv}}$ is the one exception: it cannot be obtained from a direct area integral. It depends on the full geometry of the section in a more complex way and is treated separately in CSF.
 
-See: [De Saint-Venant Torsional Constant — Cell and Wall Contributions in CSF](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md)
+See: [De Saint-Venant Torsional Constant - Cell and Wall Contributions in CSF](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md)
 
 ---
 
