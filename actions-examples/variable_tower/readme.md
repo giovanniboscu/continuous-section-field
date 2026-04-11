@@ -40,7 +40,7 @@ This applies independently to both `S0` and `S1`.
 The Bash launcher you provided defines all input values as variables, then passes them to:
 
 ```bash
-csf.utils.writegeometry_rio_v2
+python -m csf.utils.writegeometry_rio_v2
 ```
 
 So the launcher is only a parameter block plus the final Python call.
