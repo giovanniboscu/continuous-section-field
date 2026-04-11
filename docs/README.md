@@ -19,7 +19,7 @@ Start here: these three guides cover everything you need to work with CSF effect
 | File | Description |
 |------|-------------|
 | [Section Full Analysis](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md) | Reference for all quantities reported by the CSF Section Full Analysis. Explains what each value represents, how it is computed, and its validity domain. Quantities that depend on specific CSF modelling policies (e.g. torsion selection rules) are explicitly marked. |
-| [DeSaintVenantTorsionalConstant.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md) | Validity conditions for the summation `J_sv = J_sv_cell + J_sv_wall` in CSF. Covers the non-interaction hypotheses (H1–H4), elemental formulas (Bredt for closed cells, thin-wall rectangle for open walls), when the summation holds and when it does not, and how the result is exported to OpenSees and SAP2000. |
+| [SaintVenantTorsionalConstant.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md) | Validity conditions for the summation `J_sv = J_sv_cell + J_sv_wall` in CSF. Covers the non-interaction hypotheses (H1–H4), elemental formulas (Bredt for closed cells, thin-wall rectangle for open walls), when the summation holds and when it does not, and how the result is exported to OpenSees and SAP2000. |
 
 
 
