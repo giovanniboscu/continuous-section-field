@@ -26,7 +26,7 @@ weight_laws:
 
 Before proceeding, it is necessary to understand how polygons are constructed and identified, because the specified mathematical variation is defined between them.
 
-In practice, CSF provides two ways to define `w(z)`:
+In practice, CSF provides two ways to define  **$w(z)$**:
 - through the API
 - through the action YAML syntax
 
