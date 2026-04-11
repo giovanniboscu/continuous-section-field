@@ -60,6 +60,12 @@ The script uses `from csf import ...` - this is correct and expected.
 
 Other dependencies (`numpy`, `PyYAML`, `matplotlib`, `openseespy`) are installed automatically.
 
+>### Tested environment
+>
+>- OpenFAST v5.0.0
+>- Python 3.x
+>- csfpy (latest)
+
 ---
 
 ## continuous-function API of CSF
