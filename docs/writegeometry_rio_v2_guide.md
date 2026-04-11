@@ -1,4 +1,4 @@
-# writegeometry_rio_v2 — User Guide
+# writegeometry_rio_v2 - User Guide
 
 Generates a CSF-compatible YAML geometry file for a **single segment** with
 two boundary cross-sections (S0 at `z0`, S1 at `z1`). The section shape is a
