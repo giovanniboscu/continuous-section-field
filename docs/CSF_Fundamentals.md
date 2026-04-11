@@ -195,7 +195,7 @@ More specifically:
 - polygons classified with `@wall` are treated as thin-wall polygons
 - the optional suffix `@t=?` assigns the thickness value to that polygon
 
-When one of these classifications is present, CSF applies the corresponding torsional contribution method described in the *De Saint-Venant Torsional Constant* section [De Saint-Venant Torsional Constant - Cell and Wall Contributions in CSF](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md)
+When one of these classifications is present, CSF applies the corresponding torsional contribution method described in the *Saint-Venant Torsional Constant* section [Saint-Venant Torsional Constant - Cell and Wall Contributions in CSF](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md)
 
 This guide covers the geometric construction of tagged polygons in CSF. [CSF Polygon Geometry Guide: @cell and @wall](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Polygon_Geometry_Guide.md)
 
