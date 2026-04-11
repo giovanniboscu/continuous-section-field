@@ -299,8 +299,7 @@ CSF:
             - [0.00, 0.02]
 ```
 
-> **Note:** Polygon pairing between `S0` and `S1` is index-based - the order in the list must be consistent.
-
+> **Note:** Polygon pairing between `S0` and `S1` is index-based - the polygon order, as read by the parser, must remain consistent.
 ---
 
 ### Checklist - `@wall` polygon
