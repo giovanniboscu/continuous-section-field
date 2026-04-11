@@ -805,8 +805,7 @@ If you have BModes available locally on Linux/macOS, use the fully automatic rou
 
 If you want explicit control over the BModes run, use the manual route.
 
-If you are working on Windows, follow the PowerShell sequence shown in Section 8.
-
+If you are working on Windows, follow the PowerShell sequence shown in Section 6.
 
 ---
 
