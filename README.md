@@ -343,7 +343,7 @@ The following table reports the full output of the validation script, comparing 
   - [NREL wind research portal](https://www.nrel.gov/wind/)
     
 
-## 512-sided polygons
+## 512sided polygons
 
 [NREL 5-MW Tower — CSF Actions Example](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/nrel_5mw)
 
