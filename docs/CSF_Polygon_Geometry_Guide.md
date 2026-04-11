@@ -342,7 +342,7 @@ A section will typically contain more than one `@wall` polygon — one per physi
 
 There is no limit on the number of `@wall` polygons in a section. The C-section example above uses three.
 
-Use a distinct base name for each
+Use a distinct base name for each wall polygon.
 
 ---
 
