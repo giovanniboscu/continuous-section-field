@@ -375,25 +375,6 @@ Expected result:
 
 - `OpenFAST terminated normally.`
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ## 6. Windows workflow
@@ -466,7 +447,7 @@ These RNA values may be present in the launcher as placeholder example inputs to
 
 ---
 
-### Step W2 - run BModes manually
+### Step W2 - run BModes manually if needed
 
 ```powershell
 & ".\BModes\build\bmodes\bmodes.exe" .\histwin_tower_BModes_tower.bmi
@@ -487,7 +468,7 @@ It then computes the tower modal properties and writes:
 
 ---
 
-### Step W3 - inject BModes mode shapes into the ElastoDyn tower file manually
+### Step W3 - inject BModes mode shapes into the ElastoDyn tower file manually if needed
 
 ```powershell
 python .\csf_to_elastodyn.py .\histwin_tower.yaml `
