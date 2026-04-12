@@ -13,7 +13,6 @@ It is intentionally simple in geometry but rich in mechanics:
 
 The case is ideal for showing, side by side, three different torsional quantities available in CSF:
 
-- `J_sv` (legacy/solid Saint-Venant path)
 - `J_sv_wall` (open thin-walled approximation)
 - `J_sv_cell` (closed thin-walled Bredt–Batho)
 
