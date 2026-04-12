@@ -38,12 +38,6 @@ $$J_{\text{cell}} = \frac{4 A^2}{\displaystyle\oint \frac{ds}{t}}$$
 
 where $A$ is the area enclosed by the mid-line of the cell.
 
-### 2.3 General additive form (CSF implementation)
-
-For a section composed of $n_c$ closed cells and $n_w$ open walls:
-
-$$\boxed{J = \sum_{k=1}^{n_c} J_{\text{cell},k} + \sum_{i=1}^{n_w} J_{\text{wall},i}}$$
-
 ---
 
 ## 3. Hypotheses for Validity of Additivity
