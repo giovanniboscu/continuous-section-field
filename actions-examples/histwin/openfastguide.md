@@ -80,11 +80,12 @@ Platform-specific launcher files:
 - Linux/macOS: `run_csf_to_elastodyn.sh`
 - Windows PowerShell: `run_csf_to_elastodyn.ps1`
 
-Optional utility:
+utility:
 
 - `bmodes_out_to_elastodyn.py`
 
-Optional local BModes executable:
+ 
+ local BModes executable:
 
 - Linux/macOS: `./BModes/build/bmodes/bmodes`
 - Windows: `.\BModes\build\bmodes\bmodes.exe`
