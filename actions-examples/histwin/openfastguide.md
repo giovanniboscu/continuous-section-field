@@ -315,7 +315,7 @@ You can create manually with the BModes step below.
 > zero-coefficient tower file to OpenFAST - ElastoDyn requires non-zero
 > mode-shape coefficients whose terms sum to 1.0.
 
-### Step 4 - run BModes manually if needed
+### Step 4 - run BModes manually if you choose the manual BModes path
 
 Run this step 
 
@@ -327,7 +327,7 @@ Expected result:
 
 - `histwin_tower_BModes_tower.out`
 
-### Step 5 - inject BModes mode shapes manually if needed
+### Step 5 - inject BModes mode shapes manually if you followed the manual BModes path
 
 Run this step only if BModes was executed manually in Step 4.
 
@@ -447,7 +447,7 @@ These RNA values may be present in the launcher as placeholder example inputs to
 
 ---
 
-### Step W2 - run BModes manually if needed
+### Step W2 - run BModes manually if you choose the manual BModes path
 
 ```powershell
 & ".\BModes\build\bmodes\bmodes.exe" .\histwin_tower_BModes_tower.bmi
@@ -468,7 +468,7 @@ It then computes the tower modal properties and writes:
 
 ---
 
-### Step W3 - inject BModes mode shapes into the ElastoDyn tower file manually if needed
+### Step W3 - inject BModes mode shapes manually if you followed the manual BModes path
 
 ```powershell
 python .\csf_to_elastodyn.py .\histwin_tower.yaml `
