@@ -10,7 +10,7 @@ python3 -m csf.CSFActions  mixedthin.yaml mixedthin_action.yaml
 
 
 
-# De Saint-Venant Torsional Constant — Additivity in Cross-Section Solvers (CSF)
+# Saint-Venant Torsional Constant — Additivity in Cross-Section Solvers (CSF)
 
 ## 1. Background
 
