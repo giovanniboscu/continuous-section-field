@@ -187,7 +187,7 @@ The reference tower is a **conical tubular steel wind-turbine tower** associated
 - bottom diameter: about `4.30 m`
 - top diameter: about `3.00 m`
 - wall thickness: about `30 mm` at the base and `12 mm` at the top
-- three subparts: about `21.8 m`, `26.6 m`, and `27.8 m`
+
 
 In this project, the tower is represented as a smooth CSF section field between two circular hollow end sections.
 
