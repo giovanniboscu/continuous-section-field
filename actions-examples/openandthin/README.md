@@ -1,124 +1,136 @@
 # CSF Analysis
 
-To run the CSF analysis, execute the following commands:
+To run the CSF analysis, execute:
 
 ```bash
-python3 -m csf.CSFActions  ipe600.yaml ipe600_actions.yaml
-python3 -m csf.CSFActions  ipe600.yaml ipe600_actions.yaml
-python3 -m csf.CSFActions  mixedthin.yaml mixedthin_action.yaml
+python3 -m csf.CSFActions ipe600.yaml ipe600_actions.yaml
+python3 -m csf.CSFActions mixedthin.yaml mixedthin_action.yaml
 ```
 
-
-
-# Saint-Venant Torsional Constant — Additivity in Cross-Section Solvers (CSF)
+# Saint-Venant Torsional Contributions in CSF
 
 ## 1. Background
 
-The De Saint-Venant torsional constant $J$ (also written $I_t$) governs the torsional stiffness of a cross-section in the Saint-Venant torsion theory:
+In Saint-Venant torsion theory, the torsional moment is written as:
 
-$$M_t = G \cdot J \cdot \vartheta'$$
+`M_t = G * J * theta'`
 
-where $G$ is the shear modulus and $\vartheta'$ is the twist per unit length.
+where:
+- `G` is the shear modulus
+- `J` is the Saint-Venant torsional constant
+- `theta'` is the twist per unit length
 
-When a cross-section is assembled from multiple independent components, a CSF (Cross-Section Field solver / pre-processor) may compute $J$ by **summing the contributions** of each component. This document states when that approach is valid and when it is not.
+In CSF, mixed thin-walled sections may produce two distinct torsional contributions:
 
----
+- `J_sv_wall` for open thin-walled walls
+- `J_sv_cell` for closed thin-walled cells
 
-## 2. Elemental Formulas
-
-### 2.1 Thin open wall (slender rectangle)
-
-$$J_{\text{wall}} = \frac{b \, t^3}{3}$$
-
-where $b$ is the wall length and $t$ is the thickness.
-
-### 2.2 Closed cell (Bredt formula)
-
-$$J_{\text{cell}} = \frac{4 A^2}{\displaystyle\oint \frac{ds}{t}}$$
-
-where $A$ is the area enclosed by the mid-line of the cell.
+These two quantities must be interpreted carefully.
+CSF may sum them algebraically, but this does **not** imply mutual torsional interaction between the wall branch and the cell branch.
 
 ---
 
-## 3. Hypotheses for Validity of Additivity
+## 2. Elemental formulas
 
-The summation above is **valid if and only if** all of the following conditions hold:
+### 2.1 Thin open wall
 
-| # | Hypothesis | Physical meaning |
+For a slender rectangular wall strip:
+
+`J_wall = b * t^3 / 3`
+
+where:
+- `b` is the wall length
+- `t` is the wall thickness
+
+### 2.2 Closed thin-walled cell
+
+For a closed thin-walled cell:
+
+`J_cell = 4 * A_m^2 / integral(ds / t)`
+
+where:
+- `A_m` is the area enclosed by the cell midline
+- `t` is the wall thickness
+
+For constant thickness, this reduces to:
+
+`J_cell = 4 * A_m^2 * t / b_m`
+
+where `b_m` is the midline perimeter.
+
+---
+
+## 3. Interpretation of additivity in CSF
+
+When CSF reports:
+
+`J_total = J_sv_cell + J_sv_wall`
+
+this must be read as an **algebraic aggregation of separate modeled contributions**.
+
+This interpretation is meaningful when the model assumes:
+
+| # | Assumption | Meaning |
 |---|---|---|
-| H1 | **No torsional interaction** between components | Components do not share a closed contour; the Prandtl stress function $\phi$ is independent across parts |
-| H2 | **Same unit twist** $\vartheta'$ for all components | All parts rotate together as a rigid body about the same longitudinal axis (kinematic compatibility) |
-| H3 | **Open walls are truly open** | Tangential flow reverses at free ends; no circulation around a closed loop |
-| H4 | **Junction effects neglected** | Stress concentrations and stiffening at corners/junctions are ignored, consistent with thin-wall assumptions |
+| H1 | No mutual torsional interaction is modeled between branches | The wall branch and the cell branch are evaluated separately |
+| H2 | Same twist rate `theta'` is assumed | Contributions are referred to the same sectional twist measure |
+| H3 | Open-wall contribution is evaluated with open thin-wall logic | No closed-cell circulation is assigned to that branch |
+| H4 | Closed-cell contribution is evaluated with closed-cell logic | Bredt-type shear flow is assigned only to the cell branch |
 
-> **All four conditions must hold simultaneously.**
-> Violation of any single hypothesis invalidates the simple sum.
-
----
-
-## 4. When Additivity Holds
-
-| Section type | Additivity | Notes |
-|---|---|---|
-| Thin open section (flat plates, T, L, I, channel) |  Valid | Classic result; walls meet at a node but never close |
-| Multiple **separate** closed cells (no shared walls) |  Valid | Each cell contributes independently via Bredt |
-| **Separate** closed cell + **separate** open walls (not connected) | Valid | No interaction; H1 satisfied by geometry |
-| Closed cell + open walls **modelled as non-interacting** (CSF assumption) |  Valid as model | Acceptable approximation when wall thickness $\ll$ cell thickness |
+All four assumptions belong to the **chosen modeling framework**.
 
 ---
 
-## 5. When Additivity Does NOT Hold
+## 4. What the sum means
 
-| Section type | Issue |
-|---|---|
-| Box girder with **connected** protruding flanges | Flanges share wall with cell → interaction; Prandtl function is continuous across junction |
-| Multi-cell sections with **shared walls** | Shared wall participates in two cells simultaneously; Bredt system must be solved globally |
-| Open walls **welded/bonded to a cell** | Closed contour is modified; simple sum overestimates or underestimates $J$ |
-| Thick-walled sections | Thin-wall assumption breaks down; full Saint-Venant warping analysis required |
+The sum
 
-> **Warning for CSF users:** if the geometry is assembled by connecting open walls to the boundary of a closed cell, the non-interaction hypothesis (H1) is violated. The CSF must either apply a corrected formulation or flag the configuration explicitly.
+`J_sv_cell + J_sv_wall`
 
----
+means that CSF combines two torsional contributions computed from two different mechanical branches under a common twist rate.
 
-## 6. Practical Implication for CSF
+It does **not** mean that:
+- the open walls and the closed cell torsionally redistribute shear flow between each other,
+- the reported sum is a fully coupled torsional solution for the physical section.
 
-When a CSF sums contributions:
-
-$$J_{\mathrm{CSF}} = J_{\mathrm{cell}} + J_{\mathrm{left,wall}} + J_{\mathrm{right,wall}} + \cdots$$
-
-the result is **exact within the model** provided H1–H4 are enforced by the geometry definition (i.e. components are tagged as independent and do not share contour segments).
-
-If components share contour segments, the CSF should:
-
-1. Detect shared walls and switch to a **multi-cell Bredt system**.
-2. Add open-wall contributions only for **truly free** (unshared) wall segments.
-3. Document which components are treated as non-interacting in the output report.
+So the sum is legitimate **as a model-level aggregation**, not as proof of reciprocal torsional participation.
 
 ---
 
-## 7. Summary
+## 5. Practical implication for mixed sections
 
-```
-J = Σ J_cell (Bredt, independent cells)
-  + Σ J_wall (b·t³/3, independent open walls)
+For a mixed section containing both `@wall` and `@cell` components, attention is required in reading the result.
 
-Valid when:
-  - components do not share closed contours         [H1]
-  - all components have the same twist θ'           [H2]
-  - open walls have free ends (no closed loop)      [H3]
-  - junction stress concentrations are neglected    [H4]
+- `J_sv_wall` represents the open-wall branch
+- `J_sv_cell` represents the closed-cell branch
+- their sum is the quantity reported by CSF when both branches are active
 
-Not valid when:
-  - walls are physically connected to a cell
-  - cells share walls
-  - section is thick-walled
+This is useful for didactic and modeling purposes, but the user must keep in mind that the two branches are computed separately and then aggregated.
+
+---
+
+## 6. Summary
+
+```text
+In CSF:
+
+J_total = J_sv_cell + J_sv_wall
+
+Interpretation:
+- J_sv_cell  -> closed thin-walled cell contribution
+- J_sv_wall  -> open thin-walled wall contribution
+
+The sum is an algebraic combination of separate modeled contributions
+under a common twist rate.
+
+It must not be interpreted as mutual torsional interaction or
+as a fully coupled torsional redistribution between the two branches.
 ```
 
 ---
 
-## 8. References
+## 7. References
 
-- Timoshenko, S.P. & Goodier, J.N. — *Theory of Elasticity*, McGraw-Hill
-- Vlasov, V.Z. — *Thin-Walled Elastic Beams*, Israel Program for Scientific Translations
-- Pilkey, W.D. — *Analysis and Design of Elastic Beams*, Wiley
-- EN 1993-1-3 — Eurocode 3, Annex C (thin-walled open sections)
+- Timoshenko, S.P. and Goodier, J.N. — *Theory of Elasticity*
+- Vlasov, V.Z. — *Thin-Walled Elastic Beams*
+- Pilkey, W.D. — *Analysis and Design of Elastic Beams*
