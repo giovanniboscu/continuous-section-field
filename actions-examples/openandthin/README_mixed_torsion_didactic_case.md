@@ -101,29 +101,6 @@ J_sv_cell           : (7.663940508903227e-07, 0.0064)  [Saint-Venant torsional c
 
 ---
 
-## 6. Comparative table (S0 vs S1)
-
-$$
-\text{ratio} = \frac{\text{value at } z=20}{\text{value at } z=0}
-$$
-
-| Quantity | S0 | S1 | Ratio S1/S0 |
-|---|---:|---:|---:|
-| \(A\) | 0.0071596 | 0.0050053 | 0.699 |
-| \(I_x\) | 4.4291e-06 | 1.8791e-06 | 0.424 |
-| \(I_y\) | 1.1842e-05 | 4.9156e-06 | 0.415 |
-| \(J_{sv}\) | 1.6271e-05 | 6.7947e-06 | 0.418 |
-| \(J_{sv,wall}\) | 1.3333e-07 | 8.5333e-08 | 0.640 |
-| \(J_{sv,cell}\) | 1.8197e-06 | 9.3171e-07 | 0.512 |
-
-### Interpretation of these ratios
-
-- `J_sv_wall` ratio \( \approx 0.64 = 0.8^2 \) is consistent with your chosen wall scaling in this setup.
-- `J_sv_cell` ratio \( \approx 0.512 = 0.8^3 \) is consistent with closed-cell behavior for this controlled scaling pattern.
-- `J_sv` (legacy/solid path) follows its own domain-based trend (~0.418 here), and **must not** be expected to match wall/cell ratios term by term.
-
----
-
 ## 7. Why this example is for teaching
 
 This single model lets students see, in one place:
@@ -143,7 +120,6 @@ It is a concrete demonstration that *“torsion constant” is not one universal
 
 The three outputs are not interchangeable:
 
-- `J_sv`: full-section Saint-Venant path (legacy/domain model)
 - `J_sv_wall`: open thin-wall approximation
 - `J_sv_cell`: closed thin-wall Bredt–Batho
 
