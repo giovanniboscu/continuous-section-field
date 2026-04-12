@@ -77,23 +77,25 @@ Then S1 is built as a scaled version of S0 (example: 0.8), optionally including 
 
 From your run:
 
-### S0 (z = 0.0)
 
-- \(A = 0.0071596\)
-- \(I_x = 4.4291 \times 10^{-6}\)
-- \(I_y = 1.1842 \times 10^{-5}\)
-- \(J_{sv} = 1.6271 \times 10^{-5}\)
-- \(J_{sv,wall} = 1.3333 \times 10^{-7}\)
-- \(J_{sv,cell} = 1.8197 \times 10^{-6}\)
+### SECTION SELECTED ANALYSIS @ z = 0.0 ###
+A                   : 0.00715957063  [Total net cross-sectional area]
+Cx                  : 0  [Horizontal centroid (X)]
+Cy                  : 0  [Vertical centroid (Y)]
+Ix                  : 4.42909194e-06  [Second moment about centroidal X-axis]
+Iy                  : 1.18422119e-05  [Second moment about centroidal Y-axis]
+J_sv_wall           : 1.33333333e-07  [Saint-Venant torsional constant for open thin-walled walls]
+J_sv_cell           : (1.8710792258064515e-06, 0.008)  [Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)]
 
-### S1 (z = 20.0)
 
-- \(A = 0.0050053\)
-- \(I_x = 1.8791 \times 10^{-6}\)
-- \(I_y = 4.9156 \times 10^{-6}\)
-- \(J_{sv} = 6.7947 \times 10^{-6}\)
-- \(J_{sv,wall} = 8.5333 \times 10^{-8}\)
-- \(J_{sv,cell} = 9.3171 \times 10^{-7}\)
+### SECTION SELECTED ANALYSIS @ z = 20.0 ###
+A                   : 0.00500533063  [Total net cross-sectional area]
+Cx                  : 0  [Horizontal centroid (X)]
+Cy                  : 0  [Vertical centroid (Y)]
+Ix                  : 1.87914332e-06  [Second moment about centroidal X-axis]
+Iy                  : 4.91555728e-06  [Second moment about centroidal Y-axis]
+J_sv_wall           : 5.46133333e-08  [Saint-Venant torsional constant for open thin-walled walls]
+J_sv_cell           : (7.663940508903227e-07, 0.0064)  [Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)]
 
 (All units consistent with your CSF model conventions.)
 
