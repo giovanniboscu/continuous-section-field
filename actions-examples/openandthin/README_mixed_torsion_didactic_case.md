@@ -3,44 +3,46 @@
 
 ## 1. Purpose of this example
 
-This example is designed as a **teaching case** for torsion in thin-walled and mixed cross-sections, using CSF (Continuous Section Field).  
+This example is designed as a **teaching case** for torsion in mixed thin-walled cross-sections using CSF (Continuous Section Field).  
 It is intentionally simple in geometry but rich in mechanics:
 
 - open thin-walled components (`@wall@t=...`)
 - closed thin-walled cell (`@cell@t=...`)
-- optional solid core (untagged polygon)
 - linear section variation from **S0** to **S1**
 
-The case is ideal for showing, side by side, three different torsional quantities available in CSF:
+The case is useful for showing, side by side, the two torsional quantities explicitly computed in this mixed setting:
 
-- `J_sv_wall` (open thin-walled approximation)
-- `J_sv_cell` (closed thin-walled Bredt–Batho)
+- `J_sv_wall` for the open thin-walled branch
+- `J_sv_cell` for the closed thin-walled branch
+
+The central interpretive point is not the existence of a single generic torsional constant, but the need to understand how these two contributions are computed and combined.
 
 ---
 
 ## 2. Conceptual framework
 
-### 2.1 Saint-Venant torsion: why different formulas exist
+### 2.1 Why different torsional formulas exist
 
-In structural mechanics, torsional response depends strongly on cross-section topology and wall thickness assumptions:
+In structural mechanics, torsional response depends strongly on cross-section topology and on the assumptions used for the model.
 
 1. **Open thin-walled torsion**  
-   For slender plate-like walls (open sections), torsional stiffness is much lower than closed cells.  
-   In classical thin-wall theory, contributions often scale like \( \sim b\,t^3 \) at element level.
+   For slender plate-like open walls, torsional stiffness is relatively low.  
+   In classical thin-wall theory, the contribution typically scales with `b * t^3` at element level.
 
 2. **Closed thin-walled torsion (Bredt–Batho)**  
-   Closed cells develop membrane-like shear flow around the loop, producing much higher torsional stiffness than open walls of similar material amount.  
-   A standard constant-thickness formula is:
+   Closed cells develop a shear flow around the loop and therefore provide much higher torsional stiffness than open walls with comparable material amount.  
+   For constant thickness,
 
-$$
-J_{\text{cell}} = \frac{4 A_m^2}{\int \frac{ds}{t}} \quad \Rightarrow \quad
-\text{if } t=\text{const},\; J_{\text{cell}} = \frac{4 A_m^2 t}{b_m}
-$$
+   `J_cell = 4 * A_m^2 / ∫(ds / t)`
+
+   and, if `t` is constant,
+
+   `J_cell = 4 * A_m^2 * t / b_m`
 
 where:
-- \(A_m\): area enclosed by the cell midline
-- \(b_m\): midline perimeter
-- \(t\): wall thickness
+- `A_m` is the area enclosed by the cell midline
+- `b_m` is the midline perimeter
+- `t` is the wall thickness
 
 ---
 
@@ -48,125 +50,150 @@ where:
 
 ### 3.1 Tags used
 
-- `@wall` → polygon contributes to open thin-wall torsion branch
-- `@cell` (or `@closed`) → polygon interpreted as closed cell encoding
-- `@t=<value>` → explicit thickness override (recommended for didactic clarity)
+- `@wall` → polygon contributes to the open thin-wall torsion branch
+- `@cell` → polygon is interpreted as a closed-cell encoding
+- `@t=<value>` → explicit thickness override
 
 ### 3.2 Why explicit `@t` is pedagogically useful
 
 Using explicit thickness:
-- removes ambiguity from automatic estimators (e.g., \(t=2A/P\))
+
+- removes ambiguity from automatic thickness estimators
 - makes dimensional reasoning transparent
-- allows controlled scaling studies (e.g., 20% reduction in geometry and thickness)
+- allows controlled scaling studies
+- keeps the comparison between `J_sv_wall` and `J_sv_cell` fully explicit
 
 ---
 
-## 4. Geometry idea (minimal mixed pattern)
+## 4. Geometry idea
 
-The baseline mixed pattern has:
+The baseline mixed pattern contains:
 
-- left plate wall (`left_web@wall@t=...`)
-- right plate wall (`right_web@wall@t=...`)
-- one centered closed box cell (`cell_box@cell@t=...`), slit-encoded with outer and inner loops
+- one left plate wall (`left_web@wall@t=...`)
+- one right plate wall (`right_web@wall@t=...`)
+- one centered closed box cell (`cell_box@cell@t=...`), encoded through outer and inner loops
 
-Then S1 is built as a scaled version of S0 (example: 0.8), optionally including thickness scaling.
+Then `S1` is built as a scaled version of `S0`.
 
----
-
-## 5. Reference numerical outputs used in this note
-
-From your run:
-
-```
-### SECTION SELECTED ANALYSIS @ z = 0.0 ###
-A                   : 0.00715957063  [Total net cross-sectional area]
-Cx                  : 0  [Horizontal centroid (X)]
-Cy                  : 0  [Vertical centroid (Y)]
-Ix                  : 4.42909194e-06  [Second moment about centroidal X-axis]
-Iy                  : 1.18422119e-05  [Second moment about centroidal Y-axis]
-J_sv_wall           : 1.33333333e-07  [Saint-Venant torsional constant for open thin-walled walls]
-J_sv_cell           : (1.8710792258064515e-06, 0.008)  [Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)]
-
-
-### SECTION SELECTED ANALYSIS @ z = 20.0 ###
-A                   : 0.00500533063  [Total net cross-sectional area]
-Cx                  : 0  [Horizontal centroid (X)]
-Cy                  : 0  [Vertical centroid (Y)]
-Ix                  : 1.87914332e-06  [Second moment about centroidal X-axis]
-Iy                  : 4.91555728e-06  [Second moment about centroidal Y-axis]
-J_sv_wall           : 5.46133333e-08  [Saint-Venant torsional constant for open thin-walled walls]
-J_sv_cell           : (7.663940508903227e-07, 0.0064)  [Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)]
-```
-(All units consistent with your CSF model conventions.)
+This produces a compact example in which open-wall and closed-cell torsion coexist in the same section description, while still remaining easy to inspect.
 
 ---
 
-## 7. Why this example is for teaching
+## 5. Interpretation of the torsional outputs
 
-This single model lets students see, in one place:
+This example requires particular care in how `J_sv_wall` and `J_sv_cell` are interpreted.
 
-1. **Topology effect**: open vs closed flow paths
-2. **Modeling path effect**: solid-domain vs thin-wall formulas
-3. **Scaling effect**: how changing geometry/thickness changes each torsional descriptor
-4. **Tag-driven mechanics**: explicit model declaration, no hidden profile recognition
+CSF computes:
 
-It is a concrete demonstration that *“torsion constant” is not one universal number independent of assumptions.*
+- `J_sv_wall` on the open thin-walled branch
+- `J_sv_cell` on the closed-cell branch
+
+CSF then sums these contributions.
+
+However, this sum must be interpreted correctly:
+
+> `J_sv_wall` and `J_sv_cell` are computed through distinct torsional paths based on different modeling assumptions.  
+> Their sum in CSF is an algebraic combination of separate contributions.  
+> It must **not** be interpreted as evidence of mutual torsional participation or reciprocal torsional redistribution between the open-wall branch and the closed-cell branch.
+
+This is the main didactic message of the example.
+
+---
+
+## 6. Numerical results
+
+The numerical values for this note should be updated only from a fresh rerun of the model.
+
+For that reason, the previous numerical block is intentionally omitted here.
+
+When the model is rerun, this section should report, at minimum, the following quantities at `z = 0` and `z = L`:
+
+- `A`
+- `Ix`
+- `Iy`
+- `J_sv_wall`
+- `J_sv_cell`
+
+A useful presentation format is a two-station comparison table with a short ratio analysis.
+
+---
+
+## 7. Why this example is useful for teaching
+
+This single model allows students to see, in one place:
+
+1. **Topology effect**: open versus closed torsional paths
+2. **Modeling effect**: different torsional branches computed from different assumptions
+3. **Scaling effect**: how geometry and thickness variation influence each branch
+4. **Declarative modeling effect**: the mechanics follow explicit tags, not hidden profile recognition
+
+It shows concretely that torsional interpretation depends on the branch being evaluated.
 
 ---
 
 ## 8. Important caution for documentation
 
-## Do not mix interpretations of \(J\)
+## Do not merge the meanings of `J_sv_wall` and `J_sv_cell`
 
-The three outputs are not interchangeable:
+The two outputs are not interchangeable.
 
-- `J_sv_wall`: open thin-wall approximation
-- `J_sv_cell`: closed thin-wall Bredt–Batho
+- `J_sv_wall` refers to the open thin-walled branch
+- `J_sv_cell` refers to the closed thin-walled branch
 
-For a mixed model, comparing magnitudes is informative, but **equating** them is incorrect.
+In a mixed section, comparing their magnitudes can be informative, but identifying them as if they represented the same physical torsional mechanism is incorrect.
+
+The fact that CSF sums them does not remove the distinction between the two underlying models.
 
 ---
 
 ## 9. Closed-cell encoding requirements in CSF
 
-For `@cell` polygons (slit encoding), ensure:
+For `@cell` polygons encoded with a slit representation, ensure:
 
-1. Outer loop explicitly closed (repeat first outer point)
-2. Inner loop explicitly closed (repeat first inner point)
-3. Non-degenerate areas
-4. Explicit `@t=...` when strict mode is enabled
-5. Robust loop pairing (resampling + cyclic phase alignment) for non-rectangular shapes
+1. the outer loop is explicitly closed
+2. the inner loop is explicitly closed
+3. the loop areas are non-degenerate
+4. explicit `@t=...` is provided when strict mode requires it
 
-This is especially important for circles/ellipses and arbitrary smooth closed contours.
+These conditions are especially important for robust didactic examples, because they keep the link between the declared geometry and the torsional interpretation clear.
 
 ---
 
-## 10. Suggested “book-style” exercises
+## 10. Suggested book-style exercises
 
 1. **Geometry-only scaling test**  
-   Scale coordinates by factor \(\lambda\), keep `@t` fixed; compare measured \(J\) ratios.
+   Scale the coordinates by a factor `λ` while keeping `@t` fixed, then compare the changes in `J_sv_wall` and `J_sv_cell`.
 
-2. **Geometry + thickness scaling test**  
-   Scale both coordinates and `@t` by \(\lambda\); verify expected trends for wall and cell branches.
+2. **Geometry plus thickness scaling test**  
+   Scale both the coordinates and `@t` by a factor `λ`, then compare the trends in the two torsional branches.
 
-3. **Cell shape sensitivity**  
-   Replace rectangular cell with polygonal ring approximating a circle; compare `J_sv_cell` convergence with number of sides.
+3. **Cell shape sensitivity test**  
+   Replace the rectangular cell with a polygonal ring approximating a circle, and compare how `J_sv_cell` changes with the number of sides.
 
-4. **Mixed-core extension**  
-   Add a solid central core and discuss why `J_sv` may rise strongly while `J_sv_cell` still tracks thin-wall logic.
+4. **Wall-to-cell balance study**  
+   Modify the relative size of the walls and the cell and observe how the summed result changes while the two branches remain conceptually distinct.
 
 ---
 
+## 11. Suggested order for documentation
 
-Use this order in docs:
+Use this order in technical documentation:
 
-1. **Physical assumptions** (solid vs wall vs cell)
+1. **Physical assumptions** (`@wall` branch versus `@cell` branch)
 2. **Tag syntax and strictness policy**
 3. **Minimal mixed YAML**
 4. **Numerical table at S0 and S1**
 5. **Ratio analysis and scaling interpretation**
-6. **Warnings and non-interchangeability of \(J\) outputs**
-7. **Validation/consistency checks**
+6. **Warning about non-interchangeability of `J_sv_wall` and `J_sv_cell`**
+7. **Consistency checks**
 
 ---
-In short, it is an excellent bridge between **classical Scienza delle Costruzioni** torsion theory and **modern declarative computational modeling** in CSF.
+
+## 12. Final takeaway
+
+This example is a strong bridge between **classical structural torsion theory** and **declarative computational modeling in CSF**.
+
+Its key lesson is precise:
+
+> In a mixed torsion example, `J_sv_wall` and `J_sv_cell` must be read as distinct modeled contributions.  
+> CSF sums them, but no reciprocal torsional participation between the two branches should be inferred from that sum.
