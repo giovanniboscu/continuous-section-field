@@ -189,7 +189,7 @@ Use this order in technical documentation:
 
 ---
 
-## 12. Final takeaway
+## 12. Final consideration
 
 This example is a strong bridge between **classical structural torsion theory** and **declarative computational modeling in CSF**.
 
