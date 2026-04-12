@@ -498,8 +498,6 @@ In the HISTWIN configuration, the relevant rings are the **end rings / ring-flan
 
 When the tower is viewed globally, those module boundaries appear at intermediate elevations along the shaft. Therefore, the two local dips in `w(z)` should be interpreted as **equivalent reductions placed near the segment-joint elevations**, not as unexplained damage bands created inside an otherwise uniform shell plate field.
 
-This distinction is important and should be kept explicit in reports or publications.
-
 ---
 
 ## Coherence check against public HISTWIN data
