@@ -24,14 +24,11 @@ The case is ideal for showing, side by side, three different torsional quantitie
 
 In structural mechanics, torsional response depends strongly on cross-section topology and wall thickness assumptions:
 
-1. **Solid (or generally “full-domain”) Saint-Venant torsion**  
-   Uses a domain-based torsion model and returns a torsional constant \(J\) representing full-section resistance according to that model.
-
-2. **Open thin-walled torsion**  
+1. **Open thin-walled torsion**  
    For slender plate-like walls (open sections), torsional stiffness is much lower than closed cells.  
    In classical thin-wall theory, contributions often scale like \( \sim b\,t^3 \) at element level.
 
-3. **Closed thin-walled torsion (Bredt–Batho)**  
+2. **Closed thin-walled torsion (Bredt–Batho)**  
    Closed cells develop membrane-like shear flow around the loop, producing much higher torsional stiffness than open walls of similar material amount.  
    A standard constant-thickness formula is:
 
