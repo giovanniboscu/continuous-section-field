@@ -246,7 +246,12 @@ Use the Windows executable directly, for example:
 
 ### Step 1 - make the launcher executable
 
+working direactory
+
+continuous-section-field/actions-examples/histwin
+
 ```bash
+
 chmod +x run_csf_to_elastodyn.sh
 ```
 
@@ -297,7 +302,7 @@ The launcher stops after generating:
 - `histwin_tower_BModes_tower.bmt`
 - `histwin_tower_BModes_tower.bmi`
 
-You must then continue manually with the BModes step below.
+You can create manually with the BModes step below.
 
 > **Note - why `TwFAM*Sh` and `TwSSM*Sh` are zero before BModes runs**
 >
@@ -312,7 +317,7 @@ You must then continue manually with the BModes step below.
 
 ### Step 4 - run BModes manually if needed
 
-Run this step only if the launcher did not find BModes automatically.
+Run this step 
 
 ```bash
 ./BModes/build/bmodes/bmodes histwin_tower_BModes_tower.bmi
