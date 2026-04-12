@@ -77,7 +77,7 @@ Then S1 is built as a scaled version of S0 (example: 0.8), optionally including 
 
 From your run:
 
-
+```
 ### SECTION SELECTED ANALYSIS @ z = 0.0 ###
 A                   : 0.00715957063  [Total net cross-sectional area]
 Cx                  : 0  [Horizontal centroid (X)]
@@ -96,7 +96,7 @@ Ix                  : 1.87914332e-06  [Second moment about centroidal X-axis]
 Iy                  : 4.91555728e-06  [Second moment about centroidal Y-axis]
 J_sv_wall           : 5.46133333e-08  [Saint-Venant torsional constant for open thin-walled walls]
 J_sv_cell           : (7.663940508903227e-07, 0.0064)  [Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)]
-
+```
 (All units consistent with your CSF model conventions.)
 
 ---
