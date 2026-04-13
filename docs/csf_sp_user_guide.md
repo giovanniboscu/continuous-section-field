@@ -81,8 +81,10 @@ For non-linear variation, a custom Python expression can be added under `weight_
 
 ```yaml
   weight_laws:
-    - 'polygon_name,polygon_name: 1.0 - 0.3 * (z / L)'
+    - 'polygon_name_s0,polygon_name_s1: 1.0 - 0.3 * (z / L)'
 ```
+
+> The two names in the law (`s0_name,s1_name`) identify the polygon in S0 and its counterpart in S1 respectively. They can be different - CSF matches them by name, not by position. Using the same name in both sections is a common convention but not a requirement.
 
 ### 2.5 Closed thin-walled cells (@cell)
 
