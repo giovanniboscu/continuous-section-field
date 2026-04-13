@@ -6,7 +6,7 @@
 
 ## 1. What is csf_sp
 
-`csf_sp` is a command-line tool that reads a **CSF YAML file**, samples the section geometry at one or more positions along the member axis, and computes **cross-sectional properties** using [sectionproperties](https://sectionproperties.readthedocs.io) as the calculation engine. No Python code is required - a YAML file and a single command are enough.
+`csf_sp` is a command-line tool that reads a **CSF YAML file**, samples the section geometry at one or more positions along the member axis, and computes **cross-sectional properties** using [sectionproperties](https://sectionproperties.readthedocs.io) as the calculation engine. No Python code is required — a YAML file and a single command are enough.
 
 The tool handles arbitrary polygon nesting, multi-material sections (via weighted polygons), closed thin-walled cells (`@cell`), open thin-walled walls (`@wall`), and prismatic or tapered geometry.
 
@@ -44,9 +44,13 @@ CSF:
 
 ### 2.2 Polygons
 
-Each polygon is defined by an ordered list of vertices in the section plane (x, y). Vertices should be listed in **counter-clockwise (CCW)** order to produce a positive area. The polygon is automatically closed - there is no need to repeat the first vertex.
+Each polygon is defined by an ordered list of vertices in the section plane (x, y). Vertices should be listed in **counter-clockwise (CCW)** order to produce a positive area. The polygon is automatically closed — there is no need to repeat the first vertex.
 
-**Polygon name**: a unique identifier within the section. The same name must appear in both S0 and S1 - this is how CSF pairs the corresponding polygons across the two reference sections.
+**Polygon name**: a unique identifier within the section. The same name must appear in both S0 and S1 — this is how CSF pairs the corresponding polygons across the two reference sections.
+
+**Volume pairing by order**: each polygon in S0 is geometrically paired with the polygon at the same position in S1. The first polygon in S0 is paired with the first polygon in S1, the second with the second, and so on. Each pair subtends a continuous volume along the member between the two reference sections. The global section geometry is the union of all these volumes.
+
+**Name validation for weight laws**: polygon names are used to associate custom weight laws `w(z)`. If a name used in a weight law does not match a valid polygon pair in the model, the input is rejected immediately at load time.
 
 ### 2.3 Weight
 
@@ -61,11 +65,13 @@ Common conventions:
 | Value | Meaning |
 |---|---|
 | `1.0` | full solid material |
-| `0.0` | void - if nested inside another polygon, removes that area from the parent |
+| `0.0` | void — if nested inside another polygon, removes that area from the parent |
 | `> 1.0` | stiffer material (e.g. steel inside concrete) |
 | `0 < w < 1` | degraded or partially contributing region |
 
-> **Nesting is automatic**: the containment relationship between polygons is detected from the geometry. You never need to declare which polygon is the parent - CSF infers it from the vertex coordinates.
+> For a deeper treatment of how `weight` is used to homogenize the section and map material properties, see the [CSF Longitudinally-Varying Homogenization Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
+
+> **Nesting is automatic**: the containment relationship between polygons is detected from the geometry. You never need to declare which polygon is the parent — CSF infers it from the vertex coordinates.
 
 ### 2.4 Weight variation along z
 
@@ -110,9 +116,11 @@ J = 4 × Am² / (s / t)
 
 where `Am` is the area enclosed by the median line, `s` is the median perimeter, and `t` is the wall thickness (estimated geometrically or declared via `@t=` in the name).
 
+> For the full derivation and background of the Bredt-Batho formula used for `@cell` and the open thin-wall formula used for `@wall`, see the [Saint-Venant Torsional Constant reference](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md).
+
 ### 2.6 Open thin-walled walls (@wall)
 
-An open thin-walled wall is declared by appending `@wall` to the polygon name. The polygon is a simple rectangle - no slit encoding, no repeated vertices. It is just a standard four-vertex polygon.
+An open thin-walled wall is declared by appending `@wall` to the polygon name. The polygon is a simple rectangle — no slit encoding, no repeated vertices. It is just a standard four-vertex polygon.
 
 ```yaml
         web@wall:
@@ -206,6 +214,8 @@ The sectionproperties output is printed to the terminal. The most relevant prope
 
 > For a single-material section with all weights = 1, `e.a` equals the geometric net area.
 
+> For the full list of output properties and the mapping between CSF property names and sectionproperties names, see the [Section Full Analysis reference](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md).
+
 ---
 
 ## 5. Domain and Limits
@@ -231,7 +241,7 @@ The sectionproperties output is printed to the terminal. The most relevant prope
 
 ## 6. Examples
 
-### Example 1 - Solid rectangle (prismatic)
+### Example 1 — Solid rectangle (prismatic)
 
 A 0.4 × 0.6 m rectangle, constant along a 10 m member.
 
@@ -268,7 +278,7 @@ Expected: `e.a = 0.24`, `cx = cy = 0`, `e.ixx_c = 0.00720`, `e.iyy_c = 0.00320`
 
 ---
 
-### Example 2 - Hollow box (closed cell)
+### Example 2 — Hollow box (closed cell)
 
 A 0.20 × 0.30 m box with wall thickness 0.02 m, prismatic over 10 m.
 
@@ -313,7 +323,7 @@ Expected: `e.a = 0.0184`, `J_sv_cell ≈ 0.000224 m⁴` (Bredt-Batho), `e.j ≈ 
 
 ---
 
-### Example 3 - I-section (open thin-walled walls)
+### Example 3 — I-section (open thin-walled walls)
 
 A simplified I-section with web and two flanges, each declared as `@wall`. Wall thickness is declared explicitly via `@t=`.
 
@@ -374,7 +384,7 @@ CSF:
 
 ---
 
-### Example 4 - Composite section (concrete + steel bar)
+### Example 4 — Composite section (concrete + steel bar)
 
 A 0.40 × 0.60 m concrete section (E = 30 000 MPa) with an embedded steel bar (E = 210 000 MPa). Weights are absolute elastic moduli.
 
@@ -423,4 +433,4 @@ Expected: `e.a = 30 000 × 0.24 + 180 000 × 0.0064 = 9 504` (units: MPa × m²)
 
 ---
 
-*csf_sp - part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
+*csf_sp — part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
