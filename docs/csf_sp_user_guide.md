@@ -108,6 +108,8 @@ A closed thin-walled cell is declared by appending `@cell` to the polygon name. 
 
 > ⚠ The outer loop must be CCW (positive signed area) and the inner loop must be CW (negative signed area). CSF validates this at load time and raises an error if the orientations are inconsistent.
 
+> **Alternative without @cell**: the slit encoding is not mandatory. The same hollow section can be described using two plain polygons — an outer solid (`weight = 1.0`) and an inner void (`weight = 0.0`) nested inside it. In that case no special suffix is needed. The difference is that `@cell` also activates the Bredt-Batho torsional constant; without it, `J_sv_cell` will be zero.
+
 CSF computes the **Saint-Venant torsional constant** for `@cell` polygons using the Bredt-Batho formula:
 
 ```
@@ -241,7 +243,7 @@ The sectionproperties output is printed to the terminal. The most relevant prope
 
 ## 6. Examples
 
-### Example 1 - Solid rectangle (prismatic)
+### Example 1 — Solid rectangle (prismatic)
 
 A 0.4 × 0.6 m rectangle, constant along a 10 m member.
 
@@ -278,7 +280,7 @@ Expected: `e.a = 0.24`, `cx = cy = 0`, `e.ixx_c = 0.00720`, `e.iyy_c = 0.00320`
 
 ---
 
-### Example 2 - Hollow box (closed cell)
+### Example 2 — Hollow box (closed cell)
 
 A 0.20 × 0.30 m box with wall thickness 0.02 m, prismatic over 10 m.
 
@@ -323,7 +325,7 @@ Expected: `e.a = 0.0184`, `J_sv_cell ≈ 0.000224 m⁴` (Bredt-Batho), `e.j ≈ 
 
 ---
 
-### Example 3 - I-section (open thin-walled walls)
+### Example 3 — I-section (open thin-walled walls)
 
 A simplified I-section with web and two flanges, each declared as `@wall`. Wall thickness is declared explicitly via `@t=`.
 
@@ -384,7 +386,7 @@ CSF:
 
 ---
 
-### Example 4 - Composite section (concrete + steel bar)
+### Example 4 — Composite section (concrete + steel bar)
 
 A 0.40 × 0.60 m concrete section (E = 30 000 MPa) with an embedded steel bar (E = 210 000 MPa). Weights are absolute elastic moduli.
 
@@ -433,4 +435,4 @@ Expected: `e.a = 30 000 × 0.24 + 180 000 × 0.0064 = 9 504` (units: MPa × m²)
 
 ---
 
-*csf_sp - part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package 
+*csf_sp — part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
