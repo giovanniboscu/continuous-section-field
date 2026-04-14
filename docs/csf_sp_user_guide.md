@@ -163,7 +163,11 @@ For non-linear variation, a custom Python expression can be added under `weight_
 
 ### 2.5 Closed thin-walled cells (@cell)
 
-A closed thin-walled cell is declared by appending `@cell` to the polygon name. The vertex list must contain both the **outer loop (CCW)** and the **inner loop (CW)**, separated by a repeated first vertex that marks the end of the outer loop.
+A closed thin-walled cell is declared by appending `@cell` to the polygon name. The suffix is a **classification tag** - it is not part of the polygon base name. It tells CSF to treat this polygon as a closed thin-walled cell and compute the Saint-Venant torsional constant analytically using the Bredt-Batho formula. The vertex list must contain both the **outer loop (CCW)** and the **inner loop (CW)**, separated by a repeated first vertex that marks the end of the outer loop.
+
+> **Note for csf_sp users**: the `@cell` suffix is not required to use csf_sp. A hollow section can always be described with two plain polygons - an outer solid (`weight = 1.0`) and an inner void (`weight = 0.0`) - and csf_sp will compute all geometric properties correctly via sectionproperties FEM, including `e.j`.
+>
+> Use `@cell` only when you also need the **CSF native Bredt-Batho J** (`J_sv_cell`) - for example when you want a fast analytical torsional constant along the full member axis without running the FEM mesh at every station. The Bredt-Batho formula is much faster than a full warping FEM and sufficient for thin-walled closed sections.
 
 ```yaml
         box@cell:
