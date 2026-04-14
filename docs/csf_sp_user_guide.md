@@ -162,7 +162,7 @@ CSF:
 python -m csf.utils.csf_sp --yaml=tapered.yaml --z=15.0
 ```
 
-At z = 15.0 (mid-span) the section is interpolated - outer dimensions are 0.16 × 0.25 m,
+**At z = 15.0 (mid-span) the section is interpolated - outer dimensions are 0.16 × 0.25 m,**
 halfway between the two ends.
 
 > **Prismatic section**: for a constant cross-section along the member, copy S0 into S1
