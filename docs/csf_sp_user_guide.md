@@ -1,5 +1,4 @@
-
-
+# == DRAFT ==
 # csf_sp User Guide
 
 **Bridge between CSF section models and sectionproperties**
@@ -66,6 +65,11 @@ CSF:
 ```bash
 python -m csf.utils.csf_sp --yaml=box.yaml --z=5.0 --plot
 ```
+
+> **The only two rules you need for most sections**:
+> `weight = 1.0` → solid material. `weight = 0.0` → void (hole).
+> In the example above, `outer` is the solid wall and `inner` is the hollow core.
+> CSF detects automatically that `inner` is inside `outer` and subtracts it.
 
 That is all. csf_sp reads the YAML, samples the section at z = 5.0, meshes it,
 runs the sectionproperties FEM analysis, and prints the full result table including
