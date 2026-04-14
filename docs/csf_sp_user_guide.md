@@ -18,7 +18,7 @@ describes a tapered or composite member completely; csf_sp samples it at whateve
 stations you need, giving you `A(z)`, `EI(z)`, `J(z)` as a continuous field rather
 than a set of disconnected cross-sections.
 
-> `csf_sp` combines a section modeller, a continuous geometry/material engine, and a FEM cross-section solver - driven by a single YAML file.
+> `csf_sp` combines a section modeller, a  continuously-varying geometry/material engine, and a FEM cross-section solver - driven by a single YAML file.
 
 ### Quick start
 
