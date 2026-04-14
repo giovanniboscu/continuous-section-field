@@ -1,5 +1,3 @@
- # == DRAFT ==
-
 # csf_sp User Guide
 
 **Bridge between CSF section models and sectionproperties**
@@ -437,6 +435,266 @@ CSF:
 
 Expected: `e.a = 30 000 × 0.24 + 180 000 × 0.0064 = 9 504` (units: MPa × m²)
 
+
 ---
 
-*csf_sp - part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
+## 7. Multiple Stations
+
+### 7.1 Via CLI run-config
+
+To analyse several positions along the member in one command, create a small run-config YAML file that lists the stations:
+
+```yaml
+# run_config.yaml
+station_sets:
+  my_stations: [0.0, 2.5, 5.0, 7.5, 10.0]
+```
+
+Then pass it to csf_sp together with the CSF model:
+
+```bash
+python -m csf.utils.csf_sp --yaml=csf_sp_example.yaml \
+  --run-config=run_config.yaml --station-set=my_stations
+```
+
+csf_sp will print the full sectionproperties table for each station, separated by a horizontal rule.
+
+### 7.2 Via Python API
+
+The same station list can be iterated programmatically using the `load_yaml` and `analyse` public API functions:
+
+```python
+from csf.utils.csf_sp import load_yaml, analyse
+
+field = load_yaml("csf_sp_example.yaml")
+
+stations = [0.0, 2.5, 5.0, 7.5, 10.0]
+
+for z in stations:
+    sec = analyse(field, z=z)
+    ej  = sec.get_ej()           # Saint-Venant J (FEM warping)
+    eic = sec.get_eic()          # (e.ixx_c, e.iyy_c, e.ixy_c)
+    print(f"z={z:5.1f}  e.j={ej:.4e}  e.ixx_c={eic[0]:.4e}  e.iyy_c={eic[1]:.4e}")
+```
+
+For the prismatic `csf_sp_example.yaml` (S0 = S1) all stations return identical values.
+For a tapered section (S0 ≠ S1) the properties vary continuously along z.
+
+---
+
+## 8. CSV Input
+
+csf_sp can also read the geometry export block produced by the CSF `section_selected_analysis` action.
+This allows running sectionproperties on any section that has already been exported to CSV,
+without reloading the original YAML model.
+
+### 8.1 CSV format
+
+The CSV export block is appended automatically by the `section_selected_analysis` action and looks like this:
+
+```
+## GEOMETRY EXPORT ##
+# z=0.0
+idx_polygon,idx_container,s0_name,s1_name,w,vertex_i,x,y
+0,,outer,outer,1.0,0,-0.10,-0.15
+0,,outer,outer,1.0,1, 0.10,-0.15
+...
+1,0,inner,inner,0.0,0,-0.08,-0.13
+...
+```
+
+The file may contain one or more export blocks at different z values.
+
+### 8.2 CLI usage
+
+Pass the CSV file path as a positional argument (no `--yaml` flag):
+
+```bash
+python -m csf.utils.csf_sp out/section_analysis.csv
+```
+
+To select a specific z station when the file contains multiple blocks:
+
+```bash
+python -m csf.utils.csf_sp out/section_analysis.csv --z=5.0
+```
+
+### 8.3 Example
+
+Given the following CSV file saved as `out/section_export.csv`:
+
+```
+## GEOMETRY EXPORT ##
+# z=0.0
+idx_polygon,idx_container,s0_name,s1_name,w,vertex_i,x,y
+0,,outer,outer,1.000000,0,-0.100000,-0.150000
+0,,outer,outer,1.000000,1, 0.100000,-0.150000
+0,,outer,outer,1.000000,2, 0.100000, 0.150000
+0,,outer,outer,1.000000,3,-0.100000, 0.150000
+1,0,inner,inner,0.000000,0,-0.080000,-0.130000
+1,0,inner,inner,0.000000,1, 0.080000,-0.130000
+1,0,inner,inner,0.000000,2, 0.080000, 0.130000
+1,0,inner,inner,0.000000,3,-0.080000, 0.130000
+```
+
+Run:
+
+```bash
+python -m csf.utils.csf_sp out/section_export.csv
+```
+
+Expected output: same sectionproperties table as `--yaml=csf_sp_example.yaml --z=0`.
+
+---
+
+## 9. Python API
+
+csf_sp exposes two public functions for programmatic use.
+Everything else in the module is private implementation detail.
+
+### 9.1 `load_yaml(path)`
+
+Loads a CSF YAML file and returns the `ContinuousSectionField` object.
+
+```python
+from csf.utils.csf_sp import load_yaml
+
+field = load_yaml("csf_sp_example.yaml")
+```
+
+The field object can also be constructed directly via the CSF Python API without a YAML file:
+
+```python
+from csf import ContinuousSectionField, Section, Polygon, Pt
+from csf.utils.csf_sp import analyse
+
+outer = Polygon(vertices=(Pt(-0.10,-0.15), Pt(0.10,-0.15),
+                           Pt(0.10,0.15),  Pt(-0.10,0.15)), weight=1.0, name="outer")
+inner = Polygon(vertices=(Pt(-0.08,-0.13), Pt(0.08,-0.13),
+                           Pt(0.08,0.13),  Pt(-0.08,0.13)), weight=0.0, name="inner")
+s0 = Section(polygons=(outer, inner), z=0.0)
+s1 = Section(polygons=(outer, inner), z=10.0)
+field = ContinuousSectionField(section0=s0, section1=s1)
+```
+
+### 9.2 `analyse(field, z, mesh=1.0)`
+
+Samples the CSF field at `z`, builds and meshes the sectionproperties geometry,
+and returns a fully analysed `sectionproperties.analysis.Section` object.
+
+```python
+from csf.utils.csf_sp import load_yaml, analyse
+
+field = load_yaml("csf_sp_example.yaml")
+sec   = analyse(field, z=0.0, mesh=1.0)
+```
+
+**Important**: csf_sp always assigns `Material` objects to regions so that weighted
+(homogenized) properties are computed correctly. This means SP treats every section
+as composite. Always use the modulus-weighted getters even when all polygon weights
+equal 1.0:
+
+| Use | Instead of |
+|---|---|
+| `sec.get_ea()` | `sec.get_area()` |
+| `sec.get_eic()` | `sec.get_ic()` |
+| `sec.get_ej()` | `sec.get_j()` |
+| `sec.get_eip()` | `sec.get_ip()` |
+| `sec.get_ez()` | `sec.get_z()` |
+| `sec.get_rc()` | - |
+
+### 9.3 Full example
+
+The following script replicates the CLI output for `csf_sp_example.yaml` at z = 0.0
+and then accesses individual properties programmatically.
+
+```yaml
+# csf_sp_example.yaml
+# Simple hollow rectangular box section - prismatic over 10 m
+# outer: 0.20 x 0.30 m, wall thickness: 0.02 m
+
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        outer:
+          weight: 1.0
+          vertices:
+            - [-0.10, -0.15]
+            - [ 0.10, -0.15]
+            - [ 0.10,  0.15]
+            - [-0.10,  0.15]
+        inner:
+          weight: 0.0
+          vertices:
+            - [-0.08, -0.13]
+            - [ 0.08, -0.13]
+            - [ 0.08,  0.13]
+            - [-0.08,  0.13]
+    S1:
+      z: 10.0
+      polygons:
+        outer:
+          weight: 1.0
+          vertices:
+            - [-0.10, -0.15]
+            - [ 0.10, -0.15]
+            - [ 0.10,  0.15]
+            - [-0.10,  0.15]
+        inner:
+          weight: 0.0
+          vertices:
+            - [-0.08, -0.13]
+            - [ 0.08, -0.13]
+            - [ 0.08,  0.13]
+            - [-0.08,  0.13]
+```
+
+```python
+from csf.utils.csf_sp import load_yaml, analyse
+
+# 1. Load the CSF field
+field = load_yaml("csf_sp_example.yaml")
+
+# 2. Analyse at z = 0.0
+sec = analyse(field, z=0.0)
+
+# 3. Full display - matches CLI output
+sec.display_results()
+
+# 4. Individual property access
+ea         = sec.get_ea()      # effective area
+cx, cy     = sec.get_c()       # centroid
+eic        = sec.get_eic()     # (e.ixx_c, e.iyy_c, e.ixy_c)
+eig        = sec.get_eig()     # (e.ixx_g, e.iyy_g, e.ixy_g)
+ez         = sec.get_ez()      # (e.zxx+, e.zxx-, e.zyy+, e.zyy-)
+eip        = sec.get_eip()     # (e.i11_c, e.i22_c)
+phi        = sec.get_phi()     # principal axis angle
+rc         = sec.get_rc()      # (rx, ry)
+ej         = sec.get_ej()      # e.j FEM warping
+x_se, y_se = sec.get_sc()      # shear centre
+egamma     = sec.get_egamma()  # warping constant
+eas        = sec.get_eas()     # (e.a_sx, e.a_sy) shear areas
+
+print(f"e.a    : {ea:.6e}")
+print(f"e.ixx_c: {eic[0]:.6e}")
+print(f"e.iyy_c: {eic[1]:.6e}")
+print(f"e.j    : {ej:.6e}")
+print(f"rx     : {rc[0]:.6e}")
+print(f"ry     : {rc[1]:.6e}")
+```
+
+Expected output:
+
+```
+e.a    : 1.840000e-02
+e.ixx_c: 2.156533e-04
+e.iyy_c: 1.112533e-04
+e.j    : 2.324106e-04
+rx     : 1.082603e-01
+ry     : 7.775845e-02
+```
+
+---
+
