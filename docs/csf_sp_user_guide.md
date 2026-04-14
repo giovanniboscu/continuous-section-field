@@ -482,7 +482,7 @@ For a tapered section (S0 ≠ S1) the properties vary continuously along z.
 
 ---
 
-## 8. CSV Input
+## 8. Legacy CSV Input
 
 csf_sp can also read the geometry export block produced by the CSF `section_selected_analysis` action.
 This allows running sectionproperties on any section that has already been exported to CSV,
@@ -605,8 +605,7 @@ equal 1.0:
 
 ### 9.3 Full example
 
-The following script replicates the CLI output for `csf_sp_example.yaml` at z = 0.0
-and then accesses individual properties programmatically.
+**`csf_sp_example.yaml`** - hollow rectangular box, prismatic over 10 m:
 
 ```yaml
 # csf_sp_example.yaml
@@ -651,41 +650,122 @@ CSF:
             - [-0.08,  0.13]
 ```
 
+**`csf_sp_example.py`** - analyses all stations and prints full SP output + individual getters:
+
 ```python
+"""
+csf_sp public API - full sectionproperties output verification
+
+Expected output matches CLI:
+    python3 -m csf.utils.csf_sp --yaml=csf_sp_example.yaml \
+        --run-config=run_config.yaml --station-set=all
+"""
+
 from csf.utils.csf_sp import load_yaml, analyse
 
-# 1. Load the CSF field
+# 1. Load the CSF field from YAML
 field = load_yaml("csf_sp_example.yaml")
 
-# 2. Analyse at z = 0.0
-sec = analyse(field, z=0.0)
+# 2. Station list - matches run_config.yaml station_set 'all'
+stations = [0.0, 2.5, 5.0, 7.5, 10.0]
 
-# 3. Full display - matches CLI output
-sec.display_results()
+for z in stations:
 
-# 4. Individual property access
-ea         = sec.get_ea()      # effective area
-cx, cy     = sec.get_c()       # centroid
-eic        = sec.get_eic()     # (e.ixx_c, e.iyy_c, e.ixy_c)
-eig        = sec.get_eig()     # (e.ixx_g, e.iyy_g, e.ixy_g)
-ez         = sec.get_ez()      # (e.zxx+, e.zxx-, e.zyy+, e.zyy-)
-eip        = sec.get_eip()     # (e.i11_c, e.i22_c)
-phi        = sec.get_phi()     # principal axis angle
-rc         = sec.get_rc()      # (rx, ry)
-ej         = sec.get_ej()      # e.j FEM warping
-x_se, y_se = sec.get_sc()      # shear centre
-egamma     = sec.get_egamma()  # warping constant
-eas        = sec.get_eas()     # (e.a_sx, e.a_sy) shear areas
+    print("\n" + "=" * 60)
+    print(f"z = {z}")
+    print("=" * 60)
 
-print(f"e.a    : {ea:.6e}")
-print(f"e.ixx_c: {eic[0]:.6e}")
-print(f"e.iyy_c: {eic[1]:.6e}")
-print(f"e.j    : {ej:.6e}")
-print(f"rx     : {rc[0]:.6e}")
-print(f"ry     : {rc[1]:.6e}")
+    # 3. Sample and analyse
+    sec = analyse(field, z=z, mesh=1.0)
+
+    # 4. Full display - matches CLI output exactly
+    #
+    # Note: csf_sp always assigns Material objects to SP regions so
+    # that weighted (homogenized) properties are computed correctly.
+    # Use modulus-weighted getters even when all weights equal 1.0.
+    sec.display_results()
+
+    # 5. Individual property access via SP native composite API
+    ea         = sec.get_ea()           # effective area (e.a)
+    cx, cy     = sec.get_c()            # centroid (cx, cy)
+    eig        = sec.get_eig()          # (e.ixx_g, e.iyy_g, e.ixy_g)
+    eic        = sec.get_eic()          # (e.ixx_c, e.iyy_c, e.ixy_c)
+    ez         = sec.get_ez()           # (e.zxx+, e.zxx-, e.zyy+, e.zyy-)
+    eip        = sec.get_eip()          # (e.i11_c, e.i22_c)
+    phi        = sec.get_phi()          # principal axis angle
+    rc         = sec.get_rc()           # (rx, ry) centroidal radii of gyration
+    ej         = sec.get_ej()           # e.j (FEM warping)
+    x_se, y_se = sec.get_sc()           # shear centre
+    egamma     = sec.get_egamma()       # warping constant
+    eas        = sec.get_eas()          # (e.a_sx, e.a_sy) shear areas
+
+    print(f"\nIndividual property access")
+    print("-" * 40)
+    print(f"e.a              : {ea:.6e}")
+    print(f"cx               : {cx:.6e}")
+    print(f"cy               : {cy:.6e}")
+    print(f"e.ixx_g          : {eig[0]:.6e}")
+    print(f"e.iyy_g          : {eig[1]:.6e}")
+    print(f"e.ixy_g          : {eig[2]:.6e}")
+    print(f"e.ixx_c          : {eic[0]:.6e}")
+    print(f"e.iyy_c          : {eic[1]:.6e}")
+    print(f"e.ixy_c          : {eic[2]:.6e}")
+    print(f"e.zxx+           : {ez[0]:.6e}")
+    print(f"e.zxx-           : {ez[1]:.6e}")
+    print(f"e.zyy+           : {ez[2]:.6e}")
+    print(f"e.zyy-           : {ez[3]:.6e}")
+    print(f"e.i11_c          : {eip[0]:.6e}")
+    print(f"e.i22_c          : {eip[1]:.6e}")
+    print(f"phi              : {phi:.6e}")
+    print(f"rx               : {rc[0]:.6e}")
+    print(f"ry               : {rc[1]:.6e}")
+    print(f"e.j (FEM)        : {ej:.6e}")
+    print(f"x_se             : {x_se:.6e}")
+    print(f"y_se             : {y_se:.6e}")
+    print(f"e.gamma          : {egamma:.6e}")
+    print(f"e.a_sx           : {eas[0]:.6e}")
+    print(f"e.a_sy           : {eas[1]:.6e}")
 ```
 
-Expected output:
+Expected output of `sec.display_results()`:
+
+```
+     Section Properties      
+┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+┃ Property  ┃         Value ┃
+┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ area      │  1.840000e-02 │
+│ perimeter │  1.000000e+00 │
+│ mass      │  1.840000e-02 │
+│ e.a       │  1.840000e-02 │
+│ e.ixx_g   │  2.156533e-04 │
+│ e.iyy_g   │  1.112533e-04 │
+│ cx        │ -3.682752e-19 │
+│ cy        │ -7.365504e-19 │
+│ e.ixx_c   │  2.156533e-04 │
+│ e.iyy_c   │  1.112533e-04 │
+│ e.zxx+    │  1.437689e-03 │
+│ e.zxx-    │  1.437689e-03 │
+│ e.zyy+    │  1.112533e-03 │
+│ e.zyy-    │  1.112533e-03 │
+│ rx        │  1.082603e-01 │
+│ ry        │  7.775845e-02 │
+│ e.i11_c   │  2.156533e-04 │
+│ e.i22_c   │  1.112533e-04 │
+│ phi       │  0.000000e+00 │
+│ e_eff     │  1.000000e+00 │
+│ g_eff     │  5.000000e-01 │
+│ nu_eff    │  0.000000e+00 │
+│ e.j       │  2.324106e-04 │
+│ x_se      │ -2.622612e-17 │
+│ y_se      │  1.630298e-16 │
+│ e.gamma   │  5.970124e-08 │
+│ e.a_sx    │  5.721224e-03 │
+│ e.a_sy    │  1.042444e-02 │
+└───────────┴───────────────┘
+```
+
+Expected output of individual getters:
 
 ```
 e.a    : 1.840000e-02
@@ -698,3 +778,4 @@ ry     : 7.775845e-02
 
 ---
 
+*csf_sp - part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
