@@ -6,9 +6,84 @@
 
 ## 1. What is csf_sp
 
-`csf_sp` is a command-line tool that reads a **CSF YAML file**, samples the section geometry at one or more positions along the member axis, and computes **cross-sectional properties** using [sectionproperties](https://sectionproperties.readthedocs.io) as the calculation engine. No Python code is required - a YAML file and a single command are enough.
+`csf_sp` bridges [CSF](https://github.com/giovanniboscu/continuous-section-field) and [sectionproperties](https://sectionproperties.readthedocs.io):
+you describe your cross-section once in a YAML file and get the full sectionproperties
+result set - area, moments of inertia, warping constant, shear areas and more - at any
+position along the member axis. No Python code required.
 
-The tool handles arbitrary polygon nesting, multi-material sections (via weighted polygons), closed thin-walled cells (`@cell`), open thin-walled walls (`@wall`), and prismatic or tapered geometry.
+**The key advantage over using sectionproperties directly**: CSF interpolates geometry
+and material properties *continuously* along the member axis. A single YAML file
+describes a tapered or composite member completely; csf_sp samples it at whatever
+stations you need, giving you `A(z)`, `EI(z)`, `J(z)` as a continuous field rather
+than a set of disconnected cross-sections.
+
+### Quick start
+
+Write a YAML file, run one command:
+
+```yaml
+# box.yaml  - hollow rectangular box, prismatic over 10 m
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        outer:
+          weight: 1.0
+          vertices:
+            - [-0.10, -0.15]
+            - [ 0.10, -0.15]
+            - [ 0.10,  0.15]
+            - [-0.10,  0.15]
+        inner:
+          weight: 0.0
+          vertices:
+            - [-0.08, -0.13]
+            - [ 0.08, -0.13]
+            - [ 0.08,  0.13]
+            - [-0.08,  0.13]
+    S1:
+      z: 10.0
+      polygons:
+        outer:
+          weight: 1.0
+          vertices:
+            - [-0.10, -0.15]
+            - [ 0.10, -0.15]
+            - [ 0.10,  0.15]
+            - [-0.10,  0.15]
+        inner:
+          weight: 0.0
+          vertices:
+            - [-0.08, -0.13]
+            - [ 0.08, -0.13]
+            - [ 0.08,  0.13]
+            - [-0.08,  0.13]
+```
+
+```bash
+python -m csf.utils.csf_sp --yaml=box.yaml --z=5.0 --plot
+```
+
+That is all. csf_sp reads the YAML, samples the section at z = 5.0, meshes it,
+runs the sectionproperties FEM analysis, and prints the full result table including
+`e.j` (Saint-Venant torsional constant via warping FEM).
+
+For programmatic access - useful when you need `J(z)` over many stations - two
+public API functions are available:
+
+```python
+from csf.utils.csf_sp import load_yaml, analyse
+
+field = load_yaml("box.yaml")
+sec   = analyse(field, z=5.0)   # returns a sectionproperties Section object
+
+print(sec.get_ej())              # J FEM warping  →  2.324106e-04
+print(sec.get_eic())             # (Ixx_c, Iyy_c, Ixy_c)
+```
+
+The returned object is a native `sectionproperties.analysis.Section` - the complete
+SP API is available for any further post-processing.
 
 ---
 
