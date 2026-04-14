@@ -1,4 +1,3 @@
-# === DRAFT ===
 # csf_sp User Guide
 
 **Bridge between CSF section models and sectionproperties**
@@ -12,8 +11,9 @@ you describe your cross-section once in a YAML file and get the full sectionprop
 result set - area, moments of inertia, warping constant, shear areas and more - at any
 position along the member axis. No Python code required.
 
-**The key advantage over using sectionproperties directly**: CSF interpolates geometry and material properties CONTINUOUSLY along the member axis. 
-A single YAML file describes a tapered or composite member completely; csf_sp samples it at whatever
+**The key advantage over using sectionproperties directly**: CSF interpolates geometry
+and material properties *continuously* along the member axis. A single YAML file
+describes a tapered or composite member completely; csf_sp samples it at whatever
 stations you need, giving you `A(z)`, `EI(z)`, `J(z)` as a continuous field rather
 than a set of disconnected cross-sections.
 
@@ -161,81 +161,148 @@ For non-linear variation, a custom Python expression can be added under `weight_
 
 > The two names in the law (`s0_name,s1_name`) identify the polygon in S0 and its counterpart in S1 respectively. They can be different - CSF matches them by name, not by position. Using the same name in both sections is a common convention but not a requirement.
 
-### 2.5 Closed thin-walled cells (@cell)
+### 2.5 Tapered section example
 
-A closed thin-walled cell is declared by appending `@cell` to the polygon name. The suffix is a **classification tag** - it is not part of the polygon base name. It tells CSF to treat this polygon as a closed thin-walled cell and compute the Saint-Venant torsional constant analytically using the Bredt-Batho formula. The vertex list must contain both the **outer loop (CCW)** and the **inner loop (CW)**, separated by a repeated first vertex that marks the end of the outer loop.
-
-> **Note for csf_sp users**: the `@cell` suffix is not required to use csf_sp. A hollow section can always be described with two plain polygons - an outer solid (`weight = 1.0`) and an inner void (`weight = 0.0`) - and csf_sp will compute all geometric properties correctly via sectionproperties FEM, including `e.j`.
->
-> Use `@cell` only when you also need the **CSF native Bredt-Batho J** (`J_sv_cell`) - for example when you want a fast analytical torsional constant along the full member axis without running the FEM mesh at every station. The Bredt-Batho formula is much faster than a full warping FEM and sufficient for thin-walled closed sections.
+S0 and S1 can have different vertices - CSF interpolates the geometry continuously.
+This example shows a rectangular section that tapers from 0.20 × 0.30 m at the base
+to 0.12 × 0.20 m at the top over a 30 m member:
 
 ```yaml
-        box@cell:
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        outer:
           weight: 1.0
           vertices:
-            # Outer loop (CCW)
             - [-0.10, -0.15]
             - [ 0.10, -0.15]
             - [ 0.10,  0.15]
             - [-0.10,  0.15]
-            - [-0.10, -0.15]   # repeated first vertex: end of outer loop
-            # Inner loop (CW)
+        inner:
+          weight: 0.0
+          vertices:
             - [-0.08, -0.13]
-            - [-0.08,  0.13]
-            - [ 0.08,  0.13]
             - [ 0.08, -0.13]
-            - [-0.08, -0.13]   # end of inner loop
-```
-
-> ⚠ The outer loop must be CCW (positive signed area) and the inner loop must be CW (negative signed area). CSF validates this at load time and raises an error if the orientations are inconsistent.
-
-> **Alternative without @cell**: the slit encoding is not mandatory. The same hollow section can be described using two plain polygons - an outer solid (`weight = 1.0`) and an inner void (`weight = 0.0`) nested inside it. In that case no special suffix is needed. The difference is that `@cell` also activates the Bredt-Batho torsional constant; without it, `J_sv_cell` will be zero.
-
-CSF computes the **Saint-Venant torsional constant** for `@cell` polygons using the Bredt-Batho formula:
-
-```
-J = 4 × Am² / (s / t)
-```
-
-where `Am` is the area enclosed by the median line, `s` is the median perimeter, and `t` is the wall thickness (estimated geometrically or declared via `@t=` in the name).
-
-> For the full derivation and background of the Bredt-Batho formula used for `@cell` and the open thin-wall formula used for `@wall`, see the [Saint-Venant Torsional Constant reference](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md).
-
-### 2.6 Open thin-walled walls (@wall)
-
-An open thin-walled wall is declared by appending `@wall` to the polygon name. The polygon is a simple rectangle - no slit encoding, no repeated vertices. It is just a standard four-vertex polygon.
-
-```yaml
-        web@wall:
+            - [ 0.08,  0.13]
+            - [-0.08,  0.13]
+    S1:
+      z: 30.0
+      polygons:
+        outer:
           weight: 1.0
           vertices:
-            - [-0.02, -0.15]
-            - [ 0.02, -0.15]
-            - [ 0.02,  0.15]
-            - [-0.02,  0.15]
+            - [-0.06, -0.10]
+            - [ 0.06, -0.10]
+            - [ 0.06,  0.10]
+            - [-0.06,  0.10]
+        inner:
+          weight: 0.0
+          vertices:
+            - [-0.04, -0.08]
+            - [ 0.04, -0.08]
+            - [ 0.04,  0.08]
+            - [-0.04,  0.08]
 ```
 
-CSF computes the Saint-Venant torsional contribution for each `@wall` polygon using the open thin-wall formula:
-
-```
-J_i = (1/3) × b × t³
+```bash
+python -m csf.utils.csf_sp --yaml=tapered.yaml --z=15.0
 ```
 
-where `b` is the wall length and `t` is the wall thickness. The total torsional constant is the sum over all `@wall` polygons.
+At z = 15.0 (mid-span) the section is interpolated - outer dimensions are
+0.16 × 0.25 m, halfway between the two ends.
 
-**Declaring thickness explicitly**: by default CSF estimates `t` geometrically as `t_est = 2A / P`. For better accuracy, declare the thickness directly in the polygon name using `@t=`:
+### 2.6 Weight variation along z
+
+Weight can vary from S0 to S1 - CSF linearly interpolates at any intermediate z.
+This example models a degraded zone where stiffness drops from 100% at the base
+to 70% at the top:
 
 ```yaml
-        web@wall@t=0.02:
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        section:
           weight: 1.0
           vertices:
-            - [-0.01, -0.15]
-            - [ 0.01, -0.15]
-            - [ 0.01,  0.15]
-            - [-0.01,  0.15]
+            - [-0.20, -0.30]
+            - [ 0.20, -0.30]
+            - [ 0.20,  0.30]
+            - [-0.20,  0.30]
+    S1:
+      z: 30.0
+      polygons:
+        section:
+          weight: 0.7
+          vertices:
+            - [-0.20, -0.30]
+            - [ 0.20, -0.30]
+            - [ 0.20,  0.30]
+            - [-0.20,  0.30]
 ```
 
-> If `@t=` is specified only in S0 (not in S1), CSF treats that value as constant along the entire element length.
+At z = 15.0 the weight is interpolated to 0.85 - `e.a` will be `0.85 × 0.24 = 0.204`.
+
+### 2.7 Custom weight law
+
+For non-linear variation, add a `weight_laws` block with a Python expression.
+This example applies a parabolic stiffness reduction - full section at both ends,
+72% at mid-span:
+
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        section:
+          weight: 1.0
+          vertices:
+            - [-0.20, -0.30]
+            - [ 0.20, -0.30]
+            - [ 0.20,  0.30]
+            - [-0.20,  0.30]
+    S1:
+      z: 30.0
+      polygons:
+        section:
+          weight: 1.0
+          vertices:
+            - [-0.20, -0.30]
+            - [ 0.20, -0.30]
+            - [ 0.20,  0.30]
+            - [-0.20,  0.30]
+  weight_laws:
+    - 'section,section: 1.0 - 0.28 * (1 - (z / L)**2)'
+```
+
+> The two names in the law (`s0_name,s1_name`) identify the polygon in S0 and S1.
+> They can be different - CSF matches by name, not by position.
+> Using the same name in both sections is a common convention but not a requirement.
+> If a name used in a weight law does not match a valid polygon pair, the input is
+> rejected immediately at load time.
+
+For the full syntax and available variables (`z`, `t`, `w0`, `w1`, `L`, `np`,
+lookup tables), see the [CSF Weight Laws guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
+
+### 2.8 Fast analytical torsional constant (optional)
+
+csf_sp always computes `e.j` via sectionproperties warping FEM - this is the rigorous
+value and works for any section shape.
+
+If you need a **faster analytical torsional constant** along many stations without
+running the FEM mesh each time, CSF provides two native alternatives activated by
+classification suffixes in the polygon name:
+
+- `@cell` - closed thin-walled cell → Bredt-Batho `J_sv_cell`
+- `@wall` - open thin-walled wall → open thin-wall formula `J_sv_wall`
+
+These are CSF-level features that bypass sectionproperties entirely and are
+significantly faster for thin-walled sections. For full details see the
+[CSF documentation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md).
 
 ---
 
@@ -857,4 +924,4 @@ ry     : 7.775845e-02
 
 ---
 
-*csf_sp - part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
+*csf_sp — part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
