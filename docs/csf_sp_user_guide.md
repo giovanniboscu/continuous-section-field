@@ -1,3 +1,5 @@
+
+
 # csf_sp User Guide
 
 **Bridge between CSF section models and sectionproperties**
@@ -89,83 +91,29 @@ SP API is available for any further post-processing.
 
 ## 2. The YAML File
 
-A CSF YAML file describes the cross-section of a structural member using two reference sections, **S0** and **S1**, placed at two positions `z0` and `z1` along the member axis. CSF interpolates the geometry and material properties continuously between the two ends.
+A CSF YAML file describes the cross-section of a structural member using two reference
+sections, **S0** and **S1**, placed at two positions along the member axis. CSF
+interpolates geometry and material properties continuously between the two ends.
 
-### 2.1 Basic structure
+### 2.1 Polygons
 
-```yaml
-CSF:
-  sections:
-    S0:
-      z: 0.0
-      polygons:
-        <polygon_name>:
-          weight: 1.0
-          vertices:
-            - [x0, y0]
-            - [x1, y1]
-            - ...
-    S1:
-      z: 10.0
-      polygons:
-        <polygon_name>:
-          weight: 1.0
-          vertices:
-            - [x0, y0]
-            - ...
-```
+Each section is made of one or more **polygons**. A polygon is a closed region defined
+by an ordered list of vertices in the section plane (x, y). Vertices must be listed in
+**counter-clockwise (CCW)** order. The polygon is closed automatically - no need to
+repeat the first vertex.
 
-> **Prismatic section**: for a constant cross-section along the member, copy S0 into S1 with the desired z coordinate. CSF will treat the geometry as constant.
+Each polygon has a **name** and a **weight**. The name must be the same in S0 and S1
+so that CSF can pair the two ends of each component. The weight controls how much the
+polygon contributes to the section properties (see section 2.4).
 
-### 2.2 Polygons
+**Nesting is automatic**: if one polygon is geometrically inside another, CSF detects
+the containment from the vertex coordinates. No explicit declaration is needed.
 
-Each polygon is defined by an ordered list of vertices in the section plane (x, y). Vertices should be listed in **counter-clockwise (CCW)** order to produce a positive area. The polygon is automatically closed - there is no need to repeat the first vertex.
+### 2.2 Tapered section
 
-**Polygon name**: a unique identifier within the section. The same name must appear in both S0 and S1 - this is how CSF pairs the corresponding polygons across the two reference sections.
-
-**Volume pairing by order**: each polygon in S0 is geometrically paired with the polygon at the same position in S1. The first polygon in S0 is paired with the first polygon in S1, the second with the second, and so on. Each pair subtends a continuous volume along the member between the two reference sections. The global section geometry is the union of all these volumes.
-
-**Name validation for weight laws**: polygon names are used to associate custom weight laws `w(z)`. If a name used in a weight law does not match a valid polygon pair in the model, the input is rejected immediately at load time.
-
-### 2.3 Weight
-
-`weight` is a scalar factor that scales the contribution of a polygon to the section properties. It can represent:
-
-- a material ratio: `weight = E / E_ref` (dimensionless)
-- an elastic modulus E directly (e.g. MPa), if used consistently
-- any other physical quantity that scales with area
-
-Common conventions:
-
-| Value | Meaning |
-|---|---|
-| `1.0` | full solid material |
-| `0.0` | void - if nested inside another polygon, removes that area from the parent |
-| `> 1.0` | stiffer material (e.g. steel inside concrete) |
-| `0 < w < 1` | degraded or partially contributing region |
-
-> For a deeper treatment of how `weight` is used to homogenize the section and map material properties, see the [CSF Longitudinally-Varying Homogenization Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
-
-> **Nesting is automatic**: the containment relationship between polygons is detected from the geometry. You never need to declare which polygon is the parent - CSF infers it from the vertex coordinates.
-
-### 2.4 Weight variation along z
-
-The weight of each polygon can change from S0 to S1. CSF linearly interpolates the weight at any intermediate z. To keep the weight constant, use the same value in both sections.
-
-For non-linear variation, a custom Python expression can be added under `weight_laws`:
-
-```yaml
-  weight_laws:
-    - 'polygon_name_s0,polygon_name_s1: 1.0 - 0.3 * (z / L)'
-```
-
-> The two names in the law (`s0_name,s1_name`) identify the polygon in S0 and its counterpart in S1 respectively. They can be different - CSF matches them by name, not by position. Using the same name in both sections is a common convention but not a requirement.
-
-### 2.5 Tapered section example
-
-S0 and S1 can have different vertices - CSF interpolates the geometry continuously.
-This example shows a rectangular section that tapers from 0.20 × 0.30 m at the base
-to 0.12 × 0.20 m at the top over a 30 m member:
+When S0 and S1 have different vertices, CSF interpolates the geometry continuously.
+This example shows a hollow rectangular tower that tapers from 0.20 × 0.30 m at the
+base to 0.12 × 0.20 m at the top:
 
 ```yaml
 CSF:
@@ -210,10 +158,79 @@ CSF:
 python -m csf.utils.csf_sp --yaml=tapered.yaml --z=15.0
 ```
 
-At z = 15.0 (mid-span) the section is interpolated - outer dimensions are
-0.16 × 0.25 m, halfway between the two ends.
+At z = 15.0 (mid-span) the section is interpolated - outer dimensions are 0.16 × 0.25 m,
+halfway between the two ends.
 
-### 2.6 Weight variation along z
+> **Prismatic section**: for a constant cross-section along the member, copy S0 into S1
+> with the desired z coordinate. CSF will treat the geometry as constant.
+
+### 2.3 Multi-material section
+
+Each polygon can carry a different `weight` representing its material stiffness. The
+simplest convention is dimensionless (ratio relative to a reference material), but
+absolute elastic moduli work equally well as long as the convention is consistent.
+
+A concrete section with an embedded steel bar - weights are absolute elastic moduli
+in MPa:
+
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        concrete:
+          weight: 30000
+          vertices:
+            - [-0.20, -0.30]
+            - [ 0.20, -0.30]
+            - [ 0.20,  0.30]
+            - [-0.20,  0.30]
+        steel:
+          weight: 210000
+          vertices:
+            - [-0.04, -0.04]
+            - [ 0.04, -0.04]
+            - [ 0.04,  0.04]
+            - [-0.04,  0.04]
+    S1:
+      z: 10.0
+      polygons:
+        concrete:
+          weight: 30000
+          vertices:
+            - [-0.20, -0.30]
+            - [ 0.20, -0.30]
+            - [ 0.20,  0.30]
+            - [-0.20,  0.30]
+        steel:
+          weight: 210000
+          vertices:
+            - [-0.04, -0.04]
+            - [ 0.04, -0.04]
+            - [ 0.04,  0.04]
+            - [-0.04,  0.04]
+```
+
+The steel polygon is nested inside concrete. CSF automatically computes the effective
+contribution as `w_eff = 210 000 − 30 000 = 180 000 MPa`. You do not need to subtract
+the concrete area manually.
+
+Expected: `e.a = 30 000 × 0.24 + 180 000 × 0.0064 = 9 504` (MPa × m²)
+
+Common weight conventions:
+
+| Value | Meaning |
+|---|---|
+| `1.0` | full solid material |
+| `0.0` | void - if nested inside another polygon, removes that area from the parent |
+| `> 1.0` | stiffer material (e.g. steel inside concrete) |
+| `0 < w < 1` | degraded or partially contributing region |
+
+> For a deeper treatment of how `weight` is used to homogenize the section and map
+> material properties, see the [CSF Longitudinally-Varying Homogenization Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
+
+### 2.4 Weight variation along z
 
 Weight can vary from S0 to S1 - CSF linearly interpolates at any intermediate z.
 This example models a degraded zone where stiffness drops from 100% at the base
@@ -246,7 +263,7 @@ CSF:
 
 At z = 15.0 the weight is interpolated to 0.85 - `e.a` will be `0.85 × 0.24 = 0.204`.
 
-### 2.7 Custom weight law
+### 2.5 Custom weight law
 
 For non-linear variation, add a `weight_laws` block with a Python expression.
 This example applies a parabolic stiffness reduction - full section at both ends,
@@ -279,16 +296,15 @@ CSF:
     - 'section,section: 1.0 - 0.28 * (1 - (z / L)**2)'
 ```
 
-> The two names in the law (`s0_name,s1_name`) identify the polygon in S0 and S1.
-> They can be different - CSF matches by name, not by position.
-> Using the same name in both sections is a common convention but not a requirement.
-> If a name used in a weight law does not match a valid polygon pair, the input is
-> rejected immediately at load time.
+The two names in the law (`s0_name,s1_name`) identify the polygon in S0 and S1.
+They can be different - CSF matches by name, not by position. Using the same name
+in both sections is a common convention but not a requirement. If a name used in a
+weight law does not match a valid polygon pair, the input is rejected at load time.
 
 For the full syntax and available variables (`z`, `t`, `w0`, `w1`, `L`, `np`,
 lookup tables), see the [CSF Weight Laws guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
 
-### 2.8 Fast analytical torsional constant (optional)
+### 2.6 Fast analytical torsional constant (optional)
 
 csf_sp always computes `e.j` via sectionproperties warping FEM - this is the rigorous
 value and works for any section shape.
@@ -338,7 +354,9 @@ python -m csf.utils.csf_sp --yaml=my_section.yaml \
 
 ### 3.4 Mesh size
 
-The `--mesh` option controls the maximum element area for the sectionproperties mesh (default: 1.0, in the same length units as your YAML). Smaller values give more accurate results but take longer.
+The `--mesh` option controls the maximum element area for the sectionproperties mesh
+(default: 1.0, in the same length units as your YAML). Smaller values give more
+accurate results but take longer.
 
 ```bash
 python -m csf.utils.csf_sp --yaml=my_section.yaml --z=15.0 --mesh=0.1
@@ -348,7 +366,8 @@ python -m csf.utils.csf_sp --yaml=my_section.yaml --z=15.0 --mesh=0.1
 
 ## 4. Output Properties
 
-The sectionproperties output is printed to the terminal. The most relevant properties for structural use are:
+The sectionproperties output is printed to the terminal. The most relevant properties
+for structural use are:
 
 | Property | Unit | Description |
 |---|---|---|
@@ -364,7 +383,8 @@ The sectionproperties output is printed to the terminal. The most relevant prope
 
 > For a single-material section with all weights = 1, `e.a` equals the geometric net area.
 
-> For the full list of output properties and the mapping between CSF property names and sectionproperties names, see the [Section Full Analysis reference](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md).
+> For the full list of output properties and the mapping between CSF property names and
+> sectionproperties names, see the [Section Full Analysis reference](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md).
 
 ---
 
@@ -377,13 +397,11 @@ The sectionproperties output is printed to the terminal. The most relevant prope
 - Multi-material sections (each polygon carries its own weight)
 - Prismatic sections (S0 = S1) and tapered sections (S0 ≠ S1)
 - Weight variation along z (linear or custom law)
-- Closed thin-walled cells (`@cell`) with automatic Bredt-Batho J
-- Open thin-walled walls (`@wall`) with automatic open thin-wall J
 - Disjoint regions (multiple disconnected polygons)
 
 ### Known limitations
 
-- Warping analysis (`e.j`) is **skipped** when the section contains disjoint regions. A warning is printed. Use the CSF native `J_sv_cell` (Bredt-Batho) for closed cells in that case.
+- Warping analysis (`e.j`) is **skipped** when the section contains disjoint regions. A warning is printed.
 - Negative weights are accepted by CSF but may produce unexpected results in the sectionproperties material mapping.
 - The mesh size affects accuracy. For thin-walled sections, a fine mesh is recommended.
 
@@ -428,9 +446,10 @@ Expected: `e.a = 0.24`, `cx = cy = 0`, `e.ixx_c = 0.00720`, `e.iyy_c = 0.00320`
 
 ---
 
-### Example 2 - Hollow box (closed cell)
+### Example 2 - Hollow box (prismatic)
 
-A 0.20 × 0.30 m box with wall thickness 0.02 m, prismatic over 10 m.
+A 0.20 × 0.30 m hollow box with wall thickness 0.02 m, prismatic over 10 m.
+The inner void is declared as a nested polygon with `weight = 0.0`.
 
 ```yaml
 CSF:
@@ -438,44 +457,47 @@ CSF:
     S0:
       z: 0.0
       polygons:
-        box@cell:
+        outer:
           weight: 1.0
           vertices:
             - [-0.10, -0.15]
             - [ 0.10, -0.15]
             - [ 0.10,  0.15]
             - [-0.10,  0.15]
-            - [-0.10, -0.15]
+        inner:
+          weight: 0.0
+          vertices:
             - [-0.08, -0.13]
-            - [-0.08,  0.13]
-            - [ 0.08,  0.13]
             - [ 0.08, -0.13]
-            - [-0.08, -0.13]
+            - [ 0.08,  0.13]
+            - [-0.08,  0.13]
     S1:
       z: 10.0
       polygons:
-        box@cell:
+        outer:
           weight: 1.0
           vertices:
             - [-0.10, -0.15]
             - [ 0.10, -0.15]
             - [ 0.10,  0.15]
             - [-0.10,  0.15]
-            - [-0.10, -0.15]
+        inner:
+          weight: 0.0
+          vertices:
             - [-0.08, -0.13]
-            - [-0.08,  0.13]
-            - [ 0.08,  0.13]
             - [ 0.08, -0.13]
-            - [-0.08, -0.13]
+            - [ 0.08,  0.13]
+            - [-0.08,  0.13]
 ```
 
-Expected: `e.a = 0.0184`, `J_sv_cell ≈ 0.000224 m⁴` (Bredt-Batho), `e.j ≈ 0.000232 m⁴` (FEM)
+Expected: `e.a = 0.0184`, `e.j ≈ 0.000232 m⁴` (FEM warping)
 
 ---
 
-### Example 3 - I-section (open thin-walled walls)
+### Example 3 - Tapered hollow tower
 
-A simplified I-section with web and two flanges, each declared as `@wall`. Wall thickness is declared explicitly via `@t=`.
+A hollow rectangular tower tapering from 0.20 × 0.30 m at the base to 0.12 × 0.20 m
+at the top over 30 m. The section properties vary continuously along z.
 
 ```yaml
 CSF:
@@ -483,60 +505,50 @@ CSF:
     S0:
       z: 0.0
       polygons:
-        web@wall@t=0.02:
+        outer:
           weight: 1.0
           vertices:
-            - [-0.01, -0.15]
-            - [ 0.01, -0.15]
-            - [ 0.01,  0.15]
-            - [-0.01,  0.15]
-        top_flange@wall@t=0.02:
-          weight: 1.0
-          vertices:
-            - [-0.10,  0.15]
-            - [ 0.10,  0.15]
-            - [ 0.10,  0.17]
-            - [-0.10,  0.17]
-        bot_flange@wall@t=0.02:
-          weight: 1.0
-          vertices:
-            - [-0.10, -0.17]
-            - [ 0.10, -0.17]
-            - [ 0.10, -0.15]
             - [-0.10, -0.15]
+            - [ 0.10, -0.15]
+            - [ 0.10,  0.15]
+            - [-0.10,  0.15]
+        inner:
+          weight: 0.0
+          vertices:
+            - [-0.08, -0.13]
+            - [ 0.08, -0.13]
+            - [ 0.08,  0.13]
+            - [-0.08,  0.13]
     S1:
-      z: 10.0
+      z: 30.0
       polygons:
-        web@wall@t=0.02:
+        outer:
           weight: 1.0
           vertices:
-            - [-0.01, -0.15]
-            - [ 0.01, -0.15]
-            - [ 0.01,  0.15]
-            - [-0.01,  0.15]
-        top_flange@wall@t=0.02:
-          weight: 1.0
+            - [-0.06, -0.10]
+            - [ 0.06, -0.10]
+            - [ 0.06,  0.10]
+            - [-0.06,  0.10]
+        inner:
+          weight: 0.0
           vertices:
-            - [-0.10,  0.15]
-            - [ 0.10,  0.15]
-            - [ 0.10,  0.17]
-            - [-0.10,  0.17]
-        bot_flange@wall@t=0.02:
-          weight: 1.0
-          vertices:
-            - [-0.10, -0.17]
-            - [ 0.10, -0.17]
-            - [ 0.10, -0.15]
-            - [-0.10, -0.15]
+            - [-0.04, -0.08]
+            - [ 0.04, -0.08]
+            - [ 0.04,  0.08]
+            - [-0.04,  0.08]
 ```
 
-> The three polygons are declared as `@wall` so CSF applies the open thin-wall torsion formula to each. The total `J_sv_wall = Σ (1/3) × b × t³`.
+```bash
+python -m csf.utils.csf_sp --yaml=tapered.yaml \
+  --run-config=stations.yaml --station-set=all
+```
 
 ---
 
 ### Example 4 - Composite section (concrete + steel bar)
 
-A 0.40 × 0.60 m concrete section (E = 30 000 MPa) with an embedded steel bar (E = 210 000 MPa). Weights are absolute elastic moduli.
+A 0.40 × 0.60 m concrete section (E = 30 000 MPa) with an embedded steel bar
+(E = 210 000 MPa). Weights are absolute elastic moduli.
 
 ```yaml
 CSF:
@@ -577,10 +589,11 @@ CSF:
             - [-0.04,  0.04]
 ```
 
-> The steel polygon is nested inside concrete. CSF automatically computes the effective contribution as `w_eff = 210 000 − 30 000 = 180 000 MPa`. You do not need to subtract the concrete area manually.
+> The steel polygon is nested inside concrete. CSF automatically computes the effective
+> contribution as `w_eff = 210 000 − 30 000 = 180 000 MPa`. You do not need to subtract
+> the concrete area manually.
 
 Expected: `e.a = 30 000 × 0.24 + 180 000 × 0.0064 = 9 504` (units: MPa × m²)
-
 
 ---
 
@@ -588,7 +601,8 @@ Expected: `e.a = 30 000 × 0.24 + 180 000 × 0.0064 = 9 504` (units: MPa × m²)
 
 ### 7.1 Via CLI run-config
 
-To analyse several positions along the member in one command, create a small run-config YAML file that lists the stations:
+To analyse several positions along the member in one command, create a small
+run-config YAML file that lists the stations:
 
 ```yaml
 # run_config.yaml
@@ -603,11 +617,12 @@ python -m csf.utils.csf_sp --yaml=csf_sp_example.yaml \
   --run-config=run_config.yaml --station-set=my_stations
 ```
 
-csf_sp will print the full sectionproperties table for each station, separated by a horizontal rule.
+csf_sp will print the full sectionproperties table for each station, separated by
+a horizontal rule.
 
 ### 7.2 Via Python API
 
-The same station list can be iterated programmatically using the `load_yaml` and `analyse` public API functions:
+The same station list can be iterated programmatically:
 
 ```python
 from csf.utils.csf_sp import load_yaml, analyse
@@ -618,25 +633,19 @@ stations = [0.0, 2.5, 5.0, 7.5, 10.0]
 
 for z in stations:
     sec = analyse(field, z=z)
-    ej  = sec.get_ej()           # Saint-Venant J (FEM warping)
-    eic = sec.get_eic()          # (e.ixx_c, e.iyy_c, e.ixy_c)
+    ej  = sec.get_ej()
+    eic = sec.get_eic()
     print(f"z={z:5.1f}  e.j={ej:.4e}  e.ixx_c={eic[0]:.4e}  e.iyy_c={eic[1]:.4e}")
 ```
-
-For the prismatic `csf_sp_example.yaml` (S0 = S1) all stations return identical values.
-For a tapered section (S0 ≠ S1) the properties vary continuously along z.
 
 ---
 
 ## 8. Legacy CSV Input
 
-csf_sp can also read the geometry export block produced by the CSF `section_selected_analysis` action.
-This allows running sectionproperties on any section that has already been exported to CSV,
-without reloading the original YAML model.
+csf_sp can also read the geometry export block produced by the CSF
+`section_selected_analysis` action, without reloading the original YAML model.
 
 ### 8.1 CSV format
-
-The CSV export block is appended automatically by the `section_selected_analysis` action and looks like this:
 
 ```
 ## GEOMETRY EXPORT ##
@@ -649,11 +658,7 @@ idx_polygon,idx_container,s0_name,s1_name,w,vertex_i,x,y
 ...
 ```
 
-The file may contain one or more export blocks at different z values.
-
 ### 8.2 CLI usage
-
-Pass the CSV file path as a positional argument (no `--yaml` flag):
 
 ```bash
 python -m csf.utils.csf_sp out/section_analysis.csv
@@ -664,32 +669,6 @@ To select a specific z station when the file contains multiple blocks:
 ```bash
 python -m csf.utils.csf_sp out/section_analysis.csv --z=5.0
 ```
-
-### 8.3 Example
-
-Given the following CSV file saved as `out/section_export.csv`:
-
-```
-## GEOMETRY EXPORT ##
-# z=0.0
-idx_polygon,idx_container,s0_name,s1_name,w,vertex_i,x,y
-0,,outer,outer,1.000000,0,-0.100000,-0.150000
-0,,outer,outer,1.000000,1, 0.100000,-0.150000
-0,,outer,outer,1.000000,2, 0.100000, 0.150000
-0,,outer,outer,1.000000,3,-0.100000, 0.150000
-1,0,inner,inner,0.000000,0,-0.080000,-0.130000
-1,0,inner,inner,0.000000,1, 0.080000,-0.130000
-1,0,inner,inner,0.000000,2, 0.080000, 0.130000
-1,0,inner,inner,0.000000,3,-0.080000, 0.130000
-```
-
-Run:
-
-```bash
-python -m csf.utils.csf_sp out/section_export.csv
-```
-
-Expected output: same sectionproperties table as `--yaml=csf_sp_example.yaml --z=0`.
 
 ---
 
@@ -708,7 +687,8 @@ from csf.utils.csf_sp import load_yaml
 field = load_yaml("csf_sp_example.yaml")
 ```
 
-The field object can also be constructed directly via the CSF Python API without a YAML file:
+The field object can also be constructed directly via the CSF Python API without
+a YAML file:
 
 ```python
 from csf import ContinuousSectionField, Section, Polygon, Pt
@@ -755,9 +735,6 @@ equal 1.0:
 
 ```yaml
 # csf_sp_example.yaml
-# Simple hollow rectangular box section - prismatic over 10 m
-# outer: 0.20 x 0.30 m, wall thickness: 0.02 m
-
 CSF:
   sections:
     S0:
@@ -924,4 +901,4 @@ ry     : 7.775845e-02
 
 ---
 
-*csf_sp — part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
+*csf_sp - part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
