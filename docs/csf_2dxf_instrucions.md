@@ -1,3 +1,5 @@
+# == DRAFT ==
+
 # FreeCAD Authoring Guide for CSF-Compatible Models
 
 > **Required FreeCAD version:** **FreeCAD 1.0.0**  
