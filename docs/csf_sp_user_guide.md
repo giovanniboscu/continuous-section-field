@@ -12,7 +12,7 @@ you describe your cross-section once in a YAML file and get the full sectionprop
 result set - area, moments of inertia, warping constant, shear areas and more - at any
 position along the member axis. No Python code required.
 
-**The key advantage over using sectionproperties directly**: CSF interpolates geometry and material properties CONTINUOUSLY along the member axis.**  
+**The key advantage over using sectionproperties directly**: CSF interpolates geometry and material properties CONTINUOUSLY along the member axis. 
 A single YAML file describes a tapered or composite member completely; csf_sp samples it at whatever
 stations you need, giving you `A(z)`, `EI(z)`, `J(z)` as a continuous field rather
 than a set of disconnected cross-sections.
