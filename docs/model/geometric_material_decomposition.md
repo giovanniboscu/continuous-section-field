@@ -52,10 +52,3 @@ $J_{\mathrm{sv}}$ is the one exception: it cannot be obtained from a direct area
 
 See: [De Saint-Venant Torsional Constant - Cell and Wall Contributions in CSF](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md)
 
----
-
-## References
-
-- Timoshenko & Goodier — *Theory of Elasticity*, McGraw-Hill
-- Vlasov — *Thin-Walled Elastic Beams*, Israel Program for Scientific Translations
-- Pilkey — *Analysis and Design of Elastic Beams*, Wiley
