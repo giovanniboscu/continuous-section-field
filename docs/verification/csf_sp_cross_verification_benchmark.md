@@ -1,5 +1,5 @@
 # == DRAFFT ==
-# CSF–sectionproperties Cross-Verification Benchmark
+# CSF-sectionproperties Cross-Verification Benchmark
 
 ## Purpose
 
