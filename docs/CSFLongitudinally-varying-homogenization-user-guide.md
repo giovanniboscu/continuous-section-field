@@ -3,6 +3,7 @@
 > This guide builds on the core CSF concepts - geometric pairing and polygon naming - introduced in the [CSF Fundamentals](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md).  
 > A quick read of that page is enough to get the most out of this guide.  
 > The purpose here is only to make the syntax of custom weight laws easy to read and use.
+[04_plotting_weight](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/04_plotting_weight.md)
 
 A Custom Weight Law defines how the weight, i.e. the Elastic Modulus ratio, varies along `z` for a specific structural component of the member.
 
