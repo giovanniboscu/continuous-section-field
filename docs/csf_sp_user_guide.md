@@ -412,7 +412,7 @@ for structural use are:
 - Warping analysis (`e.j`) is **skipped** when the section contains disjoint regions. A warning is printed.
 - Negative weights are accepted by CSF but may produce unexpected results in the sectionproperties material mapping.
 - The mesh size affects accuracy. For thin-walled sections, a fine mesh is recommended.
-
+-  `csf_sp` is currently limited to CSF geometries defined by two end sections, `S0` and `S1`.
 ---
 
 ## 6. Examples
