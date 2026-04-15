@@ -1,4 +1,5 @@
 # CSF-SP @cell Verification Report
+Source code: [`csf_sp_cell_verification.py`](./csf_sp_cell_verification.py)
 
 ## Purpose
 
@@ -221,4 +222,4 @@ The torsional comparison also passes. The maximum relative difference between CS
 This benchmark is therefore a valid CSF-SP `@cell` cross-verification case.
 
 
-Source code: [`csf_sp_cell_verification.py`](./csf_sp_cell_verification.py)
+
