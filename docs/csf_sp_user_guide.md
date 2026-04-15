@@ -18,8 +18,6 @@ describes a tapered or composite member completely; csf_sp samples it at whateve
 stations you need, giving you `A(z)`, `EI(z)`, `J(z)` as a continuous field rather
 than a set of disconnected cross-sections.
 
-> `csf_sp` combines a section modeller, a  continuously-varying geometry/material engine, and a FEM cross-section solver - driven by a single YAML file.
-
 ### Quick start
 
 Write a YAML file, run one command:
@@ -105,8 +103,12 @@ interpolates geometry and material properties continuously between the two ends.
 
 Each section is made of one or more **polygons**. A polygon is a closed region defined
 by an ordered list of vertices in the section plane (x, y). Vertices must be listed in
-**counter-clockwise (CCW)** order. The polygon is closed automatically - no need to
+**counter-clockwise (CCW)** order to produce a positive area. The polygon is closed automatically - no need to
 repeat the first vertex.
+
+> If vertices are listed clockwise the area will be negative and results will be
+> incorrect. For full details on polygon construction see the
+> [CSF Fundamentals](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md).
 
 Each polygon has a **name** and a **weight**. The name must be the same in S0 and S1
 so that CSF can pair the two ends of each component. The weight controls how much the
@@ -164,7 +166,7 @@ CSF:
 python -m csf.utils.csf_sp --yaml=tapered.yaml --z=15.0
 ```
 
-**At z = 15.0 (mid-span) the section is interpolated - outer dimensions are 0.16 × 0.25 m,**
+At z = 15.0 (mid-span) the section is interpolated - outer dimensions are 0.16 × 0.25 m,
 halfway between the two ends.
 
 > **Prismatic section**: for a constant cross-section along the member, copy S0 into S1
