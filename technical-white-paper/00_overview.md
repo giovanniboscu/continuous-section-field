@@ -47,7 +47,7 @@ CSF represents a structural member as a **continuous field along the longitudina
 
 From these two descriptions, CSF evaluates **section properties and derived fields** such as:
 
-`A(z), C_x(z), C_y(z), I_x(z), I_y(z), J(z), J_sv_cell/wall(z)`
+`A(z), C_x(z), C_y(z), I_x(z), I_y(z), J_sv_cell/wall(z)...`
 ---
 
 ## Motivation and Methodological Positioning
