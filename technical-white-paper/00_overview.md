@@ -11,7 +11,7 @@ CSF does **not** aim to introduce new mechanical theories.
 
 ---
 
-## What CSF Is — and What It Is Not
+## What CSF Is - and What It Is Not
 
 ### CSF *is*:
 - A **continuous geometric and sectional model** for a single structural member.
