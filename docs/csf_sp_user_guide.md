@@ -913,7 +913,7 @@ ry     : 7.775845e-02
 
 The `csf_sp` interface builds a `sectionproperties` model with material data attached to the geometry. Since the section is handled by `sectionproperties` as a composite/material-based model, the corresponding composite result accessors are used.
 
-In this validation example, the assigned material has `E = 1.0`. Therefore, the stiffness-weighted values returned by `sectionproperties` are numerically equivalent to the corresponding geometric quantities: `EA` can be compared with `A`, while `EIx` and `EIy` can be compared with `Ix` and `Iy`.terial stiffness is set to `E = 1.0`. Therefore the stiffness-weighted values returned by `sectionproperties` are numerically equal to the corresponding geometric quantities. In practical terms, `EA` can be compared with `A`, while `EIx` and `EIy` can be compared with `Ix` and `Iy`.
+In this validation example, the assigned material has `E = 1.0`. Therefore the stiffness-weighted values returned by `sectionproperties` are numerically equal to the corresponding geometric quantities. In practical terms, `EA` can be compared with `A`, while `EIx` and `EIy` can be compared with `Ix` and `Iy`.
 
 ```python
 # ---------------------------------------------------------------------------
