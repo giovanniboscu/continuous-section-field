@@ -909,4 +909,333 @@ ry     : 7.775845e-02
 
 ---
 
+# Extracting sectionproperties Composite Results
+
+The `csf_sp` interface builds a `sectionproperties` model with material data attached to the geometry. Since the section is handled by `sectionproperties` as a composite/material-based model, the corresponding composite result accessors are used.
+
+In this validation example, the assigned material has `E = 1.0`. Therefore, the stiffness-weighted values returned by `sectionproperties` are numerically equivalent to the corresponding geometric quantities: `EA` can be compared with `A`, while `EIx` and `EIy` can be compared with `Ix` and `Iy`.terial stiffness is set to `E = 1.0`. Therefore the stiffness-weighted values returned by `sectionproperties` are numerically equal to the corresponding geometric quantities. In practical terms, `EA` can be compared with `A`, while `EIx` and `EIy` can be compared with `Ix` and `Iy`.
+
+```python
+# ---------------------------------------------------------------------------
+# 5) Extract sectionproperties composite results.
+# ---------------------------------------------------------------------------
+# csf_sp builds a material-based sectionproperties model.
+# Therefore sectionproperties treats the result as a composite analysis and
+# exposes stiffness-weighted quantities through get_ea(), get_eic(), etc.
+#
+# In this test the material has E = 1.0, so the stiffness-weighted values are
+# numerically equal to the corresponding geometric values:
+#   EA  -> A
+#   EIx -> Ix
+#   EIy -> Iy
+```
+
+```
+"""
+CSF-SP integration example with ordinary CSF no-cell geometry.
+
+Purpose
+-------
+This script compares geometric properties between:
+
+1) CSF ordinary composite geometry:
+   - outer polygon with weight = 1.0
+   - inner polygon with weight = 0.0
+
+2) sectionproperties geometry generated through csf_sp from the same CSF field.
+
+No @cell polygon is used in this script.
+No slit-encoded polygon is used in this script.
+No J_sv_cell check is performed in this script.
+
+Expected result
+---------------
+A, Cx, Cy, Ix, Iy, Ixy, rx and ry should match between CSF and
+sectionproperties up to numerical precision.
+"""
+
+from csf import (
+    ContinuousSectionField,
+    Section,
+    Polygon,
+    Pt,
+    section_full_analysis,
+    section_full_analysis_keys,
+)
+from csf.utils.csf_sp import analyse
+
+import matplotlib.pyplot as plt
+
+
+Z0 = 0.0
+Z1 = 10.0
+Z_CHECK = 0.0
+MESH_SIZE = 1e-4
+
+
+# ---------------------------------------------------------------------------
+# 1) Define the physical section as ordinary CSF polygons.
+# ---------------------------------------------------------------------------
+# Outer loop: CCW irregular boundary.
+outer_vertices = (
+    Pt(-0.14, -0.16),
+    Pt( 0.08, -0.18),
+    Pt( 0.15, -0.08),
+    Pt( 0.13,  0.12),
+    Pt( 0.02,  0.18),
+    Pt(-0.12,  0.14),
+    Pt(-0.17,  0.02),
+)
+
+# Inner loop source order.
+# It is reversed below because ordinary CSF polygons are expected as
+# standalone CCW loops after upstream validation.
+inner_vertices_source = (
+    Pt(-0.09, -0.10),
+    Pt(-0.11,  0.03),
+    Pt(-0.05,  0.10),
+    Pt( 0.05,  0.11),
+    Pt( 0.10,  0.02),
+    Pt( 0.08, -0.09),
+    Pt(-0.02, -0.13),
+)
+
+inner_vertices = tuple(reversed(inner_vertices_source))
+
+
+# ---------------------------------------------------------------------------
+# 2) Build the ordinary CSF field.
+# ---------------------------------------------------------------------------
+# The inner polygon has weight = 0.0, so it acts as an explicit void in the
+# ordinary composite geometry path.
+outer = Polygon(
+    vertices=outer_vertices,
+    weight=1.0,
+    name="outer",
+)
+
+inner = Polygon(
+    vertices=inner_vertices,
+    weight=0.0,
+    name="inner",
+)
+
+s0 = Section(polygons=(outer, inner), z=Z0)
+s1 = Section(polygons=(outer, inner), z=Z1)
+
+field = ContinuousSectionField(section0=s0, section1=s1)
+
+
+# ---------------------------------------------------------------------------
+# 3) Run sectionproperties through csf_sp from the same ordinary CSF field.
+# ---------------------------------------------------------------------------
+plt.close("all")
+
+sec_sp = analyse(field, z=Z_CHECK, mesh=MESH_SIZE)
+
+
+# Show the sectionproperties geometry.
+ax = sec_sp.geometry.plot_geometry(
+    labels=("points", "facets", "control_points"),
+    cp=True,
+)
+ax.plot(0.0, 0.0, marker="x", markersize=8)
+ax.text(0.0, 0.0, "  void")
+ax.set_aspect("equal", adjustable="box")
+plt.show(block=True)
+
+
+# Show the generated sectionproperties mesh.
+ax = sec_sp.plot_mesh(materials=False)
+ax.set_aspect("equal", adjustable="box")
+plt.show(block=True)
+
+
+# Print the full sectionproperties result table.
+sec_sp.display_results()
+
+
+# ---------------------------------------------------------------------------
+# 4) Run CSF ordinary geometry analysis.
+# ---------------------------------------------------------------------------
+sec_at_z = field.section(Z_CHECK)
+analysis = section_full_analysis(sec_at_z)
+
+print("\nCSF ordinary geometry full analysis at z = 0.0")
+for key in section_full_analysis_keys():
+    print(f"{key}: {analysis[key]}")
+
+
+# ---------------------------------------------------------------------------
+# 5) Extract sectionproperties composite results.
+# ---------------------------------------------------------------------------
+# csf_sp builds a material-based sectionproperties model.
+# Therefore sectionproperties treats the result as a composite analysis and
+# exposes stiffness-weighted quantities through get_ea(), get_eic(), etc.
+#
+# In this test the material has E = 1.0, so the stiffness-weighted values are
+# numerically equal to the corresponding geometric values:
+#   EA  -> A
+#   EIx -> Ix
+#   EIy -> Iy
+sp_area = sec_sp.get_ea()
+
+sp_qx, sp_qy = sec_sp.get_eq()
+sp_cx = sp_qy / sp_area
+sp_cy = sp_qx / sp_area
+
+sp_ixx, sp_iyy, sp_ixy = sec_sp.get_eic()
+
+sp_rx = (sp_ixx / sp_area) ** 0.5
+sp_ry = (sp_iyy / sp_area) ** 0.5
+
+
+# ---------------------------------------------------------------------------
+# 6) Build geometric comparison.
+# ---------------------------------------------------------------------------
+geometry_comparison = (
+    ("A",   analysis["A"],   sp_area),
+    ("Cx",  analysis["Cx"],  sp_cx),
+    ("Cy",  analysis["Cy"],  sp_cy),
+    ("Ix",  analysis["Ix"],  sp_ixx),
+    ("Iy",  analysis["Iy"],  sp_iyy),
+    ("Ixy", analysis["Ixy"], sp_ixy),
+    ("rx",  analysis["rx"],  sp_rx),
+    ("ry",  analysis["ry"],  sp_ry),
+)
+
+
+def print_comparison(title, rows):
+    """Print a fixed-width side-by-side comparison table."""
+    print(f"\n{title}")
+    print(f"{'Property':<12} {'CSF':>20} {'SP':>20} {'Delta':>20} {'RelDelta':>14}")
+    print("-" * 91)
+
+    for name, csf_value, sp_value in rows:
+        delta = csf_value - sp_value
+        rel_delta = delta / sp_value if abs(sp_value) > 0.0 else 0.0
+        print(
+            f"{name:<12} "
+            f"{csf_value:>20.12e} "
+            f"{sp_value:>20.12e} "
+            f"{delta:>20.12e} "
+            f"{rel_delta:>14.6e}"
+        )
+
+
+print_comparison(
+    "CSF ordinary no-cell geometry vs sectionproperties at z = 0.0",
+    geometry_comparison,
+)
+
+print("\nExpected torsion flags for ordinary no-cell geometry")
+print(f"J_sv_cell: {analysis['J_sv_cell']}")
+print(f"J_sv_wall: {analysis['J_sv_wall']}")
+```
+Result
+```
+     Section Properties      
+┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+┃ Property  ┃         Value ┃
+┡━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ area      │  5.380000e-02 │
+│ perimeter │  1.127355e+00 │
+│ mass      │  5.380000e-02 │
+│ e.a       │  5.380000e-02 │
+│ e.qx      │ -3.220000e-04 │
+│ e.qy      │ -5.331667e-04 │
+│ e.ixx_g   │  6.303150e-04 │
+│ e.iyy_g   │  5.086483e-04 │
+│ e.ixy_g   │  8.129167e-06 │
+│ cx        │ -9.910161e-03 │
+│ cy        │ -5.985130e-03 │
+│ e.ixx_c   │  6.283878e-04 │
+│ e.iyy_c   │  5.033646e-04 │
+│ e.ixy_c   │  4.938095e-06 │
+│ e.zxx+    │  3.378699e-03 │
+│ e.zxx-    │  3.611115e-03 │
+│ e.zyy+    │  3.147796e-03 │
+│ e.zyy-    │  3.144263e-03 │
+│ my_xx     │  3.383777e-03 │
+│ my_yy     │  3.136146e-03 │
+│ rx        │  1.080744e-01 │
+│ ry        │  9.672755e-02 │
+│ e.i11_c   │  6.285825e-04 │
+│ e.i22_c   │  5.031698e-04 │
+│ phi       │ -2.258346e+00 │
+│ e.z11+    │  3.361057e-03 │
+│ e.z11-    │  3.690234e-03 │
+│ e.z22+    │  3.092575e-03 │
+│ e.z22-    │  3.125483e-03 │
+│ my_11     │  3.361057e-03 │
+│ my_22     │  3.092575e-03 │
+│ r11       │  1.080911e-01 │
+│ r22       │  9.670884e-02 │
+│ e_eff     │  1.000000e+00 │
+│ g_eff     │  5.000000e-01 │
+│ nu_eff    │  0.000000e+00 │
+│ e.j       │  1.042028e-03 │
+│ x_se      │ -1.374820e-02 │
+│ y_se      │ -1.710883e-03 │
+│ x1_se     │ -4.003485e-03 │
+│ y2_se     │  4.119688e-03 │
+│ x_st      │ -1.374820e-02 │
+│ y_st      │ -1.710883e-03 │
+│ e.gamma   │  7.463910e-08 │
+│ e.a_sx    │  2.574289e-02 │
+│ e.a_sy    │  2.948160e-02 │
+│ e.a_s11   │  2.564617e-02 │
+│ e.a_s22   │  2.960948e-02 │
+│ beta_x+   │  1.181022e-02 │
+│ beta_x-   │ -1.181022e-02 │
+│ beta_y+   │ -1.388617e-02 │
+│ beta_y-   │  1.388617e-02 │
+│ beta_11+  │  1.130160e-02 │
+│ beta_11-  │ -1.130160e-02 │
+│ beta_22+  │ -1.437516e-02 │
+│ beta_22-  │  1.437516e-02 │
+└───────────┴───────────────┘
+
+
+CSF ordinary geometry full analysis at z = 0.0
+A: 0.053799999999999994
+Cx: -0.009910161090458499
+Cy: -0.0059851301115241735
+Ix: 0.0006283877881040894
+Iy: 0.0005033645657786039
+Ixy: 4.938094795539014e-06
+Ip: 0.0011317523538826933
+I1: 0.0006285825267822652
+I2: 0.0005031698271004281
+rx: 0.1080743744411999
+ry: 0.09672754878921305
+Wx: 0.0033786990805516697
+Wy: 0.003144263053840845
+K_torsion: 0.0001850621932629167
+Q_na: 0.0026194701134895897
+J_sv_wall: 0.0
+J_sv_cell: 0.0
+J_s_vroark: 0.0003234390889725317
+J_s_vroark_fidelity: 0.47936764158394424
+
+CSF ordinary no-cell geometry vs sectionproperties at z = 0.0
+Property                      CSF                   SP                Delta       RelDelta
+-------------------------------------------------------------------------------------------
+A              5.380000000000e-02   5.380000000000e-02  -4.857225732735e-17  -9.028301e-16
+Cx            -9.910161090458e-03  -9.910161090459e-03   1.387778780781e-17  -1.400359e-15
+Cy            -5.985130111524e-03  -5.985130111524e-03  -5.204170427930e-18   8.695167e-16
+Ix             6.283877881041e-04   6.283877881041e-04   4.336808689942e-19   6.901485e-16
+Iy             5.033645657786e-04   5.033645657786e-04  -2.168404344971e-19  -4.307821e-16
+Ixy            4.938094795539e-06   4.938094795539e-06   8.131516293641e-20   1.646691e-14
+rx             1.080743744412e-01   1.080743744412e-01   9.714451465470e-17   8.988672e-16
+ry             9.672754878921e-02   9.672754878921e-02   2.775557561563e-17   2.869459e-16
+
+Expected torsion flags for ordinary no-cell geometry
+J_sv_cell: 0.0
+J_sv_wall: 0.0
+
+```
+
+
+---
 *csf_sp - part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
