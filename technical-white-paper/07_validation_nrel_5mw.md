@@ -1,4 +1,4 @@
-# Numerical Validation — NREL 5-MW Reference Wind Turbine Tower
+# Numerical Validation - NREL 5-MW Reference Wind Turbine Tower
 
 ## Purpose of the Validation
 
