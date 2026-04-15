@@ -1,4 +1,4 @@
-# Continuous Section Field (CSF) — Overview
+# Continuous Section Field (CSF) - Overview
 
 ## Purpose of the Library
 
