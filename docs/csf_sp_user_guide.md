@@ -69,7 +69,7 @@ python -m csf.utils.csf_sp --yaml=box.yaml --z=5.0 --plot
 > A void (hole) is simply a polygon with `weight = 0.0` nested inside a solid one.
 > In the example above, `inner` is the hollow core - CSF detects automatically that
 > it is inside `outer` and subtracts it. For the solid, `weight = 1.0` or the elastic
-> modulus directly (e.g. `weight = 210000` for steel in MPa).
+> modulus directly (e.g. `weight = 210000` for steel in MPa). [Open the guide on GitHub](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md)
 
 That is all. csf_sp reads the YAML, samples the section at z = 5.0, meshes it,
 runs the sectionproperties FEM analysis, and prints the full result table including
@@ -310,7 +310,7 @@ in both sections is a common convention but not a requirement. If a name used in
 weight law does not match a valid polygon pair, the input is rejected at load time.
 
 For the full syntax and available variables (`z`, `t`, `w0`, `w1`, `L`, `np`,
-lookup tables), see the [CSF Weight Laws guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
+lookup tables), see the [CSF details](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
 
 ### 2.6 Fast analytical torsional constant (optional)
 
