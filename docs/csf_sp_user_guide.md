@@ -301,8 +301,7 @@ CSF:
     - 'section,section: 1.0 - 0.28 * (1 - (z / L)**2)'
 ```
 
-The two names in the law (`s0_name,s1_name`) identify the polygon in S0 and S1.
-They can be different - CSF matches by name, not by position. Using the same name
+The two names in the law (`s0_name,s1_name`) identify the polygon in S0 and S1. Using the same name
 in both sections is a common convention but not a requirement. If a name used in a
 weight law does not match a valid polygon pair, the input is rejected at load time.
 
