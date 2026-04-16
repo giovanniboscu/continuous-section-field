@@ -217,9 +217,7 @@ CSF:
             - [-0.04,  0.04]
 ```
 
-The steel polygon is nested inside concrete. CSF automatically computes the effective
-contribution as `w_eff = 210 000 − 30 000 = 180 000 MPa`. You do not need to subtract
-the concrete area manually.
+The steel polygon is nested inside concrete. CSF automatically computes the effective contribution as w_eff = 210 000 − 30 000 = 180 000 MPa. You do not need to subtract the concrete area manually - containment is detected from the vertex coordinates and the effective weight is derived automatically. In sectionproperties this requires dedicated helper functions (`add_bar`, `add_bars`); in CSF it follows from the geometry.
 
 Expected: `e.a = 30 000 × 0.24 + 180 000 × 0.0064 = 9 504` (MPa × m²)
 
