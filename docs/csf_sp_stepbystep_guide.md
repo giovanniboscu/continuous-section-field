@@ -358,22 +358,24 @@ field.set_weight_laws([
 SKIP_KEYS = {"J_sv_wall", "J_sv_cell"}
 
 for z in [0.0, 1.0, 2.0]:
-    sec = analyse(field, z=z, warping=False)
+    sec = analyse(field, z=z, warping=True)
 
-    sp_ea            = sec.get_ea()
-    sp_cx, sp_cy     = sec.get_c()
-    sp_ixx, sp_iyy, sp_ixy = sec.get_eic()
-    sp_rx, sp_ry     = sec.get_rc()
+    sp_ea                   = sec.get_ea()
+    sp_cx, sp_cy            = sec.get_c()
+    sp_ixx, sp_iyy, sp_ixy  = sec.get_eic()
+    sp_rx, sp_ry            = sec.get_rc()
+    sp_ej                   = sec.get_ej()   # FEM warping
 
     sp = {
-        "A":   sp_ea,
-        "Cx":  sp_cx,
-        "Cy":  sp_cy,
-        "Ix":  sp_ixx,
-        "Iy":  sp_iyy,
-        "Ixy": sp_ixy,
-        "rx":  sp_rx,
-        "ry":  sp_ry,
+        "A":          sp_ea,
+        "Cx":         sp_cx,
+        "Cy":         sp_cy,
+        "Ix":         sp_ixx,
+        "Iy":         sp_iyy,
+        "Ixy":        sp_ixy,
+        "rx":         sp_rx,
+        "ry":         sp_ry,
+        "e.j (FEM)":  sp_ej,
     }
 
     csf_sec  = field.section(z)
@@ -387,8 +389,15 @@ for z in [0.0, 1.0, 2.0]:
             continue
         csf_val = csf_data[key]
         sp_val  = sp.get(key, "")
-        sp_str  = f"{sp_val:>20.4f}" if sp_val != "" else f"{'-':>20}"
+        sp_str  = f"{sp_val:>20.4f}" if sp_val != "" else f"{'—':>20}"
         print(f"  {key:<25} {csf_val:>20.4f} {sp_str}")
+
+    # J comparison — different methods
+    print(f"  {'---':<25}")
+    print(f"  {'J_s_vroark (CSF/Roark)':<25} {csf_data['J_s_vroark']:>20.4f} {'—':>20}")
+    print(f"  {'e.j (SP/FEM warping)':<25} {'—':>20} {sp_ej:>20.4f}")
+    print(f"  {'J_s_vroark_fidelity':<25} {csf_data['J_s_vroark_fidelity']:>20.4f} {'—':>20}")
+
 ```
 
 **Partial output at z=0.0:**
