@@ -16,6 +16,9 @@ describes a tapered or composite member completely; csf_sp samples it at whateve
 stations you need, giving you `A(z)`, `EI(z)`, `J(z)` as a continuous field rather
 than a set of disconnected cross-sections.
 
+`csf_sp` started as an internal verification tool - a way to sanity-check CSF geometry 
+outputs against sectionproperties. It turned out to be the most direct path to continuous 
+section properties along a member axis
 ### Quick start
 
 Write a YAML file, run one command:
