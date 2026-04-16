@@ -1,43 +1,47 @@
-
 """
 csf_rough_validator.py
-=====================
+======================
 
-"Rough" (early) validation for CSF YAML files.
+Early-stage validator for CSF geometry YAML files.
 
-Why this exists
+Runs *before* CSFReader to catch common authoring mistakes and provide
+friendly, actionable error messages instead of raw Python tracebacks.
+
+What it checks
 --------------
-This validator is meant to run *before* the formal CSFReader object parsing, to provide
-very user-friendly diagnostics for common authoring errors, especially:
+- YAML syntax errors (indentation, missing ':', missing '-' in lists)
+- Quoted numbers (e.g. "10.0" instead of 10.0)
+- Missing or misspelled root key 'CSF:'
+- Unknown keys at CSF level (e.g. 'wight_laws' → suggests 'weight_laws')
+- Missing or empty 'z:', 'weight:', vertex coordinates
+- weight_laws structure: missing '-', wrong comma separator, unknown polygon ids
+- weight_laws formula: Python syntax errors (with caret pointer), unrecognised
+  variable names (with case-insensitive suggestions)
 
-1) YAML syntax errors (indentation, missing ":", missing "-" in lists)
-2) Quoted numbers anywhere in the file (e.g. "10.0" instead of 10.0)
+What it does NOT check
+----------------------
+- Geometric validity (CCW order, self-intersections, nesting correctness)
+- Physical consistency (weight signs, @cell/@wall rules)
+- Anything that requires loading the full CSF model
 
-Important design choice
------------------------
-The validator MUST NOT produce false positives like:
+These belong to deeper layers (CSFReader, ContinuousSectionField).
 
-- reporting "quoted number" when there are no quotes
-- confusing "missing '-'" (list item) with "quoted number"
+Usage as a library
+------------------
+    from csf.io.csf_rough_validator import validate_text
 
-To guarantee this:
-- "quoted number" detection is done ONLY by searching for explicit quotes in the raw text.
-  If there are no quotes on the line, it cannot be a quoted-number error.
+    ok, report = validate_text(text, source="my_section.yaml")
+    if not ok:
+        for line in report:
+            print(line)
 
-Interface
----------
-- As a module: call `csf_rough_validator(filepath)` → returns 0/1/2 and prints diagnostics.
-- As a library: call `validate_text(text, source)` → returns (ok, report_lines).
+Usage as a script
+-----------------
+    python -m csf.io.csf_rough_validator my_section.yaml
 
-Notes
------
-- This validator is intentionally "rough": it checks a minimal CSF schema
-  but does not attempt deep geometry checks or solver-related semantics.
-- It accepts BOTH polygons styles:
-    a) polygons as list (recommended for explicit order)
-    b) polygons as mapping (dict) (order = insertion order from YAML)
-
+Returns 0 (ok), 1 (validation failed), 2 (file not found).
 """
+
 
 from __future__ import annotations
 
@@ -291,6 +295,21 @@ def _validate_csf_structure(doc: Dict[str, Any]) -> None:
 
     csf = _require_mapping(doc[TOP_KEY], f"{TOP_KEY}")
 
+    _KNOWN_CSF_KEYS = {"sections", "weight_laws"}
+    unknown_csf_keys = set(csf.keys()) - _KNOWN_CSF_KEYS
+    if unknown_csf_keys:
+        import difflib
+        for uk in sorted(unknown_csf_keys):
+            matches = difflib.get_close_matches(uk, sorted(_KNOWN_CSF_KEYS), n=1, cutoff=0.6)
+            if matches:
+                raise ValidationError(
+                    f"{TOP_KEY} contains unknown key '{uk}'.\n"
+                    f"Did you mean '{matches[0]}'?\n"
+                    f"Fix: rename '{uk}:' to '{matches[0]}:'"
+                )
+            # Only warn for keys with no suggestion — could be a future extension
+            # raise ValidationError(f"{TOP_KEY} contains unknown key '{uk}'.")
+
     if "sections" not in csf:
         raise ValidationError(f"{TOP_KEY} missing required 'sections:' key.")
 
@@ -313,7 +332,16 @@ def _validate_csf_structure(doc: Dict[str, Any]) -> None:
         if "z" not in sec_map:
             raise ValidationError(f"{sec_path} missing required 'z:' key.")
         if not _is_strict_number(sec_map["z"]):
-            raise ValidationError(f"{sec_path}.z must be a finite number (no quotes). Found: {sec_map['z']!r} ({type(sec_map['z']).__name__})")
+            v = sec_map["z"]
+            if v is None:
+                raise ValidationError(
+                    f"{sec_path}.z has no value.\n"
+                    "You probably wrote:\n"
+                    "  z:\n"
+                    "Fix:\n"
+                    "  z: 0.0"
+                )
+            raise ValidationError(f"{sec_path}.z must be a finite number (no quotes). Found: {v!r} ({type(v).__name__})")
 
         if "polygons" not in sec_map:
             raise ValidationError(f"{sec_path} missing required 'polygons:' key.")
@@ -334,7 +362,16 @@ def _validate_csf_structure(doc: Dict[str, Any]) -> None:
             if "weight" not in poly_map:
                 raise ValidationError(f"{poly_path} missing required 'weight:' key.")
             if not _is_strict_number(poly_map["weight"]):
-                raise ValidationError(f"{poly_path}.weight must be a finite number (no quotes). Found: {poly_map['weight']!r} ({type(poly_map['weight']).__name__})")
+                v = poly_map["weight"]
+                if v is None:
+                    raise ValidationError(
+                        f"{poly_path}.weight has no value.\n"
+                        "You probably wrote:\n"
+                        "  weight:\n"
+                        "Fix:\n"
+                        "  weight: 1.0"
+                    )
+                raise ValidationError(f"{poly_path}.weight must be a finite number (no quotes). Found: {v!r} ({type(v).__name__})")
 
             if "vertices" not in poly_map:
                 raise ValidationError(f"{poly_path} missing required 'vertices:' key.")
@@ -348,12 +385,33 @@ def _validate_csf_structure(doc: Dict[str, Any]) -> None:
                     raise ValidationError(f"{poly_path}.vertices[{j}] must be [x, y]. Found: {v!r}")
                 x, y = v[0], v[1]
                 if not _is_strict_number(x) or not _is_strict_number(y):
+                    if x is None or y is None:
+                        raise ValidationError(
+                            f"{poly_path}.vertices[{j}] has a missing coordinate.\n"
+                            "You probably wrote:\n"
+                            "  - [0.0, ]\n"
+                            "Fix:\n"
+                            "  - [0.0, 0.0]"
+                        )
                     raise ValidationError(f"{poly_path}.vertices[{j}] coordinates must be numbers (no quotes). Found: {v!r}")
 
     # weight_laws optional, if present must be list of strings containing ":"
     if "weight_laws" in csf:
         wl = csf["weight_laws"]
         if not isinstance(wl, list) or not wl:
+            # Common authoring mistake: missing '-' before each law item.
+            # YAML parses the block as a scalar string instead of a list.
+            if isinstance(wl, str) and ":" in wl:
+                raise ValidationError(
+                    f"{TOP_KEY}.weight_laws must be a YAML list, but a plain string was found.\n"
+                    "You are probably missing the '-' before each item.\n"
+                    "You wrote:\n"
+                    f"  weight_laws:\n"
+                    f"    {wl}\n"
+                    "Fix:\n"
+                    f"  weight_laws:\n"
+                    f"    - '{wl}'"
+                )
             raise ValidationError(f"{TOP_KEY}.weight_laws is optional, but if present it must be a non-empty list.")
 
         for i, item in enumerate(wl):
@@ -381,6 +439,89 @@ def _validate_csf_structure(doc: Dict[str, Any]) -> None:
                 raise ValidationError(
                     f"{TOP_KEY}.weight_laws[{i}] must be a string in the form 'poly0,poly1: expr' (quoted)."
                 )
+
+            lhs, rhs = item.split(":", 1)
+
+            # Check comma separator between polygon ids.
+            # Catch 'rect rect: ...' (space instead of comma).
+            lhs_stripped = lhs.strip()
+            if lhs_stripped and "," not in lhs_stripped:
+                # Only raise if it looks like two tokens separated by whitespace.
+                parts = lhs_stripped.split()
+                if len(parts) == 2:
+                    raise ValidationError(
+                        f"{TOP_KEY}.weight_laws[{i}]: polygon id pair must be comma-separated.\n"
+                        f"Found: '{lhs_stripped}'\n"
+                        f"Fix:   '{parts[0]},{parts[1]}: {rhs.strip()}'"
+                    )
+
+            # Compile-check the formula (Python syntax only — no execution).
+            # This catches unbalanced parentheses, typos in operators, etc.
+            formula = rhs.strip()
+            if formula:
+                try:
+                    compile(formula, "<weight_law>", "eval")
+                except SyntaxError as e:
+                    # Build a caret pointing to the error position inside the formula.
+                    col_in_formula = getattr(e, "offset", None)
+                    pointer = ""
+                    if col_in_formula is not None:
+                        pointer = "\n" + " " * (col_in_formula - 1) + "^"
+                    raise ValidationError(
+                        f"{TOP_KEY}.weight_laws[{i}]: formula has a Python syntax error.\n"
+                        f"Formula: {formula}{pointer}\n"
+                        f"Detail:  {e.msg}"
+                    )
+
+            # MAINTENANCE NOTE: keep _KNOWN_VARS and _KNOWN_FUNCS in sync with the
+            # weight law expression environment defined in section_field.py.
+            # If CSF adds new variables or functions, add them here to avoid false positives..
+            _KNOWN_VARS = {"z", "t", "w0", "w1", "L", "np"}
+            _KNOWN_FUNCS = {"d", "d0", "d1", "E_lookup", "T_lookup"}
+            # Collect identifiers from the formula using a simple regex.
+            # First strip string literals (single or double quoted) to avoid
+            # flagging filenames like 'test.txt' as unknown identifiers.
+            _STRING_RE = re.compile(r"""(?:"[^"]*"|'[^']*')""")
+            formula_no_strings = _STRING_RE.sub('""', formula)
+            # Exclude identifiers that are attribute access (preceded by '.'),
+            # so that np.cos, np.pi, np.exp etc. are not flagged as unknown.
+            _IDENT_RE = re.compile(r"(?<!\.)(\b[A-Za-z_][A-Za-z0-9_]*\b)")
+            found_idents = set(_IDENT_RE.findall(formula_no_strings))
+            # Filter out known vars/funcs and Python builtins.
+            _BUILTINS = {"True", "False", "None", "and", "or", "not", "in", "is"}
+            unknown_idents = found_idents - _KNOWN_VARS - _KNOWN_FUNCS - _BUILTINS
+            if unknown_idents:
+                try:
+                    import difflib
+                    all_known = sorted(_KNOWN_VARS | _KNOWN_FUNCS)
+                    suggestions = []
+                    for uid in sorted(unknown_idents):
+                        # Case-insensitive match: compare lowercased.
+                        matches = difflib.get_close_matches(
+                            uid.lower(),
+                            [k.lower() for k in all_known],
+                            n=1,
+                            cutoff=0.5,
+                        )
+                        if matches:
+                            # Map back to original case.
+                            original = next(k for k in all_known if k.lower() == matches[0])
+                            suggestions.append(f"  '{uid}' → did you mean '{original}'?")
+                        else:
+                            suggestions.append(f"  '{uid}' → not a recognised weight-law variable")
+                    raise ValidationError(
+                        f"{TOP_KEY}.weight_laws[{i}]: formula contains unrecognised identifier(s).\n"
+                        "Known variables: z, t, w0, w1, L, np\n"
+                        "Known functions: d(i,j), d0(i,j), d1(i,j), E_lookup(file), T_lookup(file)\n"
+                        + "\n".join(suggestions)
+                    )
+                except ImportError:
+                    raise ValidationError(
+                        f"{TOP_KEY}.weight_laws[{i}]: formula contains unrecognised identifier(s): "
+                        f"{sorted(unknown_idents)}.\n"
+                        "Known variables: z, t, w0, w1, L, np\n"
+                        "Known functions: d(i,j), d0(i,j), d1(i,j), E_lookup(file), T_lookup(file)"
+                    )
 
             # Optional additional check (no new schema rule):
             # validate that polygon ids on the left-hand side exist in sections,
