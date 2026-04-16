@@ -595,9 +595,13 @@ CSF_ACTIONS:
 ```
 
 **Run:**
+Before running, create the output directory:
+
 ```bash
+mkdir out
 csf-actions rect_50x100_law_var.yaml rect_50x100_law_var_actions.yaml
 ```
+
 
 **Output files produced in `out/`:**
 
