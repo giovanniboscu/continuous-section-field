@@ -1,4 +1,3 @@
-# == DRAFT ==
 # csf_sp User Guide
 
 **Bridge between CSF section models and sectionproperties**
