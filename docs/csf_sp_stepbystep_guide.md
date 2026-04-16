@@ -324,6 +324,7 @@ z=2.0  area=2500  e.a=5000  Ixx=1041667
 
 Same model as B5. At each station, sectionproperties results are printed
 alongside the complete CSF `section_full_analysis` output in a side-by-side table.
+Warping is enabled so that `e.j` (FEM) can be compared against `J_s_vroark` (Roark).
 
 ```python
 from csf import ContinuousSectionField, Section, Polygon, Pt
@@ -364,18 +365,17 @@ for z in [0.0, 1.0, 2.0]:
     sp_cx, sp_cy            = sec.get_c()
     sp_ixx, sp_iyy, sp_ixy  = sec.get_eic()
     sp_rx, sp_ry            = sec.get_rc()
-    sp_ej                   = sec.get_ej()   # FEM warping
+    sp_ej                   = sec.get_ej()   # FEM warping torsional constant
 
     sp = {
-        "A":          sp_ea,
-        "Cx":         sp_cx,
-        "Cy":         sp_cy,
-        "Ix":         sp_ixx,
-        "Iy":         sp_iyy,
-        "Ixy":        sp_ixy,
-        "rx":         sp_rx,
-        "ry":         sp_ry,
-        "e.j (FEM)":  sp_ej,
+        "A":   sp_ea,
+        "Cx":  sp_cx,
+        "Cy":  sp_cy,
+        "Ix":  sp_ixx,
+        "Iy":  sp_iyy,
+        "Ixy": sp_ixy,
+        "rx":  sp_rx,
+        "ry":  sp_ry,
     }
 
     csf_sec  = field.section(z)
@@ -389,40 +389,63 @@ for z in [0.0, 1.0, 2.0]:
             continue
         csf_val = csf_data[key]
         sp_val  = sp.get(key, "")
-        sp_str  = f"{sp_val:>20.4f}" if sp_val != "" else f"{'—':>20}"
+        sp_str  = f"{sp_val:>20.4f}" if sp_val != "" else f"{'-':>20}"
         print(f"  {key:<25} {csf_val:>20.4f} {sp_str}")
 
-    # J comparison — different methods
+    # Torsional constant - two different methods
     print(f"  {'---':<25}")
-    print(f"  {'J_s_vroark (CSF/Roark)':<25} {csf_data['J_s_vroark']:>20.4f} {'—':>20}")
-    print(f"  {'e.j (SP/FEM warping)':<25} {'—':>20} {sp_ej:>20.4f}")
-    print(f"  {'J_s_vroark_fidelity':<25} {csf_data['J_s_vroark_fidelity']:>20.4f} {'—':>20}")
-
+    print(f"  {'J_s_vroark (CSF/Roark)':<25} {csf_data['J_s_vroark']:>20.4f} {'-':>20}")
+    print(f"  {'e.j (SP/FEM warping)':<25} {'-':>20} {sp_ej:>20.4f}")
+    print(f"  {'J_s_vroark_fidelity':<25} {csf_data['J_s_vroark_fidelity']:>20.4f} {'-':>20}")
 ```
 
-**Partial output at z=0.0:**
+**Output:**
 ```
 z = 0.0
-  Key                                CSF                   SP
+  Key                                        CSF                   SP
   -------------------------------------------------------------------
-  A                          5000.0000          5000.0000
-  Cx                           25.0000            25.0000
-  Cy                           50.0000            50.0000
-  Ix                      4166666.6667       4166666.6667
-  Iy                      1041666.6667       1041666.6667
-  Ixy                           0.0000             0.0000
-  rx                           28.8675            28.8675
-  ry                           14.4338            14.4338
-  Ip                      5208333.3333                   -
-  I1                      4166666.6667                   -
-  I2                      1041666.6667                   -
-  Wx                        83333.3333                   -
-  Wy                        41666.6667                   -
-  K_torsion               3000000.0000                   -
-  Q_na                      62500.0000                   -
-  J_s_vroark              2861002.6042                   -
-  J_s_vroark_fidelity           0.5000                   -
+  A                                    5000.0000            5000.0000
+  Cx                                     25.0000              25.0000
+  Cy                                     50.0000              50.0000
+  Ix                                4166666.6667         4166666.6667
+  Iy                                1041666.6667         1041666.6667
+  Ixy                                     0.0000               0.0000
+  rx                                     28.8675              28.8675
+  ry                                     14.4338              14.4338
+  ...
+  ---
+  J_s_vroark (CSF/Roark)            2861002.6042                    -
+  e.j (SP/FEM warping)                         -         2858521.5336
+  J_s_vroark_fidelity                     0.5000                    -
+
+z = 1.0
+  ...
+  J_s_vroark (CSF/Roark)            2602599.3827                    -
+  e.j (SP/FEM warping)                         -         2294071.5928
+  J_s_vroark_fidelity                     0.5333                    -
+
+z = 2.0
+  ...
+  J_s_vroark (CSF/Roark)            2861002.6042                    -
+  e.j (SP/FEM warping)                         -         1757213.7478
+  J_s_vroark_fidelity                     0.5000                    -
 ```
+
+> **Torsional constant comparison:**
+>
+> | z | J_s_vroark (Roark) | e.j (FEM) | delta % |
+> |---|---|---|---|
+> | 0.0 | 2 861 003 | 2 858 522 | 0.09% ✓ |
+> | 1.0 | 2 602 599 | 2 294 072 | 11.8% |
+> | 2.0 | 2 861 003 | 1 757 214 | 38.7% |
+>
+> At z=0.0 (50×100 mm, aspect ratio 2:1) the two methods agree within 0.1%.
+> At z=1.0 and z=2.0 the section becomes squarer (aspect ratio approaching 1:1)
+> and Roark diverges progressively from the FEM result.
+> The `J_s_vroark_fidelity` indicator (0.50–0.53, borderline range) correctly
+> signals that the Roark approximation is outside its most reliable domain.
+> For solid rectangular sections with aspect ratio near 1:1, the FEM warping
+> result from sectionproperties is the more reliable value.
 
 ---
 
@@ -604,13 +627,10 @@ CSF_ACTIONS:
 ```
 
 **Run:**
-Before running, create the output directory:
-
 ```bash
 mkdir out
 csf-actions rect_50x100_law_var.yaml rect_50x100_law_var_actions.yaml
 ```
-
 
 **Output files produced in `out/`:**
 
