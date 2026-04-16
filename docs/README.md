@@ -79,6 +79,15 @@ Start here: these three guides cover everything you need to work with CSF effect
 
 ---
 
+## sectionproperties Integration (csf_sp)
+
+| File | Description |
+|------|-------------|
+| [csf_sp User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md) | Complete reference for `csf_sp`: YAML file format, polygon nesting, tapered sections, multi-material sections, weight variation, custom weight laws, CLI usage, output properties, and Python API (`load_yaml`, `analyse`). Includes worked examples and the full SP composite getter reference. |
+| [csf_sp Step-by-Step Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_stepbystep_guide.md) | Progressive examples moving from native sectionproperties to CSF: baseline SP usage, prismatic and tapered sections via Python API and YAML, linear and custom weight laws, CSF vs SP property comparison, and a full CSF Actions pipeline with solver export. |
+
+---
+
 ## Additional Documents
 
 The following files are present in this folder but not covered in this index:
