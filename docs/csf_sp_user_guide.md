@@ -8,8 +8,7 @@
 ## 1. What is csf_sp
 
 `csf_sp` bridges [CSF](https://github.com/giovanniboscu/continuous-section-field) and [sectionproperties](https://sectionproperties.readthedocs.io):
-You describe your cross-section once in a YAML file and get the full sectionproperties result set - area, moments of inertia, warping constant, shear areas and more -
-at any position along the member axis. Use it as a standalone tool with no Python code required, or import it directly as a Python library in your own pipeline.
+You describe your cross-section once in a YAML file and get the full sectionproperties result set. Use it as a standalone tool with no Python code required, or import it directly as a Python library in your own pipeline.
 
 **The key advantage over using sectionproperties directly**: CSF interpolates geometry
 and material properties *continuously* along the member axis. A single YAML file
