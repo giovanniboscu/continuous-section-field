@@ -18,7 +18,8 @@ than a set of disconnected cross-sections.
 
 `csf_sp` started as an internal verification tool - a way to sanity-check CSF geometry 
 outputs against sectionproperties. It turned out to be the most direct path to continuous 
-section properties along a member axis
+section properties along a member axis.
+
 ### Quick start
 
 Write a YAML file, run one command:
@@ -111,11 +112,10 @@ repeat the first vertex.
 > incorrect. For full details on polygon construction see the
 > [CSF Fundamentals](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md).
 
-Each polygon has a **name** and a **weight**. It is not required to use the same in S0 and S1, CSF  pairs the two ends of each component by its order.
-The weight controls how much the
-polygon contributes to the section properties (see section 2.4).
+Each polygon has a **name** and a **weight**. It is not required to use the same in S0 and S1, CSF pairs the two ends of each component by its order.
+The weight controls how much the polygon contributes to the section properties (see section 2.4).
 
-**Nesting is automatic**: if one polygon is geometrically inside another, CSF detects the containment from the vertex coordinates. No explicit declaration is needed. Note that weight: 0.0 must still be set explicitly on the inner polygon -containment is detected from geometry, but the physical contribution is always a user decision
+**Nesting is automatic**: if one polygon is geometrically inside another, CSF detects the containment from the vertex coordinates. No explicit declaration is needed. Note that `weight: 0.0` must still be set explicitly on the inner polygon - containment is detected from geometry, but the physical contribution is always a user decision.
 
 ### 2.2 Tapered section
 
@@ -220,7 +220,7 @@ CSF:
             - [-0.04,  0.04]
 ```
 
-The steel polygon is nested inside concrete. CSF automatically computes the effective contribution as w_eff = 210 000 − 30 000 = 180 000 MPa. You do not need to subtract the concrete area manually - containment is detected from the vertex coordinates and the effective weight is derived automatically. In sectionproperties this requires dedicated helper functions (`add_bar`, `add_bars`); in CSF it follows from the geometry.
+The steel polygon is nested inside concrete. CSF automatically computes the effective contribution as `w_eff = 210 000 − 30 000 = 180 000 MPa`. You do not need to subtract the concrete area manually - containment is detected from the vertex coordinates and the effective weight is derived automatically. In sectionproperties this requires dedicated helper functions (`add_bar`, `add_bars`); in CSF it follows from the geometry.
 
 Expected: `e.a = 30 000 × 0.24 + 180 000 × 0.0064 = 9 504` (MPa × m²)
 
@@ -367,6 +367,15 @@ accurate results but take longer.
 python -m csf.utils.csf_sp --yaml=my_section.yaml --z=15.0 --mesh=0.1
 ```
 
+### 3.5 Skip warping
+
+The `--no-warping` flag skips the warping FEM (`e.j`, shear centre, warping constant).
+Significantly faster when the torsional constant is not needed.
+
+```bash
+python -m csf.utils.csf_sp --yaml=my_section.yaml --z=15.0 --no-warping
+```
+
 ---
 
 ## 4. Output Properties
@@ -409,7 +418,8 @@ for structural use are:
 - Warping analysis (`e.j`) is **skipped** when the section contains disjoint regions. A warning is printed.
 - Negative weights are accepted by CSF but may produce unexpected results in the sectionproperties material mapping.
 - The mesh size affects accuracy. For thin-walled sections, a fine mesh is recommended.
--  `csf_sp` is currently limited to CSF geometries defined by two end sections, `S0` and `S1`.
+- `csf_sp` is currently limited to CSF geometries defined by two end sections, `S0` and `S1`.
+
 ---
 
 ## 6. Examples
@@ -643,6 +653,16 @@ for z in stations:
     print(f"z={z:5.1f}  e.j={ej:.4e}  e.ixx_c={eic[0]:.4e}  e.iyy_c={eic[1]:.4e}")
 ```
 
+If `e.j` is not needed, pass `warping=False` to skip the FEM torsional analysis
+and reduce computation time significantly:
+
+```python
+for z in stations:
+    sec = analyse(field, z=z, warping=False)
+    eic = sec.get_eic()
+    print(f"z={z:5.1f}  e.ixx_c={eic[0]:.4e}  e.iyy_c={eic[1]:.4e}")
+```
+
 ---
 
 ## 8. Legacy CSV Input
@@ -665,7 +685,6 @@ idx_polygon,idx_container,s0_name,s1_name,w,vertex_i,x,y
 ...
 (rows omitted)
 ```
-
 
 ### 8.2 CLI usage
 
@@ -712,7 +731,7 @@ s1 = Section(polygons=(outer, inner), z=10.0)
 field = ContinuousSectionField(section0=s0, section1=s1)
 ```
 
-### 9.2 `analyse(field, z, mesh=1.0)`
+### 9.2 `analyse(field, z, mesh=1.0, warping=True)`
 
 Samples the CSF field at `z`, builds and meshes the sectionproperties geometry,
 and returns a fully analysed `sectionproperties.analysis.Section` object.
@@ -722,6 +741,13 @@ from csf.utils.csf_sp import load_yaml, analyse
 
 field = load_yaml("csf_sp_example.yaml")
 sec   = analyse(field, z=0.0, mesh=1.0)
+```
+
+Set `warping=False` to skip the warping FEM - significantly faster when `e.j`
+is not needed:
+
+```python
+sec = analyse(field, z=15.0, warping=False)
 ```
 
 **Important**: csf_sp always assigns `Material` objects to regions so that weighted
@@ -897,41 +923,15 @@ Expected output of `sec.display_results()`:
 └───────────┴───────────────┘
 ```
 
-Expected output of individual getters:
-
-```
-e.a    : 1.840000e-02
-e.ixx_c: 2.156533e-04
-e.iyy_c: 1.112533e-04
-e.j    : 2.324106e-04
-rx     : 1.082603e-01
-ry     : 7.775845e-02
-```
-
 ---
 
-# Extracting sectionproperties Composite Results
+## Extracting sectionproperties Composite Results
 
 The `csf_sp` interface builds a `sectionproperties` model with material data attached to the geometry. Since the section is handled by `sectionproperties` as a composite/material-based model, the corresponding composite result accessors are used.
 
 In this validation example, the assigned material has `E = 1.0`. Therefore the stiffness-weighted values returned by `sectionproperties` are numerically equal to the corresponding geometric quantities. In practical terms, `EA` can be compared with `A`, while `EIx` and `EIy` can be compared with `Ix` and `Iy`.
 
 ```python
-# ---------------------------------------------------------------------------
-# 5) Extract sectionproperties composite results.
-# ---------------------------------------------------------------------------
-# csf_sp builds a material-based sectionproperties model.
-# Therefore sectionproperties treats the result as a composite analysis and
-# exposes stiffness-weighted quantities through get_ea(), get_eic(), etc.
-#
-# In this test the material has E = 1.0, so the stiffness-weighted values are
-# numerically equal to the corresponding geometric values:
-#   EA  -> A
-#   EIx -> Ix
-#   EIy -> Iy
-```
-
-```
 """
 CSF-SP integration example with ordinary CSF no-cell geometry.
 
@@ -977,7 +977,6 @@ MESH_SIZE = 1e-4
 # ---------------------------------------------------------------------------
 # 1) Define the physical section as ordinary CSF polygons.
 # ---------------------------------------------------------------------------
-# Outer loop: CCW irregular boundary.
 outer_vertices = (
     Pt(-0.14, -0.16),
     Pt( 0.08, -0.18),
@@ -988,9 +987,6 @@ outer_vertices = (
     Pt(-0.17,  0.02),
 )
 
-# Inner loop source order.
-# It is reversed below because ordinary CSF polygons are expected as
-# standalone CCW loops after upstream validation.
 inner_vertices_source = (
     Pt(-0.09, -0.10),
     Pt(-0.11,  0.03),
@@ -1007,19 +1003,8 @@ inner_vertices = tuple(reversed(inner_vertices_source))
 # ---------------------------------------------------------------------------
 # 2) Build the ordinary CSF field.
 # ---------------------------------------------------------------------------
-# The inner polygon has weight = 0.0, so it acts as an explicit void in the
-# ordinary composite geometry path.
-outer = Polygon(
-    vertices=outer_vertices,
-    weight=1.0,
-    name="outer",
-)
-
-inner = Polygon(
-    vertices=inner_vertices,
-    weight=0.0,
-    name="inner",
-)
+outer = Polygon(vertices=outer_vertices, weight=1.0, name="outer")
+inner = Polygon(vertices=inner_vertices, weight=0.0, name="inner")
 
 s0 = Section(polygons=(outer, inner), z=Z0)
 s1 = Section(polygons=(outer, inner), z=Z1)
@@ -1034,25 +1019,6 @@ plt.close("all")
 
 sec_sp = analyse(field, z=Z_CHECK, mesh=MESH_SIZE)
 
-
-# Show the sectionproperties geometry.
-ax = sec_sp.geometry.plot_geometry(
-    labels=("points", "facets", "control_points"),
-    cp=True,
-)
-ax.plot(0.0, 0.0, marker="x", markersize=8)
-ax.text(0.0, 0.0, "  void")
-ax.set_aspect("equal", adjustable="box")
-plt.show(block=True)
-
-
-# Show the generated sectionproperties mesh.
-ax = sec_sp.plot_mesh(materials=False)
-ax.set_aspect("equal", adjustable="box")
-plt.show(block=True)
-
-
-# Print the full sectionproperties result table.
 sec_sp.display_results()
 
 
@@ -1107,7 +1073,6 @@ geometry_comparison = (
 
 
 def print_comparison(title, rows):
-    """Print a fixed-width side-by-side comparison table."""
     print(f"\n{title}")
     print(f"{'Property':<12} {'CSF':>20} {'SP':>20} {'Delta':>20} {'RelDelta':>14}")
     print("-" * 91)
@@ -1133,7 +1098,9 @@ print("\nExpected torsion flags for ordinary no-cell geometry")
 print(f"J_sv_cell: {analysis['J_sv_cell']}")
 print(f"J_sv_wall: {analysis['J_sv_wall']}")
 ```
-Result
+
+Result:
+
 ```
      Section Properties      
 ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
@@ -1197,7 +1164,6 @@ Result
 │ beta_22-  │  1.437516e-02 │
 └───────────┴───────────────┘
 
-
 CSF ordinary geometry full analysis at z = 0.0
 A: 0.053799999999999994
 Cx: -0.009910161090458499
@@ -1234,9 +1200,120 @@ ry             9.672754878921e-02   9.672754878921e-02   2.775557561563e-17   2.
 Expected torsion flags for ordinary no-cell geometry
 J_sv_cell: 0.0
 J_sv_wall: 0.0
-
 ```
 
+---
+
+## 10. From sectionproperties to CSF: progressive examples
+
+**Declarative cross-section modelling with continuous geometry interpolation**
+*API Python e YAML - esempi progressivi*
+
+### Step 1 - SP nativo (baseline)
+
+Rettangolo 50×100 mm costruito in Python con `rectangular_section`. Analisi geometrica pura.
+
+```python
+from sectionproperties.pre.library import rectangular_section
+from sectionproperties.analysis import Section
+
+geom = rectangular_section(d=100, b=50)
+geom.create_mesh(mesh_sizes=[5])
+sec = Section(geometry=geom)
+sec.calculate_geometric_properties()
+area = sec.get_area()
+ixx_c, iyy_c, ixy_c = sec.get_ic()
+print(f"Area = {area:.0f} mm²")
+print(f"Ixx = {ixx_c:.0f} mm⁴, Iyy = {iyy_c:.0f} mm⁴")
+```
+
+```
+Area = 5000 mm²
+Ixx = 4166667 mm⁴, Iyy = 1041667 mm⁴
+```
+
+### Step 2 - Stesso rettangolo via CSF YAML, peso 1.0 prismatico
+
+Stessa sezione descritta in YAML, peso uniforme 1.0. Nota: usare `get_ea()` e `get_eic()`
+invece di `get_area()` e `get_ic()` perché csf_sp assegna sempre `Material` objects alle regioni.
+
+```python
+from csf.utils.csf_sp import load_yaml, analyse
+
+field = load_yaml("rect_50x100.yaml")
+sec   = analyse(field, z=0.5, warping=False)
+area  = sec.get_ea()
+ixx_c, iyy_c, ixy_c = sec.get_eic()
+print(f"Area = {area:.0f} mm²")
+print(f"Ixx = {ixx_c:.0f} mm⁴, Iyy = {iyy_c:.0f} mm⁴")
+```
+
+```
+Area = 5000 mm²
+Ixx = 4166667 mm⁴, Iyy = 1041667 mm⁴
+```
+
+### Step 3 - Variazione peso lineare S0→S1, geometria costante
+
+YAML con `weight=1.0` a z=0, `weight=2.0` a z=2. `area` geometrica costante, `e.a` scala con il peso.
+
+```python
+for z in [0.0, 1.0, 2.0]:
+    sec  = analyse(field, z=z, warping=False)
+    area = sec.get_area()
+    ea   = sec.get_ea()
+    ixx_c, iyy_c, ixy_c = sec.get_eic()
+    print(f"z={z:.1f}  area={area:.0f}  e.a={ea:.0f}  Ixx={ixx_c:.0f}")
+```
+
+```
+z=0.0  area=5000  e.a=5000  Ixx=4166667
+z=1.0  area=5000  e.a=7500  Ixx=6250000
+z=2.0  area=5000  e.a=10000  Ixx=8333333
+```
+
+### Step 4 - Custom weight law parabolica via YAML
+
+Legge `w0 + (w1-w0)*(z/L)**2` nel blocco `weight_laws`. A z=1.0 il peso è 1.25 - più lento a salire rispetto alla lineare.
+
+```
+z=0.0  area=5000  e.a=5000  Ixx=4166667
+z=1.0  area=5000  e.a=6250  Ixx=5208333
+z=2.0  area=5000  e.a=10000  Ixx=8333333
+```
+
+### Step 5 - Stessa legge via API
+
+`field.set_weight_laws([...])` dopo `load_yaml`. Risultato identico al Step 4 - YAML e API sono intercambiabili.
+
+### Step 6 - Legge sinusoidale via API, geometria costante
+
+```python
+field.set_weight_laws([
+    "rect,rect: w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
+])
+```
+
+A z=1.0 il peso è 1.5 - coincide con la lineare al punto medio ma con curva diversa.
+
+```
+z=0.0  area=5000  e.a=5000  Ixx=4166667
+z=1.0  area=5000  e.a=7500  Ixx=6250000
+z=2.0  area=5000  e.a=10000  Ixx=8333333
+```
+
+### Step 7 - Geometria variabile + peso variabile indipendenti
+
+S0: 50×100, S1: 50×50. Peso 1.0→2.0 con legge sinusoidale sovrascritta via API.
+`area` scende geometricamente, `e.a` è la combinazione dei due campi -
+geometria e peso sono indipendenti in CSF.
+
+```
+z=0.0  area=5000  e.a=5000  Ixx=4166667
+z=1.0  area=3750  e.a=5625  Ixx=2636719
+z=2.0  area=2500  e.a=5000  Ixx=1041667
+```
 
 ---
+
 *csf_sp - part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
