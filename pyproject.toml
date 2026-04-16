@@ -8,7 +8,7 @@ Repository = "https://github.com/giovanniboscu/continuous-section-field"
 
 [project]
 name = "csfpy"
-version = "0.1.2.3"
+version = "0.1.2.4"
 description = "An Analytical Engine for Non-Prismatic Structural Members"
 readme = "README.md"
 authors = [{ name = "Giovanni Boscu" }]
