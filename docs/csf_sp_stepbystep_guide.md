@@ -558,6 +558,19 @@ field.set_weight_laws([
 ])
 ```
 
+> **YAML quoting note**: when a law contains a lookup function with a filename
+> argument, the filename uses single quotes inside the expression. In that case
+> the outer YAML string must use double quotes to avoid a conflict:
+>
+> ```yaml
+> weight_laws:
+>   # WRONG - inner single quotes conflict with outer single quotes
+>   - 'rect,rect: E_lookup('data.txt') * w0'
+>
+>   # CORRECT - use double quotes as outer delimiter
+>   - "rect,rect: E_lookup('data.txt') * w0"
+> ```
+
 ---
 
 ## Group D - CSF Actions YAML
@@ -656,7 +669,7 @@ The file contains four tables:
 - `TABLE 1 - SOLVER INPUT`: z, A, Ix, Iy, Ixy, Ip, J_tors, G_ref, Cx, Cy, method
 - `TABLE 2 - SECTION QUALITY`: z, I1, I2, theta_deg, rx, ry, Wx, Wy, Q_na, K_torsion
 - `TABLE 3 - TORSION QUALITY`: z, J_sv_cell, J_sv_wall, J_s_vroark, J_s_vroark_fidelity, J_tors, method
-- `TABLE 4 - STATION NAMES`: id, z, section_name (SEC0001 … SEC0011)
+- `TABLE 4 - STATION NAMES`: id, z, section_name (SEC0001 ... SEC0011)
 
 Stations are distributed using Gauss-Lobatto quadrature (`n_intervals=10` → 11 stations):
 ```
