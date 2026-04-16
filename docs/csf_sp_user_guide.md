@@ -658,9 +658,13 @@ idx_polygon,idx_container,s0_name,s1_name,w,vertex_i,x,y
 0,,outer,outer,1.0,0,-0.10,-0.15
 0,,outer,outer,1.0,1, 0.10,-0.15
 ...
+(rows omitted)
+
 1,0,inner,inner,0.0,0,-0.08,-0.13
 ...
+(rows omitted)
 ```
+
 
 ### 8.2 CLI usage
 
