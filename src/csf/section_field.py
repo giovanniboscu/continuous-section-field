@@ -1062,6 +1062,7 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
     Raises:
         Exception: Propagates any error encountered during evaluation.
     """
+    #print(f"DEBUGF >>>>>>>>>>>>>> ")
     # 2. Generate a temporary for the 'd(i,j)' helper.
     # This allows the formula to access distances at the current evaluation point.
     #   
@@ -1143,7 +1144,7 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
     # 6. Execute evaluation in a clean sandbox
     # We disable __builtins__ for safety to ensure only provided tools are used.
     
-    law_value = float(eval(formula, {"__builtins__": SAFE_BUILTINS}, context))
+    law_value =  float(eval(formula, {"__builtins__": SAFE_BUILTINS}, context))
     return law_value
  
 def execute_string_to_float(code_string, z_val, t_val):
@@ -2280,6 +2281,9 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
             return None
         return tval
 
+
+
+
     def _find_outer_bridge_index(xy: List[Tuple[float, float]], nm: str) -> int:
         """
         Return index of first point matching the first vertex within global tolerance.
@@ -2323,6 +2327,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         - If tail starts and ends with the same key, treat last as explicit closure
           and drop it.
         """
+        #print(f"DEBUG xy {xy}")
         rem_start = i_outer_end + 1
         if rem_start >= len(xy):
             raise CSFError(
@@ -2389,7 +2394,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
             raise CSFError(
                 f"compute_saint_venant_J_cell(v3): polygon '{nm}' produced degenerate loops."
             )
-
+        #print(f"DEBUG loop_a {loop_a} loop_b {loop_b}" ) 
         return loop_a, loop_b, i_outer_end
 
     def _compute_J_geom_from_global_mid_quantities(
@@ -2406,9 +2411,17 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
             b_m = 0.5*(P_outer + P_inner)
             J   = 4*A_m^2*t/b_m
         """
-        A_outer = abs(_signed_area_xy(outer_xy))
-        A_inner = abs(_signed_area_xy(inner_xy))
+        
+        
+        A_outer_signed = _signed_area_xy(outer_xy)
+        A_inner_signed = _signed_area_xy(inner_xy)
+        
+        
+        A_outer = abs(A_outer_signed)
+        A_inner = abs(A_inner_signed)
         A_wall = A_outer - A_inner
+
+
 
         if A_wall <= EPS_A:
             raise CSFError(
@@ -2453,6 +2466,8 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
             continue
 
         xy = _xy_list(p)
+        
+        
         z_sec = getattr(section, "z", None)
         '''
         print(
@@ -2475,6 +2490,8 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         # Split loops (inner explicit closure is optional).
         loop_a, loop_b, i_outer_end = _split_outer_inner_loops(xy, nm)
         '''
+        print(f"DEBUG loop_a {loop_a}  loop_b {loop_b} i_outer_end  {i_outer_end}")
+        
         print(
             f"[OUTER_CLOSE][idx={i_cell}][z={z_sec}][{nm}] "
             f"first={xy[0]} repeated={xy[i_outer_end]}"
@@ -2500,10 +2517,19 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         s_outer_before = _signed_area_xy(outer_xy)
         s_inner_before = _signed_area_xy(inner_xy)
 
+
+        if s_outer_before * s_inner_before >= 0.0:
+            raise ValueError(
+                f"{getattr(p, 'name', '<unnamed @cell>')}: @cell OUTER and INNER loops outer_xy: {outer_xy} inner_xy: {inner_xy}"
+                " must have non-zero signed areas with opposite signs."
+            )
         if s_outer_before < 0.0:
             outer_xy = list(reversed(outer_xy))
+            
         if s_inner_before < 0.0:
             inner_xy = list(reversed(inner_xy))
+            
+            
 
         s_outer_after = _signed_area_xy(outer_xy)
         s_inner_after = _signed_area_xy(inner_xy)
@@ -2547,7 +2573,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         A_outer = abs(_signed_area_xy(outer_xy))
         A_inner = abs(_signed_area_xy(inner_xy))
         A_wall = A_outer - A_inner
-
+        '''
         A_poly = abs(_signed_area_xy(xy))
         abs_err = abs(A_poly - A_wall)
         rel_err = abs_err / max(abs(A_wall), EPS_A)
@@ -2560,7 +2586,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
                 f"abs_err={abs_err:.12g}, rel_err={rel_err:.6e}",
                 RuntimeWarning,
             )
-        
+        '''
         J_geom = _compute_J_geom_from_global_mid_quantities(
             outer_xy, inner_xy, t, nm, i_cell, z_sec
         )
@@ -2807,12 +2833,12 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
 
         b_est = (A / t) if t > EPS_L else 0.0
         
-        
+        '''
         print(
-            f"[J_WALL] nm={nm}  A={A:.6f}  P={P_dbg:.6f}  t={t:.6f} ({t_source})  "
+            f"[DEBUG J_WALL] nm={nm}  A={A:.6f}  P={P_dbg:.6f}  t={t:.6f} ({t_source})  "
             f"b_est=A/t={b_est:.6f}  J_i={J_i_wall:.6f}  w={w:.6f} "
         )
-        
+        '''
 
         # Keep torsional stiffness non-negative
         J += w * J_i
@@ -3813,20 +3839,31 @@ def section_full_analysis(section: Section):
     # distance to the "extreme fibers" (the points furthest from the centroid).
     
     # Extract all vertex coordinates from every polygon in the section
-    all_x = [v.x for poly in section.polygons for v in poly.vertices]
-    all_y = [v.y for poly in section.polygons for v in poly.vertices]
-    
-    # Compute the maximum perpendicular distance from the centroidal axes:
-    # y_dist_max is used for bending about the X-axis (Top/Bottom fiber)
-    y_dist_max = max(max(all_y) - props['Cy'], props['Cy'] - min(all_y))
-    # x_dist_max is used for bending about the Y-axis (Left/Right fiber)
-    x_dist_max = max(max(all_x) - props['Cx'], props['Cx'] - min(all_x))
-    
-    # Calculate Elastic Moduli: W = I / c_max.
-    # A tolerance check (EPS_K) prevents division by zero in degenerate geometries.
-    props['Wx'] = props['Ix'] / y_dist_max if y_dist_max > EPS_K else 0.0
-    props['Wy'] = props['Iy'] / x_dist_max if x_dist_max > EPS_K else 0.0
-    
+
+
+
+    #--------------------------------------------    
+    effective_polygons = [poly for poly in section.polygons if abs(poly.weight) > EPS_K]
+
+    if effective_polygons:
+        all_x = [v.x for poly in effective_polygons for v in poly.vertices]
+        all_y = [v.y for poly in effective_polygons for v in poly.vertices]
+
+        # Compute the maximum perpendicular distance from the centroidal axes:
+        # y_dist_max is used for bending about the X-axis (Top/Bottom fiber)
+        y_dist_max = max(max(all_y) - props['Cy'], props['Cy'] - min(all_y))
+        # x_dist_max is used for bending about the Y-axis (Left/Right fiber)
+        x_dist_max = max(max(all_x) - props['Cx'], props['Cx'] - min(all_x))
+
+        # Calculate Elastic Moduli: W = I / c_max.
+        # A tolerance check (EPS_K) prevents division by zero in degenerate geometries.
+        props['Wx'] = props['Ix'] / y_dist_max if y_dist_max > EPS_K else 0.0
+        props['Wy'] = props['Iy'] / x_dist_max if x_dist_max > EPS_K else 0.0
+    else:
+        props['Wx'] = 0.0
+        props['Wy'] = 0.0
+
+    #--------------------------------------------    
 # -------------------------------------------------------------------------
     # 4. TORSIONAL RIGIDITY (K) - BETA ESTIMATION
     # -------------------------------------------------------------------------
@@ -6732,14 +6769,10 @@ class ContinuousSectionField:
         # If L_val is 0 (coincident sections), t is forced to 0 to avoid division by zero
         #t_mid = (z_mid - z0) / L_val if L_val != 0 else 0.0
         
-        z_mid=5
+        
         for idx, formula in normalized_map.items():
-               
-            
+                           
             if isinstance(formula, str):
-
-                    
-                    
                     try:
                         # Endpoint polygon references for distance calculations
                         p0_test = self.s0.polygons[idx-1]
@@ -6753,6 +6786,7 @@ class ContinuousSectionField:
                         
                         try:
                             # We test the formula at mid-span (t=0.5) to verify syntax and logic
+                            
                             we = evaluate_weight_formula(formula, p0_test, p1_test,z0=self.s0.z,z1=self.s1.z,zt=z_mid)
                             
                         except Exception as e:                      
