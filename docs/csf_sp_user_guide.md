@@ -112,8 +112,7 @@ Each polygon has a **name** and a **weight**. The name must be the same in S0 an
 so that CSF can pair the two ends of each component. The weight controls how much the
 polygon contributes to the section properties (see section 2.4).
 
-**Nesting is automatic**: if one polygon is geometrically inside another, CSF detects
-the containment from the vertex coordinates. No explicit declaration is needed.
+**Nesting is automatic**: if one polygon is geometrically inside another, CSF detects the containment from the vertex coordinates. No explicit declaration is needed. Note that weight: 0.0 must still be set explicitly on the inner polygon — containment is detected from geometry, but the physical contribution is always a user decision
 
 ### 2.2 Tapered section
 
