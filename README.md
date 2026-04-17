@@ -196,10 +196,10 @@ csf-actions geometry.yaml actions.yaml
 ### Option B - Local editable install (development)
 
 ```bash
-git clone https://github.com/giovanniboscu/continuous-section-field.git
-cd continuous-section-field
 python3 -m venv venv
 source venv/bin/activate
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
 pip install -e .
 
 python3 example/nrel_5mw_tower.py
@@ -208,7 +208,7 @@ python3 example/csf_rotated_validation_benchmark.py
 
 cd actions-examples/stell_degradated_model
 mkdir -p out
-python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
+csf-actions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 
 ```
 ---
@@ -231,11 +231,11 @@ csf-actions geometry.yaml actions.yaml
 ### Option 2 - Local editable install (development)
 
 ```powershell
-git clone https://github.com/giovanniboscu/continuous-section-field.git
-cd continuous-section-field
 
 python -m venv venv
 .\venv\Scripts\activate
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
 
 pip install -e .
 
@@ -245,8 +245,7 @@ python .\example\csf_rotated_validation_benchmark.py
 python .\example\tsection_lab.py
 
 cd actions-examples\stell_degradated_model
-
-python -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
+csf-actions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 ```
 
 ---
