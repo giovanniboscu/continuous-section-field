@@ -1,4 +1,4 @@
-# CSF – Section Full Analysis Output
+# CSF  Section Full Analysis Output
 
 This document explains **all quantities reported by the CSF _Section Full Analysis_**.
 
