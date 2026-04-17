@@ -120,9 +120,9 @@ Analytical reference: Bredt formula `J = 4 · A_m² · t / s_m` (valid for thin-
 |---|---|---|---|
 | Circle (64 vertices) | 0.9994 | 0.955 | **0.00051** |
 | Ellipse 4×5 m | ~0.970 | high | **~0.03** |
-| Square | 0.785 | 1.000 | **1.000** (unchanged) |
-| Rectangle 3×2 | 0.698 | 0.666 | **0.666** (unchanged) |
-| Square hollow thin | 0.785 | 0.051 | **0.051** (unchanged) |
+| Square | 0.785 | 1.000 | **1.000**  |
+| Rectangle 3×2 | 0.698 | 0.666 | **0.666**  |
+| Square hollow thin | 0.785 | 0.051 | **0.051**  |
 
 ---
 
