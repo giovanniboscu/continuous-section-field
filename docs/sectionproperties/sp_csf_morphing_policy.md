@@ -1,4 +1,7 @@
 # == DRAFT ==
+`sectionproperties` is used as the analysis backend for the generated/interpolated sections. 
+Please refer to the original project and its license:
+https://github.com/robbievanleeuwen/section-properties
 # Morphing policy for `sp_csf`
 
 ## Purpose
