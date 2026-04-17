@@ -1,5 +1,9 @@
 # Quick Start Guide
 
+
+[CSF Actions Template - complete reference with all available actions](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/actions_template.yaml)
+
+
 ### Practical, didactic workflow from zero to results
 
 This guide explains how to start from a complete **CSF geometry file**, add a **degradation law `w(z)`**, run **CSF_ACTIONS**, and interpret the outputs.
