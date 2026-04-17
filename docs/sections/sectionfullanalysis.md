@@ -792,6 +792,30 @@ To make interpretation robust, include these plots together:
 3. `J_s_vroark(z)`
 4. `J_s_vroark_fidelity(z)`
 
+>## A note on Adhémar Jean Claude Barré de Saint-Venant
+>
+>The torsional constant *J* that this library estimates and validates bears the
+>name of Adhémar Jean Claude Barré de Saint-Venant (1797–1886), one of the
+>founders of the mathematical theory of elasticity.
+>
+>In his 1855 memoir *Mémoire sur la torsion des prismes*, Saint-Venant solved
+>the torsion problem for prismatic bars of arbitrary cross-section, a result
+>that had resisted earlier attempts by Coulomb and Navier. His approach
+>introduced the warping function, reduced the problem to a boundary-value
+>equation, and produced exact solutions for elliptical and rectangular sections
+>that remain in use today.
+>
+>The formula implemented in `_roark_torsion_rect` is a compact approximation
+>of Saint-Venant's exact series solution for the rectangle, later tabulated by
+>Roark (1938) and condensed into continuous form by Timoshenko & Goodier (1951).
+>The FEM warping analysis performed by `sectionproperties` solves the same
+>boundary-value problem numerically, for arbitrary geometry, using the
+>mathematical framework Saint-Venant laid down nearly 170 years ago.
+
+> *"The problem of torsion is one of the most beautiful in the whole of
+> mathematical physics."*
+> — attributed to Saint-Venant
+
 ---
 ## CSF sectionproperties mapping table
 
