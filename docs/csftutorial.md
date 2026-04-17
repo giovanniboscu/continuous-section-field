@@ -1,4 +1,6 @@
 # CSF YAML Tutorial (CSFActions.py)
+[CSF Actions Template - complete reference with all available actions](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/actions_template.yaml)
+
 Although CSF is implemented as a Python engine, it can be used **without programming** through the **CSFAction** tool.
 In these tutorials, the working directory is set **immediately after cloning** the repository.
 
