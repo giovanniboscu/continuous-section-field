@@ -720,6 +720,7 @@ Notes:
 ## 19. Roark Fidelity Index
 
 **Key:** `J_s_vroark_fidelity`
+[J_s_vroark usage guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J_vroark_usage_guide.md)
 
 Internal consistency index for the equivalent-rectangle mapping pipeline used to compute `J_s_vroark`. Intended as a trend/reliability indicator within the same method, not as an absolute physical accuracy metric.
 
