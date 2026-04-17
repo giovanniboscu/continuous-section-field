@@ -10,6 +10,12 @@ Start here: these three guides cover everything you need to work with CSF effect
 | [CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md) | Step-by-step YAML workflow — no Python programming required. |
 | [CSFLongitudinally-varying-homogenization-user-guide.md](CSFLongitudinally-varying-homogenization-user-guide.md) | Technical guide for defining custom weight laws `w(z)`: conventions, syntax, available variables, lookup functions (`E_lookup`, `T_lookup`), validation rules, and OpenSees export mapping. |
 | [writegeometry_rio_v2 — User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/writegeometry_rio_v2_guide.md) | CLI reference for the parametric geometry generator: shape families (circle, rounded rectangle, sharp rectangle), rebar rows, degradation weight laws, twist, and worked examples. |
+| [CSF complete reference with all available action](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/actions_template.yaml) |CSF Actions Template - complete reference with all available actions|
+
+
+
+
+
 
 
 
