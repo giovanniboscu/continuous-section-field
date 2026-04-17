@@ -100,11 +100,11 @@ Analytical reference: Bredt formula `J = 4 · A_m² · t / s_m` (valid for thin-
 
 | # | Section | Type | t/d | Fidelity | Δ vroark / FEM | Verdict |
 |---|---|---|---|---|---|---|
-| 1 | Square solid | solid | - | **1.000** | +0.18% | ✅ use vroark |
-| 2 | Rectangular solid b/d = 2/3 | solid | - | **0.666** | +0.27% | ✅ use vroark |
-| 3 | Circular solid | solid | - | **0.955** | -12.1% | ❌ use `e.j` |
-| 4 | Square hollow thin wall | hollow | 0.025 | **0.051** | -99.3% | ❌ use `e.j` |
-| 5 | Square hollow thick wall | hollow | 0.200 | **0.471** | -61.7% | ❌ use `e.j` |
+| 1 | Square solid | solid | - | **1.000** | +0.18% | OK use vroark |
+| 2 | Rectangular solid b/d = 2/3 | solid | - | **0.666** | +0.27% | OK use vroark |
+| 3 | Circular solid | solid | - | **0.955** | -12.1% | KO use `e.j` |
+| 4 | Square hollow thin wall | hollow | 0.025 | **0.051** | -99.3% | KO use `e.j` |
+| 5 | Square hollow thick wall | hollow | 0.200 | **0.471** | -61.7% | KO use `e.j` |
 
 ---
 
@@ -118,13 +118,13 @@ Analytical reference: Bredt formula `J = 4 · A_m² · t / s_m` (valid for thin-
 
 | Shape | Q isoperimetric | Aspect-ratio fidelity | Final fidelity | Δ vroark/FEM |
 |---|---|---|---|---|
-| Circle (64 vertices) | 0.9994 | 0.955 | **0.00051** | -12.4% ❌ |
+| Circle (64 vertices) | 0.9994 | 0.955 | **0.00051** | -12.4% KO |
 | Ellipse 4×5 m | ~0.970 | high | **~0.03** | - |
-| Square 1:1 | 0.785 | 1.000 | **1.000** | +0.18% ✅ |
-| Rectangle 1.5:1 | 0.723 | 0.666 | **0.666** | +0.26% ✅ |
-| Rectangle 2:1 | 0.698 | 0.500 | **0.500** | +0.08% ✅ |
-| Rectangle 3:1 | 0.637 | 0.333 | **0.333** | +0.03% ✅ |
-| Square hollow thin | 0.785 | 0.051 | **0.051** | -99.3% ❌ |
+| Square 1:1 | 0.785 | 1.000 | **1.000** | +0.18% OK |
+| Rectangle 1.5:1 | 0.723 | 0.666 | **0.666** | +0.26% OK |
+| Rectangle 2:1 | 0.698 | 0.500 | **0.500** | +0.08% OK |
+| Rectangle 3:1 | 0.637 | 0.333 | **0.333** | +0.03% OK |
+| Square hollow thin | 0.785 | 0.051 | **0.051** | -99.3% KO |
 
 ---
 
@@ -179,7 +179,7 @@ For tapered members with geometrically similar cross-sections, fidelity is const
 
 ## Notes on `e.j` accuracy
 
-`e.j` from `sectionproperties` is computed via FEM warping analysis. Its accuracy depends on mesh size (`mesh_sizes` parameter in `csf_sp`). Residual errors observed:
+`e.j` from `sectionproperties` is computed via FEM warping analysis. Its accuracy depends on mesh size (`mesh_sizes` parameter in `csf_sp`). The default `mesh_sizes = 1.0` was used throughout this validation. Residual errors observed:
 
 - Solid sections: < 0.5% vs analytical
 - Thin hollow sections: ~+1.3% vs Bredt (small FEM overestimate, conservative for design)
