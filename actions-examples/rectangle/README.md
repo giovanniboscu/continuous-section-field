@@ -1,5 +1,7 @@
 # CSF Rectangle Example - `actions-examples/rectangle`
 
+[CSF Actions Template - complete reference with all available actions](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/actions_template.yaml)
+
 A self-contained example demonstrating the full **CSF Actions** pipeline on a
 linearly tapered solid rectangular section. Every available action is exercised
 in a single run, producing plots, reports, and solver exports.
