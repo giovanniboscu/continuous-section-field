@@ -179,7 +179,7 @@ For tapered members with geometrically similar cross-sections, fidelity is const
 
 ## Notes on `e.j` accuracy
 
-`e.j` from `sectionproperties` is computed via FEM warping analysis. Its accuracy depends on mesh size (`mesh_sizes` parameter in `csf_sp`). The default `mesh_sizes = 1.0` was used throughout this validation. Residual errors observed:
+`e.j` from `sectionproperties` is computed via FEM warping analysis. Its accuracy depends on mesh size (`mesh_sizes` parameter in `csf_sp`). Residual errors observed:
 
 - Solid sections: < 0.5% vs analytical
 - Thin hollow sections: ~+1.3% vs Bredt (small FEM overestimate, conservative for design)
