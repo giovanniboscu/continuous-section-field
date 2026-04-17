@@ -1,5 +1,7 @@
 # From sectionproperties to CSF: A Step-by-Step Guide
-
+>`sectionproperties` is used as the analysis backend for the generated/interpolated sections. 
+>Please refer to the original project and its license:
+>https://github.com/robbievanleeuwen/section-properties
 **Progressive examples - Python API and YAML**
 
 This guide walks through a complete set of working examples that show how to move
