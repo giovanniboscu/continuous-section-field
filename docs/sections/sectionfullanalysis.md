@@ -811,7 +811,7 @@ To make interpretation robust, include these plots together:
 >The FEM warping analysis performed by `sectionproperties` solves the same
 >boundary-value problem numerically, for arbitrary geometry, using the
 >mathematical framework Saint-Venant laid down nearly 170 years ago.
-
+>
 > *"The problem of torsion is one of the most beautiful in the whole of
 > mathematical physics."*
 > — attributed to Saint-Venant
