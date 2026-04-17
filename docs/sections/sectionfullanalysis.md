@@ -747,18 +747,6 @@ Do **not** use it as:
 
 ---
 
-## Why sharp points can appear without a discontinuity
-
-For many variable sections, any quantity derived from a branch selection (e.g., principal inertia I2(z) or the mapped I_min(z) used by the equivalent-rectangle pipeline) can show a sharp point (kink) when the governing branch changes (commonly near `Ix ≈ Iy`, especially when `Ixy ≈ 0`).
-
-Important distinction:
-- **Kink**: curve is continuous, slope changes abruptly.
-- **Jump**: curve value itself is discontinuous.
-
-A sharp visual point is not automatically a jump.
-
----
-
 ## How to read the fidelity plot correctly
 
 When you look at `J_s_vroark_fidelity(z)`:
