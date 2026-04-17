@@ -1,0 +1,197 @@
+# =============================================================================
+# CSF Actions Template - complete reference with all available actions
+# =============================================================================
+# Usage: csf-actions geometry.yaml actions_template.yaml
+#
+# This file documents every action with all its parameters.
+# Enable/disable actions by commenting/uncommenting the relevant blocks.
+#
+# RULES:
+#   - Indentation: spaces only (no tabs). Recommended: 2 spaces.
+#   - Strings: use quotes for formulas and filenames.
+#   - Booleans: true / false (lowercase).
+#   - Scientific notation: use e+NN form (e.g. 2.1e+11, not 2.1e11).
+#   - 'out/' directory must exist before running file-output actions.
+#   - Keep 'actions:' only ONCE in the file (no duplicate keys).
+# =============================================================================
+
+CSF_ACTIONS:
+
+  # ---------------------------------------------------------------------------
+  # STATION SETS
+  # Named lists of absolute z coordinates used by analysis actions.
+  # Multiple sets allow different sampling densities for different purposes.
+  # ---------------------------------------------------------------------------
+  stations:
+    station_ends:    [0.0, 80.0]           # boundary sections only
+    station_mid:     [40.0]                # mid-span single point
+    station_3pt:     [0.0, 40.0, 80.0]    # base, mid, top
+    station_dense:   [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0]
+
+  actions:
+
+    # -------------------------------------------------------------------------
+    # 3D RULED VOLUME VISUALIZATION
+    # Shows the interpolated solid volume between the two end sections.
+    # line_percent controls the density of longitudinal rulings (0..100).
+    # stations: FORBIDDEN for this action.
+    # -------------------------------------------------------------------------
+    - plot_volume_3d:
+        params:
+          line_percent: 100.0                  # percentage of generator lines shown
+          title: "Ruled volume"                # figure title
+          show_end_sections: true              # draw end-section outlines at z0 and z1
+          seed: 0                              # RNG seed when line_percent < 100
+
+    # -------------------------------------------------------------------------
+    # 2D CROSS-SECTION OUTLINES
+    # Plots 2D cross-section geometry at the specified stations.
+    # Multiple stations produce a single composite vertical image.
+    # stations: REQUIRED.
+    # -------------------------------------------------------------------------
+    - plot_section_2d:
+        stations:
+          - station_3pt
+        output:
+          - stdout                             # display interactively at end of run
+          - out/sections2d.jpg                 # save to file (jpg, png, bmp)
+
+    # -------------------------------------------------------------------------
+    # CONTINUOUS PROPERTY VARIATION PLOT
+    # Samples and plots selected section properties along z.
+    # stations: FORBIDDEN (samples internally between z0 and z1).
+    # -------------------------------------------------------------------------
+    - plot_properties:
+        output:
+          - stdout
+          - out/properties.png
+        properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy,
+                     K_torsion, Q_na, J_sv_wall, J_sv_cell,
+                     J_s_vroark, J_s_vroark_fidelity]
+        params:
+          num_points: 80                       # sampling points along z (default 100)
+
+    # -------------------------------------------------------------------------
+    # POLYGON WEIGHT VARIATION PLOT
+    # Plots w(z) for each polygon pair along the member axis.
+    # stations: FORBIDDEN (samples internally between endpoints).
+    # -------------------------------------------------------------------------
+    - plot_weight:
+        output:
+          - stdout
+          - out/weights.jpg
+        params:
+          num_points: 100
+                 # numeric format for display
+
+    # -------------------------------------------------------------------------
+    # SELECTED SECTION ANALYSIS
+    # Computes only the requested properties at each station.
+    # stations: REQUIRED.
+    # output: stdout | *.csv | text file
+    # -------------------------------------------------------------------------
+    - section_selected_analysis:
+        stations:
+          - station_3pt
+        output:
+          - stdout
+          - out/selected_analysis.csv
+        properties: [geometry, A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2,
+                     rx, ry, Wx, Wy, Q_na, J_s_vroark, J_s_vroark_fidelity]
+        params:
+          fmt_display: ".8f"
+
+    # -------------------------------------------------------------------------
+    # AREA BREAKDOWN BY WEIGHT
+    # Reports area breakdown grouped by absolute weight W_abs(z).
+    # Intended for composite sections with deterministic nesting.
+    # stations: REQUIRED.
+    # -------------------------------------------------------------------------
+    - section_area_by_weight:
+        stations:
+          - station_3pt
+        output:
+          - stdout
+          - out/area_by_weight.txt
+        params:
+          w_tol: 0.0                           # weight threshold (currently unused)
+          include_per_polygon: false           # include per-polygon breakdown
+          fmt_display: ".6g"
+
+    # -------------------------------------------------------------------------
+    # VOLUME INTEGRATION (quantity take-off)
+    # Integrates occupied and homogenized volumes between exactly two z values.
+    # stations: REQUIRED - must contain exactly TWO z values.
+    # -------------------------------------------------------------------------
+    - volume:
+        stations:
+          - station_ends
+        output:
+          - stdout
+          - out/volume.txt
+        params:
+          n_points: 20                         # Gauss-Legendre integration points
+          fmt_display: ".6f"
+          w_tol: 0.0                           # weight threshold (currently unused)
+
+    # -------------------------------------------------------------------------
+    # WEIGHT LAW INSPECTOR
+    # Evaluates and displays w(z) expressions at user-provided relative z stations.
+    # z values are interpreted as RELATIVE (user responsibility).
+    # stations: REQUIRED.
+    # -------------------------------------------------------------------------
+    - weight_lab_zrelative:
+        stations:
+          - station_mid
+        weight_law:                             # weight_law
+          - "w0 + (w1 - w0) * (z / L)**2"
+          - "w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))"
+        output:
+          - stdout
+          - out/weight_inspector.txt
+
+    # -------------------------------------------------------------------------
+    # EXPORT YAML
+    # Exports a new CSF geometry YAML from exactly two intermediate stations.
+    # stations: REQUIRED - must contain exactly TWO z values.
+    # output: FILE-ONLY (stdout is not supported).
+    # -------------------------------------------------------------------------
+    - export_yaml:
+        stations:
+          - station_ends
+        output:
+          - out/geometry_export.yaml
+
+    # -------------------------------------------------------------------------
+    # OPENSEES GEOMETRY EXPORT
+    # Writes an OpenSees Tcl geometry file (deterministic data contract).
+    # stations: FORBIDDEN (uses internal Lobatto station generation).
+    # output: FILE-ONLY (stdout is not supported). Exactly one path required.
+    # -------------------------------------------------------------------------
+    - write_opensees_geometry:
+        output:
+          - out/geometry.tcl
+        params:
+          n_points: 10                         # number of integration stations (required)
+          E_ref: 2.1e+11                       # reference Young's modulus (required)
+          nu: 0.30                             # Poisson ratio (required)
+
+    # -------------------------------------------------------------------------
+    # SAP2000 / OPENSEESPY TEMPLATE PACK EXPORT
+    # Writes a structured text file with section properties at Lobatto stations.
+    # Includes four tables: solver input, section quality, torsion quality,
+    # station names. Optionally writes a preview plot.
+    # stations: FORBIDDEN (uses internal Lobatto station generation).
+    # output: FILE-ONLY (stdout is not supported). Exactly one path required.
+    # -------------------------------------------------------------------------
+    - write_sap2000_geometry:
+        output:
+          - out/sap2000_template.txt
+        params:
+          n_intervals: 10                      # Lobatto intervals (stations = n+1) (required)
+          E_ref: 2.1e+11                       # reference Young's modulus (required)
+          nu: 0.30                             # Poisson ratio (required)
+          material_name: "S355"               # material label in template (optional)
+          mode: "BOTH"                         # CENTROIDAL_LINE | REFERENCE_LINE | BOTH (optional)
+          include_plot: true                   # write preview PNG (optional)
+          plot_filename: "out/variation.jpg"   # preview plot path (optional)
