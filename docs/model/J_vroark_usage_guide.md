@@ -14,7 +14,7 @@ CSF computes two torsion-related indicators for each cross-section station:
 
 ## Validation dataset
 
-Five tapered members were analysed at three stations each (z = 0, 40, 80 m), with 50% reduction in cross-section dimensions from base to top. For each station, `J_s_vroark`, `e.j`, and - where applicable - the closed-form analytical reference were compared.
+Five tapered members were analysed at three stations each (z = 0, 40, 80 m), with 50% reduction in cross-section dimensions from base to top. For each station, `J_s_vroark`, `e.j`, and — where applicable — the closed-form analytical reference were compared.
 
 ### Case 1 — Square solid section, 2.0 × 2.0 → 1.0 × 1.0 m
 
@@ -28,11 +28,11 @@ Analytical reference: `J = 0.1406 · a⁴` (Roark, solid square).
 
 `J_s_vroark_fidelity` = **1.000** (constant along the member).
 
-*Fidelity = 1.0 for square sections - this is the reference case for which the Roark mapping is exact. FEM agrees with analytical to within 0.01%.*
+*Fidelity = 1.0 for square sections — this is the reference case for which the Roark mapping is exact. FEM agrees with analytical to within 0.01%.*
 
 ---
 
-### Case 2 - Rectangular solid section, 3.0 × 2.0 → 1.5 × 1.0 m
+### Case 2 — Rectangular solid section, 3.0 × 2.0 → 1.5 × 1.0 m
 
 Analytical reference: `J = β · b · d³` with `β = 0.1958` for `b/d = 2/3` (Roark table).
 
@@ -42,13 +42,13 @@ Analytical reference: `J = β · b · d³` with `β = 0.1958` for `b/d = 2/3` (R
 | 40 | 2.25 × 1.50 | 1.48266 | 1.48656 | 1.486 | +0.26% |
 | 80 | 1.5 × 1.0 | 0.29287 | 0.29365 | 0.294 | +0.27% |
 
-`J_s_vroark_fidelity` = **0.666** (constant - depends only on aspect ratio `b/d`, not scale).
+`J_s_vroark_fidelity` = **0.666** (constant — depends only on aspect ratio `b/d`, not scale).
 
 *The fidelity is constant along the entire tapered member because taper is geometrically similar: b/d = 2/3 is preserved at every station. The systematic error (~0.27%) is small and consistent.*
 
 ---
 
-### Case 3 - Circular solid section, d = 2.0 → 1.0 m
+### Case 3 — Circular solid section, d = 2.0 → 1.0 m
 
 Analytical reference: `J = π · d⁴ / 32` (exact for circle).
 
@@ -60,13 +60,13 @@ Analytical reference: `J = π · d⁴ / 32` (exact for circle).
 
 `J_s_vroark_fidelity` = **0.00051** (constant, after isoperimetric penalty).
 
-The isoperimetric penalty correctly drives fidelity to near zero - the circle is now unambiguously flagged as inapplicable for `J_s_vroark`. Use `e.j` from sectionproperties.
+The isoperimetric penalty correctly drives fidelity to near zero — the circle is now unambiguously flagged as inapplicable for `J_s_vroark`. Use `e.j` from sectionproperties.
 
 The FEM error of -0.43% vs analytical is caused by the 64-vertex polygonal discretisation of the circle, not by CSF or sectionproperties.
 
 ---
 
-### Case 4 - Thin-walled square hollow section, t = 0.05 → 0.025 m (t/d = 0.025)
+### Case 4 — Thin-walled square hollow section, t = 0.05 → 0.025 m (t/d = 0.025)
 
 Analytical reference: Bredt formula `J = 4 · A_m² · t / s_m` (valid for thin-walled closed sections).
 
@@ -82,7 +82,7 @@ Analytical reference: Bredt formula `J = 4 · A_m² · t / s_m` (valid for thin-
 
 ---
 
-### Case 5 - Thick-walled square hollow section, t = 0.40 → 0.20 m (t/d = 0.20)
+### Case 5 — Thick-walled square hollow section, t = 0.40 → 0.20 m (t/d = 0.20)
 
 | z (m) | d (m) | t (m) | `J_s_vroark` | `e.j` FEM | J Bredt | Δ vroark / FEM | Δ FEM / Bredt |
 |---|---|---|---|---|---|---|---|
@@ -100,11 +100,11 @@ Analytical reference: Bredt formula `J = 4 · A_m² · t / s_m` (valid for thin-
 
 | # | Section | Type | t/d | Fidelity | Δ vroark / FEM | Verdict |
 |---|---|---|---|---|---|---|
-| 1 | Square solid | solid | - | **1.000** | +0.18% |  use vroark |
-| 2 | Rectangular solid b/d = 2/3 | solid | - | **0.666** | +0.27% |  use vroark |
-| 3 | Circular solid | solid | - | **0.955** | -12.1% |  use `e.j` |
-| 4 | Square hollow thin wall | hollow | 0.025 | **0.051** | -99.3% |  use `e.j` |
-| 5 | Square hollow thick wall | hollow | 0.200 | **0.471** | -61.7% |  use `e.j` |
+| 1 | Square solid | solid | — | **1.000** | +0.18% | ✅ use vroark |
+| 2 | Rectangular solid b/d = 2/3 | solid | — | **0.666** | +0.27% | ✅ use vroark |
+| 3 | Circular solid | solid | — | **0.955** | -12.1% | ❌ use `e.j` |
+| 4 | Square hollow thin wall | hollow | 0.025 | **0.051** | -99.3% | ❌ use `e.j` |
+| 5 | Square hollow thick wall | hollow | 0.200 | **0.471** | -61.7% | ❌ use `e.j` |
 
 ---
 
@@ -114,15 +114,17 @@ Analytical reference: Bredt formula `J = 4 · A_m² · t / s_m` (valid for thin-
 
 **1. Aspect-ratio score** (original): derived from the equivalent rectangle dimensions `a` and `b`. Approaches 1.0 for square sections (`a = b`), decreases for elongated sections. A rectangle 3×1 scores ~0.67, a rectangle 2×1 scores ~0.79.
 
-**2. Isoperimetric penalty** (added in v1.x): the aspect-ratio score is blind to circular shapes - a circle and a square both have `a ≈ b` and would score equally. The penalty uses the isoperimetric ratio `Q = 4πA/P²`, which equals 1.0 only for a perfect circle and decreases for all other shapes (square: Q ≈ 0.785, rectangle 2:1: Q ≈ 0.698, ellipse: Q ≈ 0.97). When `Q > 0.90`, fidelity is scaled by `(1 - Q)`, driving it toward zero. This correctly flags circular and elliptical sections where Roark produces ~12% systematic error regardless of how compact the section looks.
+**2. Isoperimetric penalty** (added in v1.x): the aspect-ratio score is blind to circular shapes — a circle and a square both have `a ≈ b` and would score equally. The penalty uses the isoperimetric ratio `Q = 4πA/P²`, which equals 1.0 only for a perfect circle and decreases for all other shapes (square: Q ≈ 0.785, rectangle 2:1: Q ≈ 0.698, ellipse: Q ≈ 0.97). When `Q > 0.90`, fidelity is scaled by `(1 - Q)`, driving it toward zero. This correctly flags circular and elliptical sections where Roark produces ~12% systematic error regardless of how compact the section looks.
 
-| Shape | Q isoperimetric | Aspect-ratio fidelity | Final fidelity |
-|---|---|---|---|
-| Circle (64 vertices) | 0.9994 | 0.955 | **0.00051** |
-| Ellipse 4×5 m | ~0.970 | high | **~0.03** |
-| Square | 0.785 | 1.000 | **1.000**  |
-| Rectangle 3×2 | 0.698 | 0.666 | **0.666**  |
-| Square hollow thin | 0.785 | 0.051 | **0.051**  |
+| Shape | Q isoperimetric | Aspect-ratio fidelity | Final fidelity | Δ vroark/FEM |
+|---|---|---|---|---|
+| Circle (64 vertices) | 0.9994 | 0.955 | **0.00051** | -12.4% ❌ |
+| Ellipse 4×5 m | ~0.970 | high | **~0.03** | — |
+| Square 1:1 | 0.785 | 1.000 | **1.000** | +0.18% ✅ |
+| Rectangle 1.5:1 | 0.723 | 0.666 | **0.666** | +0.26% ✅ |
+| Rectangle 2:1 | 0.698 | 0.500 | **0.500** | +0.08% ✅ |
+| Rectangle 3:1 | 0.637 | 0.333 | **0.333** | +0.03% ✅ |
+| Square hollow thin | 0.785 | 0.051 | **0.051** | -99.3% ❌ |
 
 ---
 
@@ -132,24 +134,30 @@ Analytical reference: Bredt formula `J = 4 · A_m² · t / s_m` (valid for thin-
 
 Use `J_s_vroark` as a substitute for `e.j` when **all** of the following conditions hold:
 
-1. `J_s_vroark_fidelity ≥ 0.8`
+1. `J_s_vroark_fidelity ≥ 0.3`
 2. The section is **solid** (no holes, no enclosed voids)
-3. The section is **not circular** (see exception below)
+3. The section is **not circular or elliptical** (isoperimetric penalty will drive fidelity to near zero)
 
-Under these conditions, the expected error is below 1%.
+Under these conditions, the expected error is below 0.3% — decreasing as the section becomes more elongated.
+
+> Note: fidelity reflects **section shape**, not accuracy of `J_s_vroark` for solid sections.
+> A rectangle 3:1 scores fidelity 0.333 but the J error is only +0.03%.
+> Low fidelity on a solid section means elongated geometry, not unreliable J.
 
 ### When to always use `e.j`
 
 Use `e.j` (from `csf_sp`) in any of the following situations:
 
-- The section has an **enclosed void** (hollow tube, box section, pipe) - regardless of wall thickness or fidelity
-- The section is **circular or elliptical** - fidelity will appear high but vroark systematically underestimates J
-- `J_s_vroark_fidelity < 0.5` - the equivalent-rectangle mapping does not represent the section geometry
+- The section has an **enclosed void** (hollow tube, box section, pipe) — regardless of wall thickness or fidelity
+- The section is **circular or elliptical** — fidelity will appear high but vroark systematically underestimates J
+- `J_s_vroark_fidelity < 0.5` — the equivalent-rectangle mapping does not represent the section geometry
 - The application is **load-bearing structural design** and accuracy below 5% is required
 
-### Intermediate zone (0.5 ≤ fidelity < 0.8)
+### When to always use `e.j` regardless of fidelity
 
-Proceed with caution. The error may be acceptable for preliminary sizing (order-of-magnitude estimates) but should not be used for final design. A cross-check with `e.j` at key stations is recommended.
+- The section has an **enclosed void** (hollow tube, box section, pipe)
+- The section is **circular or elliptical** (fidelity will be near zero after isoperimetric penalty)
+- `J_s_vroark_fidelity < 0.3` for any reason
 
 ---
 
