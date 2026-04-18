@@ -55,7 +55,8 @@ CSF_ACTIONS:
         output:
           - stdout                             # display interactively at end of run
           - out/sections2d.jpg                 # save to file (jpg, png, bmp)
-
+        show_ids: True
+        show_vertex_ids: True
     # -------------------------------------------------------------------------
     # CONTINUOUS PROPERTY VARIATION PLOT
     # Samples and plots selected section properties along z.
