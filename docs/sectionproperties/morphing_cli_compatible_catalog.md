@@ -590,8 +590,6 @@ python3 -m csf.utils.sp_csf rectangular_hollow_section \
 
 ## H11. `hexagonal-to-circular hollow tower`
 
-Recommended mode: `perimeter`
-
 Note: Hexagonal hollow base tapering to circular hollow top over 80 m:
 
 ```bash
