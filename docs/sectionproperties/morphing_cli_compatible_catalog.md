@@ -6,11 +6,36 @@ https://github.com/robbievanleeuwen/section-properties
 
 ## Scope
 
-This catalog lists morphing examples that are compatible with the current scalar CLI style:
+This tool currently targets **single, non-composite sections** from the `sectionproperties` catalog.
+
+The supported workflow is the current **scalar CLI style**:
 
 ```text
 section_name --morph other_section --s0 key=value,... --s1 key=value,...
 ```
+
+### What this means
+
+- `sp_csf` does **not** define its own section catalog.
+- The section name is passed through to `sectionproperties.pre.library`.
+- If a section constructor exists there, `sp_csf` can attempt to use it.
+- The current scope is limited to **catalog-based single sections** that fit this scalar parameter style.
+- This includes the current prismatic, tapered, and supported morphing workflows already implemented in `sp_csf`.
+
+### What is outside the current scope
+
+- composite sections
+- generic `Geometry` / `CompoundGeometry` construction
+- a separate geometric DSL
+- high-level generic section building beyond the current catalog-style interface
+
+### Practical implication
+
+`sp_csf` should currently be understood as:
+
+**a bridge from the `sectionproperties` catalog of single sections to CSF YAML**
+
+not as a general-purpose builder for arbitrary SP geometries.
 
 The examples avoid section constructors that require Python lists, custom material objects, or manual geometry composition.
 
