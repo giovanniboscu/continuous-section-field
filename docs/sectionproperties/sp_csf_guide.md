@@ -124,14 +124,14 @@ Same section at both ends - the simplest case.
 ```bash
 python3 -m csf.utils.sp_csf rectangular_hollow_section \
   --s0 d=200,b=150,t=10,r_out=15,n_r=8,z=0 \
-  --s1 d=200,b=150,t=10,r_out=15,n_r=8,z=10 \
+  --s1 d=100,b=150,t=10,r_out=15,n_r=8,z=10 \
    --gen-actions 
 ```
 
 ```bash
 python3 -m csf.utils.sp_csf circular_hollow_section \
   --s0 d=500,t=20,n=48,z=0 \
-  --s1 d=500,t=20,n=48,z=30 \
+  --s1 d=100,t=20,n=48,z=30 \
   --name=pipe --out=pipe.yaml \
    --gen-actions 
 ```
@@ -143,7 +143,7 @@ Same section type, different dimensions at S0 and S1.
 ```bash
 python3 -m csf.utils.sp_csf  rectangular_hollow_section \
   --s0 d=300,b=200,t=12,r_out=20,n_r=8,z=0 \
-  --s1 d=200,b=150,t=8,r_out=15,n_r=8,z=10 \
+  --s1 d=100,b=150,t=8,r_out=15,n_r=8,z=10 \
   --out=rhs_tapered.yaml \
    --gen-actions 
 ```
