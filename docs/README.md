@@ -44,6 +44,7 @@ Start here: these three guides cover everything you need to work with CSF effect
 | [full actions list/](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/rectangle) | Complete worked example covering all available actions on a tapered rectangular section — plots, reports, solver exports, and three weight law alternatives. Run with `python3 -m csf.CSFActions geometry.yaml actions.yaml`. |
 | [csftutorial.md](csftutorial.md) | Step-by-step YAML tutorial using `CSFActions.py` - no Python coding required. Covers installation, file structure, station sets, output rules, weight laws, and all available actions with examples. |
 | [QuickStartGuide.md](QuickStartGuide.md) | End-to-end practical workflow: geometry file, actions file, degradation law `w(z)`, running CSF, and interpreting outputs. Start here. |
+| [CSF complete reference with all available action](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/actions_template.yaml) |CSF Actions Template - complete reference with all available actions|
 
 ---
 ## API Reference & Programmig
