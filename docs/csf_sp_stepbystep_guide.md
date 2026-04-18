@@ -1,15 +1,23 @@
 # From sectionproperties to CSF: A Step-by-Step Guide
->`sectionproperties` is used as the analysis backend for the generated/interpolated sections. 
->Please refer to the original project and its license:
->https://github.com/robbievanleeuwen/section-properties
+
+> `sectionproperties` can be used by CSF as an optional analysis backend for generated or interpolated sections.  
+> Please refer to the original project and its license:  
+> https://github.com/robbievanleeuwen/section-properties
+
 **Progressive examples - Python API and YAML**
 
-This guide walks through a complete set of working examples that show how to move
-from native sectionproperties usage to the CSF declarative model. Each group is
-self-contained and can be run independently.
+This guide shows how `sectionproperties` can be used within a CSF workflow.
 
-All examples use the same base geometry: a rectangle 50 × 100 mm (b × h) that may
-taper and carry a varying weight along its length.
+CSF already computes a core set of section properties directly from its own geometric model, and in many applications this is fully sufficient. This is often the case, for example, in wind tower workflows, where CSF geometry together with `@cell`-based properties already provides the required section data.
+
+`sectionproperties` is therefore not mandatory. It is an optional backend that can be used when a more complete cross-section analysis is needed on generated or interpolated sections.
+
+In this integration:
+
+- CSF defines the member geometry continuously along `z`;
+- `sectionproperties` can be called on the resulting sections when additional section properties are required.
+
+All examples start from the same base geometry: a 50 × 100 mm rectangle (`b × h`), then progressively introduce tapering and longitudinal weight variation.
 
 ---
 
