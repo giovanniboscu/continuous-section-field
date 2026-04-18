@@ -41,7 +41,7 @@ CSF_ACTIONS:
           line_percent: 100.0                  # percentage of generator lines shown
           title: "Ruled volume"                # figure title
           show_end_sections: true              # draw end-section outlines at z0 and z1
-          seed: 0                              # RNG seed when line_percent < 100
+          seed: 0                              # RNG seed when line_percent < 100 or w | w<resolution> for weight line color feature
 
     # -------------------------------------------------------------------------
     # 2D CROSS-SECTION OUTLINES
