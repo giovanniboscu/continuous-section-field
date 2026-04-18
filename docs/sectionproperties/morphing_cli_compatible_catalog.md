@@ -603,6 +603,19 @@ python3 -m csf.utils.sp_csf polygon_hollow_section \
 ```
 
 
+## H12. `rounded square hollow to circular hollow tower`
+
+Note: Rounded square hollow base tapering to circular hollow top over 80: 
+
+```bash
+python3 -m csf.utils.sp_csf rectangular_hollow_section \
+  --morph circular_hollow_section \
+  --s0 d=4.2,b=4.2,t=0.028,r_out=0.30,n_r=16,z=0 \
+  --s1 d=2.2,t=0.014,n=48,z=80 \
+  --n=96 --name=tower --gen-actions \
+  --out=tower.yaml
+```
+
 # Open steel morphs
 
 ## S01. `channel_section -> tee_section`
