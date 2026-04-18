@@ -122,16 +122,18 @@ function.
 Same section at both ends - the simplest case.
 
 ```bash
-python sp_csf.py rectangular_hollow_section \
+python3 -m csf.utils.sp_csf rectangular_hollow_section \
   --s0 d=200,b=150,t=10,r_out=15,n_r=8,z=0 \
-  --s1 d=200,b=150,t=10,r_out=15,n_r=8,z=10
+  --s1 d=200,b=150,t=10,r_out=15,n_r=8,z=10 \
+   --gen-actions 
 ```
 
 ```bash
-python sp_csf.py circular_hollow_section \
+python3 -m csf.utils.sp_csf circular_hollow_section \
   --s0 d=500,t=20,n=48,z=0 \
   --s1 d=500,t=20,n=48,z=30 \
-  --name=pipe --out=pipe.yaml
+  --name=pipe --out=pipe.yaml \
+   --gen-actions 
 ```
 
 ### Tapered section
@@ -139,17 +141,19 @@ python sp_csf.py circular_hollow_section \
 Same section type, different dimensions at S0 and S1.
 
 ```bash
-python sp_csf.py rectangular_hollow_section \
+python3 -m csf.utils.sp_csf  rectangular_hollow_section \
   --s0 d=300,b=200,t=12,r_out=20,n_r=8,z=0 \
   --s1 d=200,b=150,t=8,r_out=15,n_r=8,z=10 \
-  --out=rhs_tapered.yaml
+  --out=rhs_tapered.yaml \
+   --gen-actions 
 ```
 
 ```bash
 python sp_csf.py i_section \
   --s0 d=400,b=200,t_f=15,t_w=10,r=18,n_r=8,z=0 \
   --s1 d=250,b=150,t_f=10,t_w=7,r=12,n_r=8,z=8 \
-  --out=i_tapered.yaml
+  --out=i_tapered.yaml \
+   --gen-actions 
 ```
 
 > **Note**: for tapered sections, `n_r` and `n` (discretisation parameters)
@@ -162,29 +166,32 @@ auto-aligned by default.
 
 ```bash
 # I-section → circular section
-python sp_csf.py i_section \
+python3 -m csf.utils.sp_csf  i_section \
   --morph circular_section \
   --s0 d=200,b=100,t_f=10,t_w=6,r=12,n_r=8,z=0 \
   --s1 d=150,n=32,z=10 \
-  --n=64 --out=i_to_circle.yaml
+  --n=64 --out=i_to_circle.yaml \
+   --gen-actions 
 ```
 
 ```bash
 # RHS → CHS (hollow → hollow)
-python sp_csf.py rectangular_hollow_section \
+python3 -m csf.utils.sp_csf  rectangular_hollow_section \
   --morph circular_hollow_section \
   --s0 d=200,b=150,t=10,r_out=15,n_r=8,z=0 \
   --s1 d=180,t=8,n=32,z=12 \
-  --n=64 --out=rhs_to_chs.yaml
+  --n=64 --out=rhs_to_chs.yaml \
+   --gen-actions 
 ```
 
 ```bash
 # Wind tower: square hollow → circular hollow over 70 m
-python sp_csf.py rectangular_hollow_section \
+python3 -m csf.utils.sp_csf  rectangular_hollow_section \
   --morph circular_hollow_section \
   --s0 d=4000,b=4000,t=30,r_out=300,n_r=16,z=0 \
   --s1 d=2500,t=18,n=48,z=70000 \
-  --n=96 --name=tower --out=wind_tower.yaml
+  --n=96 --name=tower --out=wind_tower.yaml \
+   --gen-actions 
 ```
 
 ### Twist
@@ -193,19 +200,21 @@ Apply a rotation to S1 to model a member that twists from base to top.
 
 ```bash
 # RHS → CHS with 45° twist at top
-python sp_csf.py rectangular_hollow_section \
+python3 -m csf.utils.sp_csf  rectangular_hollow_section \
   --morph circular_hollow_section \
   --s0 d=200,b=150,t=10,r_out=15,n_r=8,z=0 \
   --s1 d=180,t=8,n=32,z=10 \
-  --twist1=45 --out=rhs_to_chs_twist45.yaml
+  --twist1=45 --out=rhs_to_chs_twist45.yaml \
+   --gen-actions 
 ```
 
 ```bash
 # Prismatic RHS with 90° pure twist along the member
-python sp_csf.py rectangular_hollow_section \
+python3 -m csf.utils.sp_csf  rectangular_hollow_section \
   --s0 d=200,b=150,t=10,r_out=15,n_r=8,z=0 \
   --s1 d=200,b=150,t=10,r_out=15,n_r=8,z=10 \
-  --twist1=90 --out=rhs_twist90.yaml
+  --twist1=90 --out=rhs_twist90.yaml \
+   --gen-actions 
 ```
 
 ```bash
@@ -214,7 +223,8 @@ python sp_csf.py i_section \
   --morph rectangular_section \
   --s0 d=200,b=100,t_f=10,t_w=6,r=12,n_r=8,z=0 \
   --s1 d=150,b=150,z=12 \
-  --twist1=30 --n=64 --out=i_to_rect_twist30.yaml
+  --twist1=30 --n=64 --out=i_to_rect_twist30.yaml \
+   --gen-actions 
 ```
 
 ### Manual offset (auto-align disabled)
@@ -222,12 +232,13 @@ python sp_csf.py i_section \
 Disable auto-alignment and control offsets explicitly.
 
 ```bash
-python sp_csf.py rectangular_hollow_section \
+ppython3 -m csf.utils.sp_csf rectangular_hollow_section \
   --morph circular_hollow_section \
   --s0 d=200,b=200,t=10,r_out=20,n_r=8,z=0 \
   --s1 d=150,t=8,n=32,z=10 \
   --no-align --dx1=25 --dy1=25 \
-  --out=manual_offset.yaml
+  --out=manual_offset.yaml \
+  --gen-actions 
 ```
 
 ### Offset S1 relative to S0 (eccentric connection)
@@ -235,10 +246,11 @@ python sp_csf.py rectangular_hollow_section \
 Both centroids aligned, then S1 shifted by an additional offset.
 
 ```bash
-python sp_csf.py circular_hollow_section \
+python3 -m csf.utils.sp_csf  circular_hollow_section \
   --s0 d=400,t=15,n=48,z=0 \
   --s1 d=300,t=12,n=48,z=10 \
-  --dx1=50 --out=chs_eccentric.yaml
+  --dx1=50 --out=chs_eccentric.yaml \
+  --gen-actions 
 ```
 
 > When `auto_align=True` (default) and an explicit `--dx1` is provided, the
