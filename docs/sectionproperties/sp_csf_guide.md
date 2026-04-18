@@ -75,7 +75,7 @@ for example a helical wind turbine tower or a twisted architectural column.
 ## CLI Reference
 
 ```
-python sp_csf.py <section_s0> [options]
+python3 -m csf.utils.sp_csf  <section_s0> [options]
 ```
 
 ### Required arguments
