@@ -587,6 +587,24 @@ python3 -m csf.utils.sp_csf rectangular_hollow_section \
   --morph-mode perimeter
 ```
 
+
+## H11. `hexagonal-to-circular hollow tower`
+
+Recommended mode: `perimeter`
+
+Note: Hexagonal hollow base tapering to circular hollow top over 80 m:
+
+```bash
+python3 -m csf.utils.sp_csf polygon_hollow_section \
+  --morph circular_hollow_section \
+  --s0 d=5.0,t=0.035,n_sides=6,r_in=0,n_r=8,z=0 \
+  --s1 d=3.5,t=0.022,n=48,z=80 \
+  --n=96 --name=tower \
+  --out=tower_poly_to_round.yaml \
+  --gen-actions
+```
+
+
 # Open steel morphs
 
 ## S01. `channel_section -> tee_section`
