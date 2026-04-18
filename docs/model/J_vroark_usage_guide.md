@@ -1,4 +1,4 @@
-# `J_s_vroark` — torsional constant estimate: usage guide
+# `J_s_vroark` - torsional constant estimate: usage guide
 
 ## What it is
 
@@ -6,19 +6,19 @@ CSF provides two complementary estimators for the Saint-Venant torsional constan
 
 | Output | Method | Cost |
 |---|---|---|
-| `J_s_vroark` | Roark formula on equivalent rectangle (mesh-free) | zero — always available |
+| `J_s_vroark` | Roark formula on equivalent rectangle (mesh-free) | zero - always available |
 | `e.j` | Full FEM warping solve via `sectionproperties` | requires `csf_sp` call |
-| `J_s_vroark_fidelity` | Geometric reliability indicator ∈ (0, 1] | zero — always available |
+| `J_s_vroark_fidelity` | Geometric reliability indicator ∈ (0, 1] | zero - always available |
 
 `J_s_vroark` is a fast proxy. `e.j` is the reference. Fidelity tells you when the proxy is trustworthy.
 
 ---
 
-## Fidelity — how it is computed
+## Fidelity - how it is computed
 
 Fidelity combines two checks.
 
-**Aspect-ratio score** `r = t_eq / a_eq` — ratio of short to long side of the equivalent rectangle derived from effective area and minimum principal inertia:
+**Aspect-ratio score** `r = t_eq / a_eq` - ratio of short to long side of the equivalent rectangle derived from effective area and minimum principal inertia:
 
 ```
 t_eq = sqrt(12 · I_min / A_eff)
@@ -28,13 +28,13 @@ r    = t_eq / a_eq  ∈ (0, 1]
 
 `r = 1` for a square, decreasing toward zero for elongated sections. Verified on all test cases: `fidelity = r` for non-circular solid sections.
 
-**Isoperimetric penalty** — activated when `Q = 4πA/P² > 0.90` (circle: Q=1, square: Q=0.785). Drives fidelity to near zero for circular and elliptical sections, correctly flagging the ~12% systematic underestimate by Roark.
+**Isoperimetric penalty** - activated when `Q = 4πA/P² > 0.90` (circle: Q=1, square: Q=0.785). Drives fidelity to near zero for circular and elliptical sections, correctly flagging the ~12% systematic underestimate by Roark.
 
-For geometrically similar tapered members, fidelity is **constant along the entire member axis** — one check at any station classifies the full member.
+For geometrically similar tapered members, fidelity is **constant along the entire member axis** - one check at any station classifies the full member.
 
 ---
 
-## Validation dataset — effect of polygon weight `w`
+## Validation dataset - effect of polygon weight `w`
 
 | Case | w | `J_s_vroark` | `J_s_vroark_fidelity` | `e.j` |
 |---|---|---|---|---|
@@ -50,14 +50,14 @@ For geometrically similar tapered members, fidelity is **constant along the enti
 | complexboxesw1 | 1.0 | 2.67006702 | 0.44445209 | 1.60937700 |
 | complexboxesw0.5 | 0.5 | 0.86876799 | 0.88890418 | 0.80468870 |
 
-`*` — yaml polygon weights used as-is (mixed: 1.0, 0.9, 0.7, 0.8, 0.6).
+`*` - yaml polygon weights used as-is (mixed: 1.0, 0.9, 0.7, 0.8, 0.6).
 
 **Key observations:**
 
-- `e.j = J_SV(geometry) × w` — confirmed at 0.000% for all cases with fine mesh.
-- `fidelity = r = t_eq / a_eq` — confirmed on all cases. Variation with `w` depends on whether the swap condition is triggered: fidelity ∝ 1/w when no swap occurs, fidelity ∝ w when swap is fixed.
+- `e.j = J_SV(geometry) × w` - confirmed at 0.000% for all cases with fine mesh.
+- `fidelity = r = t_eq / a_eq` - confirmed on all cases. Variation with `w` depends on whether the swap condition is triggered: fidelity ∝ 1/w when no swap occurs, fidelity ∝ w when swap is fixed.
 - `J_s_vroark` is reliable (error < 0.3%) only for **w = 1, solid rectangular sections**. For w ≠ 1 the mapping distorts the aspect ratio, producing errors from −44% to −79%.
-- `complexboxesw1` and `complexboxesw0.5` are the same yaml as `complexboxes` with a global weight multiplier — identical values confirm the mechanism is geometry-independent.
+- `complexboxesw1` and `complexboxesw0.5` are the same yaml as `complexboxes` with a global weight multiplier - identical values confirm the mechanism is geometry-independent.
 
 ---
 
@@ -72,7 +72,7 @@ For geometrically similar tapered members, fidelity is **constant along the enti
 > A 3:1 rectangle has fidelity 0.333 but J error below 0.1%.
 
 **Always use `e.j`** if any of the following:
-- Section has an enclosed void (hollow tube, box, pipe) — any wall thickness
+- Section has an enclosed void (hollow tube, box, pipe) - any wall thickness
 - Section is circular or elliptical
 - `J_s_vroark_fidelity < 0.3`
 - Structural design requires accuracy below 5%
