@@ -17,6 +17,12 @@ In this integration:
 - CSF defines the member geometry continuously along `z`;
 - `sectionproperties` can be called on the resulting sections when additional section properties are required.
 
+CSF geometry can be defined in two ways: programmatically or through YAML.  
+For this reason, the guide is organised in two parts. It first shows how to integrate CSF with `sectionproperties` through the Python API, starting from geometry defined directly in code. In the final part, the same workflow is presented using the YAML-based CSF description.
+
+For further details on how to use the CSF-`sectionproperties` integration through YAML, see the dedicated guide here:  
+https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md
+
 All examples start from the same base geometry: a 50 × 100 mm rectangle (`b × h`), then progressively introduce tapering and longitudinal weight variation.
 
 ---
