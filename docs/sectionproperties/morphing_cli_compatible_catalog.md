@@ -618,7 +618,7 @@ python3 -m csf.utils.sp_csf rectangular_hollow_section \
 
 # Open steel morphs
 
-## S01. `channel_section -> tee_section`
+## S01. `channel_section -> tee_section` - x
 
 Recommended mode: `perimeter`
 
@@ -635,7 +635,7 @@ python3 -m csf.utils.sp_csf channel_section \
   --morph-mode perimeter
 ```
 
-## S02. `tee_section -> channel_section`
+## S02. `tee_section -> channel_section` -x 
 
 Recommended mode: `perimeter`
 
@@ -652,7 +652,7 @@ python3 -m csf.utils.sp_csf tee_section \
   --morph-mode perimeter
 ```
 
-## S03. `tee_section -> angle_section`
+## S03. `tee_section -> angle_section` - x
 
 Recommended mode: `perimeter`
 
@@ -669,7 +669,7 @@ python3 -m csf.utils.sp_csf tee_section \
   --morph-mode perimeter
 ```
 
-## S04. `angle_section -> tee_section`
+## S04. `angle_section -> tee_section` + x
 
 Recommended mode: `perimeter`
 
@@ -686,7 +686,7 @@ python3 -m csf.utils.sp_csf angle_section \
   --morph-mode perimeter
 ```
 
-## S05. `cee_section -> zed_section`
+## S05. `cee_section -> zed_section` -x 
 
 Recommended mode: `perimeter`
 
@@ -703,7 +703,7 @@ python3 -m csf.utils.sp_csf cee_section \
   --morph-mode perimeter
 ```
 
-## S06. `zed_section -> cee_section`
+## S06. `zed_section -> cee_section` -x 
 
 Recommended mode: `perimeter`
 
@@ -720,7 +720,7 @@ python3 -m csf.utils.sp_csf zed_section \
   --morph-mode perimeter
 ```
 
-## S07. `angle_section -> rectangular_section`
+## S07. `angle_section -> rectangular_section` -x 
 
 Recommended mode: `perimeter`
 
@@ -756,7 +756,7 @@ python3 -m csf.utils.sp_csf tee_section \
 
 # NASTRAN scalar morphs
 
-## N01. `nastran_i -> nastran_h`
+## N01. `nastran_i -> nastran_h` -x 
 
 Recommended mode: `perimeter`
 
@@ -773,7 +773,7 @@ python3 -m csf.utils.sp_csf nastran_i \
   --morph-mode perimeter
 ```
 
-## N02. `nastran_h -> nastran_i`
+## N02. `nastran_h -> nastran_i` -x
 
 Recommended mode: `perimeter`
 
@@ -790,7 +790,7 @@ python3 -m csf.utils.sp_csf nastran_h \
   --morph-mode perimeter
 ```
 
-## N03. `nastran_chan -> nastran_tee`
+## N03. `nastran_chan -> nastran_tee` -x
 
 Recommended mode: `perimeter`
 
@@ -807,7 +807,7 @@ python3 -m csf.utils.sp_csf nastran_chan \
   --morph-mode perimeter
 ```
 
-## N04. `nastran_tee -> nastran_chan`
+## N04. `nastran_tee -> nastran_chan` -x
 
 Recommended mode: `perimeter`
 
@@ -824,7 +824,7 @@ python3 -m csf.utils.sp_csf nastran_tee \
   --morph-mode perimeter
 ```
 
-## N05. `nastran_l -> nastran_tee`
+## N05. `nastran_l -> nastran_tee` -x
 
 Recommended mode: `perimeter`
 
@@ -841,7 +841,7 @@ python3 -m csf.utils.sp_csf nastran_l \
   --morph-mode perimeter
 ```
 
-## N06. `nastran_tee -> nastran_l`
+## N06. `nastran_tee -> nastran_l` -x
 
 Recommended mode: `perimeter`
 
@@ -858,7 +858,7 @@ python3 -m csf.utils.sp_csf nastran_tee \
   --morph-mode perimeter
 ```
 
-## N07. `nastran_hat -> nastran_zed`
+## N07. `nastran_hat -> nastran_zed` -x
 
 Recommended mode: `perimeter`
 
@@ -875,7 +875,7 @@ python3 -m csf.utils.sp_csf nastran_hat \
   --morph-mode perimeter
 ```
 
-## N08. `nastran_zed -> nastran_hat`
+## N08. `nastran_zed -> nastran_hat` -x
 
 Recommended mode: `perimeter`
 
