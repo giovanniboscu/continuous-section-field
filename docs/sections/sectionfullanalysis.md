@@ -726,12 +726,6 @@ Internal consistency index for the equivalent-rectangle mapping pipeline used to
 
 **Range:** `[0, 1]`
 
-| `J_s_vroark_fidelity` | Validity | Recommendation |
-|---|---|---|
-| `>= 0.6` | applicable | `J_s_vroark` can be used directly |
-| `0.3 – 0.6` | borderline validity | cross-check with `e.j` recommended |
-| `< 0.3` | not applicable | always use `e.j` |
-
 ---
 
 ## What `J_s_vroark_fidelity` means
