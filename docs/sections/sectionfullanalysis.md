@@ -720,9 +720,10 @@ Notes:
 ## 19. Roark Fidelity Index
 
 **Key:** `J_s_vroark_fidelity`
-[J_s_vroark usage guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J_vroark_usage_guide.md)
 
-Internal consistency index for the equivalent-rectangle mapping pipeline used to compute `J_s_vroark`. Intended as a trend/reliability indicator within the same method, not as an absolute physical accuracy metric.
+**References:**
+- [J_s_vroark usage guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J_vroark_usage_guide.md)
+- Engineering note: `roark_torsional_indicator_note.md` (conceptual background on `J_s_vroark` and the fidelity mechanism)
 
 **Range:** `[0, 1]`
 
@@ -730,61 +731,49 @@ Internal consistency index for the equivalent-rectangle mapping pipeline used to
 
 ## What `J_s_vroark_fidelity` means
 
-`J_s_vroark_fidelity` is a **method-internal consistency indicator** for the same equivalent-mapping pipeline used to compute `J_s_vroark`.
+`J_s_vroark_fidelity` is a **geometric validity indicator** for the equivalent-rectangle mapping behind `J_s_vroark`. It answers a single question: *is this cross-section still close enough to a filled rectangle for a Roark rectangle formula to be meaningful?*
+
+It is not a torsion value, and it does not measure physical accuracy in absolute terms. It measures whether the simplifying assumptions of the Roark method still hold for the current geometry.
 
 Use it to:
-- compare reliability trends along `z` **within the same model and same method**,
-- identify zones where the equivalent mapping is more/less stable.
 
-Do **not** use it as:
-- an absolute, geometry-independent physical accuracy metric.
+- decide whether `J_s_vroark` can be trusted for the current section,
+- identify regions along `z` where the Roark mapping degrades,
+- flag sections that require a different torsion method (`J_s_v_cell` for closed thin-walled shapes, `J_s_v_wall` for open thin-walled shapes).
+
+Do not use it as:
+
+- an absolute, method-independent accuracy metric,
+- a substitute for a physically rigorous torsion computation,
+- a quantitative estimate of the error on `J_s_vroark`.
 
 ---
 
-## How to read the fidelity plot correctly
+## How to read the value
 
-When you look at `J_s_vroark_fidelity(z)`:
+- **≥ 0.9** — the section is compact and rectangle-like; `J_s_vroark` is a reasonable estimate.
+- **0.7 – 0.9** — borderline geometry, typically mild asymmetry or light non-structural material; `J_s_vroark` remains usable, with visible error.
+- **< 0.7** — the geometry is no longer rectangle-like (T, H, I, internal voids, extreme weight dispersion); `J_s_vroark` should be discarded in favor of `J_s_v_cell` or `J_s_v_wall`.
 
-1. **Check continuity first**  
-   If the curve is continuous and smooth except for mild corners, behavior is usually numerically consistent.
+A practical rule for automated pipelines is to reject `J_s_vroark` whenever fidelity drops below 0.7.
 
-2. **Correlate with inertia branches**  
-   Plot `Ix`, `Iy`, `I2` together.  
-   If `Ix - Iy` crosses zero, `I2` may change branch and show a kink.
+---
 
-3. **Do not over-interpret local sharpness**  
-   A narrow sharp point can be a branch-swap signature, not a solver failure.
+## How to read the fidelity plot along z
 
-4. **Read fidelity as a trend**  
-   Focus on zones where fidelity degrades persistently over intervals, not on one single point.
+When you plot `J_s_vroark_fidelity(z)`:
+
+1. **Prefer trend over point values.** Persistent degradation over a `z` interval is meaningful; an isolated sharp point often corresponds to a principal-inertia branch swap (`Ix − Iy` changing sign), not a solver failure.
+
+2. **Correlate with the inertias.** Plot `Ix`, `Iy`, and `I2` together. Kinks in fidelity frequently align with principal-axis rotations, which are geometric transitions rather than errors.
+
+3. **Cross-check the torsion value.** Where fidelity is high, compare `J_s_vroark` with `J_s_v_cell` or `J_s_v_wall` when available. Agreement at high fidelity increases confidence in all three methods for that section family.
 
 ---
 
 ## Suggested wording for reports
 
-> `J_s_vroark_fidelity` quantifies internal consistency of the equivalent-mapping approach used for `J_s_vroark` along the member axis.  
-> It is intended for comparative trend reading within the same method, not as a universal physical accuracy guarantee for arbitrary section shapes.
-
----
-
-## Plot-reading checklist (quick)
-
-Before concluding there is a bug, verify:
-- [ ] `I2` left/right test with shrinking `dz`
-- [ ] `Ix - Iy` sign around the same `z`
-- [ ] `Ixy` magnitude (near zero often implies branch behavior is easier to interpret)
-- [ ] no true jump in value, only slope change
-- [ ] fidelity interpreted as method-confidence trend, not absolute truth
-
----
-
-## Recommended figure set in documentation
-
-To make interpretation robust, include these plots together:
-1. `Ix(z), Iy(z), I2(z)` (same figure)
-2. `Ix(z) - Iy(z)` (crossing visibility)
-3. `J_s_vroark(z)`
-4. `J_s_vroark_fidelity(z)`
+> `J_s_vroark_fidelity` quantifies the geometric validity of the equivalent-rectangle mapping used to compute `J_s_vroark`. It reflects how close the actual cross-section is to a filled rectangle, not the absolute error on the torsional constant. Values above 0.9 indicate reliable Roark applicability; values below 0.7 indicate that the section should be treated with a thin-walled or full Saint-Venant method.
 
 >## A note on Adhémar Jean Claude Barré de Saint-Venant
 >
