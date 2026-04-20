@@ -1,4 +1,4 @@
-# Roark-based Torsional Indicator - Engineering Note
+# Roark-based Torsional Indicator -Engineering Note
 
 ## Purpose
 
@@ -18,7 +18,7 @@ Three geometric checks are combined.
 
 **Weighted compactness.** How well the material fills a bounding box that has been contracted toward the geometric centroid in proportion to polygon weights. Light flanges effectively disappear from this box, so the indicator reflects structural material rather than outline.
 
-**Container gap veto.** The compactness test can be misleading when a shape has voids inside its outline - the classic T/H/I case. If the raw geometry leaves more than 10% of its minimum bounding rectangle empty, and the base fidelity would otherwise be high, fidelity is set to zero. This catches cases where the weights suggest a compact shape but the geometry says otherwise.
+**Container gap veto.** The compactness test can be misleading when a shape has voids inside its outline -the classic T/H/I case. If the raw geometry leaves more than 10% of its minimum bounding rectangle empty, and the base fidelity would otherwise be high, fidelity is set to zero. This catches cases where the weights suggest a compact shape but the geometry says otherwise.
 
 **Weight dispersion.** The linear correction `w_roark` cannot fully compensate for the non-linearity of the Roark mapping when weights vary significantly across the section. A gentle penalty, `fid · w_roark^0.1`, reflects this residual uncertainty without overreacting.
 
@@ -28,9 +28,9 @@ Three geometric checks are combined.
 
 In practice:
 
-- **fidelity close to 1.0** - the geometry is compact and rectangle-like; the Roark value is a reasonable estimate.
-- **fidelity between 0.7 and 0.9** - borderline case, typically mild asymmetry or light non-structural material; the value may still be useful but with visible error.
-- **fidelity below 0.6** - the geometry is no longer rectangle-like; discard `J_s_vroark` and use another torsional method (Bredt–Batho for closed thin-walled sections, Saint-Venant FEM for general cases).
+- **fidelity close to 1.0** -the geometry is compact and rectangle-like; the Roark value is a reasonable estimate.
+- **fidelity between 0.7 and 0.9** -borderline case, typically mild asymmetry or light non-structural material; the value may still be useful but with visible error.
+- **fidelity below 0.6** -the geometry is no longer rectangle-like; discard `J_s_vroark` and use another torsional method (Bredt–Batho for closed thin-walled sections, Saint-Venant FEM for general cases).
 
 A reasonable rule of thumb for automated pipelines is to reject the Roark value whenever fidelity falls below 0.7.
 
