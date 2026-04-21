@@ -29,13 +29,13 @@ Each lines is colored by its own normalized material participation factor w(z)
 a scalar field that scales the stiffness contribution
 </p>
 
-
->**The Problem**
 >
->Non-prismatic members with localized degradation demand manual discretization and recalculation-an error‑prone, non‑reproducible process
->CSF eliminates this through a continuous field where geometry and degradation are independent functions of $z$: the entire model resides in one YAML file, from which the complete analysis can be reconstructed exactly and repeated deterministically.
+> **The Problem**
 >
->**📁 Reference:** [`actions-examples/histwin/`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin)
+> Non-prismatic members with localized degradation demand manual discretization and recalculation **—** an error‑prone, non‑reproducible process **.**
+> **CSF eliminates this** through a continuous field where geometry and degradation are independent functions of $z$: the entire model resides in one YAML file, from which the complete analysis can be reconstructed exactly and repeated deterministically.
+>
+> **📁 Reference:** [`actions-examples/histwin/`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin)
 >
 
 
