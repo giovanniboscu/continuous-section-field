@@ -32,7 +32,7 @@ a scalar field that scales the stiffness contribution
 >
 > **The Problem**
 >
-> Non-prismatic members with localized degradation demand manual discretization and recalculation **—** an error‑prone, non‑reproducible process **.**
+> Non-prismatic members with localized degradation demand manual discretization and recalculation an error‑prone, non‑reproducible process **.**
 > **CSF eliminates this** through a continuous field where geometry and degradation are independent functions of $z$: the entire model resides in one YAML file, from which the complete analysis can be reconstructed exactly and repeated deterministically.
 >
 > **📁 Reference:** [`actions-examples/histwin/`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin)
