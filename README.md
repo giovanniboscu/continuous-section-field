@@ -32,13 +32,8 @@ a scalar field that scales the stiffness contribution
 
 >**The Problem**
 >
->Analysis of non-prismatic members with localized degradation (e.g., corrosion) traditionally requires manual station discretization and property recalculation-a process that is both error-prone and non-reproducible.
->
->**CSF Approach**
->
->CSF defines a continuous field where cross‑section geometry and material degradation are independent functions of the axial coordinate $z$.  
->The entire model (geometry + degradation law) is stored in a **single YAML file**.
->From this file, the complete section property distribution can be **reconstructed exactly** and the entire analysis workflow **repeated deterministically**.
+>Non-prismatic members with localized degradation demand manual discretization and recalculation-an error‑prone, non‑reproducible process
+>CSF eliminates this through a continuous field where geometry and degradation are independent functions of $z$: the entire model resides in one YAML file, from which the complete analysis can be reconstructed exactly and repeated deterministically.
 >
 >**📁 Reference:** [`actions-examples/histwin/`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin)
 >
