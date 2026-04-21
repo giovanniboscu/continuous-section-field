@@ -41,7 +41,7 @@ a scalar field that scales the stiffness contribution
 
 ---
 
-CSF combines:
+**CSF combines:**
 
 - **Geometry field**: arbitrary polygonal sections defined at stations (`S0`, `S1`) with continuous interpolation for tapered or varying shapes.
 
