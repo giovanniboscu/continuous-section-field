@@ -37,7 +37,7 @@ a scalar field that scales the stiffness contribution
 >
 >**📁 Reference:** [`actions-examples/histwin/`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin)
 >
-![Tower Analysis](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin)
+
 
 ---
 
