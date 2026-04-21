@@ -261,9 +261,10 @@ CSF_ACTIONS:
       - 10.0
 
   actions:
-    - plot_volume_3d:
+    - :
         params:
           line_percent: 100.0
+          seed: w 
           title: "Ruled volume"
 
     - section_selected_analysis:
@@ -341,7 +342,7 @@ CSF_ACTIONS:
     idx_polygon,idx_container,s0_name,s1_name,w,vertex_i,x,y
     0,,rect,rect,1.00000000,0,-0.50000000,0.00000000
     0,,rect,rect,1.00000000,1,0.50000000,0.00000000
-    0,,rect,rect,1.00000000,2,0.500000000,1.00000000
+    0,,rect,rect,1.000000000,2,0.500000000,1.00000000
     0,,rect,rect,1.00000000,3,-0.50000000,1.00000000
 
 ---
@@ -423,9 +424,10 @@ CSF_ACTIONS:
       - 10.0
 
   actions:
-    - plot_volume_3d:
+    - :
         params:
           line_percent: 100.0
+          seed: w200 
           title: "Ruled volume"
 
     - section_selected_analysis:
@@ -444,7 +446,7 @@ CSF_ACTIONS:
 
 ## What these actions do
 
-- `plot_volume_3d` plots the ruled member volume
+- `` plots the ruled member volume
 - `section_selected_analysis` evaluates the selected stations and writes:
   - section properties
   - geometry export if `geometry` is included in `properties`
@@ -613,9 +615,10 @@ CSF_ACTIONS:
       - 10.0
 
   actions:
-    - plot_volume_3d:
+    - :
         params:
           line_percent: 100.0
+          seed: w 
           title: " - mycase 3D -"
 
     - section_selected_analysis:
@@ -667,24 +670,41 @@ csf-actions geometry.yaml actions.yaml
 ```
 ---
 
-### 6.4 `plot_volume_3d` (stations FORBIDDEN)
+### 6.4 `` (stations FORBIDDEN)
 
 **Concept**  
 Shows a 3D ruled “volume” between end sections. This action uses the **endpoints** only.
 
+The `seed` parameter can be an integer, `w`, or `w<number>` (for example `w200`).
 
 **YAML**
 
 ```yaml
 CSF_ACTIONS:
   actions:
-    - plot_volume_3d:
+    - :
         output: [stdout]
         params:
           show_end_sections: true
           line_percent: 50.0
-          seed: 0
+          seed: w200
           title: "CSF volume"
+```
+
+**Additional examples**
+
+```yaml
+    - :
+        params:
+          line_percent: 100.0
+          seed: w 
+          title: "Ruled volume"
+
+    - :
+        params:
+          line_percent: 100.0
+          seed: w200 
+          title: "Ruled volume"
 ```
 
 **CLI**
@@ -696,7 +716,7 @@ csf-actions geometry.yaml actions.yaml
 **Expected output snippet**
 
 ```
-[OK] plot_volume_3d scheduled (display at end)
+[OK]  scheduled (display at end)
 ```
 
 **Pitfalls**
@@ -726,9 +746,10 @@ CSF_ACTIONS:
       - 10.0
 
   actions:
-    - plot_volume_3d:
+    - :
         params:
           line_percent: 100.0
+          seed: w 
           title: " - mycase 3D -"
     - plot_properties:
         output: [stdout, out/properties.png]
@@ -1116,7 +1137,7 @@ CSF_ACTIONS:
 
   actions:
 
-        
+
     - plot_weight:
         output:
           - stdout
@@ -1158,7 +1179,7 @@ CSF:
             - [-0.5, 2.0]
   weight_laws:
     - 'rect,rect: 1.0 - 0.3*(z/L)*(z/L)'     
-    
+
 ```
 
 
@@ -1403,7 +1424,7 @@ csf-actions geometry.yaml actions.yaml
 | `section_full_analysis` | REQUIRED | - | `fmt_display` (str → `.8f`) | stdout report; `.csv` table; other text file |
 | `section_selected_analysis` | REQUIRED | `properties` (list, non-empty) | `fmt_display` (str → `.8f`) | compact stdout; `.csv` (z + selected keys); other text file |
 | `plot_section_2d` | REQUIRED | - | `show_ids` (bool → true), `show_weights` (bool → true), `show_vertex_ids` (bool → false), `title` (str → null), `dpi` (int → 150) | stdout shows at end; image files saved if provided |
-| `plot_volume_3d` | FORBIDDEN | - | `show_end_sections` (bool → true), `line_percent` (float → 100.0), `seed` (int → 0), `title` (str → "Ruled volume (vertex-connection lines)") | display-only (stdout); no file saving by design |
+| `plot_volume_3d` | FORBIDDEN | - | `show_end_sections` (bool → true), `line_percent` (float → 100.0), `seed` (int or str → `0`; supports `w` and `w<number>`, where `w` colors the generator lines of the polygons as a function of the weight `w`), `title` (str → "Ruled volume (vertex-connection lines)")`| display-only (stdout); no file saving by design |
 | `plot_properties` | FORBIDDEN | `properties` (list, non-empty) | `num_points` (int → 100) | stdout display unless file-only; image saved if path given |
 | `plot_weight` | FORBIDDEN | - | `num_points` (int → 100) | stdout display unless file-only; image saved if path given |
 | `weight_law_zrelative` | REQUIRED | `weight_law` (list[str], non-empty) | - | text-only; stdout and/or text files |
@@ -1511,5 +1532,3 @@ These conventions are not enforced, but they improve readability and reduce mist
 4. All station sets referenced by actions exist.
 5. Output folders exist (`out/`).
 6. Run `--validate-only` once before long runs.
-
-
