@@ -257,22 +257,27 @@ The subtraction of the parent material is handled internally by CSF.
 
 ## Nesting Hierarchy and Effective Weight
 
-When polygons are nested, CSF automatically detects the immediate container of each polygon.
+When polygons are nested (one polygon inside another), CSF automatically detects the immediate container of each polygon.
 
-From this internal containment logic, CSF assembles the contribution of each region consistently during section-property evaluation.
+The rule is simple: **each polygon subtracts its weight only from its immediate container.** Ancestors higher in the nesting chain are not considered.
 
-The value assigned by the user remains the polygon’s absolute weight `W(z)`, while CSF internally derives the effective local contribution `W_eff(z)` relative to the containing domain.
-No manual subtraction or containment correction is required from the user.
+> *"Like diving into a swimming pool: you displace only the water in the pool, not the lawn around it nor the hill underneath."*
+
+This means:
+- A void (`weight = 0.0`) removes material only from its direct parent.
+- An embedded reinforcement (`weight = 210000`) inside concrete (`weight = 30000`) contributes `210000 - 30000 = 180000` to the homogenized section.
+- Three or more levels of nesting work the same way: each level subtracts from its immediate parent. No special cases, no exceptions.
+
+CSF handles this automatically. No manual subtraction or containment correction is required from the user.
 
 ### Example: embedded steel reinforcement in concrete
 
-| Polygon   | Absolute weight W | Container         | W_eff                        |
-|-----------|-------------------|-------------------|------------------------------|
-| Concrete  | 30 000            | none (root)       | 30 000                       |
-| Steel bar | 210 000           | Concrete          | 210 000 − 30 000 = 180 000   |
+| Polygon | Absolute weight W | Container | W_eff |
+|---------|-------------------|-----------|-------|
+| Concrete | 30 000 | none (root) | 30 000 |
+| Steel bar | 210 000 | Concrete | 210 000 − 30 000 = 180 000 |
 
-The user declares only the absolute material property of each polygon.
-The effective contribution is derived automatically from the containment relationship.
+The user declares only the absolute material property of each polygon. The effective contribution is derived automatically from the containment relationship.
 
 > **Note:** only the *immediate* parent is considered, not ancestors higher in the nesting hierarchy.
 
