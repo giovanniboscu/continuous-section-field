@@ -53,6 +53,7 @@ CSF_ACTIONS:
     - plot_volume_3d:
         params:
           line_percent: 100.0
+          seed: w 
           title: "Ruled volume"
     - section_selected_analysis:
         stations: stations_example
