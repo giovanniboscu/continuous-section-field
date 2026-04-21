@@ -1,4 +1,3 @@
-# == DRAFT ==
 # CSF-SP Complex Integration Verification Report
 
 Source code: [`csf_sp_complex_integration_verification.py`](./csf_sp_complex_integration_verification.py)
