@@ -262,7 +262,7 @@ The subtraction of the parent material is handled internally by CSF.
 
 When polygons are nested (one polygon inside another), CSF automatically detects the immediate container of each polygon.
 
-The rule is simple: **each polygon subtracts its weight only from its immediate container.** Ancestors higher in the nesting chain are not considered.
+The rule is direct and physically consistent: each polygon subtracts its weight from its immediate container—the material it directly displaces. Ancestors higher in the nesting chain remain unaffected, exactly as a steel bar displaces only the concrete immediately surrounding it, not the formwork outside.
 
 > *"Like diving into a swimming pool: you displace only the water in the pool, not the lawn around it nor the hill underneath."*
 
