@@ -121,7 +121,7 @@ The geometric pairing between polygons in `S0` and `S1` is determined by their c
 
 In this example, `poly_bottom_start` is geometrically paired with `poly_bottom_end`, and `poly_top_start` with `poly_top_end`, because they occupy the same position in the two polygon lists.
 
-Consequently, when you later define a weight law using polygon names, CSF verifies that the named polygons occupy the same position in both lists. If they do not, the model is rejected at the input stage
+Consequently, when you later define a weight law using polygon names (names which are unique by section), CSF verifies that the named polygons occupy the same position in both lists. If they do not, the model is rejected at the input stage
 
 
 > **Polygon**  
