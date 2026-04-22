@@ -282,7 +282,7 @@ CSF handles this automatically. No manual subtraction or containment correction 
 
 The user declares only the absolute material property of each polygon. The effective contribution is derived automatically from the containment relationship.
 
-> **Note:** only the *immediate* parent is considered, not ancestors higher in the nesting hierarchy.
+> **Note:** This means the effective contribution of an inclusion is always computed relative to its immediate parent. Ancestors higher in the hierarchy are already correctly represented by their own material properties and nested contents.
 
 ---
 
