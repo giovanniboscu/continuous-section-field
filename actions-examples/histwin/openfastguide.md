@@ -1,6 +1,6 @@
 # CSF → BModes → ElastoDyn → OpenFAST Guide
 
-This workflow sets up a **time-domain structural dynamics simulation** of a wind turbine tower using OpenFAST and ElastoDyn.
+This workflow sets up a **time-domain structural dynamics simulation** of a wind turbine tower using OpenFAST and ElastoDyn. The tower geometry is provided by a continuous description, from which the distributed mass and stiffness properties along the height are generated automatically. OpenFAST then uses those properties to compute the structural response.
 
 The simulation computes the free response of the tower structure - displacements, velocities, and bending moments along the height - starting from an initial condition. No aerodynamic loads are applied. The tower responds under its own structural properties and the inertia of the RNA mass at the top.
 
