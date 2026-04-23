@@ -1,16 +1,15 @@
 # HISTWIN Example
 
-This example shows how to use CSF with the HISTWIN steel wind-tower model. The tower geometry file, `histwin_tower.yaml`, is generated parametrically by the `create_yaml-histwin.sh` script, while the post-processing workflow is controlled by `action.yaml`, which defines the station sets, actions, and expected outputs produced by `csf-actions`.
+This example shows how a wind turbine tower can be described geometrically in a continuous way, rather than defining its structural properties station by station by hand. The tower shape is defined once in a parametric YAML file, and from that description the cross-sectional properties-such as area and moments of inertia-re obtained automatically along the full height. This part of the workflow concerns only the geometry: no structural, modal, or aerodynamic analysis is performed. The computed properties serve as input data for an external solver, which remains responsible for the actual dynamic simulation. The advantage is that when the tower geometry changes, the section properties are simply regenerated, without needing to rewrite the tower input tables manually.
 
-
->If you want to run a **OpenFast analysis** of the HISTWIN tower,
->two workflows are available. Both start from `histwin_tower.yaml`
->and produce a time-domain structural simulation with OpenFAST and ElastoDyn.
->Choose based on what you need:
+> If you want to run a **OpenFast analysis** of the HISTWIN tower,
+> two workflows are available. Both start from `histwin_tower.yaml`
+> and produce a time-domain structural simulation with OpenFAST and ElastoDyn.
+> Choose based on what you need:
 >
->[Full structural pipeline: CSF → BModes → ElastoDyn → OpenFAST](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/openfastguide.md)
+> [Full structural pipeline: CSF → BModes → ElastoDyn → OpenFAST](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/histwin/openfastguide.md)
 >
->[Minimal structural pipeline: CSF → OpenFAST directly, no BModes](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin/csf_to_openfast)
+> [Minimal structural pipeline: CSF → OpenFAST directly, no BModes](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin/csf_to_openfast)t)
 
 
 To generate `histwin_tower.yaml` first, follow the steps below.below.
