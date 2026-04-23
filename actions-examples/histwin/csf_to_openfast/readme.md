@@ -1,5 +1,18 @@
-# CSF -> OpenFAST Minimal Pipeline Guide
+
+# CSF → OpenFAST Minimal Pipeline Guide
+
+This guide describes a minimal pipeline that starts from a continuous geometric description of a wind turbine tower and produces a ready-to-run structural simulation with OpenFAST. The tower shape is defined once, and the distributed properties needed by OpenFAST are generated automatically from that geometry. The simulation itself is performed entirely by OpenFAST.
+
 ## Analysis description
+
+For a detailed description of the type of analysis performed by the generated OpenFAST case - including the role of ElastoDyn, the active degrees of freedom, and the structural free-decay nature of the simulation - see:
+
+[OpenFAST_analysis_desc.md](./OpenFAST_analysis_desc.md)
+
+## What this process does
+
+## Analysis description
+
 
 For a detailed description of the type of analysis performed by the generated OpenFAST case - including the role of ElastoDyn, the active degrees of freedom, and the structural free-decay nature of the simulation - see:
 
