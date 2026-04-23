@@ -11,10 +11,8 @@ This example shows how a wind turbine tower can be described geometrically in a 
 >
 > [Minimal structural pipeline: CSF → OpenFAST directly, no BModes](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin/csf_to_openfast)t)
 
-
-To generate `histwin_tower.yaml` first, follow the steps below.below.
-
 ---
+To generate `histwin_tower.yaml` first, follow the steps below.below.
 
 ## 1. Create a virtual environment
 
