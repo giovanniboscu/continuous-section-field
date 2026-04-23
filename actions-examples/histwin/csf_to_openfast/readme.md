@@ -38,7 +38,7 @@ It is a **minimal structural OpenFAST case** in which the tower properties come 
 
 ---
 
-## Why this process is useful
+## process
 
 The main point of the process is not OpenFAST alone.
 
