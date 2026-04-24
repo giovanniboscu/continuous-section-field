@@ -690,6 +690,21 @@ Supported `morph_mode` values:
 native
 perimeter
 ```
+**native**
+Uses the native vertices produced by sectionproperties, without resampling.
+Used for sections of the same type, prismatic or tapered, where S0 and S1 already have the same vertex order and count.
+This is the mode closest to the original SP constructor.
+
+**perimeter**
+Resamples the S0 and S1 contours to a common number of points along the perimeter.
+Used for morphing between different section types when no dedicated map exists.
+It is generic, but the correspondence is only perimeter-based: it may produce visual twist-like effects.
+
+**feature**
+Builds an explicit correspondence between recognized geometric parts: flanges, webs, radii, sides, etc.
+Used for controlled morphing between supported section families.
+It is less generic, but produces a clearer and more physically readable mapping.
+
 
 Use this when the geometries have already been created in Python.
 
