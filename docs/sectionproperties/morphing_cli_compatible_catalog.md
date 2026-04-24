@@ -4,6 +4,13 @@ Please refer to the original project and its license:
 https://github.com/robbievanleeuwen/section-properties
 # CLI-compatible morphing catalog for `sp_csf`
 
+
+>sp_csf
+>
+>is alias of
+>
+>python3 -m csf.utils.sp_csf
+
 ## Scope
 
 This tool currently targets **single, non-composite sections** from the `sectionproperties` catalog.
