@@ -149,7 +149,7 @@ python3 -m csf.utils.sp_csf  rectangular_hollow_section \
 ```
 
 ```bash
-python sp_csf.py i_section \
+python3 -m csf.utils.sp_csf i_section \
   --s0 d=400,b=200,t_f=15,t_w=10,r=18,n_r=8,z=0 \
   --s1 d=250,b=150,t_f=10,t_w=7,r=12,n_r=8,z=8 \
   --out=i_tapered.yaml \
