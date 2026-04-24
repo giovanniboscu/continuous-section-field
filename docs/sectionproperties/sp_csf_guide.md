@@ -217,22 +217,12 @@ python3 -m csf.utils.sp_csf  rectangular_hollow_section  \
  --gen-actions
 ```
 
-```bash
-# I-section with 30° twist morphing to rectangular section
-python sp_csf.py i_section \
-  --morph rectangular_section \
-  --s0 d=200,b=100,t_f=10,t_w=6,r=12,n_r=8,z=0 \
-  --s1 d=150,b=150,z=12 \
-  --twist1=30 --n=64 --out=i_to_rect_twist30.yaml \
-   --gen-actions 
-```
-
 ### Manual offset (auto-align disabled)
 
 Disable auto-alignment and control offsets explicitly.
 
 ```bash
-ppython3 -m csf.utils.sp_csf rectangular_hollow_section \
+python3 -m csf.utils.sp_csf rectangular_hollow_section \
   --morph circular_hollow_section \
   --s0 d=200,b=200,t=10,r_out=20,n_r=8,z=0 \
   --s1 d=150,t=8,n=32,z=10 \
