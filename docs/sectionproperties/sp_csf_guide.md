@@ -734,6 +734,108 @@ sp_to_csf_yaml           -> geometry objects      -> native, perimeter
 sp_sections_to_csf_yaml  -> section names + args  -> native, perimeter, feature
 ```
 
+```
+"""
+case1_sp_to_csf_yaml_flat.py
+
+Case 1: geometry-based API.
+
+This example uses sp_to_csf_yaml(...).
+
+The sectionproperties geometries are created first, then passed to CSF.
+No helper functions are used.
+"""
+
+from sectionproperties.pre.library import rectangular_section
+
+from csf.utils.sp_csf import sp_to_csf_yaml
+
+
+geometry_s0 = rectangular_section(
+    d=200.0,
+    b=100.0,
+)
+
+geometry_s1 = rectangular_section(
+    d=300.0,
+    b=150.0,
+)
+
+result_path = sp_to_csf_yaml(
+    geometry_s0=geometry_s0,
+    geometry_s1=geometry_s1,
+    z0=0.0,
+    z1=10.0,
+    output_path="case1_sp_to_csf_yaml.yaml",
+    n=None,
+    name="rect",
+    comment="Case 1: geometry-based API",
+    solid_weight=1.0,
+    void_weight=0.0,
+    indent=8,
+    precision=6,
+    dx0=None,
+    dy0=None,
+    dx1=None,
+    dy1=None,
+    twist0_deg=0.0,
+    twist1_deg=0.0,
+    auto_align=True,
+    morph_mode="native",
+)
+
+print(f"Written: {result_path}")
+```
+
+```
+"""
+case2_sp_sections_to_csf_yaml_flat.py
+
+Case 2: section-name API.
+
+This example uses sp_sections_to_csf_yaml(...).
+
+The API receives section names and parameter dictionaries.
+No helper functions are used.
+"""
+
+from csf.utils.sp_csf import sp_sections_to_csf_yaml
+
+
+result_path = sp_sections_to_csf_yaml(
+    section_s0="rectangular_section",
+    params_s0={
+        "d": 200.0,
+        "b": 100.0,
+        "z": 0.0,
+    },
+    section_s1="rectangular_section",
+    params_s1={
+        "d": 300.0,
+        "b": 150.0,
+        "z": 10.0,
+    },
+    output_path="case2_sp_sections_to_csf_yaml.yaml",
+    n=None,
+    name="rect",
+    comment="Case 2: section-name API",
+    solid_weight=1.0,
+    void_weight=0.0,
+    indent=8,
+    precision=6,
+    dx0=None,
+    dy0=None,
+    dx1=None,
+    dy1=None,
+    twist0_deg=0.0,
+    twist1_deg=0.0,
+    auto_align=True,
+    morph_mode="native",
+)
+
+print(f"Written: {result_path}")
+```
+
 
 
 
