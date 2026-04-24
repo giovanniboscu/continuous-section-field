@@ -86,7 +86,7 @@ Start here: these three guides cover everything you need to work with CSF effect
 
 ---
 
-## sectionproperties Integration (csf_sp)
+## sectionproperties Integration (csf_sp & sp_csf)
 
 | File | Description |
 |------|-------------|
