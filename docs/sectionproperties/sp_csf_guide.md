@@ -654,6 +654,10 @@ purely by arc-length position, starting from the positive x semi-axis. The
 quality of the morph depends on how similar the two shapes are. For very
 different shapes, increase `n` to capture both contours accurately.
 
+- allowed mode:
+perimeter
+native
+
 **Hole matching**: if S0 has one hole (hollow section), S1 must also have
 exactly one hole. The exterior ring morphs to the exterior ring; each hole
 morphs to the corresponding hole by index.
@@ -668,6 +672,15 @@ area at every station; the twist is a rigid-body rotation, not a shape change.
 
 The generated YAML is a standard CSF geometry file, ready to use with any
 CSF tool:
+
+
+### Analysis note
+
+`sp_csf.py` is an export bridge, not an analysis wrapper.
+
+It does not call the `sectionproperties` analysis API. Geometry analysis remains
+on the `sectionproperties` side, through `Section(...)` and its calculation
+methods.
 
 ```bash
 # Analyse with csf_sp
