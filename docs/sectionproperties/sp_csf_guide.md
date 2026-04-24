@@ -554,15 +554,31 @@ sp_csf_yaml(
 ### Prismatic section with pure twist
 
 ```python
-from sp_csf import sp_csf_yaml
-from sectionproperties.pre.library import rectangular_hollow_section
+from pathlib import Path
+from csf.utils.sp_csf import sp_to_csf_yaml
+from sectionproperties.pre.library import rectangular_hollow_section,circular_hollow_section
 
-geom = rectangular_hollow_section(d=200, b=150, t=10, r_out=15, n_r=8)
+geomS0 = rectangular_hollow_section(
+    d=300.0,
+    b=200.0,
+    t=12.0,
+    r_out=20.0,
+    n_r=8,
+)
 
-sp_csf_yaml(
-    geom, geom,
+geomS1 = rectangular_hollow_section(
+    d=200.0,
+    b=100.0,
+    t=8.0,
+    r_out=20.0,
+    n_r=8,
+)
+
+
+sp_to_csf_yaml(
+    geomS0, geomS1,
     z0=0.0, z1=10.0,
-    n=64, name="section",
+    n=128, name="section",
     twist1_deg=90.0,
     output_path="rhs_twist90.yaml",
 )
@@ -571,20 +587,22 @@ sp_csf_yaml(
 ### Manual centroid control
 
 ```python
-from sp_csf import sp_csf_yaml, _geometry_centroid
-from sectionproperties.pre.library import rectangular_hollow_section, circular_hollow_section
+from pathlib import Path
+from csf.utils.sp_csf import sp_to_csf_yaml,geometry_centroid
+from sectionproperties.pre.library import rectangular_hollow_section,circular_hollow_section
 
 geom_s0 = rectangular_hollow_section(d=200, b=200, t=10, r_out=20, n_r=8)
 geom_s1 = circular_hollow_section(d=150, t=8, n=32)
 
 # Inspect centroids before writing
-cx0, cy0 = _geometry_centroid(geom_s0)
-cx1, cy1 = _geometry_centroid(geom_s1)
+
+cx0, cy0 = geometry_centroid(geom_s0)
+cx1, cy1 = geometry_centroid(geom_s1)
 print(f"S0 centroid: ({cx0:.3f}, {cy0:.3f})")
 print(f"S1 centroid: ({cx1:.3f}, {cy1:.3f})")
 
 # Disable auto-align, apply manual offset
-sp_csf_yaml(
+sp_to_csf_yaml(
     geom_s0, geom_s1,
     z0=0.0, z1=10.0,
     n=64, name="section",
