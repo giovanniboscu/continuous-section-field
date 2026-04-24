@@ -1,7 +1,4 @@
-# == DRAFT ==
-`sectionproperties` is used as the analysis backend for the generated/interpolated sections. 
-Please refer to the original project and its license:
-https://github.com/robbievanleeuwen/section-properties
+
 # CLI-compatible morphing catalog for `sp_csf`
 
 
@@ -719,3 +716,10 @@ If ruled lines cross or `plot_properties` fails, the morph is geometrically inva
 Use these commands as CLI-compatible morphing test cases.
 
 For production-like tapered members, use the tapered same-family catalog instead.
+
+
+---
+
+`sectionproperties` is used as the analysis backend for the generated/interpolated sections. 
+Please refer to the original project and its license:
+https://github.com/robbievanleeuwen/section-properties
