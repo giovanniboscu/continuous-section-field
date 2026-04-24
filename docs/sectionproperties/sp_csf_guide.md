@@ -491,14 +491,11 @@ sp_csf_yaml(
 ### Tapered I-section
 
 ```python
-from sp_csf import sp_csf_yaml
-from sectionproperties.pre.library import i_section
-
-sp_csf_yaml(
-    i_section(d=400, b=200, t_f=15, t_w=10, r=18, n_r=8),
-    i_section(d=250, b=150, t_f=10, t_w=7,  r=12, n_r=8),
-    z0=0.0, z1=8.0,
-    n=64, name="beam",
+sp_to_csf_yaml(
+    i_section(d=400, b=200, t_f=25, t_w=10, r=18, n_r=8),
+    i_section(d=250, b=150, t_f=10, t_w=27,  r=12, n_r=128),
+    z0=0.0, z1=30.0,
+    n=256, name="beam",
     output_path="i_tapered.yaml",
 )
 ```
@@ -506,14 +503,16 @@ sp_csf_yaml(
 ### Morphing: RHS → CHS (centroids auto-aligned)
 
 ```python
-from sp_csf import sp_csf_yaml
-from sectionproperties.pre.library import rectangular_hollow_section, circular_hollow_section
+from pathlib import Path
+from csf.utils.sp_csf import sp_to_csf_yaml
+from sectionproperties.pre.library import rectangular_hollow_section,circular_hollow_section
 
-sp_csf_yaml(
+
+sp_to_csf_yaml(
     rectangular_hollow_section(d=200, b=150, t=10, r_out=15, n_r=8),
     circular_hollow_section(d=180, t=8, n=32),
     z0=0.0, z1=12.0,
-    n=64, name="section",
+    n=128, name="section",
     output_path="rhs_to_chs.yaml",
 )
 ```
@@ -521,10 +520,12 @@ sp_csf_yaml(
 ### Wind tower: square hollow → circular hollow
 
 ```python
-from sp_csf import sp_csf_yaml
-from sectionproperties.pre.library import rectangular_hollow_section, circular_hollow_section
+from pathlib import Path
+from csf.utils.sp_csf import sp_to_csf_yaml
+from sectionproperties.pre.library import rectangular_hollow_section,circular_hollow_section
 
-sp_csf_yaml(
+
+sp_to_csf_yaml(
     rectangular_hollow_section(d=4000, b=4000, t=30, r_out=300, n_r=16),
     circular_hollow_section(d=2500, t=18, n=48),
     z0=0.0, z1=70000.0,
