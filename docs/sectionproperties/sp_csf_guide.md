@@ -654,9 +654,34 @@ purely by arc-length position, starting from the positive x semi-axis. The
 quality of the morph depends on how similar the two shapes are. For very
 different shapes, increase `n` to capture both contours accurately.
 
-- allowed mode:
+
+`sp_to_csf_yaml(...)` is the low-level API.
+
+It receives already-built `sectionproperties` geometry objects, so it only supports:
+
+```text
 perimeter
 native
+```
+
+`sp_sections_to_csf_yaml(...)` and the CLI are higher-level interfaces.
+
+They receive the original section name and parameter dictionaries, so they also support:
+
+```text
+feature
+```
+
+This distinction is intentional: `feature` mode needs semantic section information such as `i_section`, `tee_section`, etc., which is no longer available once only raw geometry objects are passed to `sp_to_csf_yaml(...)`.
+
+Summary:
+
+```text
+CLI / sp_sections_to_csf_yaml : perimeter, native, feature
+sp_to_csf_yaml               : perimeter, native
+
+
+
 
 **Hole matching**: if S0 has one hole (hollow section), S1 must also have
 exactly one hole. The exterior ring morphs to the exterior ring; each hole
