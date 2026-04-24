@@ -93,6 +93,13 @@ Start here: these three guides cover everything you need to work with CSF effect
 | [csf_sp User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md) | Complete reference for `csf_sp`: YAML file format, polygon nesting, tapered sections, multi-material sections, weight variation, custom weight laws, CLI usage, output properties, and Python API (`load_yaml`, `analyse`). Includes worked examples and the full SP composite getter reference. |
 | [csf_sp Step-by-Step Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_stepbystep_guide.md) | Progressive examples moving from native sectionproperties to CSF: baseline SP usage, prismatic and tapered sections via Python API and YAML, linear and custom weight laws, CSF vs SP property comparison, and a full CSF Actions pipeline with solver export. |
 
+| File | Description |
+|------|-------------|
+| [sp_csf Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/sp_csf_guide.md) | Convert `sectionproperties` parametric sections to CSF YAML. Main reference for generating CSF-compatible geometry files from the `sectionproperties` catalog. |
+| [CLI Tapered Examples](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/cli_tapered_examples.md) | CLI examples for tapered same-family sections, where `S0` and `S1` use the same section type with different dimensions along `z`. |
+| [Morphing CLI-Compatible Catalog](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/morphing_cli_compatible_catalog.md) | Catalog of morphing examples compatible with the current scalar `sp_csf` CLI syntax. |
+| [Morphing Policy](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/morphingpolicy.md) | Policy defining the rules, scope, and intended behavior of the morphing workflow between different section families. |
+
 ---
 
 ## Additional Documents
