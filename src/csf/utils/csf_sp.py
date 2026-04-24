@@ -1,5 +1,13 @@
 """
-Bridge CSF geometry data to sectionproperties.
+Bridge between CSF and sectionproperties.
+
+This tool uses sectionproperties as the finite-element-based section analysis
+backend where applicable.
+
+sectionproperties:
+https://github.com/robbievanleeuwen/section-properties
+License: MIT
+
 
 This module exposes a compact but non-trivial topology bridge between CSF and
 sectionproperties. The important point is that the bridge does *not* rebuild a
@@ -29,13 +37,6 @@ view when it touches another region exactly on the boundary, especially in deep
  nested topologies. The bridge therefore computes local domains for *all* nodes,
 not only for active ones.
 
-Important interpretation note
------------------------------
-The bridge is intended first of all for homogenized geometric properties such as
-A, centroid coordinates, and second moments. When sectionproperties is asked to
-compute warping-related quantities, remember that the material mapping used here
-is an implementation device for the bridge, not a full physical constitutive
-model.
 """
 
 from __future__ import annotations
