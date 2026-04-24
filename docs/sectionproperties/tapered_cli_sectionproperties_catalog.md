@@ -44,7 +44,7 @@ S0 native vertex i  ->  S1 native vertex i
 
 ---
 
-## Proposed `--morph-mode` options
+## `--morph-mode` options
 
 ### 1. `perimeter`
 
