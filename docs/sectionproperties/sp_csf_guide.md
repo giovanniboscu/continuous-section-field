@@ -877,17 +877,12 @@ area at every station; the twist is a rigid-body rotation, not a shape change.
 
 ---
 
-## Output format
-
-The generated YAML is a standard CSF geometry file, ready to use with any
-CSF tool:
-
-
-### Analysis note
+## Example YAML creation  and sectionprooerties analysis
 
 `sp_csf.py` is an export bridge, not an analysis wrapper.
 
-It does not reimplement the sectionproperties analysis engine. Section analysis remains delegated to sectionproperties, through Section(...) and its calculation methods.
+### Analysis note
+CSF does not reimplement the sectionproperties analysis engine. Section analysis remains delegated to sectionproperties, through Section(...) and its calculation methods.
 
 
 create geometry
@@ -918,6 +913,80 @@ sec = analyse(
 )
 print(sec.get_ej())
 ```
+---
+## Example: creating a tapered CSF geometry directly from Python
+
+This example shows how to build a simple tapered member directly in Python, without reading or writing a YAML file.
+
+Two CSF sections are defined explicitly:
+
+- `S0`: a 400 × 600 mm rectangular section at `z = 0`
+- `S1`: a 250 × 400 mm rectangular section at `z = 10 000 mm`
+
+Both sections contain one polygon with the same name, `tapered_rect`. CSF interpolates the polygon vertices between `S0` and `S1`, producing a continuous tapered geometry along the member axis.
+
+The resulting `ContinuousSectionField` object is then passed directly to `csf_sp.analyse()`, which converts each sampled CSF section into a native `sectionproperties` section and computes its properties.
+
+The purpose of the example is to show the in-memory workflow:
+
+```
+from csf.utils.csf_sp import analyse
+from csf import Pt, Polygon, Section, ContinuousSectionField
+
+
+# S0 polygon: 400 x 600 mm
+poly_s0 = Polygon(
+    vertices=(
+        Pt(-200.0, -300.0),
+        Pt( 200.0, -300.0),
+        Pt( 200.0,  300.0),
+        Pt(-200.0,  300.0),
+    ),
+    weight=1.0,
+    name="tapered_rect",
+)
+
+# S1 polygon: 250 x 400 mm
+poly_s1 = Polygon(
+    vertices=(
+        Pt(-125.0, -200.0),
+        Pt( 125.0, -200.0),
+        Pt( 125.0,  200.0),
+        Pt(-125.0,  200.0),
+    ),
+    weight=1.0,
+    name="tapered_rect",
+)
+
+s0 = Section(
+    polygons=(poly_s0,),
+    z=0.0,
+)
+
+s1 = Section(
+    polygons=(poly_s1,),
+    z=10_000.0,
+)
+
+field = ContinuousSectionField(section0=s0, section1=s1)
+
+for z in range(0, 10_001, 2_000):
+    sec = analyse(
+        field,
+        z=z,
+        mesh=100.0,
+    )
+
+    ea = sec.get_ea()
+    ixx, iyy, _ = sec.get_eic()
+    ej = sec.get_ej()
+
+    print(f"z={z/1000:5.1f} m  EA={ea:.4e}  EIxx={ixx:.4e}  EIyy={iyy:.4e}  EJ={ej:.4e}")
+```
+
+```text
+Python CSF objects → ContinuousSectionField → csf_sp.analyse() → sectionproperties results
+
 
 ---
 `sectionproperties` is used as the analysis backend for the generated/interpolated sections. 
