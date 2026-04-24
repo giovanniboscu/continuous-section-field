@@ -11,6 +11,13 @@ CSF declarative geometry model. It takes one or two sectionproperties section
 objects and writes a CSF-ready YAML file that can be loaded directly by
 `csf-actions` or `csf_sp`.
 
+
+>sp_csf
+>
+>is alias of
+>
+>python3 -m csf.utils.sp_csf
+>
 ---
 
 ## Installation
