@@ -645,43 +645,102 @@ triangular_radius_section triangular_section      zed_section
 **Topology rule**: S0 and S1 must have the same number of polygons and the same
 number of holes per polygon. A solid section cannot morph to a hollow one.
 
+---
+
 **Discretisation rule**: for tapered sections (same section type), `n_r` and `n`
 must be identical in `--s0` and `--s1` to guarantee the same vertex count after
 SP generates the geometry.
+
+---
 
 **Morph mode**: when `--morph` is used, vertex correspondence is established
 purely by arc-length position, starting from the positive x semi-axis. The
 quality of the morph depends on how similar the two shapes are. For very
 different shapes, increase `n` to capture both contours accurately.
 
+### `sp_csf.py` API distinction
 
-`sp_to_csf_yaml(...)` is the low-level API.
+`sp_csf.py` exposes two different API levels.
 
-It receives already-built `sectionproperties` geometry objects, so it only supports:
+### 1. `sp_to_csf_yaml(...)`
 
-```text
-perimeter
-native
+This is the geometry-based API.
+
+It receives already-built `sectionproperties` geometry objects:
+
+```python
+sp_to_csf_yaml(
+    geometry_s0=geometry_s0,
+    geometry_s1=geometry_s1,
+    ...
+)
 ```
 
-`sp_sections_to_csf_yaml(...)` and the CLI are higher-level interfaces.
-
-They receive the original section name and parameter dictionaries, so they also support:
+Supported `morph_mode` values:
 
 ```text
+native
+perimeter
+```
+
+Use this when the geometries have already been created in Python.
+
+### 2. `sp_sections_to_csf_yaml(...)`
+
+This is the section-name API.
+
+It receives section names and parameter dictionaries:
+
+```python
+sp_sections_to_csf_yaml(
+    section_s0="rectangular_section",
+    params_s0={...},
+    section_s1="circular_section",
+    params_s1={...},
+    ...
+)
+```
+
+Supported `morph_mode` values:
+
+```text
+native
+perimeter
 feature
 ```
 
-This distinction is intentional: `feature` mode needs semantic section information such as `i_section`, `tee_section`, etc., which is no longer available once only raw geometry objects are passed to `sp_to_csf_yaml(...)`.
+Use this when the API must build the `sectionproperties` geometries itself.
 
-Summary:
+## Key difference
+
+`feature` mode needs semantic section information, such as:
 
 ```text
-CLI / sp_sections_to_csf_yaml : perimeter, native, feature
-sp_to_csf_yaml               : perimeter, native
+i_section
+tee_section
+channel_section
+rectangular_section
+angle_section
+```
+
+That information is available in `sp_sections_to_csf_yaml(...)`.
+
+It is not available in `sp_to_csf_yaml(...)`, because that function receives only already-built geometry objects.
+
+## Summary
+
+```text
+sp_to_csf_yaml           -> geometry objects      -> native, perimeter
+sp_sections_to_csf_yaml  -> section names + args  -> native, perimeter, feature
+```
 
 
 
+
+
+
+
+---
 
 **Hole matching**: if S0 has one hole (hollow section), S1 must also have
 exactly one hole. The exterior ring morphs to the exterior ring; each hole
