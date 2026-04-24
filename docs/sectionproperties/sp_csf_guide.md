@@ -984,10 +984,6 @@ for z in range(0, 10_001, 2_000):
     print(f"z={z/1000:5.1f} m  EA={ea:.4e}  EIxx={ixx:.4e}  EIyy={iyy:.4e}  EJ={ej:.4e}")
 ```
 
-```text
-Python CSF objects → ContinuousSectionField → csf_sp.analyse() → sectionproperties results
-
-
 ---
 `sectionproperties` is used as the analysis backend for the generated/interpolated sections. 
 Please refer to the original project and its license:
