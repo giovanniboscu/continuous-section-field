@@ -170,7 +170,7 @@ python3 -m csf.utils.sp_csf  i_section \
   --morph circular_section \
   --s0 d=200,b=100,t_f=10,t_w=6,r=12,n_r=8,z=0 \
   --s1 d=150,n=32,z=10 \
-  --n=64 --out=i_to_circle.yaml \
+  --n=256 --out=i_to_circle.yaml \
    --gen-actions 
 ```
 
