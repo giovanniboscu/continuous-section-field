@@ -2,13 +2,12 @@
 
 These examples use the same section family for `S0` and `S1`, with different dimensions.
 
-can be used
 
-sp_csf 
-
-insted of 
-
-python3 -m csf.utils.sp_csf
+>sp_csf
+>
+>is alias of
+>
+>python3 -m csf.utils.sp_csf
 
 
 Recommended mode:
