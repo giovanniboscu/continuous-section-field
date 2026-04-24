@@ -876,13 +876,21 @@ on the `sectionproperties` side, through `Section(...)` and its calculation
 methods.
 
 ```bash
-# Analyse with csf_sp
-python -m csf.utils.csf_sp --yaml=wind_tower.yaml --z=35000 --plot
+# create geometry
 
-# Run CSF actions
+ python -m csf.utils.sp_csf  rectangular_hollow_section  \
+ --morph circular_hollow_section \
+ --s0 d=4000,b=4000,t=30,r_out=300,n_r=16,z=0  \
+ --s1 d=2500,t=18,n=48,z=70000  \
+ --n=96 --name=tower --out=wind_tower.yaml \
+ --gen-actions
+
+# Analyse with csf_sp
+
 csf-actions wind_tower.yaml actions.yaml
 
-# Load in Python
+# Load in Python and use sectionproperties
+
 from csf.utils.csf_sp import load_yaml, analyse
 field = load_yaml("wind_tower.yaml")
 sec = analyse(field, z=35000.0)
