@@ -871,32 +871,37 @@ CSF tool:
 
 `sp_csf.py` is an export bridge, not an analysis wrapper.
 
-It does not call the `sectionproperties` analysis API. Geometry analysis remains
-on the `sectionproperties` side, through `Section(...)` and its calculation
-methods.
+It does not reimplement the sectionproperties analysis engine. Section analysis remains delegated to sectionproperties, through Section(...) and its calculation methods.
 
+
+create geometry
 ```bash
-# create geometry
-
  python -m csf.utils.sp_csf  rectangular_hollow_section  \
  --morph circular_hollow_section \
  --s0 d=4000,b=4000,t=30,r_out=300,n_r=16,z=0  \
  --s1 d=2500,t=18,n=48,z=70000  \
  --n=96 --name=tower --out=wind_tower.yaml \
  --gen-actions
+```
 
-# Analyse with csf_sp
+Analyse with CLI
 
+```
 csf-actions wind_tower.yaml actions.yaml
+```
 
-# Load in Python and use sectionproperties
+Analyse with API 
 
+```
 from csf.utils.csf_sp import load_yaml, analyse
 field = load_yaml("wind_tower.yaml")
-sec = analyse(field, z=35000.0)
-print(sec.get_ea())
+sec = analyse(
+    field,
+    z=35000.0,
+    mesh=50.0,   # mesh size in the same units as the geometry
+)
+print(sec.get_ej())
 ```
 
 ---
 
-*sp_csf.py - part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) ecosystem*
