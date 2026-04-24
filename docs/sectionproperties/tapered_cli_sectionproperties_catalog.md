@@ -1,5 +1,10 @@
 # Morphing policy for `sp_csf`
-
+>sp_csf
+>
+>is alias of
+>
+>python3 -m csf.utils.sp_csf
+>
 ## Purpose
 
 This note defines the intended behavior of `--morph-mode` in `sp_csf`.
