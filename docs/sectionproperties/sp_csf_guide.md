@@ -209,12 +209,12 @@ python3 -m csf.utils.sp_csf  rectangular_hollow_section \
 ```
 
 ```bash
-# Prismatic RHS with 90° pure twist along the member
-python3 -m csf.utils.sp_csf  rectangular_hollow_section \
-  --s0 d=200,b=150,t=10,r_out=15,n_r=8,z=0 \
-  --s1 d=200,b=150,t=10,r_out=15,n_r=8,z=10 \
-  --twist1=90 --out=rhs_twist90.yaml \
-   --gen-actions 
+# Prismatic RHS with 70° pure twist along the member
+python3 -m csf.utils.sp_csf  rectangular_hollow_section  \
+ --s0 d=200,b=150,t=10,r_out=15,n_r=8,z=0  \
+ --s1 d=150,b=100,t=10,r_out=15,n_r=8,z=10 \
+ --twist1=70 --out=rhs_twist90.yaml \
+ --gen-actions
 ```
 
 ```bash
