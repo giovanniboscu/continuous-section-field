@@ -132,7 +132,7 @@ Same section at both ends - the simplest case.
 ```bash
 python3 -m csf.utils.sp_csf rectangular_hollow_section \
   --s0 d=200,b=150,t=10,r_out=15,n_r=8,z=0 \
-  --s1 d=100,b=150,t=10,r_out=15,n_r=8,z=10 \
+  --s1 d=200,b=150,t=10,r_out=15,n_r=8,z=10 \
    --gen-actions 
 ```
 
