@@ -54,7 +54,7 @@ vertex correspondence between S0 and S1.
 >n_r is a sectionproperties constructor parameter, not a CSF parameter.
 >It is specified inside both --s0 and --s1 because each endpoint section is built independently by sectionproperties before being converted to CSF.
 >
->In native mode, using the same n_r on both sides preserves the native vertex correspondence required by CSF. A shared/common parameter could be added as CLI sugar, but the current explicit form keeps the mapping transparent and directly aligned with sectionproperties' API.
+>In native mode, using the same n_r on both sides preserves the native vertex correspondence required by CSF. A shared/common parameter could be added as CLI additinal common parameter, but the current explicit form keeps the mapping transparent and directly aligned with sectionproperties' API.
 
 ### Centroid auto-alignment
 
