@@ -1,4 +1,4 @@
-# 12 — FAQ: Methodology and Modeling Choices
+# 12 - FAQ: Methodology and Modeling Choices
 
 This FAQ addresses the most common **methodological questions** about **CSF (Continuous Section Field)**.  
 It focuses on *why* certain design decisions were made, not only *how* to use the tool.
