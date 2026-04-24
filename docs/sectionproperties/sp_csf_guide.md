@@ -640,7 +640,7 @@ triangular_radius_section triangular_section      zed_section
 
 ---
 
-## Rules and constraints
+# Rules and constraints
 
 **Topology rule**: S0 and S1 must have the same number of polygons and the same
 number of holes per polygon. A solid section cannot morph to a hollow one.
