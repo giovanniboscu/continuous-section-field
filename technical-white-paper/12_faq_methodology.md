@@ -19,7 +19,7 @@ Equilibrium, boundary conditions, and nonlinear response are delegated to extern
 
 ---
 
-## Q2 — What problem does CSF solve that classical tools do not?
+## Q2 - What problem does CSF solve that classical tools do not?
 
 Classical tools model non‑prismatic members as:
 - stepped prismatic elements,
