@@ -5,7 +5,7 @@ It focuses on *why* certain design decisions were made, not only *how* to use th
 
 ---
 
-## Q1 — Is CSF a finite element method (FEM) solver?
+## Q1 - Is CSF a finite element method (FEM) solver?
 
 **No.**  
 CSF is **not** a FEM solver and does not solve equilibrium equations.
