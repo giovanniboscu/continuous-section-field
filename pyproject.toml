@@ -34,8 +34,8 @@ dependencies = [
 csf-actions = "csf.CSFActions:main"
 csf-sp = "csf.utils.csf_sp:main"
 csf_sp = "csf.utils.csf_sp:main"
-
-
+csf-sp = "csf.utils.csf_sp:main"
+csf_sp = "csf.utils.csf_sp:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

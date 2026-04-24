@@ -30,37 +30,8 @@ Scope (v0.1)
         - WARNING if not sorted ascending
         - WARNING if duplicates are found
 - Execute actions in order.
-  For now, only 'section_full_analysis' is implemented.
+  Implemented actions are listed by --help-actions.
   Other actions are placeholders and will stop the run with a controlled error.
-
-Implemented action: section_full_analysis
------------------------------------------
-Wraps ready-made library functions:
-
-    from csf.section_field import section_full_analysis, section_print_analysis
-
-Behavior:
-- Expand z-values from the selected station sets.
-- For each z:
-    - compute section = field.section(z)
-    - compute full_analysis = section_full_analysis(section)
-    - print report using section_print_analysis(full_analysis, fmt=...)
-- Output routing:
-    - stdout: prints human report
-    - file ending with ".csv": writes tabular CSV (z + analysis keys)
-    - any other file: writes text report (captured print output)
-
-Action params (v0.1)
---------------------
-section_full_analysis.params:
-  - fmt_display (OPTIONAL) : str, default ".8f"
-      Python format for displaying numbers in the printed report.
-      Example: ".4f", ".4e"
-      NOTE: if the user writes fmt_display: =".4f" we strip the leading '=' with a WARNING.
-
-Help
-----
-- --help-actions prints the action catalog and parameters to stdout.
 
 Usage
 -----
@@ -345,41 +316,6 @@ class ActionSpec:
 # - We keep a stable "common envelope" for every action: stations/output/params.
 # - Action-specific parameters live under params and are validated by ParamSpec.
 ACTION_SPECS: Dict[str, ActionSpec] = {
-    "section_full_analysis": ActionSpec(
-        name="section_full_analysis",
-        summary="Compute a full (weighted) section property report at one or more stations.",
-        description=(
-            "Computes the complete section property set at each requested station z and renders a report.\n"
-            "\n"
-            "YAML fields\n"
-            "- stations: REQUIRED. One or more station-set names defined under CSF_ACTIONS.stations (absolute z).\n"
-            "- output:  OPTIONAL. Default is [stdout]. Add file paths to write reports/tables to disk.\n"
-            "          If output does NOT include 'stdout', the action is file-only.\n"
-            "\n"
-            "Outputs\n"
-            "- stdout : human-readable report per station.\n"
-            "- *.csv  : numeric table (z + all reported keys).\n"
-            "- other : captured text report (written to the given path).\n"
-            "\n"
-            "Modeling note (scope)\n"
-            "- All reported properties are intended for slender-beam (Euler–Bernoulli) member models.\n"
-            "  CSF does not model local effects, shear deformation, or 3D continuum behavior."
-        ),
-        params=(
-            ParamSpec(
-                name="fmt_display",  # NOTE: keep spelling as requested
-                required=False,
-                typ="str",
-                default=".8f",
-                description="Python format spec used by section_print_analysis (e.g. '.4f', '.4e').",
-                aliases=("fmt_display",),  # we accept the more correct spelling as alias
-            ),
-        ),
-    ),
-
-
-
-
     "weight_lab": ActionSpec(
         name="weight_lab",
         summary="Placeholder: weight-law exploration (not implemented in this runner).",
@@ -409,7 +345,9 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
             "Params\n"
             "- show_end_sections : draw end-section outlines at z0 and z1.\n"
             "- line_percent      : percentage (0..100) of generator lines displayed (random subsample).\n"
-            "- seed              : RNG seed used when line_percent < 100.\n"
+            "- seed              : int seed for legacy coloring, or 'w' / 'w<int resolution>' for weight-aware coloring.\n"
+            "                      Examples: seed: 0, seed: w, seed: w100.\n"            
+            
             "- title             : window/figure title."
         ),
         params=(
@@ -432,7 +370,9 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
                 required=False,
                 typ="str|int",
                 default="0",
-                description="Random seed used when line_percent < 100.",
+                description="Accepted values: int seed for legacy coloring; 'w' for weight-aware "
+                            "polygon-component coloring; 'w<int resolution>' to control the z-slice "
+                            "coloring resolution, e.g. 'w100'.",
             ),
             ParamSpec(
                 name="title",
@@ -513,7 +453,7 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
             "\n"
             "YAML fields\n"
             "- stations:   REQUIRED. Interpreted as relative z values (user responsibility).\n"
-            "- weith_law:  REQUIRED. List[str] of expressions to evaluate (kept outside params; spelling preserved).\n"
+            "- weight_law:  REQUIRED. List[str] of expressions to evaluate (kept outside params; spelling preserved).\n"
             "- output:     OPTIONAL. Default is [stdout]. Add file paths to write the full inspector text.\n"
             "\n"
             "Outputs\n"
@@ -1057,13 +997,13 @@ def _validate_action_params(
 
     # Normalize section_full_analysis fmt param:
     # user might write fmt_display: =".4f" (leading '='). We strip it with a WARNING.
-    if action in ("section_full_analysis", "section_selected_analysis") and "fmt_display" in params2 and isinstance(params2["fmt_display"], str):
+    if action == "section_selected_analysis" and "fmt_display" in params2 and isinstance(params2["fmt_display"], str):
         v = params2["fmt_display"].strip()
         if v.startswith("="):
             issues.append(
                 CSFIssues.make(
                     "CSFA_W_FMT_LEADING_EQUALS",
-                    path=f"{TOP_KEY}.actions.section_full_analysis.params.fmt_display",
+                    path=f"{TOP_KEY}.actions.section_selected_analysis.params.fmt_display",
                     message="Found leading '=' in fmt_display; it will be ignored.",
                     hint='Use fmt_display: ".4f" (without "=").',
                     context={"value": params2["fmt_display"]},
@@ -1200,7 +1140,7 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                 "CSFA_E_ACTIONS_MISSING",
                 path=f"{TOP_KEY}",
                 message="Missing required 'actions:' list.",
-                hint="Add:\n  actions:\n    - section_full_analysis: {stations: [station_base]}",
+                hint="Add:\n  actions:\n    - section_selected_analysis: {stations: [station_base]}",
                 context={"filepath": filepath, "snippet": _make_snippet(text, ln, 1)},
             )
         )
@@ -1214,7 +1154,7 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                 "CSFA_E_ACTIONS_TYPE",
                 path=f"{TOP_KEY}.actions",
                 message="'actions' must be a non-empty YAML list.",
-                hint="Example:\n  actions:\n    - section_full_analysis: {...}",
+                hint="Example:\n  actions:\n    - section_selected_analysis: {...}",
                 context={"filepath": filepath, "snippet": _make_snippet(text, ln, 1)},
             )
         )
@@ -1371,7 +1311,7 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                     "CSFA_E_ACTION_ITEM_TYPE",
                     path=apath,
                     message="Each action item must be a mapping (dictionary).",
-                    hint="Example:\n  - section_full_analysis:\n      stations: [station_base]",
+                    hint="Example:\n  - section_selected_analysis:\n      stations: [station_base]",
                     context={"filepath": filepath, "snippet": _make_snippet(text, ln_actions, 1)},
                 )
             )
@@ -1383,7 +1323,7 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                     "CSFA_E_ACTION_ITEM_KEYS",
                     path=apath,
                     message="Each action item must define exactly one action name key.",
-                    hint="Example:\n  - section_full_analysis: {...}",
+                    hint="Example:\n  - section_selected_analysis: {...}",
                     context={"filepath": filepath, "snippet": _make_snippet(text, ln_actions, 1), "found_keys": list(item.keys())},
                 )
             )
@@ -1411,13 +1351,13 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                     "CSFA_E_ACTION_PAYLOAD_TYPE",
                     path=f"{apath}.{action_name}",
                     message=f"Action '{action_name}' parameters must be a mapping.",
-                    hint="Example:\n  - section_full_analysis:\n      stations: [station_base]\n      output: [stdout]\n      params: {}",
+                    hint="Example:\n  - section_selected_analysis:\n      stations: [station_base]\n      output: [stdout]\n      params: {}",
                     context={"filepath": filepath, "snippet": _make_snippet(text, ln, 1)},
                 )
             )
             continue
 
-        # Common: stations REQUIRED                            <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        # Common: stations REQUIRED           
 
         # Common: stations
         # - Most actions REQUIRE stations
@@ -2103,16 +2043,21 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
             #
             # IMPORTANT: the key name is intentionally kept as requested ("weith_law").
             # We also accept the more correct alias "weight_law" with a WARNING.
-            laws_raw = payload.get("weith_law")
-            if laws_raw is None and "weight_law" in payload:
-                laws_raw = payload.get("weight_law")
+            # The user provides a list of expressions under the key `weight_law:` (kept OUTSIDE
+            # `params:` because it is not a numerical knob; it is the actual payload to inspect).
+            #
+            # Backward compatibility: accept the legacy misspelled key `weith_law:` with a warning.
+            laws_raw = payload.get("weight_law")
+            if laws_raw is None and "weith_law" in payload:
+                laws_raw = payload.get("weith_law")
                 issues.append(
                     CSFIssues.make(
-                        "CSFA_W_WEIGHT_LAW_ALIAS",
-                        path=f"{apath}.{action_name}.weight_law",
-                        message="Using 'weight_law' as alias for 'weith_law'.",
-                        hint="Rename 'weight_law' to 'weith_law' to match the official schema.",
+                        "CSFA_W_WEIGHT_LAW_LEGACY_ALIAS",
+                        path=f"{apath}.{action_name}.weith_law",
+                        message="Using legacy key 'weith_law' as alias for 'weight_law'.",
+                        hint="Rename 'weith_law' to 'weight_law'.",
                         context={},
+                        severity=Severity.WARNING,
                     )
                 )
 
@@ -2122,10 +2067,9 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                 issues.append(
                     CSFIssues.make(
                         "CSFA_E_WEIGHT_LAW_MISSING",
-                        path=f"{apath}.{action_name}.weith_law",
-                        message="Action 'weight_lab_zrelative' is missing required 'weith_law:' list.",
-                        hint="Example:\n  weith_law: ['w0 + (w1-w0)*0.5*(1-np.cos(np.pi*z/L))']",
-                        context={"filepath": filepath, "snippet": _make_snippet(text, ln, 1)},
+                        path=f"{apath}.{action_name}.weight_law",
+                        message="Action 'weight_lab_zrelative' is missing required 'weight_law:' list.",
+                        hint="Example:\n  weight_law: ['w0 + (w1-w0)*0.5*(1-np.cos(np.pi*z/L))']",
                     )
                 )
             else:
@@ -2137,10 +2081,9 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                     issues.append(
                         CSFIssues.make(
                             "CSFA_E_WEIGHT_LAW_TYPE",
-                            path=f"{apath}.{action_name}.weith_law",
-                            message="'weith_law' must be a non-empty YAML list of strings.",
-                            hint="Example:\n  weith_law: ['np.cos(np.pi*z/L)', '1 + 0.1*z/L']",
-                            context={"filepath": filepath, "snippet": _make_snippet(text, ln, 1)},
+                            path=f"{apath}.{action_name}.weight_law",
+                            message="Action 'weight_lab_zrelative' is missing required 'weight_law:' list.",
+                            hint="Example:\n  weight_law: ['w0 + (w1-w0)*0.5*(1-np.cos(np.pi*z/L))']",
                         )
                     )
                 else:
@@ -2156,16 +2099,17 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                         issues.append(
                             CSFIssues.make(
                                 "CSFA_E_WEIGHT_LAW_VALUE",
-                                path=f"{apath}.{action_name}.weith_law",
-                                message=f"Invalid empty/non-string expression(s) in 'weith_law': {bad}",
-                                hint="Each entry must be a non-empty string.",
-                                context={"filepath": filepath, "snippet": _make_snippet(text, ln, 1)},
+                                path=f"{apath}.{action_name}.weight_law",
+                                message="Action 'weight_lab_zrelative' is missing required 'weight_law:' list.",
+                                hint="Example:\n  weight_law: ['w0 + (w1-w0)*0.5*(1-np.cos(np.pi*z/L))']",
                             )
                         )
                     else:
                         laws_norm = tmp
-
+            #
             if laws_norm is not None:
+                # Store the canonical key and mirror the legacy key for older action runners.
+                extra_fields["weight_law"] = laws_norm
                 extra_fields["weith_law"] = laws_norm
         
         normalized_actions.append(
@@ -2385,259 +2329,6 @@ def _ensure_analysis_imports_or_error(
     return ok
 
 
-def _run_action_section_full_analysis2remove(
-    field: Any,
-    stations_map: Dict[str, List[float]],
-    action: Dict[str, Any],
-) -> None:
-    """
-    Execute section_full_analysis action.
-    """
-    # Resolve fmt parameter (default from spec)
-    params = action.get("params", {}) or {}
-    fmt = params.get("fmt_display")
-    if fmt is None:
-        fmt = ACTION_SPECS["section_full_analysis"].params[0].default
-
-    # Expand z values
-    z_list = _expand_station_names(stations_map, action["stations"])
-
-    # Collect analysis data for potential CSV outputs
-    keys: List[str]
-    if section_full_analysis_keys is not None:
-        keys = list(section_full_analysis_keys())
-
-    else:
-        # fallback: will infer from first dict
-        keys = []
-
-    rows: List[Dict[str, Any]] = []
-
-    # We'll build text reports (for non-CSV file outputs)
-    report_blocks: List[str] = []
-    '''
-    for z in z_list:
-        sec = field.section(float(z))
-        full = section_full_analysis(sec)
-
-        # Prepare a report block (text) by capturing stdout from section_print_analysis
-        buf = io.StringIO()
-        with redirect_stdout(buf):
-            print(f"\n## SSECTION FULL ANALYSIS @ z = {float(z)} ###")
-            section_print_analysis(full, fmt=fmt)
-
-        report_text = buf.getvalue()
-        report_blocks.append(report_text)
-
-        # Prepare row for CSV
-        if not keys:
-            # infer key order from dict (insertion order)
-            keys = list(full.keys())
-        row = {"z": float(z)}
-        for k in keys:
-            row[k] = full.get(k)
-        rows.append(row)
-    
-    # Output routing
-    outputs = action["output"]
-
-    for outp in outputs:
-        if outp == "stdout":
-            # Print all reports
-            for blk in report_blocks:
-                print(blk, end="" if blk.endswith("\n") else "\n")
-            continue
-
-        p = Path(outp)
-        # Safety: create friendly error if directory missing (should have been caught in validation)
-        if not p.parent.exists():
-            raise RuntimeError(f"Output directory does not exist: {p.parent}")
-
-        if p.suffix.lower() == ".csv":
-            # Write numeric table
-            # Columns: z + keys
-            fieldnames = ["z"] + keys
-            with open(p, "w", newline="", encoding="utf-8") as f:
-                w = csv.DictWriter(f, fieldnames=fieldnames)
-                w.writeheader()
-                for r in rows:
-                    w.writerow(r)
-        else:
-            # Write captured report text
-            with open(p, "w", encoding="utf-8") as f:
-                for blk in report_blocks:
-                    f.write(blk)
-                    if not blk.endswith("\n"):
-                        f.write("\n")
-
-    '''    
-
-
-# [migrated] write_opensees_geometry runner moved to actions/write_opensees_geometry.py
-
-
-
-
-
-
-def show_per_label2remove(label):
-    print(f"Label to show '{label}'")
-    for num in plt.get_fignums():
-        fig = plt.figure(num)
-        if fig.get_label() == label:
-            plt.figure(num)  # Attiva
-            print(f"Label '{label}'")
-            plt.show()
-            return True
-    print(f"Label '{label}' not found")
-    return False
-
-def _run_action_plot_properties2remove(
-    field: Any,
-    stations_map: Dict[str, List[float]],
-    action: Dict[str, Any],
-) -> None:
-    """Action: plot_properties
-
-    Wrapper of:
-        Visualizer.plot_properties(keys_to_plot=None, num_points=100)
-
-    Key design points (per current CSFActions prototype)
-    ----------------------------------------------------
-    1) This action does NOT use 'stations'. It always samples between the CSF endpoints.
-       That is why it is listed in STATIONS_FORBIDDEN and the validator rejects 'stations:'.
-
-    2) Output semantics match plot_section_2d:
-       - If output is omitted -> default ["stdout"] -> keep figures for the final GUI window.
-       - If output contains file paths -> save to file.
-       - If output does NOT contain "stdout" -> file-only (do not show, and do not set want_show_2d).
-
-    3) The plotting window is shown only ONCE at the very end of main() (deferred plt.show()).
-       However, the current Visualizer.plot_properties implementation (in section_field)
-       ends with a direct plt.show(). To preserve the deferred-show protocol without
-       editing section_field, we temporarily monkey-patch plt.show to a no-op during
-       the call.
-
-       This is intentionally localized and reversible:
-       - we restore the original plt.show in a finally block
-       - we then label the newly created figures and optionally save them
-
-    Notes
-    -----
-    - This action requires a top-level YAML list 'properties:' that selects which
-      property keys to plot.
-    - The validator normalizes it into action["properties"].
-    """
-    # stations_map is unused by design (endpoints only).
-    _ = stations_map
-
-    if Visualizer is None:
-        raise RuntimeError("Visualizer is not available (import failed).")
-
-    import io
-
-    # 1) Resolve parameters
-    params = action.get("params", {}) or {}
-    num_points = int(params.get("num_points", ACTION_SPECS["plot_properties"].params[0].default))
-
-    # 2) Resolve outputs
-    outputs = action.get("output")
-    if outputs is None:
-        outputs = ["stdout"]
-
-    do_show = ("stdout" in outputs)
-    file_outputs = [o for o in outputs if o != "stdout"]
-
-    # 3) Resolve properties (normalized by validation)
-    keys_to_plot = action.get("properties")
-    if not isinstance(keys_to_plot, list) or len(keys_to_plot) == 0:
-        # Should not happen after validation, but keep a friendly runtime error.
-        raise RuntimeError("plot_properties requires a non-empty 'properties:' list.")
-
-    # 4) Call Visualizer while suppressing its internal plt.show()
-    viz = Visualizer(field)
-
-    # Capture current figure numbers so we can identify what this action creates.
-    before = set(plt.get_fignums())
-
-    old_show = plt.show
-
-    def _noop_show(*args, **kwargs):
-        """Temporary replacement for plt.show() during plot_properties.
-
-        Why: Visualizer.plot_properties currently calls plt.show() at the end.
-        In the CSFActions runner we want ONE final plt.show() at the end of main().
-        """
-        return None
-
-    plt.show = _noop_show
-    try:
-        # NOTE: Visualizer.plot_properties signature in section_field _lastv.py is:
-        #   plot_properties(self, keys_to_plot=None, num_points=100)
-        viz.plot_properties(keys_to_plot=keys_to_plot, num_points=num_points)
-    finally:
-        # Always restore original plt.show, even if plotting fails.
-        plt.show = old_show
-
-    after = set(plt.get_fignums())
-    new_nums = sorted(after - before)
-
-    # If Visualizer reused an existing figure (rare), fall back to current figure.
-    if not new_nums:
-        try:
-            new_nums = [plt.gcf().number]
-        except Exception:
-            new_nums = []
-
-    figs = [plt.figure(n) for n in new_nums]
-
-    # Label figures so the deferred-show logic in main() can prune/show correctly.
-    for fig in figs:
-        fig.set_label('plot2d_show' if do_show else 'plot2d_file')
-
-    # 5) Optional file output
-    # We save a single composite image if multiple figures were created.
-    # This mirrors plot_section_2d behavior and avoids requiring multiple output paths.
-    if file_outputs:
-        dpi = 150  # keep a stable default (can be extended later)
-        spacing_px = 10
-
-        images: List[Image.Image] = []
-        for fig in figs:
-            buf = io.BytesIO()
-            fig.savefig(buf, format="png", dpi=dpi, bbox_inches="tight")
-            buf.seek(0)
-            im = Image.open(buf).convert("RGB")
-            im.load()
-            buf.close()
-            images.append(im)
-
-        if not images:
-            raise RuntimeError("No images were generated for plot_properties file output.")
-
-        if len(images) == 1:
-            composite = images[0]
-        else:
-            max_w = max(im.width for im in images)
-            total_h = sum(im.height for im in images) + spacing_px * (len(images) - 1)
-            composite = Image.new("RGB", (max_w, total_h), (255, 255, 255))
-            y = 0
-            for im in images:
-                composite.paste(im, (0, y))
-                y += im.height + spacing_px
-
-        for out_path in file_outputs:
-            outp = Path(out_path)
-            if not outp.parent.exists():
-                raise RuntimeError(f"Output directory does not exist: {outp.parent}")
-            composite.save(str(outp), dpi=(dpi, dpi))
-            print(f"[OK] plot_properties wrote: {outp}")
-
-    # 6) Mark that 2D figures should be shown at the end (ONLY if stdout requested)
-    global want_show_2d
-    if do_show:
-        want_show_2d = "yes"
-
 
 def _run_action_plot_weight2remove(
     field: Any,
@@ -2834,7 +2525,6 @@ def _load_actions() -> None:
         return _runner
 
     # Explicit registrations for the current monolithic baseline.
-    #register_action(ACTION_SPECS["section_full_analysis"], _wrap_no_debug(_run_action_section_full_analysis))
 
     # section_selected_analysis action migrated to actions/section_selected_analysis.py (explicit registration; no side effects).
     from .actions.section_selected_analysis import register as register_section_selected_analysis
@@ -3177,7 +2867,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             "\n"
             "  6) weight_lab_zrelative     (stations REQUIRED; TEXT-ONLY)\n"
             "     - Inspector for user weight-law formulas at RELATIVE z in [0..L]\n"
-            "     - Requires: weith_law: ['expr1', 'expr2', ...]\n"
+            "     - Requires: weight_law: ['expr1', 'expr2', ...]\n"
             "     - For each law, each z, and each polygon pair (p0->p1): prints evaluation\n"
             "     - file-only supported (e.g., out/weight_inspector.txt)\n"
             "\n"
@@ -3419,7 +3109,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             "  - per-action schema rules (stations required/forbidden)\n"
             "  - params type checks + defaults\n"
             "  - plot_properties: property keys must be allowed\n"
-            "  - weight_lab_zrelative: weith_law must be a non-empty list of non-empty strings\n"
+            "  - weight_lab_zrelative: weight_law must be a non-empty list of non-empty strings\n"
             "\n"
             "Reporting:\n"
             "  - Errors: friendly messages + YAML snippet/caret when available\n"

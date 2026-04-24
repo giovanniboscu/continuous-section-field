@@ -92,6 +92,8 @@ import math
 import re
 from pathlib import Path
 import io
+from yaml.loader import SafeLoader
+from yaml.constructor import ConstructorError
 from contextlib import redirect_stdout, redirect_stderr
 try:
     import yaml  # type: ignore
@@ -104,6 +106,28 @@ from .csf_issues import CSFIssues, Issue, Severity
 # -----------------------------
 # Public result / configuration
 # -----------------------------
+
+class _NoDuplicateKeyLoader(SafeLoader):
+    pass
+
+def _construct_mapping_no_duplicates(loader, node, deep=False):
+    mapping = {}
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        if key in mapping:
+            raise ConstructorError(
+                "while constructing a mapping",
+                node.start_mark,
+                f"found duplicate key {key!r}",
+                key_node.start_mark,
+            )
+        mapping[key] = loader.construct_object(value_node, deep=deep)
+    return mapping
+
+_NoDuplicateKeyLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+    _construct_mapping_no_duplicates,
+)
 
 @dataclass
 class ReaderConfig:
@@ -337,16 +361,6 @@ class CSFReader:
         s0 = self._parse_section("S0", s0_data, issues)
         s1 = self._parse_section("S1", s1_data, issues)
 
-        # Emit a single warning if any polygons mapping was coerced.
-        if self._polygons_map_coercions:
-            issues.append(
-                CSFIssues.make(
-                    "CSF_W_POLYGONS_MAP_COERCED",
-                    path=f"{self._top_key}.sections",
-                    context=self._polygons_map_coercions,
-                )
-            )
-
         if s0 is None or s1 is None:
             return ReadResult(field=None, issues=issues)
 
@@ -397,7 +411,8 @@ class CSFReader:
             return None
 
         try:
-            doc = yaml.safe_load(text)
+            
+            doc = yaml.load(text, Loader=_NoDuplicateKeyLoader)
         except Exception as e:
             issues.append(self._make_yaml_parse_issue(text, e))
             return None

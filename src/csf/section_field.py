@@ -787,7 +787,7 @@ def _csf__section_to_Sz_dict(section_obj,nodesection: str) -> Dict[str, Any]:
     for i, poly in enumerate(section_obj.polygons):
         if not hasattr(poly, "name"):
             raise CSFError(f"Polygon at index {i} has no attribute 'name'.")
-        if not hasattr(poly, "weight"):
+        if not hasattr(poly, "weightabs"):
             raise CSFError(f"Polygon '{getattr(poly,'name','?')}' at index {i} has no attribute 'weight'.")
         if not hasattr(poly, "vertices"):
             raise CSFError(f"Polygon '{getattr(poly,'name','?')}' at index {i} has no attribute 'vertices'.")
@@ -805,12 +805,23 @@ def _csf__section_to_Sz_dict(section_obj,nodesection: str) -> Dict[str, Any]:
                 verts_out.append(globals()["XY"]((x, y)))  # type: ignore[index]
             else:
                 verts_out.append([x, y])
+        #
+        poly_name = str(poly.name)
 
-        out_polys[str(poly.name)] = {
-            "weight": float(poly.weight),
+        # Clean duplicated diagnostic names produced by section interpolation.
+        # Example: "tower:tower" -> "tower".
+        if ":" in poly_name:
+            name0, name1 = poly_name.split(":", 1)
+            node_section_norm = str(nodesection).strip().lower()
+
+            if node_section_norm == "s0":
+                poly_name = name0
+            elif node_section_norm == "s1":
+                poly_name = name1                      
+        out_polys[poly_name] = {
+            "weight": float(poly.weightabs),
             "vertices": verts_out,
         }
-
     return {
         nodesection: {
             "z": float(getattr(section_obj, "z", float("nan"))),
@@ -1781,8 +1792,6 @@ def _poly_signed_area_centroid(pts: Any, eps_a: float) -> Tuple[float, float, fl
         print()  # riga vuota
         '''
 
-
-
     A = 0.5 * a2
     if A <= eps_a:
         raise ValueError("Polygon area is non-positive or too small (expected CCW, non-degenerate).")
@@ -1790,34 +1799,6 @@ def _poly_signed_area_centroid(pts: Any, eps_a: float) -> Tuple[float, float, fl
     Cx = cx6 / (3.0 * a2)
     Cy = cy6 / (3.0 * a2)
     return A, Cx, Cy
-
-
-def _poly_centroidal_inertia(pts: Any, cx: float, cy: float) -> Tuple[float, float, float]:
-    """
-    Centroidal second moments via signed polygon integration.
-
-    Returns (Ix, Iy, Ixy) about the polygon centroid.
-    """
-    n = len(pts)
-    ix = 0.0
-    iy = 0.0
-    ixy = 0.0
-
-    for i in range(n):
-        x0 = pts[i].x - cx
-        y0 = pts[i].y - cy
-        x1 = pts[(i + 1) % n].x - cx
-        y1 = pts[(i + 1) % n].y - cy
-        cross = x0 * y1 - x1 * y0
-
-        ix += (y0 * y0 + y0 * y1 + y1 * y1) * cross
-        iy += (x0 * x0 + x0 * x1 + x1 * x1) * cross
-        ixy += (x0 * y1 + 2.0 * x0 * y0 + 2.0 * x1 * y1 + x1 * y0) * cross
-
-    ix /= 12.0
-    iy /= 12.0
-    ixy /= 24.0
-    return ix, iy, ixy
 
 
 def _principal_inertias(ix: float, iy: float, ixy: float) -> Tuple[float, float]:
@@ -1851,6 +1832,7 @@ def _equiv_rectangle_dims(A: float, i_min: float, eps_k: float) -> Tuple[float, 
 
     Uses: I_min = (A * t^2) / 12  -> t = sqrt(12*I_min/A),  b = A/t
     """
+    #print(f"DEBIG _equiv_rectangle_dims A {A} i_min {i_min}")
     if A <= 0.0:
         raise ValueError("Effective area must be positive for the solid-rectangle mapping.")
     if i_min <= 0.0:
@@ -1925,118 +1907,389 @@ def _fidelity_from_equiv_rectangle(a: float, b: float) -> float:
 
     return ratio
 
+#------------------  Saint Venant Jv2 
 
 # -----------------------------------------------------------------------------
 # Public API
 # -----------------------------------------------------------------------------
-
-
+from typing import Any, Tuple
+import math
 
 def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[float, float]:
     """
+    Estimate the Saint-Venant torsional constant J and a fidelity indicator.
+
     Returns (J_total, fidelity).
 
-    - Polygon input: compute centroidal inertias, map to equivalent rectangle, apply Roark.
-    - Section input (has `.polygons`): aggregate (A, centroid, Ix, Iy, Ixy) first, then map ONCE.
+    Strategy
+    --------
+    - Build the geometric reference section from the raw polygons.
+    - Compute the Roark reference J on the geometric section only.
+    - Compute the homogenized weighted area using per-polygon `weight`.
+    - Apply the global correction factor:
+          w_roark = A_weighted / A_geom
+      so that:
+          J_total = w_roark * J_ref
+    - Compute fidelity independently from J using the weighted bounding box
+      driven by `sqrt(weightabs)`.
 
-    Weighting:
-    - For polygons: J_i is multiplied by polygon.weight.
-    - For sections: the aggregation uses A_eff = w_i*A_i and inertia_eff = w_i*(I_i + A_i*shift^2).
-      This is algebraic and representation-invariant.
+    Notes
+    -----
+    - `weight` is used only for the final Roark correction factor.
+    - `weightabs` is used only for fidelity.
+    - The weighted fidelity box must not be reused for the Roark calculation.
     """
-    eps_a = _resolve_eps_a(poly_input)
-    eps_k = _resolve_eps_k(poly_input)
 
-    # -------------------------------------------------------------------------
-    # 1) Section: aggregate keys then map once (representation-invariant)
-    # -------------------------------------------------------------------------
-    if hasattr(poly_input, "polygons"):
-        polys = poly_input.polygons
+    def _weightabs_deviation(polys: Any) -> float:
+        """
+        Normalized standard deviation of absolute polygon weights.
 
-        # First pass: effective area and centroid
-        A_tot = 0.0
-        Qx = 0.0
-        Qy = 0.0
+        Returns
+        -------
+        float
+            0.0 -> all `weightabs` are equal
+            >0  -> larger relative spread among `weightabs`
 
-        cache = []  # (A_i, cx_i, cy_i, Ix_i, Iy_i, Ixy_i, w_i)
+        Notes
+        -----
+        This is the coefficient of variation:
+            std(weightabs) / mean(weightabs)
+        """
+        values = []
+
+        for p in polys:
+            if not hasattr(p, "weightabs"):
+                raise ValueError("Polygon has no weightabs.")
+            values.append(float(p.weightabs))
+
+        if not values:
+            return 0.0
+
+        mean = sum(values) / len(values)
+        if mean == 0.0:
+            return 0.0
+
+        var = sum((w - mean) ** 2 for w in values) / len(values)
+        return (var ** 0.5) / mean
+
+    def _container_gap_metrics(polys: Any, a_geom_total: float) -> Tuple[float, float, float]:
+        """
+        Returns (gap_area, gap_ratio, a_cont), where:
+        - gap_area  = A_cont - A_geom
+        - gap_ratio = gap_area / A_cont
+        - a_cont    = minimum global container area
+
+        Notes
+        -----
+        - Pure geometry only: no weight and no weightabs.
+        - In the CSF workflow considered here, polygon overlap is not expected.
+        """
+        def _x(pt: Any) -> float:
+            return pt.x if hasattr(pt, "x") else pt[0]
+
+        def _y(pt: Any) -> float:
+            return pt.y if hasattr(pt, "y") else pt[1]
+
+        xmin = float("inf")
+        xmax = float("-inf")
+        ymin = float("inf")
+        ymax = float("-inf")
 
         for p in polys:
             pts = p.vertices() if callable(getattr(p, "vertices", None)) else getattr(p, "vertices", None)
             if pts is None:
                 raise ValueError("Polygon has no vertices.")
-            if not hasattr(p, "weight"):
-                raise ValueError("Polygon has no weight.")
-            w_i = float(getattr(p, "weight"))
 
-            A_i, cx_i, cy_i = _poly_signed_area_centroid(pts, eps_a)
-            Ix_i, Iy_i, Ixy_i = _poly_centroidal_inertia(pts, cx_i, cy_i)
+            xs = [_x(pt) for pt in pts]
+            ys = [_y(pt) for pt in pts]
 
-            A_eff = w_i * A_i
-            A_tot += A_eff
-            Qx += A_eff * cx_i
-            Qy += A_eff * cy_i
-            cache.append((A_i, cx_i, cy_i, Ix_i, Iy_i, Ixy_i, w_i))
+            pxmin = min(xs)
+            pxmax = max(xs)
+            pymin = min(ys)
+            pymax = max(ys)
 
-        if A_tot <= eps_a:
-            print(f"WARNING:: Composite effective area is non-positive A_tot: {A_tot}; cannot compute solid-rectangle torsion proxy")
-            return 0,0
-            #raise ValueError(f"Composite effective area is non-positive A_tot: {A_tot}; cannot compute solid-rectangle torsion proxy.")
+            if pxmin < xmin:
+                xmin = pxmin
+            if pxmax > xmax:
+                xmax = pxmax
+            if pymin < ymin:
+                ymin = pymin
+            if pymax > ymax:
+                ymax = pymax
 
-        cx_tot = Qx / A_tot
-        cy_tot = Qy / A_tot
+        a_cont = (xmax - xmin) * (ymax - ymin)
+        gap_area = a_cont - a_geom_total
 
-        # Second pass: centroidal inertias about composite centroid
-        Ix = 0.0
-        Iy = 0.0
-        Ixy = 0.0
+        if a_cont <= 0.0:
+            raise ValueError("compute_saint_venant_Jv2: Global container area must be positive.")
+        gap_ratio = gap_area / a_cont
 
-        for A_i, cx_i, cy_i, Ix_i, Iy_i, Ixy_i, w_i in cache:
-            dx = cx_i - cx_tot
-            dy = cy_i - cy_tot
-            Ix += w_i * (Ix_i + A_i * (dy * dy))
-            Iy += w_i * (Iy_i + A_i * (dx * dx))
-            Ixy += w_i * (Ixy_i + A_i * (dx * dy))
+        return gap_area, gap_ratio, a_cont
 
-        i1, i2 = _principal_inertias(Ix, Iy, Ixy)
-        i_min = i2 if i2 <= i1 else i1
+    def _weight_scale(w_abs_i: float) -> float:
+        if w_abs_i < 0.0:
+            raise ValueError("weightabs must be non-negative.")
 
-        a_dim, b_dim = _equiv_rectangle_dims(A_tot, i_min, eps_k)
-        J_total = _roark_torsion_rect(a_dim, b_dim)
-        fid = _fidelity_from_equiv_rectangle(a_dim, b_dim)
+        w0 = 1.5
+        w1 = 4.0
 
-        if verbose and math.isfinite(fid) and (fid < 0.5):
-            print(
-                "[SECTION ANALYSIS] Global fidelity for '%s' is low (%.2f)." %
-                (getattr(poly_input, "name", "unnamed"), fid)
+        if w_abs_i <= w0:
+            return math.sqrt(w_abs_i)
+
+        if w_abs_i >= w1:
+            return 1.0
+
+        t = (w_abs_i - w0) / (w1 - w0)
+        s = t * t * (3.0 - 2.0 * t)  # smoothstep
+
+        return (1.0 - s) * math.sqrt(w_abs_i) + s * 1.0
+
+    def _weighted_bounding_box_dims(polys: Any, cx_ref: float, cy_ref: float) -> Tuple[float, float]:
+        """
+        Compute weighted bounding-box dimensions using the global geometric
+        centroid as the contraction center.
+
+        For each polygon:
+        - xmin_n_eff = cx_ref + sqrt(weightabs_n) * (xmin_n - cx_ref)
+        - xmax_n_eff = cx_ref + sqrt(weightabs_n) * (xmax_n - cx_ref)
+        - ymin_n_eff = cy_ref + sqrt(weightabs_n) * (ymin_n - cy_ref)
+        - ymax_n_eff = cy_ref + sqrt(weightabs_n) * (ymax_n - cy_ref)
+
+        Then the global weighted box is obtained from the min/max over all
+        weighted polygon bounds.
+
+        Returns
+        -------
+        (b_box_eff, h_box_eff)
+        """
+        def _x(pt: Any) -> float:
+            return pt.x if hasattr(pt, "x") else pt[0]
+
+        def _y(pt: Any) -> float:
+            return pt.y if hasattr(pt, "y") else pt[1]
+
+        xmin_eff = float("inf")
+        xmax_eff = float("-inf")
+        ymin_eff = float("inf")
+        ymax_eff = float("-inf")
+
+        for p in polys:
+            pts = p.vertices() if callable(getattr(p, "vertices", None)) else getattr(p, "vertices", None)
+            if pts is None:
+                raise ValueError("Polygon has no vertices.")
+            if not hasattr(p, "weightabs"):
+                raise ValueError("Polygon has no weightabs.")
+
+            w_abs_i = float(getattr(p, "weightabs"))
+
+            #alpha = 0.5
+            if verbose:
+                rint(f"w_abs_i {w_abs_i}")
+            scale_i = _weight_scale(w_abs_i)
+            #wscale = _weight_scale(w_abs_i)
+            #scale_i = w_abs_i * wscale
+          
+            if verbose:
+                print(f"roark: w_abs_i {w_abs_i}")
+
+            xs = [_x(pt) for pt in pts]
+            ys = [_y(pt) for pt in pts]
+
+            xmin_n = min(xs)
+            xmax_n = max(xs)
+            ymin_n = min(ys)
+            ymax_n = max(ys)
+
+            xmin_n_eff = cx_ref + scale_i * (xmin_n - cx_ref)
+            xmax_n_eff = cx_ref + scale_i * (xmax_n - cx_ref)
+            ymin_n_eff = cy_ref + scale_i * (ymin_n - cy_ref)
+            ymax_n_eff = cy_ref + scale_i * (ymax_n - cy_ref)
+
+            if xmin_n_eff < xmin_eff:
+                xmin_eff = xmin_n_eff
+            if xmax_n_eff > xmax_eff:
+                xmax_eff = xmax_n_eff
+            if ymin_n_eff < ymin_eff:
+                ymin_eff = ymin_n_eff
+            if ymax_n_eff > ymax_eff:
+                ymax_eff = ymax_n_eff
+
+        return xmax_eff - xmin_eff, ymax_eff - ymin_eff
+
+    def _poly_centroidal_inertia(pts: Any, cx: float, cy: float) -> Tuple[float, float, float]:
+        """
+        Centroidal second moments via signed polygon integration.
+
+        Returns (Ix, Iy, Ixy) about the polygon centroid.
+        """
+        n = len(pts)
+        ix = 0.0
+        iy = 0.0
+        ixy = 0.0
+
+        for i in range(n):
+            x0 = pts[i].x - cx
+            y0 = pts[i].y - cy
+            x1 = pts[(i + 1) % n].x - cx
+            y1 = pts[(i + 1) % n].y - cy
+            cross = x0 * y1 - x1 * y0
+
+            ix += (y0 * y0 + y0 * y1 + y1 * y1) * cross
+            iy += (x0 * x0 + x0 * x1 + x1 * x1) * cross
+            ixy += (x0 * y1 + 2.0 * x0 * y0 + 2.0 * x1 * y1 + x1 * y0) * cross
+
+        ix /= 12.0
+        iy /= 12.0
+        ixy /= 24.0
+        return ix, iy, ixy
+
+    def _isoperimetric_ratio(pts: list) -> float:
+        """
+        Returns the isoperimetric ratio Q = 4*pi*A / P^2.
+        """
+        def _x(p):
+            return p.x if hasattr(p, "x") else p[0]
+
+        def _y(p):
+            return p.y if hasattr(p, "y") else p[1]
+
+        n = len(pts)
+        perimeter = sum(
+            math.hypot(
+                _x(pts[(i + 1) % n]) - _x(pts[i]),
+                _y(pts[(i + 1) % n]) - _y(pts[i])
             )
+            for i in range(n)
+        )
+        A, _, _ = _poly_signed_area_centroid(pts, 0.0)
+        if perimeter <= 0:
+            return 0.0
+        return 4.0 * math.pi * abs(A) / (perimeter ** 2)
 
-        return float(J_total), float(fid)
+    eps_a = _resolve_eps_a(poly_input)
+    eps_k = _resolve_eps_k(poly_input)
 
-    # -------------------------------------------------------------------------
-    # 2) Single polygon
-    # -------------------------------------------------------------------------
-    pts = poly_input.vertices() if callable(getattr(poly_input, "vertices", None)) else getattr(poly_input, "vertices", None)
-    if pts is None:
-        raise ValueError("Polygon has no vertices.")
-    if len(pts) < 3:
-        return 0.0, float("nan")
-    if not hasattr(poly_input, "weight"):
-        raise ValueError("Polygon has no weight.")
-    w = float(getattr(poly_input, "weight"))
+    polys = poly_input.polygons
 
-    A, cx, cy = _poly_signed_area_centroid(pts, eps_a)
-    ix, iy, ixy = _poly_centroidal_inertia(pts, cx, cy)
-    i1, i2 = _principal_inertias(ix, iy, ixy)
-    i_min = i2 if i2 <= i1 else i1
+    # First pass:
+    # - A_geom is the geometric reference area for Roark
+    # - A_weighted is the homogenized weighted area for the final correction
+    # - geometric centroid is used only for the fidelity weighted box
+    A_geom = 0.0
+    A_weighted = 0.0
+    Qx_geom = 0.0
+    Qy_geom = 0.0
 
-    a_dim, b_dim = _equiv_rectangle_dims(A, i_min, eps_k)
-    J_geom = _roark_torsion_rect(a_dim, b_dim)
-    J_value = w * J_geom
-    fid = _fidelity_from_equiv_rectangle(a_dim, b_dim)
+    cache = []  # stores (A_i, cx_i, cy_i, Ix_i, Iy_i, Ixy_i)
 
-    return float(J_value), float(fid)
+    for p in polys:
+        pts = p.vertices() if callable(getattr(p, "vertices", None)) else getattr(p, "vertices", None)
+        if pts is None:
+            raise ValueError("Polygon has no vertices.")
+        if not hasattr(p, "weightabs"):
+            raise ValueError("Polygon has no weightabs.")
+        if not hasattr(p, "weight"):
+            raise ValueError("Polygon has no weight.")
 
-######################################################################################################################################
+        w_i = float(getattr(p, "weight"))
+
+        A_i, cx_i, cy_i = _poly_signed_area_centroid(pts, eps_a)
+        Ix_i, Iy_i, Ixy_i = _poly_centroidal_inertia(pts, cx_i, cy_i)
+
+        A_geom += A_i
+        A_weighted += w_i * A_i
+        Qx_geom += A_i * cx_i
+        Qy_geom += A_i * cy_i
+
+        cache.append((A_i, cx_i, cy_i, Ix_i, Iy_i, Ixy_i))
+    
+    if A_geom <= eps_a:
+        return 0.0, 0.0
+
+    if A_weighted <= eps_a:
+        return 0.0, 0.0
+    cx_geom = Qx_geom / A_geom
+    cy_geom = Qy_geom / A_geom
+
+    # Roark reference calculation on the geometric section only.
+    Ix_geom = 0.0
+    Iy_geom = 0.0
+    Ixy_geom = 0.0
+
+    for A_i, cx_i, cy_i, Ix_i, Iy_i, Ixy_i in cache:
+        dx = cx_i - cx_geom
+        dy = cy_i - cy_geom
+        Ix_geom += Ix_i + A_i * (dy * dy)
+        Iy_geom += Iy_i + A_i * (dx * dx)
+        Ixy_geom += Ixy_i + A_i * (dx * dy)
+
+    i1_geom, i2_geom = _principal_inertias(Ix_geom, Iy_geom, Ixy_geom)
+    i_min_geom = i2_geom if i2_geom <= i1_geom else i1_geom
+
+    a_dim_ref, b_dim_ref = _equiv_rectangle_dims(A_geom, i_min_geom, eps_k)
+    J_ref = _roark_torsion_rect(a_dim_ref, b_dim_ref)
+    # Final Roark correction factor from homogenized weighted area.
+    w_roark = A_weighted / A_geom
+    J_total = w_roark * J_ref
+    
+
+
+    # Fidelity: weighted box driven only by sqrt(weightabs).
+    b_box_eff, h_box_eff = _weighted_bounding_box_dims(polys, cx_geom, cy_geom)
+    a_box_eff = b_box_eff * h_box_eff
+
+    if a_box_eff <= eps_a:
+        fid = 0.0
+    else:
+        fid = A_weighted / a_box_eff
+        if verbose:
+           print(f" A_weighted {A_weighted} a_box_eff {a_box_eff}")
+        fid = min(1.0, fid)
+
+    gap_area, gap_ratio, a_cont = _container_gap_metrics(polys, A_geom)
+    tol_gap_ratio = 1.0e-6
+    
+    if fid > 0.9 and gap_ratio > tol_gap_ratio: 
+        fid = fid * (1.0 - gap_ratio)  
+
+    # Isoperimetric penalty
+    outer_poly = max(
+        polys,
+        key=lambda p: float(getattr(p, "weightabs", 1.0)) * abs(
+            _poly_signed_area_centroid(
+                p.vertices() if callable(getattr(p, "vertices", None)) else p.vertices,
+                0.0
+            )[0]
+        )
+    )
+    outer_pts = (
+        outer_poly.vertices()
+        if callable(getattr(outer_poly, "vertices", None))
+        else outer_poly.vertices
+    )
+    
+
+    q_iso = _isoperimetric_ratio(outer_pts)
+    if q_iso > 0.90:
+        fid = 0.0
+        J_total = 0.0
+        
+
+    if verbose:
+        print(f"roark: A_weighted fid {fid} {fid} tol_gap_ratio {tol_gap_ratio} w_roark {w_roark} J_total {J_total} J_ref {J_ref}")
+    #fid = fid = fid * (w_roark ** ALPHA_W_ROARK)
+    dev_weightabs = _weightabs_deviation(polys)
+    if verbose and math.isfinite(fid) and (fid < 0.5):
+        print(
+            "[SECTION ANALYSIS] Global fidelity for '%s' is low (%.2f)." %
+            (getattr(poly_input, "name", "unnamed"), fid)
+        )
+        
+    fid_final = fid *( 1 - dev_weightabs**2)
+    fid_final = max(0.0, min(1.0, fid_final))
+    return float(J_total), float(fid_final)
+
+    # -----------------------------------------------------------------------------
 
 
 def calculate_t_eq(points):
@@ -4380,37 +4633,23 @@ class Polygon:
                     f"A polygon must have at least 3 non-collinear vertices to enclose an area."
                 )
 
+from collections.abc import Mapping
 
 @dataclass(frozen=True)
 class Section:
     polygons: Tuple[Polygon, ...]
     z: float
-    def __post_init__(self):
 
-        seen_names = set()
-        for i, poly in enumerate(self.polygons):
-            # 1. Check for empty or whitespace-only names
-            if not poly.name or not poly.name.strip():
-                raise ValueError(
-                    f"VALIDATION ERROR: Polygon at index {i} in section at Z={self.z} "
-                    f"has an empty or invalid name. All polygons must have a unique name."
-                )
-            
-            # 2. Check for uniqueness
-            if poly.name in seen_names:
-                raise ValueError(
-                    f"VALIDATION ERROR: Duplicate polygon name '{poly.name}' detected "
-                    f"in section at Z={self.z}. Each polygon within a section must have a unique name."
-                )
-            
-            seen_names.add(poly.name)
-            
-
-        # Common error case: (poly) instead of (poly,)
+    def __post_init__(self) -> None:
         if isinstance(self.polygons, Polygon):
             raise TypeError(
                 "Section.polygons must be a tuple of Polygon. "
-                "For a single polygon, use (poly,) not (poly)."
+                "For a single polygon, use (poly,) not (poly,)."
+            )
+
+        if isinstance(self.polygons, Mapping):
+            raise TypeError(
+                "Section.polygons must be a tuple of Polygon, not a mapping/dict."
             )
 
         if not isinstance(self.polygons, tuple):
@@ -4428,6 +4667,23 @@ class Section:
                 raise TypeError(
                     "All elements of Section.polygons must be Polygon."
                 )
+
+        seen_names = set()
+
+        for i, poly in enumerate(self.polygons):
+            if not poly.name or not poly.name.strip():
+                raise ValueError(
+                    f"VALIDATION ERROR: Polygon at index {i} in section at Z={self.z} "
+                    f"has an empty or invalid name. All polygons must have a unique name."
+                )
+
+            if poly.name in seen_names:
+                raise ValueError(
+                    f"VALIDATION ERROR: Duplicate polygon name '{poly.name}' detected "
+                    f"in section at Z={self.z}. Each polygon within a section must have a unique name."
+                )
+
+            seen_names.add(poly.name)
 
 
 
@@ -5923,15 +6179,15 @@ class ContinuousSectionField:
         weight_laws_yaml = []
         secz0 = self.section(float(z0))
         secz1 = self.section(float(z1))
+        #print(f"DEBUG self {self.s0}")
         if self.weight_laws is not None:   
             try:
                 secz0 = self.section(float(z0))
                 secz1 = self.section(float(z1))  
                 for key in self.weight_laws:
                     idx = key - 1
-                    
-                    namestartlaw = self.s0.polygons[idx].name 
-                    nameendlaw   =  self.s0.polygons[idx].name
+                    namestartlaw = self.s0.polygons[idx].name
+                    nameendlaw = self.s1.polygons[idx].name
                     law_string = f"{namestartlaw},{nameendlaw}: {self.weight_laws[key]}"
                     weight_laws_yaml.append(law_string)
             except CSFError:
@@ -6531,12 +6787,11 @@ class ContinuousSectionField:
         return data
 
     def to_yaml(self, filepath: Optional[str] = None, include_weight_laws: bool = True) -> str:
-        """
-        Produce YAML come stringa; se filepath è dato, scrive anche su file.
-        """
         
         data = self.to_dict(include_weight_laws=include_weight_laws)
+        
         if yaml is not None:
+     
             yml = yaml.dump(
                 data,
                 Dumper=CSFDumper,
@@ -6556,7 +6811,7 @@ class ContinuousSectionField:
         return yml
 
 
-
+        #
         if include_weight_laws:
             laws_out = []
             if isinstance(self.weight_laws, dict):
@@ -7848,11 +8103,12 @@ class Visualizer:
                 v_max_r = float(y_rf[i_max_r])
                 z_min_r = float(z_rf[i_min_r])
                 z_max_r = float(z_rf[i_max_r])
-
+                '''
                 print(
                     f"{key} [right]: min={v_min_r:.12g} at z={z_min_r:.12g} | "
                     f"max={v_max_r:.12g} at z={z_max_r:.12g}"
                 )
+                '''
 
             # ---------------------------------------------------------------------
             # Case A: no valid left data
@@ -7872,7 +8128,7 @@ class Visualizer:
                     clip_on=False
                 )
 
-                # Left-top text: t endpoints only (requested behavior)
+                # Left-top text: t endpoints only
                 if t_start_txt is not None and t_end_txt is not None:
                     title_left_t = f"t(z0)={t_start_txt:.6g}  t(z1)={t_end_txt:.6g}"
                     ax.text(
@@ -7903,11 +8159,12 @@ class Visualizer:
                     v_max_r = float(y_rf[i_max_r])
                     z_min_r = float(z_rf[i_min_r])
                     z_max_r = float(z_rf[i_max_r])
-
+                    '''
                     print(
                         f"{key} [right]: min={v_min_r:.12g} at z={z_min_r:.12g} | "
                         f"max={v_max_r:.12g} at z={z_max_r:.12g}"
                     )
+                    '''
                 continue
 
             # ---------------------------------------------------------------------
@@ -8014,11 +8271,12 @@ class Visualizer:
                 v_max_r = float(y_rf[i_max_r])
                 z_min_r = float(z_rf[i_min_r])
                 z_max_r = float(z_rf[i_max_r])
-
+                '''
                 print(
                     f"{key} [right]: min={v_min_r:.12g} at z={z_min_r:.12g} | "
                     f"max={v_max_r:.12g} at z={z_max_r:.12g}"
                 )
+                '''
 
         #print("=== END PROPERTIES MIN/MAX REPORT ===\n")
 
@@ -8305,12 +8563,12 @@ class Visualizer:
             mode = None
             seed_numeric = int(seed)
 
-        
+        '''
         print(
             f"DEBUG plot_volume_3d seed_numeric: {seed_numeric} "
             f"seed command: {seed} mode: {mode} resolution {resolution}"
         )
-        
+        '''
         def _thickness_line_from_section_points(
             section,
             min_thickness=0.15,

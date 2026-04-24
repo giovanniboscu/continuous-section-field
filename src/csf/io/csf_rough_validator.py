@@ -160,6 +160,49 @@ def _find_first_root_key_in_text(text: str) -> Tuple[Optional[str], Optional[int
 
     return None, None
 
+def _find_weight_law_item_lines(text: str) -> List[int]:
+    """
+    Return the source line numbers for items inside CSF.weight_laws.
+
+    This is a best-effort raw-text scan used only to enrich validator errors with
+    the original YAML line number. If the structure is unusual and the scan cannot
+    determine the positions reliably, it returns fewer items and the validator
+    falls back to the old message without a line number.
+    """
+    lines = text.splitlines()
+    csf_indent: Optional[int] = None
+    weight_laws_indent: Optional[int] = None
+    out: List[int] = []
+
+    for i, raw in enumerate(lines, start=1):
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        indent = len(raw) - len(raw.lstrip(" "))
+
+        if csf_indent is None:
+            if stripped == f"{TOP_KEY}:":
+                csf_indent = indent
+            continue
+
+        if indent <= csf_indent and stripped.endswith(":"):
+            break
+
+        if weight_laws_indent is None:
+            if indent > csf_indent and stripped == "weight_laws:":
+                weight_laws_indent = indent
+            continue
+
+        if indent <= weight_laws_indent:
+            break
+
+        if stripped.startswith("-"):
+            out.append(i)
+
+    return out
+
+
 
 # -----------------------------
 # Phase 1: YAML parsing
@@ -271,7 +314,7 @@ def _coerce_polygons_container(polys: Any) -> List[Tuple[Optional[str], Dict[str
     raise ValidationError(f"polygons must be a mapping or list. Found: {type(polys).__name__}")
 
 
-def _validate_csf_structure(doc: Dict[str, Any]) -> None:
+def _validate_csf_structure(doc: Dict[str, Any], weight_law_item_lines: Optional[Sequence[int]] = None) -> None:
     """
     Minimal schema validation for CSF.
 
@@ -467,10 +510,16 @@ def _validate_csf_structure(doc: Dict[str, Any]) -> None:
                     pointer = ""
                     if col_in_formula is not None:
                         pointer = "\n" + " " * (col_in_formula - 1) + "^"
+
+                    line_no = None
+                    if weight_law_item_lines is not None and i < len(weight_law_item_lines):
+                        line_no = int(weight_law_item_lines[i])
+
                     raise ValidationError(
                         f"{TOP_KEY}.weight_laws[{i}]: formula has a Python syntax error.\n"
                         f"Formula: {formula}{pointer}\n"
-                        f"Detail:  {e.msg}"
+                        f"Detail:  {e.msg}",
+                        line=line_no,
                     )
 
             # MAINTENANCE NOTE: keep _KNOWN_VARS and _KNOWN_FUNCS in sync with the
@@ -628,10 +677,13 @@ def validate_text(text: str, source: str = "<memory>") -> Tuple[bool, List[str]]
         return False, report
 
     # 3) rough CSF structure on parsed doc
+    weight_law_item_lines = _find_weight_law_item_lines(text)
     try:
-        _validate_csf_structure(doc)
+        _validate_csf_structure(doc, weight_law_item_lines=weight_law_item_lines)
     except ValidationError as e:
         report.append(f"[ERROR] CSF structure validation failed for {source}: {e.message}")
+        if e.line is not None:
+            report.append(_make_context_snippet(text, e.line, e.col))
         return False, report
 
     return True, ["[OK] Rough CSF validation passed."]
