@@ -282,8 +282,13 @@ CSF handles this automatically. No manual subtraction or containment correction 
 
 The user declares only the absolute material property of each polygon. The effective contribution is derived automatically from the containment relationship.
 
-> **Note:** This means the effective contribution of an inclusion is always computed relative to its immediate parent. Ancestors higher in the hierarchy are already correctly represented by their own material properties and nested contents.
+This means the effective contribution of an inclusion is always computed relative to its immediate parent. Ancestors higher in the hierarchy are already correctly represented by their own material properties and nested contents.
 
+>**Note on identical nested polygons:**  
+>If two polygons have identical geometry and one is treated as nested inside the other, CSF assigns the immediate container according to polygon order. In this case, the first valid polygon in the section order acts as the container, and the effective weight is computed relative to it:
+
+```text
+W_eff = W_child - W_parent
 ---
 
 ### Why "Weight" and not "E"?
