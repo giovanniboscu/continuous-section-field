@@ -66,7 +66,7 @@ CSF:
 ```
 
 ```bash
-python -m csf.utils.csf_sp --yaml=box.yaml --z=5.0 --plot
+csf-sp  --yaml=box.yaml --z=5.0 --plot
 ```
 
 > A void (hole) is simply a polygon with `weight = 0.0` nested inside a solid one.
@@ -164,7 +164,7 @@ CSF:
 ```
 
 ```bash
-python -m csf.utils.csf_sp --yaml=tapered.yaml --z=15.0
+csf-sp  --yaml=tapered.yaml --z=15.0
 ```
 
 At z = 15.0 (mid-height) the section is interpolated - outer dimensions are 0.16 × 0.25 m,
@@ -333,13 +333,13 @@ significantly faster for thin-walled sections. For full details see the
 ### 3.1 Single station
 
 ```bash
-python -m csf.utils.csf_sp --yaml=my_section.yaml --z=15.0
+csf-sp  --yaml=my_section.yaml --z=15.0
 ```
 
 ### 3.2 With plot
 
 ```bash
-python -m csf.utils.csf_sp --yaml=my_section.yaml --z=15.0 --plot
+csf-sp  --yaml=my_section.yaml --z=15.0 --plot
 ```
 
 ### 3.3 Multiple stations via run-config
@@ -354,7 +354,7 @@ station_sets:
 Then run:
 
 ```bash
-python -m csf.utils.csf_sp --yaml=my_section.yaml \
+csf-sp  --yaml=my_section.yaml \
   --run-config=stations.yaml --station-set=my_stations
 ```
 
@@ -365,7 +365,7 @@ The `--mesh` option controls the maximum element area for the sectionproperties 
 accurate results but take longer.
 
 ```bash
-python -m csf.utils.csf_sp --yaml=my_section.yaml --z=15.0 --mesh=0.1
+csf-sp  --yaml=my_section.yaml --z=15.0 --mesh=0.1
 ```
 
 ### 3.5 Skip warping
@@ -374,7 +374,7 @@ The `--no-warping` flag skips the warping FEM (`e.j`, shear centre, warping cons
 Significantly faster when the torsional constant is not needed.
 
 ```bash
-python -m csf.utils.csf_sp --yaml=my_section.yaml --z=15.0 --no-warping
+csf-sp  --yaml=my_section.yaml --z=15.0 --no-warping
 ```
 
 ---
@@ -455,7 +455,7 @@ CSF:
 ```
 
 ```bash
-python -m csf.utils.csf_sp --yaml=rect.yaml --z=5.0 --plot
+csf-sp  --yaml=rect.yaml --z=5.0 --plot
 ```
 
 Expected: `e.a = 0.24`, `cx = cy = 0`, `e.ixx_c = 0.00720`, `e.iyy_c = 0.00320`
@@ -555,7 +555,7 @@ CSF:
 ```
 
 ```bash
-python -m csf.utils.csf_sp --yaml=tapered.yaml \
+csf-sp  --yaml=tapered.yaml \
   --run-config=stations.yaml --station-set=all
 ```
 
@@ -629,7 +629,7 @@ station_sets:
 Then pass it to csf_sp together with the CSF model:
 
 ```bash
-python -m csf.utils.csf_sp --yaml=csf_sp_example.yaml \
+csf-sp  --yaml=csf_sp_example.yaml \
   --run-config=run_config.yaml --station-set=my_stations
 ```
 
@@ -690,13 +690,13 @@ idx_polygon,idx_container,s0_name,s1_name,w,vertex_i,x,y
 ### 8.2 CLI usage
 
 ```bash
-python -m csf.utils.csf_sp out/section_analysis.csv
+csf-sp  out/section_analysis.csv
 ```
 
 To select a specific z station when the file contains multiple blocks:
 
 ```bash
-python -m csf.utils.csf_sp out/section_analysis.csv --z=5.0
+csf-sp  out/section_analysis.csv --z=5.0
 ```
 
 ---
