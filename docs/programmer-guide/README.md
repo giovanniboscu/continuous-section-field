@@ -37,7 +37,7 @@ opensees_export.md
 2. [02_plotting sections_and_volume](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/02_plotting_sections_and_volume.md)
 3. [03_plotting properties](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/03_plotting_properties.md)
 4. [04_plotting weight](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/04_plotting_weight.md)
-5. [04_plotting weight](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/04_plotting_weight.md)
+5. [05 Stacked field](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/06_csf_stacked.md)
 6. [06_opensees export](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/opensees_export.md)
 8. [07_geometry and properties export](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/geometry_properties_export.md)
 9. 
