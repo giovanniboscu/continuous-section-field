@@ -1,4 +1,4 @@
-# 02 — Plotting Sections and Volume
+# 02 - Plotting Sections and Volume
 
 ## Purpose
 
