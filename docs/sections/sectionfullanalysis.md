@@ -751,9 +751,9 @@ Do not use it as:
 
 ## How to read the value
 
-- **≥ 0.9** — the section is compact and rectangle-like; `J_s_vroark` is a reasonable estimate.
-- **0.7 – 0.9** — borderline geometry, typically mild asymmetry or light non-structural material; `J_s_vroark` remains usable, with visible error.
-- **< 0.7** — the geometry is no longer rectangle-like (T, H, I, internal voids, extreme weight dispersion); `J_s_vroark` should be discarded in favor of `J_s_v_cell` or `J_s_v_wall`.
+- **≥ 0.9** - the section is compact and rectangle-like; `J_s_vroark` is a reasonable estimate.
+- **0.7 – 0.9** - borderline geometry, typically mild asymmetry or light non-structural material; `J_s_vroark` remains usable, with visible error.
+- **< 0.7** - the geometry is no longer rectangle-like (T, H, I, internal voids, extreme weight dispersion); `J_s_vroark` should be discarded in favor of `J_s_v_cell` or `J_s_v_wall`.
 
 A practical rule for automated pipelines is to reject `J_s_vroark` whenever fidelity drops below 0.7.
 
@@ -797,7 +797,7 @@ When you plot `J_s_vroark_fidelity(z)`:
 >
 > *"The problem of torsion is one of the most beautiful in the whole of
 > mathematical physics."*
-> — attributed to Saint-Venant
+> - attributed to Saint-Venant
 
 ---
 ## CSF sectionproperties mapping table
@@ -818,7 +818,7 @@ When you plot `J_s_vroark_fidelity(z)`:
 | `Wx` | `e.zxx+`, `e.zxx-` | homogenized | CSF computes `Wx = Ix / c_y,max`, so it corresponds to the controlling modulus, i.e. `min(e.zxx+, e.zxx-)` |
 | `Wy` | `e.zyy+`, `e.zyy-` | homogenized | CSF computes `Wy = Iy / c_x,max`, so it corresponds to the controlling modulus, i.e. `min(e.zyy+, e.zyy-)` |
 | `J_sv_cell/wall` | `e.j` | torsion cell/wall polygon |  [De Saint-Venant Torsional Constant](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md) |
-| `Q_na` | — | CSF-only |First Moment of Area |
+| `Q_na` | - | CSF-only |First Moment of Area |
 
 This combination avoids misreading isolated curves.**
 
