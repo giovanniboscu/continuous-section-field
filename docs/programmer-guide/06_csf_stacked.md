@@ -1,4 +1,4 @@
-# CSFStacked.py — Reference (classes, dataclasses, and methods)
+# CSFStacked.py - Reference (classes, dataclasses, and methods)
 
 ## Analyzed file
 `CSFStacked.py`
