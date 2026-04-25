@@ -119,6 +119,12 @@ CSF_ACTIONS:
         stations:
           - station_edge
         properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy]
+    - volume:
+        stations:
+          - station_edge
+        output:
+          - stdout
+          - volume_report.txt
                                    
 
 ```
