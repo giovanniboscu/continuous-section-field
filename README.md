@@ -118,7 +118,7 @@ CSF_ACTIONS:
     - section_selected_analysis:
         stations:
           - station_edge
-        properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy]
+        properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy,J_s_vroark, J_s_vroark_fidelity]
     - volume:
         stations:
           - station_edge
