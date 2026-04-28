@@ -309,17 +309,18 @@ or
 ## Example
 
 ```python
-
-
-
 # Load a YAML model containing a single polygon tagged as @cell
 res = CSFReader().read_file("tower_cell.yaml")
+
+# read_file() returns a ReadResult.
+# res.ok is False if the reader/validator found at least one ERROR.
+# In that case, print the formatted report and stop before using res.field.
 if not res.ok:
     print(CSFIssues.format_report(res.issues))
-else:
-    print("OK")
+    raise SystemExit(1)
 
-    
+print("OK")
+
 field = res.field
 
 sec = field.section(10.0)
