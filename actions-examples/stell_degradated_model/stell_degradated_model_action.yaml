@@ -12,6 +12,7 @@ CSF_ACTIONS:
   actions:  
     - plot_volume_3d:
         params:
+          seed: w
           line_percent: 100.0
           title: "Stell degradated"   
     - section_selected_analysis:
