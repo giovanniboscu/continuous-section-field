@@ -309,18 +309,16 @@ or
 ## Example
 
 ```python
-# Load a YAML model containing a single polygon tagged as @cell
-res = CSFReader().read_file("tower_cell.yaml")
+from csf import section_full_analysis
+from csf.io.csf_reader import CSFReader
 
-# read_file() returns a ReadResult.
-# res.ok is False if the reader/validator found at least one ERROR.
-# In that case, print the formatted report and stop before using res.field.
+res = CSFReader().read_file("boxcell.yaml")
 if not res.ok:
     print(CSFIssues.format_report(res.issues))
-    raise SystemExit(1)
+else:
+    print("OK")
 
-print("OK")
-
+    
 field = res.field
 
 sec = field.section(10.0)
@@ -333,10 +331,11 @@ print(f"A: {out['A']}")
 # returned values are:
 #   first  -> J_sv_cell (or J_sv_wall)
 #   second -> t
-j_sv, t = out["J"]
+j_sv, t = out["J_sv_cell"]
 
 print(f"J_sv: {j_sv}")
 print(f"t: {t}")
+
 ```
 ---
 
