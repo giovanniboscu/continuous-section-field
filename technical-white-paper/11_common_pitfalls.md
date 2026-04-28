@@ -1,4 +1,4 @@
-# 11 — Common Pitfalls and How to Avoid Them
+# 11 - Common Pitfalls and How to Avoid Them
 
 This document collects the most frequent mistakes encountered when using **CSF (Continuous Section Field)** and explains **why they happen**, **how CSF reacts**, and **how to fix them**.  
 The goal is not to hide errors, but to make modeling assumptions explicit and reproducible.
