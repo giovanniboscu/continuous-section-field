@@ -2,6 +2,7 @@
 ## Variable rounded-rectangle / circle section with optional twist, two internal rebar rows, and paired weight laws
 
 This guide explains how to use the Python generator `writegeometry_rio_v2.py` through its launcher script (`un_writegeometry_v6_twist.sh` on Linux and the corresponding `.ps1` file on Windows).
+<img width="466" height="582" alt="Screenshot 2026-04-28 at 15 28 30" src="https://github.com/user-attachments/assets/2e25d89a-dc2c-42d7-979d-01dff1d55ed9" />
 
 The intended workflow is simple:
 
