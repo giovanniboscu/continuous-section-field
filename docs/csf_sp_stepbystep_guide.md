@@ -715,4 +715,44 @@ z = 0, 0.066, 0.216, 0.435, 0.704, 1.0, 1.296, 1.565, 1.784, 1.934, 2.0
 
 ---
 
-*csf_sp - part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
+# Note on `csf_sp` Weight Mapping
+
+In `csf_sp`, the CSF polygon weight `w` is mapped into a fictitious SectionProperties material.
+
+The goal is purely mathematical: make SectionProperties scale the weighted section quantities consistently with CSF.
+
+SectionProperties uses:
+
+```text
+G = E / (2 * (1 + nu))
+```
+
+The bridge sets:
+
+```text
+E  = w
+nu = -0.5
+```
+
+Therefore:
+
+```text
+G = w / (2 * (1 - 0.5)) = w
+```
+
+So the effective mapping becomes:
+
+```text
+E = w
+G = w
+```
+
+This makes the relevant SectionProperties outputs scale uniformly:
+
+```text
+EA  ~ w
+EI  ~ w
+GJ  ~ w
+```
+
+It is a numerical mapping used inside `csf_sp` to represent the CSF weight field `w` in SectionProperties.
