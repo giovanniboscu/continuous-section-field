@@ -309,8 +309,17 @@ or
 ## Example
 
 ```python
+
+
+
 # Load a YAML model containing a single polygon tagged as @cell
 res = CSFReader().read_file("tower_cell.yaml")
+if not res.ok:
+    print(CSFIssues.format_report(res.issues))
+else:
+    print("OK")
+
+    
 field = res.field
 
 sec = field.section(10.0)
