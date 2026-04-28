@@ -306,19 +306,26 @@ or
 (J_sv_wall, t)
 ```
 
+
 ## Example
+
+This example loads a CSF YAML file, validates it through `CSFReader`, extracts the section at `z = 10.0`, and runs the full section analysis.
+
+The file `boxcell.yaml` is expected to contain a section with a polygon tagged as `@cell`. If the YAML file has syntax errors, missing fields, invalid polygon data, or invalid weight laws, the reader reports the issue before any analysis is executed.
 
 ```python
 from csf import section_full_analysis
 from csf.io.csf_reader import CSFReader
+from csf.io.csf_issues import CSFIssues
 
 res = CSFReader().read_file("boxcell.yaml")
+
 if not res.ok:
     print(CSFIssues.format_report(res.issues))
-else:
-    print("OK")
+    raise SystemExit(1)
 
-    
+print("OK")
+
 field = res.field
 
 sec = field.section(10.0)
@@ -329,14 +336,15 @@ print(f"A: {out['A']}")
 
 # Special torsional case:
 # returned values are:
-#   first  -> J_sv_cell (or J_sv_wall)
+#   first  -> J_sv_cell
 #   second -> t
 j_sv, t = out["J_sv_cell"]
 
 print(f"J_sv: {j_sv}")
 print(f"t: {t}")
-
 ```
+
+The `if not res.ok:` block is essential: it prevents the code from using `res.field` when the YAML model has not been loaded correctly.
 ---
 
 From this point, all action-style workflows can be reproduced programmatically.
