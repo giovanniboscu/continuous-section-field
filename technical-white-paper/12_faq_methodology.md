@@ -34,7 +34,7 @@ The difference is **methodological**, not theoretical.
 
 ---
 
-## Q3 — Is CSF introducing new structural mechanics theory?
+## Q3 - Is CSF introducing new structural mechanics theory?
 
 No.
 
@@ -47,7 +47,7 @@ The novelty lies in **how geometry and properties are declared and sampled**, no
 
 ---
 
-## Q4 — Why are sections defined using polygons instead of templates?
+## Q4 - Why are sections defined using polygons instead of templates?
 
 Templates (I‑sections, tubes, boxes):
 - hide assumptions,
@@ -63,7 +63,7 @@ This choice favors **clarity over convenience**.
 
 ---
 
-## Q5 — Why does CSF require CCW polygon orientation?
+## Q5 - Why does CSF require CCW polygon orientation?
 
 Because CSF uses **signed area integrals**.
 
@@ -76,7 +76,7 @@ CSF enforces:
 
 ---
 
-## Q6 — What exactly is “weight” in CSF?
+## Q6 - What exactly is “weight” in CSF?
 
 `weight` is a **scalar field multiplying area integrals**.
 
@@ -89,7 +89,7 @@ CSF does not impose interpretation; **the user does**.
 
 ---
 
-## Q7 — Why are voids declared as `weight = 0`?
+## Q7 - Why are voids declared as `weight = 0`?
 
 Because a void is **zero contribution**, not negative material.
 
@@ -101,7 +101,7 @@ This avoids sign errors and double counting.
 
 ---
 
-## Q8 — Can weight laws vary continuously along z?
+## Q8 - Can weight laws vary continuously along z?
 
 Yes.  
 Each polygon may have its own **continuous law** `w(z)` defined by:
@@ -113,7 +113,7 @@ This is optional, not mandatory.
 
 ---
 
-## Q9 — Is continuous variation along z really necessary in practice?
+## Q9 - Is continuous variation along z really necessary in practice?
 
 Not always.
 
@@ -126,7 +126,7 @@ Use it **only when it adds value**.
 
 ---
 
-## Q10 — Is CSF just a “fancy piecewise‑prismatic model”?
+## Q10 - Is CSF just a “fancy piecewise‑prismatic model”?
 
 No.
 
@@ -143,7 +143,7 @@ The OpenSees discretization is a **numerical enforcement**, not a conceptual lim
 
 ---
 
-## Q11 — Why does CSF use ruled surfaces?
+## Q11 - Why does CSF use ruled surfaces?
 
 Ruled surfaces:
 - provide exact linear interpolation of vertices,
@@ -154,7 +154,7 @@ Curved geometry is approximated by polygon refinement, not by implicit curves.
 
 ---
 
-## Q12 — Why is Gauss–Lobatto used for station placement?
+## Q12 - Why is Gauss–Lobatto used for station placement?
 
 Because:
 - endpoints are included exactly,
@@ -165,7 +165,7 @@ This avoids artificial stiffness at supports.
 
 ---
 
-## Q13 — Does CSF enforce a unit system?
+## Q13 - Does CSF enforce a unit system?
 
 No.
 
@@ -176,7 +176,7 @@ This mirrors most structural solvers (including OpenSees).
 
 ---
 
-## Q14 — Why does CSF avoid silent “fixes”?
+## Q14 - Why does CSF avoid silent “fixes”?
 
 Silent fixes:
 - hide modeling errors,
@@ -190,7 +190,7 @@ CSF prefers:
 
 ---
 
-## Q15 — When should CSF *not* be used?
+## Q15 - When should CSF *not* be used?
 
 CSF is not suitable when:
 - full 3D stress fields are required,
