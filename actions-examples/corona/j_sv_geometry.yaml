@@ -279,6 +279,6 @@ CSF:
            - [0.597108, -0.058812]
 
   weight_laws:
-    - 'pol_j_sv_start,pol_j_sv_end: 0.7 + 0.29*(3*(min(t/0.3,1.0))*(min(t/0.3,1.0)) - 2*(min(t/0.3,1.0))*(min(t/0.3,1.0))*(min(t/0.3,1.0)))'
+    - 'pol_j_sv_start,pol_j_sv_end: 0.7 + 0.29*(3*(np.minimum(t/0.3,1.0))*(np.minimum(t/0.3,1.0)) - 2*(np.minimum(t/0.3,1.0))*(np.minimum(t/0.3,1.0))*(np.minimum(t/0.3,1.0)))'
     
 
