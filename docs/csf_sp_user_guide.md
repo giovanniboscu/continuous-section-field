@@ -6,6 +6,17 @@
 
 ---
 
+>##  CSF weight mapping in `csf_sp`
+>
+>In the current `csf_sp` implementation, each CSF polygon weight `w` is assigned to the SectionProperties material parameters as follows:
+>
+>```text
+>E  = w
+>nu = -0.5
+>```
+>so that `EA`, `EI`, and `GJ` scale consistently with the CSF weight field.
+>
+>A future extension is under development to allow polygon-level `nu` and, later, separate resolved fields `E(z)` and `G(z)`. In that case, `csf_sp` will only read the resolved CSF fields and convert them to SectionProperties materials; it will not define or infer the material model.
 ## 1. What is csf_sp
 
 `csf_sp` bridges [CSF](https://github.com/giovanniboscu/continuous-section-field) and [sectionproperties](https://sectionproperties.readthedocs.io):
