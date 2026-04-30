@@ -14,7 +14,7 @@
 >```
 >so that `EA`, `EI`, and `GJ` scale consistently with the CSF weight field.
 >
->A future extension is under development to allow polygon-level `nu` and, later, separate resolved fields `E(z)` and `G(z)`. In that case, `csf_sp` will only read the resolved CSF fields and convert them to SectionProperties materials; it will not define or infer the material model.
+>An extension is under development to allow polygon-level `nu` and, later, separate resolved fields for `E(z)` and `G(z)`. For `csf_sp`, the SectionProperties bridge will be available only when the CSF model provides an explicit isotropic relation that allows `E` and `nu` to be defined.
 
 **Progressive examples - Python API and YAML**
 
