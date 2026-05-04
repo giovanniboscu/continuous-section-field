@@ -92,7 +92,7 @@ CSF:
   # used to scale torsion/shear-related contributions independently from w(z)
   shear_weight_laws:
   # isotropic shortcut: sets shear_w(z) from w(z) using G = E / [2 * (1 + nu)]
-  - 'iso(0.2)'
+  - 'startsection,endsection: iso(0.2)'
   weight_laws:
   # parabolic increase: 72% at base (z=0), full section at top (z=10)
   - 'startsection,endsection:1.0 - 0.28 * (1 - (z / 10.0)**2)'                 
