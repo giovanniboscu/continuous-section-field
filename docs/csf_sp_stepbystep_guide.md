@@ -4,17 +4,6 @@
 > Please refer to the original project and its license:  
 > https://github.com/robbievanleeuwen/section-properties
 
->##  CSF weight mapping in `csf_sp`
->
->In the current `csf_sp` implementation, each CSF polygon weight `w` is assigned to the SectionProperties material parameters as follows:
->
->```text
->E  = w
->nu = -0.5
->```
->so that `EA`, `EI`, and `GJ` scale consistently with the CSF weight field.
->
->An extension is under development to allow polygon-level `nu` and, later, separate resolved fields for `E(z)` and `G(z)`. For `csf_sp`, the SectionProperties bridge will be available only when the CSF model provides an explicit isotropic relation that allows `E` and `nu` to be defined.
 
 **Progressive examples - Python API and YAML**
 
