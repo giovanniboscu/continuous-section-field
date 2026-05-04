@@ -44,9 +44,11 @@ a scalar field that scales the stiffness contribution
 
 - **Geometry field**: arbitrary polygonal sections defined at stations (`S0`, `S1`) with continuous interpolation for tapered or varying shapes.
 
-- **Weight field**: per-polygon participation factor $w_i(z)$ along the longitudinal axis, scaling each region’s effective contribution to section properties (not physical weight or self-weight).  
-  See [Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case.
+- **Axial/bending weight field**: per-polygon participation factor `w_i(z)` along the longitudinal axis, scaling each region’s effective contribution to area, axial, and bending-related section properties.
 
+- **Shear/torsion weight field**: per-polygon participation factor `shear_w_i(z)` along the longitudinal axis, allowing shear/torsion-related contributions to vary independently from `w_i(z)`.
+
+  See [Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case. 
 
 
 ### Conceptul Overview of CSF - [Model](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/geometric_material_decomposition.md)
