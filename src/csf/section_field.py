@@ -34,6 +34,8 @@ from collections import defaultdict
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from contextlib import redirect_stdout
 import random as _random
+import dataclasses
+
 #
 # Your current implementation uses a "strict proper intersection" test:
 #     (o1 * o2 < 0) and (o3 * o4 < 0)
@@ -1053,6 +1055,129 @@ def execute_string_to_float(code_string, x_value):
     final_number = float(workspace.get("output", 0.0))
 
 
+def evaluate_shear_weight_formula(
+    formula: str,
+    p0: Polygon,
+    p1: Polygon,
+    z0: float,
+    z1: float,
+    zt: float,
+    w: float,
+) -> float:
+    """
+    Evaluate a string-based shear-weight law.
+
+    Differences from evaluate_weight_formula():
+    - The variable 'w' is available and represents the absolute weight at z.
+    - The special function iso(nu) is available.
+    - If iso(nu) is used, it must be the entire formula.
+
+    iso(nu) applies the isotropic relation:
+
+        G = E / (2 * (1 + nu))
+
+    In CSF terms, if 'w' represents the absolute E-like weight,
+    iso(nu) returns the corresponding G-like shear weight.
+    """
+
+    if not isinstance(formula, str):
+        raise ValueError("shear_weight formula must be a string.")
+
+    formula = formula.strip()
+
+    if not formula:
+        raise ValueError("shear_weight formula cannot be empty.")
+
+    # Detect iso(...) usage.
+    iso_call = re.fullmatch(r"iso\s*\((.*)\)", formula)
+    iso_used = re.search(r"\biso\s*\(", formula) is not None
+
+    if iso_used and iso_call is None:
+        raise ValueError(
+            "Invalid shear_weight formula: iso(<nu>) must be used alone."
+        )
+
+    z = zt
+    l_total = z1 - z0
+
+    current_verts = tuple(
+        v0.lerp(v1, z, l_total)
+        for v0, v1 in zip(p0.vertices, p1.vertices)
+    )
+
+    p0_z = Polygon(vertices=current_verts, weight=p0.weight, name=p0.name)
+
+    t = zt / (z1 - z0)
+
+    def E_lookup(filename: str) -> float:
+        # zt is absolute for E lookup.
+        return lookup_homogenized_elastic_modulus(filename, zt)
+
+    def T_lookup(filename: str) -> float:
+        # t is normalized for T lookup.
+        return lookup_homogenized_elastic_modulus(filename, t)
+
+    def iso(nu: float) -> float:
+        # Isotropic relation: E = 2 * G * (1 + nu)
+        # Here w represents the absolute E-like weight at z.
+        # Therefore the shear weight is G-like:
+        # shear_w = w / (2 * (1 + nu))
+        nu = float(nu)
+        den = 2.0 * (1.0 + nu)
+
+        if abs(den) < 1e-15:
+            raise ValueError("Invalid iso(nu): nu = -1 makes shear weight undefined.")
+
+        shear_weight = float(w) / den
+        return shear_weight
+
+    d = lambda i, j: get_points_distance(p0_z, i, j)
+    di = lambda i, j: get_points_distance(p0, i, j)
+    de = lambda i, j: get_points_distance(p1, i, j)
+
+    context = {
+        "w": float(w),          # Absolute weight at z
+        "w0": p0.weight,        # Start weight
+        "w1": p1.weight,        # End weight
+        "z": z,                 # Absolute z
+        "t": t,                 # Normalized z
+        "L": l_total,           # Physical length
+        "math": math,
+        "np": np,
+        "d": d,
+        "d0": di,
+        "d1": de,
+        "E_lookup": E_lookup,
+        "T_lookup": T_lookup,
+        "iso": iso,
+    }
+
+    SAFE_BUILTINS = {
+        "int": int,
+        "float": float,
+        "bool": bool,
+        "min": min,
+        "max": max,
+        "abs": abs,
+        "round": round,
+        "sum": sum,
+        "pow": pow,
+        "len": len,
+        "range": range,
+        "sorted": sorted,
+        "enumerate": enumerate,
+        "zip": zip,
+        "list": list,
+        "tuple": tuple,
+        "dict": dict,
+        "set": set,
+        "any": any,
+        "all": all,
+    }
+    shear_weight = float(eval(formula, {"__builtins__": SAFE_BUILTINS}, context))
+
+    return shear_weight
+
 def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float, z1: float, zt: float) -> float:
     """
     Wrapper function intended for use within 'eval()' contexts.
@@ -1073,7 +1198,6 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
     Raises:
         Exception: Propagates any error encountered during evaluation.
     """
-    #print(f"DEBUGF >>>>>>>>>>>>>> ")
     # 2. Generate a temporary for the 'd(i,j)' helper.
     # This allows the formula to access distances at the current evaluation point.
     #   
@@ -1821,6 +1945,9 @@ def _roark_torsion_rect(a: float, b: float) -> float:
 
         J ≈ (1/3 - 0.21*(b/a)*(1 - (b/a)^4/12)) * a * b^3
     """
+    if b > a:
+        a, b = b, a
+    ratio = b / a    
     ratio = b / a
     factor = (1.0 / 3.0) - 0.21 * ratio * (1.0 - (ratio ** 4) / 12.0)
     return factor * a * (b ** 3)
@@ -1912,8 +2039,7 @@ def _fidelity_from_equiv_rectangle(a: float, b: float) -> float:
 # -----------------------------------------------------------------------------
 # Public API
 # -----------------------------------------------------------------------------
-from typing import Any, Tuple
-import math
+
 
 def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[float, float]:
     """
@@ -1923,233 +2049,222 @@ def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[fl
 
     Strategy
     --------
-    - Build the geometric reference section from the raw polygons.
-    - Compute the Roark reference J on the geometric section only.
-    - Compute the homogenized weighted area using per-polygon `weight`.
-    - Apply the global correction factor:
-          w_roark = A_weighted / A_geom
-      so that:
-          J_total = w_roark * J_ref
-    - Compute fidelity independently from J using the weighted bounding box
-      driven by `sqrt(weightabs)`.
-
-    Notes
-    -----
-    - `weight` is used only for the final Roark correction factor.
-    - `weightabs` is used only for fidelity.
-    - The weighted fidelity box must not be reused for the Roark calculation.
+    - Net geometric area and homogenised area via polygon_surface_w1_inners0.
+    - Equivalent Roark rectangle: shape from geometric bounding box, area from
+      A_geom_net. Weight enters as linear multiplier w_total = Ao / A_geom_net.
+    - Fidelity = A_geom_net / Ag  (fill ratio of the geometric bounding box).
+    - Isoperimetric penalty: if the outer polygon is nearly circular
+      (q_iso > 0.90), J and fidelity are forced to zero.
+    - Weight-dispersion penalty:  fid_final = fid * (1 - dev_weightabs^2).
     """
+    # ------------------------------------------------------------------
+    # Helper: normalised weight-dispersion (coefficient of variation)
+    # ------------------------------------------------------------------
+
+
+    def compute_shear_areas(
+        section: Any,
+        children_map: Mapping[int, Sequence[int]],
+        eps_a: float = 1.0e-12,
+    ) -> Tuple[float, float]:
+        """
+        Compute shear geometric area and shear-weighted area from a Section object.
+
+        Input:
+        - section:
+            Section object exposing section.polygons.
+
+        - children_map:
+            Mapping parent_idx -> direct inner polygon indexes.
+
+        Returns:
+        - A_geom_net:
+            Sum of occupied geometric areas for polygons with shear_weightabs != 0.
+
+        - Ao:
+            Sum of occupied geometric areas multiplied by shear_weightabs.
+
+        Area rule:
+        - occupied_area(idx) = area(idx) - sum(area(direct_inner_idx))
+
+        Notes:
+        - Polygons with shear_weightabs == 0 are excluded from both returned sums.
+        - The children_map subtraction is geometric and index-based.
+        - Polygon names are never used.
+        - Vertices are passed directly to _poly_signed_area_centroid.
+        - _poly_signed_area_centroid must already be available in the same module.
+        """
+
+        polygons = section.polygons
+
+        area_by_idx: Dict[int, float] = {}
+
+        for idx, polygon in enumerate(polygons):
+            signed_area, _, _ = _poly_signed_area_centroid(polygon.vertices, eps_a)
+            area_by_idx[idx] = abs(float(signed_area))
+
+        occupied_area_by_idx: Dict[int, float] = {}
+
+        for idx in range(len(polygons)):
+            occupied_area = area_by_idx[idx]
+
+            for inner_idx in children_map.get(idx, ()):
+                occupied_area -= area_by_idx[inner_idx]
+
+            occupied_area_by_idx[idx] = occupied_area
+
+        A_geom_net = 0.0
+        Ao = 0.0
+
+        for idx, polygon in enumerate(polygons):
+            shear_weightabs = float(polygon.shear_weightabs)
+            if shear_weightabs == 0.0:
+                continue
+
+            occupied_area = occupied_area_by_idx[idx]
+
+            A_geom_net += occupied_area
+            Ao += occupied_area * shear_weightabs
+
+        return A_geom_net, Ao
+
+
 
     def _weightabs_deviation(polys: Any) -> float:
-        """
-        Normalized standard deviation of absolute polygon weights.
-
-        Returns
-        -------
-        float
-            0.0 -> all `weightabs` are equal
-            >0  -> larger relative spread among `weightabs`
-
-        Notes
-        -----
-        This is the coefficient of variation:
-            std(weightabs) / mean(weightabs)
-        """
         values = []
-
         for p in polys:
-            if not hasattr(p, "weightabs"):
-                raise ValueError("Polygon has no weightabs.")
-            values.append(float(p.weightabs))
-
+            if not hasattr(p, "shear_weightabs"):
+                raise ValueError("Polygon has no shear_weightabs.")
+            w = float(p.weightabs)
+            if w > 0.0:
+                values.append(w)
         if not values:
             return 0.0
-
         mean = sum(values) / len(values)
         if mean == 0.0:
             return 0.0
-
         var = sum((w - mean) ** 2 for w in values) / len(values)
         return (var ** 0.5) / mean
 
-    def _container_gap_metrics(polys: Any, a_geom_total: float) -> Tuple[float, float, float]:
+    # ------------------------------------------------------------------
+    # Helper: geometric bounding-box dimensions (no weighting)
+    # ------------------------------------------------------------------
+
+    def _geometric_bounding_box_dims(poly_input: Any) -> Tuple[float, float]:
         """
-        Returns (gap_area, gap_ratio, a_cont), where:
-        - gap_area  = A_cont - A_geom
-        - gap_ratio = gap_area / A_cont
-        - a_cont    = minimum global container area
+        Compute the minimum-area geometric bounding box for one or more polygons.
 
-        Notes
-        -----
-        - Pure geometry only: no weight and no weightabs.
-        - In the CSF workflow considered here, polygon overlap is not expected.
+        All vertices from the input polygons are collected into a single point cloud.
+        Candidate box orientations are taken from the polygon edge directions. For a
+        polygonal planar shape, the minimum-area enclosing rectangle has one side
+        parallel to an edge direction, so no continuous angular optimisation is needed.
+
+        The returned dimensions (B, H) correspond to the candidate with the minimum
+        area B * H. The computation is purely geometric: polygon weights are ignored.
         """
-        def _x(pt: Any) -> float:
-            return pt.x if hasattr(pt, "x") else pt[0]
 
-        def _y(pt: Any) -> float:
-            return pt.y if hasattr(pt, "y") else pt[1]
+        def _xy_array(pts: Any) -> np.ndarray:
+            coords = np.empty((len(pts), 2), dtype=float)
 
-        xmin = float("inf")
-        xmax = float("-inf")
-        ymin = float("inf")
-        ymax = float("-inf")
+            for i, pt in enumerate(pts):
+                if hasattr(pt, "x"):
+                    coords[i, 0] = pt.x
+                    coords[i, 1] = pt.y
+                else:
+                    coords[i, 0] = pt[0]
+                    coords[i, 1] = pt[1]
 
-        for p in polys:
-            pts = p.vertices() if callable(getattr(p, "vertices", None)) else getattr(p, "vertices", None)
+            return coords
+
+        if hasattr(poly_input, "polygons"):
+            polygons = poly_input.polygons() if callable(poly_input.polygons) else poly_input.polygons
+        elif hasattr(poly_input, "vertices"):
+            polygons = [poly_input]
+        else:
+            polygons = poly_input
+
+        polygons = list(polygons)
+
+        point_arrays = []
+        angle_arrays = []
+
+        for poly in polygons:
+            vertices_attr = getattr(poly, "vertices", None)
+            pts = vertices_attr() if callable(vertices_attr) else vertices_attr
+
             if pts is None:
                 raise ValueError("Polygon has no vertices.")
 
-            xs = [_x(pt) for pt in pts]
-            ys = [_y(pt) for pt in pts]
+            pts = list(pts)
 
-            pxmin = min(xs)
-            pxmax = max(xs)
-            pymin = min(ys)
-            pymax = max(ys)
+            if len(pts) < 3:
+                raise ValueError("Polygon has fewer than 3 vertices.")
 
-            if pxmin < xmin:
-                xmin = pxmin
-            if pxmax > xmax:
-                xmax = pxmax
-            if pymin < ymin:
-                ymin = pymin
-            if pymax > ymax:
-                ymax = pymax
+            arr = _xy_array(pts)
+            point_arrays.append(arr)
 
-        a_cont = (xmax - xmin) * (ymax - ymin)
-        gap_area = a_cont - a_geom_total
+            nxt = np.roll(arr, -1, axis=0)
+            d = nxt - arr
 
-        if a_cont <= 0.0:
-            raise ValueError("compute_saint_venant_Jv2: Global container area must be positive.")
-        gap_ratio = gap_area / a_cont
+            dx = d[:, 0]
+            dy = d[:, 1]
 
-        return gap_area, gap_ratio, a_cont
+            valid = (np.abs(dx) >= 1e-15) | (np.abs(dy) >= 1e-15)
 
-    def _weight_scale(w_abs_i: float) -> float:
-        if w_abs_i < 0.0:
-            raise ValueError("weightabs must be non-negative.")
+            if np.any(valid):
+                theta = np.mod(np.arctan2(dy[valid], dx[valid]), np.pi / 2.0)
+                angle_arrays.append(np.round(theta, 15))
 
-        w0 = 1.5
-        w1 = 4.0
+        if not point_arrays:
+            raise ValueError("No polygons provided.")
 
-        if w_abs_i <= w0:
-            return math.sqrt(w_abs_i)
+        if not angle_arrays:
+            raise ValueError("No valid polygon edges found.")
 
-        if w_abs_i >= w1:
-            return 1.0
+        points = np.vstack(point_arrays)
+        angles = np.unique(np.concatenate(angle_arrays))
 
-        t = (w_abs_i - w0) / (w1 - w0)
-        s = t * t * (3.0 - 2.0 * t)  # smoothstep
+        x = points[:, 0]
+        y = points[:, 1]
 
-        return (1.0 - s) * math.sqrt(w_abs_i) + s * 1.0
+        best_area = float("inf")
+        best_B = 0.0
+        best_H = 0.0
 
-    def _weighted_bounding_box_dims(polys: Any, cx_ref: float, cy_ref: float) -> Tuple[float, float]:
-        """
-        Compute weighted bounding-box dimensions using the global geometric
-        centroid as the contraction center.
+        # Chunking avoids building a very large angle-by-point matrix at once.
+        chunk_size = 256
 
-        For each polygon:
-        - xmin_n_eff = cx_ref + sqrt(weightabs_n) * (xmin_n - cx_ref)
-        - xmax_n_eff = cx_ref + sqrt(weightabs_n) * (xmax_n - cx_ref)
-        - ymin_n_eff = cy_ref + sqrt(weightabs_n) * (ymin_n - cy_ref)
-        - ymax_n_eff = cy_ref + sqrt(weightabs_n) * (ymax_n - cy_ref)
+        for start in range(0, len(angles), chunk_size):
+            a = angles[start:start + chunk_size]
 
-        Then the global weighted box is obtained from the min/max over all
-        weighted polygon bounds.
+            cos_t = np.cos(a)[:, None]
+            sin_t = np.sin(a)[:, None]
 
-        Returns
-        -------
-        (b_box_eff, h_box_eff)
-        """
-        def _x(pt: Any) -> float:
-            return pt.x if hasattr(pt, "x") else pt[0]
+            xr = x[None, :] * cos_t + y[None, :] * sin_t
+            yr = -x[None, :] * sin_t + y[None, :] * cos_t
 
-        def _y(pt: Any) -> float:
-            return pt.y if hasattr(pt, "y") else pt[1]
+            B = xr.max(axis=1) - xr.min(axis=1)
+            H = yr.max(axis=1) - yr.min(axis=1)
+            area = B * H
 
-        xmin_eff = float("inf")
-        xmax_eff = float("-inf")
-        ymin_eff = float("inf")
-        ymax_eff = float("-inf")
+            idx = int(np.argmin(area))
 
-        for p in polys:
-            pts = p.vertices() if callable(getattr(p, "vertices", None)) else getattr(p, "vertices", None)
-            if pts is None:
-                raise ValueError("Polygon has no vertices.")
-            if not hasattr(p, "weightabs"):
-                raise ValueError("Polygon has no weightabs.")
+            if area[idx] < best_area:
+                best_area = float(area[idx])
+                best_B = float(B[idx])
+                best_H = float(H[idx])
 
-            w_abs_i = float(getattr(p, "weightabs"))
+        return best_B, best_H
 
-            #alpha = 0.5
-            if verbose:
-                rint(f"w_abs_i {w_abs_i}")
-            scale_i = _weight_scale(w_abs_i)
-            #wscale = _weight_scale(w_abs_i)
-            #scale_i = w_abs_i * wscale
-          
-            if verbose:
-                print(f"roark: w_abs_i {w_abs_i}")
 
-            xs = [_x(pt) for pt in pts]
-            ys = [_y(pt) for pt in pts]
 
-            xmin_n = min(xs)
-            xmax_n = max(xs)
-            ymin_n = min(ys)
-            ymax_n = max(ys)
-
-            xmin_n_eff = cx_ref + scale_i * (xmin_n - cx_ref)
-            xmax_n_eff = cx_ref + scale_i * (xmax_n - cx_ref)
-            ymin_n_eff = cy_ref + scale_i * (ymin_n - cy_ref)
-            ymax_n_eff = cy_ref + scale_i * (ymax_n - cy_ref)
-
-            if xmin_n_eff < xmin_eff:
-                xmin_eff = xmin_n_eff
-            if xmax_n_eff > xmax_eff:
-                xmax_eff = xmax_n_eff
-            if ymin_n_eff < ymin_eff:
-                ymin_eff = ymin_n_eff
-            if ymax_n_eff > ymax_eff:
-                ymax_eff = ymax_n_eff
-
-        return xmax_eff - xmin_eff, ymax_eff - ymin_eff
-
-    def _poly_centroidal_inertia(pts: Any, cx: float, cy: float) -> Tuple[float, float, float]:
-        """
-        Centroidal second moments via signed polygon integration.
-
-        Returns (Ix, Iy, Ixy) about the polygon centroid.
-        """
-        n = len(pts)
-        ix = 0.0
-        iy = 0.0
-        ixy = 0.0
-
-        for i in range(n):
-            x0 = pts[i].x - cx
-            y0 = pts[i].y - cy
-            x1 = pts[(i + 1) % n].x - cx
-            y1 = pts[(i + 1) % n].y - cy
-            cross = x0 * y1 - x1 * y0
-
-            ix += (y0 * y0 + y0 * y1 + y1 * y1) * cross
-            iy += (x0 * x0 + x0 * x1 + x1 * x1) * cross
-            ixy += (x0 * y1 + 2.0 * x0 * y0 + 2.0 * x1 * y1 + x1 * y0) * cross
-
-        ix /= 12.0
-        iy /= 12.0
-        ixy /= 24.0
-        return ix, iy, ixy
-
+   
+    # ------------------------------------------------------------------
+    # Helper: isoperimetric ratio Q = 4*pi*A / P^2
+    # ------------------------------------------------------------------
     def _isoperimetric_ratio(pts: list) -> float:
-        """
-        Returns the isoperimetric ratio Q = 4*pi*A / P^2.
-        """
         def _x(p):
             return p.x if hasattr(p, "x") else p[0]
-
         def _y(p):
             return p.y if hasattr(p, "y") else p[1]
 
@@ -2166,93 +2281,55 @@ def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[fl
             return 0.0
         return 4.0 * math.pi * abs(A) / (perimeter ** 2)
 
+    # ------------------------------------------------------------------
+    # Setup
+    # ------------------------------------------------------------------
     eps_a = _resolve_eps_a(poly_input)
-    eps_k = _resolve_eps_k(poly_input)
-
     polys = poly_input.polygons
 
-    # First pass:
-    # - A_geom is the geometric reference area for Roark
-    # - A_weighted is the homogenized weighted area for the final correction
-    # - geometric centroid is used only for the fidelity weighted box
-    A_geom = 0.0
-    A_weighted = 0.0
-    Qx_geom = 0.0
-    Qy_geom = 0.0
+    # ------------------------------------------------------------------
+    # Net geometric area and homogenised area via topology-aware function
+    # ------------------------------------------------------------------
 
-    cache = []  # stores (A_i, cx_i, cy_i, Ix_i, Iy_i, Ixy_i)
+    s0 = Section(
+        z=0.0,
+        polygons=poly_input.polygons,
+    )
 
-    for p in polys:
-        pts = p.vertices() if callable(getattr(p, "vertices", None)) else getattr(p, "vertices", None)
-        if pts is None:
-            raise ValueError("Polygon has no vertices.")
-        if not hasattr(p, "weightabs"):
-            raise ValueError("Polygon has no weightabs.")
-        if not hasattr(p, "weight"):
-            raise ValueError("Polygon has no weight.")
+    s1 = Section(
+        z=1.0,
+        polygons=poly_input.polygons,
+    )
 
-        w_i = float(getattr(p, "weight"))
 
-        A_i, cx_i, cy_i = _poly_signed_area_centroid(pts, eps_a)
-        Ix_i, Iy_i, Ixy_i = _poly_centroidal_inertia(pts, cx_i, cy_i)
-
-        A_geom += A_i
-        A_weighted += w_i * A_i
-        Qx_geom += A_i * cx_i
-        Qy_geom += A_i * cy_i
-
-        cache.append((A_i, cx_i, cy_i, Ix_i, Iy_i, Ixy_i))
-    
-    if A_geom <= eps_a:
+    field    = ContinuousSectionField(section0=s0, section1=s1)
+    mapchildren=field.build_direct_children_map(0)    
+    A_geom_net,Ao = compute_shear_areas(poly_input,mapchildren)
+   
+    if A_geom_net <= eps_a:
         return 0.0, 0.0
-
-    if A_weighted <= eps_a:
+    if Ao <= eps_a:
         return 0.0, 0.0
-    cx_geom = Qx_geom / A_geom
-    cy_geom = Qy_geom / A_geom
-
-    # Roark reference calculation on the geometric section only.
-    Ix_geom = 0.0
-    Iy_geom = 0.0
-    Ixy_geom = 0.0
-
-    for A_i, cx_i, cy_i, Ix_i, Iy_i, Ixy_i in cache:
-        dx = cx_i - cx_geom
-        dy = cy_i - cy_geom
-        Ix_geom += Ix_i + A_i * (dy * dy)
-        Iy_geom += Iy_i + A_i * (dx * dx)
-        Ixy_geom += Ixy_i + A_i * (dx * dy)
-
-    i1_geom, i2_geom = _principal_inertias(Ix_geom, Iy_geom, Ixy_geom)
-    i_min_geom = i2_geom if i2_geom <= i1_geom else i1_geom
-
-    a_dim_ref, b_dim_ref = _equiv_rectangle_dims(A_geom, i_min_geom, eps_k)
-    J_ref = _roark_torsion_rect(a_dim_ref, b_dim_ref)
-    # Final Roark correction factor from homogenized weighted area.
-    w_roark = A_weighted / A_geom
-    J_total = w_roark * J_ref
     
+    w_total = Ao / A_geom_net
+    # ------------------------------------------------------------------
+    # Equivalent Roark rectangle: shape from bounding box, area from A_geom_net
+    # ------------------------------------------------------------------
+    b_box, h_box = _geometric_bounding_box_dims(polys)
+    Ag       = b_box * h_box
+    ratio_hb = max(b_box, h_box) / min(b_box, h_box)
+    h_eq     = math.sqrt(A_geom_net * ratio_hb)
+    b_eq     = math.sqrt(A_geom_net / ratio_hb)
 
-
-    # Fidelity: weighted box driven only by sqrt(weightabs).
-    b_box_eff, h_box_eff = _weighted_bounding_box_dims(polys, cx_geom, cy_geom)
-    a_box_eff = b_box_eff * h_box_eff
-
-    if a_box_eff <= eps_a:
-        fid = 0.0
-    else:
-        fid = A_weighted / a_box_eff
-        if verbose:
-           print(f" A_weighted {A_weighted} a_box_eff {a_box_eff}")
-        fid = min(1.0, fid)
-
-    gap_area, gap_ratio, a_cont = _container_gap_metrics(polys, A_geom)
-    tol_gap_ratio = 1.0e-6
+    ktorsion=  _roark_torsion_rect(h_eq, b_eq)
+    J_total = w_total * ktorsion
     
-    if fid > 0.9 and gap_ratio > tol_gap_ratio: 
-        fid = fid * (1.0 - gap_ratio)  
-
-    # Isoperimetric penalty
+    fid     = min(A_geom_net, Ag) / max(A_geom_net, Ag)
+    #print(f"DEBUG A_geom_net {A_geom_net} Ao {Ao} : J_total {J_total} : w_total {w_total} : ktorsion {ktorsion}")
+    # ------------------------------------------------------------------
+    # Isoperimetric penalty: circular sections -> J = 0
+    # ------------------------------------------------------------------
+    
     outer_poly = max(
         polys,
         key=lambda p: float(getattr(p, "weightabs", 1.0)) * abs(
@@ -2267,29 +2344,32 @@ def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[fl
         if callable(getattr(outer_poly, "vertices", None))
         else outer_poly.vertices
     )
-    
-
     q_iso = _isoperimetric_ratio(outer_pts)
     if q_iso > 0.90:
-        fid = 0.0
+        fid     = 0.0
         J_total = 0.0
-        
 
-    if verbose:
-        print(f"roark: A_weighted fid {fid} {fid} tol_gap_ratio {tol_gap_ratio} w_roark {w_roark} J_total {J_total} J_ref {J_ref}")
-    #fid = fid = fid * (w_roark ** ALPHA_W_ROARK)
+    # ------------------------------------------------------------------
+    # Weight-dispersion penalty on fidelity
+    # ------------------------------------------------------------------
+    
     dev_weightabs = _weightabs_deviation(polys)
-    if verbose and math.isfinite(fid) and (fid < 0.5):
+    fid_final = fid * (1.0 - dev_weightabs ** 2)
+    fid_final = max(0.0, min(1.0, fid_final))
+    if verbose:
+        print(
+            f"roark: J_total={J_total:.6e}  fid={fid:.4f}"
+            f"  fid_final={fid_final:.4f}  w_total={w_total:.4f}"
+            f"  q_iso={q_iso:.4f}  dev_w={dev_weightabs:.4f}"
+        )
+    if verbose and math.isfinite(fid_final) and fid_final < 0.5:
         print(
             "[SECTION ANALYSIS] Global fidelity for '%s' is low (%.2f)." %
-            (getattr(poly_input, "name", "unnamed"), fid)
+            (getattr(poly_input, "name", "unnamed"), fid_final)
         )
-        
-    fid_final = fid *( 1 - dev_weightabs**2)
-    fid_final = max(0.0, min(1.0, fid_final))
+    
     return float(J_total), float(fid_final)
 
-    # -----------------------------------------------------------------------------
 
 
 def calculate_t_eq(points):
@@ -2444,7 +2524,84 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
     polys = getattr(section, "polygons", None)
     if not polys:
         return 0.0
+    #---------------------------------------------------------------------------
     
+    def compute_shear_areas(
+        section: Section,
+        #children_map: Mapping[int, Sequence[int]],
+        eps_a: float = 1.0e-12,
+    ) -> Tuple[float, float]:
+        """
+        Compute shear geometric area and shear-weighted area from a Section object.
+
+        Input:
+        - section:
+            Section object exposing section.polygons.
+
+        - children_map:
+            Mapping parent_idx -> direct inner polygon indexes.
+
+        Returns:
+        - A_geom_net:
+            Sum of occupied geometric areas for polygons with shear_weightabs != 0.
+
+        - Ao:
+            Sum of occupied geometric areas multiplied by shear_weightabs.
+
+        Area rule:
+        - occupied_area(idx) = area(idx) - sum(area(direct_inner_idx))
+
+        Notes:
+        - Polygons with shear_weightabs == 0 are excluded from both returned sums.
+        - The children_map subtraction is geometric and index-based.
+        - Polygon names are never used.
+        - Vertices are passed directly to _poly_signed_area_centroid.
+        - _poly_signed_area_centroid must already be available in the same module.
+        """
+        children_map=field.build_direct_children_map(section.z)        
+        polygons = section.polygons
+
+        area_by_idx: Dict[int, float] = {}
+
+        for idx, polygon in enumerate(polygons):
+            signed_area, _, _ = _poly_signed_area_centroid(polygon.vertices, eps_a)
+            area_by_idx[idx] = abs(float(signed_area))
+
+        occupied_area_by_idx: Dict[int, float] = {}
+
+        for idx in range(len(polygons)):
+            occupied_area = area_by_idx[idx]
+
+            for inner_idx in children_map.get(idx, ()):
+                occupied_area -= area_by_idx[inner_idx]
+
+            occupied_area_by_idx[idx] = occupied_area
+
+        A_geom_net = 0.0
+        Ao = 0.0
+
+        for idx, polygon in enumerate(polygons):
+            weight = float(polygon.weight)
+            if weight == 0.0:
+                continue
+
+            occupied_area = occupied_area_by_idx[idx]
+
+            A_geom_net += occupied_area
+            Ao += occupied_area * weight
+
+        return A_geom_net, Ao
+
+
+
+
+
+
+
+
+
+
+
     # -------------------------------------------------------------------------
     # 0) Select @cell polygons
     # -------------------------------------------------------------------------
@@ -2673,9 +2830,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         A_outer = abs(A_outer_signed)
         A_inner = abs(A_inner_signed)
         A_wall = A_outer - A_inner
-
-
-
+ 
         if A_wall <= EPS_A:
             raise CSFError(
                 f"compute_saint_venant_J_cell(v3): polygon '{nm}' has non-positive wall area "
@@ -2712,9 +2867,9 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         nm = str(getattr(p, "name", "") or "")
 
         # No silent default for structural weight.
-        w = float(getattr(p, "weight"))
+        shear_weight = float(getattr(p, "shear_weight"))
 
-        if abs(w) < EPS_A:
+        if abs(shear_weight) < EPS_A:
             t=0
             continue
 
@@ -2792,6 +2947,32 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
                 raise CSFError(
                     f"compute_saint_venant_J_cell(v3): polygon '{nm}' is @cell/@closed but missing '@t=...'."
                 )
+               
+            # Use the pure geometric wall area from the split loops.
+            # Do not use polygon_area_centroid(p)[0] here, because that area may already
+            # include the polygon weight and would make w enter J twice.
+            A_outer = abs(_signed_area_xy(outer_xy))
+            A_inner = abs(_signed_area_xy(inner_xy))
+            A_wall_geom = A_outer - A_inner
+
+            if A_wall_geom <= EPS_A:
+                raise CSFError(
+                    f"compute_saint_venant_J_cell(v3): polygon '{nm}' has non-positive geometric wall area "
+                    f"(A_outer={A_outer:.12g}, A_inner={A_inner:.12g})."
+                )
+
+            P_outer = _perimeter_xy(outer_xy)
+            P_inner = _perimeter_xy(inner_xy)
+            P_poly_fallback = P_outer + P_inner
+
+            if P_poly_fallback < EPS_L:
+                raise CSFError(
+                    f"compute_saint_venant_J_cell(v3): polygon '{nm}' has near-zero perimeter."
+                )
+
+            t = 2.0 * A_wall_geom / P_poly_fallback                
+                            
+            '''    
             A_poly_fallback = abs(float(polygon_area_centroid(p)[0]))
 
 
@@ -2809,6 +2990,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
                 )
             
             t = 2.0 * A_poly_fallback / P_poly_fallback
+            '''
         # end t calculation            
 
         if t < EPS_L:
@@ -2843,8 +3025,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         J_geom = _compute_J_geom_from_global_mid_quantities(
             outer_xy, inner_xy, t, nm, i_cell, z_sec
         )
-
-        contrib = w * J_geom
+        contrib = shear_weight * J_geom
         
         '''
         print(
@@ -3046,9 +3227,9 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
 
     for p in wall_polys:
         
-        w = float(getattr(p, "weight"))
+        shear_weight = float(getattr(p, "shear_weight"))
         
-        if abs(w) < EPS_A:
+        if abs(shear_weight) < EPS_A:
             t=0            
             continue
         
@@ -3094,7 +3275,8 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
         '''
 
         # Keep torsional stiffness non-negative
-        J += w * J_i
+        J +=  shear_weight * J_i
+        
     if len(wall_polys) == 1:
         return float(J),t
     else:
@@ -3388,7 +3570,6 @@ def _poly_signed_area_centroid_xy(verts: Sequence[PointXY]) -> Tuple[float, floa
 
 
 
-
 # -----------------------------------------------------------------------------
 # Public API
 # -----------------------------------------------------------------------------
@@ -3458,11 +3639,13 @@ def assemble_element_stiffness_matrix(field: ContinuousSectionField, E_ref: floa
         # Sectional properties
         K_sec = section_stiffness_matrix(field.section(z_phys), E_ref=E_ref) # absolute z
         props = section_full_analysis(field.section(z_phys))#alpha not used
-        
+
+        '''
         Jt = props.get("J_sv", 0.0)
         if Jt <= 0.0:
             Jt = props.get("J_s_vroark", 0.0)
-        GK = G_ref * Jt
+        '''
+        GK = 0#G_ref * Jt
 
         EA = K_sec[0, 0]
         EIx = K_sec[1, 1] 
@@ -4074,7 +4257,7 @@ def section_full_analysis(section: Section):
 
     
     props = section_properties(section)
-   
+
     
     # -------------------------------------------------------------------------
     # 2. PRINCIPAL AXIS ANALYSIS
@@ -4083,6 +4266,8 @@ def section_full_analysis(section: Section):
     # This identifies the orientation where the product of inertia is zero, 
     # crucial for analyzing unsymmetrical bending.
     derived = section_derived_properties(props)
+
+
 
     
     # -------------------------------------------------------------------------
@@ -4097,6 +4282,8 @@ def section_full_analysis(section: Section):
 
     #--------------------------------------------    
     effective_polygons = [poly for poly in section.polygons if abs(poly.weight) > EPS_K]
+
+
 
     if effective_polygons:
         all_x = [v.x for poly in effective_polygons for v in poly.vertices]
@@ -4116,6 +4303,9 @@ def section_full_analysis(section: Section):
         props['Wx'] = 0.0
         props['Wy'] = 0.0
 
+
+
+
     #--------------------------------------------    
 # -------------------------------------------------------------------------
     # 4. TORSIONAL RIGIDITY (K) - BETA ESTIMATION
@@ -4132,7 +4322,6 @@ def section_full_analysis(section: Section):
         props['K_torsion'] = (A**4) / (40.0 * Ip)
     else:
         props['K_torsion'] = 0.0
-    
 
 # -------------------------------------------------------------------------
     # 4b. ADVANCED ANALYSIS (Statical Moment and Refined Torsion) Statical Moment
@@ -4141,7 +4330,8 @@ def section_full_analysis(section: Section):
     # 1. Calculate Q at the Neutral Axis (useful for shear stress tau = V*Q/I*b)
     # Using the robust version of section_statical_moment_partial.
     props['Q_na'] = section_statical_moment_partial(section, y_cut=props['Cy'])
-    
+
+ 
     # Torsional_constant
     # 2. Calculate Refined Saint-Venant Torsional Constant (J) torsional_constant
     # This provides a more accurate value than K_torsion for specific shapes.
@@ -4156,13 +4346,19 @@ def section_full_analysis(section: Section):
     )
     '''
 
+       
+
     #props['J_sv'] = compute_saint_venant_J(section, alpha=alpha, eps_a=EPS_A)#compute_saint_venant_J(section)
     #props['J_sv_alpha']=alpha
     props['J_sv_cell'] =compute_saint_venant_J_cell(section)#compute_saint_venant_J_wall(section)
-    props['J_sv_wall'] = compute_saint_venant_J_wall(section)
-    props['J_s_vroark'],props['J_s_vroark_fidelity']= compute_saint_venant_Jv2(section)
-    
+   
 
+    props['J_sv_wall'] = compute_saint_venant_J_wall(section)
+  
+    props['J_s_vroark'],props['J_s_vroark_fidelity']= compute_saint_venant_Jv2(section)
+
+    
+ 
 
     # -------------------------------------------------------------------------
     # 5. DATA CONSOLIDATION
@@ -4581,10 +4777,12 @@ class Pt:
 @dataclass(frozen=True)
 class Polygon:
     vertices: Tuple[Pt, ...]
-    weight: float = 1.0   # relative Homogenization coefficient,  negative for holes
+    weight: float = None   # relative Homogenization coefficient,  negative for holes
     name: str = ""        # Optional label / ID
-    weightabs: float = 1.0 # absolute  Homogenization coefficient, 0 for holes
-
+    weightabs: float = None # absolute  Homogenization coefficient, 0 for holes
+    shear_weight: float = None
+    shear_weightabs: float = None
+    poisson: float = None
     def __post_init__(self) -> None:
         """
         Validation steps executed automatically after object initialization.
@@ -4632,7 +4830,10 @@ class Polygon:
                     f"GEOMETRIC ERROR: Polygon '{self.name}' has zero area (degenerate). "
                     f"A polygon must have at least 3 non-collinear vertices to enclose an area."
                 )
-
+        # Default shear weight follows the standard weight unless explicitly set.
+        if self.shear_weight is None:
+            object.__setattr__(self, "shear_weight", self.weight)
+            
 from collections.abc import Mapping
 
 @dataclass(frozen=True)
@@ -5004,6 +5205,9 @@ def polygon_surface_w1_inners0(self: Any, z: float) -> List[Dict[str, Any]]:
 
     area_by_idx: Dict[int, float] = {}
     w_rel_by_idx: Dict[int, float] = {}
+    w_abs_by_idx: Dict[int, float] = {}
+    w_shear_abs_by_idx: Dict[int, float] = {}
+    w_weight_abs_z_idx: Dict[int, float] = {}
 
     # Optional labels for output only.
     entity_by_idx: Dict[int, Dict[str, Any]] = {}
@@ -5026,11 +5230,17 @@ def polygon_surface_w1_inners0(self: Any, z: float) -> List[Dict[str, Any]]:
 
         if "area_signed" not in e:
             raise ValueError(f"Entity idx={idx} has no 'area_signed' field.")
-        if "weight_at_z" not in e:
+        if "weight_abs_z" not in e:
             raise ValueError(f"Entity idx={idx} has no 'weight_at_z' field.")
 
         area_by_idx[idx] = float(e["area_signed"])
         w_rel_by_idx[idx] = float(e["weight_at_z"])
+        w_abs_by_idx[idx] = float(e["weight_abs_z"])
+        #w_abs_by_idx[idx] = float(e["weight_abs_at_z"])
+
+
+        w_shear_abs_by_idx[idx] = float(e["shear_weight_abs_at_z"])
+
         entity_by_idx[idx] = e
 
     for idx in container_of:
@@ -5054,51 +5264,6 @@ def polygon_surface_w1_inners0(self: Any, z: float) -> List[Dict[str, Any]]:
                     f"Inner polygon idx={inner_idx} of polygon idx={idx} is missing "
                     f"from inspect_section_entities at z={z}."
                 )
-
-    w_eff_by_idx: Dict[int, float] = {}
-
-    for idx, parent_idx in container_of.items():
-        if parent_idx is None:
-            if idx not in w_rel_by_idx:
-                raise ValueError(f"Root polygon idx={idx} has no relative weight at z={z}.")
-            w_eff_by_idx[idx] = w_rel_by_idx[idx]
-
-    unresolved = set(container_of.keys()) - set(w_eff_by_idx.keys())
-    progress = True
-
-    while unresolved and progress:
-        progress = False
-
-        for idx in list(unresolved):
-            parent_idx = container_of[idx]
-
-            if parent_idx is None:
-                if idx not in w_rel_by_idx:
-                    raise ValueError(f"Root polygon idx={idx} has no relative weight at z={z}.")
-                w_eff_by_idx[idx] = w_rel_by_idx[idx]
-                unresolved.remove(idx)
-                progress = True
-                continue
-
-            if parent_idx not in w_eff_by_idx:
-                continue
-
-            if idx not in w_rel_by_idx:
-                raise ValueError(f"Polygon idx={idx} has no relative weight at z={z}.")
-
-            w_eff_by_idx[idx] = w_rel_by_idx[idx] + w_eff_by_idx[parent_idx]
-            unresolved.remove(idx)
-            progress = True
-
-    if unresolved:
-        unresolved_map: Dict[int, Optional[int]] = {}
-        for idx in unresolved:
-            unresolved_map[idx] = container_of[idx]
-        raise ValueError(
-            f"Cannot resolve effective weights at z={z} "
-            f"(cycle or missing container chain): {unresolved_map}"
-        )
-
     out: List[Dict[str, Any]] = []
 
     for idx in sorted(container_of.keys()):
@@ -5110,7 +5275,9 @@ def polygon_surface_w1_inners0(self: Any, z: float) -> List[Dict[str, Any]]:
             inners_sum += area_by_idx[inner_idx]
 
         A = area_p - inners_sum
-        w_eff = w_eff_by_idx[idx]
+        #w_eff = w_eff_by_idx[idx]
+        w_eff = w_abs_by_idx[idx]
+        w_shear_eff = w_shear_abs_by_idx[idx]
 
         direct_inners_labels: List[Optional[str]] = []
         for inner_idx in direct_inners_idx:
@@ -5136,8 +5303,10 @@ def polygon_surface_w1_inners0(self: Any, z: float) -> List[Dict[str, Any]]:
                 "container_name": container_name,
                 "direct_inners": direct_inners_labels,
                 "w": float(w_eff),
+                "shear_w": float(w_shear_eff),
                 "A": float(A),
                 "A_w": float(A * w_eff),
+                "A_shear_w": float(A * w_shear_eff),
             }
         )
 
@@ -5360,8 +5529,7 @@ def polygon_surface_w1_inners0_single(
     }
 
 # -------------------------------------------------------------------------------------------------------------
-from pathlib import Path
-from typing import Optional, List
+
 
 
 def export_polygon_vertices_csv_file(
@@ -5440,7 +5608,8 @@ def export_polygon_vertices_csv(section: Section=None, field: ContinuousSectionF
         Python format string for floats, e.g. "{:.6f}", "{:.6g}", "{:.16g}".
         Applied to: w, x, y (when they are not None).
     """
-    
+
+ 
 
     def build_w_by_idx(named_polys: dict) -> dict[int, float]:
         """
@@ -5457,6 +5626,7 @@ def export_polygon_vertices_csv(section: Section=None, field: ContinuousSectionF
         for poly in polys_by_idx.values():
             idx = poly["idx"]
             w_by_idx[idx]=poly["weight_abs_z"]
+
         return w_by_idx
 
     def strip_wall_cell_suffix(name: str) -> str:
@@ -5520,18 +5690,22 @@ def export_polygon_vertices_csv(section: Section=None, field: ContinuousSectionF
 
     entities = field.inspect_section_entities(z)
     ent_by_name = {e["name"]: e for e in entities}
-    #print(f"DEBUG ent_by_name {ent_by_name}")
-    # name -> w from area_w groups
-    #w_by_name = {}
 
-    w_by_idx = build_w_by_idx(ent_by_name)
+    w_by_idx = {
+        ent["idx"]: ent["weight_abs_z"]
+        for ent in entities
+    }
 
-    #for g in area_w.get("groups", []):
-    #    gw = g.get("w")
-    #
-    #    for pname in g.get("polygons", []):
-    #        w_by_name[pname] = gw
-    #        #print(f"DEBUG export_polygon_vertices_csv >>>>>>>>>>>>>>>>>>>>>>>>>><{pname} {gw} {w_by_name[pname]}")            
+    shear_w_by_idx = {
+        ent["idx"]: ent["shear_weight_abs_at_z"]
+        for ent in entities
+    }
+    poisson_by_idx = {
+        ent["idx"]: ent["poisson"]
+        for ent in entities
+    }
+
+    w_by_idx_nope = build_w_by_idx(ent_by_name)
 
     def esc(v):
         # Minimal CSV escaping
@@ -5574,13 +5748,13 @@ def export_polygon_vertices_csv(section: Section=None, field: ContinuousSectionF
     z_hdr = fmt.format(float(z))
     put("## GEOMETRY EXPORT ##")
     put(f"# z={z}")   
-    cols = ["idx_polygon", "idx_container", "s0_name", "s1_name", "w", "vertex_i", "x", "y"]
+    cols = ["idx_polygon", "idx_container", "s0_name", "s1_name", "w", "shear_w","poisson","vertex_i", "x", "y"]
     put(",".join(cols))
 
     for poly in section.polygons:
         
         name = poly.name
-        #print(f"\nDEBUG #####################################  {poly}\n")        
+      
         ent = ent_by_name.get(name, {})
 
         idx_polygon = ent.get("idx")
@@ -5591,8 +5765,16 @@ def export_polygon_vertices_csv(section: Section=None, field: ContinuousSectionF
 
         # w ONLY from area_w groups (as requested)
         w = w_by_idx.get(idx_polygon)
+        shear_w = shear_w_by_idx.get(idx_polygon)
+     
+        
+        poisson = float(poisson_by_idx.get(idx_polygon))
+        if math.isnan(poisson):
+            poisson = None
+
+        #rows = polygon_surface_w1_inners0_single(field, z=z,idx=idx_polygon)        
+        #print(f"DEBUG export idx_polygon {idx_polygon} rows: {rows}")
         #w = w_by_name.get(name)
-        #print(f"DEBUG export_polygon_vertices_csv :::::::::::::::::::::::::::..{w} {name}")            
 
         for i, pt in enumerate(poly.vertices):
             x = float(pt.x)
@@ -5604,6 +5786,8 @@ def export_polygon_vertices_csv(section: Section=None, field: ContinuousSectionF
                 s0_name,
                 s1_name,
                 fmt_num(w),
+                fmt_num(shear_w),
+                fmt_num(poisson),
                 i,
                 fmt_num(x),
                 fmt_num(y),
@@ -5612,8 +5796,6 @@ def export_polygon_vertices_csv(section: Section=None, field: ContinuousSectionF
             #put(",".join(esc(v) for v in row))
 #--------------------------------------------------------------------------------
 class ContinuousSectionField:
-
-
     
     def inspect_section_entities(self, z: float) -> List[Dict[str, Any]]:
         """
@@ -5683,6 +5865,12 @@ class ContinuousSectionField:
 
             weight_at_z = float(poly.weight)
             weight_abs_z = float(poly.weightabs)
+
+            shear_weight_at_z = float(poly.shear_weight) 
+            shear_weight_abs_at_z = float(poly.shear_weightabs) 
+            poisson = float(poly.poisson) 
+            
+
             s0_poly = s0_polygons[idx]
             s1_poly = s1_polygons[idx]
 
@@ -5749,7 +5937,10 @@ class ContinuousSectionField:
                     "s0_weight": s0_weight,
                     "s1_weight": s1_weight,
                     "weight_at_z": weight_at_z, 
-                    "weight_abs_z": weight_abs_z,                                        
+                    "weight_abs_z": weight_abs_z,     
+                    "shear_weight_at_z":shear_weight_at_z,
+                    "shear_weight_abs_at_z":shear_weight_abs_at_z,
+                    "poisson":poisson,
                     "weight_law": weight_law,
                     "area_signed": area_signed,
                     "is_container": len(direct_children_idx) > 0,
@@ -5802,7 +5993,6 @@ class ContinuousSectionField:
 
         for child_idx, poly in enumerate(s0_polys):
             parent_idx = self.get_container_polygon_index(poly, child_idx)
-
             if parent_idx is None:
                 continue
 
@@ -5848,6 +6038,7 @@ class ContinuousSectionField:
             self._container_polygon_index_cache = {}
 
         if i in self._container_polygon_index_cache:
+
             return self._container_polygon_index_cache[i]
 
         result = self._get_container_polygon_index_uncached(poly, i)
@@ -6161,6 +6352,27 @@ class ContinuousSectionField:
             If validation fails, section computation fails, YAML serialization fails,
             or file writing fails.
         """
+
+        def _strip_model_suffix(name: object) -> str:
+            """
+            Return the part of a polygon name before the first '@'.
+
+            Examples:
+                "outer@cell@t=0.01" -> "outer"
+                "outer"             -> "outer"
+                " outer @cell "     -> "outer"
+            """
+            s = str(name).strip()
+
+            at = s.find("@")
+            if at == -1:
+                return s
+
+            return s[:at].strip()
+
+
+
+
         # Validate z0 e z1
         z_min, z_max = min(self.s0.z, self.s1.z), max(self.s0.z, self.s1.z)
         if not (z_min <= z0 <= z_max and z_min <= z1 <= z_max):
@@ -6175,8 +6387,11 @@ class ContinuousSectionField:
         yaml_path = yaml_path.strip()
         _csf__ensure_parent_dir_exists(yaml_path)
        
-        # 2) Compute Section at z (includes w(z) logic)
-        weight_laws_yaml = []
+        # 2) Compute Section at z (includes w(z) and shear_w(z) logic)
+        weight_laws_yaml = []  # 1 based i'm sorry
+        shear_weight_laws_yaml  =[]
+        shear_weight_laws_yaml_default = None
+
         secz0 = self.section(float(z0))
         secz1 = self.section(float(z1))
         #print(f"DEBUG self {self.s0}")
@@ -6185,9 +6400,9 @@ class ContinuousSectionField:
                 secz0 = self.section(float(z0))
                 secz1 = self.section(float(z1))  
                 for key in self.weight_laws:
-                    idx = key - 1
-                    namestartlaw = self.s0.polygons[idx].name
-                    nameendlaw = self.s1.polygons[idx].name
+                    idx = key - 1 # 1 based i'm sorry
+                    namestartlaw = _strip_model_suffix(self.s0.polygons[idx].name)
+                    nameendlaw = _strip_model_suffix(self.s1.polygons[idx].name)
                     law_string = f"{namestartlaw},{nameendlaw}: {self.weight_laws[key]}"
                     weight_laws_yaml.append(law_string)
             except CSFError:
@@ -6198,6 +6413,38 @@ class ContinuousSectionField:
                     f"z={float(z0):.6g}, error={type(e).__name__}: {e}"
                 ) from e
 
+        if self.shear_weight_laws is not None:   
+            try:
+                secz0 = self.section(float(z0))
+                secz1 = self.section(float(z1))  
+                for key in self.shear_weight_laws:
+                    idx = key
+                    namestartlaw = _strip_model_suffix(self.s0.polygons[idx].name)
+                    nameendlaw = _strip_model_suffix(self.s1.polygons[idx].name)
+                    shear_law_string = f"{namestartlaw},{nameendlaw}: {self.shear_weight_laws[key]}"
+                    shear_weight_laws_yaml.append(shear_law_string)      
+                hear_law_string_default = f"{namestartlaw},{nameendlaw}: {self.shear_weight_laws_default}"          
+            except CSFError:
+                raise
+            except Exception as e:
+                raise CSFError(
+                    "write_section: shear_weight_laws section(z) failed. "
+                    f"z={float(z0):.6g}, error={type(e).__name__}: {e}"
+                ) from e
+
+        if  shear_weight_laws_yaml_default is not None:   
+            try:
+                secz0 = self.section(float(z0))
+                secz1 = self.section(float(z1))  
+                hear_law_string_default = f"{self.shear_weight_laws_default}"                                                                                           
+            except CSFError:
+                raise
+            except Exception as e:
+                raise CSFError(
+                    "write_section: weight_laws_yaml shear_weight_laws_deafault (z) failed. "
+                    f"z={float(z0):.6g}, error={type(e).__name__}: {e}"
+                ) from e
+        #print(f"DEBUG shear_weight_laws_yaml {shear_weight_laws_yaml} <{hear_law_string_default}>")
         # 3) Build minimal dict
         try:
             datas0 = _csf__section_to_Sz_dict(secz0,"S0")
@@ -6231,6 +6478,9 @@ class ContinuousSectionField:
 
                         if len(weight_laws_yaml)>0:  # True if empty
                             new_data["CSF"]["weight_laws"] = weight_laws_yaml
+
+                        if len(shear_weight_laws_yaml)>0:  # True if empty
+                            new_data["CSF"]["shear_weight_laws"] = shear_weight_laws_yaml
 
                         yml = globals()["yaml"].dump(  # type: ignore[index]
                         new_data,
@@ -6912,7 +7162,8 @@ class ContinuousSectionField:
         self._determine_magnitude()
         # Optional list of callables or strings for custom weight interpolation
         self.weight_laws: Optional[Dict[int, str]] = None
-
+        self.shear_weight_laws_default: Optional[str] = None   
+        self.shear_weight_laws: Optional[Dict[int, str]] = None
         self._validate_inputs()
          
     def _strip_model_tags(name: str) -> str:
@@ -6938,13 +7189,220 @@ class ContinuousSectionField:
         return re.sub(r'(?i)@(cell|wall|closed)\b.*$', '', s).strip()
 
 
+    def set_shear_weight_laws(self, laws: Union[List[str], Dict[Union[int, str], str]]) -> None:
+        """
+        Set shear-weight variation laws.
+
+        Rules:
+        - List item without ':' is the global default shear-weight law.
+        - List item with ':' is a polygon-specific shear-weight law.
+        - Polygon indices are 0-based.
+        - Polygon-name mapping follows the same S0/S1 homology logic used by set_weight_laws().
+        """
+
+        if not isinstance(laws, (list, dict)):
+            raise ValueError("shear_weight_laws must be a list or a dictionary.")
+
+        num_polygons = len(self.s0.polygons)
+
+        valid_names0 = [self._strip_model_tags(p.name) for p in self.s0.polygons]
+        valid_names1 = [self._strip_model_tags(p.name) for p in self.s1.polygons]
+
+        # Reset current shear-weight laws.
+        self.shear_weight_laws_default = None
+        self.shear_weight_laws = {}
+
+        normalized_map: Dict[int, str] = {}
+        default_formula: Optional[str] = None
+
+        # Parse list input.
+        if isinstance(laws, list):
+            for item in laws:
+                if not isinstance(item, str):
+                    raise ValueError(f"Critical Error: invalid shear_weight law item: {item}")
+
+                item = item.strip()
+
+                if not item:
+                    raise ValueError("Critical Error: empty shear_weight law.")
+
+                # Global default law.
+                if ":" not in item:
+                    if default_formula is not None:
+                        raise ValueError(
+                            "Critical Error: multiple default shear_weight laws declared."
+                        )
+
+                    default_formula = item
+                    continue
+
+                # Polygon-specific law.
+                left, formula = item.split(":", 1)
+                left = left.strip()
+                formula = formula.strip()
+
+                if not left:
+                    raise ValueError("Critical Error: missing shear_weight law target.")
+
+                if not formula:
+                    raise ValueError(
+                        f"Critical Error: empty shear_weight formula for target '{left}'."
+                    )
+
+                raw_names = [
+                    self._strip_model_tags(name.strip())
+                    for name in left.split(",")
+                    if name.strip()
+                ]
+
+                if len(raw_names) == 2:
+                    n0, n1 = raw_names
+
+                    if n0 not in valid_names0:
+                        raise KeyError(
+                            f"Critical Error: Polygon '{n0}' not found in Section 0."
+                        )
+
+                    if n1 not in valid_names1:
+                        raise KeyError(
+                            f"Critical Error: Polygon '{n1}' not found in Section 1."
+                        )
+
+                    idx0 = valid_names0.index(n0)
+                    idx1 = valid_names1.index(n1)
+
+                    if idx0 != idx1:
+                        raise ValueError(
+                            f"Homology Mismatch: '{n0}' (idx {idx0}) and "
+                            f"'{n1}' (idx {idx1}) must match."
+                        )
+
+                    normalized_map[idx0] = formula
+
+                elif len(raw_names) == 1:
+                    n0 = raw_names[0]
+
+                    if n0 not in valid_names0:
+                        raise KeyError(
+                            f"Critical Error: Polygon '{n0}' not found."
+                        )
+
+                    idx0 = valid_names0.index(n0)
+                    normalized_map[idx0] = formula
+
+                else:
+                    raise ValueError(
+                        f"Critical Error: invalid shear_weight law target: '{left}'"
+                    )
+
+        # Parse dict input.
+        elif isinstance(laws, dict):
+            for key, formula in laws.items():
+                if not isinstance(formula, str):
+                    raise ValueError(
+                        f"Critical Error: invalid shear_weight formula for key '{key}'."
+                    )
+
+                formula = formula.strip()
+
+                if not formula:
+                    raise ValueError(
+                        f"Critical Error: empty shear_weight formula for key '{key}'."
+                    )
+
+                if isinstance(key, int):
+                    idx = key
+
+                    if idx < 0 or idx >= num_polygons:
+                        raise IndexError(
+                            f"Index {idx} out of range (0-{num_polygons - 1})."
+                        )
+
+                    normalized_map[idx] = formula
+
+                elif isinstance(key, str):
+                    n0 = self._strip_model_tags(key.strip())
+
+                    if n0 not in valid_names0:
+                        raise KeyError(
+                            f"Critical Error: Polygon '{n0}' not found."
+                        )
+
+                    idx = valid_names0.index(n0)
+                    normalized_map[idx] = formula
+
+                else:
+                    raise ValueError(
+                        f"Critical Error: invalid shear_weight law key: {key}"
+                    )
+
+        z0 = self.s0.z
+        z1 = self.s1.z
+        L_val = z1 - z0
+        z_mid = L_val / 2.0
+
+        # Validate default law on all polygons.
+        if default_formula is not None:
+            for idx in range(num_polygons):
+                try:
+                    p0_test = self.s0.polygons[idx]
+                    p1_test = self.s1.polygons[idx]
+                    '''
+                    evaluate_weight_formula(
+                        default_formula,
+                        p0_test,
+                        p1_test,
+                        z0=z0,
+                        z1=z1,
+                        zt=z_mid,
+                    )
+                    '''
+                except Exception as e:
+                    raise ValueError(
+                        f"VALIDATION FAILED: The default shear_weight formula "
+                        f"is not valid for polygon '{valid_names0[idx]}'.\n"
+                        f"Formula: '{default_formula}'\n"
+                        f"Error encountered at the midpoint: {e}"
+                    )
+
+        # Validate polygon-specific laws.
+        for idx, formula in normalized_map.items():
+            try:
+                p0_test = self.s0.polygons[idx]
+                p1_test = self.s1.polygons[idx]
+                '''
+                evaluate_weight_formula(
+                    formula,
+                    p0_test,
+                    p1_test,
+                    z0=z0,
+                    z1=z1,
+                    zt=z_mid,
+                )
+                '''
+            except Exception as e:
+                raise ValueError(
+                    f"VALIDATION FAILED: The shear_weight formula for "
+                    f"'{valid_names0[idx]}' is not valid.\n"
+                    f"Formula: '{formula}'\n"
+                    f"Error encountered at the midpoint: {e}"
+                )
+
+        # Store validated laws.
+        self.shear_weight_laws_default = default_formula
+
+        for idx, formula in normalized_map.items():
+            self.shear_weight_laws[idx] = str(formula)
+
+    #end set_shear_weight_laws 
+
+
     def set_weight_laws(self, laws: Union[List[str], Dict[Union[int, str], str]]) -> None:
         """
         Sets weight variation laws. 
         If a polygon name is not found or homology fails, it raises an error 
         to prevent falling back to default linear behavior.
         """
-
         if not isinstance(laws, (list, dict)):
             raise ValueError("weight_laws must be a list or a dictionary.")
         
@@ -6990,10 +7448,10 @@ class ContinuousSectionField:
                         n0 = raw_names[0]
                         if n0 not in valid_names0:
                             raise KeyError(f"Critical Error: Polygon '{n0}' not found.")
-                        normalized_map[valid_names0.index(n0) + 1] = formula
+                        normalized_map[valid_names0.index(n0) + 1] = formula # 1 based 
                 else:
                    if n0 not in valid_names0:
-                       raise KeyError(f"Critical Error: Polygon '{n0}' not found.")
+                       raise ValueError(f"Critical Error: Polygon '{n0}' not found.")
                    normalized_map[valid_names0.index(n0) + 1] = formula
                 
                    # Positional list case
@@ -7001,6 +7459,8 @@ class ContinuousSectionField:
                    #     normalized_map[i + 1] = item
 
         elif isinstance(laws, dict):
+            raise ValueError(f"Critical Error: not valid {laws} ")
+            '''
             for key, law in laws.items():
                 target_idx = None
                 if isinstance(key, int):
@@ -7014,7 +7474,7 @@ class ContinuousSectionField:
                     if target_idx < 1 or target_idx > num_polygons:
                         raise IndexError(f"Index {target_idx} out of range (1-{num_polygons}).")
                     normalized_map[target_idx] = law
-               
+            '''   
 
         z0, z1 = self.s0.z, self.s1.z
         L_val = z1 - z0
@@ -7057,14 +7517,16 @@ class ContinuousSectionField:
                             f"Formula: '{formula}'\n"
                             f"Error encountered at the midpoint:- {e}"
                         )
-        # -------------------------------------------
-        # 2. EFFECTIVE ASSIGNMENT (Bypassing FrozenInstanceError)
+        
+        # 2. EFFECTIVE ASSIGNMENT 
         for idx, formula in normalized_map.items():
 
             if formula is None: continue
            
             # Save as an integer for the interpolator
             self.weight_laws[idx] = str(formula)
+            #print(f"DEBUG idx {idx}")
+            '''
             try:
                 numeric_w = float(formula)
                 if 1 <= idx <= num_polygons:
@@ -7074,6 +7536,7 @@ class ContinuousSectionField:
             except ValueError:
                 # The formula is a function; it will be evaluated during interpolation
                 pass
+            '''
         # SUCCESS - Weight laws correctly assigned
         #print(f"SUCCESS - Weight laws correctly assigned: {self.weight_laws}")
 
@@ -7089,8 +7552,6 @@ class ContinuousSectionField:
                     f"{len(p0.vertices)} vs {len(p1.vertices)}"
                 )
             
-
-
     def _interpolate_weight(self, w0: float, w1: float, z: float, p0: Polygon, p1: Polygon, law: Optional[str]) -> float:
         
         L_val = abs(self.s1.z - self.s0.z)
@@ -7105,12 +7566,10 @@ class ContinuousSectionField:
             #
             
             
-            current_verts = tuple(v0.lerp(v1, z,L_val) for v0, v1 in zip(p0.vertices, p1.vertices))
-            p_current = Polygon(vertices=current_verts, weight=w0, name=p0.name) ## w0 is dummy value
+            #current_verts = tuple(v0.lerp(v1, z,L_val) for v0, v1 in zip(p0.vertices, p1.vertices))
+            #p_current = Polygon(vertices=current_verts, weight=w0, name=p0.name) ## w0 is dummy value
             
             try:
-                # We test the formula at t and verify syntax and logic
-                
                 wcust = evaluate_weight_formula(law, p0, p1, self.s0.z,self.s1.z,zt=z)  
                 return wcust
             except Exception as e:                  
@@ -7124,6 +7583,34 @@ class ContinuousSectionField:
         #
         return w0 + (w1 - w0)/L_val * z
 
+
+
+    def _interpolate_shear_weight(self, w: float,w0: float, w1: float, z: float, p0: Polygon, p1: Polygon, law: Optional[str]) -> float:
+
+        
+        if isinstance(law, str) and law.strip():
+            # z is real RELATIVE not [0..1]
+            # Use the existing section attributes. 
+            # Based on the error, self.section1 doesn't exist. 
+            # In ContinuousSectionField, endpoints are usually self.s0 and self.s1
+            # Since p_current is not in the signature, we interpolate vertices 
+            # locally to allow the d(i, j) helper to work at height z
+            #
+            try:
+                # 
+                wcust = evaluate_shear_weight_formula(law, p0, p1, self.s0.z,self.s1.z,zt=z,w=w)  
+                return wcust
+            except Exception as e:                  
+                raise ValueError(
+                    f"VALIDATION FAILED-: The formula for '{p0.name} '{p1.name}' is not valid.\n"
+                    f"Formula: '{law}'\n"
+                    f"Error encountered at the midpoint:: {e}"
+                )
+            
+        # Default fallback: w means G=E
+        #
+        return w
+
   
     def _to_t(self, z: float) -> float:
         z = float(z)
@@ -7134,12 +7621,26 @@ class ContinuousSectionField:
 
 
     def section(self, z: float) -> Section: 
-
         #-----------------------------------------------------
         # helpers
         #-----------------------------------------------------
-
-
+        verbose=False
+        def get_shear_weight_law(self, idx: int) -> Optional[str]:
+            if self.shear_weight_laws is not None:
+                if idx in self.shear_weight_laws:
+                    return self.shear_weight_laws[idx]
+            if self.shear_weight_laws_default is not None:
+                return self.shear_weight_laws_default
+            return None
+        
+        def parse_iso(s):
+            if not s:
+                return -0.50
+            m = re.search(r'iso\(([-\d.]+)\)', s, re.IGNORECASE)
+            if m:
+                return float(m.group(1))
+            return float('nan')
+              
         def _resolve_topology_and_t_from_names(
             p0_name: str,
             p1_name: str,
@@ -7308,7 +7809,7 @@ class ContinuousSectionField:
             else:
                 t_val = None
 
-            # Defensive post-check
+            # 
             if t_val is not None and t_val <= 0.0:
                 raise CSFError(
                     f"Resolved non-positive thickness t={t_val} "
@@ -7404,12 +7905,13 @@ class ContinuousSectionField:
 
         # in input z is absol   ute
         origz=z-self.z0 # make origz relative
+        
         #t = self._to_t(z) # normalize z 
         lenght = abs(self.z1 - self.z0)
         if z < self.z0 or z > self.z1:
             raise CSFError(f"z={z} out of bounds [{self.z0}, {self.z1}]")
         polys: List[Polygon] = []
-       
+
         for i, (p0, p1) in enumerate(zip(self.s0.polygons, self.s1.polygons)):
                         
             verts = tuple(v0.lerp(v1, origz,lenght) for v0, v1 in zip(p0.vertices, p1.vertices))
@@ -7421,51 +7923,117 @@ class ContinuousSectionField:
             # Identify if a custom law exists for the current polygon index.
             # Support for both List (by index) and Dictionary (by index or by name).
             current_law = None
-            idx = i + 1 
-            
-    
-            if isinstance(self.weight_laws, list):
-               
-                if i < len(self.weight_laws):
-                    current_law = self.weight_laws[idx]
-                    
-            elif isinstance(self.weight_laws, dict):
-                # Look up by index first, then by polygon name
-                #current_law = self.weight_laws.get(i, self.weight_laws.get(p0.name))
-                current_law = self.weight_laws.get(idx)
-                #print(f"DEBUG idx {idx} current_law {current_law}")
-            else:
-                None
-                #print(f"DEBUG3  interp_weight  {idx} {current_law}")  
-            
-            interp_weight_child = self._interpolate_weight(p0.weight, p1.weight, origz, p0, p1, current_law)
-            idx_pol_parent= self.get_container_polygon_index(p0,i)
-            #interp_weight = self.weight_effective(p0.weight, p1.weight, origz, p0, p1, current_law)
+            shear_current_law = None
+            if self.weight_laws is not None:
+                current_law = self.weight_laws.get(i+1,None)# 1 based i'm sorry
 
+            shear_current_law = get_shear_weight_law(self,idx=i)
+            poisson=parse_iso(shear_current_law)
+            
+            # --- Weight source selection for child polygon interpolation ---
+            #
+            # A Polygon attribute named `weight` serves two distinct roles depending
+            # on the stage of the object's lifecycle:
+            #
+            # STAGE 1 - First instantiation (from raw YAML input or code):
+            #   `weight` holds the RAW, ABSOLUTE weight supplied by the user.
+            #   At this stage `weightabs` is None because the nesting hierarchy has
+            #   not yet been resolved. The Section constructor reads `weight` as the
+            #   absolute value and uses it to derive both the effective (relative)
+            #   weight and `weightabs` for every polygon in the hierarchy.
+            #
+            # STAGE 2 - Re-instantiation (from an already-resolved Section):
+            #   When a Section that has already been through Stage 1 is used as the
+            #   basis for a new SectionField (e.g. inside compute_saint_venant_Jv2),
+            #   `weight` now contains the RELATIVE weight - i.e. the value after
+            #   nesting resolution has already been applied. Using it again as an
+            #   absolute weight would cause the nesting logic to run a second time
+            #   on an already-resolved value, producing wrong results (observed as
+            #   `weight_at_z = -1.0` for nested polygons instead of the correct 0.0).
+            #
+            #   At Stage 2, `weightabs` is already populated with the correct
+            #   absolute weight from the first resolution pass and is therefore the
+            #   reliable source to feed into interpolation.
+            #
+            # RESOLUTION:
+            #   `weightabs is None`  ->  Stage 1: use `weight` (it IS the absolute weight)
+            #   `weightabs is not None` ->  Stage 2: use `weightabs` (weight is relative)
+            #
+            # WHY is the attribute called `weight` and not `weightabs` from the start?
+            #   At ingestion time only one weight value exists per polygon - the raw
+            #   user-supplied scalar. Calling it `weight` is the most natural name at
+            #   that point. The concept of "absolute vs relative" only becomes
+            #   meaningful once the containment hierarchy is known, which happens
+            #   inside the Section constructor. Renaming the input attribute to
+            #   `weightabs` from the start would have been semantically premature and
+            #   would have forced every YAML author and API caller to use a name whose
+            #   meaning only becomes clear after an internal resolution step.
+            #   The current design keeps the external API simple (`weight` in YAML)
+            #   while using `weightabs` as the post-resolution canonical reference.
+
+
+            w0 = p0.weightabs if p0.weightabs is not None else p0.weight
+            w1 = p1.weightabs if p1.weightabs is not None else p1.weight
+            interp_weight_child = self._interpolate_weight(w0, w1, origz, p0, p1, current_law)
+            #interp_shear_weight_child = self._interpolate_shear_weight(interp_weight_child)
+            interp_shear_weight_child = self._interpolate_shear_weight(
+                                                    w   = interp_weight_child,
+                                                    w0  = None, # not used yet
+                                                    w1  = None, # not used yet
+                                                    z   = origz,
+                                                    p0  = p0,
+                                                    p1  = p1,
+                                                    law = shear_current_law,
+                                                )
+           
+            idx_pol_parent= self.get_container_polygon_index(p0,i)
+            # initialize parent
             polparent0 = None
             polparent1 = None
             parent_law = None
+            shear_parent_law = None
 
-            interp_weight_parent = 0 # default value when for parent is not found
+            # default value when for parent whens not found    
+            interp_weight_parent = 0 
+            interp_shear_weight_parent = 0
+
             if idx_pol_parent is not None:
                 polparent0 = self.s0.polygons[idx_pol_parent]
                 polparent1 = self.s1.polygons[idx_pol_parent]
                 
+                if self.weight_laws is not None:
+                    parent_law = self.weight_laws.get(idx_pol_parent + 1, None)# 1 base i'm sorry
+                    
+                shear_parent_law = get_shear_weight_law(self,idx=idx_pol_parent)
 
-                # Get parent law with same conventions used elsewhere (list/dict, 1-based index)
-                if isinstance(self.weight_laws, list):
-                    # list is 1-based (because you use idx=i+1), keep that convention:
-                    parent_key = idx_pol_parent #+ 1
-                    if 0 <= idx_pol_parent < len(self.weight_laws):
-                        parent_law = self.weight_laws[parent_key]
-                elif isinstance (self.weight_laws, dict):
-                    parent_key = idx_pol_parent + 1  # same 1-based convention
-                    parent_law = self.weight_laws.get(parent_key, None)
-                    interp_weight_parent = self._interpolate_weight(polparent0.weight, polparent1.weight, origz, polparent0, polparent1, parent_law)
-                else:
-                    interp_weight_parent = self._interpolate_weight(polparent0.weight, polparent1.weight, origz, polparent0, polparent1, parent_law)
+                interp_weight_parent = self._interpolate_weight(polparent0.weight, polparent1.weight, origz, polparent0, polparent1, parent_law)
 
+                interp_shear_weight_parent = self._interpolate_shear_weight(
+                                                    w   = interp_weight_parent,
+                                                    w0  = None, # not used yet
+                                                    w1  = None, # not used yet
+                                                    z   = origz,
+                                                    p0  = p0,
+                                                    p1  = p1,
+                                                    law = shear_parent_law,
+                                                )
+                
+            #nameparent = polparent0.name if polparent0 is not None else "None" 
             interp_weight_relative = interp_weight_child - interp_weight_parent #this is very important 
+            interp_shear_weight_relative = interp_shear_weight_child - interp_shear_weight_parent #this is very important 
+            
+            if verbose:
+                print(f"DEBUG pol{i} : z {origz} : name {p0.name} : parent {idx_pol_parent}")
+                print(f"  current_law              {current_law}")
+                print(f"  parent_law               {parent_law}")
+                print(f"  shear_current_law        {shear_current_law}")
+                print(f"  shear_parent_law         {shear_parent_law}")
+                print(f"  interp_weight_child      {interp_weight_child}")
+                print(f"  interp_weight_parent     {interp_weight_parent}")
+                print(f"  interp_shear_weight_child  {interp_shear_weight_child}")
+                print(f"  interp_shear_weight_parent {interp_shear_weight_parent}")
+                print(f"  interp_shear_weight_relative {interp_shear_weight_relative}")
+
             #print (f"DEBUG idx_pol_parent {idx_pol_parent}-{i} interp_weight_child {interp_weight_child} interp_weight_parent {interp_weight_parent} interp_weight_relative {interp_weight_relative} ")
             #print ("------------------------------------------------------")
             #print(f"DEBUG z {z} child {i} : name {p0.name}  interp_weight_child {interp_weight_child} current_law {current_law} : idx_pol_parent {idx_pol_parent} parent_law {parent_law} : interp_weight_parent {interp_weight_parent} : interp_weight_relative {interp_weight_relative}")
@@ -7484,6 +8052,8 @@ class ContinuousSectionField:
                 z1=self.z1,
             )
             if t_value:
+                
+
                 poly_name = _build_interpolated_polygon_name(
                     p0_name=p0.name,
                     p1_name=p1.name,
@@ -7491,11 +8061,20 @@ class ContinuousSectionField:
                     t_value=t_value,
                 )
             else:
-                poly_name=p0.name+":"+p1.name # add both for debugging purposes
-            
-            poly = Polygon(vertices=verts, weight=interp_weight_relative,weightabs=interp_weight_child,name=poly_name)
-            
-            
+                poly_name=p0.name+":"+p1.name # add both 
+            #poly = Polygon(vertices=verts, weight=interp_weight_relative,weightabs=interp_weight_child,name=poly_name)
+            # polygon setting 
+
+            poly = Polygon(vertices=verts,
+                            weight=interp_weight_relative,
+                            weightabs=interp_weight_child,
+                            shear_weight=interp_shear_weight_relative,
+                            shear_weightabs=interp_shear_weight_child,
+                            poisson=poisson,
+                            name=poly_name
+                        )
+
+
             if not re.search(r'(?i)@(cell|wall|closed)\b', str(poly.name or "")) and  polygon_has_self_intersections(poly):
                 #silent
                 None
@@ -7505,6 +8084,7 @@ class ContinuousSectionField:
                     RuntimeWarning
                 )
                 '''
+                
             polys.append(poly)
         return Section(polygons=tuple(polys), z=float(z))
 
@@ -7783,9 +8363,7 @@ class Visualizer:
             Indices out of range are ignored.
         """
         
-        import numpy as np
-        import matplotlib.pyplot as plt
-        
+        #poly_indices_to_plot=poly_indices_to_plot+1            
         z_start = self.field.s0.z
         z_end = self.field.s1.z
         z_values = np.linspace(z_start, z_end, num_points)
@@ -7799,7 +8377,7 @@ class Visualizer:
                 p0 = self.field.s0.polygons[i]
                 p1 = self.field.s1.polygons[i]
 
-                if self.field.weight_laws is not None and (i + 1) in self.field.weight_laws:
+                if self.field.weight_laws is not None and (i + 1) in self.field.weight_laws: # 1 based i'm sorry
                     current_law = self.field.weight_laws[i + 1]
                 else:
                     current_law = None
@@ -7941,6 +8519,204 @@ class Visualizer:
             # Same title on every window
             fig_w.suptitle(
                 f"Individual Polygon Weight (w) Distributions (Interpolated # {num_points} points)",
+                fontweight="bold"
+            )
+            
+            fig_w.tight_layout(rect=[0, 0.04, 1, 0.96])
+
+        #print("=== END WEIGHT MIN/MAX REPORT ===")
+        # plt.show()
+
+    def plot_shear_weight(self, num_points=100, tol=1e-12, poly_indices_to_plot=None):
+        """
+        Plot w(z) per polygon pair, skipping polygons with w(z) == 0 for all sampled z.
+        Skipped polygons are listed in a figure note.
+        Min/Max markers are shown on each plotted curve.
+
+        Parameters
+        ----------
+        num_points : int
+            Number of z sample points in [s0.z, s1.z].
+        tol : float
+            Absolute tolerance used to classify a polygon as "zero-flat" over sampled z.
+        poly_indices_to_plot : list[int] | tuple[int] | set[int] | None
+            Optional explicit polygon indices to plot (0-based). Can include gaps (e.g., [0, 2, 5]).
+            If provided, only indices in this list are considered, after removing zero-flat polygons.
+            Indices out of range are ignored.
+        """
+        
+        import numpy as np
+        import matplotlib.pyplot as plt
+        
+        z_start = self.field.s0.z
+        z_end = self.field.s1.z
+        z_values = np.linspace(z_start, z_end, num_points)
+
+        num_polys = len(self.field.s0.polygons)
+        poly_w_series = {i: [] for i in range(num_polys)}
+        
+        # Evaluate weights for every polygon index at every sampled z
+        for z in z_values:
+            for i in range(num_polys):
+                p0 = self.field.s0.polygons[i]
+                p1 = self.field.s1.polygons[i]
+
+                if self.field.shear_weight_laws is not None and (i) in self.field.shear_weight_laws:
+                    current_shear_law = self.field.shear_weight_laws[i]
+                else:
+                    current_shear_law = None
+                
+                if self.field.weight_laws is not None and (i + 1) in self.field.weight_laws: # 1 based i'm sorry
+                    current_law = self.field.weight_laws[i + 1]
+                else:
+                    current_law = None
+                
+
+
+                zlocal= z - self.field.s0.z
+                
+
+
+                w_val = self.field._interpolate_weight(
+                    p0.weight, p1.weight, zlocal, p0, p1, current_law
+                )
+                
+
+                shear_w_val = self.field._interpolate_shear_weight(w_val,
+                    p0.weight, p1.weight, zlocal, p0, p1, current_shear_law
+                )
+                
+                poly_w_series[i].append(float(shear_w_val))
+
+        # Split polygons: zero-flat vs plottable (non-zero)
+        zero_polys = []
+        plot_indices = []
+
+        for i in range(num_polys):
+            p0 = self.field.s0.polygons[i]
+            p1 = self.field.s1.polygons[i]
+            label = f"[{i}] s0:{p0.name} -> s1:{p1.name}"
+
+            y = np.asarray(poly_w_series[i], dtype=float)
+            if np.all(np.isclose(y, 0.0, atol=tol, rtol=0.0)):
+                zero_polys.append(label)
+            else:
+                plot_indices.append(i)
+
+        # If user provided an explicit index list, filter plot_indices accordingly
+        if poly_indices_to_plot is not None:
+            if not isinstance(poly_indices_to_plot, (list, tuple, set)):
+                raise TypeError(
+                    "poly_indices_to_plot must be a list/tuple/set of 0-based integer indices, or None."
+                )
+
+            requested = []
+            for v in poly_indices_to_plot:
+                if not isinstance(v, (int, np.integer)):
+                    raise TypeError(
+                        "poly_indices_to_plot must contain only integers (0-based polygon indices)."
+                    )
+                iv = int(v)
+                if 0 <= iv < num_polys:
+                    requested.append(iv)
+
+            # Preserve original plotting order (by index order in plot_indices), not user list order
+            requested_set = set(requested)
+            plot_indices = [i for i in plot_indices if i in requested_set]
+
+        # If nothing remains after filtering, do not plot
+        if len(plot_indices) == 0:
+            print("No polygons to plot after filtering (zero-flat and/or poly_indices_to_plot).")
+            if zero_polys:
+                print("Skipped polygons (w=0 for all sampled z):")
+                for s in zero_polys:
+                    print(" -", s)
+            return
+
+        # Create multiple figures, max 2 polygons per figure (keep all windows identical)
+        MAX_PLOTS_PER_FIG = 2  # Max number of polygon plots per window (do not expose as a function parameter)
+        FIGSIZE = (10, 2.4 * MAX_PLOTS_PER_FIG)  # Fixed size for all figures to avoid "odd last window" sizing
+
+        n_plot = len(plot_indices)
+
+        #print("\n=== START WEIGHT MIN/MAX REPORT ===")
+
+        for start in range(0, n_plot, MAX_PLOTS_PER_FIG):
+            # Take up to MAX_PLOTS_PER_FIG polygon indices for this figure
+            chunk = plot_indices[start : start + MAX_PLOTS_PER_FIG]
+
+            # Create a single full-height axis when only one polygon remains.
+            if len(chunk) == 1:
+                fig_w, ax_single = plt.subplots(1, 1, figsize=FIGSIZE, sharex=True)
+                axes_w = [ax_single]
+            else:
+                fig_w, axes_w = plt.subplots(
+                    MAX_PLOTS_PER_FIG, 1, figsize=FIGSIZE, sharex=True
+                )
+                axes_w = list(np.ravel(axes_w))
+
+            for ax_pos in range(len(chunk)):
+                ax = axes_w[ax_pos]
+
+                i = chunk[ax_pos]
+                p0 = self.field.s0.polygons[i]
+                p1 = self.field.s1.polygons[i]
+                y = np.asarray(poly_w_series[i], dtype=float)
+
+
+                idx_min = int(np.argmin(y))
+                idx_max = int(np.argmax(y))
+                w_min, w_max = float(y[idx_min]), float(y[idx_max])
+                z_min, z_max = float(z_values[idx_min]), float(z_values[idx_max])
+                '''
+                print(
+                    f"[{i}] s0:{p0.name} -> s1:{p1.name} | "
+                    f"min w={w_min:.12g} at z={z_min:.12g} | "
+                    f"max w={w_max:.12g} at z={z_max:.12g}"
+                )
+                '''
+                # Main curve
+                ax.plot(z_values, y, linewidth=1.5, label=f"s0 {p0.name} - s1 {p1.name}")
+
+                # Min/Max markers on the curve
+                ax.scatter([z_min], [w_min], marker="v", s=26, zorder=3, label="min")
+                ax.scatter([z_max], [w_max], marker="^", s=26, zorder=3, label="max")
+
+                # Optional tiny text near markers
+                ax.annotate(
+                    f"{w_min:.4f}", (z_min, w_min),
+                    textcoords="offset points", xytext=(4, -12), fontsize=7
+                )
+                ax.annotate(
+                    f"{w_max:.4f}", (z_max, w_max),
+                    textcoords="offset points", xytext=(4, 6), fontsize=7
+                )
+
+                # y-limits with a small margin for readability
+                if w_max != w_min:
+                    margin = (w_max - w_min) * 0.10
+                else:
+                    margin = max(abs(w_max) * 0.05, 0.05)
+                ax.set_ylim(w_min - margin, w_max + margin)
+
+                ax.set_ylabel(f"s0 {p0.name}\ns1 {p1.name}", fontweight="bold")
+                ax.grid(True, linestyle="--", alpha=0.5)
+                ax.set_title(
+                    f"Weight (w) | min={w_min:.6f} @ z={z_min:.3f} | max={w_max:.6f} @ z={z_max:.3f}",
+                    loc="right", fontsize=8
+                )
+
+            # Put x-label on the last active axis in this figure
+            axes_w[len(chunk) - 1].set_xlabel("z")
+
+            # Figure-level note for zero-flat polygons (repeat on each figure for consistency)
+            if zero_polys:
+                note = "Skipped (w=0 for all z): " + "; ".join(zero_polys)
+                fig_w.text(0.01, 0.01, note, ha="left", va="bottom", fontsize=8)
+
+            # Same title on every window
+            fig_w.suptitle(
+                f"Individual Polygon Shear Weight (w) Distributions (Interpolated # {num_points} points)",
                 fontweight="bold"
             )
             

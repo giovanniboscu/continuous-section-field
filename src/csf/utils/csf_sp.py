@@ -43,6 +43,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
@@ -69,7 +70,7 @@ from csf.io.csf_rough_validator import validate_text
 TOKEN_CELL = "@cell"
 TOKEN_CLOSED = "@closed"
 TOKEN_WALL = "@wall"
-
+verbose=False
 
 @dataclass(frozen=True)
 class Row:
@@ -80,6 +81,8 @@ class Row:
     s0_name: str
     s1_name: str
     w: Optional[float]
+    shear_w: Optional[float]
+    poisson: Optional[float]
     vertex_i: int
     x: float
     y: float
@@ -93,6 +96,7 @@ class PolygonInput:
     idx_container: Optional[int]
     name: str
     w: float
+    poisson: float
     is_cell: bool
     vertices: List[Tuple[float, float]]
 
@@ -123,6 +127,23 @@ def _parse_optional_float(s: str) -> Optional[float]:
     if s == "":
         return None
     return float(s)
+
+
+def _require_defined_poisson(idx_polygon: int, value: Any) -> float:
+    """Return a defined Poisson ratio or stop explicitly."""
+    try:
+        poisson = float(value)
+    except Exception as exc:
+        raise SystemExit(
+            f"Not applicable: idx_polygon={idx_polygon} is not isotropic; invalid poisson={value!r}."
+        ) from exc
+
+    if math.isnan(poisson):
+        raise SystemExit(
+            f"Not applicable: idx_polygon={idx_polygon} is not isotropic; poisson is undefined."
+        )
+
+    return poisson
 
 
 
@@ -188,6 +209,7 @@ def _read_geometry_export_blocks(text: str) -> Dict[float, List[Row]]:
             raise ValueError("Found '## GEOMETRY EXPORT ##' but no '# z=...' line.")
 
         rows: List[Row] = []
+        header: Optional[List[str]] = None
         while j < len(lines):
             raw = lines[j]
             s = raw.strip()
@@ -205,24 +227,52 @@ def _read_geometry_export_blocks(text: str) -> Dict[float, List[Row]]:
                 continue
 
             if rec[0].strip().lower() == "idx_polygon":
+                header = [c.strip() for c in rec]
+                required = [
+                    "idx_polygon",
+                    "idx_container",
+                    "s0_name",
+                    "s1_name",
+                    "w",
+                    "shear_w",
+                    "poisson",
+                    "vertex_i",
+                    "x",
+                    "y",
+                ]
+                missing = [c for c in required if c not in header]
+                if missing:
+                    raise SystemExit(
+                        "CSV geometry export is not applicable to the isotropic SP bridge; "
+                        f"missing columns: {missing}"
+                    )
                 j += 1
                 continue
 
-            if len(rec) < 8:
-                raise ValueError(
-                    f"z={z_value}: malformed CSV row (expected at least 8 fields): {rec!r}"
+            if header is None:
+                raise SystemExit(
+                    "CSV geometry export is not applicable to the isotropic SP bridge; missing header."
                 )
+
+            if len(rec) < len(header):
+                raise ValueError(
+                    f"z={z_value}: malformed CSV row (expected {len(header)} fields): {rec!r}"
+                )
+
+            row = {name: rec[i].strip() for i, name in enumerate(header)}
 
             rows.append(
                 Row(
-                    idx_polygon=int(rec[0]),
-                    idx_container=_parse_optional_int(rec[1]),
-                    s0_name=(rec[2] or "").strip(),
-                    s1_name=(rec[3] or "").strip(),
-                    w=_parse_optional_float(rec[4]),
-                    vertex_i=int(rec[5]),
-                    x=float(rec[6]),
-                    y=float(rec[7]),
+                    idx_polygon=int(row["idx_polygon"]),
+                    idx_container=_parse_optional_int(row["idx_container"]),
+                    s0_name=row["s0_name"],
+                    s1_name=row["s1_name"],
+                    w=_parse_optional_float(row["w"]),
+                    shear_w=_parse_optional_float(row["shear_w"]),
+                    poisson=_parse_optional_float(row["poisson"]),
+                    vertex_i=int(row["vertex_i"]),
+                    x=float(row["x"]),
+                    y=float(row["y"]),
                 )
             )
             j += 1
@@ -261,6 +311,19 @@ def _rows_to_polygon_inputs(rows: List[Row]) -> Dict[int, PolygonInput]:
         if group_sorted[0].w is None:
             raise ValueError(f"idx_polygon={idx_polygon}: missing w value.")
         w = float(group_sorted[0].w)
+        shear_w = group_sorted[0].shear_w
+        poisson_raw = group_sorted[0].poisson
+        if poisson_raw is None:
+            raise SystemExit(
+                f"Not applicable: idx_polygon={idx_polygon} is not isotropic; missing poisson."
+            )
+        poisson = _require_defined_poisson(idx_polygon, poisson_raw)
+        if verbose:
+          print(
+              f"DEBUG poisson CSV idx={idx_polygon} name={joined_name} "
+              f"w={w} poisson={poisson}"
+          )
+
 
         for r in group_sorted[1:]:
             if r.idx_container != idx_container:
@@ -274,6 +337,16 @@ def _rows_to_polygon_inputs(rows: List[Row]) -> Dict[int, PolygonInput]:
                 raise ValueError(
                     f"idx_polygon={idx_polygon}: inconsistent w {w!r} vs {float(r.w)!r}"
                 )
+            if r.shear_w != shear_w:
+                raise ValueError(
+                    f"idx_polygon={idx_polygon}: inconsistent shear_w "
+                    f"{shear_w!r} vs {r.shear_w!r}"
+                )
+            if r.poisson != poisson_raw:
+                raise ValueError(
+                    f"idx_polygon={idx_polygon}: inconsistent poisson "
+                    f"{poisson_raw!r} vs {r.poisson!r}"
+                )
 
         vertices = [(r.x, r.y) for r in group_sorted]
         is_cell = _name_has_cell_tag(s0_name) or _name_has_cell_tag(s1_name)
@@ -283,6 +356,7 @@ def _rows_to_polygon_inputs(rows: List[Row]) -> Dict[int, PolygonInput]:
             idx_container=idx_container,
             name=joined_name,
             w=w,
+            poisson=poisson,
             is_cell=is_cell,
             vertices=vertices,
         )
@@ -513,11 +587,25 @@ def _polygon_inputs_from_field(field, z: float) -> Dict[int, PolygonInput]:
         vertices = [(float(v.x), float(v.y)) for v in poly.vertices]
         w_abs = float(poly.weightabs)
 
+        if not hasattr(poly, "poisson"):
+            raise SystemExit(
+                f"Not applicable: idx_polygon={idx} is not isotropic; missing poisson."
+            )
+
+        poisson = _require_defined_poisson(idx, getattr(poly, "poisson"))
+        if verbose:
+          print(
+              f"DEBUG poisson YAML idx={idx} name={name} "
+              f"w={w_abs} poisson={poisson}"
+          )
+
+
         out[idx] = PolygonInput(
             idx_polygon=idx,
             idx_container=parent_of.get(idx),
             name=name,
             w=w_abs,
+            poisson=poisson,
             is_cell=_name_has_cell_tag(name),
             vertices=vertices,
         )
@@ -547,7 +635,6 @@ def _make_polygon(coords: List[Tuple[float, float]], label: str) -> ShapelyPolyg
     return poly
 
 
-
 def _split_cell_polygon(vertices: List[Tuple[float, float]], label: str) -> Tuple[
     List[Tuple[float, float]],
     List[Tuple[float, float]],
@@ -559,12 +646,14 @@ def _split_cell_polygon(vertices: List[Tuple[float, float]], label: str) -> Tupl
     - OUTER loop is detected by the first repeated occurrence of the first vertex.
     - INNER loop is the remaining tail after OUTER closure.
     - INNER explicit repeated endpoint is optional.
+    - If the tail closes back to the first OUTER vertex, that last point is dropped.
     """
     if len(vertices) < 8:
         raise ValueError(f"{label}: too few vertices for a slit-encoded @cell polygon.")
 
     first = vertices[0]
     i_outer_end: Optional[int] = None
+
     for i in range(1, len(vertices)):
         if vertices[i] == first:
             i_outer_end = i
@@ -579,6 +668,14 @@ def _split_cell_polygon(vertices: List[Tuple[float, float]], label: str) -> Tupl
     if len(inner) < 3:
         raise ValueError(f"{label}: insufficient INNER loop vertices.")
 
+    # Some slit-encoded @cell polygons close the full path by returning to the
+    # first OUTER vertex after the INNER loop. That point is not part of INNER.
+    if inner[-1] == first:
+        inner = inner[:-1]
+
+    if len(inner) < 3:
+        raise ValueError(f"{label}: degenerate INNER loop after outer closure drop.")
+
     if inner[0] == inner[-1]:
         inner = inner[:-1]
 
@@ -590,8 +687,10 @@ def _split_cell_polygon(vertices: List[Tuple[float, float]], label: str) -> Tupl
 
     area_a = abs(poly_a.area)
     area_b = abs(poly_b.area)
+
     if area_a >= area_b:
         return outer, inner
+
     return inner, outer
 
 
@@ -607,17 +706,14 @@ def _collect_children(
 
 
 
-def _make_material(weight: float, label: str) -> Material:
+def _make_material(weight: float, poisson: float, label: str) -> Material:
     """
-    Build a sectionproperties material that carries the polygon weight.
+    Build a sectionproperties material from CSF normal and isotropic shear data.
 
-    IMPORTANT:
-    For the bridge, ``weight`` is mapped into ``elastic_modulus`` so that SP can
-    produce weighted/homogenized geometric properties. This is a bridge device.
-    It should not be read as a general constitutive model for all SP outputs.
-
-    A unique material instance is created for each geometry piece so that the
-    region count and the material count remain aligned in sectionproperties.
+    Bridge convention:
+    - weight is mapped to elastic_modulus E
+    - poisson is mapped to poissons_ratio nu
+    - sectionproperties derives G from E and nu
     """
     if weight == 0.0:
         raise ValueError("Internal error: material requested for a zero-weight region.")
@@ -625,21 +721,22 @@ def _make_material(weight: float, label: str) -> Material:
         raise ValueError(
             f"Negative non-zero weight is not supported for sectionproperties material mapping: {weight}"
         )
+    if math.isnan(float(poisson)):
+        raise ValueError("Internal error: material requested with undefined poisson.")
 
     return Material(
-        name=f"{label}:w={weight:g}",
+        name=f"{label}:w={weight:g}:nu={poisson:g}",
         elastic_modulus=float(weight),
-        poissons_ratio=0.0,
+        poissons_ratio=float(poisson),
         yield_strength=1.0,
         density=1.0,
         color="lightgrey",
     )
 
 
-
-def _geometry_from_region(region: ShapelyPolygon, weight: float, label: str) -> Geometry:
-    """Convert one shapely region to one sectionproperties Geometry carrying weight."""
-    material = _make_material(weight, label)
+def _geometry_from_region(region: ShapelyPolygon, poly: PolygonInput, label: str) -> Geometry:
+    """Convert one shapely region to one sectionproperties Geometry carrying CSF material data."""
+    material = _make_material(poly.w, poly.poisson, label)
     return Geometry(geom=region, material=material)
 
 
@@ -734,8 +831,9 @@ def _build_node_shapes(
                 raise ValueError(f"{label}: intrinsic @cell region is invalid.")
             out[pid] = NodeShape(
                 support_region=support_region,
-                outer_envelope=support_region,  # @cell never cuts more than its own wall
+                outer_envelope=support_region,
             )
+
             continue
 
         if _looks_like_slit_encoded_polygon(poly.vertices):
@@ -825,7 +923,7 @@ def _build_sectionproperties_geometry(
 
         for i, part in enumerate(local_domains.get(pid, [])):
             part_label = f"idx_polygon={pid}:part={i}"
-            pieces.append(_geometry_from_region(part, poly.w, part_label))
+            pieces.append(_geometry_from_region(part, poly, part_label))
 
     if not pieces:
         raise ValueError("No active solid regions found.")
@@ -895,28 +993,12 @@ def _compute_effective_hole_points(
     local_domains: Dict[int, List[ShapelyPolygon]],
 ) -> List[Tuple[float, float]]:
     """
-    Compute robust hole seed points for the actual voids in the active geometry.
-
-    THIS FUNCTION FIXES THE MAIN TOPOLOGY TRANSFER ISSUE DISCOVERED DURING
-    TESTING.
-
-    Why this is needed:
-    - a zero-weight CSF node may represent an explicit void even when it does not
-      appear as an interior ring of the active regions
-    - exact boundary contact can remove the interior-ring signal while the void
-      still exists topologically
-    - nested descendants may create active islands inside a zero-weight node
+    Compute robust hole seed points for explicit CSF voids.
 
     Policy:
-    - collect void candidates from two sources:
-      1) interior rings of the active regions
-      2) local-domain pieces of all zero-weight nodes
-    - merge all void candidates
-    - subtract the union of all active regions
-    - place one hole seed inside each connected residual void component
-
-    In other words: explicit CSF voids are not inferred only from active-region
-    interiors; they are also transferred directly from zero-weight node domains.
+    - only zero-weight CSF nodes create global void candidates;
+    - interior rings of active regions are not promoted to global voids;
+    - @cell intrinsic inner loops remain local to the @cell geometry.
     """
     if not region_polys:
         return []
@@ -924,7 +1006,6 @@ def _compute_effective_hole_points(
     active_union = unary_union(region_polys)
 
     void_candidates: List[ShapelyPolygon] = []
-    void_candidates.extend(_interior_ring_polygons(region_polys))
 
     for pid, poly in polygon_inputs.items():
         if poly.w != 0.0:
@@ -950,22 +1031,27 @@ def _compute_effective_hole_points(
 
     return hole_points
 
-
-
 def _apply_effective_hole_points(
     geom: Geometry | CompoundGeometry,
     polygon_inputs: Dict[int, PolygonInput],
     local_domains: Dict[int, List[ShapelyPolygon]],
 ) -> Geometry | CompoundGeometry:
     """
-    Override sectionproperties hole seeds with points that lie in the true voids.
-
-    This uses both:
-    - interior rings already present in the active regions
-    - explicit local domains of zero-weight CSF nodes
+    Add CSF-derived hole seeds without deleting hole seeds already found by SP.
     """
     region_polys = _polygon_list_from_sectionproperties_geometry(geom)
-    geom.holes = _compute_effective_hole_points(region_polys, polygon_inputs, local_domains)
+    computed_holes = _compute_effective_hole_points(
+        region_polys,
+        polygon_inputs,
+        local_domains,
+    )
+
+    if computed_holes:
+        existing_holes = list(getattr(geom, "holes", []) or [])
+        geom.holes = existing_holes + [
+            hole for hole in computed_holes if hole not in existing_holes
+        ]
+
     return geom
 
 

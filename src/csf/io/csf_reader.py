@@ -145,6 +145,10 @@ class ReaderConfig:
     # Weight laws validation and application (if field is created successfully).
     validate_weight_laws: bool = True
 
+    # shear Weight laws validation and application (if field is created successfully).
+    validate_shear_weight_laws: bool = True
+
+
     # Require a top-level key (default "CSF") that wraps the CSF document.
     require_top_key: bool = True
 
@@ -377,8 +381,13 @@ class CSFReader:
             return ReadResult(field=None, issues=issues)
 
         if self.config.validate_weight_laws:
+            
             self._validate_and_apply_weight_laws(field, csf_root, issues)
-
+        
+        if self.config.validate_shear_weight_laws:
+            
+            self._validate_and_apply_shear_weight_laws(field, csf_root, issues)
+        
         if any(i.severity == Severity.ERROR for i in issues):
             return ReadResult(field=None, issues=issues)
        
@@ -979,6 +988,114 @@ class CSFReader:
                 )
             )
             return None
+    
+
+    def _validate_and_apply_shear_weight_laws(self, field: Any, csf_root: Dict[str, Any], issues: List[Issue]) -> None:
+            """
+            Validate and apply shear weight_laws.
+
+            Rules:
+            - weight_laws must be a list of strings
+            - each item: "name0,name1: expr"
+            - referenced polygon names must exist in S0 and S1
+            - names must refer to polygons with the SAME index in S0 and S1 (index homology)
+            """
+            
+            
+            
+            if "shear_weight_laws" not in csf_root:
+                return  # optional
+
+            wl = csf_root["shear_weight_laws"]
+            
+            wl_path = f"{self._top_key}.shear_weight_laws"
+
+            if not isinstance(wl, list):
+                issues.append(CSFIssues.make("CSF_E_WLAWS_TYPE", path=wl_path, context=type(wl).__name__))
+                return
+
+            laws_out: List[str] = []
+
+            for i, item in enumerate(wl):
+                ip = f"{wl_path}[{i}]"
+
+                if not isinstance(item, str):
+                    issues.append(CSFIssues.make("CSF_E_WLAW_ITEM_TYPE", path=ip, context=type(item).__name__))
+                    continue
+
+                s = item.strip()
+
+                if ":" not in s:
+                    if s == "":
+                        issues.append(CSFIssues.make("CSF_E_WLAW_EXPR_EMPTY", path=ip, context=item))
+                        continue
+                    if not self._paren_balance_ok(s):
+                        issues.append(CSFIssues.make("CSF_E_WLAW_EXPR_INVALID", path=ip, context=s))
+                        continue
+                    laws_out.append(s)
+                    continue
+
+                left, expr = s.split(":", 1)
+                left = left.strip()
+                expr = expr.strip()
+
+                if "," not in left:
+                    issues.append(CSFIssues.make("CSF_E_WLAW_FORMAT", path=ip, context=item))
+                    continue
+                if expr == "":
+                    issues.append(CSFIssues.make("CSF_E_WLAW_EXPR_EMPTY", path=ip, context=item))
+                    continue
+                if not self._paren_balance_ok(expr):
+                    issues.append(CSFIssues.make("CSF_E_WLAW_EXPR_INVALID", path=ip, context=expr))
+                    continue
+
+                n0, n1 = [t.strip() for t in left.split(",", 1)]
+                if n0 == "" or n1 == "":
+                    issues.append(CSFIssues.make("CSF_E_WLAW_FORMAT", path=ip, context=item))
+                    continue
+
+                idx0 = self._polygon_index_by_name(field.s0, n0)
+                idx1 = self._polygon_index_by_name(field.s1, n1)
+                
+                if idx0 is None or idx1 is None:
+                    issues.append(CSFIssues.make("CSF_E_WLAW_REF_MISSING", path=ip, context={"S0_name": n0, "S1_name": n1}))
+                    continue
+                
+                if idx0 != idx1:
+                    issues.append(
+                        CSFIssues.make(
+                            "CSF_E_WLAW_HOMO_MISMATCH",
+                            path=ip,
+                            context={"S0_name": n0, "S1_name": n1, "S0_index": idx0, "S1_index": idx1},
+                        )
+                    )
+                    continue
+                
+                # Normalize for internal use
+                laws_out.append(f"{n0},{n1}: {expr}")
+
+            if any(i.severity == Severity.ERROR for i in issues):
+
+                return
+        
+            try:
+                field.set_shear_weight_laws(laws_out)
+            
+
+            except Exception as e:
+                issues.append(
+                    CSFIssues.make(
+                        "CSF_E_WLAW_EXPR_INVALID",
+                        path=wl_path,
+                        message="Failed to apply shear weight laws (set_shear_weight_laws raised an error).",
+                        context=str(e),
+                    )
+                )
+            
+
+
+
+
 
     def _validate_and_apply_weight_laws(self, field: Any, csf_root: Dict[str, Any], issues: List[Issue]) -> None:
         """

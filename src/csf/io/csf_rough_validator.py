@@ -160,9 +160,9 @@ def _find_first_root_key_in_text(text: str) -> Tuple[Optional[str], Optional[int
 
     return None, None
 
-def _find_weight_law_item_lines(text: str) -> List[int]:
+def _find_law_item_lines(text: str, key: str) -> List[int]:
     """
-    Return the source line numbers for items inside CSF.weight_laws.
+    Return the source line numbers for items inside CSF.<key>.
 
     This is a best-effort raw-text scan used only to enrich validator errors with
     the original YAML line number. If the structure is unusual and the scan cannot
@@ -190,7 +190,7 @@ def _find_weight_law_item_lines(text: str) -> List[int]:
             break
 
         if weight_laws_indent is None:
-            if indent > csf_indent and stripped == "weight_laws:":
+            if indent > csf_indent and stripped == f"{key}:":
                 weight_laws_indent = indent
             continue
 
@@ -201,6 +201,10 @@ def _find_weight_law_item_lines(text: str) -> List[int]:
             out.append(i)
 
     return out
+
+
+def _find_weight_law_item_lines(text: str) -> List[int]:
+    return _find_law_item_lines(text, "weight_laws")
 
 
 
@@ -244,7 +248,7 @@ _QUOTED_NUMBER_RE = re.compile(
     r"""(?P<q>["'])\s*(?P<num>[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?)\s*(?P=q)"""
 )
 
-def _scan_quoted_numbers_in_text(text: str) -> List[Tuple[int, int, str]]:
+def _scan_quoted_numbers_in_text(text: str, excluded_lines: Optional[set] = None) -> List[Tuple[int, int, str]]:
     """
     Scan the raw YAML text for quoted numbers.
 
@@ -253,11 +257,14 @@ def _scan_quoted_numbers_in_text(text: str) -> List[Tuple[int, int, str]]:
 
     Key rule to prevent false positives:
     - If a line contains no quotes, it cannot be a quoted-number error.
+    - Lines in excluded_lines are skipped (e.g. weight_laws / shear_weight_laws items).
     """
     hits: List[Tuple[int, int, str]] = []
     lines = text.splitlines()
 
     for i, raw in enumerate(lines, start=1):
+        if excluded_lines and i in excluded_lines:
+            continue
         # quick guard: no quotes => cannot be quoted-number
         if '"' not in raw and "'" not in raw:
             continue
@@ -320,6 +327,16 @@ def _validate_csf_structure(doc: Dict[str, Any], weight_law_item_lines: Optional
 
     Raises ValidationError on the first detected issue (rough validator is allowed to be strict).
     """
+    def _strip_wall_cell(name: str) -> str:
+        i_wall = name.find("@wall")
+        i_cell = name.find("@cell")
+        cut = None
+        if i_wall != -1:
+            cut = i_wall
+        if i_cell != -1:
+            cut = i_cell if cut is None else min(cut, i_cell)
+        return name[:cut] if cut is not None else name    
+    
     if TOP_KEY not in doc:
         raise ValidationError(f"Root missing exact '{TOP_KEY}:' key.")
 
@@ -338,7 +355,7 @@ def _validate_csf_structure(doc: Dict[str, Any], weight_law_item_lines: Optional
 
     csf = _require_mapping(doc[TOP_KEY], f"{TOP_KEY}")
 
-    _KNOWN_CSF_KEYS = {"sections", "weight_laws"}
+    _KNOWN_CSF_KEYS = {"sections", "weight_laws","shear_weight_laws"}
     unknown_csf_keys = set(csf.keys()) - _KNOWN_CSF_KEYS
     if unknown_csf_keys:
         import difflib
@@ -351,7 +368,7 @@ def _validate_csf_structure(doc: Dict[str, Any], weight_law_item_lines: Optional
                     f"Fix: rename '{uk}:' to '{matches[0]}:'"
                 )
             # Only warn for keys with no suggestion — could be a future extension
-            # raise ValidationError(f"{TOP_KEY} contains unknown key '{uk}'.")
+            raise ValidationError(f"{TOP_KEY} contains unknown key '{uk}'.")
 
     if "sections" not in csf:
         raise ValidationError(f"{TOP_KEY} missing required 'sections:' key.")
@@ -580,15 +597,7 @@ def _validate_csf_structure(doc: Dict[str, Any], weight_law_item_lines: Optional
             if poly_ids:
                 lhs, _rhs = item.split(":", 1)
 
-                def _strip_wall_cell(name: str) -> str:
-                    i_wall = name.find("@wall")
-                    i_cell = name.find("@cell")
-                    cut = None
-                    if i_wall != -1:
-                        cut = i_wall
-                    if i_cell != -1:
-                        cut = i_cell if cut is None else min(cut, i_cell)
-                    return name[:cut] if cut is not None else name
+
 
                 names = [s.strip() for s in lhs.split(",") if s.strip()]
                 if not names:
@@ -623,6 +632,87 @@ def _validate_csf_structure(doc: Dict[str, Any], weight_law_item_lines: Optional
 
                     raise ValidationError(msg)
 
+    # shear_weight_laws optional, if present must be list of strings
+    if "shear_weight_laws" in csf:
+        swl = csf["shear_weight_laws"]
+        if not isinstance(swl, list) or not swl:
+            if isinstance(swl, str) and (":" in swl or swl.strip()):
+                raise ValidationError(
+                    f"{TOP_KEY}.shear_weight_laws must be a YAML list, but a plain string was found.\n"
+                    "You are probably missing the '-' before each item.\n"
+                    f"Fix:\n  shear_weight_laws:\n    - '{swl}'"
+                )
+            raise ValidationError(f"{TOP_KEY}.shear_weight_laws is optional, but if present it must be a non-empty list.")
+
+        for i, item in enumerate(swl):
+            if isinstance(item, dict):
+                if len(item) == 1:
+                    k = next(iter(item.keys()))
+                    v = item[k]
+                    raise ValidationError(
+                        f"{TOP_KEY}.shear_weight_laws[{i}] must be a quoted string.\n"
+                        f"You wrote: - {k}: {v}\n"
+                        f"Fix:       - '{k}: {v}'"
+                    )
+                raise ValidationError(f"{TOP_KEY}.shear_weight_laws[{i}] must be a string.")
+
+            if not isinstance(item, str):
+                raise ValidationError(f"{TOP_KEY}.shear_weight_laws[{i}] must be a string.")
+
+            s = item.strip()
+
+            if ":" not in s:
+                # 
+                formula = s
+                try:
+                    compile(formula, "<shear_weight_law>", "eval")
+                except SyntaxError as e:
+                    col_in_formula = getattr(e, "offset", None)
+                    pointer = ("\n" + " " * (col_in_formula - 1) + "^") if col_in_formula else ""
+                    raise ValidationError(
+                        f"{TOP_KEY}.shear_weight_laws[{i}]: formula has a Python syntax error.\n"
+                        f"Formula: {formula}{pointer}\n"
+                        f"Detail:  {e.msg}"
+                    )
+            else:
+                # 
+                lhs, rhs = s.split(":", 1)
+                lhs_stripped = lhs.strip()
+                if lhs_stripped and "," not in lhs_stripped:
+                    parts = lhs_stripped.split()
+                    if len(parts) == 2:
+                        raise ValidationError(
+                            f"{TOP_KEY}.shear_weight_laws[{i}]: polygon id pair must be comma-separated.\n"
+                            f"Found: '{lhs_stripped}'\n"
+                            f"Fix:   '{parts[0]},{parts[1]}: {rhs.strip()}'"
+                        )
+
+                formula = rhs.strip()
+                if formula:
+                    try:
+                        compile(formula, "<shear_weight_law>", "eval")
+                    except SyntaxError as e:
+                        col_in_formula = getattr(e, "offset", None)
+                        pointer = ("\n" + " " * (col_in_formula - 1) + "^") if col_in_formula else ""
+                        raise ValidationError(
+                            f"{TOP_KEY}.shear_weight_laws[{i}]: formula has a Python syntax error.\n"
+                            f"Formula: {formula}{pointer}\n"
+                            f"Detail:  {e.msg}"
+                        )
+
+                if poly_ids and lhs_stripped:
+                    names = [n.strip() for n in lhs_stripped.split(",") if n.strip()]
+                    poly_ids_norm = {_strip_wall_cell(pid) for pid in poly_ids}
+                    unknown = [n for n in names if _strip_wall_cell(n) not in poly_ids_norm]
+                    if unknown:
+                        raise ValidationError(
+                            f"{TOP_KEY}.shear_weight_laws[{i}] references unknown polygon id(s): {unknown}.\n"
+                            f"Known polygon ids: {sorted(poly_ids)}"
+                        )    
+    
+    
+    
+    
 
 # -----------------------------
 # Public API
@@ -665,7 +755,11 @@ def validate_text(text: str, source: str = "<memory>") -> Tuple[bool, List[str]]
         return False, report
 
     # 2) quoted-number scan (raw text)
-    qhits = _scan_quoted_numbers_in_text(text)
+    _excluded_law_lines = (
+        set(_find_law_item_lines(text, "weight_laws"))
+        | set(_find_law_item_lines(text, "shear_weight_laws"))
+    )
+    qhits = _scan_quoted_numbers_in_text(text, excluded_lines=_excluded_law_lines)
     if qhits:
         ln, col, token = qhits[0]
         report.append("[ERROR] Quoted numbers detected. All numeric values must be raw (no quotes).")
