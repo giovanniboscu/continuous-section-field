@@ -4,8 +4,8 @@
 
 ## What CSF Does
 
-CSF is a specific **organisational model**: geometry and material are treated as two fully independent fields along $z$, and every zone carries its own weight law - separately from all others and separately from the geometry. This simple structure is what makes the formulation general without adding complexity.
 
+CSF is a specific **organisational model**: geometry and material are treated as two fully independent fields along $z$, and every zone carries its own weight law - one for axial and bending properties, one for shear - separately from all others and separately from the geometry. This simple structure is what makes the formulation general without adding complexity.
 In practice, CSF evaluates structural quantities - derived from continuously varying section geometry and material along the element - such as- $A(z)$, $Ix(z)$, $Iy(z)$,... - continuously along the element. The result is deterministic and traceable at every point, independent of the solver's mesh density.
 
 ---
@@ -18,7 +18,7 @@ $$EA(z) = E(z) \cdot A, \qquad EI(z) = E(z) \cdot I, \qquad GJ(z) = G(z) \cdot J
 
 This works fine for uniform sections with a single material. It breaks down as soon as you have multiple materials, a tapered geometry, localised degradation, or any combination of these.
 
-CSF handles the general case by splitting the section into zones, each with its own independent weight law $w_i(z)$:
+CSF handles the general case by splitting the section into zones, each with its own independent weight law $w_i(z)$ for axial and bending properties, and shear weight law $\kappa_i(z)$ for shear properties:
 
 $$P(z) = \sum_i w_i(z) \cdot \iint_{\Omega_i(z)} f(x, y, z) \, dA$$
 
