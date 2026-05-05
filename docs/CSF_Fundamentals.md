@@ -583,3 +583,41 @@ shear_w_i(z) = w_i(z) / 2.4
 
 The same isotropic relation is applied to all corresponding polygon pairs.
 
+
+The following example shows a non-isotropic shear/torsion weight law defined as a function of the axial/bending weight `w`.
+
+Here, `w` is first evaluated from `weight_laws` at the current section `z`. Then, `shear_weight_laws` uses that value to compute the corresponding shear/torsion participation `shear_w`.
+
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        startsection:
+          weight: 1.0
+          vertices:
+            - [-0.4, -0.4]
+            - [ 0.4, -0.4]
+            - [ 0.4,  0.4]
+            - [-0.4,  0.4]
+
+    S1:
+      z: 10.0
+      polygons:
+        endsection:
+          weight: 1.0
+          vertices:
+            - [-0.2, -0.2]
+            - [ 0.2, -0.2]
+            - [ 0.2,  0.2]
+            - [-0.2,  0.2]
+
+  weight_laws:
+    # axial/bending weight law w_i(z)
+    - "startsection,endsection: 1.0 - 0.4*(z/L)**2"
+
+  shear_weight_laws:
+    # non-isotropic shear/torsion law as a function of the already evaluated w_i(z)
+    - "startsection,endsection: 0.6*w"
+```
