@@ -16,9 +16,9 @@ These are the basic geometric elements from which the section model is built.
 
 Once geometry is defined, CSF defines sectional participation through two native weight fields:
 
-**Axial/bending weight** `w_i(z)`: a scalar participation factor assigned to each polygon, scaling its contribution to area, axial, and bending-related section properties.
+**Axial/bending weight** `w_i(z)`: a scalar participation factor assigned to each corresponding polygon pair between `S0` and `S1`; along `z`, it scales the contribution of the interpolated polygon to area, axial, and bending-related section properties.
 
-**Shear/torsion weight** `shear_w_i(z)`: a scalar participation factor assigned to each polygon, scaling its contribution to shear/torsion-related section properties.
+**Shear/torsion weight** `shear_w_i(z)`: a scalar participation factor assigned to each corresponding polygon pair between `S0` and `S1`; along `z`, it scales the contribution of the interpolated polygon to shear- and torsion-related section properties.
 
 The two fields can be related or defined independently. `shear_w_i(z)` may be derived from `w_i(z)` through an isotropic relation, using the shortcut `iso(nu)`, where `nu` must be explicitly defined by the user. It may also be derived from `w_i(z)` through a custom user-defined law, or it may be specified as an independent field.
 
