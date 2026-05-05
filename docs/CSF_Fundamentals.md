@@ -415,6 +415,13 @@ This means that, for the same polygon:
 - at any intermediate section `z`, the weight is an interpolated value between `w0` and `w1`
 
 
+It defines how much that polygon contributes to the effective sectional properties:
+For example, the value `w_i(z) = 1` is the reference participation level. Values below or above `1` reduce or increase the effective contribution of the interpolated polygon relative to that reference.
+
+It is used to model longitudinal variation of sectional participation, such as material degradation, reinforcement contribution, staged activation, or equivalent stiffness weighting along the member axis.
+It affects the effective area, centroid, second moments of area, and related axial/bending sectional properties.
+
+
 ### 8. Custom Weight Functions
 
 The linear interpolation between `w0` in `S0` and `w1` in `S1` is the simplest way to describe the variation of the polygon weight `w` between the two reference sections.
@@ -434,7 +441,63 @@ This means that:
 In this way, CSF can apply a user-defined variation law to a specific polygon between `S0` and `S1`, instead of using only the default linear interpolation between `w0` and `w1`.
 In this way, CSF describes not only the geometric transition between `S0` and `S1`, but also the transition of the polygon weight along the element.
 
+For example, a polygon may have `w0 = 1.0` at `S0` and `w1 = 1.0` at `S1`, but a user-defined law can still impose a non-linear variation along the element:
+
+```yaml
+weight_laws:
+  - "startsection,endsection: 1.0 - 0.4*(z/L)**2"
+```
+
+### 9. Custom Shear Weight Function
+
+The shear/torsion weight `shear_w_i(z)` is conceptually similar to the axial/bending weight `w_i(z)`: it is associated with a corresponding polygon pair between `S0` and `S1` and defines the effective shear/torsion participation of the interpolated polygon at position `z`.
+
+Unlike the axial/bending weight `w`, the shear/torsion weight `shear_w` is not given by explicit polygon attributes in `S0` and `S1`.
+
+Its values, including the endpoint values at `S0` and `S1`, are computed from the applicable `shear_weight_laws`.
+
+The shear/torsion weight is used to model the longitudinal variation of shear- and torsion-related participation. It affects the effective contribution of each interpolated polygon to shear- and torsion-related sectional properties.
+
+CSF supports the following cases:
+
+- if `shear_weight_laws` is not defined, CSF uses the default relation:
+
+  ```text
+  shear_w_i(z) = w_i(z)
+  ```
+
+  This corresponds to the default isotropic relation with `nu = -0.5`.
+
+- if an isotropic relation is required, the shortcut `iso(nu)` can be used, where `nu` must be explicitly defined by the user:
+
+  ```yaml
+  shear_weight_laws:
+    - "iso(0.2)"
+  ```
+
+  When the law is written without polygon names, it is applied to all corresponding polygon pairs. A specific assignment can still be defined for a selected polygon pair by using the two polygon names:
+
+  ```yaml
+  shear_weight_laws:
+    - "iso(0.2)"
+    - "startsection,endsection: iso(0.3)"
+  ```
+
+- if a non-isotropic or custom relation is required, the user can define a Python expression. In this expression, `w` is the axial/bending weight already evaluated at the current section `z`:
+
+  ```yaml
+  shear_weight_laws:
+    # non-isotropic function
+    - "startsection,endsection: w - (1+0.4)*t/50"
+  ```
+
+In this way, CSF can describe two longitudinal participation fields: `w_i(z)` for area, axial, and bending-related properties, and `shear_w_i(z)` for shear- and torsion-related properties.
+
 For more details, see [ContinuousSectionField (CSF) - Custom Weight Laws](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
+
+
+
+
 ---
 ### Examples
 The variation law is identified by the following syntax:
