@@ -10,7 +10,7 @@ In practice, CSF evaluates structural quantities - derived from continuously var
 
 ---
 
-## The Key Idea
+### The Key Idea
 
 In a standard beam model, section properties are just a number times a material function:
 
@@ -30,7 +30,6 @@ you can vary one without touching the other. The standard separable formulation 
 ## How the Section Is Defined
 
 You define the section as a set of polygons at two end stations. CSF interpolates the vertices linearly between them, producing a smooth tapered geometry at any $z$.
-
 
 Each polygon gets its own weight law $w_i(z)$ for axial and bending properties, and an independent shear weight law $\kappa_i(z)$ for shear properties - either an analytical expression (polynomial, exponential) or a lookup table of discrete values.
 ---
