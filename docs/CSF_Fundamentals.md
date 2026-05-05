@@ -14,11 +14,18 @@ These are the basic geometric elements from which the section model is built.
 
 ### 2. Material Building Block
 
-Once geometry is defined, CSF introduces one additional building block:
+Once geometry is defined, CSF defines sectional participation through two native weight fields:
 
-* **Weight**: a scalar factor assigned to a polygon to scale its contribution to the section properties. Each polygon can therefore contribute differently, even when the geometry is explicitly defined.
+**Axial/bending weight** `w_i(z)`: a scalar participation factor assigned to each polygon, scaling its contribution to area, axial, and bending-related section properties.
 
-In this way, geometry defines **where** a region is, while weight defines **how much** that region contributes.
+**Shear/torsion weight** `shear_w_i(z)`: a scalar participation factor assigned to each polygon, scaling its contribution to shear/torsion-related section properties.
+
+The two fields can be related or defined independently. `shear_w_i(z)` may be derived from `w_i(z)` through an isotropic relation, using the shortcut `iso(nu)`, where `nu` must be explicitly defined by the user. It may also be derived from `w_i(z)` through a custom user-defined law, or it may be specified as an independent field.
+
+In this way, geometry defines where each region is, while `w_i(z)` and `shear_w_i(z)` define how much that region contributes to the corresponding classes of section properties.
+
+
+
 ### 3. Vertex Details
 
 A vertex is defined in the section plane by its coordinates, usually `(x, y)`.
