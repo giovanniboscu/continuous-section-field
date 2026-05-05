@@ -8,6 +8,10 @@
 CSF is a specific **organisational model**: geometry and material are treated as two fully independent fields along $z$, and every zone carries its own weight law - one for axial and bending properties, one for shear - separately from all others and separately from the geometry. This simple structure is what makes the formulation general without adding complexity.
 In practice, CSF evaluates structural quantities - derived from continuously varying section geometry and material along the element - such as- $A(z)$, $Ix(z)$, $Iy(z)$,... - continuously along the element. The result is deterministic and traceable at every point, independent of the solver's mesh density.
 
+> Assigning independent $w_i(z)$ and $\kappa_i(z)$ to the same zone
+> implies a non-isotropic material response. For isotropic materials,
+> the two are linked by $\kappa_i = w_i / (2(1+\nu))$ - $iso(\nu)$
+
 ---
 
 ### The Key Idea
