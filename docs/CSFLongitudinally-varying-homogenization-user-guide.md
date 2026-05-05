@@ -1,11 +1,12 @@
-#  🛠  ContinuousSectionField (CSF) - Custom Weight Laws
+# 🛠 ContinuousSectionField (CSF) - Custom Weight and Shear Weight Laws
+
 > **Before you start**  
 > This guide builds on the core CSF concepts - geometric pairing and polygon naming - introduced in the [CSF Fundamentals](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md).  
 > A quick read of that page is enough to get the most out of this guide.  
 > The purpose here is only to make the syntax of custom weight laws easy to read and use.
 [04_plotting_weight](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/04_plotting_weight.md)
 
-A Custom Weight Law defines how the weight, i.e. the Elastic Modulus ratio, varies along `z` for a specific structural component of the member.
+CSF supports two types of custom participation laws: `weight_laws`, which define the axial/bending weight `w_i(z)`, and `shear_weight_laws`, which define the shear/torsion weight `shear_w_i(z)`.
 
 For example, the following law assigns a smooth variation to the component defined between two polygons, both named "lowerpart", changing its weight from `w0` at the base to `w1` at the top.
 
@@ -42,6 +43,7 @@ To avoid relying on unclear numerical connections such as “Pair #227,” each 
 In CSF, **`weight`**, **$W$**, and **$w(z)$** refer to the same concept.
 
 
+## Weight 
 
 ### Polygon Pairing by Creation Order
 
@@ -390,6 +392,58 @@ Intermediate values are interpolated linearly.
 # Shear Weight Laws in Composed Sections
 
 The same polygon-pair logic used for `weight_laws` also applies to `shear_weight_laws`.
+
+
+## What is `shear_weight`?
+
+In CSF, `shear_weight` is the scalar participation field used for shear- and torsion-related section properties.
+
+It is written as:
+
+```text
+shear_w_i(z)
+```
+
+where `i` identifies a corresponding polygon pair between `S0` and `S1`.
+
+### Operational meaning in CSF
+
+The shear/torsion weight `shear_w_i(z)` scales the effective contribution of the interpolated polygon to shear- and torsion-related quantities.
+
+It can represent, for example:
+
+- a dimensionless shear/torsion participation factor
+- a shear modulus ratio
+- a direct shear stiffness value, such as the shear modulus `G`
+
+Unlike the axial/bending weight `w_i(z)`, `shear_w_i(z)` is not assigned directly as a polygon attribute in `S0` and `S1`.
+
+Its values at `S0`, at `S1`, and at every intermediate section `z` are computed from the applicable `shear_weight_laws`.
+
+### Relation with `w_i(z)`
+
+A `shear_weight_law` may depend on the axial/bending weight `w_i(z)`.
+
+Inside a custom shear weight expression, the variable `w` is the axial/bending weight already evaluated at the same section `z`.
+
+Example:
+
+```yaml
+shear_weight_laws:
+  - "startsection,endsection: 0.6*w"
+```
+
+This means that the shear/torsion participation is computed as a function of the current axial/bending participation.
+
+By defining `w_i(z)` and `shear_w_i(z)` separately, CSF can represent an equivalent 1D non-isotropic sectional participation model, where axial/bending and shear/torsion behavior may follow different longitudinal laws.
+
+### Unit convention
+
+CSF is unit-system agnostic.
+
+The only requirement is consistency: formulas, lookup data, geometry, and downstream exports must follow the same convention.
+
+For `shear_weight`, this means that the selected convention must be consistent with the intended shear/torsion interpretation, for example a dimensionless ratio or a direct `G` value.
 
 A shear/torsion law is associated with a corresponding polygon pair between `S0` and `S1`. This remains true also when the section contains inners or nested polygon components.
 
