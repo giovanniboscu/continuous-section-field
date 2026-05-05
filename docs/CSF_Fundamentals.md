@@ -514,8 +514,9 @@ For example:
 
 In this example, the custom weight law is associated with the polygon named `flange` in `S0` and with the corresponding polygon named `flange` in `S1`.
 
+Example with an isotropic shear/torsion relation:
 
-```
+```yaml
 CSF:
   sections:
     S0:
@@ -553,11 +554,32 @@ CSF:
             - [ 0.2, -2.5]
             - [ 0.2, -0.2]
             - [-0.2, -0.2]
+
   weight_laws:
     # parabolic increase: 72% at base (z=0), full section at top (z=10)
     - 'flange,flange:1.0 - 0.28 * (1 - (z / 10.0)**2)'
 
     # linear reduction for the web: from 1.0 at z=0 to 0.70 at z=10
-    - 'web,web:1.0 - 0.30 * (z / 10.0)'                                        
+    - 'web,web:1.0 - 0.30 * (z / 10.0)'
+
+  shear_weight_laws:
+    # isotropic shear/torsion relation with Poisson's ratio nu = 0.2
+    - 'iso(0.2)'
 ```
+
+Here, `w_i(z)` is first evaluated from `weight_laws`.
+
+Then `shear_w_i(z)` is derived from the isotropic relation:
+
+```text
+shear_w_i(z) = w_i(z) / (2 * (1 + nu))
+```
+
+For `nu = 0.2`:
+
+```text
+shear_w_i(z) = w_i(z) / 2.4
+```
+
+The same isotropic relation is applied to all corresponding polygon pairs.
 
