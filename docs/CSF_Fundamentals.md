@@ -1,6 +1,6 @@
 ## CSF Building Blocks
 
-In CSF, the model is built in a simple hierarchy.
+CSF is defined through a small set of building blocks: reference sections, polygon pairs, axial/bending weights, shear/torsion weights, and optional longitudinal variation laws.
 
 ### 1. Geometry Building Blocks
 
