@@ -387,6 +387,52 @@ Intermediate values are interpolated linearly.
 
 `T_lookup(file)` returns the value interpolated at the current normalized coordinate `t` for the active integration point.
 
+# Shear Weight Laws in Composed Sections
+
+The same polygon-pair logic used for `weight_laws` also applies to `shear_weight_laws`.
+
+A shear/torsion law is associated with a corresponding polygon pair between `S0` and `S1`. This remains true also when the section contains inners or nested polygon components.
+
+The geometric composition is still defined by the section geometry. The shear/torsion law only defines the shear/torsion participation field `shear_w_i(z)` for each interpolated polygon.
+
+Unlike the axial/bending weight `w_i(z)`, the shear/torsion weight does not have user-defined base values written inside the polygons of `S0` and `S1`.
+
+Instead, `shear_w_i(z)` is always computed from a function.
+
+This means that the values of `shear_w_i(z)` at `S0`, at `S1`, and at every intermediate section are obtained by evaluating the applicable `shear_weight_laws`.
+
+A shear/torsion law can be defined globally, without polygon names:
+
+```yaml
+shear_weight_laws:
+  - "iso(0.2)"
+```
+
+In this case, the law is applied to all corresponding polygon pairs.
+
+A specific law can also be assigned to a selected polygon pair:
+
+```yaml
+shear_weight_laws:
+  - "iso(0.2)"
+  - "startsection,endsection: 0.6*w"
+```
+
+In this example, `iso(0.2)` is the general law, while the pair `startsection,endsection` uses a specific non-isotropic relation.
+
+Inside a custom `shear_weight_law`, the variable `w` is the axial/bending weight already evaluated at the same section `z`.
+
+Therefore, a shear/torsion law may depend on the current value of `w`:
+
+```yaml
+shear_weight_laws:
+  # shear/torsion participation derived from the axial/bending participation
+  - "startsection,endsection: 0.6*w"
+```
+
+In this way, CSF keeps the same geometric and polygon-pair structure, while allowing the shear/torsion participation field `shear_w_i(z)` to be derived from its own functional law.
+
+
 ---
 
 ### 🛡️ Numerical Robustness & Validation Rules
