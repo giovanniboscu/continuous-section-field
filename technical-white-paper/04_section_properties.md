@@ -28,24 +28,33 @@ For each polygon \( k \), the following quantities are computed:
 - product of inertia `I_xy,k(z)`,
 - first moment of area `Q_k(z)` (for shear-related evaluations).
 
-
 These quantities are evaluated with respect to the **local section reference frame**.
 
 ---
 
 ## Assembly of Section Properties
 
-The section as a whole is obtained by assembling the contributions of all polygons.
+CSF defines two separate participation fields, each governing a distinct class of
+sectional properties:
 
-For a generic property \( P(z) \), the assembly rule is:
+- `w_k(z)` - the **axial/bending weight**, applied to area, centroid, moments of
+  inertia, and first moments of area.
+- `shear_w_k(z)` - the **shear/torsion weight**, applied to shear- and
+  torsion-related quantities.
 
-`P(z) = sum_k [ w_k(z) * P_k(z) ]`
+For axial/bending properties, the assembly rule is:
 
-where:
-- ` P_k(z) ` is the geometric contribution of polygon ` k `,
-` w_k(z) ` is its longitudinal weight.
+```
+P(z) = sum_k [ w_k(z) * P_k(z) ]
+```
 
-This formulation applies uniformly to all area-based sectional quantities.
+For shear/torsion properties, the assembly rule is:
+
+```
+P_sv(z) = sum_k [ shear_w_k(z) * P_k(z) ]
+```
+
+where `P_k(z)` is the purely geometric contribution of polygon `k` in both cases.
 
 ---
 
@@ -55,8 +64,7 @@ The effective (weighted) cross-sectional area is defined as:
 
 `A(z) = sum_k [ w_k(z) * A_k(z) ]`
 
-
-If all weights are equal to unity,` A(z)` coincides with the geometric area.
+If all weights are equal to unity, `A(z)` coincides with the geometric area.
 
 Zero-weight polygons contribute no area, representing voids.
 
@@ -70,11 +78,10 @@ The centroid of the weighted section is computed as:
 
 `C_y(z) = (sum_k [ w_k(z) * A_k(z) * C_y,k(z) ]) / A(z)`
 
-
 The centroid location is therefore:
 - geometry-dependent,
 - weight-dependent,
-- generally varying along `z `.
+- generally varying along `z`.
 
 This variability is explicitly tracked and exported.
 
@@ -91,7 +98,7 @@ The weighted sectional moments are:
 
 `I_y(z) = sum_k [ w_k(z) * I_y,k^(centroid)(z) ]`
 
-The product of inertia `I_{xy}(z) `is evaluated analogously.
+The product of inertia `I_{xy}(z)` is evaluated analogously.
 
 ---
 
@@ -101,14 +108,20 @@ The polar moment of area is defined as:
 
 `J_p(z) = I_x(z) + I_y(z)`
 
-CSF also evaluates a torsional stiffness constant ` J(z) `,
-which coincides with `J_p ` for simple solid sections and
-is computed using dedicated formulations for thin-walled or cellular geometries
-when applicable.
+CSF also evaluates the Saint-Venant torsional constant `J(z)`, which coincides
+with `J_p` for simple solid sections and is computed using dedicated formulations
+for thin-walled or cellular geometries when applicable.
+
+The torsional constant `J(z)` is a shear/torsion quantity and is assembled using
+the **shear weight** field:
+
+```
+J(z) = sum_k [ shear_w_k(z) * J_k(z) ]
+```
 
 The distinction between:
-- geometric polar moment,
-- Saint-Venant torsional constant,
+- geometric polar moment (scaled by `w_k`),
+- Saint-Venant torsional constant (scaled by `shear_w_k`),
 
 is preserved and documented in the output.
 
@@ -120,13 +133,12 @@ From the primary properties, CSF derives additional quantities commonly used
 in engineering practice:
 
 - radii of gyration:
-- 
+
 `r_x(z) = sqrt( I_x(z) / A(z) )`
 
 `r_y(z) = sqrt( I_y(z) / A(z) )`
 
-
-- principal moments of inertia ` I_1(z), I_2(z)`,
+- principal moments of inertia `I_1(z), I_2(z)`,
 - principal axis rotation angle.
 
 These quantities are purely sectional and independent of solver assumptions.
@@ -135,11 +147,16 @@ These quantities are purely sectional and independent of solver assumptions.
 
 ## Stiffness-Like Quantities
 
-Depending on the interpretation of weights, CSF may report stiffness-like products:
+Depending on the interpretation of weights, CSF may report stiffness-like products.
 
-- axial stiffness: ` EA(z) `,
-- bending stiffness: ` EI_x(z), EI_y(z)`,
-- torsional stiffness: `GJ(z)`.
+Axial and bending stiffness quantities are governed by `w_k(z)`:
+
+- axial stiffness: `EA(z)`
+- bending stiffness: `EI_x(z)`, `EI_y(z)`
+
+The torsional stiffness is governed by `shear_w_k(z)`:
+
+- torsional stiffness: `GJ(z)`
 
 CSF itself does not enforce how these quantities are used.
 Their physical meaning depends on the adopted weight convention
@@ -149,8 +166,15 @@ Their physical meaning depends on the adopted weight convention
 
 ## Shear-Related Quantities
 
-CSF can compute first moments of area`Q(z)`with respect to a specified cut,
-typically used in classical shear stress formulations.
+CSF computes the first moment of area `Q(z)` with respect to a specified cut,
+typically used in classical shear stress formulations (Jourawski).
+
+`Q(z)` is an axial/bending quantity and is assembled using the **axial/bending
+weight** field:
+
+```
+Q(z) = sum_k [ w_k(z) * Q_k(z) ]
+```
 
 These quantities are provided as geometric inputs and do not imply
 any shear deformation theory.
@@ -177,7 +201,7 @@ All geometric quantities are computed analytically from polygonal formulas.
 Accuracy depends on:
 - correctness of the geometry,
 - polygonal approximation of curved outlines,
-- numerical integration precision along ` z `.
+- numerical integration precision along `z`.
 
 No artificial smoothing or correction is applied.
 
@@ -200,10 +224,12 @@ are outside the scope of CSF.
 CSF evaluates section properties as **explicit, weighted geometric integrals**,
 fully determined by user-defined geometry and longitudinal laws.
 
+Axial and bending properties are governed by `w_k(z)`.  
+Shear and torsion properties are governed by `shear_w_k(z)`.
+
 This approach ensures:
 - transparency,
 - reproducibility,
 - and solver-independent interpretation,
 
 providing a robust foundation for the analysis of non-prismatic structural members.
-
