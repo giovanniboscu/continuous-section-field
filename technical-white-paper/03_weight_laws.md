@@ -224,7 +224,7 @@ Custom laws may reference the following quantities:
 
 ---
 
-## Shear/Torsion Weight
+# Shear/Torsion Weight
 
 ### Definition
 
