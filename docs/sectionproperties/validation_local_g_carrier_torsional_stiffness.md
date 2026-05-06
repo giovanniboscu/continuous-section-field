@@ -87,10 +87,6 @@ The documented global correction ($g_\text{eff}/e_\text{eff}$ scaling) introduce
 Substituting *G*ᵢ for *E*ᵢ in the `sectionproperties` material definition is a correct and sufficient procedure to compute *GJ* for composite cross-sections. The approach is verified against an independent `skfem` implementation of the warping problem, with agreement better than 0.02 % for both a symmetric and an asymmetric material layout. The library's documented global correction should not be used when an accurate spatial distribution of *GJ* is required.
 
 ---
-
-*Verification performed with `sectionproperties` and `scikit-fem`. Reference script: `skitfem_comparison.py`.*
-
----
 ```
 pip install sectionproperties scikit-fem
 ```
