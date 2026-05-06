@@ -5,7 +5,7 @@
 
 ## 1. Background
 
-The Python library `sectionproperties` computes the Saint-Venant torsional constant *J* by solving Prandtl's stress-function (warping) problem via finite elements. For composite sections, the library uses each material's Young's modulus *E*ᵢ as the local carrier, yielding a weighted quantity *EJ* rather than the torsionally relevant *GJ*. This behaviour is stated explicitly in the [Analysis documentation](https://sectionproperties.readthedocs.io/en/stable/user_guide/analysis.html):
+The Python library `sectionproperties` computes the Saint-Venant torsional constant *J* by solving Prandtl's stress-function (warping) problem via finite elements. For composite sections, the library uses each material's Young's modulus *E*ᵢ as the local carrier, yielding a weighted quantity *EJ* rather than the torsionally relevant *GJ*. This behaviour is documented in the [Retrieving Section Properties](https://sectionproperties.readthedocs.io/en/latest/examples/results/get_results.html) example page:
 
 > *"If materials are specified, the values calculated for the torsion constant … are elastic modulus weighted."*
 
