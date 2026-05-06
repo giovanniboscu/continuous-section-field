@@ -7,13 +7,22 @@ In CSF, geometric definition and physical properties are intentionally decoupled
 Geometry defines *where material exists*.  
 **Weight laws** define *how that geometry contributes to sectional properties*.
 
-The weight mechanism provides a general and explicit way to introduce:
+CSF defines two separate participation fields:
+
+- `w_i(z)` — the **axial/bending weight**, which scales the contribution of each polygon to area, centroid, and bending-related properties.
+- `shear_w_i(z)` — the **shear/torsion weight**, which scales the contribution of each polygon to shear- and torsion-related properties.
+
+Both fields are defined through longitudinal laws and can vary independently along the member.
+
+Together, they provide a general and explicit way to introduce:
 - material heterogeneity,
 - stiffness variation along the member,
 - staged or degraded properties,
 - embedded components and voids,
+- non-isotropic axial/shear participation,
 
 without altering the underlying geometric description.
+
 
 ---
 
