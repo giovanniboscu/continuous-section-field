@@ -9,9 +9,9 @@ Geometry defines *where material exists*.
 
 CSF defines two separate participation fields:
 
-- `w_i(z)` — the **axial/bending weight**, which scales the contribution of each polygon to area, centroid, and bending-related properties.
-- `shear_w_i(z)` — the **shear/torsion weight**, which scales the contribution of each polygon to shear- and torsion-related properties.
-
+- `w_i(z)` - the **axial/bending weight**, which scales the contribution of each polygon to area, centroid, and bending-related properties.
+- `shear_w_i(z)` - the **shear/torsion weight**, which scales the contribution of each polygon to shear- and torsion-related properties.
+a
 Both fields are defined through longitudinal laws and can vary independently along the member.
 
 Together, they provide a general and explicit way to introduce:
@@ -22,7 +22,6 @@ Together, they provide a general and explicit way to introduce:
 - non-isotropic axial/shear participation,
 
 without altering the underlying geometric description.
-
 
 ---
 
@@ -43,6 +42,31 @@ Q(z) = sum_k [ w_k(z) * Q_k(z) ]
 where `Q_k(z)` is the purely geometric contribution of polygon `k`.
 
 The term *weight* is deliberately generic.  
+It does not enforce a specific physical interpretation.
+
+---
+
+## Definition of Shear Weight
+
+Each polygonal region is also associated with a scalar shear/torsion weight field
+`shear_w_k(z)`, defined along the same longitudinal coordinate `z`.
+
+During sectional property assembly, this scalar multiplies the geometric contribution
+of the corresponding polygon to shear- and torsion-related quantities.
+
+Formally, a generic shear/torsion quantity `Q_sv(z)` is evaluated as:
+
+```
+Q_sv(z) = sum_k [ shear_w_k(z) * Q_k(z) ]
+```
+
+where `Q_k(z)` is the purely geometric contribution of polygon `k`.
+
+Unlike `w_k(z)`, the shear weight is **not assigned as a polygon attribute** in `S0`
+and `S1`. Its values at every section `z` are always computed from the applicable
+`shear_weight_laws`.
+
+The term *shear weight* is deliberately generic.  
 It does not enforce a specific physical interpretation.
 
 ---
@@ -233,7 +257,7 @@ Custom laws may reference the following quantities:
 
 ---
 
-# Shear/Torsion Weight
+## Shear/Torsion Weight
 
 ### Definition
 
@@ -353,7 +377,13 @@ shear_weight_laws:
 | :--- | :--- |
 | `w` | Axial/bending weight `w_i(z)` already evaluated at current `z` |
 | `z` | Current longitudinal coordinate |
+| `w0`, `w1` | Weights at the start and end sections |
 | `L` | Total member length |
+| `t` | Normalized coordinate in `[0, 1]` |
+| `d(i,j)` | Distance between vertices `i` and `j` at current `z` |
+| `d0(i,j)`, `d1(i,j)` | Corresponding distances at start and end |
+| `E_lookup(file)` | Interpolated value from external file (keyed on `z`) |
+| `T_lookup(file)` | Interpolated value from external file (keyed on `t`) |
 | `np` | NumPy namespace |
 
 ---
