@@ -110,6 +110,10 @@ Defining a Composite Beam
 
     section_field = ContinuousSectionField(section0=s0, section1=s1)
 
+    section_field.set_shear_weight_laws([
+        "lowerpart,lowerpart: w",
+    ])
+
     section_field.set_weight_laws([
         "lowerpart,lowerpart: w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
     ])
