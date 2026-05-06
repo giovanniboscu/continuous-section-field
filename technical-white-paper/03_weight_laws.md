@@ -1,5 +1,10 @@
 # Weight Laws and Sectional Homogenization
 
+> **Prerequisites**
+> This document assumes familiarity with the basic concepts of linear structural elasticity:
+> Young's modulus E, shear modulus G, and the isotropic relation G = E / (2(1+ν)).
+> Readers without this background are referred to a standard structural mechanics textbook before proceeding.
+
 ## Purpose of Weight Laws
 
 In CSF, geometric definition and physical properties are intentionally decoupled.
@@ -11,7 +16,7 @@ CSF defines two separate participation fields:
 
 - `w_i(z)` - the **axial/bending weight**, which scales the contribution of each polygon to area, centroid, and bending-related properties.
 - `shear_w_i(z)` - the **shear/torsion weight**, which scales the contribution of each polygon to shear- and torsion-related properties.
-a
+
 Both fields are defined through longitudinal laws and can vary independently along the member.
 
 Together, they provide a general and explicit way to introduce:
