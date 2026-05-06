@@ -405,9 +405,26 @@ The same polygon-pair logic used for `weight_laws` also applies to `shear_weight
 In CSF, `shear_weight` is the scalar participation field used for shear- and torsion-related section properties.
 
 It is written as:
+yaml
 
 ```text
-shear_w_i(z)
+  shear_weight_laws:
+    - 'iso(0.2)'
+  shear_weight_laws:
+    - 'pol,pol: 1.0 +w/5'
+```
+API
+
+```text
+
+    section_field.set_shear_weight_laws([
+        "lowerpart,lowerpart: w",
+    ])
+
+    section_field.set_weight_laws([
+        "lowerpart,lowerpart: w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
+    ])
+
 ```
 
 where `i` identifies a corresponding polygon pair between `S0` and `S1`.
