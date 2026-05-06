@@ -6423,7 +6423,7 @@ class ContinuousSectionField:
                     nameendlaw = _strip_model_suffix(self.s1.polygons[idx].name)
                     shear_law_string = f"{namestartlaw},{nameendlaw}: {self.shear_weight_laws[key]}"
                     shear_weight_laws_yaml.append(shear_law_string)      
-                hear_law_string_default = f"{namestartlaw},{nameendlaw}: {self.shear_weight_laws_default}"          
+                    shear_law_string_default = f"{namestartlaw},{nameendlaw}: {self.shear_weight_laws_default}"          
             except CSFError:
                 raise
             except Exception as e:
