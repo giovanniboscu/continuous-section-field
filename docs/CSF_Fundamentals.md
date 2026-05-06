@@ -12,7 +12,7 @@ Geometry starts from three basic elements, ordered from the smallest to the larg
 
 These are the basic geometric elements from which the section model is built.
 
-### 2. Material Building Block
+### 2. Material Building Blocks
 
 Once geometry is defined, CSF defines sectional participation through two native weight fields:
 
@@ -23,8 +23,6 @@ Once geometry is defined, CSF defines sectional participation through two native
 The two fields can be related or defined independently. `shear_w_i(z)` may be derived from `w_i(z)` through an isotropic relation, using the shortcut `iso(nu)`, where `nu` must be explicitly defined by the user. It may also be derived from `w_i(z)` through a custom user-defined law, or it may be specified as an independent field.
 
 In this way, geometry defines where each region is, while `w_i(z)` and `shear_w_i(z)` define how much that region contributes to the corresponding classes of section properties.
-
-
 
 ### 3. Vertex Details
 
@@ -76,13 +74,14 @@ Area = 9
      0         1         2         3         4         5
 
 ```
+
 The user is free to define any polygonal shape through a single ordered vertex sequence, provided that the enclosed area is greater than zero. The figure below is an example of a valid polygon under this rule.
+
 Example: The first part is traversed in counter-clockwise (CCW) direction up to point 5. From point 5 to point 6, the path continues into a second part, which is traversed in clockwise (CW) direction up to point 10. CSF automatically closes the polygon. An additional overlapping point may be introduced, but it is not required, because CSF automatically closes the polygon.
 
 Area = 8
 
 In this example, the outer area contributes +9, while the inner area contributes -1.
-
 
 - `0 -> [2, 3]`
 - `1 -> [2, 2]`
@@ -136,7 +135,7 @@ In CSF, two sections are defined:
 
 Each section has a z-coordinate. The difference between the z-coordinates of S0 and S1 defines the element length.
 
-the global element is formed as the union of the individual volumes generated between the corresponding polygons in sections `S0` and `S1`.
+The global element is formed as the union of the individual volumes generated between the corresponding polygons in sections `S0` and `S1`.
 
 For example, a T-beam can be described schematically as follows:
 
@@ -206,19 +205,15 @@ When one of these classifications is present, CSF applies the corresponding tors
 
 This guide covers the geometric construction of tagged polygons in CSF. [CSF Polygon Geometry Guide: @cell and @wall](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Polygon_Geometry_Guide.md)
 
-
 **The classification suffix is not considered part of the polygon base name.**
 
 The purpose of the 10-point polygon can now be made explicit.  
 It is a single geometric representation of what would otherwise be described as two separate entities: an outer rectangle and an inner rectangle. By encoding both within one ordered polygon stream, CSF can treat them as one tagged geometric object.
 
-
 ---
 
-
 This YAML example defines the same thin-walled closed-cell polygon in both reference sections,
-
-`S0` and `S1`, at `z = 0.0` and `z = 10.0`. 
+`S0` and `S1`, at `z = 0.0` and `z = 10.0`.
 
 The polygon is tagged as `@cell`, has weight `1.0`, and is described by a single ordered vertex sequence that contains both the outer and inner loops. The outer loop is a `3 x 3` rectangle written in counter-clockwise (CCW) order and explicitly closed by repeating the point `[2.0, 3.0]`. The inner loop is written in clockwise (CW) order, offset inward by about `0.1`, and is also explicitly closed by repeating the point `[2.1, 3.0]`. Using the same polygon name in `S0` and `S1` preserves the correspondence between the two sections and defines a prismatic thin-walled cell along the element length.
 
@@ -277,6 +272,7 @@ CSF:
             - [2.1, 2.1]
             - [2.1, 3.0]
 ```
+
 ---
 
 This example shows a simplified open thin-walled `I`-section representation in which the polygons are explicitly classified with the `@wall` suffix, and the wall thickness is assigned directly in the polygon name through the `@t=` suffix.
@@ -394,52 +390,47 @@ CSF:
             - [ 2.750, -4.430]
             - [-2.750, -4.430]
 ```
-> **Note on `@t=` suffix**
+
+> **Note on `@t=` suffix**  
 > If the `@t=` thickness suffix is specified on only one of the two reference sections (`S0` or `S1`), CSF treats that thickness value as **constant along the entire element length**.
 
+---
 
-## 7. Material Building Block
+### 7. Weight Variation and Custom Laws
 
-### 7.1 Weight Variation Between `S0` and `S1`
+#### 7.1 Weight Variation Between `S0` and `S1`
 
-From the section representation, it can be seen that each polygon has a numerical weight `w` in `S0` and a numerical weight `w` in `S1`.
+Each polygon has a numerical weight `w` in `S0` and a numerical weight `w` in `S1`. For a given polygon, the weight may therefore change from a value `w0` in `S0` to a value `w1` in `S1`.
 
-For a given polygon, the weight may therefore change from a value `w0` in `S0` to a value `w1` in `S1`.
-
-Since CSF linearly interpolates the intermediate geometry between `S0` and `S1`, the weight of that polygon is also interpolated between `w0` and `w1` at each intermediate section `z`.
-
-This means that, for the same polygon:
+Since CSF linearly interpolates the intermediate geometry between `S0` and `S1`, the weight of that polygon is also interpolated between `w0` and `w1` at each intermediate section `z`. This means that, for the same polygon:
 
 - at `S0`, the weight is `w0`
 - at `S1`, the weight is `w1`
 - at any intermediate section `z`, the weight is an interpolated value between `w0` and `w1`
 
+The value `w_i(z) = 1` is the reference participation level. Values below or above `1` reduce or increase the effective contribution of the interpolated polygon relative to that reference. It is used to model longitudinal variation of sectional participation, such as material degradation, reinforcement contribution, staged activation, or equivalent stiffness weighting along the member axis. It affects the effective area, centroid, second moments of area, and related axial/bending sectional properties.
 
-It defines how much that polygon contributes to the effective sectional properties:
-For example, the value `w_i(z) = 1` is the reference participation level. Values below or above `1` reduce or increase the effective contribution of the interpolated polygon relative to that reference.
+#### 7.2 Custom Weight Laws
 
-It is used to model longitudinal variation of sectional participation, such as material degradation, reinforcement contribution, staged activation, or equivalent stiffness weighting along the member axis.
-It affects the effective area, centroid, second moments of area, and related axial/bending sectional properties.
-
-
-### 8. Custom Weight Functions
-
-The linear interpolation between `w0` in `S0` and `w1` in `S1` is the simplest way to describe the variation of the polygon weight `w` between the two reference sections.
-
-To represent a more flexible variation law for the property `w` of a given polygon from section `S0` to section `S1`, CSF also allows the user to define custom functions written in Python.
-
-These functions are associated with a specific polygon through the pair of corresponding polygon names defined in `S0` and `S1`.
-
-In other words, for the user, the association needed to define the weight law w(z) is specified through the pair of polygon names identifying the same polygonal component in the two reference sections.
-
-This means that:
+The linear interpolation between `w0` and `w1` is the simplest way to describe the variation of `w` along the element. CSF also allows the user to define custom functions written in Python, associated with a specific polygon through the pair of corresponding polygon names in `S0` and `S1`:
 
 - a polygon is first defined in `S0` with its name
 - the corresponding polygon is then defined in `S1` with its name
 - the custom weight function is associated with that polygon pair through the two names
 
-In this way, CSF can apply a user-defined variation law to a specific polygon between `S0` and `S1`, instead of using only the default linear interpolation between `w0` and `w1`.
-In this way, CSF describes not only the geometric transition between `S0` and `S1`, but also the transition of the polygon weight along the element.
+The variation law is identified by the following syntax:
+
+```text
+<name_polygon_i_s0>,<name_polygon_i_s1>: <function of z>
+```
+
+For example:
+
+```text
+- 'flange,flange:1.0 - 0.28 * (1 - (z / 10.0)**2)'
+```
+
+In this example, the custom weight law is associated with the polygon named `flange` in `S0` and with the corresponding polygon named `flange` in `S1`.
 
 For example, a polygon may have `w0 = 1.0` at `S0` and `w1 = 1.0` at `S1`, but a user-defined law can still impose a non-linear variation along the element:
 
@@ -448,15 +439,11 @@ weight_laws:
   - "startsection,endsection: 1.0 - 0.4*(z/L)**2"
 ```
 
-### 9. Custom Shear Weight Function
+#### 7.3 Custom Shear Weight Laws
 
-The shear/torsion weight `shear_w_i(z)` is conceptually similar to the axial/bending weight `w_i(z)`: it is associated with a corresponding polygon pair between `S0` and `S1` and defines the effective shear/torsion participation of the interpolated polygon at position `z`.
+The shear/torsion weight `shear_w_i(z)` is associated with a corresponding polygon pair between `S0` and `S1` and defines the effective shear/torsion participation of the interpolated polygon at position `z`.
 
-Unlike the axial/bending weight `w`, the shear/torsion weight `shear_w` is not given by explicit polygon attributes in `S0` and `S1`.
-
-Its values, including the endpoint values at `S0` and `S1`, are computed from the applicable `shear_weight_laws`.
-
-The shear/torsion weight is used to model the longitudinal variation of shear- and torsion-related participation. It affects the effective contribution of each interpolated polygon to shear- and torsion-related sectional properties.
+Unlike the axial/bending weight `w`, `shear_w` is not given by explicit polygon attributes in `S0` and `S1`. Its values, including the endpoint values at `S0` and `S1`, are computed from the applicable `shear_weight_laws`.
 
 CSF supports the following cases:
 
@@ -495,24 +482,7 @@ In this way, CSF can describe two longitudinal participation fields: `w_i(z)` fo
 
 For more details, see [ContinuousSectionField (CSF) - Custom Weight Laws](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
 
-
-
-
----
-### Examples
-The variation law is identified by the following syntax:
-
-```text
-<name_polygon_i_s0>,<name_polygon_i_s1>: <function of z>
-```
-
-For example:
-
-```text
-- 'flange,flange:1.0 - 0.28 * (1 - (z / 10.0)**2)'
-```
-
-In this example, the custom weight law is associated with the polygon named `flange` in `S0` and with the corresponding polygon named `flange` in `S1`.
+#### 7.4 Examples
 
 Example with an isotropic shear/torsion relation:
 
@@ -567,9 +537,7 @@ CSF:
     - 'iso(0.2)'
 ```
 
-Here, `w_i(z)` is first evaluated from `weight_laws`.
-
-Then `shear_w_i(z)` is derived from the isotropic relation:
+Here, `w_i(z)` is first evaluated from `weight_laws`. Then `shear_w_i(z)` is derived from the isotropic relation:
 
 ```text
 shear_w_i(z) = w_i(z) / (2 * (1 + nu))
@@ -583,10 +551,7 @@ shear_w_i(z) = w_i(z) / 2.4
 
 The same isotropic relation is applied to all corresponding polygon pairs.
 
-
-The following example shows a non-isotropic shear/torsion weight law defined as a function of the axial/bending weight `w`.
-
-Here, `w` is first evaluated from `weight_laws` at the current section `z`. Then, `shear_weight_laws` uses that value to compute the corresponding shear/torsion participation `shear_w`.
+The following example shows a non-isotropic shear/torsion weight law defined as a function of the axial/bending weight `w`. Here, `w` is first evaluated from `weight_laws` at the current section `z`. Then, `shear_weight_laws` uses that value to compute the corresponding shear/torsion participation `shear_w`.
 
 ```yaml
 CSF:
