@@ -1,9 +1,7 @@
 # Weight Laws and Sectional Homogenization
 
-> **Prerequisites**
-> This document assumes familiarity with the basic concepts of linear structural elasticity:
-> Young's modulus E, shear modulus G, and the isotropic relation G = E / (2(1+ν)).
-> Readers without this background are referred to a standard structural mechanics textbook before proceeding.
+> **Note**
+> Readers familiar with Young's modulus E and shear modulus G will find an immediate analogy: `w(z)` maps to E and `shear_w(z)` maps to G. For readers without this background, the concepts remain accessible: `w(z)` and `shear_w(z)` are scalar fields that control how much each polygonal region contributes to the corresponding sectional properties.
 
 ## Purpose of Weight Laws
 
