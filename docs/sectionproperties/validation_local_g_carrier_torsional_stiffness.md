@@ -5,13 +5,15 @@
 
 ## 1. Background
 
-The Python library `sectionproperties` computes the Saint-Venant torsional constant *J* by solving Prandtl's stress-function (warping) problem via finite elements. For composite sections, the library uses each material's Young's modulus *E*ᵢ as the local carrier, yielding a weighted quantity *EJ* rather than the torsionally relevant *GJ*.
+The Python library `sectionproperties` computes the Saint-Venant torsional constant *J* by solving Prandtl's stress-function (warping) problem via finite elements. For composite sections, the library uses each material's Young's modulus *E*ᵢ as the local carrier, yielding a weighted quantity *EJ* rather than the torsionally relevant *GJ*. This behaviour is stated explicitly in the [Analysis documentation](https://sectionproperties.readthedocs.io/en/stable/user_guide/analysis.html):
 
-The library provides a documented global correction:
+> *"If materials are specified, the values calculated for the torsion constant … are elastic modulus weighted."*
+
+The composite torsional rigidity *EJ* is retrieved via [`get_ej()`](https://sectionproperties.readthedocs.io/en/stable/gen/sectionproperties.analysis.section.Section.html). The library also exposes [`get_e_eff()`](https://sectionproperties.readthedocs.io/en/stable/gen/sectionproperties.analysis.section.Section.html) and [`get_g_eff()`](https://sectionproperties.readthedocs.io/en/stable/gen/sectionproperties.analysis.section.Section.html) to compute area-averaged effective moduli, from which a global correction is derived:
 
 $$GJ_\text{doc} = \frac{g_\text{eff}}{e_\text{eff}} \cdot EJ$$
 
-This multiplier is a single scalar ratio computed from area-averaged effective moduli and does not account for the spatial distribution of *G*ᵢ across the section. For sections where the stiffer material is concentrated in a specific region, the approximation introduces a non-negligible error.
+This multiplier is a single scalar ratio and does not account for the spatial distribution of *G*ᵢ across the section. For sections where the stiffer material is concentrated in a specific region, the approximation introduces a non-negligible error.
 
 ---
 
@@ -83,6 +85,10 @@ The documented global correction ($g_\text{eff}/e_\text{eff}$ scaling) introduce
 ## 6. Conclusion
 
 Substituting *G*ᵢ for *E*ᵢ in the `sectionproperties` material definition is a correct and sufficient procedure to compute *GJ* for composite cross-sections. The approach is verified against an independent `skfem` implementation of the warping problem, with agreement better than 0.02 % for both a symmetric and an asymmetric material layout. The library's documented global correction should not be used when an accurate spatial distribution of *GJ* is required.
+
+---
+
+*Verification performed with `sectionproperties` and `scikit-fem`. Reference script: `skitfem_comparison.py`.*
 
 ---
 ```
