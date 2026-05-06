@@ -495,7 +495,7 @@ In this way, CSF keeps the same geometric and polygon-pair structure, while allo
 
 ---
 
-### 🛡️ Numerical Robustness & Validation Rules
+# 🛡️ Numerical Robustness & Validation Rules
 
 When defining a custom law string, the mathematical engine enforces strict validation to ensure the integrity of the structural model. Your formulas must adhere to the following constraints:
 
