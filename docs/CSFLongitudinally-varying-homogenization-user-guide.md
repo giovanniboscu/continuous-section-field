@@ -575,6 +575,7 @@ section_field.set_weight_laws([
 ])
 ```
 ### Isotropic shortcut vs explicit expression
+
 An isotropic shear weight law can also be written explicitly as a Python expression
 instead of using the `iso(nu)` shortcut. For `nu = 0.2`, the two forms are equivalent:
 
@@ -591,7 +592,7 @@ The numerical result is identical. However, the compact `iso(nu)` form is prefer
 because it allows CSF to recognise the law as an isotropic relation when the section
 is exported to CSV. In that case, the Poisson's ratio is also reported in the output.
 When the explicit expression is used instead, CSF treats it as a generic custom law
-and cannot extract ν from the expression — the Poisson's ratio is therefore not
+and cannot extract ν from the expression,  the Poisson's ratio is therefore not
 reported.
 
 This distinction may be relevant when the exported section properties are used with
