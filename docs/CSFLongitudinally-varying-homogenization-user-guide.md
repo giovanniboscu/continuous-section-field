@@ -16,7 +16,8 @@ For example, the following law assigns a smooth variation to the component defin
 section_field.set_weight_laws([
     "lowerpart,lowerpart: w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
 ])
-```a
+
+```
 
 The same kind of law can also be defined in an action YAML file. For example:
 
