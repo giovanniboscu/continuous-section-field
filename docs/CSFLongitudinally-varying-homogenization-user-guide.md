@@ -205,17 +205,9 @@ Each polygon requires only the axial/bending weight `w` to be specified at defin
 shear_w_i(z) = w_i(z)      # default, equivalent to iso(-0.5)
 ```
 
-In elastic terms this is equivalent to assuming `G = E` — a simplification that is acceptable in many cases and requires no additional input from the user.
+In elastic terms this is equivalent to assuming `G = E` , a simplification that is acceptable in many cases and requires no additional input from the user.
 
 This default can be overridden for any polygon pair by explicitly defining `weight_laws` and `shear_weight_laws`.
-
-```text
-shear_w_i(z) = w_i(z)      # default, equivalent to iso(-0.5)
-```
-
-In elastic terms this is equivalent to assuming `G = E` — a simplification that is acceptable in many cases and requires no additional input from the user.
-
-This polygon-level default can be overridden for any polygon pair by explicitly defining `weight_laws` and `shear_weight_laws`.
 
 # What is `weight`?
 
