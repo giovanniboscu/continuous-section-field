@@ -485,13 +485,11 @@ A shear/torsion law is associated with a corresponding polygon pair between `S0`
 
 The geometric composition is still defined by the section geometry. The shear/torsion law only defines the shear/torsion participation field `shear_w_i(z)` for each interpolated polygon.
 
-Unlike the axial/bending weight `w_i(z)`, the shear/torsion weight does not have user-defined base values written inside the polygons of `S0` and `S1`.
+Unlike the axial/bending weight `w_i(z)`, the shear/torsion weight does not have user-defined base values written inside the polygons of `S0` and `S1` ( (as already described  before)
 
-Instead, `shear_w_i(z)` is always computed from a function.
+Instead, `shear_w_i(z)` is always computed from a function. The values of shear_w_i(z) at every section z are obtained by evaluating the applicable shear_weight_laws.
 
-This means that the values of `shear_w_i(z)` at `S0`, at `S1`, and at every intermediate section are obtained by evaluating the applicable `shear_weight_laws`.
-
-A shear/torsion law can be defined globally, without polygon names:
+Unlike `weight_laws`, a shear/torsion law can be defined globally, without polygon names:
 
 ```yaml
 shear_weight_laws:
