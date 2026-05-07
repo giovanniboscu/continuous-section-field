@@ -132,9 +132,9 @@ Consequently, when you later define a weight law using polygon names (names whic
 
 
 > **Polygon**  
-> For the user, polygon names are the way to refer to components when defining weight laws `w(z)`.  
+> For the user, polygon names are the way to refer to components when defining weight laws `w(z)` and `shear_weight_laws(z)`.  
 > Internally, the geometric pairing between `S0` and `S1` is established by polygon order.  
-> In a consistent model, these two refer to the same polygonal component.
+> In the CSF model, these two refer to the same polygonal component.
 >
 > **Note**  
 > Mismatched polygon names are not accepted at input stage.  
@@ -182,20 +182,40 @@ CSF:
 
 
 
-Example
+Example program API
 ```
     # --- SECTION AND FIELD DEFINITION ---
     L = 10.0
     s0 = Section(polygons=(poly_bottom_start, poly_top_start), z=0.0)
     s1 = Section(polygons=(poly_bottom_end,  poly_top_end),  z=L)
-
-
 ```
+
+> **Note on creation order**  
+> The pairing is determined by the **position in the tuple passed to `Section`**, not by the order in which the `Polygon` objects were instantiated in the code. In this example, `poly_bottom_start` pairs with `poly_bottom_end` because both are at position 0 in their respective tuples, regardless of when they were created.
 ---
 
 ## The Default Behavior: Linear Variation
 
-By default, the variation of weight between the start and end sections is linear. If you do not specify a custom law, the software automatically interpolates the value based on the longitudinal position z.
+
+**Polygon-level defaults**
+
+Each polygon requires only the axial/bending weight `w` to be specified at definition time. The shear/torsion weight `shear_w` does not need to be assigned: by default it is derived from `w`, corresponding to the isotropic relation with `nu = -0.5`:
+
+```text
+shear_w_i(z) = w_i(z)      # default, equivalent to iso(-0.5)
+```
+
+In elastic terms this is equivalent to assuming `G = E` — a simplification that is acceptable in many cases and requires no additional input from the user.
+
+This default can be overridden for any polygon pair by explicitly defining `weight_laws` and `shear_weight_laws`.
+
+```text
+shear_w_i(z) = w_i(z)      # default, equivalent to iso(-0.5)
+```
+
+In elastic terms this is equivalent to assuming `G = E` — a simplification that is acceptable in many cases and requires no additional input from the user.
+
+This polygon-level default can be overridden for any polygon pair by explicitly defining `weight_laws` and `shear_weight_laws`.
 
 # What is `weight`?
 
