@@ -1,22 +1,4 @@
----
-title: 'CSF: Continuous Section Fields for Non-Prismatic and Axially Graded Structural Members'
-tags:
-  - Python
-  - structural engineering
-  - cross-section properties
-  - non-prismatic members
-  - finite element preprocessing
-  - wind turbines
-authors:
-  - name: Giovanni Boscu
-    orcid: 0000-0000-0000-0000
-    affiliation: 1
-affiliations:
-  - name: Independent Researcher, Sardinia, Italy
-    index: 1
-date: 2026-05-08
-bibliography: paper.bib
----
+
 
 # Summary
 
