@@ -55,7 +55,6 @@
 
 | File | Description |
 |------|-------------|
-| [CSFLongitudinally-varying-homogenization-user-guide.md](CSFLongitudinally-varying-homogenization-user-guide.md) | Technical guide for defining custom weight laws `w(z)`: conventions, syntax, available variables, lookup functions (`E_lookup`, `T_lookup`), validation rules, and OpenSees export mapping. |
 | [weight_law_example.md](weight_law_example.md) | Library of ready-to-use `w(z)` and `w(z,t)` functions in NumPy syntax: linear, polynomial, step, periodic, Gaussian, decay, lookup-based, and hybrid laws. |
 
 ---
