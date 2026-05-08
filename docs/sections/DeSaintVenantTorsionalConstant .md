@@ -7,8 +7,8 @@ In the current CSF implementation, `J_sv_cell` and `J_sv_wall` are computed from
 
 > When presenting a cross-section, the CSF reports the De Saint-Venant torsional constant $J$ broken down into **two separate contributions**:
 >
-> - $J_{\mathrm{sv,cell}}$ — contribution from all closed cells (Bredt formula)
-> - $J_{\mathrm{sv,wall}}$ — contribution from all open thin walls
+> - $J_{\mathrm{sv,cell}}$ - contribution from all closed cells (Bredt formula)
+> - $J_{\mathrm{sv,wall}}$ - contribution from all open thin walls
 >
 > These two quantities are reported **individually** in the section output, so the user can inspect the relative weight of each contribution.
 >
