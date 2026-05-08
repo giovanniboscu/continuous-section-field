@@ -416,8 +416,7 @@ The same polygon-pair logic used for `weight_laws` also applies to `shear_weight
 
 ## What is `shear_weight`?
 
-In CSF, `shear_weight` is the scalar participation field used for shear- and torsion-related section properties.
-
+In CSF, `shear_weight` is a user-defined function acting as a multiplicative factor on torsional properties.
 It is written as:
 yaml
 
