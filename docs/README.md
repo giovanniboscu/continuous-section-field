@@ -1,7 +1,7 @@
 
 # CSF Documentation
  
-## Start here: these guides cover everything you need to work with CSF effectively.
+## Overview
 
 
 | Resource | Description |
