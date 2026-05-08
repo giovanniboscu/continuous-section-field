@@ -310,6 +310,7 @@ This means the effective contribution of an inclusion is always computed relativ
 
 ```text
 W_eff = W_child - W_parent
+```
 ---
 
 ### Why "Weight" and not "E"?
