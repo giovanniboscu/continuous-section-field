@@ -409,7 +409,7 @@ Intermediate values are interpolated linearly.
 
 `T_lookup(file)` returns the value interpolated at the current normalized coordinate `t` for the active integration point.
 
-# Shear Weight Laws in Composed Sections
+# Shear Weight Laws in Sections
 
 The same polygon-pair logic used for `weight_laws` also applies to `shear_weight_laws`.
 
