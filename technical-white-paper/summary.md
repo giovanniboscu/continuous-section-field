@@ -84,7 +84,7 @@ the established `sectionproperties` ecosystem. These materials allow other
 researchers to install the package, inspect the model assumptions, reproduce the
 reported section-property fields, and adapt the workflow to tapered, graded,
 composite, repaired, or otherwise spatially varying beam-like members.
-structural-analysis tools.
+
 
 # AI usage disclosure
 
