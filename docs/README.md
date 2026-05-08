@@ -70,7 +70,7 @@
 
 ---
 
-## sectionproperties Integration (csf_sp & sp_csf)
+##  Integration - sectionproperties to CSF and viceversa
 
 | File | Description |
 |------|-------------|
