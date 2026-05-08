@@ -66,23 +66,16 @@ the established `sectionproperties` ecosystem. These materials allow other
 researchers to install the package, inspect the model assumptions, reproduce the
 reported section-property fields, and adapt the workflow to tapered, graded,
 composite, repaired, or otherwise spatially varying beam-like members.
-
-
-# AI usage disclosure
-
-OpenAI ChatGPT was used to assist with documentation drafting, paper wording,
-code-development support, code review and editing of explanatory
-material. AI assistance was used for drafting, refactoring suggestions,
-copy-editing, and technical phrasing, but not for making the core scientific,
-architectural, validation, or design decisions.
-
-All AI-assisted text, code suggestions, and technical content were reviewed,
-edited, tested, validated, and approved by the author. The author remains fully
-responsible for the software implementation, manuscript content, validation
-results, licensing, originality, and scientific claims.
+.
 
 # Acknowledgements
 
 The author thanks the developers of `sectionproperties` [@vandenbergh2023sectionproperties] for providing the open finite-element section-analysis backend used by the CSF integration workflow.
+
+
+
+># AI usage disclosure
+>
+>ChatGPT was used for drafting assistance, copy-editing, and code-review suggestions. All AI-generated content was reviewed, validated, and approved by the author, who retains full responsibility for the scientific claims, >software implementation, and manuscript
 
 # References
