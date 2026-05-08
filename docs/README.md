@@ -37,16 +37,16 @@
 
 | File | Description |
 |------|-------------|
-| [api.md](api.md) | Complete Python API reference: geometry primitives (`Pt`, `Polygon`, `Section`), `ContinuousSectionField` and all its methods, section analysis functions, polygon utilities, torsion routines, volume integration, element stiffness assembly, export functions, and weight law utilities. |
+| [CSF API](api.md) | Complete Python API reference: geometry primitives (`Pt`, `Polygon`, `Section`), `ContinuousSectionField` and all its methods, section analysis functions, polygon utilities, torsion routines, volume integration, element stiffness assembly, export functions, and weight law utilities. |
 | [programmer-guide](programmer-guide) |This is a practical programmer guide for CSF.. |
-| [user_guide.md](user_guide.md) | Python API user guide: constructing `Polygon`, `Section`, and `ContinuousSectionField`, retrieving intermediate sections, and computing section properties along Z. |
+| [user_guide](user_guide.md) | Python API user guide: constructing `Polygon`, `Section`, and `ContinuousSectionField`, retrieving intermediate sections, and computing section properties along Z. |
 
 
 ## Geometry
 
 | File | Description |
 |------|-------------|
-| [CSF_Polygon_Geometry_Guide.md](CSF_Polygon_Geometry_Guide.md) | Geometric construction of tagged polygons: `@cell` (closed thin-walled cell, two-loop encoding) and `@wall` (open thin-walled strip, single loop). Includes YAML examples and checklists. |
+| [CSF_Polygon_Geometry_Guide](CSF_Polygon_Geometry_Guide.md) | Geometric construction of tagged polygons: `@cell` (closed thin-walled cell, two-loop encoding) and `@wall` (open thin-walled strip, single loop). Includes YAML examples and checklists. |
 | [GeneratingSectionGeometryWithAnLLM.md](GeneratingSectionGeometryWithAnLLM.md) | Workflows for generating CSF-ready YAML geometry using an LLM: from images, analytical descriptions, and parametric scripts. Includes prompt examples and vertex resolution guidelines. |
 
 ---
@@ -55,7 +55,7 @@
 
 | File | Description |
 |------|-------------|
-| [weight_law_example.md](weight_law_example.md) | Library of ready-to-use `w(z)` and `w(z,t)` functions in NumPy syntax: linear, polynomial, step, periodic, Gaussian, decay, lookup-based, and hybrid laws. |
+| [weight_law_example](weight_law_example.md) | Library of ready-to-use `w(z)` and `w(z,t)` functions in NumPy syntax: linear, polynomial, step, periodic, Gaussian, decay, lookup-based, and hybrid laws. |
 
 ---
 
@@ -93,9 +93,9 @@ The following files are present in this folder but not covered in this index:
 
 | File | Description |
 |------|-------------|
-| `core_assumption.md` | - |
+| `core_assumption` | - |
 | `report.md` | - |
-| `references.md` | - |
+| `references` | - |
 | `csf_2dxf_instrucions.md` | - |
 
 ### Subfolders
