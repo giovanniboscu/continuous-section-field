@@ -7,10 +7,10 @@
 | Resource | Description |
 |----------|-------------|
 | [CSF Building Blocks Fundamentals](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md) | CSF Geometry, Sections, Polygon Tags, and Weight Laws Guide |
-| [CSFLongitudinally-varying-homogenization-user-guide.md](CSFLongitudinally-varying-homogenization-user-guide.md) | Technical guide for defining custom weight laws `w(z)`: conventions, syntax, available variables, lookup functions (`E_lookup`, `T_lookup`), validation rules, and OpenSees export mapping. |
+| [CSFLongitudinally-varying-homogenization-user-guide](CSFLongitudinally-varying-homogenization-user-guide.md) | Technical guide for defining custom weight laws `w(z)`: conventions, syntax, available variables, lookup functions (`E_lookup`, `T_lookup`), validation rules, and OpenSees export mapping. |
 | [CSF Programmer Guide](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/programmer-guide) | Python API reference - developer-oriented. |
 | [CSF Tutorial (YAML workflow)](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md) | Step-by-step YAML workflow . no Python programming required. |
-| [Quick Start Guide](QuickStartGuide.md) | End-to-end practical workflow: geometry file, actions file, degradation law `w(z)`, running CSF, and interpreting outputs. Start here. |
+| [Quick Start Guide](QuickStartGuide) | End-to-end practical workflow: geometry file, actions file, degradation law `w(z)`, running CSF, and interpreting outputs. Start here. |
 | [writegeometry_rio_v2 - User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/writegeometry_rio_v2_guide.md) | CLI reference for the parametric geometry generator: shape families (circle, rounded rectangle, sharp rectangle), rebar rows, degradation weight laws, twist, and worked examples. |
 
 
