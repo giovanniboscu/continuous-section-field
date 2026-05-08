@@ -155,6 +155,6 @@ Not valid when:
 ## 8. References
 
 - Timoshenko, S.P. & Goodier, J.N. — *Theory of Elasticity*, McGraw-Hill
-- Vlasov, V.Z. — *Thin-Walled Elastic Beams*, Israel Program for Scientific Translations
-- Pilkey, W.D. — *Analysis and Design of Elastic Beams*, Wiley
-- EN 1993-1-3 — Eurocode 3, Annex C (thin-walled open sections)
+- Vlasov, V.Z. - *Thin-Walled Elastic Beams*, Israel Program for Scientific Translations
+- Pilkey, W.D. - *Analysis and Design of Elastic Beams*, Wiley
+- EN 1993-1-3 - Eurocode 3, Annex C (thin-walled open sections)
