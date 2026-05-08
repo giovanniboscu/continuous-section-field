@@ -58,11 +58,18 @@ The torsion workflow is stratified. CSF includes analytical paths for thin-walle
 
 # Research impact statement
 
-CSF provides reproducible materials for modelling non-prismatic and axially graded members from declarative geometry and participation laws. The current workflow supports direct sampling of section properties, two- and three-dimensional visual inspection, selected or full sectional reports, and solver-oriented exports. The YAML action interface makes these workflows repeatable without requiring users to write analysis scripts for each case.
+CSF is currently a single-author open-source project. Its significance lies in the
+research workflow it enables: representing non-prismatic members as continuous
+fields of geometry and sectional participation, and exporting solver-ready
+section-property data from that representation. The package is intended for
+researchers working on tapered, graded, composite, or otherwise spatially varying
+beam-like members, where repeated single-section analyses are insufficient or
+cumbersome.
 
-The package is positioned for research workflows where sectional data must be generated before running a beam or aeroelastic solver. Examples include wind turbine towers requiring distributed stiffness and mass properties, non-prismatic beam elements in OpenSees, and comparative studies where a geometric member definition must be sampled at consistent stations. The `sectionproperties` integration also allows CSF-generated sections to be evaluated with an established finite-element section-analysis backend.
-
-Near-term scholarly significance is supported by the explicit modelling capability that CSF adds to the existing ecosystem: continuous geometry, independent axial/bending and shear/torsion participation fields, nested polygon composition, and solver-ready station export in one reproducible workflow. These features address a recurring preprocessing gap in structural simulations involving tapered, graded, repaired, or composite members.
+Rather than claiming an established user community, this submission emphasizes
+the software contribution itself: a reusable modelling abstraction, documented
+Python and YAML interfaces, validation examples, and integrations with existing
+structural-analysis tools.
 
 # AI usage disclosure
 
