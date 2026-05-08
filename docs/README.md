@@ -39,7 +39,7 @@
 |------|-------------|
 | [CSF API](api.md) | Complete Python API reference: geometry primitives (`Pt`, `Polygon`, `Section`), `ContinuousSectionField` and all its methods, section analysis functions, polygon utilities, torsion routines, volume integration, element stiffness assembly, export functions, and weight law utilities. |
 | [programmer-guide](programmer-guide) |This is a practical programmer guide for CSF.. |
-| [user_guide](user_guide.md) | Python API user guide: constructing `Polygon`, `Section`, and `ContinuousSectionField`, retrieving intermediate sections, and computing section properties along Z. |
+| [CSF - Modeling and Sectional Analysis] | Python API user guide: constructing `Polygon`, `Section`, and `ContinuousSectionField`, retrieving intermediate sections, and computing section properties along Z. |
 
 
 ## Geometry
@@ -66,7 +66,7 @@
 | [Opensees on win11](opensees_win11_setup.md) |OpenSeesPy on Win11 with a Python 3.12 virtual environment |
 | [OpenSeesIntegrationNumericalStrategy.md](OpenSeesIntegrationNumericalStrategy.md) | Detailed numerical strategy for consuming CSF station data in OpenSees: export file format (`geometry.tcl`), material conventions, centroid axis topology, integration strategies (member-level Lobatto vs segmented endpoint), and torsion export policy. |
 | [Solver sap200 and generic](write_sap2000_template_pack.md) | write_sap2000_template_pack exports a CSF (Continuous Section Field) model to a structured plain-text file that, although organized as a SAP2000 template pack, also contains information usable by other beam solvers such as OpenSeesPy, as well as for section verification and quality review. |
-| [write_opensees_builder_tcl.md](write_opensees_builder_tcl.md) | Documentation for `write_opensees_builder_tcl.py`: generates a standalone OpenSees Tcl script that reads `geometry.tcl` as a data file and builds a 3D beam model without requiring OpenSeesPy. Covers material modes, Gauss–Lobatto segment behavior, and limitations. |
+| [write_opensees_builder_tcl](write_opensees_builder_tcl.md) | Documentation for `write_opensees_builder_tcl.py`: generates a standalone OpenSees Tcl script that reads `geometry.tcl` as a data file and builds a 3D beam model without requiring OpenSeesPy. Covers material modes, Gauss–Lobatto segment behavior, and limitations. |
 
 
 ---
