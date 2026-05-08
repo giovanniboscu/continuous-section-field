@@ -30,14 +30,6 @@
 
 
 
-
-| File | Description |
-|------|-------------|
-| [csftutorial.md](csftutorial.md) | Step-by-step YAML tutorial using `CSFActions.py` - no Python coding required. Covers installation, file structure, station sets, output rules, weight laws, and all available actions with examples. |
-| [QuickStartGuide.md](QuickStartGuide.md) | End-to-end practical workflow: geometry file, actions file, degradation law `w(z)`, running CSF, and interpreting outputs. Start here. |
-
-
-
 ## Actions Runner (No-Code Workflow)
 
 | File | Description |
