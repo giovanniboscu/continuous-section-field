@@ -58,17 +58,32 @@ The torsion workflow is stratified. CSF includes analytical paths for thin-walle
 
 # Research impact statement
 
-CSF is currently a single-author open-source project. Its significance lies in the
-research workflow it enables: representing non-prismatic members as continuous
-fields of geometry and sectional participation, and exporting solver-ready
-section-property data from that representation. The package is intended for
-researchers working on tapered, graded, composite, or otherwise spatially varying
-beam-like members, where repeated single-section analyses are insufficient or
-cumbersome.
+CSF is currently a single-author open-source project. Its research significance
+does not rely on an established external user community, but on the reproducible
+modelling workflow it provides for structural members whose sectional properties
+vary along the longitudinal axis.
 
-Rather than claiming an established user community, this submission emphasizes
-the software contribution itself: a reusable modelling abstraction, documented
-Python and YAML interfaces, validation examples, and integrations with existing
+The software has been developed and tested through reference research workflows
+in which continuous section-property fields are generated from evolving
+polygonal geometry and longitudinal participation laws. These workflows include
+non-prismatic beam and tower models, solver-oriented station sampling, OpenSees
+export, OpenFAST/BModes-oriented tower-property generation, and comparisons with
+analytical or finite-element section-property calculations.
+
+CSF contributes a reusable modelling abstraction rather than a one-off analysis
+script: a member is represented as a continuous field composed of geometry,
+axial/bending participation `w_i(z)`, and shear/torsion participation
+`shear_w_i(z)`. This makes it possible to generate consistent tabular inputs for
+downstream beam, tower, and aeroelastic solvers from a single declarative
+section model.
+
+Near-term scholarly significance is supported by the reproducible reference
+materials distributed with the package: documented YAML workflows, Python API
+examples, validation cases, solver export examples, and interoperability with
+the established `sectionproperties` ecosystem. These materials allow other
+researchers to install the package, inspect the model assumptions, reproduce the
+reported section-property fields, and adapt the workflow to tapered, graded,
+composite, repaired, or otherwise spatially varying beam-like members.
 structural-analysis tools.
 
 # AI usage disclosure
