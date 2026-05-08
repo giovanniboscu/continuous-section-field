@@ -88,7 +88,16 @@ structural-analysis tools.
 
 # AI usage disclosure
 
-Artificial intelligence tools were used to support the preparation of the project documentation and parts of the software development workflow. All generated text, code suggestions, and technical content were reviewed, edited, validated, and approved by the author, who remains fully responsible for the final manuscript, the software implementation, and the reported results.
+OpenAI ChatGPT was used to assist with documentation drafting, paper wording,
+code-development support, code review and editing of explanatory
+material. AI assistance was used for drafting, refactoring suggestions,
+copy-editing, and technical phrasing, but not for making the core scientific,
+architectural, validation, or design decisions.
+
+All AI-assisted text, code suggestions, and technical content were reviewed,
+edited, tested, validated, and approved by the author. The author remains fully
+responsible for the software implementation, manuscript content, validation
+results, licensing, originality, and scientific claims.
 
 # Acknowledgements
 
