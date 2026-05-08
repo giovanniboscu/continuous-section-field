@@ -54,7 +54,7 @@ The total closed-cell contribution is:
 
 $$J_{\mathrm{sv,cell}} = \sum_{k=1}^{n_c} J_{\mathrm{sv,cell},k}$$
 
-### 2.2 Open-wall contribution — $J_{\mathrm{sv,wall}}$
+### 2.2 Open-wall contribution - $J_{\mathrm{sv,wall}}$
 
 Each thin open wall $i$ (slender rectangle) contributes:
 
