@@ -55,7 +55,7 @@
 
 | File | Description |
 |------|-------------|
-| [weight_law_example](weight_law_example.md) | Library of ready-to-use `w(z)` and `w(z,t)` functions in NumPy syntax: linear, polynomial, step, periodic, Gaussian, decay, lookup-based, and hybrid laws. |
+| [weight_law_example](weight_law_example) | Library of ready-to-use `w(z)` and `w(z,t)` functions in NumPy syntax: linear, polynomial, step, periodic, Gaussian, decay, lookup-based, and hybrid laws. |
 
 ---
 
