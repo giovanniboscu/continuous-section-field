@@ -39,7 +39,7 @@
 |------|-------------|
 | [CSF API](api.md) | Complete Python API reference: geometry primitives (`Pt`, `Polygon`, `Section`), `ContinuousSectionField` and all its methods, section analysis functions, polygon utilities, torsion routines, volume integration, element stiffness assembly, export functions, and weight law utilities. |
 | [programmer-guide](programmer-guide) |This is a practical programmer guide for CSF.. |
-| [programmer-guide](user_guide.md)  | Python API user guide: constructing `Polygon`, `Section`, and `ContinuousSectionField`, retrieving intermediate sections, and computing section properties along Z. |
+| [Modeling and Sectional Analysis](user_guide.md)  | Python API user guide: constructing `Polygon`, `Section`, and `ContinuousSectionField`, retrieving intermediate sections, and computing section properties along Z. |
 
 
 ## Geometry
