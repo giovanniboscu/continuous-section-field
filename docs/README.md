@@ -47,7 +47,7 @@
 | File | Description |
 |------|-------------|
 | [CSF_Polygon_Geometry_Guide](CSF_Polygon_Geometry_Guide.md) | Geometric construction of tagged polygons: `@cell` (closed thin-walled cell, two-loop encoding) and `@wall` (open thin-walled strip, single loop). Includes YAML examples and checklists. |
-| [GeneratingSectionGeometryWithAnLLM.md](GeneratingSectionGeometryWithAnLLM.md) | Workflows for generating CSF-ready YAML geometry using an LLM: from images, analytical descriptions, and parametric scripts. Includes prompt examples and vertex resolution guidelines. |
+| [GeneratingSectionGeometryWithAnLLM](GeneratingSectionGeometryWithAnLLM.md) | Workflows for generating CSF-ready YAML geometry using an LLM: from images, analytical descriptions, and parametric scripts. Includes prompt examples and vertex resolution guidelines. |
 
 ---
 
