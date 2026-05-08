@@ -1,4 +1,4 @@
-# CSF User Guide - Modeling and Sectional Analysis
+# CSF - Modeling and Sectional Analysis
 
 Continuous Section Field (CSF) models structural members whose cross-section **varies along the longitudinal axis `Z`.
 CSF is built around a simple idea:
