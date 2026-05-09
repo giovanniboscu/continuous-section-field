@@ -34,9 +34,23 @@ Why this matters
 This policy preserves general nesting for homogenized geometric properties and
 fixes an important failure mode: a zero-weight void may disappear from the SP
 view when it touches another region exactly on the boundary, especially in deep
- nested topologies. The bridge therefore computes local domains for *all* nodes,
+nested topologies. The bridge therefore computes local domains for *all* nodes,
 not only for active ones.
 
+Torsion carrier policy
+----------------------
+sectionproperties reports composite Saint-Venant torsion as ``e.j`` because its
+torsion assembly is weighted by the value stored as ``elastic_modulus``.
+
+For the native sectionproperties run, CSF maps the axial/bending carrier to
+``elastic_modulus``. The native ``sec.get_ej()`` result is therefore reported as
+the sectionproperties native ``e.j`` result.
+
+For CSF torsion, this bridge can also perform a dedicated torsion-only carrier
+run where the value passed to sectionproperties as ``elastic_modulus`` is the
+resolved CSF shear carrier ``G_i`` / ``shear_w_i``. The resulting
+sectionproperties ``e.j`` value from that second run is reported as a CSF
+torsion-carrier result, not as a native sectionproperties ``g.j`` output.
 """
 
 from __future__ import annotations
@@ -44,14 +58,12 @@ from __future__ import annotations
 import argparse
 import csv
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import yaml
-from shapely.geometry import GeometryCollection as ShapelyGeometryCollection
 from shapely.geometry import Polygon as ShapelyPolygon
-from shapely.geometry import MultiPolygon as ShapelyMultiPolygon
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import unary_union
 
@@ -70,7 +82,8 @@ from csf.io.csf_rough_validator import validate_text
 TOKEN_CELL = "@cell"
 TOKEN_CLOSED = "@closed"
 TOKEN_WALL = "@wall"
-verbose=False
+verbose = False
+
 
 @dataclass(frozen=True)
 class Row:
@@ -96,6 +109,7 @@ class PolygonInput:
     idx_container: Optional[int]
     name: str
     w: float
+    shear_w: Optional[float]
     poisson: float
     is_cell: bool
     vertices: List[Tuple[float, float]]
@@ -119,7 +133,6 @@ def _parse_optional_int(s: str) -> Optional[int]:
     if s == "":
         return None
     return int(s)
-
 
 
 def _parse_optional_float(s: str) -> Optional[float]:
@@ -146,6 +159,35 @@ def _require_defined_poisson(idx_polygon: int, value: Any) -> float:
     return poisson
 
 
+def _read_optional_shear_w(idx_polygon: int, poly: Any) -> Optional[float]:
+    """
+    Read the sampled CSF shear carrier when it is explicitly available.
+
+    No default value is invented here. If the sampled polygon does not expose a
+    shear carrier, the torsion-carrier run is reported as unavailable.
+    """
+    for attr_name in ("shear_weightabs", "shear_w"):
+        if not hasattr(poly, attr_name):
+            continue
+
+        value = getattr(poly, attr_name)
+        if value is None:
+            return None
+
+        try:
+            shear_w = float(value)
+        except Exception as exc:
+            raise SystemExit(
+                f"Not applicable: idx_polygon={idx_polygon} has invalid {attr_name}={value!r}."
+            ) from exc
+
+        if math.isnan(shear_w):
+            return None
+
+        return shear_w
+
+    return None
+
 
 def strip_wall_cell_suffix(name: str) -> str:
     """
@@ -169,7 +211,6 @@ def strip_wall_cell_suffix(name: str) -> str:
         return name
 
     return name[: min(idxs)]
-
 
 
 def _name_has_cell_tag(name: str) -> bool:
@@ -286,13 +327,11 @@ def _read_geometry_export_blocks(text: str) -> Dict[float, List[Row]]:
     return blocks
 
 
-
 def _group_rows_by_polygon(rows: Iterable[Row]) -> Dict[int, List[Row]]:
     grouped: Dict[int, List[Row]] = {}
     for r in rows:
         grouped.setdefault(r.idx_polygon, []).append(r)
     return grouped
-
 
 
 def _rows_to_polygon_inputs(rows: List[Row]) -> Dict[int, PolygonInput]:
@@ -311,19 +350,21 @@ def _rows_to_polygon_inputs(rows: List[Row]) -> Dict[int, PolygonInput]:
         if group_sorted[0].w is None:
             raise ValueError(f"idx_polygon={idx_polygon}: missing w value.")
         w = float(group_sorted[0].w)
+
         shear_w = group_sorted[0].shear_w
+
         poisson_raw = group_sorted[0].poisson
         if poisson_raw is None:
             raise SystemExit(
                 f"Not applicable: idx_polygon={idx_polygon} is not isotropic; missing poisson."
             )
         poisson = _require_defined_poisson(idx_polygon, poisson_raw)
-        if verbose:
-          print(
-              f"DEBUG poisson CSV idx={idx_polygon} name={joined_name} "
-              f"w={w} poisson={poisson}"
-          )
 
+        if verbose:
+            print(
+                f"DEBUG poisson CSV idx={idx_polygon} name={joined_name} "
+                f"w={w} shear_w={shear_w} poisson={poisson}"
+            )
 
         for r in group_sorted[1:]:
             if r.idx_container != idx_container:
@@ -356,13 +397,13 @@ def _rows_to_polygon_inputs(rows: List[Row]) -> Dict[int, PolygonInput]:
             idx_container=idx_container,
             name=joined_name,
             w=w,
+            shear_w=shear_w,
             poisson=poisson,
             is_cell=is_cell,
             vertices=vertices,
         )
 
     return result
-
 
 
 def _select_z_block(blocks: Dict[float, List[Row]], requested_z: Optional[float]) -> Tuple[float, List[Row]]:
@@ -388,7 +429,6 @@ def _format_text_block(header: str, lines: List[str]) -> str:
     out = [header]
     out.extend(str(line) for line in lines)
     return "\n".join(out)
-
 
 
 def _format_reader_issues(issues: List[Any], header: str) -> str:
@@ -422,7 +462,6 @@ def _format_reader_issues(issues: List[Any], header: str) -> str:
     return "\n".join(lines)
 
 
-
 def _make_yaml_snippet(text: str, line_no: int, col_no: Optional[int] = None) -> str:
     """Build a compact YAML snippet around a specific location."""
     lines = text.splitlines()
@@ -440,7 +479,6 @@ def _make_yaml_snippet(text: str, line_no: int, col_no: Optional[int] = None) ->
             caret_pos = len(f"{prefix} {ln:4d} | ") + (col_no - 1)
             out.append(" " * caret_pos + "^")
     return "\n".join(out)
-
 
 
 def _load_run_config_yaml(run_config_path: Path) -> Dict[str, Any]:
@@ -474,7 +512,6 @@ def _load_run_config_yaml(run_config_path: Path) -> Dict[str, Any]:
         )
 
     return data
-
 
 
 def _load_field_from_yaml(yaml_path: Path):
@@ -514,7 +551,6 @@ def _load_field_from_yaml(yaml_path: Path):
     return res.field
 
 
-
 def _load_station_set(run_config_path: Path, station_set_name: str) -> List[float]:
     """Load one station set from a small YAML run-config file."""
     data = _load_run_config_yaml(run_config_path)
@@ -552,7 +588,6 @@ def _load_station_set(run_config_path: Path, station_set_name: str) -> List[floa
     return out
 
 
-
 def _polygon_inputs_from_field(field, z: float) -> Dict[int, PolygonInput]:
     """
     Build polygon inputs directly from ``field.section(z)``.
@@ -562,6 +597,7 @@ def _polygon_inputs_from_field(field, z: float) -> Dict[int, PolygonInput]:
     holes from polygon orientation or from boolean operations. Instead it reads:
     - the sampled polygon coordinates,
     - the sampled absolute weights,
+    - the sampled absolute shear carrier when present,
     - the direct container relation from the CSF field.
 
     The rest of the bridge assumes that the polygon ordering used by
@@ -586,6 +622,7 @@ def _polygon_inputs_from_field(field, z: float) -> Dict[int, PolygonInput]:
         name = str(getattr(poly, "name", f"poly_{idx}"))
         vertices = [(float(v.x), float(v.y)) for v in poly.vertices]
         w_abs = float(poly.weightabs)
+        shear_w = _read_optional_shear_w(idx, poly)
 
         if not hasattr(poly, "poisson"):
             raise SystemExit(
@@ -593,18 +630,19 @@ def _polygon_inputs_from_field(field, z: float) -> Dict[int, PolygonInput]:
             )
 
         poisson = _require_defined_poisson(idx, getattr(poly, "poisson"))
-        if verbose:
-          print(
-              f"DEBUG poisson YAML idx={idx} name={name} "
-              f"w={w_abs} poisson={poisson}"
-          )
 
+        if verbose:
+            print(
+                f"DEBUG poisson YAML idx={idx} name={name} "
+                f"w={w_abs} shear_w={shear_w} poisson={poisson}"
+            )
 
         out[idx] = PolygonInput(
             idx_polygon=idx,
             idx_container=parent_of.get(idx),
             name=name,
             w=w_abs,
+            shear_w=shear_w,
             poisson=poisson,
             is_cell=_name_has_cell_tag(name),
             vertices=vertices,
@@ -694,7 +732,6 @@ def _split_cell_polygon(vertices: List[Tuple[float, float]], label: str) -> Tupl
     return inner, outer
 
 
-
 def _collect_children(
     polygon_inputs: Dict[int, PolygonInput],
 ) -> Dict[Optional[int], List[int]]:
@@ -705,15 +742,14 @@ def _collect_children(
     return children
 
 
-
 def _make_material(weight: float, poisson: float, label: str) -> Material:
     """
-    Build a sectionproperties material from CSF normal and isotropic shear data.
+    Build a sectionproperties material from the current carrier and Poisson data.
 
     Bridge convention:
-    - weight is mapped to elastic_modulus E
-    - poisson is mapped to poissons_ratio nu
-    - sectionproperties derives G from E and nu
+    - the current carrier is mapped to sectionproperties ``elastic_modulus``
+    - ``poisson`` is mapped to ``poissons_ratio``
+    - sectionproperties internally uses ``elastic_modulus`` as the torsion carrier
     """
     if weight == 0.0:
         raise ValueError("Internal error: material requested for a zero-weight region.")
@@ -725,7 +761,7 @@ def _make_material(weight: float, poisson: float, label: str) -> Material:
         raise ValueError("Internal error: material requested with undefined poisson.")
 
     return Material(
-        name=f"{label}:w={weight:g}:nu={poisson:g}",
+        name=f"{label}:carrier={weight:g}:nu={poisson:g}",
         elastic_modulus=float(weight),
         poissons_ratio=float(poisson),
         yield_strength=1.0,
@@ -740,14 +776,12 @@ def _geometry_from_region(region: ShapelyPolygon, poly: PolygonInput, label: str
     return Geometry(geom=region, material=material)
 
 
-
 def _union_or_raise(polys: List[ShapelyPolygon], label: str) -> BaseGeometry:
     """Union helper with explicit error on empty output."""
     out = unary_union(polys)
     if out.is_empty:
         raise ValueError(f"{label}: union produced an empty geometry.")
     return out
-
 
 
 def _polygon_parts_from_geometry(geom: BaseGeometry, label: str) -> List[ShapelyPolygon]:
@@ -783,9 +817,7 @@ def _polygon_parts_from_geometry(geom: BaseGeometry, label: str) -> List[Shapely
 
 
 def _looks_like_slit_encoded_polygon(vertices: List[Tuple[float, float]]) -> bool:
-    """
-    Detect a slit-encoded multi-loop polygon by an early repeated first vertex.
-    """
+    """Detect a slit-encoded multi-loop polygon by an early repeated first vertex."""
     if len(vertices) < 8:
         return False
 
@@ -833,7 +865,6 @@ def _build_node_shapes(
                 support_region=support_region,
                 outer_envelope=support_region,
             )
-
             continue
 
         if _looks_like_slit_encoded_polygon(poly.vertices):
@@ -847,16 +878,14 @@ def _build_node_shapes(
             outer_envelope=outer_poly,
         )
 
-
-
     return out
-
 
 
 # -----------------------------------------------------------------------------
 # IMPORTANT TOPOLOGY STEP
 # Compute local domains for every node, including zero-weight nodes.
 # -----------------------------------------------------------------------------
+
 
 def _compute_node_local_domains(
     polygon_inputs: Dict[int, PolygonInput],
@@ -899,7 +928,6 @@ def _compute_node_local_domains(
     return local_domains
 
 
-
 def _build_sectionproperties_geometry(
     polygon_inputs: Dict[int, PolygonInput],
     local_domains: Dict[int, List[ShapelyPolygon]],
@@ -934,7 +962,6 @@ def _build_sectionproperties_geometry(
     return CompoundGeometry(pieces)
 
 
-
 def _polygon_list_from_sectionproperties_geometry(
     geom: Geometry | CompoundGeometry,
 ) -> List[ShapelyPolygon]:
@@ -961,11 +988,8 @@ def _polygon_list_from_sectionproperties_geometry(
     return polys
 
 
-
 def _interior_ring_polygons(region_polys: List[ShapelyPolygon]) -> List[ShapelyPolygon]:
-    """
-    Convert all interior rings of active regions into polygonal void candidates.
-    """
+    """Convert all interior rings of active regions into polygonal void candidates."""
     out: List[ShapelyPolygon] = []
 
     for i, region in enumerate(region_polys):
@@ -980,12 +1004,12 @@ def _interior_ring_polygons(region_polys: List[ShapelyPolygon]) -> List[ShapelyP
     return out
 
 
-
 # -----------------------------------------------------------------------------
 # IMPORTANT VOID TRANSFER STEP
 # Explicit CSF voids must survive in SP even when they touch other regions
 # exactly on the boundary.
 # -----------------------------------------------------------------------------
+
 
 def _compute_effective_hole_points(
     region_polys: List[ShapelyPolygon],
@@ -1031,14 +1055,13 @@ def _compute_effective_hole_points(
 
     return hole_points
 
+
 def _apply_effective_hole_points(
     geom: Geometry | CompoundGeometry,
     polygon_inputs: Dict[int, PolygonInput],
     local_domains: Dict[int, List[ShapelyPolygon]],
 ) -> Geometry | CompoundGeometry:
-    """
-    Add CSF-derived hole seeds without deleting hole seeds already found by SP.
-    """
+    """Add CSF-derived hole seeds without deleting hole seeds already found by SP."""
     region_polys = _polygon_list_from_sectionproperties_geometry(geom)
     computed_holes = _compute_effective_hole_points(
         region_polys,
@@ -1055,10 +1078,10 @@ def _apply_effective_hole_points(
     return geom
 
 
-
 # -----------------------------------------------------------------------------
 # CONNECTEDNESS POLICY USED ONLY BY THE BRIDGE
 # -----------------------------------------------------------------------------
+
 
 def _geometry_is_connected(geom: Geometry | CompoundGeometry) -> bool:
     """
@@ -1077,11 +1100,128 @@ def _geometry_is_connected(geom: Geometry | CompoundGeometry) -> bool:
 
 
 # -----------------------------------------------------------------------------
+# Torsion carrier helpers
+# -----------------------------------------------------------------------------
+
+
+def _make_torsion_carrier_inputs(
+    polygon_inputs: Dict[int, PolygonInput],
+) -> Dict[int, PolygonInput]:
+    """
+    Replace the normal CSF carrier ``w`` with the resolved shear carrier.
+
+    This is the explicit carrier substitution used by the torsion-only run:
+
+        E_SP := G_i / shear_w_i
+
+    No fallback is applied. If the sampled CSF model does not provide shear_w
+    for every polygon node, the torsion-carrier result is not computed.
+    """
+    missing = [
+        pid
+        for pid, poly in polygon_inputs.items()
+        if poly.shear_w is None
+    ]
+    if missing:
+        raise ValueError(
+            "CSF torsion-carrier result is not available: missing shear_w for "
+            f"idx_polygon={missing}."
+        )
+
+    out: Dict[int, PolygonInput] = {}
+    for pid, poly in polygon_inputs.items():
+        shear_w = float(poly.shear_w)  # type: ignore[arg-type]
+        if shear_w < 0.0:
+            raise ValueError(
+                f"CSF torsion-carrier result is not available: "
+                f"idx_polygon={pid} has negative shear_w={shear_w}."
+            )
+        out[pid] = replace(poly, w=shear_w)
+
+    return out
+
+
+def _build_meshed_geometry(
+    polygon_inputs: Dict[int, PolygonInput],
+    mesh: float,
+) -> Tuple[Geometry | CompoundGeometry, Dict[int, List[ShapelyPolygon]]]:
+    """Build the meshed sectionproperties geometry for a given carrier field."""
+    local_domains = _compute_node_local_domains(polygon_inputs)
+    geom = _build_sectionproperties_geometry(polygon_inputs, local_domains)
+    geom = _apply_effective_hole_points(geom, polygon_inputs, local_domains)
+    geom = geom.create_mesh(mesh_sizes=mesh)
+    return geom, local_domains
+
+
+def _compute_torsion_carrier_result(
+    polygon_inputs: Dict[int, PolygonInput],
+    mesh: float,
+) -> float:
+    """
+    Compute the CSF torsion-carrier result through a dedicated SP run.
+
+    The returned value is the sectionproperties ``e.j`` value obtained after
+    substituting the carrier:
+
+        E_SP := G_i / shear_w_i
+
+    It is intentionally not named ``g.j`` because sectionproperties does not
+    expose a native ``g.j`` result.
+    """
+    carrier_inputs = _make_torsion_carrier_inputs(polygon_inputs)
+    geom, _ = _build_meshed_geometry(carrier_inputs, mesh)
+
+    if not _geometry_is_connected(geom):
+        raise ValueError(
+            "CSF torsion-carrier result is not available: geometry contains disjoint regions."
+        )
+
+    sec = Section(geometry=geom)
+    sec.calculate_geometric_properties()
+    sec.calculate_warping_properties()
+    return float(sec.get_ej())
+
+
+def _print_torsion_results(
+    sec: Section,
+    polygon_inputs: Dict[int, PolygonInput],
+    mesh: float,
+) -> None:
+    """
+    Print native SP torsion and CSF torsion-carrier output.
+
+    The second value is labelled as a CSF carrier result, not as an SP-native
+    ``g.j`` quantity.
+    """
+    print("csf_sp torsion carrier results:")
+
+    native_ej = float(sec.get_ej())
+    print(f"  sectionproperties native e.j [E_i carrier] = {native_ej:.12g}")
+
+    try:
+        carrier_result = _compute_torsion_carrier_result(polygon_inputs, mesh)
+    except ValueError as exc:
+        print(f"  CSF torsion carrier J [SP e.j with E_SP := G_i] = not available ({exc})")
+        return
+
+    print(
+        "  CSF torsion carrier J "
+        f"[SP e.j with E_SP := G_i/shear_w_i] = {carrier_result:.12g}"
+    )
+
+
+# -----------------------------------------------------------------------------
 # Analysis helpers
 # -----------------------------------------------------------------------------
 
 
-def _analyse_one_geometry(z: float, polygon_inputs: Dict[int, PolygonInput], mesh: float, plot: bool, warping: bool = True) -> None:
+def _analyse_one_geometry(
+    z: float,
+    polygon_inputs: Dict[int, PolygonInput],
+    mesh: float,
+    plot: bool,
+    warping: bool = True,
+) -> None:
     """
     Mesh, analyse, and print one station.
 
@@ -1093,18 +1233,20 @@ def _analyse_one_geometry(z: float, polygon_inputs: Dict[int, PolygonInput], mes
     5. compute geometric properties
     6. compute warping only if the final active geometry is connected according
        to the bridge policy implemented in ``_geometry_is_connected``
+    7. when warping is available, print both the native SP ``e.j`` result and
+       the CSF torsion-carrier result obtained by the dedicated ``E_SP := G_i``
+       run
     """
-    local_domains = _compute_node_local_domains(polygon_inputs)
-    geom = _build_sectionproperties_geometry(polygon_inputs, local_domains)
-    geom = _apply_effective_hole_points(geom, polygon_inputs, local_domains)
-    geom = geom.create_mesh(mesh_sizes=mesh)
+    geom, _local_domains = _build_meshed_geometry(polygon_inputs, mesh)
 
     sec = Section(geometry=geom)
     sec.calculate_geometric_properties()
 
+    warping_computed = False
     if warping:
         if _geometry_is_connected(geom):
             sec.calculate_warping_properties()
+            warping_computed = True
         else:
             print(
                 "WARNING: Warping analysis skipped because the geometry contains disjoint regions."
@@ -1114,6 +1256,9 @@ def _analyse_one_geometry(z: float, polygon_inputs: Dict[int, PolygonInput], mes
     print(f"mesh_sizes = {mesh}")
     print("sectionproperties results:")
     sec.display_results()
+
+    if warping_computed:
+        _print_torsion_results(sec, polygon_inputs, mesh)
 
     if plot:
         import matplotlib.pyplot as plt
@@ -1158,7 +1303,12 @@ def main() -> None:
     )
     ap.add_argument("--mesh", type=float, default=1.0, help="Max mesh element area.")
     ap.add_argument("--plot", action="store_true", help="Plot geometry and mesh.")
-    ap.add_argument("--no-warping", dest="no_warping", action="store_true", help="Skip warping FEM (e.j, shear centre). Significantly faster when torsional constant is not needed.")
+    ap.add_argument(
+        "--no-warping",
+        dest="no_warping",
+        action="store_true",
+        help="Skip warping FEM. Native e.j and CSF torsion-carrier J are not computed.",
+    )
     args = ap.parse_args()
 
     if args.yaml_path is not None:
@@ -1193,22 +1343,27 @@ def main() -> None:
     _analyse_one_geometry(z, polygon_inputs, args.mesh, args.plot, warping=not args.no_warping)
 
 
-
 # =============================================================================
 # PUBLIC API
 # =============================================================================
-# Two entry points are exposed for programmatic use.  Everything else in this
-# module is considered private implementation detail and may change without
-# notice.
+# Two main entry points are exposed for programmatic use:
+# - load_yaml(...)
+# - analyse(...)
+#
+# A torsion-specific helper is also exposed:
+# - analyse_torsion_carrier(...)
+#
+# Everything else in this module is considered private implementation detail and
+# may change without notice.
 # =============================================================================
 
 
 def load_yaml(path: "str | Path") -> Any:
     """Load a CSF model from a YAML file and return the field object.
 
-    This is a thin public wrapper around the internal YAML loader.  The
-    returned object is a ``ContinuousSectionField`` instance that can be
-    passed directly to :func:`analyse`.
+    This is a thin public wrapper around the internal YAML loader. The returned
+    object is a ``ContinuousSectionField`` instance that can be passed directly
+    to :func:`analyse`.
 
     Parameters
     ----------
@@ -1224,12 +1379,6 @@ def load_yaml(path: "str | Path") -> Any:
     ------
     SystemExit
         If the file cannot be read or the CSF model fails validation.
-
-    Example
-    -------
-    >>> field = load_yaml("my_section.yaml")
-    >>> sec = analyse(field, z=15.0)
-    >>> print(sec.get_ea())
     """
     return _load_field_from_yaml(Path(path))
 
@@ -1238,14 +1387,26 @@ def analyse(field: Any, z: float, mesh: float = 1.0, warping: bool = True) -> "S
     """Analyse a CSF field at a given longitudinal position.
 
     Samples the CSF field at ``z``, builds the sectionproperties geometry,
-    meshes it, and runs the geometric analysis.  Warping analysis is also
-    performed when the active geometry is connected (i.e. contains no
-    disjoint regions); otherwise a warning is printed and warping properties
-    are left uncomputed.
+    meshes it, and runs the geometric analysis. Warping analysis is also
+    performed when the active geometry is connected.
 
-    The returned :class:`sectionproperties.analysis.Section` object exposes
-    the full sectionproperties API.  In particular ``e.j`` (Saint-Venant
-    torsional constant via FEM) is available when warping was computed.
+    The returned :class:`sectionproperties.analysis.Section` object exposes the
+    full sectionproperties API.
+
+    Torsion note
+    ------------
+    ``sec.get_ej()`` is the native sectionproperties result. It is an ``e.j``
+    result because sectionproperties weights composite torsion with the value
+    stored as ``elastic_modulus``.
+
+    To compute the CSF torsion-carrier result based on the resolved shear field,
+    use :func:`analyse_torsion_carrier`. That helper performs a dedicated
+    torsion-only run with:
+
+        E_SP := G_i / shear_w_i
+
+    and returns the resulting sectionproperties ``e.j`` value as a CSF
+    torsion-carrier result.
 
     Parameters
     ----------
@@ -1257,48 +1418,21 @@ def analyse(field: Any, z: float, mesh: float = 1.0, warping: bool = True) -> "S
     mesh:
         Maximum triangular element area for the sectionproperties mesh.
         Smaller values give more accurate results at the cost of speed.
-        Default is ``1.0`` (same length units as the CSF model).
     warping:
-        If ``True`` (default), warping properties (``e.j``, shear centre,
-        etc.) are computed when the geometry is connected.  Set to ``False``
-        to skip the warping FEM — significantly faster when ``e.j`` is not
-        needed.
+        If ``True`` (default), warping properties (native ``e.j``, shear centre,
+        etc.) are computed when the geometry is connected. Set to ``False`` to
+        skip the warping FEM.
 
     Returns
     -------
     sectionproperties.analysis.Section
-        A fully analysed Section object.  Geometric properties are always
-        available.  Warping properties (``e.j``, shear centre, etc.) are
-        available only when the geometry is connected.
-
-    Example
-    -------
-    Given a prismatic hollow circular tower (outer radius 5 m, wall ~0.43 m,
-    weight = 1.0) sampled at z = 0.0:
-
-    >>> from csf.utils.csf_sp import load_yaml, analyse
-    >>> field = load_yaml("twist_tower.yaml")
-    >>> sec = analyse(field, z=0.0)
-    >>>
-    >>> # Saint-Venant torsional constant (FEM warping)
-    >>> print(sec.get_ej())
-    182.099                          # CSF J_sv_vroark ≈ 182.0
-    >>>
-    >>> # Centroidal second moments of area (Ixx, Iyy, Ixy)
-    >>> print(sec.get_eic())
-    (91.049, 91.049, ~0.0)           # CSF Ix = Iy = 91.049 (circular symmetry)
-
-    Note: SP exposes composite-aware getters (``get_ej``, ``get_eic``, etc.)
-    because the bridge always assigns material properties to regions.
-    Use ``get_ej()`` instead of ``get_j()`` to avoid a RuntimeError even
-    when all polygon weights are equal to 1.0.
+        A fully analysed Section object. Geometric properties are always
+        available. Warping properties are available only when warping is enabled
+        and the geometry is connected.
     """
     polygon_inputs = _polygon_inputs_from_field(field, float(z))
 
-    local_domains = _compute_node_local_domains(polygon_inputs)
-    geom = _build_sectionproperties_geometry(polygon_inputs, local_domains)
-    geom = _apply_effective_hole_points(geom, polygon_inputs, local_domains)
-    geom = geom.create_mesh(mesh_sizes=float(mesh))
+    geom, _local_domains = _build_meshed_geometry(polygon_inputs, float(mesh))
 
     sec = Section(geometry=geom)
     sec.calculate_geometric_properties()
@@ -1312,6 +1446,42 @@ def analyse(field: Any, z: float, mesh: float = 1.0, warping: bool = True) -> "S
             )
 
     return sec
+
+
+def analyse_torsion_carrier(field: Any, z: float, mesh: float = 1.0) -> float:
+    """Return the CSF torsion-carrier result at a station.
+
+    This performs a dedicated sectionproperties torsion-only run after replacing
+    the normal axial/bending carrier by the resolved CSF shear carrier:
+
+        E_SP := G_i / shear_w_i
+
+    The returned scalar is the sectionproperties ``e.j`` value from that carrier
+    run. It is intentionally exposed as a CSF torsion-carrier result, not as a
+    native sectionproperties ``g.j`` output.
+
+    Parameters
+    ----------
+    field:
+        A ``ContinuousSectionField`` instance.
+    z:
+        Longitudinal coordinate at which to sample the section.
+    mesh:
+        Maximum triangular element area for the sectionproperties mesh.
+
+    Returns
+    -------
+    float
+        The carrier-weighted torsional result computed with ``E_SP := G_i``.
+
+    Raises
+    ------
+    ValueError
+        If the sampled CSF model does not expose ``shear_w`` for every polygon,
+        or if the active carrier geometry is disconnected.
+    """
+    polygon_inputs = _polygon_inputs_from_field(field, float(z))
+    return _compute_torsion_carrier_result(polygon_inputs, float(mesh))
 
 
 if __name__ == "__main__":
