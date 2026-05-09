@@ -110,6 +110,8 @@ The main contribution of CSF is a continuous field-based representation of beam-
 
 This representation provides a general computational layer between geometric section descriptions and downstream beam-level simulations. It enables reproducible construction, evaluation, inspection, and export of continuous section-property fields for members whose properties vary along the longitudinal axis.
 
+The continuous geometric field provided by CSF is designed to interface with external section-analysis solvers. Evaluating the field at any required set of stations - for example Gauss–Lobatto points - and passing the resulting polygonal geometry to a tool such as `sectionproperties` for detailed property computation is a natural use of the framework. CSF and section solvers are therefore complementary layers in a pre-processing pipeline, each operating at its own level of abstraction.
+
 The contribution is therefore not limited to the calculation of isolated section properties. It is the formulation of a member-level sectional field and its declarative implementation in a reusable computational framework.
 
 ## Acknowledgements
