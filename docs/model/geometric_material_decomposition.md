@@ -19,12 +19,13 @@ The change of paradigm is the explicit separation between geometry and
 sectional participation. Geometry defines where each polygonal region is
 located along the member. Two independent longitudinal participation fields
 define how much each region contributes: the axial/bending field `w_i(z)` and
-the shear/torsion field `shear_w_i(z)`. These fields can represent stiffness
-ratios, degraded regions, reinforcement, voids, density-like quantities, or
-other user-defined sectional contributions. They may be interpolated from
-endpoint values, derived from an isotropic relation, or specified through
-custom laws depending on the longitudinal coordinate and on geometric
-quantities.
+the shear/torsion field `shear_w_i(z)`. In the theoretical notation used
+below, `shear_w_i(z)` is denoted as `κ_i(z)`. These fields can represent
+stiffness ratios, degraded regions, reinforcement, voids, density-like
+quantities, or other user-defined sectional contributions. They may be
+interpolated from endpoint values, derived from an isotropic relation, or
+specified through custom laws depending on the longitudinal coordinate and on
+geometric quantities.
 
 The continuous model can be defined through a Python API or through a
 declarative YAML workflow. In the YAML workflow, one file defines the
@@ -46,12 +47,12 @@ solver-facing station-wise data when required.
 
 In current structural analysis practice, the definition of section properties
 for non-prismatic members is typically embedded within the solver itself.
-Geometry and material participation are not treated as independent fields;
-instead, they are collapsed into a discrete table of section properties
-evaluated at a fixed set of stations, tied to the solver mesh and conventions.
-This coupling makes the sectional model difficult to inspect, reuse, or
-transfer across different solvers, and it obscures the distinction between
-the continuous physical model and its numerical discretisation.
+Geometry and material participation are often collapsed into a discrete table
+of section properties evaluated at a fixed set of stations, tied to the
+solver mesh and conventions. This coupling makes the sectional model difficult
+to inspect, reuse, or transfer across different solvers, and it obscures the
+distinction between the continuous physical model and its numerical
+discretisation.
 
 Many structural and mechanical engineering problems involve members whose
 cross-section changes along their length: tapered towers, variable-depth
@@ -87,10 +88,10 @@ product of a material function and a geometric constant:
 $$EA(z) = E(z)\cdot A, \qquad EI(z) = E(z)\cdot I, \qquad GJ(z) = G(z)\cdot J$$
 
 This formulation is adequate for prismatic members with a single homogeneous
-material. It breaks down when the section is tapered, composed of multiple
-materials, locally degraded, or any combination of these, because geometry
-and material participation can no longer be described by a single shared
-function.
+material. It becomes limiting when the section is tapered, composed of
+multiple materials, locally degraded, or any combination of these, because
+geometry and material participation can no longer be described by a single
+shared function.
 
 CSF addresses the general case through an organisational model in which
 geometry and material participation are treated as fully independent fields
@@ -143,16 +144,18 @@ $$\mathbf{v}_{i,k}(z) = \mathbf{v}_{i,k}^{(0)} + \frac{z - z_0}{z_1 - z_0}
 
 where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$
 respectively, and $k$ indexes the vertices of zone $i$.
-This produces a smooth tapered geometry at any intermediate station.
+This produces a continuous geometric evolution at any intermediate station,
+with linear vertex trajectories between consecutive reference stations.
 Multiple interpolation intervals can be composed in sequence to represent
 members with piecewise-varying cross-sectional evolution.
 
 ### 2.4 Participation fields
 
 The weight laws $w_i(z)$ and $\kappa_i(z)$ are user-defined functions of
-the longitudinal coordinate. Supported forms include polynomials,
-exponentials, piecewise-linear laws, and discrete lookup tables. The only
-requirement is that the function be evaluable at any requested station.
+the longitudinal coordinate. Supported forms include endpoint interpolation,
+isotropic relations through `iso(nu)`, and user-defined laws evaluable at any
+requested station. The only requirement is that the function be evaluable at
+the requested station.
 
 ### 2.5 Assumptions
 
@@ -295,9 +298,7 @@ modifying the underlying model.
 
 The continuous geometric field provided by CSF is designed to interface with
 external section-analysis solvers when detailed sectional properties are
-required. For many practical cases the properties computed directly by CSF
-are sufficient for downstream beam-level simulations. Where additional detail
-is needed, evaluating the field at any required set of stations - for example
+required. Evaluating the field at any required set of stations - for example
 Gauss-Lobatto points - and passing the resulting polygonal geometry to a tool
 such as `sectionproperties` is a natural extension of the workflow. CSF and
 section solvers are therefore complementary layers in a pre-processing
