@@ -14,12 +14,23 @@ You describe your cross-section once in a YAML file and get the full sectionprop
 **The key advantage over using sectionproperties directly**: CSF interpolates geometry
 and material properties *continuously* along the member axis. A single YAML file
 describes a tapered or composite member completely; csf_sp samples it at whatever
-stations you need, giving you `A(z)`, `EI(z)`, `J(z)` as a continuous field rather
-than a set of disconnected cross-sections.
+stations you need, giving you `A(z)`, `EI(z)`, and torsional quantities as continuous
+fields rather than a set of disconnected cross-sections.
 
-`csf_sp` started as an internal verification tool - a way to sanity-check CSF geometry 
-outputs against sectionproperties. It turned out to be the most direct path to continuous 
+`csf_sp` started as an internal verification tool - a way to sanity-check CSF geometry
+outputs against sectionproperties. It turned out to be the most direct path to continuous
 section properties along a member axis.
+
+A specific issue arises for torsion in composite or graded sections: sectionproperties
+returns `e.j` using the material data attached to the section model. This is appropriate
+for the native SP workflow, but it does not directly solve the case where CSF carries
+independent axial/bending participation and shear/torsional participation fields.
+For that reason, csf_sp provides a dedicated torsion-carrier API,
+`analyse_torsion_carrier`, which performs the torsion run with the shear/torsional
+carrier values required by the CSF model.
+
+A complete example showing how to use the csf_sp API, including
+`analyse_torsion_carrier`, is provided at the end of this file.
 
 ### Quick start
 
