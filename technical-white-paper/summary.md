@@ -1,8 +1,8 @@
 
 
-# Summary
+## A Field-Based Framework for the Continuous Modelling of Non-Prismatic Structural Members
 
-Continuous Section Field (CSF) is an open-source Python package for constructing and analysing continuous cross-section fields in structural members whose geometry and sectional participation vary along the longitudinal axis. Its main purpose is to turn a member-level geometric description into station-wise section properties that can be used in beam, tower, bridge, and finite element workflows.
+Continuous Section Field (CSF) is a Field-Based Framework for the Continuous Modeling of Non-Prismatic Structural Members whose geometry and sectional participation vary along the longitudinal axis. Its main purpose is to turn a member-level geometric description into station-wise section properties that can be used in beam, tower, bridge, and finite element workflows.
 
 The central idea of CSF is to treat the cross-section not as a single isolated object, but as a field defined along `z`. A user defines polygonal cross-sections at reference stations, usually `S0` and `S1`; CSF then interpolates corresponding polygon vertices to generate intermediate sections and evaluates properties such as area, centroid, second moments of area, principal inertias, section moduli, torsional constants, and stiffness-weighted quantities at any station.
 
