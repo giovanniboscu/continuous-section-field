@@ -6,7 +6,6 @@
 
 ## v0.1.3
 
-- 2026-05-06 - typo error
 - 2026-05-04 - Introduction of the shear_weight field
 
 ## v0.1.2.5
