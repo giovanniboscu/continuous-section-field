@@ -51,7 +51,7 @@ a scalar field that scales the stiffness contribution
   See [Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case. 
 
 
-### Conceptul Overview of CSF - [Model](https://github.com/giovanniboscu/continuous-section-field/blob/main/technical-white-paper/summary.md)
+### Conceptul MOdel of CSF - [Model](https://github.com/giovanniboscu/continuous-section-field/blob/main/technical-white-paper/summary.md)
 
 
 ---
