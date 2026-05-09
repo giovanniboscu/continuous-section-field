@@ -193,6 +193,7 @@ Saint-Venant warping analysis is required and the polygonal geometry
 provided by CSF can be passed to a finite-element section solver such as
 `sectionproperties`.
 
+
 More broadly, CSF is not a section-analysis tool and does not replace
 finite-element section solvers. Its role is to provide a continuous,
 evaluable geometric and participation field. Where the properties computed
@@ -200,6 +201,8 @@ directly by CSF are sufficient, as in many practical beam and tower models,
 no external solver is required. Where they are not, the continuous geometric
 field serves as the input to a more detailed analysis, with the station
 sampling fully controlled by the user.
+
+
 ---
 
 ## 3. Declarative numerical workflow
