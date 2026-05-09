@@ -19,13 +19,12 @@ The change of paradigm is the explicit separation between geometry and
 sectional participation. Geometry defines where each polygonal region is
 located along the member. Two independent longitudinal participation fields
 define how much each region contributes: the axial/bending field `w_i(z)` and
-the shear/torsion field `shear_w_i(z)`. In the theoretical notation used
-below, `shear_w_i(z)` is denoted as `κ_i(z)`. These fields can represent
-stiffness ratios, degraded regions, reinforcement, voids, density-like
-quantities, or other user-defined sectional contributions. They may be
-interpolated from endpoint values, derived from an isotropic relation, or
-specified through custom laws depending on the longitudinal coordinate and on
-geometric quantities.
+the shear/torsion field `shear_w_i(z)`. These fields can represent stiffness
+ratios, degraded regions, reinforcement, voids, density-like quantities, or
+other user-defined sectional contributions. They may be interpolated from
+endpoint values, derived from an isotropic relation, or specified through
+custom laws depending on the longitudinal coordinate and on geometric
+quantities.
 
 The continuous model can be defined through a Python API or through a
 declarative YAML workflow. In the YAML workflow, one file defines the
@@ -35,7 +34,7 @@ discrete table of section properties; it defines the geometry and
 participation laws from which CSF constructs continuous sectional fields.
 
 Discrete stations are therefore evaluation points of an already defined
-continuous field. For example, Gauss-Lobatto stations obtained through the
+continuous field. For example, Gauss–Lobatto stations obtained through the
 API can be used as quadrature-compatible sampling points for downstream beam
 formulations, but they do not define the field itself. This distinction allows
 CSF to preserve a continuous member representation while generating
@@ -47,12 +46,12 @@ solver-facing station-wise data when required.
 
 In current structural analysis practice, the definition of section properties
 for non-prismatic members is typically embedded within the solver itself.
-Geometry and material participation are often collapsed into a discrete table
-of section properties evaluated at a fixed set of stations, tied to the
-solver mesh and conventions. This coupling makes the sectional model difficult
-to inspect, reuse, or transfer across different solvers, and it obscures the
-distinction between the continuous physical model and its numerical
-discretisation.
+Geometry and material participation are not treated as independent fields;
+instead, they are collapsed into a discrete table of section properties
+evaluated at a fixed set of stations, tied to the solver mesh and conventions.
+This coupling makes the sectional model difficult to inspect, reuse, or
+transfer across different solvers, and it obscures the distinction between
+the continuous physical model and its numerical discretisation.
 
 Many structural and mechanical engineering problems involve members whose
 cross-section changes along their length: tapered towers, variable-depth
@@ -88,10 +87,10 @@ product of a material function and a geometric constant:
 $$EA(z) = E(z)\cdot A, \qquad EI(z) = E(z)\cdot I, \qquad GJ(z) = G(z)\cdot J$$
 
 This formulation is adequate for prismatic members with a single homogeneous
-material. It becomes limiting when the section is tapered, composed of
-multiple materials, locally degraded, or any combination of these, because
-geometry and material participation can no longer be described by a single
-shared function.
+material. It breaks down when the section is tapered, composed of multiple
+materials, locally degraded, or any combination of these, because geometry
+and material participation can no longer be described by a single shared
+function.
 
 CSF addresses the general case through an organisational model in which
 geometry and material participation are treated as fully independent fields
@@ -144,18 +143,16 @@ $$\mathbf{v}_{i,k}(z) = \mathbf{v}_{i,k}^{(0)} + \frac{z - z_0}{z_1 - z_0}
 
 where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$
 respectively, and $k$ indexes the vertices of zone $i$.
-This produces a continuous geometric evolution at any intermediate station,
-with linear vertex trajectories between consecutive reference stations.
+This produces a smooth tapered geometry at any intermediate station.
 Multiple interpolation intervals can be composed in sequence to represent
 members with piecewise-varying cross-sectional evolution.
 
 ### 2.4 Participation fields
 
 The weight laws $w_i(z)$ and $\kappa_i(z)$ are user-defined functions of
-the longitudinal coordinate. Supported forms include endpoint interpolation,
-isotropic relations through `iso(nu)`, and user-defined laws evaluable at any
-requested station. The only requirement is that the function be evaluable at
-the requested station.
+the longitudinal coordinate. Supported forms include polynomials,
+exponentials, piecewise-linear laws, and discrete lookup tables. The only
+requirement is that the function be evaluable at any requested station.
 
 ### 2.5 Assumptions
 
@@ -170,13 +167,37 @@ Multiple straight elements can be composed in sequence - each with its own
 geometry and participation fields - to represent members of arbitrary length
 and cross-sectional evolution.
 
-### 2.6 Note on the torsional constant
+### 2.6 Relation to existing tools and structural limitations
 
-The Saint-Venant torsional constant $J_\mathrm{sv}$ is the one exception
-to the area-integral formulation: it depends on the full geometry of the
-section through a warping problem and cannot be obtained from a direct
-weighted area integral. CSF treats $J_\mathrm{sv}$ separately through a
-dedicated approximation procedure documented in the accompanying repository.
+Most section properties evaluated by CSF follow directly from the weighted
+area-integral formulation of Section 2.2. The Saint-Venant torsional constant
+$J_\mathrm{sv}$ is the one exception: it depends on the full geometry of the
+section through a warping problem and cannot be obtained from a direct area
+integral. CSF computes $J_\mathrm{sv}$ through an approximation that
+decomposes the section into closed cells and open thin walls:
+
+$$J_\mathrm{sv} = J_\mathrm{sv,cell} + J_\mathrm{sv,wall}$$
+
+$$J_\mathrm{sv,cell} = \sum_k \frac{4 A_{m,k}^2\, t_k}{b_{m,k}}, \qquad J_\mathrm{sv,wall} = \sum_i \frac{b_i\, t_i^3}{3}$$
+
+where the first term applies the Bredt formula to each closed cell using
+mean area and perimeter quantities, and the second term sums the thin-wall
+contribution of each open wall. This decomposition is valid when cells and
+walls do not share closed contours, all components have the same unit twist,
+and thin-wall assumptions hold. It is not valid for thick-walled sections,
+multi-cell configurations with shared walls, or geometries where open walls
+are physically connected to a cell boundary. In those cases a full
+Saint-Venant warping analysis is required and the polygonal geometry
+provided by CSF can be passed to a finite-element section solver such as
+`sectionproperties`.
+
+More broadly, CSF is not a section-analysis tool and does not replace
+finite-element section solvers. Its role is to provide a continuous,
+evaluable geometric and participation field. Where the properties computed
+directly by CSF are sufficient - as in many practical beam and tower models
+- no external solver is required. Where they are not, the continuous
+geometric field serves as the input to a more detailed analysis, with the
+station sampling fully controlled by the user.
 
 ---
 
@@ -206,7 +227,7 @@ The action file defines:
 
 This separation makes the same continuous model reusable across different
 numerical studies. A single member definition can be sampled at dense
-stations for inspection, at Gauss-Lobatto stations for quadrature-compatible
+stations for inspection, at Gauss–Lobatto stations for quadrature-compatible
 beam input, or at user-defined stations for comparison with external data.
 
 ---
@@ -219,7 +240,7 @@ including uniformly spaced stations, manually defined stations, or
 integration-compatible points.
 
 For example, a beam formulation may require section properties at
-Gauss-Lobatto points. CSF can evaluate the continuous field directly at
+Gauss–Lobatto points. CSF can evaluate the continuous field directly at
 those points and export the corresponding values. The sampling strategy is
 therefore tied to the downstream numerical method, while the underlying
 member model remains unchanged.
@@ -298,8 +319,10 @@ modifying the underlying model.
 
 The continuous geometric field provided by CSF is designed to interface with
 external section-analysis solvers when detailed sectional properties are
-required. Evaluating the field at any required set of stations - for example
-Gauss-Lobatto points - and passing the resulting polygonal geometry to a tool
+required. For many practical cases the properties computed directly by CSF
+are sufficient for downstream beam-level simulations. Where additional detail
+is needed, evaluating the field at any required set of stations - for example
+Gauss–Lobatto points - and passing the resulting polygonal geometry to a tool
 such as `sectionproperties` is a natural extension of the workflow. CSF and
 section solvers are therefore complementary layers in a pre-processing
 pipeline, each operating at its own level of abstraction.
