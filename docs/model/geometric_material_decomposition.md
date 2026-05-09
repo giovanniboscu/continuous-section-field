@@ -34,7 +34,7 @@ discrete table of section properties; it defines the geometry and
 participation laws from which CSF constructs continuous sectional fields.
 
 Discrete stations are therefore evaluation points of an already defined
-continuous field. For example, Gauss–Lobatto stations obtained through the
+continuous field. For example, Gauss-Lobatto stations obtained through the
 API can be used as quadrature-compatible sampling points for downstream beam
 formulations, but they do not define the field itself. This distinction allows
 CSF to preserve a continuous member representation while generating
@@ -44,25 +44,36 @@ solver-facing station-wise data when required.
 
 ## 1. Motivation
 
+In current structural analysis practice, the definition of section properties
+for non-prismatic members is typically embedded within the solver itself.
+Geometry and material participation are not treated as independent fields;
+instead, they are collapsed into a discrete table of section properties
+evaluated at a fixed set of stations, tied to the solver mesh and conventions.
+This coupling makes the sectional model difficult to inspect, reuse, or
+transfer across different solvers, and it obscures the distinction between
+the continuous physical model and its numerical discretisation.
+
 Many structural and mechanical engineering problems involve members whose
 cross-section changes along their length: tapered towers, variable-depth
 beams, haunched bridge girders, repaired or degraded members, hybrid material
 sections, and staged or homogenized structural models. In these cases, the
 required input for a numerical model is not a single section, but a
-longitudinal field of section properties such as `A(z)`, `Cx(z)`, `Cy(z)`,
-`EI_x(z)`, `EI_y(z)`, `GJ(z)`, and mass-related quantities.
+longitudinal field of section properties such as $A(z)$, $I_x(z)$, $I_y(z)$,
+$EI_x(z)$, $GJ(z)$, and mass-related quantities. When this field is defined
+inside the solver, it cannot be validated, inspected, or reused independently.
 
-CSF addresses this modelling level directly. A member is represented as a
-continuous sectional field composed of evolving polygonal geometry, axial/
-bending participation `w_i(z)`, and shear/torsion participation
-`shear_w_i(z)`. From this representation, the same model can be sampled,
-inspected, plotted, validated, and exported at the stations required by a
-downstream numerical workflow.
+CSF addresses this by extracting the sectional field definition into a
+dedicated pre-solver layer. A member is represented as a continuous sectional
+field composed of evolving polygonal geometry, axial/bending participation
+$w_i(z)$, and shear/torsion participation $\kappa_i(z)$. This representation
+is defined, evaluated, inspected, and validated independently of any
+downstream solver. The solver receives a station-wise projection of an
+already defined continuous field — not a table that defines the model itself.
 
-The practical need is a reproducible way to define and evaluate sectional
-fields when geometry, effective material participation, and solver sampling
-are all varying along the member axis. CSF provides this as a dedicated
-pre-processing layer for beam-like structural models.
+The result is a clean separation between three concerns that are normally
+conflated: the continuous physical model of the member, the numerical
+sampling strategy required by the solver, and the exported data format
+consumed by a specific tool.
 
 ---
 
@@ -152,7 +163,7 @@ requirement is that the function be evaluable at any requested station.
 | C | Polygonal representation | Curved boundaries must be approximated by polygon discretisation |
 | D | Straight element axis | CSF models a single element along a straight $z$-axis; curved members are not supported |
 
-Multiple straight elements can be composed in sequence - each with its own
+Multiple straight elements can be composed in sequence — each with its own
 geometry and participation fields — to represent members of arbitrary length
 and cross-sectional evolution.
 
@@ -192,7 +203,7 @@ The action file defines:
 
 This separation makes the same continuous model reusable across different
 numerical studies. A single member definition can be sampled at dense
-stations for inspection, at Gauss–Lobatto stations for quadrature-compatible
+stations for inspection, at Gauss-Lobatto stations for quadrature-compatible
 beam input, or at user-defined stations for comparison with external data.
 
 ---
@@ -205,7 +216,7 @@ including uniformly spaced stations, manually defined stations, or
 integration-compatible points.
 
 For example, a beam formulation may require section properties at
-Gauss–Lobatto points. CSF can evaluate the continuous field directly at
+Gauss-Lobatto points. CSF can evaluate the continuous field directly at
 those points and export the corresponding values. The sampling strategy is
 therefore tied to the downstream numerical method, while the underlying
 member model remains unchanged.
@@ -266,30 +277,35 @@ different station-wise projections depending on the target numerical workflow.
 
 ## 7. Research contribution
 
-The main contribution of CSF is a continuous field-based representation of
-beam-like structural members, in which evolving sectional geometry,
-axial/bending participation, and shear/torsional participation are treated
-as coupled longitudinal fields.
+The main contribution of CSF is the extraction of the sectional field
+definition from the solver into an independent, declarative pre-solver layer.
+In conventional practice, the mapping from member geometry and material
+participation to section properties is embedded within the numerical solver
+and is therefore inseparable from its mesh, conventions, and output format.
+CSF makes this mapping explicit, continuous, and solver-agnostic.
 
-This representation provides a general computational layer between geometric
-section descriptions and downstream beam-level simulations. It enables
-reproducible construction, evaluation, inspection, and export of continuous
-section-property fields for members whose properties vary along the
-longitudinal axis.
+The framework represents a beam-like member as a coupled set of longitudinal
+fields — evolving polygonal geometry, axial/bending participation $w_i(z)$,
+and shear/torsion participation $\kappa_i(z)$ — that are defined and
+evaluated independently of any downstream solver. Station-wise data are a
+projection of this continuous model, not its definition. The same member
+description can therefore be sampled at different station sets, validated
+against analytical references, and exported to different solvers without
+modifying the underlying model.
 
 The continuous geometric field provided by CSF is designed to interface with
 external section-analysis solvers when detailed sectional properties are
 required. For many practical cases the properties computed directly by CSF
 are sufficient for downstream beam-level simulations. Where additional detail
 is needed, evaluating the field at any required set of stations — for example
-Gauss–Lobatto points — and passing the resulting polygonal geometry to a tool
+Gauss-Lobatto points — and passing the resulting polygonal geometry to a tool
 such as `sectionproperties` is a natural extension of the workflow. CSF and
 section solvers are therefore complementary layers in a pre-processing
 pipeline, each operating at its own level of abstraction.
 
-The contribution is therefore not limited to the calculation of isolated
-section properties. It is the formulation of a member-level sectional field
-and its declarative implementation in a reusable computational framework.
+The contribution is the formulation of this pre-solver layer and its
+declarative implementation as a reusable computational framework for
+beam-like structural members with varying geometry and material participation.
 
 ---
 
