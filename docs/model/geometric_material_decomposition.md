@@ -292,7 +292,7 @@ section properties. It is the formulation of a member-level sectional field
 and its declarative implementation in a reusable computational framework.
 
 ---
-a
+
 ## Acknowledgements
 
 The author thanks the developers of `sectionproperties` for providing an
