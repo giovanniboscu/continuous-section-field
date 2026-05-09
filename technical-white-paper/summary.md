@@ -121,8 +121,8 @@ The continuous geometric field provided by CSF is designed to interface with
 external section-analysis solvers when detailed sectional properties are
 required. For many practical cases the properties computed directly by CSF
 are sufficient for downstream beam-level simulations. Where additional detail
-is needed, evaluating the field at any required set of stations — for example
-Gauss–Lobatto points — and passing the resulting polygonal geometry to a tool
+is needed, evaluating the field at any required set of stations - for example
+Gauss–Lobatto points - and passing the resulting polygonal geometry to a tool
 such as `sectionproperties` is a natural extension of the workflow. CSF and
 section solvers are therefore complementary layers in a pre-processing
 pipeline, each operating at its own level of abstraction.
