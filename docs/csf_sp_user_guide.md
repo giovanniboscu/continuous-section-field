@@ -1208,11 +1208,11 @@ J_sv_wall: 0.0
 ## 10. From sectionproperties to CSF: progressive examples
 
 **Declarative cross-section modelling with continuous geometry interpolation**
-*API Python e YAML - esempi progressivi*
+*Python API and YAML - progressive examples*
 
-### Step 1 - SP nativo (baseline)
+### Step 1 - Native SP (baseline)
 
-Rettangolo 50×100 mm costruito in Python con `rectangular_section`. Analisi geometrica pura.
+50×100 mm rectangle built in Python with `rectangular_section`. Pure geometric analysis.
 
 ```python
 from sectionproperties.pre.library import rectangular_section
@@ -1233,10 +1233,10 @@ Area = 5000 mm²
 Ixx = 4166667 mm⁴, Iyy = 1041667 mm⁴
 ```
 
-### Step 2 - Stesso rettangolo via CSF YAML, peso 1.0 prismatico
+### Step 2 - Same rectangle via CSF YAML, prismatic weight 1.0
 
-Stessa sezione descritta in YAML, peso uniforme 1.0. Nota: usare `get_ea()` e `get_eic()`
-invece di `get_area()` e `get_ic()` perché csf_sp assegna sempre `Material` objects alle regioni.
+Same section described in YAML, uniform weight 1.0. Note: use `get_ea()` and `get_eic()`
+instead of `get_area()` and `get_ic()` because csf_sp always assigns `Material` objects to the regions.
 
 ```python
 from csf.utils.csf_sp import load_yaml, analyse
@@ -1254,9 +1254,9 @@ Area = 5000 mm²
 Ixx = 4166667 mm⁴, Iyy = 1041667 mm⁴
 ```
 
-### Step 3 - Variazione peso lineare S0→S1, geometria costante
+### Step 3 - Linear weight variation S0→S1, constant geometry
 
-YAML con `weight=1.0` a z=0, `weight=2.0` a z=2. `area` geometrica costante, `e.a` scala con il peso.
+YAML with `weight=1.0` at z=0, `weight=2.0` at z=2. The geometric `area` is constant, `e.a` scales with the weight.
 
 ```python
 for z in [0.0, 1.0, 2.0]:
@@ -1273,9 +1273,9 @@ z=1.0  area=5000  e.a=7500  Ixx=6250000
 z=2.0  area=5000  e.a=10000  Ixx=8333333
 ```
 
-### Step 4 - Custom weight law parabolica via YAML
+### Step 4 - Parabolic custom weight law via YAML
 
-Legge `w0 + (w1-w0)*(z/L)**2` nel blocco `weight_laws`. A z=1.0 il peso è 1.25 - più lento a salire rispetto alla lineare.
+Law `w0 + (w1-w0)*(z/L)**2` in the `weight_laws` block. At z=1.0 the weight is 1.25 - slower to increase than the linear law.
 
 ```
 z=0.0  area=5000  e.a=5000  Ixx=4166667
@@ -1283,11 +1283,11 @@ z=1.0  area=5000  e.a=6250  Ixx=5208333
 z=2.0  area=5000  e.a=10000  Ixx=8333333
 ```
 
-### Step 5 - Stessa legge via API
+### Step 5 - Same law via API
 
-`field.set_weight_laws([...])` dopo `load_yaml`. Risultato identico al Step 4 - YAML e API sono intercambiabili.
+`field.set_weight_laws([...])` after `load_yaml`. Result identical to Step 4 - YAML and API are interchangeable.
 
-### Step 6 - Legge sinusoidale via API, geometria costante
+### Step 6 - Sinusoidal law via API, constant geometry
 
 ```python
 field.set_weight_laws([
@@ -1295,7 +1295,7 @@ field.set_weight_laws([
 ])
 ```
 
-A z=1.0 il peso è 1.5 - coincide con la lineare al punto medio ma con curva diversa.
+At z=1.0 the weight is 1.5 - it matches the linear law at mid-point but with a different curve.
 
 ```
 z=0.0  area=5000  e.a=5000  Ixx=4166667
@@ -1303,18 +1303,365 @@ z=1.0  area=5000  e.a=7500  Ixx=6250000
 z=2.0  area=5000  e.a=10000  Ixx=8333333
 ```
 
-### Step 7 - Geometria variabile + peso variabile indipendenti
+### Step 7 - Variable geometry + independent variable weight
 
-S0: 50×100, S1: 50×50. Peso 1.0→2.0 con legge sinusoidale sovrascritta via API.
-`area` scende geometricamente, `e.a` è la combinazione dei due campi -
-geometria e peso sono indipendenti in CSF.
+S0: 50×100, S1: 50×50. Weight 1.0→2.0 with sinusoidal law overridden via API.
+`area` decreases geometrically, `e.a` is the combination of the two fields -
+geometry and weight are independent in CSF.
 
 ```
 z=0.0  area=5000  e.a=5000  Ixx=4166667
 z=1.0  area=3750  e.a=5625  Ixx=2636719
 z=2.0  area=2500  e.a=5000  Ixx=1041667
 ```
-
 ---
 
-*csf_sp - part of the [continuous-section-field (csfpy)](https://github.com/giovanniboscu/continuous-section-field) package | GPL-3.0*
+# CSF and sectionproperties torsion carrier bridge
+
+## Purpose
+
+This example illustrates a specific interoperability issue between CSF and sectionproperties when torsional stiffness must be evaluated with a shear/torsion carrier that is distinct from the axial and bending carrier.
+
+The example is intentionally simple: the geometry is basic, the topology is explicit, and the numerical output is easy to inspect. Its purpose is not to create a complex benchmark, but to show clearly why a dedicated torsion-carrier run is needed.
+
+## Background
+
+CSF represents a section as a geometric and material participation model.
+
+Each polygonal region can carry two independent longitudinal participation fields:
+
+- an axial/bending participation field;
+- a shear/torsion participation field.
+
+This separation is important when the torsional contribution of a region is not governed by the same carrier used for axial and bending quantities.
+
+sectionproperties, on the other hand, reports composite torsion through its native torsional output associated with the elastic carrier used internally by the finite-element formulation.
+
+For many simple homogeneous cases this distinction is harmless. For composite, graded, or independently weighted CSF models, it becomes important.
+
+## The problem
+
+The native sectionproperties torsion result is tied to the carrier stored as the elastic modulus.
+
+This means that the native torsion output is naturally aligned with the axial/bending carrier.
+
+When CSF defines a different shear/torsion participation field, the native sectionproperties torsion result does not directly represent the CSF torsion carrier.
+
+The geometry can still be correct. The mesh can still be correct. The axial and bending properties can still be correct. The issue is only the carrier used in the torsional run.
+
+## Numeric Example
+
+The example shows that the same geometry can produce two different torsional readings depending on which carrier is used in the sectionproperties run.
+
+The first reading is the native sectionproperties result.
+
+The second reading is the CSF torsion-carrier result, obtained by performing a dedicated torsion-only run where the sectionproperties carrier is replaced by the shear/torsion carrier resolved by CSF.
+
+This makes the distinction visible and testable.
+
+## CSF role
+
+CSF keeps the model unchanged.
+
+The geometry is not modified.  
+The nesting is not modified.  
+The axial and bending weights are not modified.  
+The shear/torsion field is defined natively in CSF.
+
+CSF provides the resolved section at the requested station and exposes the carrier information needed by the sectionproperties bridge.
+
+## sectionproperties role
+
+sectionproperties is used as the finite-element backend for the section analysis.
+
+The first run is the normal sectionproperties run. It computes and prints the full set of sectionproperties results.
+
+The second run is a dedicated torsion-carrier run. It is not used to print a second full table. It is used only to extract the torsional value associated with the CSF shear/torsion carrier.
+
+This keeps the output clean:
+
+- full sectionproperties table from the native run;
+- one additional torsional scalar from the carrier run.
+
+## Bridge solution
+
+The bridge exposes two separate API calls.
+
+The standard analysis call returns the usual sectionproperties Section object and can be used to display the full sectionproperties results.
+
+The torsion-carrier helper performs the second run internally and returns only the scalar needed for the CSF torsion-carrier result.
+
+This separation is deliberate.
+
+It avoids changing the CSF model.  
+It avoids overloading the normal sectionproperties result.  
+It makes the carrier substitution explicit.  
+It keeps the torsion-specific workaround isolated and inspectable.
+
+
+
+## Interpretation of the outputs
+```
+======================================================================
+TORSION CARRIER COMPARISON
+======================================================================
+nu                         = 0.300000
+G/E                        = 0.384615384615
+SP e.j [E-carrier]          = 45701982.381604
+CSF/SP e.j [G-carrier]      = 17577685.531387
+
+Interpretation:
+  E-carrier: SP elastic_modulus := E_i  -> e.j is E.J
+  G-carrier: SP elastic_modulus := G_i  -> e.j is G.J
+```
+
+
+The native sectionproperties torsion value should be read as the torsional result associated with the native elastic carrier.
+
+The CSF/SP torsion-carrier value should be read as the torsional result associated with the CSF shear/torsion carrier.
+
+Both values are useful, but they answer different questions.
+
+The important point is that the second value is not a new native sectionproperties quantity. It is the result of a controlled carrier substitution performed by the bridge.
+
+## Practical significance
+
+This example is useful because it makes the carrier issue visible with minimal geometry.
+
+It shows why a direct reuse of the native sectionproperties torsion result can be insufficient for CSF models with independent shear/torsion participation.
+
+It also shows that the solution does not require changing CSF geometry or rebuilding the model manually. The bridge can perform the required torsion-only carrier run while preserving the original CSF definition.
+
+## Summary
+
+The example demonstrates a clean division of responsibilities.
+
+CSF defines the continuous geometry, topology, axial/bending participation, and shear/torsion participation.
+
+sectionproperties provides the finite-element section analysis backend.
+
+The CSF/SP bridge connects the two by performing a normal sectionproperties run for the full output and a second torsion-only carrier run for the CSF torsion value.
+
+This gives a transparent and reproducible way to obtain torsional results consistent with CSF's independent shear/torsion field.
+
+---
+```
+import math
+import matplotlib.pyplot as plt
+
+from csf import (
+    Pt,
+    Polygon,
+    Section,
+    ContinuousSectionField,
+    Visualizer,
+    section_full_analysis,
+    section_print_analysis,
+)
+
+from csf.utils.csf_sp import analyse, analyse_torsion_carrier
+
+
+# --------------------------------------------------------
+# Parameters
+# --------------------------------------------------------
+
+z = 0.0
+mesh = 10.0
+
+b_outer = 200.0
+h_outer = 100.0
+
+b_inner = 50.0
+h_inner = 50.0
+
+d_hole = 20.0
+n_hole = 32
+
+nu = 0.3
+
+
+# --------------------------------------------------------
+# Geometry helpers
+# --------------------------------------------------------
+
+def circle_vertices(cx, cy, d, n):
+    """Return a CCW polygonal approximation of a circular hole."""
+    r = d / 2.0
+    return tuple(
+        Pt(
+            cx + r * math.cos(2.0 * math.pi * i / n),
+            cy + r * math.sin(2.0 * math.pi * i / n),
+        )
+        for i in range(n)
+    )
+
+
+# --------------------------------------------------------
+# CSF model
+#
+# The section is equivalent to:
+#
+# outer_rect - inner_rect + inner_rect - circle
+#
+# The inner rectangle is kept as an explicit nested region.
+# The circle has weight = 0.0, therefore it is an explicit void.
+# --------------------------------------------------------
+
+outer_rect = Polygon(
+    vertices=(
+        Pt(0.0, 0.0),
+        Pt(b_outer, 0.0),
+        Pt(b_outer, h_outer),
+        Pt(0.0, h_outer),
+    ),
+    weight=1.0,
+    name="outer_rect",
+)
+
+inner_x0 = (b_outer - b_inner) / 2.0
+inner_x1 = inner_x0 + b_inner
+inner_y0 = (h_outer - h_inner) / 2.0
+inner_y1 = inner_y0 + h_inner
+
+inner_rect = Polygon(
+    vertices=(
+        Pt(inner_x0, inner_y0),
+        Pt(inner_x1, inner_y0),
+        Pt(inner_x1, inner_y1),
+        Pt(inner_x0, inner_y1),
+    ),
+    weight=1.0,
+    name="inner_rect",
+)
+
+circle_hole = Polygon(
+    vertices=circle_vertices(
+        cx=b_outer / 2.0,
+        cy=h_outer / 2.0,
+        d=d_hole,
+        n=n_hole,
+    ),
+    weight=0.0,
+    name="circle_hole",
+)
+
+
+# --------------------------------------------------------
+# Prismatic field
+# --------------------------------------------------------
+
+s0 = Section(
+    polygons=(outer_rect, inner_rect, circle_hole),
+    z=0.0,
+)
+
+s1 = Section(
+    polygons=(outer_rect, inner_rect, circle_hole),
+    z=1.0,
+)
+
+field = ContinuousSectionField(section0=s0, section1=s1)
+
+
+# --------------------------------------------------------
+# CSF native shear/torsion law
+#
+# CSF keeps axial/bending weight w(z) and shear/torsion weight shear_w(z)
+# as separate fields.
+#
+# For iso(0.3):
+#     G/E = 1 / [2 * (1 + 0.3)]
+# --------------------------------------------------------
+
+field.set_shear_weight_laws([
+    "iso(0.3)",
+])
+
+
+# --------------------------------------------------------
+# 1. CSF native analysis
+# --------------------------------------------------------
+
+print("\n" + "=" * 70)
+print("CSF RESULTS")
+print("=" * 70)
+
+sec_csf = field.section(z)
+csf_results = section_full_analysis(sec_csf)
+section_print_analysis(csf_results)
+
+
+# --------------------------------------------------------
+# 2. sectionproperties native run
+#
+# Problem:
+# sectionproperties reports torsion as e.j because its torsion assembly uses
+# elastic_modulus as the carrier.
+#
+# This first run is the native SP run:
+#     E_SP := E_i
+# so:
+#     sec_sp.get_ej() is read as E.J
+# --------------------------------------------------------
+
+print("\n" + "=" * 70)
+print("SECTIONPROPERTIES RESULTS - E-CARRIER")
+print("=" * 70)
+
+sec_sp = analyse(
+    field,
+    z=z,
+    mesh=mesh,
+    warping=True,
+)
+
+sec_sp.display_results()
+
+ej_e_carrier = sec_sp.get_ej()
+
+
+# --------------------------------------------------------
+# 3. sectionproperties torsion-carrier run
+#
+# This second run changes only the SP carrier:
+#     E_SP := G_i
+#
+# The geometry and CSF model are unchanged.
+# The returned SP e.j is therefore read as G.J.
+# --------------------------------------------------------
+
+gj_g_carrier = analyse_torsion_carrier(
+    field,
+    z=z,
+    mesh=mesh,
+)
+
+
+# --------------------------------------------------------
+# 4. Explicit comparison
+# --------------------------------------------------------
+
+print("\n" + "=" * 70)
+print("TORSION CARRIER COMPARISON")
+print("=" * 70)
+
+print(f"nu                         = {nu:.6f}")
+print(f"G/E                        = {1.0 / (2.0 * (1.0 + nu)):.12f}")
+print(f"SP e.j [E-carrier]          = {ej_e_carrier:.6f}")
+print(f"CSF/SP e.j [G-carrier]      = {gj_g_carrier:.6f}")
+print()
+print("Interpretation:")
+print("  E-carrier: SP elastic_modulus := E_i  -> e.j is E.J")
+print("  G-carrier: SP elastic_modulus := G_i  -> e.j is G.J")
+
+
+# --------------------------------------------------------
+# 5. CSF visualization
+# --------------------------------------------------------
+
+viz = Visualizer(field)
+viz.plot_section_2d(z=z)
+
+plt.show()
+```
