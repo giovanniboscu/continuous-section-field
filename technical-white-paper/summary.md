@@ -169,39 +169,44 @@ and cross-sectional evolution.
 
 ### 2.6 Relation to existing tools and structural limitations
 
+
 Most section properties evaluated by CSF follow directly from the weighted
 area-integral formulation of Section 2.2. The Saint-Venant torsional constant
 $J_\mathrm{sv}$ is the one exception: it depends on the full geometry of the
 section through a warping problem and cannot be obtained from a direct area
-integral. CSF computes $J_\mathrm{sv}$ when the user explicitly tags polygons as
-closed cells (`@cell`) or open thin walls (`@wall`). Untagged polygons do
-not contribute to the torsional constant. For tagged geometries the
-computation decomposes into two contributions:
+integral.
 
-$$J_\mathrm{sv} = J_\mathrm{sv,cell} + J_\mathrm{sv,wall}$$
+CSF provides an internal approximation of $J_\mathrm{sv}$ when the user
+explicitly tags polygons as closed cells (`@cell`) or open thin walls
+(`@wall`). Untagged polygons do not contribute to the torsional constant.
+For each category, CSF computes and reports the contributions independently:
 
-$$J_\mathrm{sv,cell} = \sum_k \frac{4 A_{m,k}^2\, t_k}{b_{m,k}}, \qquad J_\mathrm{sv,wall} = \sum_i \frac{b_i\, t_i^3}{3}$$
+$$J_\mathrm{sv,cell} = \sum_k \frac{4 A_{m,k}^2\, t_k}{b_{m,k}}, \qquad
+J_\mathrm{sv,wall} = \sum_i \frac{b_i\, t_i^3}{3}$$
 
 where the first term applies the Bredt formula to each closed cell using
 mean area and perimeter quantities, and the second term sums the thin-wall
-contribution of each open wall. This decomposition is valid when cells and
+contribution of each open wall. The two quantities are presented separately
+so that the user can inspect the relative weight of each contribution and
+verify that each component is physically meaningful. Their combination is
+left to the user and is valid only under the following hypotheses: cells and
 walls do not share closed contours, all components have the same unit twist,
-and thin-wall assumptions hold. It is not valid for thick-walled sections,
-multi-cell configurations with shared walls, or geometries where open walls
-are physically connected to a cell boundary. In those cases a full
-Saint-Venant warping analysis is required and the polygonal geometry
-provided by CSF can be passed to a finite-element section solver such as
-`sectionproperties`.
+open walls have free ends, and thin-wall assumptions hold throughout.
 
+Beyond these hypotheses - thick-walled sections, multi-cell configurations
+with shared walls, or open walls physically connected to a cell boundary -
+the internal CSF approximation is no longer valid. In those cases CSF must
+export the polygonal geometry at the required stations to a finite-element
+section solver such as `sectionproperties` for a full Saint-Venant warping
+analysis.
 
 More broadly, CSF is not a section-analysis tool and does not replace
 finite-element section solvers. Its role is to provide a continuous,
 evaluable geometric and participation field. Where the properties computed
 directly by CSF are sufficient, as in many practical beam and tower models,
-no external properties calculator is required. Where they are not, the continuous geometric
+no external solver is required. Where they are not, the continuous geometric
 field serves as the input to a more detailed analysis, with the station
 sampling fully controlled by the user.
-
 
 ---
 
