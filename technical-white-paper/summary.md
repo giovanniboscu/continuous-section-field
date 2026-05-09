@@ -173,8 +173,10 @@ Most section properties evaluated by CSF follow directly from the weighted
 area-integral formulation of Section 2.2. The Saint-Venant torsional constant
 $J_\mathrm{sv}$ is the one exception: it depends on the full geometry of the
 section through a warping problem and cannot be obtained from a direct area
-integral. CSF computes $J_\mathrm{sv}$ through an approximation that
-decomposes the section into closed cells and open thin walls:
+integral. CSF computes $J_\mathrm{sv}$ when the user explicitly tags polygons as
+closed cells (`@cell`) or open thin walls (`@wall`). Untagged polygons do
+not contribute to the torsional constant. For tagged geometries the
+computation decomposes into two contributions:
 
 $$J_\mathrm{sv} = J_\mathrm{sv,cell} + J_\mathrm{sv,wall}$$
 
@@ -198,7 +200,6 @@ directly by CSF are sufficient, as in many practical beam and tower models,
 no external solver is required. Where they are not, the continuous geometric
 field serves as the input to a more detailed analysis, with the station
 sampling fully controlled by the user.
-
 ---
 
 ## 3. Declarative numerical workflow
