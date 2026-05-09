@@ -50,12 +50,11 @@ CSF can be used as a Python library or through a file-based YAML workflow. The Y
 
 The geometry file defines:
 
-- reference stations;
+- reference stations (`S0` and `S1`);
 - polygonal regions;
 - vertex coordinates;
-- axial/bending weights;
-- shear/torsion weights;
-- longitudinal participation laws.
+- endpoint participation values;
+- longitudinal laws for `w_i(z)` and `shear_w_i(z)`.
 
 The action file defines:
 
