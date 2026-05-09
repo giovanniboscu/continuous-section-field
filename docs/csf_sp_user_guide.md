@@ -21,7 +21,7 @@ fields rather than a set of disconnected cross-sections.
 outputs against sectionproperties. It turned out to be the most direct path to continuous
 section properties along a member axis.
 
-A specific issue arises for torsion in composite or graded sections: sectionproperties
+A specific issue arises [CSF](https://github.com/giovanniboscu/continuous-section-field) and [Verification Note](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/validation_local_g_carrier_torsional_stiffness.md)   for torsion in composite or graded sections: sectionproperties
 returns `e.j` using the material data attached to the section model. This is appropriate
 for the native SP workflow, but it does not directly solve the case where CSF carries
 independent axial/bending participation and shear/torsional participation fields.
