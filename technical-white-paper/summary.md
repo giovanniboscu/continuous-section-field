@@ -106,13 +106,30 @@ The examples should emphasize that the same declarative model can generate diffe
 
 ## 8. Research contribution
 
-The main contribution of CSF is a continuous field-based representation of beam-like structural members, in which evolving sectional geometry, axial/bending participation, and shear/torsional participation are treated as coupled longitudinal fields.
+The main contribution of CSF is a continuous field-based representation of
+beam-like structural members, in which evolving sectional geometry,
+axial/bending participation, and shear/torsional participation are treated
+as coupled longitudinal fields.
 
-This representation provides a general computational layer between geometric section descriptions and downstream beam-level simulations. It enables reproducible construction, evaluation, inspection, and export of continuous section-property fields for members whose properties vary along the longitudinal axis.
+This representation provides a general computational layer between geometric
+section descriptions and downstream beam-level simulations. It enables
+reproducible construction, evaluation, inspection, and export of continuous
+section-property fields for members whose properties vary along the
+longitudinal axis.
 
-The continuous geometric field provided by CSF is designed to interface with external section-analysis solvers. Evaluating the field at any required set of stations - for example Gauss–Lobatto points - and passing the resulting polygonal geometry to a tool such as `sectionproperties` for detailed property computation is a natural use of the framework. CSF and section solvers are therefore complementary layers in a pre-processing pipeline, each operating at its own level of abstraction.
+The continuous geometric field provided by CSF is designed to interface with
+external section-analysis solvers when detailed sectional properties are
+required. For many practical cases the properties computed directly by CSF
+are sufficient for downstream beam-level simulations. Where additional detail
+is needed, evaluating the field at any required set of stations — for example
+Gauss–Lobatto points — and passing the resulting polygonal geometry to a tool
+such as `sectionproperties` is a natural extension of the workflow. CSF and
+section solvers are therefore complementary layers in a pre-processing
+pipeline, each operating at its own level of abstraction.
 
-The contribution is therefore not limited to the calculation of isolated section properties. It is the formulation of a member-level sectional field and its declarative implementation in a reusable computational framework.
+The contribution is therefore not limited to the calculation of isolated
+section properties. It is the formulation of a member-level sectional field
+and its declarative implementation in a reusable computational framework.
 
 ## Acknowledgements
 
