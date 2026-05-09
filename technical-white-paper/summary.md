@@ -118,7 +118,7 @@ $$P(z) = \sum_{i=1}^{n} w_i(z) \iint_{\Omega_i(z)} f(x,y,z)\,\mathrm{d}A$$
 where $f(x,y,z)$ is the integrand corresponding to the property of interest
 (unity for area, $y^2$ for the second moment of area about the $x$-axis,
 and so on). Geometry $\Omega_i$ and material weight $w_i$ are fully decoupled:
-one can vary independently of the other.
+one can vary independently of the other. For polygonal domains, the area integrals in the above expression are evaluated exactly via Green's theorem, reducing each double integral to a closed-form sum over the polygon edges. No numerical quadrature is required; the result is exact for the given polygonal geometry.
 
 The standard separable formulation is recovered as the special case in which
 all zones share the same weight law: $w_i(z) = w(z)$ for all $i$.
