@@ -1,81 +1,122 @@
+# A Field-Based Framework for the Continuous Modelling of Non-Prismatic Structural Members
 
+Continuous Section Field (CSF) is a field-based computational framework for the continuous modelling of non-prismatic structural members whose geometry and sectional participation vary along the longitudinal axis. Its purpose is to transform a member-level geometric description into continuous section-property fields and station-wise data suitable for beam, tower, bridge, and finite-element workflows.
 
-## A Field-Based Framework for the Continuous Modelling of Non-Prismatic Structural Members
+The central idea of CSF is to treat the cross-section as a field defined along `z`, rather than as a single isolated object. A user defines polygonal cross-sections at reference stations, usually `S0` and `S1`; CSF interpolates corresponding polygon vertices to generate intermediate sections and evaluates properties such as area, centroid, second moments of area, principal inertias, section moduli, torsional constants, stiffness-weighted quantities, and mass-related properties at any requested station.
 
-Continuous Section Field (CSF) is a Field-Based Framework for the Continuous Modeling of Non-Prismatic Structural Members whose geometry and sectional participation vary along the longitudinal axis. Its main purpose is to turn a member-level geometric description into station-wise section properties that can be used in beam, tower, bridge, and finite element workflows.
+The change of paradigm is the explicit separation between geometry and sectional participation. Geometry defines where each polygonal region is located along the member. Two independent longitudinal participation fields define how much each region contributes: the axial/bending field `w_i(z)` and the shear/torsion field `shear_w_i(z)`. These fields can represent stiffness ratios, degraded regions, reinforcement, voids, density-like quantities, or other user-defined sectional contributions. They may be interpolated from endpoint values, derived from an isotropic relation, or specified through custom laws depending on the longitudinal coordinate and on geometric quantities.
 
-The central idea of CSF is to treat the cross-section not as a single isolated object, but as a field defined along `z`. A user defines polygonal cross-sections at reference stations, usually `S0` and `S1`; CSF then interpolates corresponding polygon vertices to generate intermediate sections and evaluates properties such as area, centroid, second moments of area, principal inertias, section moduli, torsional constants, and stiffness-weighted quantities at any station.
+The continuous model can be defined through a Python API or through a declarative YAML workflow. In the YAML workflow, one file defines the continuous member and another file defines the requested computations, plots, inspections, station sampling, and exports. The YAML file does not define a discrete table of section properties; it defines the geometry and participation laws from which CSF constructs continuous sectional fields.
 
-The change of paradigm is the explicit separation between geometry and sectional participation. Geometry defines where each polygonal region is located along the member. Two independent longitudinal participation fields define how much each region contributes: the axial/bending field `w_i(z)` and the shear/torsion field `shear_w_i(z)`. These fields can represent stiffness ratios, degraded regions, reinforcement, voids, density-like quantities, or other user-defined sectional contributions. They may be interpolated from endpoint values, derived from an isotropic relation, or specified through custom laws that depend on the longitudinal coordinate and on geometric quantities.
+Discrete stations are therefore evaluation points of an already defined continuous field. For example, Gauss–Lobatto stations obtained through the API can be used as quadrature-compatible sampling points for downstream beam formulations, but they do not define the field itself. This distinction allows CSF to preserve a continuous member representation while generating solver-facing station-wise data when required.
 
-CSF can be used through a Python API or through a file-based YAML workflow. The YAML workflow separates the definition of the continuous member from the requested computations, plots, and exports, allowing the same geometry to be reused in reproducible analysis pipelines. The package also provides interoperability tools for OpenSees [@mckenna2011opensees], SAP2000, and `sectionproperties` [@vandenbergh2023sectionproperties].
+## 1. Motivation
 
-# Statement of need
+Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required input for a numerical model is not a single section, but a longitudinal field of section properties such as `A(z)`, `Cx(z)`, `Cy(z)`, `EI_x(z)`, `EI_y(z)`, `GJ(z)`, and mass-related quantities.
 
-Many engineering research problems involve members whose cross-section changes along their length: tapered wind turbine towers, haunched bridge girders, variable-depth beams, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required input for downstream solvers is not one section, but a field of section properties such as `A(z)`, `EI_x(z)`, `EI_y(z)`, and `GJ(z)`.
+CSF addresses this modelling level directly. A member is represented as a continuous sectional field composed of evolving polygonal geometry, axial/bending participation `w_i(z)`, and shear/torsion participation `shear_w_i(z)`. From this representation, the same model can be sampled, inspected, plotted, validated, and exported at the stations required by a downstream numerical workflow.
 
-Most cross-section analysis tools are section-first. They provide accurate properties for a section at a given station, but the user remains responsible for creating all intermediate sections, preserving topological consistency, applying material or degradation laws, sampling the member, and exporting the results to a solver. This creates repeated custom scripting and increases the risk that geometry variation, material participation, and solver stations are handled inconsistently.
+The practical need is a reproducible way to define and evaluate sectional fields when geometry, effective material participation, and solver sampling are all varying along the member axis. CSF provides this as a dedicated pre-processing layer for beam-like structural models.
 
-CSF is designed for researchers and engineers who need a reproducible way to define, sample, inspect, and export continuous sectional models. Its target users include structural engineering researchers, wind turbine modelers, bridge and tower analysts, and developers who need section-property fields as inputs to beam-level or aeroelastic simulations. The software is especially useful when a sectional model must combine geometric taper, multi-region composition, longitudinal stiffness variation, and solver-specific tabular output.
+## 2. Continuous section-field formulation
 
-The key need addressed by CSF is therefore not another single-section calculator. It is a field-level modelling layer that makes the longitudinal evolution of a section a first-class object. This allows a structural member to be represented by coupled but independently controlled fields: geometry, axial/bending participation, and shear/torsion participation.
+Let `z` be the longitudinal coordinate of the member. For each polygonal region `i`, CSF defines three coupled fields:
 
-# State of the field
+- the evolving polygonal geometry `P_i(z)`;
+- the axial/bending participation field `w_i(z)`;
+- the shear/torsion participation field `shear_w_i(z)`.
 
-Several open-source tools address important parts of cross-section analysis. `sectionproperties` provides finite-element-based analysis of arbitrary cross-sections, including warping-based torsion [@vandenbergh2023sectionproperties]. `cross-section` provides sectional property calculations for individual profiles [@de2022cross]. OpenFAST and BeamDyn consume distributed structural properties for wind turbine analysis, but the user must supply the corresponding sectional tables [@jonkman2021openfast; @wang2016beamdyn]. OpenSees is a general finite element framework in which beam-column formulations require section definitions or section properties at element integration points [@mckenna2011opensees].
+At any station `z`, the section is assembled from the set of polygonal regions:
 
-CSF occupies a different layer in this ecosystem. It represents the member as a continuous sectional field, samples it at requested stations, and exports solver-ready data. This makes it complementary to single-section tools rather than a replacement for them. Through the `csf_sp` bridge, CSF can send any station of the continuous field to `sectionproperties` for finite-element section analysis. Through the reverse `sp_csf` bridge, parametric sections from `sectionproperties` can be converted into CSF YAML geometries and then treated as evolving members.
+`S(z) = {P_i(z), w_i(z), shear_w_i(z)}`
 
-The build-versus-contribute justification follows from this modelling level. Extending a single-section analysis package would not by itself provide a field representation with polygon-pair interpolation, independent longitudinal participation laws, nested composition, YAML action workflows, and solver export. CSF provides these capabilities as a dedicated pre-processing layer for continuous sectional models.
+The geometric field `P_i(z)` is generated by interpolating corresponding polygon vertices between reference sections. The participation fields are evaluated independently at the same station. Section properties are then computed from the generated station section and the corresponding participation values.
 
-# Software design
+This means that CSF constructs sectional quantities from the continuous member representation itself. The output table is a projection of the field at selected stations, not the primary definition of the model.
 
-CSF is built around a compact data model: vertices define polygonal regions, polygons form sections, and ordered section pairs define a continuous member. Corresponding polygon vertices are interpolated along the longitudinal coordinate, producing a deterministic intermediate section at any requested `z`. Section properties are then computed from the generated station section.
+## 3. Geometry and participation fields
 
-The main architectural choice is to keep geometry and participation separate. A polygon has an evolving shape, while its axial/bending contribution and shear/torsion contribution are controlled by `w_i(z)` and `shear_w_i(z)`. This avoids forcing all sectional effects through a single scalar. For example, a region may follow one participation law for axial and bending terms and another for torsion-related quantities. The `iso(nu)` shortcut links the two fields through an isotropic relation when appropriate, while explicit laws allow more general models.
+The geometry field controls the spatial evolution of each polygonal region. It defines the position and shape of each region along `z`, including tapering, translation of centroids, changes in dimensions, and multi-region composition.
 
-A second design choice is to keep the same model available through two interfaces. The Python API supports scripted construction, testing, parameter studies, and integration in larger programs. The YAML action workflow supports reproducible file-based runs in which one file defines the continuous member and another file defines computations, plots, inspections, and exports. This division makes CSF usable both as a library and as a command-line research tool.
+The axial/bending participation field `w_i(z)` controls the contribution of each polygonal region to area-like, axial, bending, inertia, stiffness-weighted, or mass-like quantities, depending on the selected calculation path.
 
-The torsion workflow is stratified. CSF includes analytical paths for thin-walled closed cells and open wall components, a Roark-type approximation with a fidelity indicator for general sections, and an optional finite-element route through `sectionproperties`. This provides fast built-in estimates while preserving access to higher-fidelity warping analysis when required.
+The shear/torsion participation field `shear_w_i(z)` controls the corresponding contribution to shear- and torsion-related quantities. This second field allows the model to represent cases in which axial/bending participation and shear/torsional participation follow different longitudinal laws.
 
-# Research impact statement
+The `iso(nu)` shortcut can be used when the two fields are linked through an isotropic relation. More general cases can be expressed through explicit user-defined laws.
 
-CSF is currently a single-author open-source project. Its research significance
-does not rely on an established external user community, but on the reproducible
-modelling workflow it provides for structural members whose sectional properties
-vary along the longitudinal axis.
+## 4. Declarative numerical workflow
 
-The software has been developed and tested through reference research workflows
-in which continuous section-property fields are generated from evolving
-polygonal geometry and longitudinal participation laws. These workflows include
-non-prismatic beam and tower models, solver-oriented station sampling, OpenSees
-export, OpenFAST/BModes-oriented tower-property generation, and comparisons with
-analytical or finite-element section-property calculations.
+CSF can be used as a Python library or through a file-based YAML workflow. The YAML workflow separates the continuous member definition from the requested numerical actions.
 
-CSF contributes a reusable modelling abstraction rather than a one-off analysis
-script: a member is represented as a continuous field composed of geometry,
-axial/bending participation `w_i(z)`, and shear/torsion participation
-`shear_w_i(z)`. This makes it possible to generate consistent tabular inputs for
-downstream beam, tower, and aeroelastic solvers from a single declarative
-section model.
+The geometry file defines:
 
-Near-term scholarly significance is supported by the reproducible reference
-materials distributed with the package: documented YAML workflows, Python API
-examples, validation cases, solver export examples, and interoperability with
-the established `sectionproperties` ecosystem. These materials allow other
-researchers to install the package, inspect the model assumptions, reproduce the
-reported section-property fields, and adapt the workflow to tapered, graded,
-composite, repaired, or otherwise spatially varying beam-like members.
-.
+- reference stations;
+- polygonal regions;
+- vertex coordinates;
+- axial/bending weights;
+- shear/torsion weights;
+- longitudinal participation laws.
 
-# Acknowledgements
+The action file defines:
 
-The author thanks the developers of `sectionproperties` [@vandenbergh2023sectionproperties] for providing the open finite-element section-analysis backend used by the CSF integration workflow.
+- station sets;
+- plots;
+- section inspections;
+- property evaluations;
+- exports;
+- validation-oriented outputs.
 
+This separation makes the same continuous model reusable across different numerical studies. A single member definition can be sampled at dense stations for inspection, at Gauss–Lobatto stations for quadrature-compatible beam input, or at user-defined stations for comparison with external data.
 
+## 5. Station-wise evaluation and solver-facing output
 
-># AI usage disclosure
->
->ChatGPT was used for drafting assistance, copy-editing, and code-review suggestions. All AI-generated content was reviewed, validated, and approved by the author, who retains full responsibility for the scientific claims, >software implementation, and manuscript
+A central feature of CSF is that station-wise data are generated from the continuous field. The user may request properties at arbitrary stations, including uniformly spaced stations, manually defined stations, or integration-compatible points.
 
-# References
+For example, a beam formulation may require section properties at Gauss–Lobatto points. CSF can evaluate the continuous field directly at those points and export the corresponding values. The sampling strategy is therefore tied to the downstream numerical method, while the underlying member model remains unchanged.
+
+This provides a clean distinction between:
+
+- the continuous sectional model;
+- the station set used for numerical evaluation;
+- the exported table consumed by an external solver.
+
+## 6. Validation strategy
+
+The validation of CSF should be framed as validation of the field formulation and of its numerical implementation. Suitable validation cases include:
+
+- analytical sections with known area, centroid, inertia, and torsional quantities;
+- non-prismatic members with predictable geometric evolution;
+- hollow or nested sections with known reference behaviour;
+- multi-region sections with independent participation fields;
+- comparisons with finite-element section analysis at selected stations;
+- convergence checks under station refinement or mesh refinement where applicable.
+
+The validation should show that CSF correctly constructs the continuous geometric field, evaluates the participation laws consistently, and produces station-wise sectional quantities compatible with independent analytical or numerical references.
+
+## 7. Application examples
+
+Representative applications should demonstrate the modelling level targeted by CSF:
+
+- tapered members with continuously varying sectional geometry;
+- members with longitudinal stiffness degradation;
+- hybrid or multi-region sections with different participation laws;
+- tower-like members requiring distributed section-property tables;
+- cases where axial/bending and shear/torsion participation are intentionally different.
+
+The examples should emphasize that the same declarative model can generate different station-wise projections depending on the target numerical workflow.
+
+## 8. Research contribution
+
+The main contribution of CSF is a continuous field-based representation of beam-like structural members, in which evolving sectional geometry, axial/bending participation, and shear/torsional participation are treated as coupled longitudinal fields.
+
+This representation provides a general computational layer between geometric section descriptions and downstream beam-level simulations. It enables reproducible construction, evaluation, inspection, and export of continuous section-property fields for members whose properties vary along the longitudinal axis.
+
+The contribution is therefore not limited to the calculation of isolated section properties. It is the formulation of a member-level sectional field and its declarative implementation in a reusable computational framework.
+
+## Acknowledgements
+
+The author thanks the developers of `sectionproperties` for providing an open finite-element section-analysis ecosystem that can be used in validation and interoperability workflows.
+
+## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
+
+During the preparation of this work, the author used ChatGPT for drafting assistance, copy-editing, and code-review suggestions. After using this tool, the author reviewed, edited, and validated the content as needed and takes full responsibility for the scientific claims, software implementation, and manuscript.
