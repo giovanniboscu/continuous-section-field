@@ -50,7 +50,7 @@ CSF can be used as a Python library or through a file-based YAML workflow. The Y
 
 The geometry file defines:
 
-- reference stations (`S0` and `S1`);
+- pairs of reference stations defining one or more longitudinal interpolation intervals;
 - polygonal regions;
 - vertex coordinates;
 - endpoint participation values;
