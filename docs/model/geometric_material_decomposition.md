@@ -68,7 +68,7 @@ field composed of evolving polygonal geometry, axial/bending participation
 $w_i(z)$, and shear/torsion participation $\kappa_i(z)$. This representation
 is defined, evaluated, inspected, and validated independently of any
 downstream solver. The solver receives a station-wise projection of an
-already defined continuous field — not a table that defines the model itself.
+already defined continuous field - not a table that defines the model itself.
 
 The result is a clean separation between three concerns that are normally
 conflated: the continuous physical model of the member, the numerical
@@ -163,8 +163,8 @@ requirement is that the function be evaluable at any requested station.
 | C | Polygonal representation | Curved boundaries must be approximated by polygon discretisation |
 | D | Straight element axis | CSF models a single element along a straight $z$-axis; curved members are not supported |
 
-Multiple straight elements can be composed in sequence — each with its own
-geometry and participation fields — to represent members of arbitrary length
+Multiple straight elements can be composed in sequence - each with its own
+geometry and participation fields - to represent members of arbitrary length
 and cross-sectional evolution.
 
 ### 2.6 Note on the torsional constant
@@ -285,8 +285,8 @@ and is therefore inseparable from its mesh, conventions, and output format.
 CSF makes this mapping explicit, continuous, and solver-agnostic.
 
 The framework represents a beam-like member as a coupled set of longitudinal
-fields — evolving polygonal geometry, axial/bending participation $w_i(z)$,
-and shear/torsion participation $\kappa_i(z)$ — that are defined and
+fields - evolving polygonal geometry, axial/bending participation $w_i(z)$,
+and shear/torsion participation $\kappa_i(z)$ - that are defined and
 evaluated independently of any downstream solver. Station-wise data are a
 projection of this continuous model, not its definition. The same member
 description can therefore be sampled at different station sets, validated
@@ -297,8 +297,8 @@ The continuous geometric field provided by CSF is designed to interface with
 external section-analysis solvers when detailed sectional properties are
 required. For many practical cases the properties computed directly by CSF
 are sufficient for downstream beam-level simulations. Where additional detail
-is needed, evaluating the field at any required set of stations — for example
-Gauss-Lobatto points — and passing the resulting polygonal geometry to a tool
+is needed, evaluating the field at any required set of stations - for example
+Gauss-Lobatto points - and passing the resulting polygonal geometry to a tool
 such as `sectionproperties` is a natural extension of the workflow. CSF and
 section solvers are therefore complementary layers in a pre-processing
 pipeline, each operating at its own level of abstraction.
