@@ -1,9 +1,9 @@
-# Tutorial — Running CSF with YAML Actions (No Python Coding)
+# Tutorial - Running CSF with YAML Actions (No Python Coding)
 
 This tutorial explains, step by step, how to reproduce the **tapered-rectangle example** using **only two YAML files**:
 
-- `geometry.yaml` — defines the cross-section geometry at a few reference stations.
-- `actions.yaml` — tells CSF what to compute and which plots/files to generate.
+- `geometry.yaml` - defines the cross-section geometry at a few reference stations.
+- `actions.yaml` - tells CSF what to compute and which plots/files to generate.
 
 The goal is to make the workflow clear for **students and instructors** who are comfortable with geometry and structural basics, but do not want to write Python.
 
@@ -11,7 +11,7 @@ The goal is to make the workflow clear for **students and instructors** who are 
 
 ## 1. What CSF Does (Conceptual Overview)
 
-CSF (Continuous Section Field) represents a member whose cross-section changes along the longitudinal axis **z**.
+CSF (Continuous Section Field) represents a member whose cross-section changes along the longitudinal axis **az**.
 
 You provide:
 
@@ -56,7 +56,7 @@ You can choose a different placement (e.g., centered in y as well). The physics 
 
 ---
 
-## 3. File 1 — `geometry.yaml`
+## 3. File 1 - `geometry.yaml`
 
 ### 3.1 What goes into geometry.yaml
 
@@ -171,7 +171,7 @@ CSF:
 
 ---
 
-## 4. File 2 — `actions.yaml`
+## 4. File 2 - `actions.yaml`
 
 ### 4.1 What actions.yaml controls
 
@@ -284,10 +284,10 @@ python CSFActions.py geometry.yaml actions.yaml
 
 Depending on your configured output paths, you should get:
 
-- `out/full.csv` — table of section properties at z = 0, 2.5, 5.0
-- `out/sections.bmp` — 2D section plot(s)
-- `out/properties.png` — curves of A, Ix, Iy, Cx, Cy along z
-- `out/exported_geometry.yaml` — exported end sections
+- `out/full.csv` - table of section properties at z = 0, 2.5, 5.0
+- `out/sections.bmp` - 2D section plot(s)
+- `out/properties.png` - curves of A, Ix, Iy, Cx, Cy along z
+- `out/exported_geometry.yaml` - exported end sections
 - (3D volume plot behavior depends on your implementation: show only, or show + save)
 
 If `out/` does not exist, create it first (or change output paths).
