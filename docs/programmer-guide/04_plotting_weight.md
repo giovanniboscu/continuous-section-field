@@ -5,8 +5,8 @@
 Use weight and shear weight plots to verify how each polygon weight `w(z)` and shear weight evolve along the member axis.
 
 This chapter covers:
-- per-polygon weight interpolation plots — `plot_weight` / `set_weight_laws`
-- per-polygon shear weight interpolation plots — `plot_shear_weight` / `set_shear_weight_laws`
+- per-polygon weight interpolation plots - `plot_weight` / `set_weight_laws`
+- per-polygon shear weight interpolation plots - `plot_shear_weight` / `set_shear_weight_laws`
 
 ---
 
@@ -356,7 +356,7 @@ plt.show()
 
 ---
 
-# Shear weight laws — `set_shear_weight_laws(...)`
+# Shear weight laws - `set_shear_weight_laws(...)`
 
 ```python
 set_shear_weight_laws(self, laws)
@@ -376,7 +376,7 @@ section_field.set_shear_weight_laws([
 
 ## Expression modes
 
-### 1. Isotropic declaration — `iso(nu)`
+### 1. Isotropic declaration - `iso(nu)`
 
 ```python
 section_field.set_shear_weight_laws([
