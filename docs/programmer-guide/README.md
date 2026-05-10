@@ -30,7 +30,6 @@ mkdir csf_project
 cd csf_project
 ```
 
-opensees_export.md
 
 ## Chapters
 1. [01_geometry model](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/01_geometry_model.md)
