@@ -480,5 +480,25 @@ Pass a list with multiple indices to plot more than one polygon:
 viz.plot_weight(num_points=100, poly_indices_to_plot=[0, 1])
 viz.plot_shear_weight(num_points=100, poly_indices_to_plot=[0, 1])
 ```
+Example:
+
+```python
+zsec_val = 10.0
+sec_at_z = section_field.section(zsec_val)
+
+section_field.set_weight_laws([
+         "lowerpart,lowerpart: E_lookup('zlookup_exponential.txt')"
+])
+section_field.set_shear_weight_laws([
+    "lowerpart,lowerpart : iso(0.2)",
+])    
+# =================================================================
+# Plot weight
+# =================================================================
+viz = Visualizer(section_field)
+viz.plot_weight(num_points=100, poly_indices_to_plot=None)  # None = all polygons
+viz.plot_shear_weight(num_points=100, poly_indices_to_plot=[0])
+plt.show()
+```
 
 If `poly_indices_to_plot` is omitted or set to `None`, all polygons are plotted (original behaviour).
