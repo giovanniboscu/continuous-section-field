@@ -1,4 +1,4 @@
-# 04 - Plotting Weight & shear_weght
+# 04 - Plotting weight & shear_weght
 
 ## Purpose
 
