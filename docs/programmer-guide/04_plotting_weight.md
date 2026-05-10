@@ -1,11 +1,12 @@
-# 04 - Plotting weight & shear_weght
+# 04 - Plotting weight & shear_weight
 
 ## Purpose
 
-Use weight plots to verify how each polygon weight `w(z)` evolves along the member axis.
+Use weight and shear weight plots to verify how each polygon weight `w(z)` and shear weight evolve along the member axis.
 
 This chapter covers:
-- per-polygon weight interpolation plots
+- per-polygon weight interpolation plots — `plot_weight` / `set_weight_laws`
+- per-polygon shear weight interpolation plots — `plot_shear_weight` / `set_shear_weight_laws`
 
 ---
 
@@ -14,8 +15,8 @@ This chapter covers:
 ```python
 # --- Core CSF imports used in this minimal example ---
 from csf import (
-    Pt, Polygon, Section, ContinuousSectionField,Visualizer,
-    section_full_analysis, section_print_analysis,section_full_analysis_keys
+    Pt, Polygon, Section, ContinuousSectionField, Visualizer,
+    section_full_analysis, section_print_analysis, section_full_analysis_keys
 )
 
 import matplotlib.pyplot as plt
@@ -37,8 +38,8 @@ See the example below.
 ```python
 # --- Core CSF imports used in this minimal example ---
 from csf import (
-    Pt, Polygon, Section, ContinuousSectionField,Visualizer,
-    section_full_analysis, section_print_analysis,section_full_analysis_keys
+    Pt, Polygon, Section, ContinuousSectionField, Visualizer,
+    section_full_analysis, section_print_analysis, section_full_analysis_keys
 )
 
 import matplotlib.pyplot as plt
@@ -68,7 +69,7 @@ if __name__ == "__main__":
             Pt( b/2,  h/2),
             Pt(-b/2,  h/2),
         ),
-        weight=1.0,#<=
+        weight=1.0,  # <=
         name="upperpart",
     )
 
@@ -79,7 +80,7 @@ if __name__ == "__main__":
             Pt( b/2,  0.0),
             Pt(-b/2,  0.0),
         ),
-        weight=1.5, # <= 
+        weight=1.5,  # <=
         name="lowerpart",
     )
 
@@ -129,7 +130,7 @@ if __name__ == "__main__":
     # Plot weight
     # =================================================================
     viz = Visualizer(section_field)
-    viz.plot_weight(num_points=100)
+    viz.plot_weight(num_points=100, poly_indices_to_plot=None)  # None = all polygons
     plt.show()
 ```
 
@@ -141,26 +142,44 @@ if no custom law is provided, interpolation is linear by default
 ## `plot_weight(...)`
 
 ```python
-plot_weight(self, num_points=100)
+plot_weight(self, num_points=100, poly_indices_to_plot=None)
 ```
 
 Plot interpolated polygon weights `w(z)` along the member axis, using one subplot per polygon.
 
-## custom weight law
+### Parameters
 
-The weight can also be defined in functional form using this syntax:
+- `num_points` (`int`, default: `100`)  
+  Number of sampling points between `self.field.s0.z` and `self.field.s1.z`.
+- `poly_indices_to_plot` (`list[int]` or `None`, default: `None`)  
+  List of **0-based** polygon indices to include in the plot. If `None`, all polygons are plotted.
 
-On the left, there are the names of the corresponding polygons in section s0 and section s1.
+### Behavior
 
-"lowerpart,lowerpart"
+- Sampling coordinates are generated with `np.linspace(z_start, z_end, num_points)`.
+- For each sampled `z` and each polygon index `i`, the function evaluates:
+  - `p0 = self.field.s0.polygons[i]`
+  - `p1 = self.field.s1.polygons[i]`
+  - optional law from `self.field.weight_laws[i+1]` (if present)
+  - interpolated weight via `self.field._interpolate_weight(...)`
+- One subplot is generated per polygon with:
+  - curve `w(z)`
+  - y-label: `s0 <name0> - s1 <name1>`
+  - automatic y-limits with margin
+  - grid and per-polygon title
 
-The polygon names are not required to be the same.
+### Output
 
+- Produces matplotlib plots (`plt.show()`).
+- No explicit return value.
 
+---
+
+## `set_weight_laws(...)`
 
 ```python
 section_field.set_weight_laws([
-    "lowerpart,lowerpart: put your funcion w(z) or w(t) here",
+    "lowerpart,lowerpart: put your function w(z) or w(t) here",
 ])
 ```
 The independent variable can be either `z` (physical coordinate) or `t` (normalized coordinate in `[0, 1]`).
@@ -176,16 +195,9 @@ The following variables are available in weight-law expressions:
 | **`L`** | Total physical length of the member | `w0 + (z / L) * 0.1` |
 | **`np`** | NumPy namespace | `np.sin(...)`, `np.exp(...)`, `np.sqrt(...)` |
 
-
-The following helper functions are available in weight-law expressions:
-
-### Geometric and Data Functions
-
 The following helper functions are available in weight-law expressions.
 
 **Important:** polygon vertex indexing is **1-based** (the first vertex is `1`, not `0`).
-
-### Geometric and Data Functions
 
 | Function | Meaning | Example Law Expression |
 | :--- | :--- | :--- |
@@ -195,52 +207,24 @@ The following helper functions are available in weight-law expressions.
 | **`E_lookup(file)`** | Interpolated scalar read from an external text file | `E_lookup('stiffness.txt')` |
 | **`T_lookup(file)`** | Interpolated scalar read from an external text file using normalized `t` in `[0, 1]` | `T_lookup('stiffness.txt')` |
 
-
-### For example, the following law can be defined along `z`:
+### Half-cosine smooth ramp
 
 ```python
-
-
-    # -------------------------------------------------------
-    # Section field instantiation
-    # -------------------------------------------------------
-    # Define start/end sections and create the continuous field.
-    L = 10.0
-
-    s0 = Section(polygons=(poly_bottom_start, poly_top_start), z=0.0)
-    s1 = Section(polygons=(poly_bottom_end,   poly_top_end),   z=L)
-
-    section_field = ContinuousSectionField(section0=s0, section1=s1)
-
-    section_field.set_weight_laws([
-       "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
-    ])  
-
-
+section_field.set_weight_laws([
+    "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
+])
 ```
 
-This represents a half-cosine smooth degradation law (also called a cosine ramp degradation), with gradual variation from w0 to w1 along the member length.
+This represents a half-cosine smooth degradation law (cosine ramp), with gradual variation from `w0` to `w1`.
 
 ![Figure_11](https://github.com/user-attachments/assets/8e142df7-f5db-4128-a2ad-9dfcbec0ea54)
 
+### 3-step piecewise law on normalized `t`
 
-
-This is a **3-step piecewise law** on normalized `t` (`0..1`):
 ```python
-    # -------------------------------------------------------
-    # Section field instantiation
-    # -------------------------------------------------------
-    # Define start/end sections and create the continuous field.
-    L = 10.0
-
-    s0 = Section(polygons=(poly_bottom_start, poly_top_start), z=0.0)
-    s1 = Section(polygons=(poly_bottom_end,   poly_top_end),   z=L)
-
-    section_field = ContinuousSectionField(section0=s0, section1=s1)
-
-   section_field.set_weight_laws([
-        "lowerpart,lowerpart :np.where(t < 1/3, w0, np.where(t < 2/3, 0.5*(w0 + w1), w1))", 
-    ])  
+section_field.set_weight_laws([
+    "lowerpart,lowerpart : np.where(t < 1/3, w0, np.where(t < 2/3, 0.5*(w0 + w1), w1))",
+])
 ```
 
 ![Figure_12](https://github.com/user-attachments/assets/81645c39-f894-4228-8b1f-0dabac953319)
@@ -252,8 +236,6 @@ This is a **3-step piecewise law** on normalized `t` (`0..1`):
 Lookup functions read values from a plain text **key-value** table.
 
 `T_lookup(...)` and `E_lookup(...)` return numeric values, so they can be used directly inside mathematical expressions.
-
-example
 
 ```python
 section_field.set_weight_laws([
@@ -287,15 +269,11 @@ Use a text file with two columns per row:
 10.0  1.80e11
 ```
 
-Usage in a law expression:
-
 ```python
-
 section_field.set_weight_laws([
     "lowerpart,lowerpart : E_lookup('stiffness_z.txt')",
 ])
 ```
----
 
 ## Example for `T_lookup(...)` (key = `t` in `[0, 1]`)
 
@@ -308,22 +286,15 @@ section_field.set_weight_laws([
 1.00  0.70
 ```
 
-Usage in a law expression:
-
 ```python
-
 section_field.set_weight_laws([
     "lowerpart,lowerpart : T_lookup('stiffness_t.txt')",
 ])
 ```
 
-# Example with lookup file 
+## Normalized lookup-file example
 
-To use a normalized lookup-file example, create a text file named:
-
-`wnormlookup.txt`
-
-with the following content:
+Create a text file named `wnormlookup.txt`:
 
 ```txt
 # t    value
@@ -340,35 +311,23 @@ with the following content:
 1.000000 1.00000
 ```
 
-this is the function you need to set up 
+```python
+section_field.set_weight_laws([
+    "lowerpart,lowerpart: T_lookup('wnormlookup.txt')"
+])
 
+viz = Visualizer(section_field)
+viz.plot_weight(num_points=100, poly_indices_to_plot=None)  # None = all polygons
+plt.show()
 ```
-    # -------------------------------------------------------
-    # Extract one section and print
-    # -------------------------------------------------------
-    # Here z = 10.0, so this is exactly the end section (S1).
-    section_field.set_weight_laws([
-            f"lowerpart,lowerpart: T_lookup('wnormlookup.txt' )" 
-        ])
-    
-    # =================================================================
-    # Plot weight
-    # =================================================================
-    viz = Visualizer(section_field)
-    viz.plot_weight(num_points=100)
-    plt.show()
-``` 
 
 ![Figure_17](https://github.com/user-attachments/assets/2ccaca88-25fd-49be-8450-b1d113ee9159)
 
+## Non-normalized lookup-file example
 
-## no normalized lookup-file example
+Create a text file named `zlookup_exponential.txt`:
 
-create a text file named:
-
-zlookup_exponential.txt
-
-``` 
+```txt
 # z    value
 0.000000 1.000000
 1.000000 0.525197
@@ -382,45 +341,144 @@ zlookup_exponential.txt
 9.000000 0.200144
 10.000000 0.200000
 ```
-this is the function you need to set up 
 
 ```python
+section_field.set_weight_laws([
+    "lowerpart,lowerpart: E_lookup('zlookup_exponential.txt')"
+])
 
-    section_field.set_weight_laws([
-            f"lowerpart,lowerpart: E_lookup('zlookup_exponential.txt' )" 
-        ])
-    
-    # =================================================================
-    # Plot weight
-    # =================================================================
-    viz = Visualizer(section_field)
-    viz.plot_weight(num_points=100)
-    plt.show()
+viz = Visualizer(section_field)
+viz.plot_weight(num_points=100, poly_indices_to_plot=None)  # None = all polygons
+plt.show()
 ```
+
 ![Figure_15](https://github.com/user-attachments/assets/3580a98c-e368-412f-bda3-b83cb8d8e940)
 
 ---
 
-## Parameters
+# Shear weight laws — `set_shear_weight_laws(...)`
+
+```python
+set_shear_weight_laws(self, laws)
+```
+
+Define per-polygon shear weight laws, analogous to `set_weight_laws` but governing the shear stiffness contribution of each polygon along the member axis.
+
+The syntax mirrors `set_weight_laws`:
+
+```python
+section_field.set_shear_weight_laws([
+    "poly_name_s0, poly_name_s1 : expression",
+])
+```
+
+---
+
+## Expression modes
+
+### 1. Isotropic declaration — `iso(nu)`
+
+```python
+section_field.set_shear_weight_laws([
+    "lowerpart,lowerpart : iso(0.2)",
+])
+```
+
+The shorthand `iso(nu)` declares the polygon as **isotropic** with Poisson's ratio `nu`.  
+Internally this is equivalent to `w / (2 * (1 + nu))`, but it is stored as an explicit isotropy flag.
+
+> **Important for `csf_sp` export:** only laws written as `iso(nu)` are recognised by the `csf_sp` bridge and exported to SP as isotropic sections. A numerically equivalent formula (see case 2 below) is evaluated correctly at runtime but is **not** flagged as isotropic during export.
+
+---
+
+### 2. Isotropic-equivalent formula (not flagged for export)
+
+```python
+section_field.set_shear_weight_laws([
+    "lowerpart,lowerpart : w / (2 * (1 + 0.2))",
+])
+```
+
+This produces the same numerical result as `iso(0.2)` but is treated as a generic expression. The `csf_sp` bridge will **not** export this polygon as an isotropic section toward SP.
+
+Use `iso(nu)` whenever SP-export compatibility is required.
+
+---
+
+### 3. Non-isotropic, dependent on `weight_laws`
+
+The variable `w` inside a shear weight expression refers to the **interpolated weight** returned by the corresponding `weight_laws` entry at the same `z`. This allows the shear law to track the flexural weight law:
+
+```python
+section_field.set_shear_weight_laws([
+    "lowerpart,lowerpart : w + t / 4",
+])
+```
+
+Here the shear weight evolves as the flexural weight `w(z)` plus a linear ramp `t/4`.
+
+---
+
+### 4. Non-isotropic, fully autonomous
+
+The shear law can also be completely independent of `weight_laws`, using only the standard variables (`z`, `t`, `np`, lookup functions, etc.):
+
+```python
+section_field.set_shear_weight_laws([
+    "lowerpart,lowerpart : t / 4 + 0.28",
+])
+```
+
+In this case the shear weight varies solely according to the expression, with no reference to the flexural weight.
+
+---
+
+## Available variables and functions
+
+All variables and helper functions available in `set_weight_laws` expressions are also available in `set_shear_weight_laws` expressions, with the addition of:
+
+| Variable | Meaning |
+| :--- | :--- |
+| **`w`** | Interpolated flexural weight at the current `z`, as defined by the corresponding `weight_laws` entry |
+
+---
+
+## `plot_shear_weight(...)`
+
+```python
+plot_shear_weight(self, num_points=100, poly_indices_to_plot=None)
+```
+
+Plot interpolated polygon shear weights along the member axis, using one subplot per polygon. Behaviour and parameters are identical to `plot_weight`.
+
+### Parameters
 
 - `num_points` (`int`, default: `100`)  
   Number of sampling points between `self.field.s0.z` and `self.field.s1.z`.
+- `poly_indices_to_plot` (`list[int]` or `None`, default: `None`)  
+  List of **0-based** polygon indices to include in the plot. If `None`, all polygons are plotted.
 
-## Behavior
+---
 
-- Sampling coordinates are generated with `np.linspace(z_start, z_end, num_points)`.
-- For each sampled `z` and each polygon index `i`, the function evaluates:
-  - `p0 = self.field.s0.polygons[i]`
-  - `p1 = self.field.s1.polygons[i]`
-  - optional law from `self.field.weight_laws[i+1]` (if present)
-  - interpolated weight via `self.field._interpolate_weight(...)`
-- One subplot is generated per polygon with:
-  - curve `w(z)`
-  - y-label: `s0 <name0> - s1 <name1>`
-  - automatic y-limits with margin
-  - grid and per-polygon title
+## Selective polygon plotting
 
-## Output
+Both `plot_weight` and `plot_shear_weight` accept a `poly_indices_to_plot` argument to restrict the output to a subset of polygons. This is useful when a section contains many polygons and only a few are of interest.
 
-- Produces matplotlib plots (`plt.show()`).
-- No explicit return value.
+```python
+viz = Visualizer(section_field)
+
+# Plot only the first polygon (index 0) for both weight and shear weight
+viz.plot_weight(num_points=100, poly_indices_to_plot=[0])
+viz.plot_shear_weight(num_points=100, poly_indices_to_plot=[0])
+
+plt.show()
+```
+
+Pass a list with multiple indices to plot more than one polygon:
+
+```python
+viz.plot_weight(num_points=100, poly_indices_to_plot=[0, 1])
+viz.plot_shear_weight(num_points=100, poly_indices_to_plot=[0, 1])
+```
+
+If `poly_indices_to_plot` is omitted or set to `None`, all polygons are plotted (original behaviour).
