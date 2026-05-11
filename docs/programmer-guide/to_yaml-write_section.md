@@ -509,3 +509,196 @@ tsection1.yaml  -> materialized model, evaluated weights, laws only as comments
 `write_section(z0, z1, ...)` writes a materialized CSF model over the interval `[z0, z1]`. The endpoint sections in the generated file are evaluated sections: interpolated coordinates and effective weights have already been computed. For this reason, active `weight_laws` and `shear_weight_laws` are not written back into the YAML data structure. If needed, the original laws may be appended as commented traceability metadata under `APPLIED_LAWS_TRACE`.
 
 This distinction prevents accidental re-application of laws when the materialized YAML is parsed again, especially for laws that depend on endpoint context such as `w0` and `w1`.
+
+
+```
+# --- Core CSF imports used in this minimal example ---
+from csf import (
+    Pt, Polygon,integrate_volume,section_statical_moment_partial,section_properties, section_derived_properties,Section, ContinuousSectionField,Visualizer,
+    section_full_analysis, section_print_analysis,section_full_analysis_keys
+)
+# ----------------------------------------------------------------------------------
+# 1. DEFINE START SECTION (Z = 0)
+# ----------------------------------------------------------------------------------
+#   GUIDELINES FOR POLYGON CONSTRUCTION:
+# - COUNTER-CLOCKWISE POLYGON
+# - VERTICES ORDER: You MUST define vertices in COUNTER-CLOCKWISE (CCW) order.
+#   This is MANDATORY for the Shoelace/Green's Theorem algorithm to compute a
+#   POSITIVE Area and correct Moments of Inertia. Clockwise order will result
+#   in negative area values and mathematically incorrect results.
+# - WEIGHT: Use 1.0 for solid parts and 0 to define voids/holes.
+# - The start section here is a T-shape composed of two non-overlapping polygons:
+#   a "flange" (top horizontal) and a "web" (vertical stem).
+# ----------------------------------------------------------------------------------
+
+# Flange Definition: Rectangle from (-1, -0.2) to (1, 0.2)
+# Order: Bottom-Left -> Bottom-Right -> Top-Right -> Top-Left (CCW)
+poly0_start = Polygon(
+    vertices=(Pt(-1, -0.2), Pt(1, -0.2), Pt(1, 0.2), Pt(-1, 0.2)),
+    weight=1.0,
+    name="flange",
+)
+
+# Web Definition: Rectangle from (-0.2, -1.0) to (0.2, 0.2)
+# Order: Bottom-Left -> Bottom-Right -> Top-Right -> Top-Left (CCW)
+poly1_start = Polygon(
+    vertices=(Pt(-0.2, -1.0), Pt(0.2, -1.0), Pt(0.2, -0.2), Pt(-0.2, -0.2)),
+    weight=1.0,
+    name="web",
+)
+
+# ----------------------------------------------------------------------------------
+# 2. DEFINE END SECTION (Z = 10)
+# ----------------------------------------------------------------------------------
+# GEOMETRIC CONSISTENCY:
+# - To enable linear interpolation (tapering), the end section must contain the
+#   same number of polygons with the same names as the start section.
+# - The web depth here increases linearly from 1.0 down to 2.5 (negative Y direction),
+#   creating a tapered profile along the longitudinal Z-axis.
+# ----------------------------------------------------------------------------------
+
+# Flange remains unchanged for this prismatic top part
+poly0_end = Polygon(
+    vertices=(Pt(-1, -0.2), Pt(1, -0.2), Pt(1, 0.2), Pt(-1, 0.2)),
+    weight=1.0,
+    name="flange",
+)
+
+# Web becomes deeper: Y-bottom moves from -1.0 to -2.5
+# MAINTAIN CCW ORDER: Bottom-Left -> Bottom-Right -> Top-Right -> Top-Left
+poly1_end = Polygon(
+    vertices=(Pt(-0.2, -2.5), Pt(0.2, -2.5), Pt(0.2, -0.2), Pt(-0.2, -0.2)),
+    weight=1.0,
+    name="web",
+)
+
+# ----------------------------------------------------------------------------------
+# 3. CREATE SECTIONS WITH Z-COORDINATES
+# ----------------------------------------------------------------------------------
+# Sections act as containers for polygons at a specific coordinate along the beam axis.
+# All polygons defined at Z=0.0 are grouped into s0, and those at Z=10.0 into s1.
+# ----------------------------------------------------------------------------------
+
+# Order matters: poly0_start pairs with poly0_end,
+# and poly1_start pairs with poly1_end
+# because they appear in the same position in their respective sections.
+
+s0 = Section(polygons=(poly0_start, poly1_start), z=0.0)
+s1 = Section(polygons=(poly0_end, poly1_end), z=10.0)
+
+# --------------------------------------------------------
+# 4. INITIALIZE CONTINUOUS SECTION FIELD
+# --------------------------------------------------------
+# A linear interpolator is used to generate intermediate
+# sections between Z = 0 and Z = 10.
+field = ContinuousSectionField(section0=s0, section1=s1)
+
+# shear_weight_laws: longitudinal shear participation laws shear_w(z),
+# used to scale torsion/shear-related contributions independently from w(z)
+
+
+field.set_weight_laws([
+    "flange,flange:1.0 - 0.28 * (1 - (z / 10.0)**2)",
+    "web,web:4.0 - 0.28 * (1 - (z / 10.0)**2)",
+])
+
+field.set_shear_weight_laws([
+    "iso(0.2)",
+    "flange,flange:iso(0.1)",
+    
+]) 
+
+
+field.set_weight_laws([
+    "flange,flange:1.0 +t",
+    "web,web:4.0 + t",
+])
+
+field.set_shear_weight_laws([
+    "iso(0.2)",
+    "flange,flange:iso(0.1)",
+    
+]) 
+
+
+
+
+field.to_yaml("tsection.yaml")
+field.write_section(5,6,"tsection1.yaml")
+# --------------------------------------------------------
+# 5. PRIMARY SECTION PROPERTIES (Z = 5.0)
+# --------------------------------------------------------
+# Properties are computed at mid-span.
+sec_mid = field.section(5.0)
+props = section_properties(sec_mid)
+
+print("\n" + "="*40)
+print("PRIMARY PROPERTIES AT Z=5.0 (Centroidal)")
+print("="*40)
+print(f"A:   {props['A']:.4f}      # Net Cross-Sectional Area")
+print(f"Cx:  {props['Cx']:.4f}     # Horizontal Centroid location (Global X)")
+print(f"Cy:  {props['Cy']:.4f}     # Vertical Centroid location (Global Y)")
+print(f"Ix:  {props['Ix']:.4f}     # Second Moment of Area about Centroidal X-axis")
+print(f"Iy:  {props['Iy']:.4f}     # Second Moment of Area about Centroidal Y-axis")
+print(f"Ixy: {props['Ixy']:.4f}    # Product of Inertia (Measure of asymmetry)")
+
+# 2. DERIVED PROPERTIES (Radius of Gyration, Principal Axes)
+derived = section_derived_properties(props)
+print("\n" + "-"*40)
+print("DERIVED GEOMETRIC PROPERTIES")
+print("-"*40)
+print(f"rx:  {derived['rx']:.4f}     # Radius of Gyration about X (sqrt(Ix/A))")
+print(f"ry:  {derived['ry']:.4f}     # Radius of Gyration about Y (sqrt(Iy/A))")
+print(f"I1:  {derived['I1']:.4f}     # Maximum Principal Moment of Area")
+print(f"I2:  {derived['I2']:.4f}     # Minimum Principal Moment of Area")
+print(f"Deg: {derived['theta_deg']:.2f}°   # Principal Axis Rotation Angle")
+
+# --------------------------------------------------------
+# 7. STATICAL MOMENT OF AREA (Q)
+# --------------------------------------------------------
+# Computed at the neutral axis (y = Cy).
+# Used in shear stress calculations.
+Q_na = section_statical_moment_partial(sec_mid, y_cut=props['Cy'])
+print("\n" + "-"*40)
+print("SHEAR ANALYSIS PROPERTIES")
+print("-"*40)
+print(f"Q_na: {Q_na:.4f}    # First Moment of Area above Neutral Axis (for shear stress)")
+
+# 8. VOLUMETRIC PROPERTIES
+total_vol = integrate_volume(field,0,10)
+print("\n" + "="*40)
+print("GLOBAL FIELD PROPERTIES (3D)")
+print("="*40)
+print(f"Total Volume: {total_vol:.4f} # Total material volume of the ruled solid")
+
+# Technical Explanation for the negative Cy
+print("\n" + "-"*50)
+print("TECHNICAL NOTE ON COORDINATES:")
+print("-"*50)
+print("The negative value for 'Cy' is physically correct.")
+print("In this model, the flange is centered at y=0, while the web")
+print("extends downwards (from y=0.2 to y=-1.0 at Z=0, and y=-2.5 at Z=10).")
+print("Since the majority of the T-section's mass is located below the")
+print("global X-axis (y=0), the centroid MUST have a negative Y-coordinate.")
+print("This indicates the geometric center is below the drawing origin.")
+print("-"*50)
+
+# --------------------------------------------------------
+# 9. VISUALIZATION
+# --------------------------------------------------------
+# - 2D section plot at Z = 5.0
+# - 3D ruled solid visualization
+viz = Visualizer(field)
+
+# Generate 2D plot for the specified slice
+viz.plot_section_2d(z=5.0)
+
+# Generate 3D plot of the interpolated solid
+# line_percent determines the density of the longitudinal ruled lines
+viz.plot_volume_3d(line_percent=100.0, seed=1)
+
+import matplotlib.pyplot as plt
+#plt.show()
+
+
+```
