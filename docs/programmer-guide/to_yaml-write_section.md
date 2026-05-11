@@ -1,5 +1,18 @@
 # YAML Materialization functions - to_yaml & write_section
 
+### Parametric vs materialized YAML export
+
+```python
+# Parametric export:
+# preserves the original endpoint sections and the active variation laws.
+field.to_yaml("model_parametric.yaml")
+
+# Materialized export:
+# samples the field between two stations.
+# The output YAML contains already-evaluated section geometry and weights.
+field.write_section(z_start, z_end, "model_materialized.yaml")
+```
+
 ## Purpose
 ```
 field.to_yaml("tsection.yaml")
