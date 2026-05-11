@@ -39,5 +39,6 @@ cd csf_project
 5. [05 Stacked field](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/07_csf_stacked.md)
 6. [06_opensees export](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/opensees_export.md)
 8. [07_geometry and properties export](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/geometry_properties_export.md)
-9. 
-10. `...` 
+9. [08_Parametric vs materialized YAML export](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/to_yaml-write_section.md)
+10. 
+11. `...` 
