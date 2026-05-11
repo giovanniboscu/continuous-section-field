@@ -1,7 +1,10 @@
 # YAML Materialization functions - to_yaml & write_section
 
 ## Purpose
-
+```
+field.to_yaml("tsection.yaml")
+field.write_section(5, 6, "tsection1.yaml")
+```
 This guide explains a minimal CSF example that builds a tapered T-section, assigns axial and shear/torsion weight laws, writes the original parametric YAML model, and then writes a materialized YAML model over a selected interval.
 
 The example shows the difference between two outputs:
