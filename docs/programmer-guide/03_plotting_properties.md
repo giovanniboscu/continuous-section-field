@@ -1,4 +1,4 @@
-# 02 — Plotting Properties
+# 02 - Plotting Properties
 
 ## Purpose
 
