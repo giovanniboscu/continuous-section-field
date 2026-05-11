@@ -660,7 +660,7 @@ print(f"Deg: {derived['theta_deg']:.2f}°   # Principal Axis Rotation Angle")
 # Used in shear stress calculations.
 Q_na = section_statical_moment_partial(sec_mid, y_cut=props['Cy'])
 print("\n" + "-"*40)
-print("SHEAR ANALYSIS PROPERTIES")
+print("STATICAL MOMENT PROPERTIES")
 print("-"*40)
 print(f"Q_na: {Q_na:.4f}    # First Moment of Area above Neutral Axis (for shear stress)")
 
