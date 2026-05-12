@@ -101,7 +101,17 @@ if __name__ == "__main__":
     vizprop.plot_properties(['Cy','Ix','Iy','Ip'])
     write_opensees_geometry(section_field,E_ref=1, nu=0, n_points=10, filename=geometryfile)
     plt.show()
-  
+
+    
+    # NOTE:
+    # Weight laws are intentionally assigned after the analysis, plotting, and
+    # OpenSees export. The operations above use the original unit weights
+    # declared in the Polygon objects.
+    #
+    # The following set_weight_laws() call is only used to serialize/export
+    # the CSF YAML template with the desired material/weight laws attached.
+
+    
     section_field.set_weight_laws([
         f"upperpart,upperpart : 7.85", 
         f"lowerpart,lowerpart: 2.5"
