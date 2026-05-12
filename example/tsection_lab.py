@@ -79,7 +79,7 @@ if __name__ == "__main__":
     field = ContinuousSectionField(section0=s0, section1=s1)
 
     # ----------------------------------------------------------------------------------
-    # 5. PRIMARY SECTION PROPERTIES (EVALUATED AT Z = 0.0)
+    # 5. PRIMARY SECTION PROPERTIES (EVALUATED AT Z = 13.0 and z = 13.1)
     # ----------------------------------------------------------------------------------
     zsec_val = 13.0
     sec_mid = field.section(zsec_val)
