@@ -10,11 +10,11 @@ The present formulation is derived from:
 EN 1992-1-1, Eq. (3.2)
 EN 1992-1-1, Eq. (3.5)
 
-**EN 1992-1-1 — Eurocode 2: Design of Concrete Structures – Part 1-1: General Rules and Rules for Buildings**
+**EN 1992-1-1 - Eurocode 2: Design of Concrete Structures – Part 1-1: General Rules and Rules for Buildings**
 
 Relevant clauses:
 
-- Section 3.1.2 — Compressive strength
+- Section 3.1.2 - Compressive strength
 - Section 3.1.3 — Modulus of elasticity
 - Equation (3.2):
   
@@ -36,7 +36,7 @@ The degradation model introduced below is an engineering assumption. Eurocode 2 
 
 # 2. Reference (Sound) Concrete
 
-## Step 1 — Characteristic Strength
+## Step 1 - Characteristic Strength
 
 From the selected concrete class:
 
@@ -50,7 +50,7 @@ where:
 
 ---
 
-## Step 2 — Mean Compressive Strength
+## Step 2 - Mean Compressive Strength
 
 According to EN 1992-1-1 Eq. (3.2):
 
@@ -60,7 +60,7 @@ $$
 
 ---
 
-## Step 3 — Secant Elastic Modulus of Sound Concrete
+## Step 3 - Secant Elastic Modulus of Sound Concrete
 
 From EN 1992-1-1 Eq. (3.5):
 
@@ -93,7 +93,7 @@ where:
 
 # 4. Degraded Material Properties
 
-## Step 4 — Degraded Mean Strength
+## Step 4 - Degraded Mean Strength
 
 Applying EC2 Eq. (3.2):
 
@@ -109,7 +109,7 @@ $$
 
 ---
 
-## Step 5 — Degraded Elastic Modulus
+## Step 5 - Degraded Elastic Modulus
 
 Using EC2 Eq. (3.5):
 
@@ -127,7 +127,7 @@ $$
 
 # 5. Modulus Reduction Law
 
-## Step 6 — Definition of Modulus Ratio
+## Step 6 - Definition of Modulus Ratio
 
 The elastic modulus reduction factor is defined as:
 
