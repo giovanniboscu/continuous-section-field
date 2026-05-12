@@ -25,7 +25,7 @@ from csf import (
 
 if __name__ == "__main__":
     # ----------------------------------------------------------------------------------
-    # 1. DEFINE START SECTION (Z = 0)
+    # 1. DEFINE START SECTION (Z = 10)
     # ----------------------------------------------------------------------------------
     # POLYGON CONSTRUCTION GUIDELINES:
     # - Vertices MUST be defined in COUNTER-CLOCKWISE (CCW) order.
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     )
 
     # ----------------------------------------------------------------------------------
-    # 2. DEFINE END SECTION (Z = 10)
+    # 2. DEFINE END SECTION (Z = 20)
     # ----------------------------------------------------------------------------------
     # CONSISTENCY RULES:
     # - Same number of polygons and same names as the start section for interpolation.
