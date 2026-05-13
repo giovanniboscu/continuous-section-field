@@ -98,8 +98,6 @@ else:
 
 
 
-# Add this method inside class ContinuousSectionField.
-#
 # Goal:
 #   Provide an API to compute an AREA BREAKDOWN of one 2D section by MATERIAL WEIGHT (W)
 #   without requiring the user to manually manage nested polygons and negative "void" weights.
