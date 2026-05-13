@@ -42,7 +42,7 @@ from . import _tol
 
 
 #
-# Your current implementation uses a "strict proper intersection" test:
+# The current implementation uses a "strict proper intersection" test:
 #     (o1 * o2 < 0) and (o3 * o4 < 0)
 # which detects only crossings where the intersection lies strictly inside both segments.
 #
