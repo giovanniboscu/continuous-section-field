@@ -253,6 +253,34 @@ def build_section_geometry(
     }
 
 
+def get_rebar_area(args, row, section_name):
+    """Return the equivalent square area for a rebar row at one section.
+
+    Backward compatibility:
+    - If only --area-bar-row1 / --area-bar-row2 are provided, the same
+      bar area is used in S0 and S1.
+    - If section-specific values are provided, they override the generic
+      value only for the matching section.
+    """
+    if row == 1:
+        generic_area = args.area_bar_row1
+        s0_area = args.area_bar_row1S0
+        s1_area = args.area_bar_row1S1
+    elif row == 2:
+        generic_area = args.area_bar_row2
+        s0_area = args.area_bar_row2S0
+        s1_area = args.area_bar_row2S1
+    else:
+        raise ValueError(f"Unsupported rebar row: {row}")
+
+    if section_name == "base":
+        return s0_area if s0_area is not None else generic_area
+    if section_name == "head":
+        return s1_area if s1_area is not None else generic_area
+
+    raise ValueError(f"Unsupported section name for rebar area lookup: {section_name}")
+
+
 def build_section_dict(z, section_geom, name, t_val, args):
     polys = {}
 
@@ -267,18 +295,20 @@ def build_section_dict(z, section_geom, name, t_val, args):
         polys[outer_name] = {"weight": 1.0, "vertices": to_points(ensure_ccw(section_geom["outer"]))}
         polys[inner_name] = {"weight": 0.0, "vertices": to_points(ensure_ccw(section_geom["inner_ccw"]))}
 
-    # Row 1 bars are written using the row-specific equivalent square area.
+    # Row 1 bars are written using the equivalent square area selected for this section.
+    area_bar_row1 = get_rebar_area(args, row=1, section_name=name)
     for i, (cx_bar, cy_bar) in enumerate(section_geom["row1_centers"], start=1):
         polys[f"rebar_row1_{i}"] = {
             "weight": args.rebar_weight,
-            "vertices": to_points(make_square(cx_bar, cy_bar, args.area_bar_row1)),
+            "vertices": to_points(make_square(cx_bar, cy_bar, area_bar_row1)),
         }
 
     # Row 2 bars are written independently to preserve the original naming/output scheme.
+    area_bar_row2 = get_rebar_area(args, row=2, section_name=name)
     for i, (cx_bar, cy_bar) in enumerate(section_geom["row2_centers"], start=1):
         polys[f"rebar_row2_{i}"] = {
             "weight": args.rebar_weight,
-            "vertices": to_points(make_square(cx_bar, cy_bar, args.area_bar_row2)),
+            "vertices": to_points(make_square(cx_bar, cy_bar, area_bar_row2)),
         }
 
     return {"z": float(z), "polygons": polys}
@@ -386,64 +416,81 @@ def build_geometry(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Build a CSF geometry YAML with optional paired weight-law export."
+        description=(
+            "Build a CSF geometry YAML with two compatible sections S0/S1, "
+            "optional twist, two rebar rows, and optional paired weight-law export."
+        ),
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        allow_abbrev=False,
     )
 
-    # Longitudinal coordinates
-    parser.add_argument("--z0", type=float, required=True)
-    parser.add_argument("--z1", type=float, required=True)
+    # Longitudinal coordinates.
+    parser.add_argument("--z0", type=float, required=True, help="Longitudinal coordinate of section S0.")
+    parser.add_argument("--z1", type=float, required=True, help="Longitudinal coordinate of section S1. Must be greater than --z0.")
 
     # Section S0 geometry.
     # Legacy option names are kept as aliases for backward compatibility.
-    parser.add_argument("--s0-t-cell", "--tf-cell", dest="s0_t_cell", type=float, required=True)
-    parser.add_argument("--s0-tg", "--tg-base", dest="s0_tg", type=float, required=True)
-    parser.add_argument("--s0-x", "--cx", dest="s0_x", type=float, required=True)
-    parser.add_argument("--s0-y", "--cy", dest="s0_y", type=float, required=True)
-    parser.add_argument("--s0-dx", "--bdx", dest="s0_dx", type=float, required=True)
-    parser.add_argument("--s0-dy", "--bdy", dest="s0_dy", type=float, required=True)
-    parser.add_argument("--s0-R", "--bR", dest="s0_R", type=float, required=True)
+    parser.add_argument("--s0-t-cell", "--tf-cell", dest="s0_t_cell", type=float, required=True, help="Thin-wall @cell thickness tag exported on the S0 shell polygon name. Use 0 to omit @t.")
+    parser.add_argument("--s0-tg", "--tg-base", dest="s0_tg", type=float, required=True, help="Geometric wall thickness used to build the inward-offset S0 inner contour.")
+    parser.add_argument("--s0-x", "--cx", dest="s0_x", type=float, required=True, help="X coordinate of the S0 section center.")
+    parser.add_argument("--s0-y", "--cy", dest="s0_y", type=float, required=True, help="Y coordinate of the S0 section center.")
+    parser.add_argument("--s0-dx", "--bdx", dest="s0_dx", type=float, required=True, help="Overall S0 rounded-rectangle width along X.")
+    parser.add_argument("--s0-dy", "--bdy", dest="s0_dy", type=float, required=True, help="Overall S0 rounded-rectangle depth along Y.")
+    parser.add_argument("--s0-R", "--bR", dest="s0_R", type=float, required=True, help="Outer corner radius of the S0 rounded rectangle.")
 
     # Section S1 geometry.
     # Legacy option names are kept as aliases for backward compatibility.
-    parser.add_argument("--s1-t-cell", "--th-cell", dest="s1_t_cell", type=float, required=True)
-    parser.add_argument("--s1-tg", "--tg-head", dest="s1_tg", type=float, required=True)
-    parser.add_argument("--s1-x", "--rcx", dest="s1_x", type=float, required=True)
-    parser.add_argument("--s1-y", "--rcy", dest="s1_y", type=float, required=True)
-    parser.add_argument("--s1-dx", "--rdx", dest="s1_dx", type=float, required=True)
-    parser.add_argument("--s1-dy", "--rdy", dest="s1_dy", type=float, required=True)
-    parser.add_argument("--s1-R", "--R", dest="s1_R", type=float, required=True)
+    parser.add_argument("--s1-t-cell", "--th-cell", dest="s1_t_cell", type=float, required=True, help="Thin-wall @cell thickness tag exported on the S1 shell polygon name. Use 0 to omit @t.")
+    parser.add_argument("--s1-tg", "--tg-head", dest="s1_tg", type=float, required=True, help="Geometric wall thickness used to build the inward-offset S1 inner contour.")
+    parser.add_argument("--s1-x", "--rcx", dest="s1_x", type=float, required=True, help="X coordinate of the S1 section center.")
+    parser.add_argument("--s1-y", "--rcy", dest="s1_y", type=float, required=True, help="Y coordinate of the S1 section center.")
+    parser.add_argument("--s1-dx", "--rdx", dest="s1_dx", type=float, required=True, help="Overall S1 rounded-rectangle width along X.")
+    parser.add_argument("--s1-dy", "--rdy", dest="s1_dy", type=float, required=True, help="Overall S1 rounded-rectangle depth along Y.")
+    parser.add_argument("--s1-R", "--R", dest="s1_R", type=float, required=True, help="Outer corner radius of the S1 rounded rectangle.")
 
-    # Twist and discretization
-    parser.add_argument("--twist-deg", type=float, default=0.0)
-    parser.add_argument("--N", type=int, required=True)
-    parser.add_argument("--singlepolygon", type=parse_bool, required=True)
+    # Twist and discretization.
+    parser.add_argument("--twist-deg", type=float, default=0.0, help="Rotation angle in degrees applied to the complete S1 package around its own center.")
+    parser.add_argument("--N", type=int, required=True, help="Number of vertices used to discretize each rounded-rectangle loop.")
+    parser.add_argument("--singlepolygon", type=parse_bool, required=True, help="If true, export the shell as one @cell polygon with outer and reversed inner loops. If false, export outer weight=1 and inner weight=0 polygons.")
 
-    # Rebar rows
-    parser.add_argument("--n-bars-row1", type=int, required=True)
-    parser.add_argument("--n-bars-row2", type=int, required=True)
-    parser.add_argument("--area-bar-row1", type=float, required=True)
-    parser.add_argument("--area-bar-row2", type=float, required=True)
-    parser.add_argument("--dist-row1-outer", type=float, required=True)
-    parser.add_argument("--dist-row2-inner", type=float, required=True)
-    parser.add_argument("--rebar-weight", type=float, required=True)
+    # Rebar rows.
+    parser.add_argument("--n-bars-row1", type=int, required=True, help="Number of bars on row 1. Row 1 follows an inward offset from the outer contour.")
+    parser.add_argument("--n-bars-row2", type=int, required=True, help="Number of bars on row 2. Row 2 follows an outward offset from the inner contour.")
+    parser.add_argument("--area-bar-row1", type=float, required=True, help="Generic equivalent square area for each row-1 bar. Used for both S0 and S1 unless a section-specific row-1 area is provided.")
+    parser.add_argument("--area-bar-row2", type=float, required=True, help="Generic equivalent square area for each row-2 bar. Used for both S0 and S1 unless a section-specific row-2 area is provided.")
+    parser.add_argument("--area-bar-row1S0", type=float, default=None, help="Optional equivalent square area for each row-1 bar in S0 only. Overrides --area-bar-row1 for S0.")
+    parser.add_argument("--area-bar-row2S0", type=float, default=None, help="Optional equivalent square area for each row-2 bar in S0 only. Overrides --area-bar-row2 for S0.")
+    parser.add_argument("--area-bar-row1S1", type=float, default=None, help="Optional equivalent square area for each row-1 bar in S1 only. Overrides --area-bar-row1 for S1.")
+    parser.add_argument("--area-bar-row2S1", type=float, default=None, help="Optional equivalent square area for each row-2 bar in S1 only. Overrides --area-bar-row2 for S1.")
+    parser.add_argument("--dist-row1-outer", type=float, required=True, help="Offset distance from the outer contour to the row-1 bar-center guide contour.")
+    parser.add_argument("--dist-row2-inner", type=float, required=True, help="Offset distance from the inner contour to the row-2 bar-center guide contour.")
+    parser.add_argument("--rebar-weight", type=float, required=True, help="CSF weight assigned to every rebar polygon.")
 
     # Optional weight laws appended after the geometry block.
-    parser.add_argument("--bars-row1-law", type=str, default="")
-    parser.add_argument("--bars-row2-law", type=str, default="")
-    parser.add_argument("--s0-law", type=str, default="")
-    parser.add_argument("--s1-law", type=str, default="")
+    parser.add_argument("--bars-row1-law", type=str, default="", help="Optional CSF weight law applied pairwise to all row-1 bars between S0 and S1.")
+    parser.add_argument("--bars-row2-law", type=str, default="", help="Optional CSF weight law applied pairwise to all row-2 bars between S0 and S1.")
+    parser.add_argument("--s0-law", type=str, default="", help="Optional shell weight law. Kept as S0-side legacy argument; if --s1-law is also provided, both values must match.")
+    parser.add_argument("--s1-law", type=str, default="", help="Optional shell weight law. Kept as S1-side legacy argument; if --s0-law is also provided, both values must match.")
 
-    # Output
-    parser.add_argument("--out", type=str, default="softwarex_geometry.yaml")
-
+    # Output.
+    parser.add_argument("--out", type=str, default="softwarex_geometry.yaml", help="Output YAML file path.")
     args = parser.parse_args()
 
     if args.z1 <= args.z0:
         raise ValueError("z1 must be > z0.")
     if args.n_bars_row1 < 0 or args.n_bars_row2 < 0:
         raise ValueError("The number of bars per row must be >= 0.")
-    if args.area_bar_row1 <= 0.0 or args.area_bar_row2 <= 0.0:
-        raise ValueError("The single-bar areas must be > 0.")
+    area_values = [
+        ("area_bar_row1", args.area_bar_row1),
+        ("area_bar_row2", args.area_bar_row2),
+        ("area_bar_row1S0", args.area_bar_row1S0),
+        ("area_bar_row2S0", args.area_bar_row2S0),
+        ("area_bar_row1S1", args.area_bar_row1S1),
+        ("area_bar_row2S1", args.area_bar_row2S1),
+    ]
+    for area_name, area_value in area_values:
+        if area_value is not None and area_value <= 0.0:
+            raise ValueError(f"{area_name} must be > 0.")
     if args.dist_row1_outer < 0.0 or args.dist_row2_inner < 0.0:
         raise ValueError("The row distances must be >= 0.")
 

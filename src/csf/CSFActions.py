@@ -68,6 +68,7 @@ from contextlib import redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
 import numpy as np 
+from . import _tol 
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 # ---------------------------------------------------------------------------
@@ -78,13 +79,15 @@ from .io.csf_issues import CSFIssues, Issue, Severity
 
 # The analysis/printing functions are defined at module level in section_field.py.
 # Adjust the import path if your package layout differs.
+
+from csf.visualizer import Visualizer
+
 try:
+    from csf.continuous_section_field import ContinuousSectionField
     from csf.section_field import (
-        ContinuousSectionField,
         section_full_analysis,
         section_full_analysis_keys,
         section_print_analysis,
-        Visualizer,
         safe_evaluate_weight_zrelative,
         write_opensees_geometry,
         write_sap2000_template_pack,
@@ -93,7 +96,6 @@ try:
         emit_volume_polygon_list_report,
     )
 except Exception:
-    # If imports fail, we keep them as None and emit a friendly error later.
     ContinuousSectionField = None  # type: ignore
     section_full_analysis = None  # type: ignore
     section_full_analysis_keys = None  # type: ignore
@@ -102,7 +104,7 @@ except Exception:
     safe_evaluate_weight_zrelative = None  # type: ignore
     write_opensees_geometry = None  # type: ignore
     write_sap2000_template_pack = None  # type: ignore
-    polygon_surface_w1_inners0 = None  # type: ignore
+    polygon_surface_w1_interns0 = None  # type: ignore
     volume_polygon_list_report_data = None  # type: ignore
     emit_volume_polygon_list_report = None  # type: ignore
 

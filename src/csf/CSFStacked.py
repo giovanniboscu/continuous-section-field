@@ -10,11 +10,11 @@ from .section_field import (
     Pt,
     Polygon,
     Section,
-    ContinuousSectionField,
-    section_full_analysis,
-    Visualizer,
-)
 
+    section_full_analysis,
+)
+from .visualizer import Visualizer
+from .continuous_section_field import ContinuousSectionField
 
 @dataclass(frozen=True)
 class SegmentSpec:

@@ -1,13 +1,7 @@
-import numpy as np
-import math
-# __init__.py interno alla cartella csf
-
 from .section_field import (
     Pt,
     Polygon,
     Section,
-    ContinuousSectionField,
-    section_properties,
     section_derived_properties,
     section_full_analysis,
     section_stiffness_matrix,
@@ -15,8 +9,6 @@ from .section_field import (
     polygon_inertia_about_origin,
     polygon_statical_moment,
     integrate_volume,
-    Visualizer,
-    section_data,
     compute_saint_venant_Jv2,
     write_opensees_geometry,
     section_full_analysis_keys,
@@ -26,37 +18,16 @@ from .section_field import (
     write_sap2000_geometry,
     write_sap2000_template_pack,
     plot_section_variation,
-    polygon_area_centroid,
     list_polygons_with_contents,
     polygon_surface_w1_inners0,
     volume_polygon_list_report,
     export_polygon_vertices_csv,
     export_polygon_vertices_csv_file
 )
-
-# 
-__all__ = [
-    "Pt",
-    "Polygon",
-    "Section",
-    "ContinuousSectionField",
-    "section_properties",
-    "section_derived_properties",
-    "section_full_analysis",
-    "section_stiffness_matrix",
-    "section_geometry",
-    "section_statical_moment_partial",
-    "polygon_inertia_about_origin",
-    "polygon_statical_moment",
-    "integrate_volume",
-    "Visualizer",
-    "section_data",
-    "write_sap2000_geometry",
-    "write_sap2000_template_pack",
-    "polygon_area_centroid",
-    "list_polygons_with_contents",
-    "polygon_surface_w1_inners0",
-    "volume_polygon_list_report",
-    "export_polygon_vertices_csv",
-    "export_polygon_vertices_csv_file"
-]
+from .continuous_section_field import (
+    ContinuousSectionField,
+    section_properties,
+    section_data,
+    polygon_area_centroid,
+)
+from .visualizer import Visualizer

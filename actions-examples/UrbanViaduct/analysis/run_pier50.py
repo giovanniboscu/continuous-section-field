@@ -155,7 +155,7 @@ for i in range(n_sez):
             fmt="{:.10g}",
         )
 
-print(f"Export complete — {n_sez} files written to '{csv_dir}'.")
+print(f"Export complete - {n_sez} files written to '{csv_dir}'.")
 
 # =============================================================================
 # Close report file

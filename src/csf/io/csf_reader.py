@@ -976,7 +976,7 @@ class CSFReader:
         Instantiate ContinuousSectionField with controlled error reporting.
         """
         try:
-            from csf.section_field import ContinuousSectionField
+            from csf.continuous_section_field import ContinuousSectionField
             return ContinuousSectionField(section0=s0, section1=s1)
         except Exception as e:
             issues.append(

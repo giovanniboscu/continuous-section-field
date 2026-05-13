@@ -233,12 +233,12 @@ if __name__ == "__main__":
     INNER_CENTER_0 = Pt(0.0, 0.0)
     INNER_LX_0 = 1.70
     INNER_LY_0 = 1.70
-    INNER_N_0  = 128
+    INNER_N_0  = 8
 
-    OUTER_CENTER_0 = Pt(0.0, 0.0)
+    OUTER_CENTER_0 = Pt(0.0, 0.0
     OUTER_LX_0 = 1.80
     OUTER_LY_0 = 1.80
-    OUTER_N_0  = 128
+    OUTER_N_0  = 8
 
     # -----------------------
     # Section S1 parameters
@@ -248,12 +248,12 @@ if __name__ == "__main__":
     INNER_CENTER_1 = Pt(0.0, 0.0)
     INNER_LX_1 = 1.70
     INNER_LY_1 = 1.70
-    INNER_N_1  = 128
+    INNER_N_1  = 8
 
     OUTER_CENTER_1 = Pt(0.0, 0.0)
     OUTER_LX_1 = 1.80
     OUTER_LY_1 = 1.80
-    OUTER_N_1  = 128
+    OUTER_N_1  = 8
 
     # -----------------------------------------------------------------------------
     # Build loops for S0 and S1
