@@ -43,7 +43,7 @@ CSF_ACTIONS:
   stations:
     my_station_set: [0.0, 2.0, 4.0]
   actions:
-    - section_full_analysis:
+    - section_selected_analysis:
         stations: [my_station_set]
         output: [stdout, out/full.csv]
         params: {fmt_display: ".8f"}
