@@ -65,7 +65,7 @@ CSF_ACTIONS:
     - plot_properties:
         output:
           - stdout
-          - out/properties.png
+          - out/properties.jpg
         properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy,
                      K_torsion, Q_na, J_sv_wall, J_sv_cell,
                      J_s_vroark, J_s_vroark_fidelity]
