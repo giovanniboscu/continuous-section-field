@@ -29,7 +29,7 @@ w_E(z) = 1.0 - 0.28 exp(-((z - 0.0)^2)/(2·1.5^2)), producing a minimum carrier 
 This example demonstrates a **reproducible CSF workflow** for a circular hollow steel member (CHS), using:
 
 - `@cell` closed-cell torsion (`J_sv_cell`, Bredt-Batho),
-- explicit wall thickness tag `@t=...`,
+- implict wall thickness no tag `@t=...`,
 - a position-dependent axial/bending degradation law `weight_laws`,
 - an independent shear/torsional degradation law `shear_weight_laws`,
 - 3D visualization of both carrier fields with quantitative legends.
