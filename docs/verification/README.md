@@ -1,79 +1,81 @@
-# Verification Benchmarks
+# Running the csfpy Verification Tests
 
-This directory contains verification benchmarks for the CSF integration workflow.
+## Prerequisites
 
-The benchmarks are intended to provide readable numerical evidence that CSF section models remain consistent when evaluated through independent or complementary analysis paths. 
+```bash
+pip install -e ".[sp]"
+pip install pytest
+```
 
-## Scope
+## Expected repo layout
 
-The verification cases cover three main model classes:
+```
+continuous-section-field/
+├── docs/
+│   └── verification/
+│       ├── csf_sp_cell_verification.py
+│       ├── csf_sp_complex_integration_verification.py
+│       └── csf_sp_wall_complex_verification.py
+├── tests/
+│   └── test_verification.py   ← place the downloaded file here
+└── src/csf/
+```
 
-- ordinary weighted polygonal geometries;
-- slit-encoded closed thin-walled cells;
-- open thin-walled wall geometries.
+## Running
 
-Each case compares the direct CSF result with the result obtained through the `csf_sp` integration layer and `sectionproperties`.
+```bash
+# from the repo root
+pytest tests/test_verification.py -v
+```
 
-## Verification approach
+Expected terminal output:
 
-The general procedure is:
+```
+tests/test_verification.py::test_cell_verification                PASSED
+tests/test_verification.py::test_complex_integration_verification PASSED
+tests/test_verification.py::test_wall_complex_verification        PASSED
 
-1. define a CSF section field;
-2. evaluate the section properties directly with CSF;
-3. convert the same geometry through `csf_sp`;
-4. evaluate the converted model with `sectionproperties`;
-5. compare the resulting quantities at selected stations along `z`.
+3 passed in ~22s
+```
 
-For ordinary geometric quantities, the comparison is expected to match at numerical precision.
+To also see the numeric tables printed in real time:
 
-For torsional quantities, the comparison is interpreted with a wider tolerance when CSF and `sectionproperties` use different formulations.
+```bash
+pytest est_verification.py -v -s
+```
 
-## Compared quantities
+## What gets produced
 
-The geometric checks generally include:
+Three Markdown reports are written (or overwritten) in `docs/verification/`:
 
-- area;
-- centroid coordinates;
-- centroidal second moments of area;
-- product of inertia;
-- polar second moment;
-- principal second moments;
-- radii of gyration.
+| Report file | What it covers |
+|-------------|---------------|
+| `csf_sp_cell_verification_report.md` | `@cell` section: geometry + torsion (Bredt vs FEM) |
+| `csf_sp_complex_integration_report.md` | Composite multi-polygon section: geometry only |
+| `csf_sp_wall_complex_verification_report.md` | Complex `@wall` section: geometry + torsion |
 
-For thin-walled cases, the benchmarks also check that the expected CSF path is activated:
+## What to look at in the reports
 
-- `J_sv_cell` for closed `@cell` geometries;
-- `J_sv_wall` for open `@wall` geometries.
+### Geometric properties (A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry)
 
-## Role of the reports
+Deltas should be at machine precision (relative error ~1e-15).
+Both paths — CSF and sectionproperties — operate on the same vertices,
+so the agreement is expected to be essentially exact.
 
-The generated reports provide:
+### Torsion (J_sv_cell or J_sv_wall vs sectionproperties e.j)
 
-- the benchmark purpose;
-- the model description;
-- the comparison method;
-- the tolerances used;
-- station-wise numerical tables;
-- final pass/fail summaries.
+A relative delta of 2–3% is **normal and expected**: CSF uses an
+analytical Bredt-type formula, while sectionproperties solves the
+torsion problem numerically via FEM. The tolerances declared at the
+top of each script (`TORSION_REL_TOL`) reflect this known difference.
 
-They are meant to be readable verification records, not just raw test logs.
+### Global summary
 
-## Relation to automated tests
+Each report ends with a summary block — the key line is:
 
-These benchmarks can be used in two complementary ways:
+```
+Overall status: PASS
+```
 
-- as documentation-oriented verification examples, producing detailed reports;
-- as the basis for compact automated regression tests with numerical assertions.
-
-The report-oriented versions are useful for review, publication support, and external technical discussion. The automated versions are useful for continuous integration and implementation safety.
-
-## Interpretation
-
-A successful benchmark run shows that:
-
-- the CSF geometry model is evaluated consistently;
-- the `csf_sp` conversion preserves the intended geometry and weights;
-- `sectionproperties` returns results consistent with the direct CSF path;
-- the selected thin-walled path, when present, is activated as expected.
-
-These benchmarks are therefore cross-verification references for CSF and its `sectionproperties` integration.
+If any row exceeds its tolerance the status reads `FAIL` and a
+"Failed rows" table lists exactly which property and station failed.
