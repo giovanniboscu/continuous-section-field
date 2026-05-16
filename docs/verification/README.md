@@ -7,7 +7,7 @@ pip install -e ".[sp]"
 pip install pytest
 ```
 
-## Expected repo layout
+## repo layout
 
 ```
 continuous-section-field/
@@ -17,7 +17,7 @@ continuous-section-field/
 │       ├── csf_sp_complex_integration_verification.py
 │       └── csf_sp_wall_complex_verification.py
 ├── tests/
-│   └── test_verification.py   ← place the downloaded file here
+│   └── test_verification.py   
 └── src/csf/
 ```
 
