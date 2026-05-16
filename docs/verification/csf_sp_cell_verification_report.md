@@ -1,116 +1,23 @@
 # CSF-SP @cell Verification Report
-Source code: [`csf_sp_cell_verification.py`](./csf_sp_cell_verification.py)
-
-## Purpose
-
-This verification report checks the consistency of the CSF `@cell` workflow against the `csf_sp` integration path and `sectionproperties`.
-
-The test verifies two separate aspects:
-
-1. **Geometric consistency**  
-   A direct CSF ordinary reference model is compared against the `sectionproperties` model generated from a slit-encoded `@cell` polygon through `csf_sp`.
-
-2. **Torsional consistency**  
-   CSF `J_sv_cell` is compared with the `sectionproperties` composite torsion result `e.j`.
-
-The geometric comparison is expected to match at numerical precision. The torsional comparison is expected to be close, but not identical, because CSF and `sectionproperties` use different torsional formulations.
 
 ## Model
 
-The verification uses two equivalent CSF representations of the same section:
+This benchmark verifies a slit-encoded `@cell` polygon converted through `csf_sp` into a `sectionproperties` model.
 
-### 1. Ordinary reference geometry
+Two CSF fields are used:
 
-The ordinary CSF model uses:
+1. an ordinary reference field with `outer weight = 1.0` and `inner weight = 0.0`, used for geometric quantities;
+2. a slit-encoded `@cell` field, used for `csf_sp` conversion and `J_sv_cell` evaluation.
 
-- one outer polygon with `weight = 1.0`;
-- one inner void polygon with `weight = 0.0`;
-- no `@cell` tag.
+The geometric comparison is expected to match at numerical precision. The torsional comparison checks consistency between CSF `J_sv_cell` and `sectionproperties` `e.j`, using a looser tolerance because the two paths use different torsion formulations.
 
-This model is used as the geometric reference for:
+Geometry absolute tolerance: `1.0e-09`
+Geometry relative tolerance: `1.0e-07`
+Torsion absolute tolerance: `1.0e-08`
+Torsion relative tolerance: `1.0e-01`
+Mesh size: `0.0001`
 
-- `A`
-- `Cx`
-- `Cy`
-- `Ix`
-- `Iy`
-- `Ixy`
-- `Ip`
-- `I1`
-- `I2`
-- `rx`
-- `ry`
-
-### 2. Slit-encoded `@cell` geometry
-
-The `@cell` model uses one slit-encoded polygon containing:
-
-- the outer loop;
-- a repeated outer start vertex;
-- the inner loop tail;
-- a repeated inner start vertex.
-
-This model is passed to `csf_sp`, which builds the corresponding `sectionproperties` geometry. It is also used by CSF to compute `J_sv_cell`.
-
-## Compared quantities
-
-At each station, the report compares:
-
-| Group | CSF quantity | sectionproperties quantity |
-|---|---|---|
-| Geometry | `A` | `EA` |
-| Geometry | `Cx` | `Cx` |
-| Geometry | `Cy` | `Cy` |
-| Geometry | `Ix` | `EIx` |
-| Geometry | `Iy` | `EIy` |
-| Geometry | `Ixy` | `EIxy` |
-| Geometry | `Ip` | `EIx + EIy` |
-| Geometry | `I1` | principal value from `EIx`, `EIy`, `EIxy` |
-| Geometry | `I2` | principal value from `EIx`, `EIy`, `EIxy` |
-| Geometry | `rx` | `sqrt(EIx / EA)` |
-| Geometry | `ry` | `sqrt(EIy / EA)` |
-| Torsion | `J_sv_cell` | `e.j` |
-
-The `csf_sp` model is handled by `sectionproperties` as a composite/material-based section. The composite accessors are therefore used. In this verification, the effective material scale is `E = 1.0`, so the stiffness-weighted quantities are numerically comparable to the corresponding CSF geometric quantities.
-
-## Acceptance criteria
-
-The geometric comparison uses strict numerical tolerances:
-
-```python
-GEOM_ABS_TOL = 1.0e-9
-GEOM_REL_TOL = 1.0e-7
-```
-
-The torsional comparison uses a looser tolerance:
-
-```python
-TORSION_ABS_TOL = 1.0e-8
-TORSION_REL_TOL = 1.0e-1
-```
-
-The looser torsion tolerance is intentional. CSF computes `J_sv_cell` through its `@cell` Saint-Venant thin-walled/Bredt-type path, while `sectionproperties` computes `e.j` numerically.
-
-A row passes when at least one of the following conditions is true:
-
-```text
-abs(delta) <= absolute_tolerance
-abs(relative_delta) <= relative_tolerance
-```
-
-## Results
-
-The verification was run at three stations:
-
-```text
-z = 0.0
-z = 5.0
-z = 10.0
-```
-
-## Station z = 0.0
-
-### Geometric check
+### Geometric check: CSF ordinary reference vs csf_sp @cell at z = 0.0
 
 | Property | CSF | SP | Delta | RelDelta | OK |
 |---|---:|---:|---:|---:|:---:|
@@ -126,22 +33,18 @@ z = 10.0
 | rx | 1.080743744412e-01 | 1.080743744412e-01 | 9.714451465470e-17 | 8.988672e-16 | yes |
 | ry | 9.672754878921e-02 | 9.672754878921e-02 | 2.775557561563e-17 | 2.869459e-16 | yes |
 
-### Torsion check
+### Torsion check: CSF J_sv_cell vs sectionproperties e.j at z = 0.0
 
 | Property | CSF | SP | Delta | RelDelta | OK |
 |---|---:|---:|---:|---:|:---:|
 | J_sv_cell | 1.062409393301e-03 | 1.042027764982e-03 | 2.038162831885e-05 | 1.955958e-02 | yes |
 
-Expected CSF torsion flags:
+Expected `@cell` torsion flags:
 
-```text
-J_sv_cell = (0.0010624093933009307, 0.05815589402152802)
-J_sv_wall = 0.0
-```
+- `J_sv_cell`: `(0.0010624093933009307, 0.05815589402152802)`
+- `J_sv_wall`: `0.0`
 
-## Station z = 5.0
-
-### Geometric check
+### Geometric check: CSF ordinary reference vs csf_sp @cell at z = 5.0
 
 | Property | CSF | SP | Delta | RelDelta | OK |
 |---|---:|---:|---:|---:|:---:|
@@ -157,22 +60,18 @@ J_sv_wall = 0.0
 | rx | 1.007024705655e-01 | 1.007024705655e-01 | 4.163336342344e-17 | 4.134294e-16 | yes |
 | ry | 8.972315722127e-02 | 8.972315722127e-02 | -1.387778780781e-17 | -1.546734e-16 | yes |
 
-### Torsion check
+### Torsion check: CSF J_sv_cell vs sectionproperties e.j at z = 5.0
 
 | Property | CSF | SP | Delta | RelDelta | OK |
 |---|---:|---:|---:|---:|:---:|
 | J_sv_cell | 8.008614568896e-04 | 7.852298462031e-04 | 1.563161068650e-05 | 1.990705e-02 | yes |
 
-Expected CSF torsion flags:
+Expected `@cell` torsion flags:
 
-```text
-J_sv_cell = (0.000800861456889579, 0.054580108121773684)
-J_sv_wall = 0.0
-```
+- `J_sv_cell`: `(0.0008008614568895788, 0.05458010812177368)`
+- `J_sv_wall`: `0.0`
 
-## Station z = 10.0
-
-### Geometric check
+### Geometric check: CSF ordinary reference vs csf_sp @cell at z = 10.0
 
 | Property | CSF | SP | Delta | RelDelta | OK |
 |---|---:|---:|---:|---:|:---:|
@@ -188,38 +87,23 @@ J_sv_wall = 0.0
 | rx | 9.331652708790e-02 | 9.331652708790e-02 | 0.000000000000e+00 | 0.000000e+00 | yes |
 | ry | 8.272295869345e-02 | 8.272295869345e-02 | 0.000000000000e+00 | 0.000000e+00 | yes |
 
-### Torsion check
+### Torsion check: CSF J_sv_cell vs sectionproperties e.j at z = 10.0
 
 | Property | CSF | SP | Delta | RelDelta | OK |
 |---|---:|---:|---:|---:|:---:|
 | J_sv_cell | 5.908006935839e-04 | 5.787142501257e-04 | 1.208644345821e-05 | 2.088499e-02 | yes |
 
-Expected CSF torsion flags:
+Expected `@cell` torsion flags:
 
-```text
-J_sv_cell = (0.0005908006935839331, 0.051002491836489756)
-J_sv_wall = 0.0
-```
+- `J_sv_cell`: `(0.000590800693583933, 0.05100249183648975)`
+- `J_sv_wall`: `0.0`
 
 ## Global summary
 
-```text
-stations checked: 3
-geometry properties per station: 11
-maximum geometry absolute delta: 9.714451465470e-17
-maximum geometry relative delta: 2.301475e-14
-maximum torsion absolute delta: 2.038162831885e-05
-maximum torsion relative delta: 2.088499e-02
-overall status: PASS
-```
-
-## Interpretation
-
-The geometric conversion from slit-encoded `@cell` geometry through `csf_sp` is consistent with the ordinary CSF reference model at numerical precision.
-
-The torsional comparison also passes. The maximum relative difference between CSF `J_sv_cell` and `sectionproperties` `e.j` is approximately `2.09%`, which is acceptable for this verification because the two values come from different torsion formulations.
-
-This benchmark is therefore a valid CSF-SP `@cell` cross-verification case.
-
-
-
+- Stations checked: `3`
+- Geometry properties per station: `11`
+- Maximum geometry absolute delta: `9.714451465470e-17`
+- Maximum geometry relative delta: `2.301475e-14`
+- Maximum torsion absolute delta: `2.038162831885e-05`
+- Maximum torsion relative delta: `2.088499e-02`
+- Overall status: `PASS`

@@ -1,102 +1,22 @@
 # CSF-SP Complex Integration Verification Report
 
-Source code: [`csf_sp_complex_integration_verification.py`](./csf_sp_complex_integration_verification.py)
+## Model
 
-## Purpose
-
-This verification report checks the numerical consistency between CSF and the `csf_sp` integration path, which converts a CSF-defined section field into a `sectionproperties` model.
-
-The objective is to verify that a complex ordinary CSF geometry produces the same homogenized section properties when evaluated directly by CSF and when converted through `csf_sp` to `sectionproperties`.
-
-This is a cross-verification benchmark: CSF and `sectionproperties` follow different implementation paths, but they are expected to return the same section properties for the same weighted geometry.
-
-## Test case
-
-The benchmark uses a non-prismatic cross-section varying along the longitudinal coordinate `z`.
-
-The model includes:
+Ordinary non-prismatic CSF geometry with:
 
 - one irregular outer polygon with `weight = 1.0`;
 - two explicit void polygons with `weight = 0.0`;
-- one locally stiffer insert with `weight = 1.8`;
-- one locally degraded insert with `weight = 0.35`;
-- matching polygon topology between the start and end sections;
-- five verification stations along `z`.
+- one stiff insert with `weight = 1.8`;
+- one degraded insert with `weight = 0.35`;
+- no `@cell` polygon.
 
-No `@cell` polygon is used in this benchmark. The test is limited to ordinary CSF geometry and weighted polygon composition.
+The comparison uses `sectionproperties` composite accessors because `csf_sp` builds a material-based model. The effective material scale is the CSF polygon weight, so `EA`, `EIx` and `EIy` are compared with CSF `A`, `Ix` and `Iy`.
 
-## Compared quantities
+Absolute tolerance: `1.0e-09`
+Relative tolerance: `1.0e-07`
+Mesh size: `0.0002`
 
-At each verification station, the following quantities are compared:
-
-- `A`
-- `Cx`
-- `Cy`
-- `Ix`
-- `Iy`
-- `Ixy`
-- `Ip`
-- `I1`
-- `I2`
-- `rx`
-- `ry`
-
-The comparison is performed between:
-
-1. the direct CSF section analysis;
-2. the `sectionproperties` result obtained through `csf_sp`.
-
-## Composite result extraction
-
-The `csf_sp` interface builds a `sectionproperties` model with material data attached to the geometry. Since the section is handled by `sectionproperties` as a composite/material-based model, the corresponding composite result accessors are used.
-
-In this benchmark, the CSF polygon weight acts as the effective material scale. Therefore, the stiffness-weighted quantities returned by `sectionproperties` are compared with the corresponding CSF homogenized quantities:
-
-- `EA` is compared with `A`;
-- `EIx` is compared with `Ix`;
-- `EIy` is compared with `Iy`;
-- `EIxy` is compared with `Ixy`.
-
-## Torsion flags
-
-Because this is an ordinary no-cell geometry test, the expected CSF torsion flags are:
-
-```text
-J_sv_cell = 0.0
-J_sv_wall = 0.0
-```
-
-This confirms that no thin-walled `@cell` or `@wall` path is activated during the benchmark.
-
-## Acceptance criteria
-
-The benchmark checks the absolute and relative differences between CSF and `sectionproperties`.
-
-Recommended tolerances:
-
-```python
-ABS_TOL = 1.0e-9
-REL_TOL = 1.0e-7
-```
-
-A row passes when each compared quantity satisfies at least one of the following conditions:
-
-```text
-abs(delta) <= ABS_TOL
-abs(relative_delta) <= REL_TOL
-```
-
-The benchmark passes only if all checked quantities pass at all stations.
-
-## Results
-
-Command:
-
-```bash
-python3 csf_sp_complex_integration_verification.py
-```
-
-### Station z = 0.0
+### CSF ordinary weighted geometry vs sectionproperties at z = 0.0
 
 | Property | CSF | SP | Delta | RelDelta | OK |
 |---|---:|---:|---:|---:|:---:|
@@ -112,14 +32,12 @@ python3 csf_sp_complex_integration_verification.py
 | rx | 2.265281637717e-01 | 2.265281637717e-01 | -2.775557561563e-17 | -1.225259e-16 | yes |
 | ry | 2.813990618952e-01 | 2.813990618952e-01 | 8.881784197001e-16 | 3.156295e-15 | yes |
 
-Expected torsion flags:
+Expected torsion flags for ordinary no-cell geometry:
 
-```text
-J_sv_cell: 0.0
-J_sv_wall: 0.0
-```
+- `J_sv_cell`: `0.0`
+- `J_sv_wall`: `0.0`
 
-### Station z = 2.5
+### CSF ordinary weighted geometry vs sectionproperties at z = 2.5
 
 | Property | CSF | SP | Delta | RelDelta | OK |
 |---|---:|---:|---:|---:|:---:|
@@ -135,14 +53,12 @@ J_sv_wall: 0.0
 | rx | 2.177689818415e-01 | 2.177689818415e-01 | 0.000000000000e+00 | 0.000000e+00 | yes |
 | ry | 2.707058443801e-01 | 2.707058443801e-01 | -2.220446049250e-16 | -8.202431e-16 | yes |
 
-Expected torsion flags:
+Expected torsion flags for ordinary no-cell geometry:
 
-```text
-J_sv_cell: 0.0
-J_sv_wall: 0.0
-```
+- `J_sv_cell`: `0.0`
+- `J_sv_wall`: `0.0`
 
-### Station z = 5.0
+### CSF ordinary weighted geometry vs sectionproperties at z = 5.0
 
 | Property | CSF | SP | Delta | RelDelta | OK |
 |---|---:|---:|---:|---:|:---:|
@@ -158,14 +74,12 @@ J_sv_wall: 0.0
 | rx | 2.090185070210e-01 | 2.090185070210e-01 | 5.551115123126e-17 | 2.655801e-16 | yes |
 | ry | 2.600171411264e-01 | 2.600171411264e-01 | -3.330669073875e-16 | -1.280942e-15 | yes |
 
-Expected torsion flags:
+Expected torsion flags for ordinary no-cell geometry:
 
-```text
-J_sv_cell: 0.0
-J_sv_wall: 0.0
-```
+- `J_sv_cell`: `0.0`
+- `J_sv_wall`: `0.0`
 
-### Station z = 7.5
+### CSF ordinary weighted geometry vs sectionproperties at z = 7.5
 
 | Property | CSF | SP | Delta | RelDelta | OK |
 |---|---:|---:|---:|---:|:---:|
@@ -181,14 +95,12 @@ J_sv_wall: 0.0
 | rx | 2.002778856123e-01 | 2.002778856123e-01 | -1.387778780781e-16 | -6.929266e-16 | yes |
 | ry | 2.493335225387e-01 | 2.493335225387e-01 | -1.942890293094e-16 | -7.792335e-16 | yes |
 
-Expected torsion flags:
+Expected torsion flags for ordinary no-cell geometry:
 
-```text
-J_sv_cell: 0.0
-J_sv_wall: 0.0
-```
+- `J_sv_cell`: `0.0`
+- `J_sv_wall`: `0.0`
 
-### Station z = 10.0
+### CSF ordinary weighted geometry vs sectionproperties at z = 10.0
 
 | Property | CSF | SP | Delta | RelDelta | OK |
 |---|---:|---:|---:|---:|:---:|
@@ -204,27 +116,15 @@ J_sv_wall: 0.0
 | rx | 1.915484707796e-01 | 1.915484707796e-01 | -4.996003610813e-16 | -2.608219e-15 | yes |
 | ry | 2.386556578459e-01 | 2.386556578459e-01 | -3.885780586188e-16 | -1.628195e-15 | yes |
 
-Expected torsion flags:
+Expected torsion flags for ordinary no-cell geometry:
 
-```text
-J_sv_cell: 0.0
-J_sv_wall: 0.0
-```
+- `J_sv_cell`: `0.0`
+- `J_sv_wall`: `0.0`
 
 ## Global summary
 
-```text
-stations checked: 5
-properties per station: 11
-maximum absolute delta: 1.998401444325e-15
-maximum relative delta: 7.818387e-14
-overall status: PASS
-```
-
-## Interpretation
-
-The benchmark passes at all five stations.
-
-The maximum absolute difference is `1.998401444325e-15` and the maximum relative difference is `7.818387e-14`, which are numerical round-off levels for this comparison.
-
-This confirms that the ordinary weighted CSF geometry is preserved by the `csf_sp` conversion path and that `sectionproperties` returns results consistent with the direct CSF analysis for this complex non-prismatic weighted geometry.
+- Stations checked: `5`
+- Properties per station: `11`
+- Maximum absolute delta: `1.998401444325e-15`
+- Maximum relative delta: `7.818387e-14`
+- Overall status: `PASS`
