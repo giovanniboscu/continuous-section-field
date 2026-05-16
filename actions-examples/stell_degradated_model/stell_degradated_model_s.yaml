@@ -576,5 +576,7 @@ CSF:
   weight_laws:
   - 'MP1_outer,MP1_inner: 1.0 - 0.28 * np.exp(-((z - 0.0)**2) / (2.0 * 1.5**2))'
 
+  shear_weight_laws:
+  - 'MP1_outer,MP1_inner: max(0.0, 1.0 - t / 3.0)'
             
             
