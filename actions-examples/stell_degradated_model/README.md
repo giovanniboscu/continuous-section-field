@@ -1,12 +1,14 @@
-# CSF Example: Closed-Cell CHS with Splash-Zone Weight Law
+# CSF Example: Closed-Cell CHS with Independent Weight and Shear-Weight Laws
 ```
-python3 -m csf.CSFActions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
+csf-actions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 ```
 This example demonstrates a **reproducible CSF workflow** for a circular hollow steel member (CHS), using:
 
 - `@cell` closed-cell torsion (`J_sv_cell`, Bredt-Batho),
 - explicit wall thickness tag `@t=...`,
-- a position-dependent degradation law `w(z)`.
+- a position-dependent axial/bending degradation law `weight_laws`,
+- an independent shear/torsional degradation law `shear_weight_laws`,
+- 3D visualization of both carrier fields with quantitative legends.
 
 It is suitable as a repository example because it is simple, transparent, and numerically self-consistent.
 ![stell_sections](https://github.com/user-attachments/assets/b14ccdca-4d3d-473d-b1a6-3dd2a6a437e5)
@@ -21,26 +23,14 @@ We model a tubular steel member (MP-1) with nominal geometry:
 - Inner diameter: `Di = 1.70 m`
 - Member length: `L = 85.0 m`
 
-So the wall thickness is deterministic:
 
-```text
-t = (Do - Di) / 2 = (1.80 - 1.70) / 2 = 0.05 m
 ```
-
-That is why the polygon tag is:
-
-```text
-@t=0.05
-```
-```
-
-
 CSF:
   sections:
     S0:
       z: 0
       polygons:
-        MP1_outer@cell@t=0.05:
+        MP1_outer:
           weight: 1
           vertices:
             - [-0.85, 1.04094977928e-16]
@@ -72,9 +62,11 @@ CSF:
             - [-0.898915910585, 0.0441609068947]
             - [-0.9, 1.10218211923e-16]
   weight_laws:
-  - 'MP1_outer,MP1_outer: 1.0 - 0.28 * np.exp(-((z - 0.0)**2) / (2.0 * 1.5**2))'
-```
+  - 'MP1_outer,MP1_inner: 1.0 - 0.28 * np.exp(-((z - 0.0)**2) / (2.0 * 1.5**2))'
 
+  shear_weight_laws:
+  - 'MP1_outer,MP1_inner: max(0.0, 1.0 - t / 3.0)'
+```
 
 ---
 
@@ -84,45 +76,81 @@ The section is a **closed thin-walled ring**, so `@cell` is the correct modeling
 
 Example naming:
 
-- Outer polygon: `MP1_outer@cell@t=0.05`
+- Outer polygon: `MP1_outer@cell`
 - Inner polygon: `MP1_inner`
 
 ---
 
-## 3) Weight law used in this example
+## 3) Weight and shear-weight laws used in this example
 
-We apply a splash-zone-like law:
+This example intentionally separates the axial/bending carrier from the shear/torsional carrier.
+
+### 3.1 Axial/bending carrier: `weight_laws`
+
+```yaml
+weight_laws:
+  - 'MP1_outer,MP1_inner: 1.0 - 0.28 * np.exp(-((z - 0.0)**2) / (2.0 * 1.5**2))'
+```
+
+Equivalent expression:
 
 ```python
-1.0 - 0.28 * np.exp(-((z - 0.0)**2) / (2.0 * 1.5**2))
+w_E(z) = 1.0 - 0.28 * np.exp(-((z - 0.0)**2) / (2.0 * 1.5**2))
 ```
 
 Parameters:
 
-- `beta = 0.28` (max reduction amplitude),
+- `beta = 0.28` (maximum reduction amplitude),
 - `z0 = 0.0 m` (critical elevation center),
 - `sigma = 1.5 m` (critical band width).
 
 Interpretation:
 
-- At `z = 0`, `w = 0.72` (maximum degradation in this scenario).
-- Far from `z0`, `w -> 1.0` (nominal behavior).
+- At `z = 0`, `w_E = 0.72` (maximum axial/bending degradation in this scenario).
+- Far from `z0`, `w_E -> 1.0` (nominal axial/bending behavior).
 
-> Note: this is a **scenario law**, not a site-calibrated measurement unless validated with field inspection data.
+### 3.2 Shear/torsional carrier: `shear_weight_laws`
+
+```yaml
+shear_weight_laws:
+  - 'MP1_outer,MP1_inner: max(0.0, 1.0 - t / 3.0)'
+```
+
+Equivalent expression:
+
+```python
+w_G(t) = max(0.0, 1.0 - t / 3.0)
+```
+
+Interpretation:
+
+- the shear/torsional carrier decreases as the degradation parameter `t` increases;
+- the `max(0.0, ...)` guard prevents negative carrier values;
+- this law is independent from the `weight_laws` field.
+
+For the plotted case, the visualized shear-weight range is approximately:
+
+```text
+0.67 <= shear weight <= 1.00
+```
+
+> Note: these are **scenario laws**, not site-calibrated measurements unless validated with field inspection data.
 
 ---
 
 ## 4) Inspector verification (expected)
 
-For this exact formula and `L=85`:
+For the axial/bending carrier formula and `L=85`:
 
-- `z = 0.0`  -> expected `w = 0.72`
-- `z = 85.0` -> expected `w ≈ 1.0`
+- `z = 0.0`  -> expected `w_E = 0.72`
+- `z = 85.0` -> expected `w_E ≈ 1.0`
 
-Example inspector output confirms:
+For the shear/torsional carrier law:
 
-- `RESULT W: 0.72` at `z=0`
-- `RESULT W: 1` at `z=85`
+- the expected value follows `w_G(t) = max(0.0, 1.0 - t / 3.0)`;
+- the plotted example shows a decreasing shear-weight field with range approximately `0.67` to `1.00`.
+
+Example inspector output should therefore confirm the independent values of both carriers where both are requested.
 
 ---
 
@@ -155,35 +183,29 @@ Ratios vs nominal section (`z=85`) are all approximately `0.72`, consistent with
 
 ---
 
-## 6) Critical implementation notes
 
-### 6.1 `@t` unit is meters
+## 7) 3D carrier-field visualization
 
-`@t=1.0` would be physically wrong for this case and can inflate torsional results drastically.  
-For MP-1, use `@t=0.05`.
+The 3D plots are part of the demonstrator and are useful because the geometry is intentionally simple: the constant CHS shape makes the material/carrier variation visually dominant.
 
-### 6.2 Name matching with model tags
+Two separate fields are plotted:
 
-When matching law references by polygon name, normalize names by removing suffixes from:
+- `weight`: axial/bending carrier;
+- `shear weight`: shear/torsional carrier.
 
-- `@cell`
-- `@wall`
-- `@closed`
+The quantitative colorbar is important because it turns the plot from a qualitative debug visualization into an interpretable field map.
 
-Example normalization:
+Expected plot behavior:
 
-- `MP1_outer@cell@t=0.05` -> `MP1_outer`
+- the `weight` plot shows a localized degradation near the base, with range approximately `0.72 -> 1.00`;
+- the `shear weight` plot shows a stronger monotonic degradation field, with range approximately `0.67 -> 1.00`;
+- the two legends make the independence of the two carrier laws explicit.
 
-### 6.3 Keep name logic deterministic
+Recommended exported figures:
 
-A robust approach is:
+- `stell_degradated_weight_3d.png`
+- `stell_degradated_shear_weight_3d.png`
 
-- parse/normalize names once for matching,
-- then use polygon indices for actual law assignment.
-
-### 6.4 Self-intersection warnings and tagged polygons
-
-If your encoding intentionally uses tagged/modeling polygons that may trigger generic checks, you can skip warning emission for names containing `@cell/@wall/@closed` in that specific diagnostic path.
 
 ## Comment on the J_sv_cell Trend
 
@@ -193,17 +215,6 @@ The plotted response is consistent with a **highly localized degradation law** n
 - increases rapidly within the first meters,
 - reaches the nominal level (`~0.210314`) around `z ~ 13.55 m`,
 - then remains on a near-constant plateau up to the top of the member.
-
-### Engineering interpretation
-
-This indicates that torsional degradation is concentrated in a narrow critical band (splash-zone-like region), while outside that band the weight-law effect becomes negligible.
-
-In parametric terms, the initial steep rise is controlled by:
-
-- `beta` (damage amplitude),
-- `sigma` (critical-zone width).
-
-The resulting shape is therefore physically consistent with a localized corrosion scenario rather than uniform deterioration along the full length.
 
 
 
@@ -215,10 +226,12 @@ The resulting shape is therefore physically consistent with a localized corrosio
 
 - [x] Explicit geometry (`Do`, `Di`, `L`)
 - [x] Explicit thickness tag (`@t=0.05`)
-- [x] Explicit law formula (`w(z)`)
-- [x] Inspector values at two reference positions
+- [x] Explicit axial/bending law formula (`w_E(z)`)
+- [x] Explicit shear/torsional law formula (`w_G(t)`)
+- [x] Inspector values at reference positions
 - [x] Section outputs consistent with law behavior
 - [x] Naming normalization rules documented
+- [x] 3D plots with quantitative legends for both carrier fields
 
 ---
 
