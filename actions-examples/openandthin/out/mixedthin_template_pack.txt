@@ -1,58 +1,43 @@
-SAP2000 TEMPLATE PACK (from CSF)
-==============================================================================
+# CSF SECTION EXPORT
+# z_start      : 0
+# z_end        : 20
+# length       : 20
+# stations     : 3
+# station_mode : user
+# stations_list: 0 10 20
+# material     : S355
+# J_tors       : J_sv_cell + J_sv_wall - see TABLE 3 for per-method breakdown and fidelity
+# E_ref        : 2.1e+11 is reported for reference only, E is polygon-pair based.
+# nu           : 0.3 is reported for reference only, nu is polygon-pair based.
+# doc          : docs/sections/sectionfullanalysis.md
 
-DISCLAIMER
-------------------------------------------------------------------------------
-This template is a data pack intended to help build a SAP2000 import file. It may require adaptation depending on SAP2000 version/table format.
+# TABLE 1 — SOLVER INPUT
+# z  A  Ix  Iy  Ixy  Ip  J_tors  G_ref  Cx  Cy  method
+  z                   A                   Ix                  Iy                  Ixy                 Ip                  J_tors              Cx                  Cy                  method              
+  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  0                   0.00715957063       4.42909194e-06      1.18422119e-05      0                   1.62713039e-05      2.00441256e-06      0                   0                   J_sv_cell+J_sv_wall 
+  10                  0.00602261063       2.94378142e-06      7.80752946e-06      0                   1.07513109e-05      1.31509508e-06      0                   0                   J_sv_cell+J_sv_wall 
+  20                  0.00500533063       1.87914332e-06      4.91555728e-06      0                   6.79470059e-06      8.21007384e-07      0                   0                   J_sv_cell+J_sv_wall 
 
-MODEL METADATA
-------------------------------------------------------------------------------
-z_start      : 0
-z_end        : 20
-length (L)   : 20
-stations     : 3
-mode         : BOTH
-material     : S355
-E_ref        : 2.1e+11
-nu           : 0.3
+# TABLE 2 — SECTION QUALITY
+# z  I1  I2  theta_deg  rx  ry  Wx  Wy  Q_na  K_torsion
+  z                   I1                  I2                  theta_deg           rx                  ry                  Wx                  Wy                  Q_na                K_torsion           
+  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  0                   1.18422119e-05      4.42909194e-06      90                  0.0248721804        0.0406698833        8.85818387e-05      0.000197370199      7.53360461e-05      4.03706335e-06      
+  10                  7.80752946e-06      2.94378142e-06      90                  0.0221085564        0.0360051332        6.54173648e-05      0.000144583879      5.62272941e-05      3.05926949e-06      
+  20                  4.91555728e-06      1.87914332e-06      90                  0.019375975         0.0313379076        4.69785829e-05      0.000102407443      4.09261901e-05      2.30940854e-06      
 
-STATIONS (CORE) J_tors = J_sv_cell + J_sv_wall
-------------------------------------------------------------------------------
-Columns: id, z, Cx, Cy, A, Ix, Iy, Ixy, Ip,J_tors
-   1  0  0  0  0.00715957063  4.42909194e-06  1.18422119e-05  0  1.62713039e-05 0 
-   2  10  0  0  0.00602261063  2.94378142e-06  7.80752946e-06  0  1.07513109e-05 0 
-   3  20  0  0  0.00500533063  1.87914332e-06  4.91555728e-06  0  6.79470059e-06 0 
+# TABLE 3 — TORSION QUALITY
+# J_s_vroark_fidelity: >=0.6 reliable | 0.3-0.6 borderline | <0.3 do not use
+  z                   J_sv_cell           J_sv_cell_t         J_sv_wall           J_s_vroark          J_s_vroark_fidelity J_tors              method              
+  ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+  0                   1.87107923e-06      0.008               1.33333333e-07      7.06381689e-06      0.596630886         2.00441256e-06      J_sv_cell+J_sv_wall 
+  10                  1.22761508e-06      0.0072              8.748e-08           4.99844652e-06      0.619610147         1.31509508e-06      J_sv_cell+J_sv_wall 
+  20                  7.66394051e-07      0.0064              5.46133333e-08      3.45247878e-06      0.651735759         8.21007384e-07      J_sv_cell+J_sv_wall 
 
-SECTION NAMES
-------------------------------------------------------------------------------
-SEC0001 @ z=0
-SEC0002 @ z=10
-SEC0003 @ z=20
-
-CANDIDATE TABLE BLOCKS (EDIT/ADAPT FOR YOUR SAP2000 VERSION)
-------------------------------------------------------------------------------
-1) Frame Section Property Definitions
-   - Create one section per station using the core properties above.
-   - Map section names with section_prefix + station id.
-
-2) Joint Coordinates (if using segmented model)
-   - Build joints along the member axis with joint_prefix and z station coordinates.
-
-3) Connectivity and Section Assignment
-   - Create frame objects with frame_prefix and assign station-based sections.
-
-MODE BLOCK: CENTROIDAL_LINE
-------------------------------------------------------------------------------
-Use Cx, Cy at each station to define centroidal alignment if needed.
-
-MODE BLOCK: REFERENCE_LINE
-------------------------------------------------------------------------------
-Keep a fixed geometric/reference axis and assign varying station properties.
-
-CHECKLIST
-------------------------------------------------------------------------------
-[] Confirm units consistency (geometry, E, inertia, torsion).
-[] Confirm SAP2000 table schema/version for import.
-[] Confirm local axis conventions and sign conventions.
-[] Confirm material definition exists in model.
-[] Confirm section assignment strategy (per object/per segment).
+# TABLE 4 — STATION NAMES
+  id                  z                   section_name        
+  ------------------------------------------------------------
+  1                   0                   SEC0001             
+  2                   10                  SEC0002             
+  3                   20                  SEC0003

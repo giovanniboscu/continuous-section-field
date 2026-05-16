@@ -235,7 +235,7 @@ if __name__ == "__main__":
     INNER_LY_0 = 1.70
     INNER_N_0  = 8
 
-    OUTER_CENTER_0 = Pt(0.0, 0.0
+    OUTER_CENTER_0 = Pt(0.0, 0.0)
     OUTER_LX_0 = 1.80
     OUTER_LY_0 = 1.80
     OUTER_N_0  = 8

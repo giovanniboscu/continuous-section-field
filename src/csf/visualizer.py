@@ -1,5 +1,4 @@
 from __future__ import annotations
-import traceback
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 from typing import Tuple, Dict, Optional, List
@@ -8,31 +7,22 @@ import random
 import warnings
 import os
 import sys
-import numbers
-import textwrap
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D 
 import re
 from datetime import datetime
-from typing import overload, Union, Literal
+from typing import  Union, Literal
 from pathlib import Path
 import io
-
 from collections import defaultdict
-from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from contextlib import redirect_stdout
 import random as _random
-import dataclasses
-#from ._tol import EPS_A, EPS_L, EPS_K,EPS_K_ATOL
+from matplotlib.colors import LinearSegmentedColormap, Normalize
+from matplotlib.cm import ScalarMappable
 from . import _tol
-
 from .continuous_section_field import ContinuousSectionField
 from .continuous_section_field import _set_axes_equal_3d
 from .section_field import section_full_analysis
-
-
-
 
 class Visualizer:
     """
@@ -428,7 +418,7 @@ class Visualizer:
 
     # ----------------------------------------------------------------------------
   
-    def plot_properties(self, keys_to_plot=None, alpha=1,title: String="Plot Properties",num_points=100):
+    def plot_properties(self, keys_to_plot=None, alpha=1,title: str = "Plot Properties",num_points=100):
         """
         Plot the evolution of selected section properties along the Z-axis.
 
@@ -1033,6 +1023,7 @@ class Visualizer:
             if seed_lower == "w":
                 # seed="w"  -> mode="w", resolution unchanged (default 100)
                 mode = "w"
+                weight_attr = "weightabs"
                 seed_numeric = 1
 
             elif seed_lower.startswith("w") and seed_lower[1:].isdigit():
@@ -1040,7 +1031,15 @@ class Visualizer:
                 mode = "w"
                 resolution = int(seed_lower[1:])
                 seed_numeric = 1
-
+            elif seed_lower == "s":
+                mode = "s"
+                weight_attr = "shear_weightabs"
+                seed_numeric = 1
+            elif seed_lower.startswith("s") and seed_lower[1:].isdigit():
+                mode = "s"
+                weight_attr = "shear_weightabs"
+                resolution = int(seed_lower[1:])
+                seed_numeric = 1                
             else:
                 raise ValueError(
                     f"Unknown plot_volume_3d string mode: {seed!r}. "
@@ -1120,7 +1119,7 @@ class Visualizer:
             # Use the maximum slope among all consecutive portions.
             for i in range(len(values) - 1):
                 dz = z_values[i + 1] - z_values[i]
-                if abs(dz) <= EPS_L:
+                if abs(dz) <= _tol.EPS_L:
                     continue
 
                 slope = abs((values[i + 1] - values[i]) / dz)
@@ -1128,7 +1127,7 @@ class Visualizer:
                     max_slope = slope
 
             # Zero slope gives the minimum resolution.
-            if max_slope <= EPS_L:
+            if max_slope <= _tol.EPS_L:
                 return min_resolution
 
             # Convert the maximum slope to a normalized percentage.
@@ -1250,8 +1249,26 @@ class Visualizer:
                 if abs(weight_max) <= _tol.EPS_L:
                     return (0.5, 0.5, 0.5, 0.9)   # void 
                 else:
-                    
-                    return (0.0, 0.0, 0.0, 1)     # costant non-void -> nero
+                    return (0.0, 0.0, 0.0, 1)     # constant non-void -> black
+
+            if mode_name == "gray":
+                return (ratio, ratio, ratio)
+
+            if weight_value < 0:
+                ratio = 1.0 - ratio
+
+            if mode_name == "s":
+                color_min = (0.0, 0.45, 0.0)  # green
+                color_max = (1.0, 0.55, 0.0)  # orange
+            else:
+                color_min = (0.0, 0.0, 1.0)  # blue
+                color_max = (1.0, 0.0, 0.0)  # red
+
+            r = color_min[0] + ratio * (color_max[0] - color_min[0])
+            g = color_min[1] + ratio * (color_max[1] - color_min[1])
+            b = color_min[2] + ratio * (color_max[2] - color_min[2])
+            
+            return (r, g, b, alpha)
 
             # Keep the mapping fully opaque.
             # The old mode labels are treated as semantic selectors only.
@@ -1386,7 +1403,12 @@ class Visualizer:
         weight_range_by_polygon: list[tuple[float, float]] = [
             (0.0, 0.0) for _ in selected_lines_by_polygon
         ]
-      
+
+        global_numeric_weights = []
+        global_weight_min = 0.0
+        global_weight_max = 0.0
+
+        
         if mode is not None and len(z_planes) > 2:
             for slice_idx in range(len(z_planes) - 1):
                 z_a = z_planes[slice_idx]
@@ -1433,7 +1455,8 @@ class Visualizer:
                         section_cache[z_a] = self.field.section(z_a)
 
                     #poly_weight = getattr(section_cache[z_a].polygons[poly_idx], "weight", None)
-                    poly_weight = getattr(section_cache[z_a].polygons[poly_idx], "weightabs", None) 
+                    #poly_weight = getattr(section_cache[z_a].polygons[poly_idx], "weightabs", None) 
+                    poly_weight = getattr(section_cache[z_a].polygons[poly_idx], weight_attr, None)
                     #poly_weight = getattr(section_cache[z_a].polygons[poly_idx], "shear_weightabs", None) 
                     #
                     
@@ -1444,7 +1467,7 @@ class Visualizer:
 
                     poly_weight_float = _to_float_or_none(poly_weight)
                     if poly_weight_float is not None:
-                    
+                        global_numeric_weights.append(poly_weight_float)
                         poly_numeric_weights.append(poly_weight_float)                    
                 
                 weights_by_polygon[poly_idx] = poly_weights
@@ -1456,7 +1479,9 @@ class Visualizer:
                     )
                 else:
                     weight_range_by_polygon[poly_idx] = (0.0, 0.0)
-
+            if global_numeric_weights:
+                global_weight_min = min(global_numeric_weights)
+                global_weight_max = max(global_numeric_weights)
         # ------------------------------------------------------------------
         # Accumulate generator segments slice-by-slice and polygon-by-polygon.
         # ------------------------------------------------------------------
@@ -1506,13 +1531,15 @@ class Visualizer:
 
                     base_color = polygon_base_colors[poly_idx]
                     poly_weight = weights_by_polygon[poly_idx][slice_idx]
-                    poly_weight_min, poly_weight_max = weight_range_by_polygon[poly_idx]
+                    poly_weight_min = global_weight_min
+                    poly_weight_max = global_weight_max                    
+                    
                     
                     segment_color = _get_semantic_color(
                         base_color=base_color,
                         weight_value=poly_weight,
-                        weight_min=poly_weight_min,
-                        weight_max=poly_weight_max,
+                        weight_min=global_weight_min,
+                        weight_max=global_weight_max,
                         mode_name=mode,
                     )
 
@@ -1531,6 +1558,37 @@ class Visualizer:
         for (lw, color), buf in edges_by_style.items():
             if buf["x"]:
                 ax.plot(buf["x"], buf["y"], buf["z"], lw=lw, color=color)
+
+        if mode is not None:
+
+            if mode == "s":
+                cmap = LinearSegmentedColormap.from_list(
+                    "shear_green_orange",
+                    [(0.0, 0.45, 0.0), (1.0, 0.55, 0.0)],
+                )
+            else:
+                cmap = LinearSegmentedColormap.from_list(
+                    "weight_blue_red",
+                    [(0.0, 0.0, 1.0), (1.0, 0.0, 0.0)],
+                )
+
+            if global_weight_min == global_weight_max:
+                global_weight_min -= 0.5
+                global_weight_max += 0.5
+
+            norm = Normalize(vmin=global_weight_min, vmax=global_weight_max)
+            sm = ScalarMappable(norm=norm, cmap=cmap)
+            sm.set_array([])
+
+            cbar = ax.figure.colorbar(sm, ax=ax, pad=0.12, shrink=0.75)
+            cbar.set_label("weight" if mode == "w" else "shear weight")
+
+
+            ticks = np.linspace(global_weight_min, global_weight_max, 10)
+
+            cbar.set_ticks(ticks)
+            cbar.set_ticklabels([f"{v:.4g}" for v in ticks])
+
 
         # ------------------------------------------------------------------
         # Explicit limits

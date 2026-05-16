@@ -2,10 +2,13 @@
 # Beam Span: 20.000000 (units follow your model)
 # Stations: 10
 # NOTE: This file is meant to be PARSED AS DATA (do NOT source it as Tcl).
-# NOTE: Section lines append 'Cx Cy' as CSF-only fields (not OpenSees syntax).
+# NOTE: Section records are CSF data records, not OpenSees Tcl syntax.
 #
-# CSF_EXPORT_MODE: E=E_ref ; A/I/J are station-wise CSF results (already weighted)
-# CSF_TORSION_SELECTION: J_eff = max(J_sv_cell, J_sv_wall) if any >0 else J if >0 else ERROR
+# CSF_EXPORT_MODE: weighted section properties only
+# CSF_METADATA_E_REF: 2.100000e+11
+# CSF_METADATA_NU_REF: 3.000000e-01
+# CSF_METADATA_G_REF: 8.076923e+10
+# CSF_TORSION_SELECTION: J_tors = J_sv_cell + J_sv_wall
 
 # CSF_Z_STATIONS: 0 0.804660918335 2.61226134894 5.2207505019 8.34721042334 11.6527895767 14.7792494981 17.3877386511 19.1953390817 20
 
@@ -15,13 +18,13 @@ node 2 0 0 20
 
 geomTransf Linear 1 1 0 0
 
-section Elastic 1 2.100000e+11 7.159571e-03 4.429092e-06 1.184221e-05 8.076923e+10 1.333333e-07 0.000000e+00 0.000000e+00  # torsion=J_sv_wall
-section Elastic 2 2.100000e+11 7.063656e-03 4.291747e-06 1.146913e-05 8.076923e+10 1.290933e-07 0.000000e+00 0.000000e+00  # torsion=J_sv_wall
-section Elastic 3 2.100000e+11 6.851019e-03 3.995173e-06 1.066352e-05 8.076923e+10 1.199377e-07 0.000000e+00 0.000000e+00  # torsion=J_sv_wall
-section Elastic 4 2.100000e+11 6.551061e-03 3.595357e-06 9.577463e-06 8.076923e+10 1.075949e-07 0.000000e+00 0.000000e+00  # torsion=J_sv_wall
-section Elastic 5 2.100000e+11 6.202271e-03 3.157743e-06 8.388731e-06 8.076923e+10 9.408524e-08 0.000000e+00 0.000000e+00  # torsion=J_sv_wall
-section Elastic 6 2.100000e+11 5.846220e-03 2.741289e-06 7.257481e-06 8.076923e+10 8.122881e-08 0.000000e+00 0.000000e+00  # torsion=J_sv_wall
-section Elastic 7 2.100000e+11 5.521496e-03 2.388140e-06 6.298192e-06 8.076923e+10 7.032669e-08 0.000000e+00 0.000000e+00  # torsion=J_sv_wall
-section Elastic 8 2.100000e+11 5.259522e-03 2.121773e-06 5.574634e-06 8.076923e+10 6.210360e-08 0.000000e+00 0.000000e+00  # torsion=J_sv_wall
-section Elastic 9 2.100000e+11 5.082760e-03 1.951399e-06 5.111833e-06 8.076923e+10 5.684397e-08 0.000000e+00 0.000000e+00  # torsion=J_sv_wall
-section Elastic 10 2.100000e+11 5.005331e-03 1.879143e-06 4.915557e-06 8.076923e+10 5.461333e-08 0.000000e+00 0.000000e+00  # torsion=J_sv_wall
+section CSF 1 7.159571e-03 4.429092e-06 1.184221e-05 2.004413e-06 0.000000e+00 0.000000e+00  # torsion=J_sv_cell+J_sv_wall
+section CSF 2 7.063656e-03 4.291747e-06 1.146913e-05 1.940672e-06 0.000000e+00 0.000000e+00  # torsion=J_sv_cell+J_sv_wall
+section CSF 3 6.851019e-03 3.995173e-06 1.066352e-05 1.803035e-06 0.000000e+00 0.000000e+00  # torsion=J_sv_cell+J_sv_wall
+section CSF 4 6.551061e-03 3.595357e-06 9.577463e-06 1.617485e-06 0.000000e+00 0.000000e+00  # torsion=J_sv_cell+J_sv_wall
+section CSF 5 6.202271e-03 3.157743e-06 8.388731e-06 1.414392e-06 0.000000e+00 0.000000e+00  # torsion=J_sv_cell+J_sv_wall
+section CSF 6 5.846220e-03 2.741289e-06 7.257481e-06 1.221120e-06 0.000000e+00 0.000000e+00  # torsion=J_sv_cell+J_sv_wall
+section CSF 7 5.521496e-03 2.388140e-06 6.298192e-06 1.057228e-06 0.000000e+00 0.000000e+00  # torsion=J_sv_cell+J_sv_wall
+section CSF 8 5.259522e-03 2.121773e-06 5.574634e-06 9.336093e-07 0.000000e+00 0.000000e+00  # torsion=J_sv_cell+J_sv_wall
+section CSF 9 5.082760e-03 1.951399e-06 5.111833e-06 8.545407e-07 0.000000e+00 0.000000e+00  # torsion=J_sv_cell+J_sv_wall
+section CSF 10 5.005331e-03 1.879143e-06 4.915557e-06 8.210074e-07 0.000000e+00 0.000000e+00  # torsion=J_sv_cell+J_sv_wall

@@ -56,9 +56,7 @@ from contextlib import redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
-
-
-
+from csf.entities import Pt, Polygon, Section, CSFError
 import argparse
 import csv
 import io
@@ -347,9 +345,9 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
             "Params\n"
             "- show_end_sections : draw end-section outlines at z0 and z1.\n"
             "- line_percent      : percentage (0..100) of generator lines displayed (random subsample).\n"
-            "- seed              : int seed for legacy coloring, or 'w' / 'w<int resolution>' for weight-aware coloring.\n"
-            "                      Examples: seed: 0, seed: w, seed: w100.\n"            
-            
+            "- seed              : int seed for coloring, or 'w' / 'w<int resolution>' for weight-aware coloring.\n"
+            "                    : use 's' / 's<int resolution>' for shear_weight-aware coloring.\n"
+            "                      Examples: seed: 0, seed: w, seed: w100.\n"     
             "- title             : window/figure title."
         ),
         params=(

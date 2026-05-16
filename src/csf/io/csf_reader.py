@@ -95,6 +95,8 @@ import io
 from yaml.loader import SafeLoader
 from yaml.constructor import ConstructorError
 from contextlib import redirect_stdout, redirect_stderr
+from csf.entities import Section
+from csf.entities import Pt, Polygon, Section
 try:
     import yaml  # type: ignore
 except Exception:
@@ -838,7 +840,6 @@ class CSFReader:
         if any(i.severity == Severity.ERROR for i in issues):
             return None
 
-        from csf.section_field import Section
         return Section(polygons=tuple(parsed_polys), z=float(z))
 
     def _parse_polygon(self, p: Any, p_path: str, issues: List[Issue]) -> Optional[Any]:
@@ -892,7 +893,6 @@ class CSFReader:
         if any(i.severity == Severity.ERROR for i in issues):
             return None
 
-        from csf.section_field import Polygon
         return Polygon(vertices=tuple(parsed_pts), weight=float(w), name=name)
 
     def _parse_vertex(self, v: Any, v_path: str, issues: List[Issue]) -> Optional[Any]:
@@ -911,7 +911,6 @@ class CSFReader:
             issues.append(CSFIssues.make("CSF_E_VERTEX_NANINF", path=v_path, context=v))
             return None
 
-        from csf.section_field import Pt
         return Pt(float(x), float(y))
 
     # ------------------------------------------------------------------

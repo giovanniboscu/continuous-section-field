@@ -130,9 +130,8 @@ CSF_ACTIONS:
         params:
           n_intervals: 10
           material_name: "S355"
-          E_ref: 2.2e+11
-          nu: 0.30
-          mode: "BOTH"
+          E_ref: 2.2e+11 # for reference only, E is polygon-pair based.
+          nu: 0.30 # for reference only, E is polygon-pair based.
           include_plot: True
           plot_filename: "out/rectangle_variation.jpg"
   

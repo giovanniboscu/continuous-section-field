@@ -1,7 +1,6 @@
+from .entities import Pt, Polygon, Section, CSFError
+
 from .section_field import (
-    Pt,
-    Polygon,
-    Section,
     section_derived_properties,
     section_full_analysis,
     section_stiffness_matrix,
@@ -22,12 +21,14 @@ from .section_field import (
     polygon_surface_w1_inners0,
     volume_polygon_list_report,
     export_polygon_vertices_csv,
-    export_polygon_vertices_csv_file
+    export_polygon_vertices_csv_file,
 )
+
 from .continuous_section_field import (
     ContinuousSectionField,
     section_properties,
     section_data,
     polygon_area_centroid,
 )
+
 from .visualizer import Visualizer

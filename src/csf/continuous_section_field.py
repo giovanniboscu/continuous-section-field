@@ -1,26 +1,23 @@
 from __future__ import annotations
-import traceback
-from typing import Dict, Any, Optional, List, Tuple, overload, Union, Literal
-from dataclasses import dataclass
-import math, random, warnings, os, sys, numbers, textwrap, re, io, dataclasses
+from typing import Dict, Any, Optional, List, Tuple, Union, Literal
+import math, random, warnings, os, sys, re, io
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from collections import defaultdict
 from contextlib import redirect_stdout
 from datetime import datetime
 from pathlib import Path
 import random as _random
+from .entities import Pt, Polygon, Section, CSFError
 from . import _tol
 
 
 from .section_field import (
-    Pt, Polygon, Section, CSFDumper, XY,
+     CSFDumper, XY,
     _csf__is_finite_number, _csf__atomic_write_text, _csf__ensure_parent_dir_exists,
     _bbox_xy, _point_in_poly_inclusive, _point_on_segment_sq,
     polygon_has_self_intersections, polygon_inertia_about_origin,
-    section_print_analysis, _signed_area_centroid_xy, _simple_yaml_dump, _csf__section_to_Sz_dict, CSFError,
+    section_print_analysis, _signed_area_centroid_xy, _simple_yaml_dump, _csf__section_to_Sz_dict, 
 )
 
 from .section_field import section_full_analysis, evaluate_weight_formula, evaluate_weight_formula_zrelative, evaluate_shear_weight_formula
@@ -190,9 +187,6 @@ class ContinuousSectionField:
                 }
             )
         return records
-
-    #---------------------------------------------------------------------------------------------------
-
     
     def build_direct_children_map(self, z: float) -> Dict[int, List[int]]:
         """
@@ -741,10 +735,6 @@ class ContinuousSectionField:
         }
 
     @staticmethod
-    def _pt_to_xy(pt):
-        return [float(pt.x), float(pt.y)]
-
-    @staticmethod
     def _polygon_to_dict(poly):
         if XY is not None:
             verts = [XY((float(v.x), float(v.y))) for v in poly.vertices]
@@ -756,10 +746,7 @@ class ContinuousSectionField:
             "vertices": verts,
         }
 
-    # --------------------------------------------------------------------------------------
     
-
-
     def section_area_list_report(
         self,
         z: float,
@@ -896,9 +883,6 @@ class ContinuousSectionField:
         # Totals block (accountant-style, as requested)
         print(f"Occupied Total Surface: {occupied_total_surface:.12g}")
         print(f"Homogenized area:       {homogenized_area:.12g}")
-    # --------------------------------------------------------------------------------------
-
-
 
     def section_area_by_weight(
         self,
@@ -1129,11 +1113,6 @@ class ContinuousSectionField:
 
         return result
 
-        
-
-
-    # --------------------------------------------------------------------------------------
-
     
     def _determine_magnitude(self) -> None:
         """
@@ -1182,9 +1161,6 @@ class ContinuousSectionField:
                     if x > max_x: max_x = x
                     if y > max_y: max_y = y
 
-
-
-
         # Handle empty geometry defensively
         if min_x is inf:
             # No points found: fall back to a safe default
@@ -1226,8 +1202,6 @@ class ContinuousSectionField:
         #print(f"SCALE {SCALE} _tol.EPS_K {_tol.EPS_K} _tol.EPS_L{_tol.EPS_L} _tol.EPS_A {_tol.EPS_A}")
 
 
-
-
     def to_dict(self, include_weight_laws=True):
 
 
@@ -1267,8 +1241,7 @@ class ContinuousSectionField:
             if shear_out:
                 data["CSF"]["shear_weight_laws"] = shear_out
 
-        return data
-        
+        return data        
 
 
     def to_yaml(self, filepath: Optional[str] = None, include_weight_laws: bool = True) -> str:
@@ -1355,7 +1328,6 @@ class ContinuousSectionField:
         # Sort to ensure numerical stability
         z_coords = sorted(z_coords)
         return z_coords
-
 
 
     def __init__(self, section0: Section, section1: Section):
@@ -1676,30 +1648,12 @@ class ContinuousSectionField:
 
         elif isinstance(laws, dict):
             raise ValueError(f"Critical Error: not valid {laws} ")
-            '''
-            for key, law in laws.items():
-                target_idx = None
-                if isinstance(key, int):
-                    target_idx = key
-                elif isinstance(key, str):
-                    if key not in valid_names0:
-                        raise KeyError(f"Critical Error: No polygon named '{key}' found.")
-                    target_idx = valid_names0.index(key) + 1
-                
-                if target_idx is not None:
-                    if target_idx < 1 or target_idx > num_polygons:
-                        raise IndexError(f"Index {target_idx} out of range (1-{num_polygons}).")
-                    normalized_map[target_idx] = law
-            '''   
+
 
         z0, z1 = self.s0.z, self.s1.z
         L_val = z1 - z0
         z_mid = L_val / 2.0 # Actual RELATIVE Z value halfway between the sections
-        
-        # Compute t consistently with the interpolation formula
-        # If L_val is 0 (coincident sections), t is forced to 0 to avoid division by zero
-        #t_mid = (z_mid - z0) / L_val if L_val != 0 else 0.0
-        
+
         
         for idx, formula in normalized_map.items():
                            

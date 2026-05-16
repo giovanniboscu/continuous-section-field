@@ -32,11 +32,10 @@ FILE (geometry.tcl)
 - Required/used records:
   1) "# CSF_Z_STATIONS: z0 ... zN-1"   (comment line, but machine-readable here)
   2) "geomTransf Linear 1 vx vy vz"
-  3) "section Elastic tag E A Iz Iy G J Cx Cy"  (Cx,Cy are CSF-only extra fields)
+  3) "section CSF tag A Iz Iy J Cx Cy" (Cx,Cy are CSF-only extra fields)
 
 Notes:
-- "Cx Cy" (or "xc yc"): the names do NOT matter. They are simply the last two
-  numeric tokens of each "section Elastic" line. OpenSees would ignore them if
+- "Cx Cy" (or "xc yc"): the names do NOT matter. OpenSees would ignore them if
   sourced, but this script parses them as centroid offsets in the local section plane.
 - "node 1/2" lines in geometry.tcl are treated as informational only and are ignored.
 
@@ -169,10 +168,10 @@ DISP_OUTPUT_UNIT = "mm"
 # ---------------------------------------------------------------------------
 # MATERIAL INPUT MODE
 # ---------------------------------------------------------------------------
-# Demonstrates the same behavior as your Tcl builder:
-# - "from_file": use E, G from geometry.tcl
-# - "override": force constant E/G in OpenSees section definitions
-MATERIAL_INPUT_MODE = "override"  # "override" or "from_file"
+# OpenSees Elastic sections require scalar E/G carriers.
+# CSF records provide weighted section properties.
+MATERIAL_INPUT_MODE = "override"
+
 E_OVERRIDE = 2.1e11
 NU_OVERRIDE = 0.30
 G_OVERRIDE = None  # if None -> computed from E/(2*(1+nu))
@@ -217,15 +216,12 @@ class SectionCSF:
     One CSF station record.
 
     Notes:
-      - A, Iz, Iy, J, xc, yc are always taken from the file (CSF export).
-      - E, G can be taken from file or overridden by Python (see MATERIAL_INPUT_MODE).
+      - A, Iz, Iy, J, xc, yc are taken from the CSF data record.
     """
     tag: int
-    E: float
     A: float
     Iz: float
     Iy: float
-    G: float
     J: float
     xc: float = 0.0
     yc: float = 0.0
@@ -410,31 +406,25 @@ def parse_csf_geometry(file_path: str) -> GeometryCSF:
                     vecxz = np.array([float(parts[3]), float(parts[4]), float(parts[5])], dtype=float)
                 except ValueError:
                     pass
-
-            # section Elastic tag E A Iz Iy G J [xc yc]
-            if len(parts) >= 9 and parts[0] == "section" and parts[1] == "Elastic":
+            # - section CSF tag A Iz Iy J [xc yc]
+            if len(parts) >= 7 and parts[0] == "section" and parts[1] == "CSF":
                 try:
                     tag = int(parts[2])
-                    E = float(parts[3])
-                    A = float(parts[4])
-                    Iz = float(parts[5])
-                    Iy = float(parts[6])
-                    G = float(parts[7])
-                    J = float(parts[8])
+                    A = float(parts[3])
+                    Iz = float(parts[4])
+                    Iy = float(parts[5])
+                    J = float(parts[6])
 
-                    # If present, centroid offsets are appended as the last two fields.
-                    # We detect them by total token count.
-                    has_xy = len(parts) >= 11
-                    xc = float(parts[9]) if has_xy else 0.0
-                    yc = float(parts[10]) if has_xy else 0.0
+                    has_xy = len(parts) >= 9
+                    xc = float(parts[7]) if has_xy else 0.0
+                    yc = float(parts[8]) if has_xy else 0.0
 
-                    sections.append(SectionCSF(tag, E, A, Iz, Iy, G, J, xc, yc))
+                    sections.append(SectionCSF(tag, A, Iz, Iy, J, xc, yc))
                 except ValueError:
                     continue
 
     if not sections:
-        raise ValueError("No 'section Elastic' lines found. geometry.tcl does not look like CSF data.")
-
+        raise ValueError("No 'section CSF' lines found. geometry.tcl does not look like CSF data.")
     N = len(sections)
 
     # Validate CSF_Z_STATIONS if present
@@ -506,29 +496,19 @@ def build_local_basis(axis_e3: np.ndarray, vecxz: np.ndarray) -> Tuple[np.ndarra
 # =============================================================================
 # MATERIAL HANDLING
 # =============================================================================
-
-def get_EG(sec: SectionCSF) -> Tuple[float, float]:
+def get_EG() -> Tuple[float, float]:
     """
-    Decide where (E,G) come from:
-      - from_file: use sec.E, sec.G
-      - override:  use constants E_OVERRIDE and computed/forced G
+    Return scalar E/G carriers required by OpenSees Elastic sections.
     """
-    mode = MATERIAL_INPUT_MODE.strip().lower()
+    E = float(E_OVERRIDE)
 
-    if mode == "from_file":
-        return float(sec.E), float(sec.G)
+    if G_OVERRIDE is not None:
+        G = float(G_OVERRIDE)
+    else:
+        nu = float(NU_OVERRIDE)
+        G = E / (2.0 * (1.0 + nu))
 
-    if mode == "override":
-        E = float(E_OVERRIDE)
-
-        if G_OVERRIDE is not None:
-            G = float(G_OVERRIDE)
-        else:
-            nu = float(NU_OVERRIDE)
-            G = E / (2.0 * (1.0 + nu))
-        return E, G
-
-    raise ValueError("MATERIAL_INPUT_MODE must be 'from_file' or 'override'.")
+    return E, G
 
 
 # =============================================================================
@@ -627,8 +607,8 @@ def run_csf_opensees(geom: GeometryCSF, verbose: bool = True) -> float:
         print(f"   => Using CSF_Z_STATIONS: {'YES' if using_csf_z else 'NO'}")
         print(f"   => Centroid variation detected: {'YES' if tilt else 'NO'}")
         print(f"   => Integration mode: {INTEGRATION_MODE} (member_lobatto={integration_member})")
-        E0, G0 = get_EG(secs[0])
-        print(f"   => MATERIAL_INPUT_MODE: {MATERIAL_INPUT_MODE} (E={E0:.6g}, G={G0:.6g})")
+        E0, G0 = get_EG()
+        print(f"   => OpenSees assigned carriers: E={E0:.6g}, G={G0:.6g}")
 
     # ---------------- OpenSees domain ----------------
     ops.wipe()
@@ -639,7 +619,7 @@ def run_csf_opensees(geom: GeometryCSF, verbose: bool = True) -> float:
 
     # Define all station sections (tags are taken from file; E/G maybe overridden)
     for s in secs:
-        E, G = get_EG(s)
+        E, G = get_EG()
         ops.section(
             "Elastic",
             int(s.tag),
@@ -844,15 +824,15 @@ def main() -> None:
         print("\n================ PARSED geometry.tcl SUMMARY ================")
         print(f"File: {GEOMETRY_FILE}")
         print(f"Stations: {geom.n_stations}")
-        print(f"Beam length L (fallback) = {geom.L} (units follow your model)")
+        print(f"Beam length L = {geom.L} (units follow your model)")
         print(f"vecxz (geomTransf orientation) = {geom.vecxz}")
         if geom.z_stations is not None:
             print(f"CSF_Z_STATIONS: present (N={len(geom.z_stations)}), z0={geom.z_stations[0]}, zN={geom.z_stations[-1]}")
         else:
-            print("CSF_Z_STATIONS: missing (fallback distribution will be used if allowed)")
-        print("Section lines: tag, E, A, Iz, Iy, G, J, [xc, yc]")
-        print("  - A/Iz/Iy/J/xc/yc are ALWAYS read from file.")
-        print("  - E/G are taken from file only if MATERIAL_INPUT_MODE='from_file'.")
+            print("CSF_Z_STATIONS: missing")
+        print("Section records: tag, A, Iz, Iy, J, [xc, yc]")
+        print("  - A/Iz/Iy/J/xc/yc are read from CSF records.")
+        print("  - E/G are assigned as OpenSees Elastic-section carriers.")
         print("=============================================================\n")
 
     uy = run_csf_opensees(geom, verbose=True)

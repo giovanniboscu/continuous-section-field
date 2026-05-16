@@ -69,6 +69,7 @@ from shapely.ops import unary_union
 
 from sectionproperties.analysis import Section
 from sectionproperties.pre import CompoundGeometry, Geometry
+from shapely.ops import snap, unary_union
 
 try:
     from sectionproperties.pre import Material
@@ -1083,20 +1084,29 @@ def _apply_effective_hole_points(
 # -----------------------------------------------------------------------------
 
 
-def _geometry_is_connected(geom: Geometry | CompoundGeometry) -> bool:
+def _geometry_is_connected(
+    geom: Geometry | CompoundGeometry,
+    tol: float = 1e-8,
+) -> bool:
     """
-    Return True when the union of all active regions is one connected polygon.
+    Return True when active regions are connected.
 
-    NOTE:
-    This is a bridge policy, not a CSF theorem. The decision is made with
-    Shapely ``unary_union`` on the final active SP regions. It is used only to
-    decide whether the bridge will attempt SP warping calculations.
+    Connectivity uses snapping only as a topological test.
+    The physical geometry passed to sectionproperties is not modified.
     """
     region_polys = _polygon_list_from_sectionproperties_geometry(geom)
     if not region_polys:
         return False
+
     union_geom = unary_union(region_polys)
-    return union_geom.geom_type == "Polygon"
+    if union_geom.geom_type == "Polygon":
+        return True
+
+    reference = union_geom
+    snapped_polys = [snap(p, reference, tol) for p in region_polys]
+    snapped_union = unary_union(snapped_polys)
+
+    return snapped_union.geom_type == "Polygon"
 
 
 # -----------------------------------------------------------------------------

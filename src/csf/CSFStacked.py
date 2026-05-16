@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 from typing import List, Sequence, Tuple, Optional
-
-
+from .entities import Pt, Polygon, Section
+from typing import Tuple
 from .section_field import (
     Pt,
     Polygon,
@@ -511,7 +511,7 @@ class CSFStacked:
 #-----------------------------------------------------------------------------------------------
     def plot_volume_3d_global(
         self,
-        title: String=None,
+        title: str = None,
         line_percent: float = 100.0,
         seed: int = 1,
         margin_ratio: float = 0.10,

@@ -1,48 +1,42 @@
 """
-continuous section field + property digestor + 2D/3D visualization
-
-Assumptions (explicit):
+Assumptions:
 - Two endpoint sections exist at z0 and z1.
 - Same number of polygons in start/end.
 - For each polygon: same number of vertices in start/end.
 - Vertex ordering is already consistent (your matching is given/assumed).
 - Polygons are simple enough for shoelace formulas (no self-intersections).
-
-Dependencies: matplotlib (standard in most Python setups).
 """
 from __future__ import annotations
-import traceback
-from typing import Dict, Any, Optional, List
+from datetime import datetime
 from dataclasses import dataclass
-from typing import Tuple, Dict, Optional, List
+from typing import Any, Dict, List, Literal, Mapping, Optional, Sequence, Tuple
 import math
 import random
 import warnings
 import os
 import sys
-import numbers
-import textwrap
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D 
 import re
 from datetime import datetime
-from typing import overload, Union, Literal
+from typing import Union, Literal
 from pathlib import Path
+import csv
 import io
-
+from typing import Any, Dict, List, Optional, Tuple
+from .entities import Pt, Polygon, Section, CSFError
 from collections import defaultdict
-from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from contextlib import redirect_stdout
 import random as _random
-import dataclasses
+from typing import Literal,TYPE_CHECKING
+
 from . import _tol
-
-
-
+# ruff: noqa: F821
+if TYPE_CHECKING:
+    from .continuous_section_field import ContinuousSectionFie
 
 #
-# The current implementation uses a "strict proper intersection" test:
+# Your current implementation uses a "strict proper intersection" test:
 #     (o1 * o2 < 0) and (o3 * o4 < 0)
 # which detects only crossings where the intersection lies strictly inside both segments.
 #
@@ -98,6 +92,8 @@ else:
 
 
 
+# Add this method inside class ContinuousSectionField.
+#
 # Goal:
 #   Provide an API to compute an AREA BREAKDOWN of one 2D section by MATERIAL WEIGHT (W)
 #   without requiring the user to manually manage nested polygons and negative "void" weights.
@@ -109,16 +105,6 @@ else:
 #         w_rel(child) = w_abs(child) - w_abs(container(child))
 #     This method reconstructs absolute weights w_abs and assigns area to the exclusive region
 #     of each polygon (polygon area minus its immediate children areas).
-
-from typing import Any, Dict, List, Optional, Tuple
-
-
-
-#################################################################
-# -----------------------------------------------------------------------------
-# Plot helper
-# -----------------------------------------------------------------------------
-
 
 
 def plot_section_variation(
@@ -185,8 +171,6 @@ def plot_section_variation(
     #print(f"[PLOT] Preview saved as '{filename}'")
     if show:
         plt.show()
-
-
 
 # -----------------------------------------------------------------------------
 # Station generation
@@ -340,6 +324,7 @@ def _compute_station_data(
         )
 
     return out
+
 #------------------------------------------------------------------------------
 
 def write_sap2000_template_pack(
@@ -347,7 +332,7 @@ def write_sap2000_template_pack(
     n_intervals: int = 20,
     template_filename: str = "export_template_pack.txt",
     *,
-    mode: _Mode = "BOTH",
+    mode: Literal["BOTH", "CENTROIDAL_LINE", "REFERENCE_LINE"] = "BOTH",
     section_prefix: str = "SEC",
     material_name: str = "S355",
     E_ref: Optional[float] = None,
@@ -379,9 +364,9 @@ def write_sap2000_template_pack(
     mode             : Retained for API compatibility; not used in output.
     section_prefix   : Prefix for section name labels ("SEC" -> "SEC0001").
     material_name    : Informational label written to the file header.
-    E_ref            : Reference Young's modulus; G_ref = E_ref / (2*(1+nu)).
+    E_ref            : Reference Young's modulus; G_ref = E_ref / (2*(1+nu)). For reference only
                        Written to header only if provided.
-    nu               : Poisson's ratio; used to derive G_ref when E_ref is given.
+    nu               : Poisson's ratio; used to derive G_ref when E_ref is given. for referencep only
     include_plot     : If True and matplotlib is available, saves a property plot.
     plot_filename    : Path for the optional plot image.
     show_plot        : If True, display the plot interactively.
@@ -466,16 +451,10 @@ def write_sap2000_template_pack(
             plot_path_written = None
 
     # -------------------------------------------------------------------------
-    # Derive G_ref and collect per-station records.
     # _t fields (Bredt-Batho wall thickness) exist only for single-polygon
     # @cell/@wall sections; optional columns are emitted only when at least one
     # station carries the value — avoids empty columns in the common case.
     # -------------------------------------------------------------------------
-    G_ref = (
-        float(E_ref) / (2.0 * (1.0 + float(nu)))
-        if (E_ref is not None and nu is not None)
-        else None
-    )
 
     records = []
     any_cell_t = False
@@ -597,11 +576,9 @@ def write_sap2000_template_pack(
     lines.append(f"# material     : {material_name}")
     lines.append(f"# J_tors       : J_sv_cell + J_sv_wall - see TABLE 3 for per-method breakdown and fidelity")
     if E_ref is not None:
-        lines.append(f"# E_ref        : {_fmt(E_ref)}")
+        lines.append(f"# E_ref        : {_fmt(E_ref)} is reported for reference only, E is polygon-pair based.")
     if nu is not None:
-        lines.append(f"# nu           : {_fmt(nu)}")
-    if G_ref is not None:
-        lines.append(f"# G_ref        : {_fmt(G_ref)}")
+        lines.append(f"# nu           : {_fmt(nu)} is reported for reference only, nu is polygon-pair based.")
     if plot_path_written is not None:
         lines.append(f"# plot         : {plot_path_written}")
     lines.append(f"# doc          : docs/sections/sectionfullanalysis.md")
@@ -611,15 +588,13 @@ def write_sap2000_template_pack(
     # Direct input for SAP2000 and OpenSees beam elements.
     # J_tors = J_sv_cell + J_sv_wall; see TABLE 3 for per-method breakdown.
     # Cx, Cy: centroid offsets in the section plane.
-    # G_ref column is empty when E_ref / nu are not provided.
     lines.append("# TABLE 1 — SOLVER INPUT")
     lines.append("# z  A  Ix  Iy  Ixy  Ip  J_tors  G_ref  Cx  Cy  method")
-    _header("z", "A", "Ix", "Iy", "Ixy", "Ip", "J_tors", "G_ref", "Cx", "Cy", "method")
+    _header("z", "A", "Ix", "Iy", "Ixy", "Ip", "J_tors",  "Cx", "Cy", "method")
     for r in records:
         _row(_fmt(r["z"]), _fmt(r["A"]),
              _fmt(r["Ix"]), _fmt(r["Iy"]), _fmt(r["Ixy"]), _fmt(r["Ip"]),
-             _fmt(r["J_tors"]), _fmt(G_ref),
-             _fmt(r["Cx"]), _fmt(r["Cy"]),
+             _fmt(r["J_tors"]), _fmt(r["Cx"]), _fmt(r["Cy"]),
              r["method"])
     lines.append("")
 
@@ -691,18 +666,6 @@ def write_sap2000_template_pack(
 
     return str(out_path)
 
-
-
-
-
-
-# -----------------------------------------------------------------------------
-# Template pack writer
-# -----------------------------------------------------------------------------
-#_Mode = Literal["BOTH", "CENTROIDAL_LINE", "REFERENCE_LINE"]
-
-
-
 #--------------------------------------------------------------------------------
 def write_sap2000_geometry(*args: Any, **kwargs: Any) -> str:
     """
@@ -718,7 +681,6 @@ def write_sap2000_geometry(*args: Any, **kwargs: Any) -> str:
     """
     return write_sap2000_template_pack(*args, **kwargs)
 
-#################################################################
 
 def _csf__is_finite_number(x: Any) -> bool:
     """Return True if x can be converted to a finite float."""
@@ -870,9 +832,6 @@ def _simple_yaml_dump(data, indent: int = 0) -> str:
     # scalare singolo
     return f"{sp}{_yaml_scalar(data)}"
 
-
-
-
 def safe_evaluate_weight_zrelative(formula: str, p0: Polygon, p1: Polygon, z0: float, z1: float, z: float,print=True) -> tuple[float, dict]:
     """
     Evaluates a weight formula string safely by trapping all potential exceptions.
@@ -930,7 +889,6 @@ def safe_evaluate_weight_zrelative(formula: str, p0: Polygon, p1: Polygon, z0: f
                 "suggestion": "Verify if a void was intended. Consider using 'np.maximum(0, ...)'."
             })
 
-    # --- BLOCK 4: ERROR TRAPPING ---
     
     except NameError as e:
         # Occurs if a variable (like 'w0' or 'z') is misspelled or 'np' is not loaded
@@ -975,10 +933,6 @@ def safe_evaluate_weight_zrelative(formula: str, p0: Polygon, p1: Polygon, z0: f
         print_evaluation_report(final_value, report)
     
     return float(final_value), report
-
-
-
-from datetime import datetime
 
 def print_evaluation_report(value: float, report: dict):
     """
@@ -1301,17 +1255,6 @@ def execute_string_to_float(code_string, z_val, t_val):
         print(f"Details: {e}")
         raise
 
-'''
-def t_lookup(filename: str, t: float) -> float:
-    """
-    normalised
-    Wrapper function intended for use within 'eval()' contexts.
-    It bridges the string evaluation to the structural lookup logic.
-    """
-    z=t # to be implemented
-    return lookup_homogenized_elastic_modulus(filename, z)
-''' 
-
 
 def evaluate_weight_formula_zrelative( formula: str, p0: Polygon, p1: Polygon, z0: float, z1: float, z: float) -> float:
         """
@@ -1395,8 +1338,6 @@ def section_geometry(section: Section, fmt=".8f"):
         print(f"{poly.name:<12} | {poly.weight:<10.2f} | {len(poly.vertices):<10} | {v_coords}")
 
 
-
-
 def section_print_analysis(full_analysis, fmt=".8f"):
     """
     Prints the structural analysis report for a cross-section.
@@ -1451,9 +1392,7 @@ def section_print_analysis(full_analysis, fmt=".8f"):
     print(f"17) Torsional const K wall            J_sv_wall             {fmt_val_or_pair(full_analysis['J_sv_wall'],fmt)}     # computes the Saint-Venant torsional constant for open thin-walled walls")
     print(f"18) Torsional const K roark:          J_s_vroark            {full_analysis['J_s_vroark']:{fmt}}     # Roark torsional indicator (equivalent-rectangle mapping)")
     print(f"19) Torsional const K roark fidelity: J_s_vroark_fidelity   {full_analysis['J_s_vroark_fidelity']:{fmt}}     # Reliability index based on aspect-ratio (1.0 = Thin-walled, 0.0 = Stout")
-    
-    print("="*span)
-    
+    print("="*span) 
 
 def section_full_analysis_keys() -> List[str]:
     """
@@ -1504,13 +1443,12 @@ def write_opensees_geometry(
     2) Section record format (data record that *resembles* OpenSees)
        We write one record per station:
 
-           section Elastic <tag> <E_ref> <A*> <Iz*> <Iy*> <G_ref> <J_tors> <Cx> <Cy>
+           section CSF <tag> <A> <Iz> <Iy> <J_tors> <Cx> <Cy>
 
        IMPORTANT:
        - This is a DATA record. OpenSees Tcl would NOT accept the trailing <Cx> <Cy>.
        - Cx,Cy are appended for CSF parsers/builders (centroid offsets in section plane).
-       - A*, Iz*, Iy* are assumed already "CSF-weighted / modular" properties
-         (i.e., heterogeneity/holes already reflected by CSF analysis).
+       - A, Iz, Iy, J_tors are station-wise CSF results computed from polygon-level E/G values.
 
     3) Torsion export without tying the file to a single CSF torsion model
        CSF may provide multiple Saint-Venant torsion contributions
@@ -1530,11 +1468,6 @@ def write_opensees_geometry(
 
          - If no valid Saint-Venant contribution is available:
              fail-fast (explicit error; no silent torsion default).
-
-
-    4) Reference shear modulus
-       G_ref is computed as isotropic:
-           G_ref = E_ref / (2*(1+nu))
 
     --------------------------------------------------------------------------------
     OUTPUT CONTENTS
@@ -1592,7 +1525,7 @@ def write_opensees_geometry(
         sec = field.section(z)
 
         # NOTE:
-        # If your CSF legacy torsion uses alpha=1 internally, that should be handled
+        # Torsion details are handled inside section_full_analysis / torsion routines.
         # inside section_full_analysis / torsion routines.
         # The exporter should not encode that assumption here unless it is part of
         # the section analysis contract.
@@ -1609,7 +1542,7 @@ def write_opensees_geometry(
 
     # -------------------------------------------------------------------------
     # 3) Informational-only: best-fit straight line through centroid offsets
-    #    (kept only for legacy scripts/human readability)
+    #    (used only for exported geometry metadata)
     # -------------------------------------------------------------------------
     m_y, q_y = np.polyfit(z_coords, cy_list, 1)
     m_x, q_x = np.polyfit(z_coords, cx_list, 1)
@@ -1629,11 +1562,13 @@ def write_opensees_geometry(
             f.write(f"# Beam Span: {z1 - z0:.6f} (units follow your model)\n")
             f.write(f"# Stations: {len(z_coords)}\n")
             f.write("# NOTE: This file is meant to be PARSED AS DATA (do NOT source it as Tcl).\n")
-            f.write("# NOTE: Section lines append 'Cx Cy' as CSF-only fields (not OpenSees syntax).\n")
+            f.write("# NOTE: Section records are CSF data records, not OpenSees Tcl syntax.\n")
             f.write("#\n")
-            f.write("# CSF_EXPORT_MODE: E=E_ref ; A/I/J are station-wise CSF results (already weighted)\n")
+            f.write("# CSF_EXPORT_MODE: weighted section properties only\n")
+            f.write(f"# CSF_METADATA_E_REF: {float(E_ref):.6e}\n")
+            f.write(f"# CSF_METADATA_NU_REF: {float(nu):.6e}\n")
+            f.write(f"# CSF_METADATA_G_REF: {float(G_ref):.6e}\n")
             f.write("# CSF_TORSION_SELECTION: J_tors = J_sv_cell + J_sv_wall")
-
             # ---- Exact z stations ----
             f.write("\n\n# CSF_Z_STATIONS: " + " ".join(f"{z:.12g}" for z in z_coords) + "\n\n")
 
@@ -1647,7 +1582,7 @@ def write_opensees_geometry(
 
             # ---- Section records ----
             # Record format (DATA):
-            #   section Elastic tag E_ref A Iz Iy G_ref J_tors Cx Cy
+            #    section CSF tag A Iz Iy J_tors Cx Cy
             #
             # Mapping:
             #   Iz := Ix from CSF (if your axes are aligned); otherwise swap upstream.
@@ -1696,14 +1631,12 @@ def write_opensees_geometry(
 
                 # Write section data record
                 f.write(
-                    "section Elastic {tag} {E:.6e} {A:.6e} {Iz:.6e} {Iy:.6e} {G:.6e} {J:.6e} "
+                    "section CSF {tag} {A:.6e} {Iz:.6e} {Iy:.6e} {J:.6e} "
                     "{Cx:.6e} {Cy:.6e}  # torsion={tm}\n".format(
                         tag=tag,
-                        E=float(E_ref),
                         A=float(res["A"]),
                         Iz=float(res["Ix"]),
                         Iy=float(res["Iy"]),
-                        G=float(G_ref),
                         J=float(J_tors),
                         Cx=float(res["Cx"]),
                         Cy=float(res["Cy"]),
@@ -1812,7 +1745,7 @@ def lookup_homogenized_elastic_modulus(filename: str, zt: float) -> float:
     # end for
     # Fallback for the very last point
     return data[-1][1]
-######################################################################################################################################
+
 """
 
 
@@ -1950,69 +1883,6 @@ def _equiv_rectangle_dims(A: float, i_min: float, eps_k: float) -> Tuple[float, 
         b_dim = b_equiv
     return a_dim, b_dim
 
-
-# -----------------------------------------------------------------------------
-# Representation-invariant fidelity
-# -----------------------------------------------------------------------------
-
-class _TmpPt:
-    __slots__ = ("x", "y")
-    def __init__(self, x: float, y: float) -> None:
-        self.x = float(x)
-        self.y = float(y)
-
-class _TmpPoly:
-    __slots__ = ("vertices", "weight", "name")
-    def __init__(self, vertices, name: str = "equiv_rect") -> None:
-        self.vertices = vertices
-        self.weight = 1.0
-        self.name = name
-
-def _equiv_rectangle_polygon(a: float, b: float) -> _TmpPoly:
-    """Build a CCW rectangle centered at the origin with side lengths a (x) and b (y)."""
-    hx = 0.5 * float(a)
-    hy = 0.5 * float(b)
-    verts = [_TmpPt(-hx, -hy), _TmpPt(hx, -hy), _TmpPt(hx, hy), _TmpPt(-hx, hy)]
-    return _TmpPoly(verts)
-
-def _fidelity_from_equiv_rectangle(a: float, b: float) -> float:
-    """
-    Fidelity index for the Roark proxy, invariant to polygon splitting.
-
-    Policy:
-    - If an external callable `evaluate_torsional_fidelity(obj)` exists, use it,
-      but evaluate it on the equivalent rectangle (synthetic polygon).
-    - Otherwise, return the rectangle aspect ratio b/a (with a >= b), which is a
-      simple compactness indicator in (0, 1].
-
-    No abs(), no sign normalization.
-    """
-    a = float(a)
-    b = float(b)
-    if a == 0.0:
-        return float("nan")
-    ratio = b / a
-
-    diag_fn = globals().get("evaluate_torsional_fidelity", None)
-    if callable(diag_fn):
-        try:
-            diag = diag_fn(_equiv_rectangle_polygon(a, b))
-            if isinstance(diag, dict) and ("confidence_index" in diag):
-                v = float(diag["confidence_index"])
-                if math.isfinite(v):
-                    return v
-        except Exception:
-            pass
-
-    return ratio
-
-#------------------  Saint Venant Jv2 
-
-# -----------------------------------------------------------------------------
-# Public API
-# -----------------------------------------------------------------------------
-
-
 def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[float, float]:
     """
     Estimate the Saint-Venant torsional constant J and a fidelity indicator.
@@ -2037,7 +1907,7 @@ def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[fl
     def compute_shear_areas(
         section: Any,
         children_map: Mapping[int, Sequence[int]],
-        eps_a: float = 1.0e-12,
+        eps_a: float = _tol.EPS_A,
     ) -> Tuple[float, float]:
         """
         Compute shear geometric area and shear-weighted area from a Section object.
@@ -2228,9 +2098,7 @@ def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[fl
 
         return best_B, best_H
 
-
-
-   
+  
     # ------------------------------------------------------------------
     # Helper: isoperimetric ratio Q = 4*pi*A / P^2
     # ------------------------------------------------------------------
@@ -2253,9 +2121,6 @@ def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[fl
             return 0.0
         return 4.0 * math.pi * abs(A) / (perimeter ** 2)
 
-    # ------------------------------------------------------------------
-    # Setup
-    # ------------------------------------------------------------------
     eps_a = _resolve_eps_a(poly_input)
     polys = poly_input.polygons
 
@@ -2341,7 +2206,6 @@ def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[fl
         )
     
     return float(J_total), float(fid_final)
-
 
 
 def calculate_t_eq(points):
@@ -2476,7 +2340,6 @@ We therefore scale each polygon contribution by abs(weight), consistent with you
 compute_saint_venant_J_wall implementation.
 
 """
-
 def compute_saint_venant_J_cell(section: "Section") -> float:
     """
     Compute closed-cell Saint-Venant torsional constant J_sv [m^4]
@@ -2492,77 +2355,10 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
     TOKEN_CLOSED = "@closed"
     TOKEN_T = "@t="
     REQUIRE_EXPLICIT_T = False
-    
+    verbose = False
     polys = getattr(section, "polygons", None)
     if not polys:
         return 0.0
-    #---------------------------------------------------------------------------
-    
-    def compute_shear_areas(
-        section: Section,
-        #children_map: Mapping[int, Sequence[int]],
-        eps_a: float = 1.0e-12,
-    ) -> Tuple[float, float]:
-        """
-        Compute shear geometric area and shear-weighted area from a Section object.
-
-        Input:
-        - section:
-            Section object exposing section.polygons.
-
-        - children_map:
-            Mapping parent_idx -> direct inner polygon indexes.
-
-        Returns:
-        - A_geom_net:
-            Sum of occupied geometric areas for polygons with shear_weightabs != 0.
-
-        - Ao:
-            Sum of occupied geometric areas multiplied by shear_weightabs.
-
-        Area rule:
-        - occupied_area(idx) = area(idx) - sum(area(direct_inner_idx))
-
-        Notes:
-        - Polygons with shear_weightabs == 0 are excluded from both returned sums.
-        - The children_map subtraction is geometric and index-based.
-        - Polygon names are never used.
-        - Vertices are passed directly to _poly_signed_area_centroid.
-        - _poly_signed_area_centroid must already be available in the same module.
-        """
-        children_map=field.build_direct_children_map(section.z)        
-        polygons = section.polygons
-
-        area_by_idx: Dict[int, float] = {}
-
-        for idx, polygon in enumerate(polygons):
-            signed_area, _, _ = _poly_signed_area_centroid(polygon.vertices, eps_a)
-            area_by_idx[idx] = abs(float(signed_area))
-
-        occupied_area_by_idx: Dict[int, float] = {}
-
-        for idx in range(len(polygons)):
-            occupied_area = area_by_idx[idx]
-
-            for inner_idx in children_map.get(idx, ()):
-                occupied_area -= area_by_idx[inner_idx]
-
-            occupied_area_by_idx[idx] = occupied_area
-
-        A_geom_net = 0.0
-        Ao = 0.0
-
-        for idx, polygon in enumerate(polygons):
-            weight = float(polygon.weight)
-            if weight == 0.0:
-                continue
-
-            occupied_area = occupied_area_by_idx[idx]
-
-            A_geom_net += occupied_area
-            Ao += occupied_area * weight
-
-        return A_geom_net, Ao
 
     # -------------------------------------------------------------------------
     # 0) Select @cell polygons
@@ -2652,9 +2448,6 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         if tval <= 0.0:
             return None
         return tval
-
-
-
 
     def _find_outer_bridge_index(xy: List[Tuple[float, float]], nm: str) -> int:
         """
@@ -2766,7 +2559,6 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
             raise CSFError(
                 f"compute_saint_venant_J_cell(v3): polygon '{nm}' produced degenerate loops."
             )
-        #print(f"DEBUG loop_a {loop_a} loop_b {loop_b}" ) 
         return loop_a, loop_b, i_outer_end
 
     def _compute_J_geom_from_global_mid_quantities(
@@ -2810,14 +2602,14 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
                 f"compute_saint_venant_J_cell(v3): polygon '{nm}' degenerate global mid quantities "
                 f"(A_m={A_m:.12g}, b_m={b_m:.12g})."
             )
-        '''
-        print(
-            f"[CELL-GEOM][idx={i_cell}][z={z_sec}][{nm}] "
-            f"A_outer={A_outer:.12g} A_inner={A_inner:.12g} A_wall={A_wall:.12g} "
-            f"P_outer={P_outer:.12g} P_inner={P_inner:.12g} "
-            f"A_m={A_m:.12g} b_m={b_m:.12g} t={t:.12g}"
-        )
-        '''
+        if verbose:
+            print(
+                f"[CELL-GEOM][idx={i_cell}][z={z_sec}][{nm}] \n"
+                f"A_outer={A_outer:.12g} A_inner={A_inner:.12g} A_wall={A_wall:.12g} \n"
+                f"P_outer={P_outer:.12g} P_inner={P_inner:.12g} \n"
+                f"A_m={A_m:.12g} b_m={b_m:.12g} t={t:.12g} \n"
+            )
+            
         return 4.0 * (A_m ** 2) * t / b_m
 
     # -------------------------------------------------------------------------
@@ -2839,12 +2631,12 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         
         
         z_sec = getattr(section, "z", None)
-        '''
-        print(
-            f"[CELL-START][idx={i_cell}] z={z_sec} name={nm} "
-            f"id={id(p)} nverts={len(xy)} first={xy[0] if xy else None}"
-        )
-        '''
+        if verbose:
+            print(
+                f"[CELL-START][idx={i_cell}] z={z_sec} name={nm} "
+                f"id={id(p)} nverts={len(xy)} first={xy[0] if xy else None}"
+            )
+        
 
         if len(xy) < 8:
             raise CSFError(
@@ -2859,23 +2651,22 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
         # Split loops (inner explicit closure is optional).
         loop_a, loop_b, i_outer_end = _split_outer_inner_loops(xy, nm)
-        '''
-        print(f"DEBUG loop_a {loop_a}  loop_b {loop_b} i_outer_end  {i_outer_end}")
-        
-        print(
-            f"[OUTER_CLOSE][idx={i_cell}][z={z_sec}][{nm}] "
-            f"first={xy[0]} repeated={xy[i_outer_end]}"
-        )
-        '''
+        if verbose:
+            print(f"verbose loop_a {loop_a}  loop_b {loop_b} i_outer_end  {i_outer_end}")
+            
+            print(
+                f"[OUTER_CLOSE][idx={i_cell}][z={z_sec}][{nm}] "
+                f"first={xy[0]} repeated={xy[i_outer_end]}"
+            )
         area_a = abs(_signed_area_xy(loop_a))
         area_b = abs(_signed_area_xy(loop_b))
-        '''
-        print(
-            f"[CELL-LOOPS][idx={i_cell}][z={z_sec}][{nm}] "
-            f"len_loop_a={len(loop_a)} len_loop_b={len(loop_b)} "
-            f"area_a={area_a:.12g} area_b={area_b:.12g}"
-        )
-        '''
+        if verbose:
+            print(
+                f"[CELL-LOOPS][idx={i_cell}][z={z_sec}][{nm}] "
+                f"len_loop_a={len(loop_a)} len_loop_b={len(loop_b)} "
+                f"area_a={area_a:.12g} area_b={area_b:.12g}"
+            )
+        
         # OUTER is the loop with larger absolute area.
         if area_a >= area_b:
             outer_xy = loop_a
@@ -2931,72 +2722,37 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
                 raise CSFError(
                     f"compute_saint_venant_J_cell(v3): polygon '{nm}' has near-zero perimeter."
                 )
-
+            
             t = 2.0 * A_wall_geom / P_poly_fallback                
-                            
-            '''    
-            A_poly_fallback = abs(float(polygon_area_centroid(p)[0]))
 
-
-            P_outer = _perimeter_xy(outer_xy)
-            P_inner = _perimeter_xy(inner_xy) 
-
-            P_poly_fallback= P_outer + P_inner
-            #P_poly_fallback = _perimeter_xy(xy)
-
-           
-            
-            if P_poly_fallback < _tol.EPS_L:
-                raise CSFError(
-                    f"compute_saint_venant_J_cell(v3): polygon '{nm}' has near-zero perimeter."
-                )
-            
-            t = 2.0 * A_poly_fallback / P_poly_fallback
-            '''
         # end t calculation            
 
         if t < _tol.EPS_L:
             raise CSFError(
                 f"compute_saint_venant_J_cell(v3): polygon '{nm}' invalid thickness t={t}."
             )
-        '''
-        print(
-            f"[CELL-ORIENT][idx={i_cell}][z={z_sec}][{nm}] "
-            f"s_outer_before={s_outer_before:.12g} s_outer_after={s_outer_after:.12g} "
-            f"s_inner_before={s_inner_before:.12g} s_inner_after={s_inner_after:.12g}"
-        )
-        '''
+        if verbose:
+            print(
+                f"[CELL-ORIENT][idx={i_cell}][z={z_sec}][{nm}] "
+                f"s_outer_before={s_outer_before:.12g} s_outer_after={s_outer_after:.12g} "
+                f"s_inner_before={s_inner_before:.12g} s_inner_after={s_inner_after:.12g}"
+            )
         # Optional area consistency warning.
         A_outer = abs(_signed_area_xy(outer_xy))
         A_inner = abs(_signed_area_xy(inner_xy))
         A_wall = A_outer - A_inner
-        '''
-        A_poly = abs(_signed_area_xy(xy))
-        abs_err = abs(A_poly - A_wall)
-        rel_err = abs_err / max(abs(A_wall), _tol.EPS_A)
-        
-        if abs_err > _tol.EPS_A and rel_err > _tol.EPS_K_RTOL:
-            warnings.warn(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' "
-                f"(idx={i_cell}, z={z_sec}) geometric area mismatch. "
-                f"A_poly={A_poly:.12g}, A_outer-A_inner={A_wall:.12g}, "
-                f"abs_err={abs_err:.12g}, rel_err={rel_err:.6e}",
-                RuntimeWarning,
-            )
-        '''
         J_geom = _compute_J_geom_from_global_mid_quantities(
             outer_xy, inner_xy, t, nm, i_cell, z_sec
         )
         contrib = shear_weight * J_geom
-        
-        '''
-        print(
-            f"[CELL-CONTRIB][idx={i_cell}][z={z_sec}][{nm}] "
-            f"w={w:.12g} J_geom={J_geom:.12g} contrib={contrib:.12g} J_total_before={J_total:.12g}"
-        )
-        '''
+        if verbose:
+            print(
+                f"[CELL-CONTRIB][idx={i_cell}][z={z_sec}][{nm}] "
+                f"w={w:.12g} J_geom={J_geom:.12g} contrib={contrib:.12g} J_total_before={J_total:.12g}"
+            )
         J_total += contrib
-        #print(f"[CELL-TOTAL][idx={i_cell}][z={z_sec}][{nm}] J_total_after={J_total:.12g}")
+        if verbose:
+            print(f"[CELL-TOTAL][idx={i_cell}][z={z_sec}][{nm}] J_total_after={J_total:.12g}")
 
 
         if t is None:
@@ -3011,9 +2767,6 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
     else:
         
         return J_total
-
-#----------------------------------------------------------------------------
-
 
 """
 CSF torsion (Saint-Venant) - WALL-based variant with optional thickness override
@@ -3088,6 +2841,7 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
     float
         Effective Saint-Venant torsional constant J_sv [m^4].
     """
+    verbose = False
     # -----------------------------
     # 1) Geometry helpers
     # -----------------------------
@@ -3126,7 +2880,6 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
 
         return perim
         
-
     # -----------------------------
     # 2) Parse optional "@t=<...>"
     # -----------------------------
@@ -3204,7 +2957,6 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
 
     J = 0.0
     n_wall_used = 0 
-
     for p in wall_polys:
         
         shear_weight = float(getattr(p, "shear_weight"))
@@ -3222,8 +2974,9 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
         nm = str(getattr(p, "name", "") or "")
         t_override = _parse_thickness_from_name(nm)
         t_source = "?"
-        
         if t_override is not None:
+            if verbose:
+                print(f"DEBUG t_override {t_override}")
             t = float(t_override)
             t_source = "@t"
 
@@ -3241,18 +2994,19 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
         J_i = (A * (t ** 2)) / 3.0
 
         J_i_wall = J_i
-        #print(f"DEBUG Area poly {p} A={A} J_i={J_i}")    
+        if verbose:
+            print(f"DEBUG Area poly {p} A={A} J_i={J_i}")    
 
         P_dbg = _poly_perimeter(p)
 
         b_est = (A / t) if t > _tol.EPS_L else 0.0
+        if verbose:
         
-        '''
-        print(
-            f"[DEBUG J_WALL] nm={nm}  A={A:.6f}  P={P_dbg:.6f}  t={t:.6f} ({t_source})  "
-            f"b_est=A/t={b_est:.6f}  J_i={J_i_wall:.6f}  w={w:.6f} "
-        )
-        '''
+            print(
+                f"[DEBUG J_WALL] nm={nm}  A={A:.6f}  P={P_dbg:.6f}  t={t:.6f} ({t_source})  "
+                f"b_est=A/t={b_est:.6f}  J_i={J_i_wall:.6f}  w={w:.6f} "
+            )
+        
 
         # Keep torsional stiffness non-negative
         J +=  shear_weight * J_i
@@ -3261,10 +3015,6 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
         return float(J),t
     else:
         return float(J)
-
-
-
-#---------------------------------------------------------------------------------------
 
 
 """
@@ -3492,9 +3242,6 @@ def _solve_poisson_sor(
 
     return psi
 
-
-
-
 def _sq(x: float) -> float:
     return x * x
 
@@ -3507,8 +3254,6 @@ def _is_near_zero(x: float, eps: float) -> bool:
     It does not "fix" or "normalize" signs.
     """
     return _sq(x) <= _sq(eps)
-
-
 
 
 def _signed_area_centroid_xy(
@@ -3548,14 +3293,6 @@ def _signed_area_centroid_xy(
 def _poly_signed_area_centroid_xy(verts: Sequence[PointXY]) -> Tuple[float, float, float]:#qui
     return _signed_area_centroid_xy(verts)
 
-
-
-# -----------------------------------------------------------------------------
-# Public API
-# -----------------------------------------------------------------------------
-
-
-##############################################################################################################################################à
 
 def export_to_opensees_tcl(field, K_12x12, filename="csf_model.tcl"):
     """
@@ -3855,7 +3592,7 @@ def volume_polygon_list_report_data(
     }
 
 def volume_polygon_list_report(
-    field: "ContinuousSectionField",
+    field: ContinuousSectionField,
     z1: float,
     z2: float,
     *,
@@ -4176,30 +3913,13 @@ def integrate_volume(
         rec = polygon_surface_w1_inners0_single(field, z_abs, idx)  # type: ignore[misc]
 
         return float(rec["A"]), float(rec["A_w"])
-        '''
-        if callable(fn):
-            rec = fn(field, z_abs, idx)  # type: ignore[misc]
-            return float(rec["A"]), float(rec["A_w"])
-        '''
-        '''
-        # Fallback: compute full list once at this z and pick the record by idx.
-        rows = polygon_surface_w1_inners0(field, z_abs)
-        for r in rows:
-            if int(r.get("idx", -1)) == idx:
-                return float(r["A"]), float(r["A_w"])
-        raise ValueError(f"Polygon idx={idx} not found at z={z_abs}.")
-        '''
-    # --- integration loop ---
+
     for x, w in zip(xi, wi):
         # Map x in [-1,1] to z in [z0,z1] (using midpoint + half-length)
         z = z_mid + half_L * float(x)
         w = float(w)
 
         if idx is None:
-            # -----------------------------------------------------------------
-            # LEGACY integrand (explicit and isolated):
-            #   A_global(z) from section_properties(...)["A"]
-            # -----------------------------------------------------------------
             sec = field.section(z)
             props = section_properties(sec)
             A_global = float(props["A"])
@@ -4514,8 +4234,6 @@ def section_stiffness_matrix(section: Section, E_ref: float = 1.0) -> np.ndarray
     
     return k_matrix
 
-
-
 def _segments_intersect(p1, p2, p3, p4) -> bool:
     '''
     Determines if two finite line segments (p1-p2 and p3-p4) intersect in a 2D plane.
@@ -4566,10 +4284,6 @@ def _segments_intersect(p1, p2, p3, p4) -> bool:
     o4 = orient(p3, p4, p2)
 
     return (o1 * o2 < 0) and (o3 * o4 < 0)
-
-
-
-
 
 def polygon_has_self_intersections(poly: Polygon) -> bool:
     """
@@ -4672,167 +4386,6 @@ def polygon_has_self_intersections(poly: Polygon) -> bool:
 
     return False
 
-
-
-class CSFError(ValueError):
-    
-    pass
-
-
-
-
-# -------------------------
-# Geometry primitives
-# -------------------------
-
-@dataclass(frozen=True)
-class Pt:
-    x: float
-    y: float
-
-    def lerp(self, other: "Pt", z_real: float, length: float) -> "Pt": 
-            """
-            Calculates the interpolated point at a specific distance using slopes.
-            
-            Args:
-                self start point
-                other (Pt): Ending point (top).
-                z_real (float): relative Distance from the starting point (0 to length).
-                length (float): Total vertical length of the segment.
-            """
-         
-            # Avoid division by zero
-            if abs(length) < _tol.EPS_L:
-                return self
-
-            # 1. Calculate the geometric slope (how much x and y change per meter)
-            slope_x = (other.x - self.x) / length
-            slope_y = (other.y - self.y) / length
-
-            # 2. Add the change to the initial x and y coordinates
-            # New = Initial + (Rate of change * distance)
-            xr = self.x + (slope_x * z_real)
-            yr = self.y + (slope_y * z_real) 
-            
-            return Pt( 
-                x = xr, 
-                y = yr  
-            )
-
-@dataclass(frozen=True)
-class Polygon:
-    vertices: Tuple[Pt, ...]
-    weight: float = None   # relative Homogenization coefficient,  negative for holes
-    name: str = ""        # Optional label / ID
-    weightabs: float = None # absolute  Homogenization coefficient, 0 for holes
-    shear_weight: float = None
-    shear_weightabs: float = None
-    poisson: float = None
-    def __post_init__(self) -> None:
-        """
-        Validation steps executed automatically after object initialization.
-        """
-        # 1. Check for minimum number of vertices
-        if len(self.vertices) < 3:
-            raise ValueError(f"Polygon '{self.name}' must have at least 3 vertices.")
-
-        # 2. Check for Counter-Clockwise (CCW) orientation
-        # We use the Shoelace formula to calculate the signed area (a2).
-        # A positive result indicates CCW, a negative result indicates CW.
-        verts = self.vertices
-        n = len(verts)
-        a2 = 0.0
-        for i in range(n):
-            x0, y0 = verts[i].x, verts[i].y
-            x1, y1 = verts[(i + 1) % n].x, verts[(i + 1) % n].y
-            a2 += (x0 * y1 - x1 * y0)
-        
-        # If a2 is negative, the winding order is Clockwise (CW).
-        if a2 <= 0:
-            raise ValueError(
-                f"GEOMETRIC ERROR:: Polygon '{self.name}' has area {a2}. "
-                f"Polygons must have a positive area and be defined in Counter-Clockwise (CCW) order. "
-                f"An area of 0 means the polygon is degenerate (e.g., only 2 sides)."
-            )
-        
-        if abs(a2) < _tol.EPS_A: # Check if the area is practically zero
-                raise ValueError(
-                    f"GEOMETRIC ERROR: Polygon '{self.name}' has zero area (degenerate polygon). "
-                    f"A polygon must have at least 3 non-collinear vertices (it cannot have only 2 sides)."
-                )        
-        # GEOMETRIC INTEGRITY CHECK
-        if a2 < _tol.EPS_A:  # Covers both negative area and zero area
-            if a2 < 0:
-                # Case: Clockwise (CW) order
-                raise ValueError(
-                    f"GEOMETRIC ERROR: Polygon '{self.name}' is defined in Clockwise (CW) order. "
-                    f"All polygons must be Counter-Clockwise (CCW). "
-                    f"Use weight={self.weight} for voids instead of flipping vertices."
-                )
-            else:
-                # Case: Zero Area (2 sides or collinear points)
-                raise ValueError(
-                    f"GEOMETRIC ERROR: Polygon '{self.name}' has zero area (degenerate). "
-                    f"A polygon must have at least 3 non-collinear vertices to enclose an area."
-                )
-        # Default shear weight follows the standard weight unless explicitly set.
-        if self.shear_weight is None:
-            object.__setattr__(self, "shear_weight", self.weight)
-            
-from collections.abc import Mapping
-
-@dataclass(frozen=True)
-class Section:
-    polygons: Tuple[Polygon, ...]
-    z: float
-
-    def __post_init__(self) -> None:
-        if isinstance(self.polygons, Polygon):
-            raise TypeError(
-                "Section.polygons must be a tuple of Polygon. "
-                "For a single polygon, use (poly,) not (poly,)."
-            )
-
-        if isinstance(self.polygons, Mapping):
-            raise TypeError(
-                "Section.polygons must be a tuple of Polygon, not a mapping/dict."
-            )
-
-        if not isinstance(self.polygons, tuple):
-            raise TypeError(
-                "Section.polygons must be a tuple of Polygon."
-            )
-
-        if len(self.polygons) == 0:
-            raise ValueError(
-                "Section must contain at least one Polygon."
-            )
-
-        for p in self.polygons:
-            if not isinstance(p, Polygon):
-                raise TypeError(
-                    "All elements of Section.polygons must be Polygon."
-                )
-
-        seen_names = set()
-
-        for i, poly in enumerate(self.polygons):
-            if not poly.name or not poly.name.strip():
-                raise ValueError(
-                    f"VALIDATION ERROR: Polygon at index {i} in section at Z={self.z} "
-                    f"has an empty or invalid name. All polygons must have a unique name."
-                )
-
-            if poly.name in seen_names:
-                raise ValueError(
-                    f"VALIDATION ERROR: Duplicate polygon name '{poly.name}' detected "
-                    f"in section at Z={self.z}. Each polygon within a section must have a unique name."
-                )
-
-            seen_names.add(poly.name)
-
-
-
 def poly_from_string(s: str, weight: float = 1.0, name: str = "") -> Polygon:
     """
     Utility: build a Polygon from a string like:
@@ -4843,31 +4396,6 @@ def poly_from_string(s: str, weight: float = 1.0, name: str = "") -> Polygon:
         x_str, y_str = token.split(",")
         pts.append(Pt(float(x_str), float(y_str)))
     return Polygon(vertices=tuple(pts), weight=weight, name=name)
-
-'''
-def get_points_distance(polygon: Polygon, i: int, j: int) -> float:
-    """
-    Calculates the Euclidean distance between vertex i and vertex j of a polygon.
-    Indices i and j are 1-based (from 1 to N).
-    
-    This can measure sides (if i, j are consecutive) or diagonals/distances 
-    between any two nodes of the polygon.
-    """
-    verts = polygon.vertices
-    n = len(verts)
-
-    # Validate indices to prevent Out of Range errors
-    if not (1 <= i <= n) or not (1 <= j <= n):
-        raise IndexError(f"Vertex indices {i, j} out of range for polygon with {n} vertices.")
-
-    # Convert 1-based indices to 0-based for Python list access
-    p1 = verts[i - 1]
-    p2 = verts[j - 1]
-
-    # Euclidean distance formula: sqrt((x2-x1)^2 + (y2-y1)^2)
-    return math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2)
-'''
-
 
 
 def get_points_distance(polygon: Polygon, i: int, j: int) -> float:
@@ -5047,8 +4575,6 @@ def list_polygons_with_contents(csf: ContinuousSectionField, z: float) -> List[D
         )
 
     return out
-
-#-------------------------------------------------------------------------------------------------------------
 
 
 def polygon_surface_w1_inners0(self: Any, z: float) -> List[Dict[str, Any]]:
@@ -5257,7 +4783,6 @@ def polygon_surface_w1_inners0(self: Any, z: float) -> List[Dict[str, Any]]:
 
     return out
 
-#---------------------------------------------------------------------------------------------------------------
 
 def polygon_surface_w1_inners0_single(
     self: ContinuousSectionField,
@@ -5473,10 +4998,6 @@ def polygon_surface_w1_inners0_single(
         "A_w": float(A_w),
     }
 
-# -------------------------------------------------------------------------------------------------------------
-
-
-
 def export_polygon_vertices_csv_file(
     section: Section = None,
     field: ContinuousSectionField = None,
@@ -5596,9 +5117,6 @@ def export_polygon_vertices_csv(section: Section=None, field: ContinuousSectionF
             return name
 
         return name[:min(idxs)]    
-    
-    
-    # --- Input validation: mutually exclusive modes -----------------------------
 
     # Mode A: explicit section provided
     has_section = section is not None
@@ -5610,7 +5128,6 @@ def export_polygon_vertices_csv(section: Section=None, field: ContinuousSectionF
         raise ValueError(
             "You must provide either 'section' OR both 'field' and 'zpos'."
         )
-    # --- Resolve section ---------------------------------------------------------
 
     if not has_section:
         # Build section from field at given z
@@ -5688,7 +5205,6 @@ def export_polygon_vertices_csv(section: Section=None, field: ContinuousSectionF
             return v
         return _apply_fmt(fv)
 
-
         
     z_hdr = fmt.format(float(z))
     put("## GEOMETRY EXPORT ##")
@@ -5739,7 +5255,8 @@ def export_polygon_vertices_csv(section: Section=None, field: ContinuousSectionF
             ]
             put(",".join(esc(fmt_num(v)) for v in row))
             #put(",".join(esc(v) for v in row))
-#--------------------------------------------------------------------------------
+
+
 def section_properties(section: Section) -> Dict[str, float]:
     """
     Computes the integral geometric properties for a composite cross-section.
