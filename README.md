@@ -28,8 +28,8 @@ It represents section geometry and material as continuous functions along z, com
   <img width="1126" height="468" alt="steel_degradated" src="https://github.com/user-attachments/assets/c5e3e529-2d2b-43a8-a868-d03e427ec348" />
 
 
+The colors show how material participation changes continuously along the member: one field controls axial/bending stiffness (`weight`), while a separate field controls shear/torsional stiffness (`shear_weight`).
   
-3D visualization of independent CSF carrier fields along the member axis: axial/bending `weight` and shear/torsional `shear_weight`.  
 Full reproducible example: [`stell_degradated_model`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/stell_degradated_model)
 
 ---
