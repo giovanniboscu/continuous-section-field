@@ -146,7 +146,11 @@ pip install csfpy
 csf-actions geometry.yaml actions.yaml
 ```
 
-**This is a minimal working CSF model:** two sections, one polygon per section, one weight law, and automatic evaluation of the resulting continuous properties along the member axis.
+**Minimal working CSF model:** two sections, one polygon per section, custom `weight` laws, isotropic `shear_weight_laws`, and automatic evaluation of continuous section properties along the member axis.
+
+<img width="1667" height="656" alt="image" src="https://github.com/user-attachments/assets/e76992d3-1339-4bc5-a42f-0b07e579ae6c" />
+
+---
 
 [CSF Geometry, Sections, Polygon Tags, and Weight Laws Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md) 
 
@@ -295,9 +299,6 @@ $$
 \text{Property}(z) = \sum_k w_k \, \text{Property}_k(z)
 $$
 
-
-
- ![twist_tower_props](https://github.com/user-attachments/assets/dba77c34-967a-42af-8762-18861901cb52)
 
  [CSF – Section Full Analysis Output](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md)
  
