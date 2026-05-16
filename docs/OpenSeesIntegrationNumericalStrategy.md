@@ -87,14 +87,14 @@ OpenSees is unitless; “real” displacements require consistent stiffness unit
 
 CSF supports two workflows.
 
-### 3.1 Mode A — export physical moduli (direct stiffness)
+### 3.1 Mode A - export physical moduli (direct stiffness)
 
 - `geometry.tcl` stores the physical `E(z)` and `G(z)`.
 - The builder uses `MATERIAL_INPUT_MODE = "from_file"`.
 
 Result: OpenSees uses `E, G` exactly as written in the file.
 
-### 3.2 Mode B — export reference modulus and “modular properties”
+### 3.2 Mode B - export reference modulus and “modular properties”
 
 In this contract:
 
@@ -157,7 +157,7 @@ CSF exports stations. The OpenSees model should honor them **without inventing i
 
 There are two consistent strategies, depending on whether `(xc, yc)` are constant.
 
-#### Strategy A — Single element with N-point Gauss–Lobatto (strict)
+#### Strategy A - Single element with N-point Gauss–Lobatto (strict)
 
 Allowed only if centroid offsets are constant along the member:
 ```text
@@ -180,7 +180,7 @@ max_i | s_i - s_i^Lobatto | < eps
 
 If it does not match, this strategy is rejected (no fallback weights).
 
-#### Strategy B — Segmented elements with 2-point endpoint sampling (Lobatto-2)
+#### Strategy B - Segmented elements with 2-point endpoint sampling (Lobatto-2)
 
 Required when centroid offsets vary (tilt/curvature), because you need nodes at intermediate stations to represent the centroid axis.
 
@@ -273,7 +273,7 @@ and record the selected key as:
   
 # geometry file description
 
-## `geometry.tcl` (CSF export) — detailed, block-by-block explanation
+## `geometry.tcl` (CSF export) - detailed, block-by-block explanation
 
 This file is **not meant to be sourced** as a complete OpenSees model.  
 It is a **CSF data file**: it contains *station-by-station section properties* plus the **centroid offsets** needed by external builders to reconstruct a centroid axis.
