@@ -23,24 +23,14 @@ CSF complements standard FEM workflows by providing a continuous geometric repre
 It represents section geometry and material as continuous functions along z, computing the resulting continuously varying section properties - $A(z)$, $Ix(z)$, $Iy(z)$...  - for tapered and non-homogeneous members, exported as **CSV** and **YAML** for direct integration with any beam solver (OpenSees, SAP2000, and others) or section analysis tools (e.g. [sectionproperties](https://github.com/robbievanleeuwen/section-properties)).
 
 
-
+---
 <p align="center">     
   <img width="1126" height="468" alt="steel_degradated" src="https://github.com/user-attachments/assets/c5e3e529-2d2b-43a8-a868-d03e427ec348" />
 
 
   
-Each lines is colored by its own normalized material participation factor w(z)
-a scalar field that scales the stiffness contribution
-</p>
-
->
-> **The Problem**
->
->For a frustum tower with localized degradation, CSF uses a continuous field in which geometry and degradation are independent functions of z: the entire model resides in a single YAML file, from which the full workflow can be reconstructed exactly and repeated deterministically.
->
-> **📁 Reference:** [`actions-examples/histwin/`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin)
->
-
+3D visualization of independent CSF carrier fields: axial/bending `weight` and shear/torsional `shear_weight`.  
+Full reproducible example: [`stell_degradated_model`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/stell_degradated_model)
 
 ---
 
