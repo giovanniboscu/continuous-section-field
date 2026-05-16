@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.5
+
+- 2026-05-16 - Refactor csf_sp and improve handling of closely spaced geometries. Add shear_weight_laws support and legend to plot_volume.
+
 ## v0.1.4
 
 - 2026-05-09 - added analyse_torsion_carrier for G_i  -> e.j is G.J on csf_sp
