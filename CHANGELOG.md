@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.1.5
+## v0.1.5 - v0.1.6 
 
 - 2026-05-16 - Refactor csf_sp and improve handling of closely spaced geometries. Add shear_weight_laws support and legend to plot_volume.
 
