@@ -307,7 +307,7 @@ $$
 # CSF Numerical Validation: Circular Hollow Section
 `examples/cylinder_withcheck.py`
 
-<img width="520" height="509" alt="circletest" src="https://github.com/user-attachments/assets/b3384be1-0a35-4654-b39b-aae614703ad0" />
+<img width="398" height="484" alt="Screenshot 2026-05-16 at 18 08 54" src="https://github.com/user-attachments/assets/b92afe6a-1bdd-4abb-97a6-2fa079610979" />
 
 To verify the accuracy of the numerical engine, a validation test was performed using a **non-tapered hollow cylinder** (steel pipe). This allows for a direct comparison between the library's results (based on weighted polygons) and exact analytical formulas.
 
