@@ -64,7 +64,7 @@ CSF_ACTIONS:
     # -------------------------------------------------------------------------
     - plot_volume_3d:
         params:
-          title: "NREL 5-MW Reference Tower — H = 87.60 m"
+          title: "NREL 5-MW Reference Tower  H = 87.60 m"
           line_percent: 20.0
 
     # -------------------------------------------------------------------------
