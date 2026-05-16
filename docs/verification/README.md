@@ -71,7 +71,7 @@ top of each script (`TORSION_REL_TOL`) reflect this known difference.
 
 ### Global summary
 
-Each report ends with a summary block — the key line is:
+Each report ends with a summary block - the key line is:
 
 ```
 Overall status: PASS
