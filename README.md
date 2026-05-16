@@ -22,8 +22,12 @@ CSF complements standard FEM workflows by providing a continuous geometric repre
 
 It represents section geometry and material as continuous functions along z, computing the resulting continuously varying section properties - $A(z)$, $Ix(z)$, $Iy(z)$...  - for tapered and non-homogeneous members, exported as **CSV** and **YAML** for direct integration with any beam solver (OpenSees, SAP2000, and others) or section analysis tools (e.g. [sectionproperties](https://github.com/robbievanleeuwen/section-properties)).
 
-<p align="center">          
-<img width="754" height="525" alt="Screenshot 2026-04-10 at 23 18 08" src="https://github.com/user-attachments/assets/deb4e7a8-29e4-48ce-bdcd-298cb815006c" />
+
+
+<p align="center">     
+  <img width="1126" height="468" alt="steel_degradated" src="https://github.com/user-attachments/assets/c5e3e529-2d2b-43a8-a868-d03e427ec348" />
+
+
   
 Each lines is colored by its own normalized material participation factor w(z)
 a scalar field that scales the stiffness contribution
