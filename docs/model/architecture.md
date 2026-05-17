@@ -1,4 +1,4 @@
-# CSF-SP Architecture and Workflow Positioning
+# High-Level Architecture
 
 ## Core idea
 
@@ -89,7 +89,7 @@ one continuous SectionField
 │ polygons        │     │ weight(z)          │     │ nesting          │
 │ interpolation   │     │ shear_weight(z)    │     │ containment      │
 │ geometry laws   │     │ material fields    │     │ hierarchy        │
-│ sampling        │     │ homogenization     │     │ boolean meaning  │
+│ sampling        │     │ carrier evaluation     │     │ boolean meaning  │
 └─────────┬───────┘     └──────────┬─────────┘     └────────┬─────────┘
           │                        │                        │
           └──────────────┬─────────┴────────────────────────┘
@@ -188,7 +188,7 @@ Owns:
 * carrier fields
 * continuous section definition
 
-CSF is the physical model layer.
+CSF is the continuous model layer.
 
 ---
 
@@ -233,9 +233,9 @@ shear/torsion carrier
 This allows:
 
 ```text
-normal FEM run
+axial/bending FEM run
 +
-independent torsion-carrier run
+independent shear/torsion-carrier run
 ```
 
 without changing geometry or topology.
@@ -245,7 +245,7 @@ without changing geometry or topology.
 # Final positioning
 
 ```text
-CSF defines the continuous section.
-csf_sp translates it.
-sectionproperties solves it.
+CSF defines the continuous section field.
+csf_sp maps each sampled section to the solver.
+sectionproperties performs the local FEM section analysis.
 ```
