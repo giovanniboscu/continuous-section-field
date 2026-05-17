@@ -295,6 +295,7 @@ Example:
 ```yaml
 CSF_ACTIONS:
   version: 0.1
+
   stations:
     stations_example:
       - 0.0
@@ -307,19 +308,23 @@ CSF_ACTIONS:
           line_percent: 100.0
           seed: w 
           title: "Ruled volume"
+    - plot_volume_3d:
+        params:
+          line_percent: 100.0
+          seed: s
+          title: "Ruled volume"          
     - section_selected_analysis:
         stations: stations_example
         output:
           - stdout
           - out/results.csv   # CSV table output
           - out/report.txt    # plain text report        
-        properties: [A, Cx, Cy,
-                     Ix, Iy, Ixy,
-                     Ip, I1, I2,
-                     rx, ry,
-                     Wx, Wy,K_torsion,Q_na,
-                     J_sv_wall,J_sv_cell,
-                     J_s_vroark, J_s_vroark_fidelity]
+        properties: [A, Cx, Cy, Ix, Iy]
+    - section_selected_analysis:
+        stations: stations_example
+        output:
+          - out/geometry.txt    # plain text report        
+        properties: [geometry]        
 
 ```
 
