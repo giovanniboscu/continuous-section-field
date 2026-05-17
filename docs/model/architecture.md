@@ -4,10 +4,6 @@
 
 CSF is a continuous section-field model.
 
-`csf_sp` connects CSF to numerical section solvers.
-
-`sectionproperties` is the current FEM backend.
-
 The goal is not more complicated mathematics.
 
 The goal is reducing workflow complexity for:
@@ -120,7 +116,7 @@ one continuous SectionField
       ▼                       ▼                        ▼
 
 ┌────────────────┐  ┌──────────────────┐  ┌────────────────────┐
-│ Analytical     │  │ sectionpropertie │  │ Future FEM backend │
+│ Analytical     │  │ sectionproperties│  │ Future FEM backend │
 │ backend        │  │ backend          │  │                    │
 ├────────────────┤  ├──────────────────┤  ├────────────────────┤
 │ closed form    │  │ FEM warping      │  │ Abaqus             │
