@@ -225,18 +225,17 @@ stations:
 You can define multiple station sets and reference them in different actions:
 **action**
 ```yaml
+...
+...
+...
   stations:
     stations_example:
       - 0.0
       - 1.0
       - 10.0
-
-actions:
-    - section_selected_analysis:
-        stations: stations_example
-        output:
-          - stdout
-        properties: [A, Cx, Cy, Ix, Iy]
+...
+...
+...
 ```
 
 **geometry**
