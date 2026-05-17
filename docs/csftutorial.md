@@ -474,7 +474,7 @@ seed: s120   # color by shear_weight, using resolution 120
 ```
 **Example**
 
-geometry file
+**geometry file**
 
 ```yaml
 CSF:
@@ -530,61 +530,51 @@ CSF:
     - 'max(0.0, 1.0 - t / 3.0)'          
 ```
 **actions file**
+
 ```
-CSF:
-  # Continuous Section Field definition.
-  # The member is defined by two reference sections, S0 and S1,
-  # placed at different z coordinates.
+CSF_ACTIONS:
+  version: 0.1
 
-  sections:
-    S0:
-      # Initial station.
-      z: 0.0
+  stations:
+    stations_example:
+      - 0.0
+      - 1.0
+      - 10.0
 
-      polygons:
-        rect:
-          # Base polygon weight at S0.
-          weight: 1.0
-
-          vertices:
-            # Counter-clockwise rectangle vertices.
-            # Width = 1.0, height = 1.0.
-            - [-0.5, 0.0]
-            - [ 0.5, 0.0]
-            - [ 0.5, 1.0]
-            - [-0.5, 1.0]
-
-    S1:
-      # Final station.
-      z: 10.0
-
-      polygons:
-        rect:
-          # Base polygon weight at S1.
-          weight: 1.0
-
-          vertices:
-            # Counter-clockwise rectangle vertices.
-            # Width = 1.0, height = 2.0.
-            # The rectangle height increases from S0 to S1.
-            - [-0.5, 0.0]
-            - [ 0.5, 0.0]
-            - [ 0.5, 2.0]
-            - [-0.5, 2.0]
-
-  weight_laws:
-    # Axial/bending carrier law for polygon rect.
-    # t is the local coordinate along the member axis.
-    # The law introduces a Gaussian reduction centered at t = 0.0.
-    - 'rect,rect: 1.0 - 0.28 * np.exp(-((t - 0.0)**2) / (2.0 * 1.5**2))'
-
-  shear_weight_laws:
-    # Shear/torsional carrier law.
-    # The value decreases linearly with t and is clipped at zero.
-    - 'max(0.0, 1.0 - t / 3.0)'
+  actions:
+    - plot_volume_3d:
+        params:
+          line_percent: 100.0
+          seed: w 
+          title: "Ruled volume"
+    - plot_volume_3d:
+        params:
+          line_percent: 100.0
+          seed: s
+          title: "Ruled volume"          
+    - section_selected_analysis:
+        stations: stations_example
+        output:
+          - stdout
+          - out/results.csv   # CSV table output
+          - out/report.txt    # plain text report        
+        properties: [A, Cx, Cy, Ix, Iy]
+    - section_selected_analysis:
+        stations: stations_example
+        output:
+          - out/geometry.txt    # plain text report        
+        properties: [geometry]        
 ```
 
-**csf-actions geometry.yaml action.yaml**
+run
+
+csf-actions geometry.yaml action.yaml
+
+<img width="662" height="574" alt="image" src="https://github.com/user-attachments/assets/d7732efe-dc4d-4601-9db5-896843802b6f" />
+
+
+<img width="652" height="574" alt="image" src="https://github.com/user-attachments/assets/f38e87f6-ff44-4b94-920c-19bd8dcbb547" />
+
 
 
 ---
