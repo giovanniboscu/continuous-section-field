@@ -464,6 +464,11 @@ uses the `shear_weight` field with resolution `120`.
 | `w` | `weight` |
 | `s` | `shear_weight` |
 
+## Constant `weight` / `shear_weight`
+
+If the selected carrier field is constant along the member axis, the generator
+lines are rendered in black.
+
 ## Summary
 
 ```yaml
