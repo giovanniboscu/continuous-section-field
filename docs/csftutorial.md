@@ -302,17 +302,7 @@ CSF_ACTIONS:
       - 1.0
       - 10.0
 
-  actions:
-    - plot_volume_3d:
-        params:
-          line_percent: 100.0
-          seed: w 
-          title: "Ruled volume"
-    - plot_volume_3d:
-        params:
-          line_percent: 100.0
-          seed: s
-          title: "Ruled volume"          
+  actions:        
     - section_selected_analysis:
         stations: stations_example
         output:
@@ -323,10 +313,16 @@ CSF_ACTIONS:
     - section_selected_analysis:
         stations: stations_example
         output:
-          - out/geometry.txt    # plain text export file (or csv)        
-        properties: [geometry]        
+          - out/geometry.txt    # plain text report        
+        properties: [geometry]           
 
 ```
+
+
+```bash
+csf-actions geometry.yaml actions.yaml
+```
+
 
 The output directory (e.g. out/) is not created automatically and must already exist.
 
