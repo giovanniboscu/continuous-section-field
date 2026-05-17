@@ -1,5 +1,9 @@
 
 # CSF Documentation
+
+[CSF positioning and workflow overview](docs/mod)
+
+Compact overview of where CSF sits in the workflow.
  
 ## Overview
 
