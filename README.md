@@ -267,29 +267,6 @@ csf-actions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 
 ---
 
-## Package Notes
-
-- Distribution name for installation: `csfpy`
-- Python import name: `csf`
-- Repository directory used in the commands above: `continuous-section-field`
-
-```python
-import csf
-```
-
-## Optional Features
-
-Some tools require additional dependencies and are not installed by default.
-
-### SectionProperties-based tools (`csf_sp`)
-
-```bash
-pip install "csfpy[sp]"
-```
-
-> `csf_sp` is an optional tool and depends on external libraries such as `shapely` and `sectionproperties`.
-
----
 
 ## Cross-sectional properties 
 
