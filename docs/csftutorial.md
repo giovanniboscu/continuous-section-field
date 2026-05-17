@@ -261,7 +261,6 @@ CSF_ACTIONS:
       - 10.0
 
   actions:
-    - :
         params:
           line_percent: 100.0
           seed: w 
