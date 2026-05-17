@@ -323,7 +323,7 @@ CSF_ACTIONS:
     - section_selected_analysis:
         stations: stations_example
         output:
-          - out/geometry.txt    # plain text report        
+          - out/geometry.txt    # plain text export file (or csv)        
         properties: [geometry]        
 
 ```
