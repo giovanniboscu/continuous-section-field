@@ -330,7 +330,7 @@ CSF_ACTIONS:
 
 The output directory (e.g. out/) is not created automatically and must already exist.
 
-result.csv
+**result.csv**
 
 ```
 z,A,Cx,Cy,Ix,Iy
@@ -339,7 +339,7 @@ z,A,Cx,Cy,Ix,Iy
 10.00000000,1.55158705,0.00000000,1.00000000,0.51719568,0.12929892
 ```
 
-report.txt
+**report.txt**
 ```
 ### SECTION SELECTED ANALYSIS @ z = 0.0 ###
 A                   : 0.72000000  [Total net cross-sectional area]
@@ -360,7 +360,7 @@ Cy                  : 1.00000000  [Vertical centroid (Y)]
 Ix                  : 0.51719568  [Second moment about centroidal X-axis]
 Iy                  : 0.12929892  [Second moment about centroidal Y-axis]
 ```
-geometry
+**geometry.txt**
 ```
 ## GEOMETRY EXPORT ##
 # z=0.0
@@ -383,6 +383,94 @@ idx_polygon,idx_container,s0_name,s1_name,w,shear_w,poisson,vertex_i,x,y
 0,,rect,rect,0.77579353,0.66666667,,1,0.50000000,0.00000000
 0,,rect,rect,0.77579353,0.66666667,,2,0.50000000,2.00000000
 0,,rect,rect,0.77579353,0.66666667,,3,-0.50000000,2.00000000
+```
+# `plot_volume_3d`: carrier-colored generator lines
+
+A specific feature of the `plot_volume_3d` action is the `seed` parameter, which controls how the generator lines of the ruled 3D volume are colored.
+
+The generator lines can be colored according to either:
+
+- the axial/bending carrier field `weight`;
+- the shear/torsional carrier field `shear_weight`.
+
+## Basic usage
+
+```yaml
+CSF_ACTIONS:
+  - action: plot_volume_3d
+    seed: w
+```
+
+With:
+
+```yaml
+seed: w
+```
+
+the generator lines are colored according to the local value of the `weight` field.
+
+```yaml
+CSF_ACTIONS:
+  - action: plot_volume_3d
+    seed: s
+```
+
+With:
+
+```yaml
+seed: s
+```
+
+the generator lines are colored according to the local value of the `shear_weight` field.
+
+## Optional resolution suffix
+
+The `seed` value can also include a resolution suffix:
+
+```yaml
+seed: w<res>
+```
+
+or:
+
+```yaml
+seed: s<res>
+```
+
+where `<res>` is an integer resolution value.
+
+For example:
+
+```yaml
+CSF_ACTIONS:
+  - action: plot_volume_3d
+    seed: w80
+```
+
+uses the `weight` field with resolution `80`.
+
+```yaml
+CSF_ACTIONS:
+  - action: plot_volume_3d
+    seed: s120
+```
+
+uses the `shear_weight` field with resolution `120`.
+
+## Meaning of the prefixes
+
+| Prefix | Carrier field used for coloring |
+|---|---|
+| `w` | `weight` |
+| `s` | `shear_weight` |
+
+## Summary
+
+```yaml
+seed: w      # color generator lines by weight
+seed: s      # color generator lines by shear_weight
+seed: w80    # color by weight, using resolution 80
+seed: s120   # color by shear_weight, using resolution 120
 ```
 
 
