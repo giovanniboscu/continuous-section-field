@@ -54,11 +54,22 @@ Full reproducible example: [`stell_degradated_model`](https://github.com/giovann
 geometry.yaml file 
 ```yaml
 # geometry.yaml
-# Defines the cross-sectional geometry of the structural member.
-# - sections: end cross-sections (S0, S1) with polygon vertices at each z-station
-# - polygons: 2D closed polygons (CCW vertex order) that compose each cross-section
+# Defines the cross-sectional geometry and material participation laws
+# of the structural member.
+#
+# - sections: end cross-sections (S0, S1) with polygon vertices at each
+#   z-station.
+# - polygons: 2D closed polygons, defined by ordered vertices, that compose
+#   each cross-section.
+# - vertices: polygon coordinates in the local section plane; vertices should
+#   be given in counter-clockwise (CCW) order for positive area.
+# - weight: base participation factor assigned to each polygon.
 # - weight_laws: longitudinal participation laws w(z) that scale each polygon's
-#   contribution along the member axis (independent of geometric interpolation)
+#   contribution along the member axis, independently of geometric interpolation.
+# - shear_weight_laws: longitudinal shear/torsional participation laws shear_w(z),
+#   used to scale shear- and torsion, related contributions independently from w(z).
+# - iso(nu): isotropic shortcut that derives shear participation from weight
+#   using G = E / [2 * (1 + nu)].
 
 CSF:
   sections:
