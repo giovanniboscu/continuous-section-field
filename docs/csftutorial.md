@@ -42,7 +42,6 @@ This example runs one analysis at three stations and prints to screen + writes a
 ```yaml
 CSF_ACTIONS:
   version: 0.1
-
   stations:
     stations_example:
       - 0.0
@@ -59,7 +58,13 @@ CSF_ACTIONS:
         stations: stations_example
         output:
           - stdout
-        properties: [A, Cx, Cy, Ix, Iy]
+        properties: [A, Cx, Cy,
+                     Ix, Iy, Ixy,
+                     Ip, I1, I2,
+                     rx, ry,
+                     Wx, Wy,K_torsion,Q_na,
+                     J_sv_wall,J_sv_cell,
+                     J_s_vroark, J_s_vroark_fidelity]
 ```
 
 **geometry.yaml**:
@@ -109,30 +114,67 @@ what you will see
 ![Figure_1](https://github.com/user-attachments/assets/2f4daf1a-e309-4834-9499-d43fa3d9d087)
 
 ```
-## SECTION SELECTED ANALYSIS @ z = 0.0 ###
-torsion_alpha_sv     : 1.00000000  [Solid J_sv scaling factor]
+### SECTION SELECTED ANALYSIS @ z = 0.0 ###
 A                   : 1.00000000  [Total net cross-sectional area]
 Cx                  : 0.00000000  [Horizontal centroid (X)]
 Cy                  : 0.50000000  [Vertical centroid (Y)]
 Ix                  : 0.08333333  [Second moment about centroidal X-axis]
 Iy                  : 0.08333333  [Second moment about centroidal Y-axis]
-
+Ixy                 : 0.00000000  [Product of inertia (symmetry indicator)]
+Ip                  : 0.16666667  [Polar second moment (Ix + Iy)]
+I1                  : 0.08333333  [Major principal second moment]
+I2                  : 0.08333333  [Minor principal second moment]
+rx                  : 0.28867513  [Radius of gyration (about X)]
+ry                  : 0.28867513  [Radius of gyration (about Y)]
+Wx                  : 0.16666667  [Elastic section modulus about X]
+Wy                  : 0.16666667  [Elastic section modulus about Y]
+K_torsion           : 0.15000000  [Semi-empirical torsional stiffness approximation]
+Q_na                : 0.12500000  [First moment of area at neutral axis]
+J_sv_wall           : 0.00000000  [Saint-Venant torsional constant for open thin-walled walls]
+J_sv_cell           : 0.00000000  [Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)]
+J_s_vroark          : 0.14083333  [Roark torsional indicator (equivalent-rectangle mapping)]
+J_s_vroark_fidelity : 1.00000000  [Fidelity / reliability indicator]
 ### SECTION SELECTED ANALYSIS @ z = 1.0 ###
-torsion_alpha_sv     : 1.00000000  [Solid J_sv scaling factor]
 A                   : 1.10000000  [Total net cross-sectional area]
 Cx                  : 0.00000000  [Horizontal centroid (X)]
 Cy                  : 0.55000000  [Vertical centroid (Y)]
 Ix                  : 0.11091667  [Second moment about centroidal X-axis]
 Iy                  : 0.09166667  [Second moment about centroidal Y-axis]
-
+Ixy                 : 0.00000000  [Product of inertia (symmetry indicator)]
+Ip                  : 0.20258333  [Polar second moment (Ix + Iy)]
+I1                  : 0.11091667  [Major principal second moment]
+I2                  : 0.09166667  [Minor principal second moment]
+rx                  : 0.31754265  [Radius of gyration (about X)]
+ry                  : 0.28867513  [Radius of gyration (about Y)]
+Wx                  : 0.20166667  [Elastic section modulus about X]
+Wy                  : 0.18333333  [Elastic section modulus about Y]
+K_torsion           : 0.18067873  [Semi-empirical torsional stiffness approximation]
+Q_na                : 0.15125000  [First moment of area at neutral axis]
+J_sv_wall           : 0.00000000  [Saint-Venant torsional constant for open thin-walled walls]
+J_sv_cell           : 0.00000000  [Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)]
+J_s_vroark          : 0.16861940  [Roark torsional indicator (equivalent-rectangle mapping)]
+J_s_vroark_fidelity : 1.00000000  [Fidelity / reliability indicator]
 ### SECTION SELECTED ANALYSIS @ z = 10.0 ###
-torsion_alpha_sv     : 1.00000000  [Solid J_sv scaling factor]
 A                   : 2.00000000  [Total net cross-sectional area]
 Cx                  : 0.00000000  [Horizontal centroid (X)]
 Cy                  : 1.00000000  [Vertical centroid (Y)]
 Ix                  : 0.66666667  [Second moment about centroidal X-axis]
 Iy                  : 0.16666667  [Second moment about centroidal Y-axis]
-All actions completed successfully.
+Ixy                 : 0.00000000  [Product of inertia (symmetry indicator)]
+Ip                  : 0.83333333  [Polar second moment (Ix + Iy)]
+I1                  : 0.66666667  [Major principal second moment]
+I2                  : 0.16666667  [Minor principal second moment]
+rx                  : 0.57735027  [Radius of gyration (about X)]
+ry                  : 0.28867513  [Radius of gyration (about Y)]
+Wx                  : 0.66666667  [Elastic section modulus about X]
+Wy                  : 0.33333333  [Elastic section modulus about Y]
+K_torsion           : 0.48000000  [Semi-empirical torsional stiffness approximation]
+Q_na                : 0.50000000  [First moment of area at neutral axis]
+J_sv_wall           : 0.00000000  [Saint-Venant torsional constant for open thin-walled walls]
+J_sv_cell           : 0.00000000  [Saint-Venant torsional constant for closed thin-walled cells (Bredt–Batho)]
+J_s_vroark          : 0.45776042  [Roark torsional indicator (equivalent-rectangle mapping)]
+J_s_vroark_fidelity : 1.00000000  [Fidelity / reliability indicator]
+
         ...
 ```
 
