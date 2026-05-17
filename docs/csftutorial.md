@@ -330,6 +330,62 @@ CSF_ACTIONS:
 
 The output directory (e.g. out/) is not created automatically and must already exist.
 
+result.csv
+
+```
+z,A,Cx,Cy,Ix,Iy
+0.00000000,0.72000000,0.00000000,0.50000000,0.06000000,0.06000000
+1.00000000,0.79268368,0.00000000,0.55000000,0.07992894,0.06605697
+10.00000000,1.55158705,0.00000000,1.00000000,0.51719568,0.12929892
+```
+
+report.txt
+```
+### SECTION SELECTED ANALYSIS @ z = 0.0 ###
+A                   : 0.72000000  [Total net cross-sectional area]
+Cx                  : 0.00000000  [Horizontal centroid (X)]
+Cy                  : 0.50000000  [Vertical centroid (Y)]
+Ix                  : 0.06000000  [Second moment about centroidal X-axis]
+Iy                  : 0.06000000  [Second moment about centroidal Y-axis]
+### SECTION SELECTED ANALYSIS @ z = 1.0 ###
+A                   : 0.79268368  [Total net cross-sectional area]
+Cx                  : 0.00000000  [Horizontal centroid (X)]
+Cy                  : 0.55000000  [Vertical centroid (Y)]
+Ix                  : 0.07992894  [Second moment about centroidal X-axis]
+Iy                  : 0.06605697  [Second moment about centroidal Y-axis]
+### SECTION SELECTED ANALYSIS @ z = 10.0 ###
+A                   : 1.55158705  [Total net cross-sectional area]
+Cx                  : 0.00000000  [Horizontal centroid (X)]
+Cy                  : 1.00000000  [Vertical centroid (Y)]
+Ix                  : 0.51719568  [Second moment about centroidal X-axis]
+Iy                  : 0.12929892  [Second moment about centroidal Y-axis]
+```
+geometry
+```
+## GEOMETRY EXPORT ##
+# z=0.0
+idx_polygon,idx_container,s0_name,s1_name,w,shear_w,poisson,vertex_i,x,y
+0,,rect,rect,0.72000000,1.00000000,,0,-0.50000000,0.00000000
+0,,rect,rect,0.72000000,1.00000000,,1,0.50000000,0.00000000
+0,,rect,rect,0.72000000,1.00000000,,2,0.50000000,1.00000000
+0,,rect,rect,0.72000000,1.00000000,,3,-0.50000000,1.00000000
+## GEOMETRY EXPORT ##
+# z=1.0
+idx_polygon,idx_container,s0_name,s1_name,w,shear_w,poisson,vertex_i,x,y
+0,,rect,rect,0.72062153,0.96666667,,0,-0.50000000,0.00000000
+0,,rect,rect,0.72062153,0.96666667,,1,0.50000000,0.00000000
+0,,rect,rect,0.72062153,0.96666667,,2,0.50000000,1.10000000
+0,,rect,rect,0.72062153,0.96666667,,3,-0.50000000,1.10000000
+## GEOMETRY EXPORT ##
+# z=10.0
+idx_polygon,idx_container,s0_name,s1_name,w,shear_w,poisson,vertex_i,x,y
+0,,rect,rect,0.77579353,0.66666667,,0,-0.50000000,0.00000000
+0,,rect,rect,0.77579353,0.66666667,,1,0.50000000,0.00000000
+0,,rect,rect,0.77579353,0.66666667,,2,0.50000000,2.00000000
+0,,rect,rect,0.77579353,0.66666667,,3,-0.50000000,2.00000000
+```
+
+
 ---
 ## 4.2 Geometry export in `properties`
 
