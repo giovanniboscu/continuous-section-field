@@ -1,7 +1,7 @@
 
 # CSF Documentation
 
-[CSF positioning and workflow overview]([docs/mod](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/architecture.md))
+[CSF positioning and workflow overview](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/architecture.md)
 
 Compact overview of where CSF sits in the workflow.
  
