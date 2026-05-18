@@ -14,9 +14,9 @@ The Continuous Section Field (CSF) model addresses this issue by introducing a c
 The purpose of CSF is not to replace sectional solvers or finite element backends. Rather, CSF acts as a continuous model layer between the structural description and the numerical evaluation tools. The model can be sampled at arbitrary stations, and each resolved section can then be passed to analytical routines or external sectional analysis backends such as sectionproperties.
 
 In this sense, CSF shifts the workflow from a collection of disconnected section models to a unified continuous section description. The following diagram summarizes this positioning and illustrates the role of CSF as an intermediate layer between declarative input, local section resolution, backend analysis, and continuous beam-ready sectional properties.
+---
 
-
-The goal is not more complicated mathematics.
+## The goal is not more complicated mathematics.
 
 The goal is reducing workflow complexity for:
 
