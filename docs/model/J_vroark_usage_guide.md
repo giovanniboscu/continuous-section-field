@@ -1,4 +1,4 @@
-# Roark-based Torsional Indicator -Engineering Note
+un# Roark-based Torsional Indicator -Engineering Note
 
 ## Purpose
 
@@ -30,7 +30,7 @@ In practice:
 
 - **fidelity close to 1.0** -the geometry is compact and rectangle-like; the Roark value is a reasonable estimate.
 - **fidelity between 0.7 and 0.9** -borderline case, typically mild asymmetry or light non-structural material; the value may still be useful but with visible error.
-- **fidelity below 0.6** -the geometry is no longer rectangle-like; discard `J_s_vroark` and use another torsional method (Bredt–Batho for closed thin-walled sections, Saint-Venant FEM for general cases).
+- **fidelity below 0.7** -the geometry is no longer rectangle-like; discard `J_s_vroark` and use another torsional method (Bredt–Batho for closed thin-walled sections, Saint-Venant FEM for general cases).
 
 A reasonable rule of thumb for automated pipelines is to reject the Roark value whenever fidelity falls below 0.7.
 
