@@ -1658,8 +1658,6 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                 )
                 continue
 
-# Common: output OPTIONAL (default stdout)                     <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
         output_list = payload.get("output", ["stdout"])
         if isinstance(output_list, str):
             output_list = [output_list]
@@ -2328,153 +2326,6 @@ def _ensure_analysis_imports_or_error(
         ok = False
     return ok
 
-
-
-def _run_action_plot_weight2remove(
-    field: Any,
-    stations_map: Dict[str, List[float]],
-    action: Dict[str, Any],
-) -> None:
-    """Action: plot_weight
-
-    Wrapper of:
-        Visualizer.plot_weight(num_points=100)
-
-    Key design points (per current CSFActions prototype)
-    ----------------------------------------------------
-    1) This action does NOT use 'stations'. It always samples between the CSF endpoints.
-       That is why it is listed in STATIONS_FORBIDDEN and the validator rejects 'stations:'.
-
-    2) Output semantics match plot_section_2d and plot_properties:
-       - If output is omitted -> default ["stdout"] -> keep figures for the final GUI window.
-       - If output contains file paths -> save to file.
-       - If output does NOT contain "stdout" -> file-only (do not show, and do not set want_show_2d).
-
-    3) The plotting window is shown only ONCE at the very end of main() (deferred plt.show()).
-       However, the current Visualizer.plot_weight implementation (in section_field)
-       ends with a direct plt.show(). To preserve the deferred-show protocol without
-       editing section_field, we temporarily monkey-patch plt.show to a no-op during
-       the call.
-
-       This is intentionally localized and reversible:
-       - we restore the original plt.show in a finally block
-       - we then label the newly created figures and optionally save them
-
-    Notes
-    -----
-    - plot_weight is intended to visualize the *effective weight protocol* used by
-      ContinuousSectionField._interpolate_weight, including user-defined laws.
-    - The action produces 1 (or more) matplotlib figure(s). We label them as:
-        'plot2d_show' -> keep for the final interactive plt.show()
-        'plot2d_file' -> save to file only, close before plt.show()
-      This keeps compatibility with the global deferred-show pruning logic.
-    """
-    # stations_map is unused by design (endpoints only).
-    _ = stations_map
-
-    if Visualizer is None:
-        raise RuntimeError("Visualizer is not available (import failed).")
-
-    import io
-
-    # 1) Resolve parameters
-    params = action.get("params", {}) or {}
-    num_points = int(params.get("num_points", ACTION_SPECS["plot_weight"].params[0].default))
-
-    # 2) Resolve outputs
-    outputs = action.get("output")
-    if outputs is None:
-        outputs = ["stdout"]
-
-    do_show = ("stdout" in outputs)
-    file_outputs = [o for o in outputs if o != "stdout"]
-
-    # 3) Call Visualizer while suppressing its internal plt.show()
-    viz = Visualizer(field)
-
-    # Capture current figure numbers so we can identify what this action creates.
-    before = set(plt.get_fignums())
-
-    old_show = plt.show
-
-    def _noop_show(*args, **kwargs):
-        """Temporary replacement for plt.show() during plot_weight.
-
-        Visualizer.plot_weight currently ends with plt.show() which would
-        prematurely open/flush the GUI window. We need to defer that until
-        the end of main().
-        """
-        return None
-
-    plt.show = _noop_show
-    try:
-        viz.plot_weight(num_points=num_points)
-    finally:
-        # Always restore the original show function.
-        plt.show = old_show
-
-    # 4) Determine which figure(s) were created by this action
-    after = set(plt.get_fignums())
-    new_nums = sorted(after - before)
-
-    # If Visualizer reused an existing figure (rare), fall back to current figure.
-    if not new_nums:
-        try:
-            new_nums = [plt.gcf().number]
-        except Exception:
-            new_nums = []
-
-    figs = [plt.figure(n) for n in new_nums]
-
-    # Label figures so the deferred-show logic in main() can prune/show correctly.
-    for fig in figs:
-        fig.set_label('plot2d_show' if do_show else 'plot2d_file')
-
-    # 5) Optional file output
-    # We save a single composite image if multiple figures were created.
-    # This mirrors plot_section_2d and plot_properties behavior.
-    if file_outputs:
-        dpi = 150  # stable default; can be made configurable later if needed
-        spacing_px = 10
-
-        images: List[Image.Image] = []
-        for fig in figs:
-            buf = io.BytesIO()
-            fig.savefig(buf, format="png", dpi=dpi, bbox_inches="tight")
-            buf.seek(0)
-            im = Image.open(buf).convert("RGB")
-            im.load()
-            buf.close()
-            images.append(im)
-
-        if not images:
-            raise RuntimeError("No images were generated for plot_weight file output.")
-
-        if len(images) == 1:
-            composite = images[0]
-        else:
-            max_w = max(im.width for im in images)
-            total_h = sum(im.height for im in images) + spacing_px * (len(images) - 1)
-            composite = Image.new("RGB", (max_w, total_h), (255, 255, 255))
-            y = 0
-            for im in images:
-                composite.paste(im, (0, y))
-                y += im.height + spacing_px
-
-        for out_path in file_outputs:
-            outp = Path(out_path)
-            if not outp.parent.exists():
-                raise RuntimeError(f"Output directory does not exist: {outp.parent}")
-            composite.save(str(outp), dpi=(dpi, dpi))
-            print(f"[OK] plot_weight wrote: {outp}")
-
-    # 6) Mark that 2D figures should be shown at the end (ONLY if stdout requested)
-    global want_show_2d
-    if do_show:
-        want_show_2d = "yes"
-
-#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
 def _get_bool_param_strict(params: Dict[str, Any], name: str, default: bool, *, path: str) -> bool:
     '''
     Strict boolean parameter reader.
@@ -3116,16 +2967,6 @@ def main(argv: Optional[List[str]] = None) -> int:
             "  - Warnings: context only (no snippet)\n"
         ),
     )
-
-
-
-
-
-
-
-
-
-
 
 
     parser.add_argument(

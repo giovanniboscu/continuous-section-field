@@ -29,6 +29,7 @@ from collections import defaultdict
 from contextlib import redirect_stdout
 import random as _random
 from typing import Literal,TYPE_CHECKING
+import numpy as np
 
 from . import _tol
 # ruff: noqa: F821
@@ -347,13 +348,13 @@ def write_sap2000_template_pack(
     Export a CSF field to a structured text pack for SAP2000 / OpenSees input.
 
     Produces four compact tables:
-      1. SOLVER INPUT    — properties consumed directly by SAP2000 / OpenSees.
-      2. SECTION QUALITY — derived verification properties (principal axes, moduli).
-      3. TORSION QUALITY — torsion breakdown with fidelity indicator.
-      4. STATION NAMES   — section name list for frame property assignment.
+      1. SOLVER INPUT    - properties consumed directly by SAP2000 / OpenSees.
+      2. SECTION QUALITY - derived verification properties (principal axes, moduli).
+      3. TORSION QUALITY - torsion breakdown with fidelity indicator.
+      4. STATION NAMES   - section name list for frame property assignment.
 
     All section data comes from section_full_analysis() evaluated at the requested
-    stations — no interpolation, no silent fallback values.
+    stations - no interpolation, no silent fallback values.
 
     Parameters
     ----------
@@ -371,7 +372,7 @@ def write_sap2000_template_pack(
     plot_filename    : Path for the optional plot image.
     show_plot        : If True, display the plot interactively.
     z_values         : Explicit station list (strictly increasing, within field bounds).
-                       No sorting or deduplication — invalid input raises ValueError.
+                       No sorting or deduplication - invalid input raises ValueError.
     float_fmt        : Format spec for all numeric output fields.
 
     Returns
@@ -453,7 +454,7 @@ def write_sap2000_template_pack(
     # -------------------------------------------------------------------------
     # _t fields (Bredt-Batho wall thickness) exist only for single-polygon
     # @cell/@wall sections; optional columns are emitted only when at least one
-    # station carries the value — avoids empty columns in the common case.
+    # station carries the value - avoids empty columns in the common case.
     # -------------------------------------------------------------------------
 
     records = []
@@ -463,7 +464,7 @@ def write_sap2000_template_pack(
     for d in stations_data:
         res = d["analysis_raw"]
 
-        # Fail fast — no silent defaults for missing keys.
+        # Fail fast - no silent defaults for missing keys.
         for k in ("A", "Cx", "Cy", "Ix", "Iy", "Ixy", "Ip",
                   "I1", "I2", "theta_deg",
                   "rx", "ry", "Wx", "Wy", "K_torsion", "Q_na",
@@ -490,7 +491,7 @@ def write_sap2000_template_pack(
             any_wall_t = True
 
         # Torsion selection: additive Saint-Venant contributions.
-        # Zero only when both are absent — explicit warning, no silent fallback.
+        # Zero only when both are absent - explicit warning, no silent fallback.
         has_cell = j_cell != 0.0
         has_wall = j_wall != 0.0
 
@@ -543,7 +544,7 @@ def write_sap2000_template_pack(
     N = len(records)
 
     # -------------------------------------------------------------------------
-    # Build output text — four compact tables.
+    # Build output text - four compact tables.
     # Uniform column width W keeps tables both machine-parseable and
     # human-readable without requiring a CSV parser.
     # -------------------------------------------------------------------------
@@ -588,7 +589,7 @@ def write_sap2000_template_pack(
     # Direct input for SAP2000 and OpenSees beam elements.
     # J_tors = J_sv_cell + J_sv_wall; see TABLE 3 for per-method breakdown.
     # Cx, Cy: centroid offsets in the section plane.
-    lines.append("# TABLE 1 — SOLVER INPUT")
+    lines.append("# TABLE 1 - SOLVER INPUT")
     lines.append("# z  A  Ix  Iy  Ixy  Ip  J_tors  G_ref  Cx  Cy  method")
     _header("z", "A", "Ix", "Iy", "Ixy", "Ip", "J_tors",  "Cx", "Cy", "method")
     for r in records:
@@ -599,10 +600,10 @@ def write_sap2000_template_pack(
     lines.append("")
 
     # ---- TABLE 2: Section quality -------------------------------------------
-    # Verification properties — not consumed directly by solvers.
+    # Verification properties - not consumed directly by solvers.
     # theta_deg: principal axis rotation (0 for symmetric sections).
     # K_torsion: semi-empirical A^4/(40*Ip), low fidelity, included for completeness.
-    lines.append("# TABLE 2 — SECTION QUALITY")
+    lines.append("# TABLE 2 - SECTION QUALITY")
     lines.append("# z  I1  I2  theta_deg  rx  ry  Wx  Wy  Q_na  K_torsion")
     _header("z", "I1", "I2", "theta_deg", "rx", "ry", "Wx", "Wy", "Q_na", "K_torsion")
     for r in records:
@@ -618,7 +619,7 @@ def write_sap2000_template_pack(
     # _t columns (Bredt-Batho wall thickness) appear only when at least one
     # station carries the value (single-polygon @cell/@wall sections).
     # J_s_vroark_fidelity: CSF polygon-based reliability index.
-    #   >= 0.6 reliable | 0.3-0.6 borderline | < 0.3 outside validity domain.
+    #   >= 0.9 reliable | 0.8-0.9 borderline | < 0.8 outside validity domain.
     t3_headers = ["z", "J_sv_cell"]
     if any_cell_t:
         t3_headers.append("J_sv_cell_t")
@@ -627,8 +628,8 @@ def write_sap2000_template_pack(
         t3_headers.append("J_sv_wall_t")
     t3_headers += ["J_s_vroark", "J_s_vroark_fidelity", "J_tors", "method"]
 
-    lines.append("# TABLE 3 — TORSION QUALITY")
-    lines.append("# J_s_vroark_fidelity: >=0.6 reliable | 0.3-0.6 borderline | <0.3 do not use")
+    lines.append("# TABLE 3 - TORSION QUALITY")
+    lines.append("# J_s_vroark_fidelity: >=0.9 reliable | 0.8-0.9 borderline | <0.8 do not use")
     _header(*t3_headers)
     for r in records:
         vals = [_fmt(r["z"]), _fmt(r["J_sv_cell"])]
@@ -648,7 +649,7 @@ def write_sap2000_template_pack(
 
     # ---- TABLE 4: Station names ---------------------------------------------
     # Section name list for SAP2000 frame property assignment.
-    lines.append("# TABLE 4 — STATION NAMES")
+    lines.append("# TABLE 4 - STATION NAMES")
     _header("id", "z", "section_name")
     for r in records:
         _row(str(r["id"]), _fmt(r["z"]), f"{section_prefix}{r['id']:04d}")
@@ -671,7 +672,7 @@ def write_sap2000_geometry(*args: Any, **kwargs: Any) -> str:
     """
     Backward-compatible wrapper.
 
-    Historically this function tried to generate a SAP2000 .s2k directly. In v2 we avoid
+    this function tried to generate a SAP2000 .s2k directly. In v2 we avoid
     promising direct import correctness and instead generate a template pack.
 
     Use:
@@ -780,7 +781,7 @@ def _csf__section_to_Sz_dict(section_obj,nodesection: str) -> Dict[str, Any]:
             "polygons": out_polys,
         }
     }
-#
+
 
 def _yaml_scalar(v):
     if v is None:
@@ -936,8 +937,8 @@ def safe_evaluate_weight_zrelative(formula: str, p0: Polygon, p1: Polygon, z0: f
 
 def print_evaluation_report(value: float, report: dict):
     """
-    Prints a professional, minimalist structured report with Timestamp.
-    Designed for maximum visual impact and traceability.
+    Prints minimalist structured report with Timestamp.
+    Designed for traceability.
     """
     # 1. Icons and Styling
     icons = {"SUCCESS": "OK", "WARNING": "WW", "ERROR": "KO"}
@@ -1488,7 +1489,7 @@ def write_opensees_geometry(
         "J_sv_wall", "J_sv_cell"
     """
 
-    import numpy as np
+
 
     # -------------------------------------------------------------------------
     # Helper: robust positive check for torsion fields
@@ -1939,6 +1940,11 @@ def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[fl
 
         polygons = section.polygons
 
+        for idx, polygon in enumerate(polys):
+            name = str(getattr(polygon, "name", ""))
+            if "@cell" in name or "@closed" in name:
+                return 0.0, 0.0
+        
         area_by_idx: Dict[int, float] = {}
 
         for idx, polygon in enumerate(polygons):
@@ -2984,12 +2990,19 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
             P = _poly_perimeter(p)
             if P < _tol.EPS_L:
                 continue
-            t = 2.0 * A / P
-            t_source = "2A/P"
+
+            disc = P * P - 16.0 * A
+            if disc < 0.0:
+                t = 2.0 * A / P
+                t_source = "2A/P_fallback"
+            else:
+                t = (P - disc ** 0.5) / 4.0
+                t_source = "Tglobal"
+                
         if t < _tol.EPS_L:
             continue
         
-        # Use A ≈ b*t to avoid explicit midline computation:
+
         # b ≈ A/t, so J_i ≈ (A/t)*t^3/3 = A*t^2/3
         J_i = (A * (t ** 2)) / 3.0
 
@@ -3001,12 +3014,17 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
 
         b_est = (A / t) if t > _tol.EPS_L else 0.0
         if verbose:
-        
             print(
-                f"[DEBUG J_WALL] nm={nm}  A={A:.6f}  P={P_dbg:.6f}  t={t:.6f} ({t_source})  "
-                f"b_est=A/t={b_est:.6f}  J_i={J_i_wall:.6f}  w={w:.6f} "
+                "[DEBUG J_WALL] "
+                f"name={nm!r} | "
+                f"A={A:.8e} | "
+                f"P={P_dbg:.8e} | "
+                f"t={t:.8e} [{t_source}] | "
+                f"b_est=A/t={b_est:.8e} | "
+                f"J_i={J_i_wall:.8e} | "
+                f"shear_weight={shear_weight:.8e}"
             )
-        
+
 
         # Keep torsional stiffness non-negative
         J +=  shear_weight * J_i
@@ -3936,7 +3954,7 @@ def integrate_volume(
 
     return volume_legacy if idx is None else (volume_geom, volume_weighted)
 
-    
+
 def section_full_analysis(section: Section, compute_vroark=True):
     """
     Perform a complete geometric and sectional analysis of a cross-section.
@@ -4385,17 +4403,6 @@ def polygon_has_self_intersections(poly: Polygon) -> bool:
                 return True
 
     return False
-
-def poly_from_string(s: str, weight: float = 1.0, name: str = "") -> Polygon:
-    """
-    Utility: build a Polygon from a string like:
-      "-0.5,-0.5  0.5,-0.5  0.5,0.5  -0.5,0.5"
-    """
-    pts = []
-    for token in s.split():
-        x_str, y_str = token.split(",")
-        pts.append(Pt(float(x_str), float(y_str)))
-    return Polygon(vertices=tuple(pts), weight=weight, name=name)
 
 
 def get_points_distance(polygon: Polygon, i: int, j: int) -> float:
@@ -5363,9 +5370,6 @@ def section_properties(section: Section) -> Dict[str, float]:
     }
 
 
-# -------------------------
-# Visualization helpers
-# -------------------------
 
 def _polygon_signed_area_and_centroid(poly: Polygon) -> Tuple[float, Tuple[float, float]]:
     """

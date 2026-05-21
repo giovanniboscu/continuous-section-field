@@ -71,11 +71,17 @@ Rationale:
   while still using only file-provided sections.
 
 ================================================================================
-MATERIAL MODE (E,G)
+SECTION STIFFNESS CONVENTION
 ================================================================================
-- MATERIAL_INPUT_MODE="from_file": use E and G from geometry.tcl.
-- MATERIAL_INPUT_MODE="override": use E_OVERRIDE and (G_OVERRIDE or E/(2*(1+nu))).
-  A/Iz/Iy/J and Cx/Cy are always taken from file.
+- CSF records provide stiffness-equivalent section quantities.
+- OpenSees Elastic sections are created with unit scalar carriers:
+      E = 1.0
+      G = 1.0
+- Therefore OpenSees uses directly:
+      E*A  = A
+      E*Iz = Iz
+      E*Iy = Iy
+      G*J  = J
 
 ================================================================================
 TORSION (J)
@@ -126,7 +132,7 @@ It parses:
       # Beam Length: 10.000 m | Int. Points: 10
       # CSF_Z_STATIONS: z0 z1 ... zN-1   (strongly recommended)
   - geomTransf Linear 1 vx vy vz
-  - section Elastic tag E A Iz Iy G J [xc yc]
+  - section CSF tag A Iz Iy J [xc yc]
   - optional node lines (informational only)
 
 ================================================================================
@@ -166,15 +172,12 @@ DISP_OUTPUT_SCALE = 1000.0
 DISP_OUTPUT_UNIT = "mm"
 
 # ---------------------------------------------------------------------------
-# MATERIAL INPUT MODE
+# OPENSEES SECTION CARRIERS
 # ---------------------------------------------------------------------------
-# OpenSees Elastic sections require scalar E/G carriers.
-# CSF records provide weighted section properties.
-MATERIAL_INPUT_MODE = "override"
-
-E_OVERRIDE = 2.1e11
-NU_OVERRIDE = 0.30
-G_OVERRIDE = None  # if None -> computed from E/(2*(1+nu))
+# CSF section records are already stiffness-equivalent.
+# Unit carriers make OpenSees use A, Iz, Iy, and J directly.
+E_OPENSEES = 1.0
+G_OPENSEES = 1.0
 
 # ---------------------------------------------------------------------------
 # INTEGRATION STRATEGY
@@ -350,7 +353,7 @@ def parse_csf_geometry(file_path: str) -> GeometryCSF:
       - Optional header line: "# CSF_Z_STATIONS: z0 z1 ... zN-1"
       - geomTransf Linear orientation vector (vecxz)
       - first two node lines (informational only)
-      - all section Elastic lines (station properties + optional xc,yc)
+      - all section CSF lines (station properties + optional xc,yc)
 
     Ignores:
       - beamIntegration / element lines
@@ -494,24 +497,6 @@ def build_local_basis(axis_e3: np.ndarray, vecxz: np.ndarray) -> Tuple[np.ndarra
 
 
 # =============================================================================
-# MATERIAL HANDLING
-# =============================================================================
-def get_EG() -> Tuple[float, float]:
-    """
-    Return scalar E/G carriers required by OpenSees Elastic sections.
-    """
-    E = float(E_OVERRIDE)
-
-    if G_OVERRIDE is not None:
-        G = float(G_OVERRIDE)
-    else:
-        nu = float(NU_OVERRIDE)
-        G = E / (2.0 * (1.0 + nu))
-
-    return E, G
-
-
-# =============================================================================
 # STATION Z COORDINATES
 # =============================================================================
 
@@ -607,8 +592,7 @@ def run_csf_opensees(geom: GeometryCSF, verbose: bool = True) -> float:
         print(f"   => Using CSF_Z_STATIONS: {'YES' if using_csf_z else 'NO'}")
         print(f"   => Centroid variation detected: {'YES' if tilt else 'NO'}")
         print(f"   => Integration mode: {INTEGRATION_MODE} (member_lobatto={integration_member})")
-        E0, G0 = get_EG()
-        print(f"   => OpenSees assigned carriers: E={E0:.6g}, G={G0:.6g}")
+        print(f"   => OpenSees unit carriers: E={E_OPENSEES:.6g}, G={G_OPENSEES:.6g}")
 
     # ---------------- OpenSees domain ----------------
     ops.wipe()
@@ -617,17 +601,16 @@ def run_csf_opensees(geom: GeometryCSF, verbose: bool = True) -> float:
     transfTag = 1
     ops.geomTransf("Linear", transfTag, float(geom.vecxz[0]), float(geom.vecxz[1]), float(geom.vecxz[2]))
 
-    # Define all station sections (tags are taken from file; E/G maybe overridden)
+    # Define all station sections using unit carriers.
     for s in secs:
-        E, G = get_EG()
         ops.section(
             "Elastic",
             int(s.tag),
-            float(E),
+            float(E_OPENSEES),
             float(s.A),
             float(s.Iz),
             float(s.Iy),
-            float(G),
+            float(G_OPENSEES),
             float(s.J),
         )
 
@@ -832,7 +815,7 @@ def main() -> None:
             print("CSF_Z_STATIONS: missing")
         print("Section records: tag, A, Iz, Iy, J, [xc, yc]")
         print("  - A/Iz/Iy/J/xc/yc are read from CSF records.")
-        print("  - E/G are assigned as OpenSees Elastic-section carriers.")
+        print("  - OpenSees uses unit E/G carriers, so A/Iz/Iy/J are used directly.")
         print("=============================================================\n")
 
     uy = run_csf_opensees(geom, verbose=True)

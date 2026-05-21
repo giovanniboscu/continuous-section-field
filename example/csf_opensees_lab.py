@@ -25,7 +25,7 @@ from csf import (
 if __name__ == "__main__":
     # this is the file name
     geometryfile="geometry.tcl"
-    
+    E= 2.1e11
     h = 1.20  
     hb= 0.40
     b = 0.30  
@@ -37,7 +37,7 @@ if __name__ == "__main__":
             Pt( b/2,  h/2),
             Pt(-b/2,  h/2),
         ),
-        weight=1, # 
+        weight=E, # 
         name="upperpart@wall",
     )
 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
             Pt( b/2,  0.0),
             Pt(-b/2,  0.0),
         ),
-        weight=1,
+        weight=E,
         name="lowerpart@wall",
     )
     
@@ -61,7 +61,7 @@ if __name__ == "__main__":
             Pt( b/2,  h/2),
             Pt(-b/2,  h/2),
         ),
-        weight=1, # 
+        weight=E, # 
         name="upperpart@wall",
     )
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
             Pt( b/2,  0.0),
             Pt(-b/2,  0.0),
         ),
-        weight=1,
+        weight=E,
         name="lowerpart@wall",
     )
 

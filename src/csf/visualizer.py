@@ -1030,6 +1030,7 @@ class Visualizer:
                 # seed="w100", "w500", "w10000"  -> mode="w", resolution=number after w
                 mode = "w"
                 resolution = int(seed_lower[1:])
+                weight_attr = "weightabs"
                 seed_numeric = 1
             elif seed_lower == "s":
                 mode = "s"

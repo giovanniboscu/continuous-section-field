@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 import random as _random
 from .entities import Pt, Polygon, Section, CSFError
+from csf.section_field import section_properties
 from . import _tol
 
 
@@ -2332,111 +2333,6 @@ def section_data(field: ContinuousSectionField, z: float) -> dict:
     }
 
 
-
-def section_properties(section: Section) -> Dict[str, float]:
-    """
-    Computes the integral geometric properties for a composite cross-section.
-
-    TECHNICAL SUMMARY:
-    This function performs a multi-pass integration over a set of weighted 
-    polygons to derive the global geometric constants. It manages homogenization 
-    by algebraically summing contributions, allowing for the representation of 
-    complex domains with voids or varying material densities.
-
-    ALGORITHMIC WORKFLOW:
-    1. First-Order Moments (Area and Centroid):
-       - Aggregates the weighted area (A) and the first moments of area (Qx, Qy) 
-         for all constituent polygons.
-       - Locates the global centroid (Cx, Cy) of the composite section.
-
-    2. Second-Order Moments (Inertia about Origin):
-       - Computes the area moments of inertia (Ix, Iy) and the product of 
-         inertia (Ixy) relative to the global coordinate origin (0,0).
-
-    3. Translation of Axes (Parallel Axis Theorem):
-       - Applies the Huygens-Steiner Theorem to shift the moments of inertia 
-         from the global origin to the newly calculated centroidal axes:
-         I_centroid = I_origin - A * d^2
-       - This transformation ensures the properties are intrinsic to the 
-         section's geometry, independent of the global coordinate system.
-
-    4. Polar Moment Extraction:
-       - Derives the Polar Second Moment of Area (J) about the centroid as 
-         the sum of the orthogonal centroidal moments (Ix + Iy).
-
-    RETURNS:
-       A comprehensive dictionary containing:
-       - 'A': Net weighted area.
-       - 'Cx', 'Cy': Centroidal coordinates.
-       - 'Ix', 'Iy', 'Ixy': Second moments of area about centroidal axes.
-       - 'Ip': Polar moment of area.
-    """
-    # First pass: area + centroid
-    A_tot = 0.0
-    Cx_num = 0.0
-    Cy_num = 0.0
-
-    poly_cache = []
-    ii=0
-    for poly in section.polygons:
-        ii=ii+1
-        A_i, (cx_i, cy_i) = polygon_area_centroid(poly)
-        A_tot += A_i
-        
-        Cx_num += A_i * cx_i
-        Cy_num += A_i * cy_i
-        poly_cache.append((poly, A_i, cx_i, cy_i))
-
-    if abs(A_tot) < _tol.EPS_A:
-        raise ValueError("Composite area is ~0;- cannot compute centroid/properties reliably. ")
-
-    Cx = Cx_num / A_tot
-    
-    Cy = Cy_num / A_tot
-
-    # Second pass: inertia about origin then shift to centroid
-    Ix_o = 0.0
-    Iy_o = 0.0
-    Ixy_o = 0.0
-
-    for poly, _, _, _ in poly_cache:
-        ix, iy, ixy = polygon_inertia_about_origin(poly)
-        Ix_o += ix
-        Iy_o += iy
-        Ixy_o += ixy
-
-    # Parallel axis theorem to centroid
-    Ix_c = Ix_o - A_tot * (Cy * Cy)
-    Iy_c = Iy_o - A_tot * (Cx * Cx)
-    Ixy_c = Ixy_o - A_tot * (Cx * Cy)
-
-    J = Ix_c + Iy_c
-
-
-    if abs(A_tot)<_tol.EPS_A:
-        A_tot = 0
-    if abs(Cx)<_tol.EPS_L:
-        Cx = 0
-    if abs(Cy)<_tol.EPS_L:
-        Cy = 0
-    if abs(Ix_c)<_tol.EPS_K_ATOL:
-        Ix_c = 0
-    if abs(Iy_c)<_tol.EPS_K_ATOL:
-        Iy_c = 0
-    if abs(Ixy_c)<_tol.EPS_K_ATOL:
-        Ixy_c= 0
-    if abs(J)<_tol.EPS_K_ATOL:
-        J= 0                
-    return {
-        "z": section.z,
-        "A": A_tot,
-        "Cx": Cx,
-        "Cy": Cy,
-        "Ix": Ix_c,
-        "Iy": Iy_c,
-        "Ixy": Ixy_c,
-        "Ip": J,
-    }
 
 
 # -------------------------
