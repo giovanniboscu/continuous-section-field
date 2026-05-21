@@ -234,9 +234,6 @@ class Visualizer:
             Indices out of range are ignored.
         """
         
-        import numpy as np
-        import matplotlib.pyplot as plt
-        
         z_start = self.field.s0.z
         z_end = self.field.s1.z
         z_values = np.linspace(z_start, z_end, num_points)
@@ -410,10 +407,6 @@ class Visualizer:
             )
             
             fig_w.tight_layout(rect=[0, 0.04, 1, 0.96])
-
-        #print("=== END WEIGHT MIN/MAX REPORT ===")
-        # plt.show()
-
 
 
     # ----------------------------------------------------------------------------
@@ -770,8 +763,6 @@ class Visualizer:
         #plt.show()
 
 
-    
-    # -----------------------------------------------------------------------------------------------------------------------------------------
     def plot_section_2d(
         self,
         z: float,
@@ -982,7 +973,6 @@ class Visualizer:
 
         return ax
 
-    #----------------------------
 
     def plot_volume_3d(
         self,
@@ -1264,28 +1254,6 @@ class Visualizer:
             else:
                 color_min = (0.0, 0.0, 1.0)  # blue
                 color_max = (1.0, 0.0, 0.0)  # red
-
-            r = color_min[0] + ratio * (color_max[0] - color_min[0])
-            g = color_min[1] + ratio * (color_max[1] - color_min[1])
-            b = color_min[2] + ratio * (color_max[2] - color_min[2])
-            
-            return (r, g, b, alpha)
-
-            # Keep the mapping fully opaque.
-            # The old mode labels are treated as semantic selectors only.
-            if mode_name == "gray":
-                return (ratio, ratio, ratio)
-
-            # In this view, negative weights are rendered with inverted progression.
-            if weight_value < 0:
-                ratio = 1.0 - ratio
-
-            # Continuous opaque blue-to-red mapping.
-            
-            color_min = (0.0, 0.0, 1.0)  # blue
-            color_max = (1.0, 0.0, 0.0)  # red
-            #color_min = (0.0, 0.6, 0.6)  # teal
-            #color_max = (1.0, 0.6, 0.0)  # orange            
 
             r = color_min[0] + ratio * (color_max[0] - color_min[0])
             g = color_min[1] + ratio * (color_max[1] - color_min[1])

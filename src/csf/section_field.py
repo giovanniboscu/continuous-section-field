@@ -71,7 +71,6 @@ except Exception as e:
 
 if yaml is not None:
     class XY(tuple):
-        """Coppia (x,y) da stampare in flow style."""
         pass
 
     class CSFDumper(yaml.SafeDumper):
@@ -90,7 +89,6 @@ if yaml is not None:
 else:
     XY = None
     CSFDumper = None
-
 
 
 # Add this method inside class ContinuousSectionField.
@@ -2279,7 +2277,7 @@ Thickness per cell polygon
 - If polygon name contains "@t=<value>": use that thickness (meters).
 - Else: estimate thickness via the SAME rigid rule you already adopted for @WALL:
 
-      t := 2*A / P
+      t := 2*A / P 
 
   where:
     A = abs(signed area of the *single polygon*),
@@ -2802,7 +2800,7 @@ Rules:
 - If "@t=<number>" is present, that thickness (in meters) is used for that wall polygon.
 - If "@t=" is absent, thickness is estimated from pure geometry (rigid rule):
 
-        t := 2*A / P
+        t := t = (P - sqrt(P² - 16A)) / 4 or 2*A / P
 
 This is intentionally profile-agnostic: no shape recognition, no heuristics, no tests.
 The user is responsible for tagging the correct polygons.
@@ -3034,49 +3032,6 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
     else:
         return float(J)
 
-
-"""
-compute_saint_venant_j_co.py
-
-Saint-Venant torsional constant J for *solid* polygonal domains (grid-based Prandtl solve).
-
-Why your "simple box" looked like an infinite loop
---------------------------------------------------
-With the previous defaults (auto_n=200, max_iter=20000), a 0.4 x 0.4 square generates
-a grid of about 201 x 201 nodes (≈ 40k unknowns). Running 20k SOR sweeps means
-~800 million node updates, which can look like a hang.
-
-This revision keeps the same numerical method, but adds *explicit safety caps*:
-- lower default auto_n
-- lower default max_iter
-- a maximum total grid node count; if exceeded, an error is raised (no silent coarsening)
-
-Contract (explicit, by design)
-------------------------------
-- NO geometry validation: no convexity checks, no self-intersection checks, no orientation checks.
-- NO sign post-processing: no abs(), no clipping, no "make positive".
-- NO inner (nested) helper functions: all helpers are module-level.
-- Each polygon is treated as its own SOLID filled domain; final result is a weighted sum.
-
-Model (per polygon Ω_i)
------------------------
-Solve Prandtl stress function ψ:
-
-    ∇²ψ = -2   in Ω_i
-    ψ  =  0    on ∂Ω_i
-
-Then:
-
-    J_i = 2 ∫_{Ω_i} ψ dA
-
-Method
-------
-Masked Cartesian grid + in-place SOR for the Poisson equation.
-
-Weighted output
----------------
-    J_total = Σ w_i * J_i     (weights are taken verbatim from poly.weight)
-"""
 
 def _poly_vertices_xy(poly: Any) -> List[PointXY]:
     """Extract polygon vertices as plain (x, y) float tuples."""
