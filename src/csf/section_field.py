@@ -4128,14 +4128,43 @@ def section_derived_properties(props: Dict[str, float]) -> Dict[str, float]:
         theta = 0.5 * math.atan2(-2 * Ixy, Ix - Iy)
     # --------------------------------------------
 
+    '''
+    'I1': avg + R,  # Major principal moment of inertia
+    'I2': avg - R,  # Minor principal moment of inertia
+    'theta_rad': theta,
+    'theta_deg': math.degrees(theta),
+    'rx': math.sqrt(Ix / props['A']) if props['A'] > 0 else 0,
+    'ry': math.sqrt(Iy / props['A']) if props['A'] > 0 else 0,
+    '''
+
+    I1 = avg + R
+    I2 = avg - R
+    theta_rad = theta
+    theta_deg = math.degrees(theta)
+
+
+    if Ix < 0:
+        raise ValueError(f"Negative Ix={Ix:.6g}: cannot compute rx")
+    if Iy < 0:
+        raise ValueError(f"Negative Iy={Iy:.6g}: cannot compute ry")
+
+    try:
+        rx = math.sqrt(Ix / props['A']) if props['A'] > 0 else 0
+        ry = math.sqrt(Iy / props['A']) if props['A'] > 0 else 0
+    except (ValueError, ZeroDivisionError) as e:
+        raise ValueError(f"Error computing radii of gyration: {e}") from e
+
+    
     return {
-        'I1': avg + R,  # Major principal moment of inertia
-        'I2': avg - R,  # Minor principal moment of inertia
-        'theta_rad': theta,
-        'theta_deg': math.degrees(theta),
-        'rx': math.sqrt(Ix / props['A']) if props['A'] > 0 else 0,
-        'ry': math.sqrt(Iy / props['A']) if props['A'] > 0 else 0,
+        'I1': I1,
+        'I2': I2,
+        'theta_rad': theta_rad,
+        'theta_deg': theta_deg,
+        'rx': rx,
+        'ry': ry,
     }
+
+
 
 
 # -------------------------
