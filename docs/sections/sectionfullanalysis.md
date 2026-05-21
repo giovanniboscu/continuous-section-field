@@ -552,6 +552,8 @@ with an optional thickness override.
 
 If no `@wall` polygons are present, the current implementation returns `0`.
 
+**t = (P - sqrt(P² - 16A)) / 4** see 4.2
+
 ## Parameters: optional vs required
 
 ### Required
@@ -569,7 +571,7 @@ If `@t=` is absent, thickness is estimated from geometry (see below).
 
 - Intended for **open thin-walled** components represented as wall polygons.
 - Thickness may be **user-specified** (`@t=`) or **estimated** (`t = 2A/P`).
-- Using `t = Tglobal` is a geometric proxy; it does **not** verify thin-wall validity.
+- Using `t = (P - sqrt(P² - 16A)) / 4` is a geometric proxy; it does **not** verify thin-wall validity.
 - Warping and shear deformation effects are **not** modeled.
 - Only considers **tagged polygons**; untagged geometry is ignored.
 
