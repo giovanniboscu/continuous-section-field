@@ -603,6 +603,69 @@ two short edges (thickness direction),
 
 thickness t much smaller than the long dimension.
 
+---
+
+For open thin-wall polygons tagged as `@wall`, CSF needs an effective wall thickness $t$ to evaluate the Saint-Venant torsional approximation:
+
+$$
+J_{\text{wall}} \approx \sum_i \frac{A_i t_i^2}{3}
+$$
+
+where $A_i$ is the polygon area and $t_i$ is the effective wall thickness.
+
+### Thickness priority
+
+For `@wall` polygons, the thickness is selected as follows:
+
+```text
+1. explicit thickness from polygon name: @t=<value>
+2. automatic global estimate: Tglobal
+```
+
+The explicit form has priority:
+
+```text
+polygon_name@wall@t=0.02
+```
+
+If `@t=` is present, the automatic estimator is not used.
+
+### Global estimator for open walls
+
+When no explicit thickness is provided, CSF estimates:
+
+$$
+t_{\text{global}} = \frac{P - \sqrt{P^2 - 16A}}{4}
+$$
+
+where:
+
+- $A$ is the polygon area;
+- $P$ is the polygon perimeter.
+
+This estimator comes from the rectangular strip relations:
+
+$$
+A = Lt
+$$
+
+$$
+P = 2L + 2t
+$$
+
+solved for the smaller dimension $t$.
+
+For open thin-wall polygons (`@wall`), `Tglobal` is preferred because it recovers the correct thickness for a rectangular strip, while `2A/P` underestimates it.
+
+## Summary
+
+```text
+@wall@t=<value>  -> use explicit thickness
+@wall            -> use Tglobal
+@cell            -> use 2A/P
+```
+
+---
 
 Operationally:
 
@@ -619,8 +682,6 @@ If the strip has:
 - non-rectangular ends
 - varying width
 - local fillets/indentations
-
-then always use `@t=`. The fallback $t=2A/P$ is only a rough estimate and may drift.
 
 ---
 
@@ -682,7 +743,7 @@ A polygon is valid for `@wall` torsion (v2) if all items below are true:
 1. Name includes `@wall`.
 2. `vertices` define **one** closed loop (no concatenated loops).
 3. The polygon represents a **thin strip** (midline length $b \gg t$).
-4. Thickness is provided as `@t=...` (recommended), or the strip is thin enough that $t=2A/P$ is meaningful.
+4. Thickness is provided as `@t=...` (recommended)
 5. If thickness varies physically, the wall is split into multiple patches with separate polygons.
 
 ---
