@@ -114,39 +114,6 @@ Recommended “standard” workflow:
 
 # Action catalog
 
-## `section_full_analysis`
-
-**Purpose**  
-Compute the full standard property set at each requested station and route it to stdout/CSV/text.
-
-**Stations**: **REQUIRED** (station-set names).  
-**Output**:
-- `stdout` → human-readable report per station.
-- `*.csv` → numeric table (one row per station; columns = analysis keys).
-- any other file → captured text report.
-
-**Parameters (`params:`)**
-
-| name | type | required | default | meaning |
-|---|---:|:---:|---:|---|
-| `fmt_display` | str | no | `.8f` | Python numeric format for printed report (e.g. `.4f`, `.3e`). Alias accepted: `fmt_display`. |
-
-**Example**
-
-```yaml
-CSF_ACTIONS:
-  stations:
-    s_dense: [0.0, 2.5, 5.0]
-  actions:
-    - section_full_analysis:
-        stations: [s_dense]
-        output: [stdout, out/section_full.csv]
-        params:
-          fmt_display: ".10f"
-```
-
----
-
 ## `section_selected_analysis`
 
 **Purpose**  
