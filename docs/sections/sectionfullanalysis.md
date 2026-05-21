@@ -569,7 +569,7 @@ If `@t=` is absent, thickness is estimated from geometry (see below).
 
 - Intended for **open thin-walled** components represented as wall polygons.
 - Thickness may be **user-specified** (`@t=`) or **estimated** (`t = 2A/P`).
-- Using `t = 2A/P` is a geometric proxy; it does **not** verify thin-wall validity.
+- Using `t = Tglobal` is a geometric proxy; it does **not** verify thin-wall validity.
 - Warping and shear deformation effects are **not** modeled.
 - Only considers **tagged polygons**; untagged geometry is ignored.
 
