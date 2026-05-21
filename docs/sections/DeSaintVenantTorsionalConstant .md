@@ -208,6 +208,7 @@ CSF reports separately:
 
 CSF exports (OpenSees, SAP2000):
   J_sv  =  J_sv_cell  +  J_sv_wall
+  when the documented non-interaction assumptions are satisfied.
 
 Valid when (H1–H4):
   - cells and walls do not share closed contours
