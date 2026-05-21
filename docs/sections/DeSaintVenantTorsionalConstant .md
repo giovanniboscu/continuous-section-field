@@ -206,9 +206,15 @@ CSF reports separately:
 
   J_sv_wall  =  Σ_i  b_i·t_i³ / 3           [thin open walls]
 
-CSF exports (OpenSees, SAP2000):
-  J_sv  =  J_sv_cell  +  J_sv_wall
-  when the documented non-interaction assumptions are satisfied.
+
+CSF reports:
+  J_sv_cell  = closed thin-cell estimate
+  J_sv_wall  = open thin-wall estimate
+
+For export-oriented workflows:
+  J_sv = J_sv_cell + J_sv_wall
+
+This direct summation is intended only for geometries satisfying the documented non-interaction assumptions. Otherwise, a full Saint-Venant torsional analysis should be preferred, for example through the `csf_sp` bridge to `sectionproperties`.
 
 Valid when (H1–H4):
   - cells and walls do not share closed contours
