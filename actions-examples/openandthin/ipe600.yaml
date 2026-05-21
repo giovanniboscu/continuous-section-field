@@ -18,7 +18,7 @@ CSF:
     S0:
       z: 0.0
       polygons:
-        ipe600:
+        ipe600@wall:
           weight: 1.0
           vertices:
             # Start at top-left outer corner, go CCW
