@@ -56,6 +56,7 @@ $$J_{\mathrm{sv,cell}} = \sum_{k=1}^{n_c} J_{\mathrm{sv,cell},k}$$
 
 ### 2.2 Open-wall contribution - $J_{\mathrm{sv,wall}}$
 
+
 Each thin open wall $i$ (slender rectangle) contributes:
 
 $$J_{\mathrm{sv,wall},i} = \frac{b_i \, t_i^3}{3}$$
@@ -65,6 +66,76 @@ where $b_i$ is the wall length and $t_i$ is the thickness.
 The total open-wall contribution is:
 
 $$J_{\mathrm{sv,wall}} = \sum_{i=1}^{n_w} J_{\mathrm{sv,wall},i}$$
+
+CSF needs an effective wall thickness $t$ to evaluate the Saint-Venant torsional approximation:
+
+$$
+J_{\text{wall}} \approx \sum_i \frac{A_i t_i^2}{3}
+$$
+
+where $A_i$ is the polygon area and $t_i$ is the effective wall thickness.
+
+### Thickness priority
+
+For `@wall` polygons, the thickness is selected as follows:
+
+```text
+1. explicit thickness from polygon name: @t=<value>
+2. automatic global estimate: Tglobal
+```
+
+The explicit form has priority:
+
+```text
+polygon_name@wall@t=0.02
+```
+
+If `@t=` is present, the automatic estimator is not used.
+
+## Global estimator for open walls
+
+When no explicit thickness is provided, CSF estimates:
+
+$$
+t_{\text{global}} = \frac{P - \sqrt{P^2 - 16A}}{4}
+$$
+
+where:
+
+- $A$ is the polygon area;
+- $P$ is the polygon perimeter.
+
+This estimator comes from the rectangular strip relations:
+
+$$
+A = Lt
+$$
+
+$$
+P = 2L + 2t
+$$
+
+solved for the smaller dimension $t$.
+
+## Relation with `2A/P`
+
+The estimate
+
+$$
+t = \frac{2A}{P}
+$$
+
+is retained for closed thin-cell logic (`@cell`).
+
+For open thin-wall polygons (`@wall`), `Tglobal` is preferred because it recovers the correct thickness for a rectangular strip, while `2A/P` underestimates it.
+
+## Summary
+
+```text
+@wall@t=<value>  -> use explicit thickness
+@wall            -> use Tglobal
+@cell            -> use 2A/P
+```
 
 ### 2.3 Total torsional constant
 
