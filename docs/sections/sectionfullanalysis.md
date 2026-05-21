@@ -219,11 +219,13 @@ where `Q` is the first moment of the sub-area cut by the neutral axis,
 evaluated consistently with the same weighted section model.
 
 ---
-## 16–17 Torsion constant methods for tagged polygons (`@cell` / `@wall`)
+## 16 - 17 Torsion constant methods for tagged polygons (`@cell` / `@wall`)
 
 The torsional constants computed from polygons tagged as `@cell` or `@wall` are CSF thin-wall estimates.
 
-They provide fast geometry-based approximations and are useful for screening, validation, and lightweight section-property evaluation.
+They provide fast geometry-based approximations and, depending on the polygon geometry, may reach a very acceptable level of accuracy.
+
+The assessment of applicability and accuracy remains the user’s responsibility.
 
 For a more complete torsional analysis, CSF can be coupled with `sectionproperties` through the `csf_sp` bridge.
 
