@@ -551,8 +551,20 @@ This is an **open-section thin-walled approximation** applied per selected polyg
 with an optional thickness override.
 
 If no `@wall` polygons are present, the current implementation returns `0`.
+**Automatic wall-thickness estimate**
 
-**t = (P - sqrt(P² - 16A)) / 4** see 4.2
+For open thin-walled `@wall` polygons, when no explicit `@t=<value>` is provided, CSF estimates the effective thickness as:
+
+$$
+t = \frac{P - \sqrt{P^2 - 16A}}{4}
+$$
+
+where:
+
+- \(P\) is the polygon perimeter;
+- \(A\) is the polygon area.
+
+See Section 4.2.
 
 ## Parameters: optional vs required
 
