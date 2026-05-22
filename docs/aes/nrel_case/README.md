@@ -27,6 +27,17 @@ This step is executed by:
 
 - `create_yaml_nrel.sh`
 
+The script uses the CSF geometry-generation tool documented in:
+
+[writegeometry_rio_v2 - User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/writegeometry_rio_v2_guide.md)
+
+This tool generates a CSF-compatible YAML geometry file for a single segment with two boundary cross-sections:
+
+- `S0` at the initial axial coordinate `z0`;
+- `S1` at the final axial coordinate `z1`.
+
+In this validation case, the generated geometry represents the tapered NREL 5-MW reference tower as a CSF segment. The tower is therefore defined by two boundary sections and by the continuous interpolation of the cross-sectional geometry and stiffness carriers along the member axis.
+
 The script generates two YAML models:
 
 - `NREL-5-MW.yaml` - baseline tower model, with the original stiffness distribution;
