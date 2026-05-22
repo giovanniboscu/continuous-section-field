@@ -160,8 +160,6 @@ This step is important because the degraded structural response is meaningful on
 
 ## Longitudinal stiffness degradation law
 
-<img width="985" height="467" alt="image" src="https://github.com/user-attachments/assets/50866952-f5ca-4ca3-969b-caf1a0b69934" />
-
 The degraded tower configuration uses the same geometry as the undegraded NREL tower. Only the longitudinal stiffness distribution is modified.
 
 The degradation is introduced through a continuous weight law applied to the stiffness carriers of the tower shell polygons. The weight field is defined as a smooth longitudinal function of the axial coordinate `z`.
@@ -175,7 +173,8 @@ weight_laws:
 
 The resulting distribution is shown below.
 
-![Weight-law distribution](image(4).png)
+<img width="985" height="467" alt="image" src="https://github.com/user-attachments/assets/50866952-f5ca-4ca3-969b-caf1a0b69934" />
+
 
 The law defines a baseline stiffness value of:
 
