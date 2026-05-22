@@ -1,0 +1,8 @@
+model_id,model_label,n_elems,n_section_calls,Uy_tip,Rz_tip
+model_0,Model 0 - uniform 4 (4 elements),4,13,4.515337402779e-01,1.384135695676e-03
+model_1,Model 1 - uniform 6 (6 elements),6,19,4.517697542663e-01,1.383296216452e-03
+model_2,Model 2 - uniform 8 (8 elements),8,25,4.502833890772e-01,1.378374217240e-03
+model_3,Model 3 - uniform 12 (12 elements),12,37,4.514387699308e-01,1.382211254732e-03
+model_4,Model 4 - uniform 16 (16 elements),16,49,4.510459170047e-01,1.381071191244e-03
+model_5,Model 5 - uniform 24 (24 elements),24,73,4.510696042685e-01,1.381111458612e-03
+model_6,Model 6 - uniform 32 (32 elements),32,97,4.510665469386e-01,1.381101475700e-03
