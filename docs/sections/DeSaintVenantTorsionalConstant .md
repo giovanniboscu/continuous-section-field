@@ -197,11 +197,14 @@ The sum $J_{\mathrm{sv}} = J_{\mathrm{sv,cell}} + J_{\mathrm{sv,wall}}$ is **val
 ---
 
 ## 7. Summary
-```
+
 CSF reports separately:
+
+```
   J_sv_cell  =  Σ_k  4·A_m,k²·t_k / b_m,k   [closed-cell approximation]
               with A_m,k = (A_outer,k + A_inner,k)/2
               and  b_m,k = (P_outer,k + P_inner,k)/2
+
 
   J_sv_wall  =  Σ_i  b_i·t_i³ / 3           [thin open walls]
 
@@ -213,6 +216,7 @@ CSF reports:
 For export-oriented workflows:
   J_sv = J_sv_cell + J_sv_wall
 ```
+
 This direct summation is intended only for geometries satisfying the documented non-interaction assumptions. Otherwise, a full Saint-Venant torsional analysis should be preferred, for example through the `csf_sp` bridge to `sectionproperties`.
 
 Valid when (H1–H4):
@@ -225,7 +229,7 @@ Not valid when:
   - walls are connected to a cell boundary
   - cells share walls
   - section is thick-walled
-```
+
 
 ---
 
