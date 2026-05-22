@@ -1,87 +1,173 @@
-# CSF YAML Examples (No  Coding Required)
+# CSF YAML Examples (No Coding Required)
 
-1. **`write_opensees_geometry`**  
-   Exports CSF section data along `z` into an OpenSees-ready Tcl geometry file, using sampled stations and reference material parameters (`E_ref`, `nu`).
+This directory contains ready-to-run CSF examples designed to demonstrate
+continuous-section modelling workflows without requiring custom programming.
 
-2. **`degradation_laws_offshore`**  
-   Collection of offshore-oriented degradation laws (e.g., splash-zone effects, corrosion-driven reductions) to model longitudinal property loss through `w(z)` and related CSF inputs.
+The examples are based on YAML input files and cover several CSF capabilities,
+including:
 
-3. **Torsion examples: `J_sv_cell` / `J_sv_wall`**  
-   Practical examples showing how to compute Saint-Venant torsional constant in CSF for closed-cell behavior (`J_sv_cell`) and thin-wall/open-wall behavior (`J_sv_wall`), with tag-based polygon selection.
+- continuously varying geometry along `z`;
+- polygon-based section interpolation;
+- independent weight and shear-weight laws;
+- open-wall and closed-cell torsion workflows;
+- degradation and corrosion-oriented modelling;
+- section-property tracking along the member axis;
+- thin-wall verification and regression cases;
+- morphing and twisted geometries;
+- offshore-oriented examples;
+- external-solver-oriented exports;
+- verification-oriented numerical workflows.
 
-4. **Closed-Cell CHS with Splash-Zone Weight Law**  
-   This example demonstrates a **reproducible CSF workflow** for a circular hollow steel member (CHS), combining closed-cell torsion and a splash-zone degradation law to evaluate section-property evolution along `z`.
-
-5. **Simple rectangle example**  
-   Minimal CSF case based on a rectangular section, intended for quick setup, validation, and first checks of area/inertia/torsion trends along the member length.
+The purpose of this directory is to provide practical, reproducible reference
+cases for using CSF in different modelling contexts.
 
 ---
-This directory contains **ready-to-run CSF examples** that require **no  programming**.
-Each example is defined by **two YAML files**:
 
-- `geometry.yaml` — defines the cross-sections at the end stations (e.g., `S0`, `S1`) using explicit polygons.
-- `actions.yaml` — defines what CSF should do (analysis, plots, exports) using `CSF_ACTIONS`.
+## Example Categories
 
-The workflow is purely declarative: you edit YAML files and run the CSF actions runner.
+### 1. Basic Geometry and Property Tracking
+
+These examples focus on simple section definitions and section-property
+evolution along the member axis.
+
+They are intended to check:
+
+- area evolution;
+- centroid motion;
+- inertia variation;
+- section interpolation;
+- torsional trends.
+
+---
+
+### 2. Thin-Wall and Torsion Examples (`@wall` / `@cell`)
+
+Several examples demonstrate the CSF Saint-Venant torsional indicators:
+
+- `J_sv_wall` for open thin-walled layouts;
+- `J_sv_cell` for closed-cell behavior.
+
+The examples include:
+
+- C-shaped sections;
+- E/F/H/I/L/T layouts;
+- rotated thin-wall geometries;
+- multi-branch wall configurations;
+- regression and verification cases.
+
+Independent section analyses through `sectionproperties` are used in some cases
+as reference comparisons for verification.
+
+Some geometries intentionally exceed the selected tolerance in order to document
+the practical limits of simplified thin-wall approximations.
+
+---
+
+### 3. Offshore and Degradation-Oriented Examples
+
+Some examples demonstrate how CSF can model longitudinal property loss through:
+
+- `weight_laws`;
+- `shear_weight_laws`;
+- corrosion-inspired reductions;
+- splash-zone-type degradation patterns;
+- offshore-oriented section variation.
+
+These examples show how geometric variation and material participation can be
+combined within the same continuous-section model.
+
+---
+
+### 4. Morphing and Twisted Geometries
+
+Several examples demonstrate:
+
+- continuous shape morphing;
+- twisted members;
+- variable towers;
+- polygon interpolation between stations;
+- ruled-volume generation.
+
+These workflows are intended to illustrate geometric continuity and section
+evolution along the member axis.
+
+---
+
+### 5. Export and External Solver Workflows
+
+Some examples focus on interoperability and export pipelines, including:
+
+- structural-solver-oriented geometry exports;
+- Tcl geometry generation;
+- exported YAML snapshots;
+- template-oriented output files;
+- verification-oriented reports.
+
+These examples demonstrate how CSF geometries and section properties can be
+transferred to external structural workflows.
 
 ---
 
 ## File Roles
 
-### 1) `geometry.yaml`
-Defines the geometry (and weights/material tags if used) at discrete stations along **z**.
+### Geometry files
 
-Typical structure:
+Geometry files define the section layout and polygon weights at discrete
+stations along `z`.
 
-- `CSF.sections.S0` and `CSF.sections.S1` include:
-  - `z`: station coordinate
-  - `polygons`: one or more polygon definitions
-    - `weight`: scalar weight for that polygon
-    - `vertices`: polygon vertices in **CCW** order
+They typically contain:
 
-Important:
-- Polygon names and vertex counts must match between stations for consistent interpolation.
-- Any required attributes must be explicitly provided (no silent defaults).
+- section definitions such as `S0` and `S1`;
+- polygon definitions;
+- scalar weights;
+- polygon tags such as `@wall` and `@cell`;
+- explicit vertex lists in counter-clockwise order.
 
-### 2) `actions.yaml`
-Defines station sets and an ordered list of actions to execute.
-
-Typical structure:
-
-- `CSF_ACTIONS.stations`: named station sets (lists of absolute z coordinates)
-- `CSF_ACTIONS.actions`: ordered list of actions (analysis, plots, exports, writers)
-
-Some actions use explicit `stations`, while others sample internally and do **not** accept stations.
+Polygon names and vertex counts should remain compatible between stations when
+continuous interpolation is required.
 
 ---
 
-## How to Run
+### Action files
 
-From this directory:
+Action files define the analyses, plots, exports, and reports associated with a
+case.
 
-```bash
-csf-actions geometry.yaml actions.yaml
-```
-Outputs (plots, CSV/TXT reports, exported YAML, templates, etc.) are written to the paths listed under each action’s `output`.
+They may include:
 
----
-
-## Example: Linearly Tapered Rectangle
-
-A minimal example usually includes:
-
-- `geometry.yaml`: rectangle at `S0` and `S1` (same polygon name, same vertex count)
-- `actions.yaml`:
-  - `section_full_analysis` at selected stations
-  - `plot_section_2d` at stations
-  - `plot_properties` along z (internal sampling)
-  - `plot_volume_3d` (internal sampling)
-  - `export_yaml` for the end sections
+- selected-station section analyses;
+- section-property reports;
+- 2D section plots;
+- 3D volume plots;
+- property evolution plots;
+- geometry exports;
+- solver-oriented writers;
+- verification-oriented outputs.
 
 ---
 
-## Notes
+## Execution Notes
 
-- Keep all geometry vertices **CCW**.
-- Use station sets to control where section-based actions evaluate properties.
-- Writers (e.g., OpenSees/SAP2000) may have additional required parameters; see the action definitions in `CSFActions.py`.
+Each example may contain its own workflow, auxiliary scripts, action files,
+verification procedures, or solver-specific export steps.
+
+Users should refer to the documentation and notes provided inside the
+corresponding example directory for execution details and expected outputs.
+
+---
+
+## Philosophy
+
+The examples are intentionally designed as declarative workflows rather than
+programmatic extensions.
+
+The objective is to allow:
+
+- reproducible verification;
+- geometry experimentation;
+- continuous-section studies;
+- torsional verification;
+- degradation modelling;
+- external solver integration;
+
+using YAML-based inputs and case-specific documentation.
