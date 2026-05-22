@@ -23,14 +23,20 @@ Both scenarios use the same geometry. The degraded case modifies only the longit
 
 ### Geometry and action generation
 
+The first step of the workflow is the generation of the CSF input files that describe the NREL 5-MW reference tower geometry and material stiffness distribution.
+
+This step is executed by:
+
 - `create_yaml_nrel.sh`
 
-Generates both YAML input files:
+The script generates two YAML models:
 
-- `NREL-5-MW.yaml`
-- `NREL-5-MW-degr.yaml`
+- `NREL-5-MW.yaml` - baseline tower model, with the original stiffness distribution;
+- `NREL-5-MW-degr.yaml` - degraded tower model, with the same geometry and a longitudinal stiffness reduction law.
 
-It also creates the output folders used by the CSF action reports.
+The two files define the same tower geometry. The difference between them is limited to the stiffness weighting law assigned through `weight_laws`.
+
+The script also creates the output directories used by the CSF action reports, so that the following analysis steps can write their results in a reproducible folder structure.
 
 ### CSF action reports
 
