@@ -127,7 +127,7 @@ The two input files are:
 Once the geometry files are generated, the cross-sectional properties are computed with:
 
 ```bash
-python3 -m csf.CSFActions twist_tower.yaml twist_tower_action.yaml
+csf-actions twist_tower.yaml twist_tower_action.yaml
 ```
 ---
 
