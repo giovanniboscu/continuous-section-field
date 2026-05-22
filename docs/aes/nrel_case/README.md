@@ -386,7 +386,6 @@ The final convergence comparison is reported in:
 
 [Validation comparison - all scenarios](validation_comparison_summary_all_b.md)
 
-![Undegraded NREL tower - convergence](validation_comparison_summary_all_b.md)
 
 That document collects the CSF-to-OpenSees results and compares them against the independent analytical reference for both tower configurations:
 
