@@ -60,11 +60,27 @@ Typical reported quantities include:
 - thin-wall torsional indicators;
 - comparison errors against the reference solution.
 
+## Demonstrative Failure Cases
+
+Some geometries are intentionally retained even when they exceed the selected
+verification tolerance.
+
+These cases are not accidental failures. They are included as demonstrative
+stress cases to show where the simplified open thin-wall approximation becomes
+less representative of the finite-element torsional response.
+
+In particular, compact, strongly branched, or locally non-uniform wall layouts
+may produce larger deviations. Keeping these cases in the test set documents
+the practical limits of the `@wall` indicator and prevents the verification
+suite from containing only favourable examples.
+
 ## Interpretation
 
-The test set includes both positive verification cases and more demanding
-geometries. Cases exceeding the selected tolerance are retained intentionally
-when useful to document the limits of the simplified open thin-wall formulation.
+The test set includes both positive verification cases and demonstrative failure
+cases. Passing cases support the regular use of the `@wall` formulation for
+representative open thin-walled layouts. Failing cases identify configurations
+where the simplified indicator should be interpreted with caution or checked
+against a higher-fidelity section analysis.
 
 This makes the directory suitable both for regression testing and for
 supporting the numerical verification material referenced in the paper.
