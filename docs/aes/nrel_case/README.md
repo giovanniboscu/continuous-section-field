@@ -53,9 +53,6 @@ In particular, the action reports make the continuous section field observable a
 
 The baseline action file is applied to `NREL-5-MW.yaml`, while the degraded action file is applied to `NREL-5-MW-degr.yaml`.
 
-
-
-
 ### CSF-OpenSees model
 
 - `run_csf_opensees.py`
@@ -148,9 +145,8 @@ csf-actions NREL-5-MW-degr.yaml action_nrel-degr.yaml
 ```
 <img width="992" height="654" alt="image" src="https://github.com/user-attachments/assets/29232887-e724-46bb-9bb7-ff635c08742f" />
 
-
-
 This produces the CSF report outputs for the degraded NREL tower.
+
 ### 4. Run the CSF-OpenSees model for the baseline case
 
 Once the sectional properties have been verified against the official NREL reference data, the next step is to evaluate the structural response of the tower using the CSF-generated stiffness distribution inside an OpenSees beam model.
@@ -180,15 +176,30 @@ openseeslab_output_NREL-5-MW
 ```
 
 This directory contains the structural response reports, numerical outputs, and plots generated for the baseline validation case.
+### 5. Run the independent analytical reference for the baseline case
 
+After the CSF-to-OpenSees model has been executed, the same baseline YAML input is evaluated with an independent analytical reference procedure.
 
-### 5. Run the analytical reference for the baseline case
+The purpose of this step is to provide a second response calculation that is independent from both computational paths used in the numerical model. In particular, this reference calculation does not use the CSF analysis library and does not use OpenSees. It is implemented as an autonomous integration procedure that reads the same YAML input data and computes the structural response directly from the stiffness distributions defined in the file.
+
+The analytical reference is executed with:
 
 ```bash
 python3 run_analytical_reference.py NREL-5-MW.yaml
 ```
 
-This computes the independent continuous-reference response for the same baseline YAML input.
+The script reads the same `NREL-5-MW.yaml` input file used by the CSF-to-OpenSees model. It then reconstructs the tower geometry and stiffness distributions required for the calculation and performs the response integration independently.
+
+In this baseline case, no degradation law is applied. Therefore, the computed response represents the reference behaviour of the original NREL tower stiffness distribution.
+
+The autonomous integration procedure provides independent values for:
+
+- tower tip displacement;
+- tower tip rotation;
+- torsional rotation.
+
+These results are used as the baseline continuous-reference solution. They are later compared with the CSF-to-OpenSees outputs to verify that the numerical beam model reproduces the same structural response when driven by the same YAML-defined tower data.
+
 
 ### 6. Run the CSF-OpenSees model for the degraded case
 
