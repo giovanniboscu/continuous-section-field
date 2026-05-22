@@ -18,6 +18,13 @@ Compact overview of where CSF sits in the workflow.
 | [writegeometry_rio_v2 - User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/writegeometry_rio_v2_guide.md) | CLI reference for the parametric geometry generator: shape families (circle, rounded rectangle, sharp rectangle), rebar rows, degradation weight laws, twist, and worked examples. |
 
 
+
+## Validation Cases
+
+| Resource | Description |
+|----------|-------------|
+| [NREL 5-MW Tower Validation Case](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case) | Reproducible CSF-to-OpenSees validation workflow for the NREL 5-MW reference tower. Includes undegraded and longitudinally degraded stiffness-field cases, independent analytical reference integration, convergence studies, and comparison of continuous versus piecewise sectional representations. |
+
 ---
 ## Section Properties Reference
 
