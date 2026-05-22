@@ -381,6 +381,7 @@ Density = 8500 kg/m3
 **Total Calculated Tower Mass:**   347.339 t  
 &nbsp;
 
+### NREL Reference 
 
 | Elevation [m] | HtFract | TMassDen [kg/m] | TwFAStif [N·m²] | TwSSStif [N·m²] | TwGJStif [N·m²] | TwEAStif [N] | TwFAIner [kg·m] | TwSSIner [kg·m] |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
