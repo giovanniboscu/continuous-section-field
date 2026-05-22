@@ -25,14 +25,6 @@ Compact overview of where CSF sits in the workflow.
 | [NREL 5-MW Tower Validation Case](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case) | Reproducible CSF-to-OpenSees validation workflow for the NREL 5-MW reference tower. Includes undegraded and longitudinally degraded stiffness-field cases, independent analytical reference integration, convergence studies, and comparison of continuous versus piecewise sectional representations. |
 
 ---
-## Section Properties Reference
-
-| File | Description |
-|------|-------------|
-| [Section Full Analysis](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md) | Reference for all quantities reported by the CSF Section Full Analysis. Explains what each value represents, how it is computed, and its validity domain. Quantities that depend on specific CSF modelling policies (e.g. torsion selection rules) are explicitly marked. |
-| [SaintVenant Torsional Constant](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md) | Validity conditions for the summation `J_sv = J_sv_cell + J_sv_wall` in CSF. Covers the non-interaction hypotheses (H1–H4), elemental formulas (Bredt for closed cells, thin-wall rectangle for open walls), when the summation holds and when it does not, and how the result is exported to OpenSees and SAP2000. |
-
-
 
 ## Actions Runner (No-Code Workflow)
 
@@ -56,6 +48,14 @@ Compact overview of where CSF sits in the workflow.
 | File | Description |
 |------|-------------|
 | [CSF_Polygon_Geometry_Guide](CSF_Polygon_Geometry_Guide.md) | Geometric construction of tagged polygons: `@cell` (closed thin-walled cell, two-loop encoding) and `@wall` (open thin-walled strip, single loop). Includes YAML examples and checklists. |
+
+## Section Properties Reference
+
+| File | Description |
+|------|-------------|
+| [Section Full Analysis](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md) | Reference for all quantities reported by the CSF Section Full Analysis. Explains what each value represents, how it is computed, and its validity domain. Quantities that depend on specific CSF modelling policies (e.g. torsion selection rules) are explicitly marked. |
+| [SaintVenant Torsional Constant](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md) | Validity conditions for the summation `J_sv = J_sv_cell + J_sv_wall` in CSF. Covers the non-interaction hypotheses (H1–H4), elemental formulas (Bredt for closed cells, thin-wall rectangle for open walls), when the summation holds and when it does not, and how the result is exported to OpenSees and SAP2000. |
+
 
 ---
 
