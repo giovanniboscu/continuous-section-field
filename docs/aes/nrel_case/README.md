@@ -91,7 +91,7 @@ The script also creates the output directories for the CSF action reports.
 ```bash
 csf-actions NREL-5-MW.yaml action_nrel.yaml
 ```
-<img width="992" height="654" alt="image" src="https://github.com/user-attachments/assets/147a64d8-5a7b-43fe-b0f4-597007ba5ec2" />
+<img width="991" height="663" alt="image" src="https://github.com/user-attachments/assets/6ac09363-c878-40ee-93f2-af3845db27d8" />
 
 
 This produces the CSF report outputs for the non-degraded NREL tower.
