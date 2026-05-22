@@ -2,7 +2,7 @@
 
 csf-acrions j_sv_geometry.yaml j_sv_action.yaml
 
-csf-acrions csf.CSFActions annulus.yaml annulus_action.yaml
+csf-acrions  annulus.yaml annulus_action.yaml
 
 
 
