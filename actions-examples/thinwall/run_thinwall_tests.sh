@@ -4,19 +4,19 @@ set -euo pipefail
 # -----------------------------------------------------------------------------
 # Automatic @wall / thin-wall verification runner.
 #
+# macOS-compatible version:
+#   - does not use associative arrays;
+#   - works with the default Bash commonly shipped with macOS.
+#
 # For each geometry YAML in this directory, the script:
 #   1. runs CSF actions with the common actions.yaml file;
 #   2. stores the CSF report in out/<case>/section_selected_analysis.txt;
 #   3. runs sectionproperties through csf-sp at z = 0.0 with an explicit mesh;
 #   4. optionally runs csf-sp with --plot when PLOT_MESH=1;
-#   5. extracts:
-#        - J_sv_wall from the CSF report;
-#        - the optional wall thickness t, when J_sv_wall is printed as (J, t);
-#        - e.j from the sectionproperties report;
-#   6. compares J_sv_wall against sectionproperties e.j;
-#   7. writes both:
-#        - out/thinwall_summary.csv  machine-readable summary;
-#        - out/thinwall_summary.txt  human-readable summary.
+#   5. compares J_sv_wall against sectionproperties e.j;
+#   6. writes:
+#        - out/thinwall_summary.csv
+#        - out/thinwall_summary.txt
 #
 # Usage:
 #   ./run_thinwall_tests.sh
@@ -40,19 +40,22 @@ PLOT_MESH="${PLOT_MESH:-0}"
 CSF_ACTIONS_CMD="${CSF_ACTIONS_CMD:-csf-actions}"
 CSF_SP_CMD="${CSF_SP_CMD:-csf-sp}"
 
-# Optional per-case mesh overrides.
-declare -A CASE_MESH=(
-  ["c-shape.yaml"]="0.0001"
-  ["e-shape.yaml"]="0.0001"
-  ["f-shape.yaml"]="0.0001"
-  ["h1-shaped.yaml"]="0.0001"
-  ["h-rot-shaped.yaml"]="0.0001"
-  ["i-shaped.yaml"]="0.0001"
-  ["l-shape.yaml"]="0.0001"
-  ["m-shape.yaml"]="0.0001"
-  ["t-shapep.yaml"]="0.0001"
-  ["t-uniqshape.yaml"]="0.0001"
-)
+mesh_for_case() {
+  case "$1" in
+    c-shape.yaml)      echo "0.0001" ;;
+    e-shape.yaml)      echo "0.0001" ;;
+    f-shape.yaml)      echo "0.0001" ;;
+    h1-shaped.yaml)    echo "0.0001" ;;
+    h-rot-shaped.yaml) echo "0.0001" ;;
+    i-shaped.yaml)     echo "0.0001" ;;
+    l-shape.yaml)      echo "0.0001" ;;
+    m-shape.yaml)      echo "0.0001" ;;
+    m2-shape.yaml)     echo "1.0" ;;
+    t-shapep.yaml)     echo "0.0001" ;;
+    t-uniqshape.yaml)  echo "0.0001" ;;
+    *)                 echo "$DEFAULT_MESH" ;;
+  esac
+}
 
 mkdir -p "$OUT_DIR"
 
@@ -120,7 +123,7 @@ for pat in patterns:
         print(m.group(1))
         raise SystemExit(0)
 
-print("Could not extract sectionpropertiecsf-sp s e.j", file=sys.stderr)
+print("Could not extract sectionproperties e.j", file=sys.stderr)
 raise SystemExit(1)
 PY
 }
@@ -138,7 +141,6 @@ rel_tol = float(sys.argv[3])
 
 rel = abs(j_csf - j_sp) / max(abs(j_sp), 1e-300)
 status = "PASS" if rel <= rel_tol else "FAIL"
-
 print(f"{rel:.12g} {status}")
 PY
 }
@@ -215,28 +217,29 @@ append_error_row() {
     >> "$SUMMARY_TXT"
 }
 
-shopt -s nullglob
-
-cases=()
+cases=""
 for yaml in *.yaml; do
-  [[ "$yaml" == actions*.yaml ]] && continue
-  cases+=("$yaml")
+  [ -e "$yaml" ] || continue
+  case "$yaml" in
+    actions*.yaml) continue ;;
+  esac
+  cases="$cases $yaml"
 done
 
-if (( ${#cases[@]} == 0 )); then
+if [ -z "${cases// }" ]; then
   echo "No geometry YAML files found."
   exit 1
 fi
 
 failures=0
 
-for yaml in "${cases[@]}"; do
+for yaml in $cases; do
   case_name="${yaml%.yaml}"
   case_out="$OUT_DIR/$case_name"
 
   mkdir -p "$case_out"
 
-  mesh="${CASE_MESH[$yaml]:-$DEFAULT_MESH}"
+  mesh="$(mesh_for_case "$yaml")"
   csf_report="$case_out/section_selected_analysis.txt"
   sp_report="$case_out/sectionproperties.txt"
   plot_report="$case_out/plot.txt"
@@ -251,7 +254,7 @@ for yaml in "${cases[@]}"; do
     continue
   fi
 
-  if ! "$CSF_SP_CMD" --yaml="$yaml" --z="$Z_STATION" --plot --mesh="$mesh" > "$sp_report" 2>&1; then
+  if ! "$CSF_SP_CMD" --yaml="$yaml" --z="$Z_STATION" --mesh="$mesh" > "$sp_report" 2>&1; then
     echo "    csf-sp failed. See: $sp_report"
     printf '%s,%s,%s,,,,,CSF_SP_ERROR\n' "$case_name" "$mesh" "$Z_STATION" >> "$SUMMARY_CSV"
     append_error_row "$case_name" "$mesh" "CSF_SP_ERROR"
@@ -259,7 +262,7 @@ for yaml in "${cases[@]}"; do
     continue
   fi
 
-  if [[ "$PLOT_MESH" == "1" ]]; then
+  if [ "$PLOT_MESH" = "1" ]; then
     if ! "$CSF_SP_CMD" --yaml="$yaml" --z="$Z_STATION" --mesh="$mesh" --plot > "$plot_report" 2>&1; then
       echo "    plot failed. See: $plot_report"
     else
@@ -267,7 +270,10 @@ for yaml in "${cases[@]}"; do
     fi
   fi
 
-  if ! read -r j_wall t_wall < <(extract_j_sv_wall "$csf_report"); then
+  if ! read -r j_wall t_wall <<EOF
+$(extract_j_sv_wall "$csf_report")
+EOF
+  then
     echo "    Could not extract J_sv_wall. See: $csf_report"
     printf '%s,%s,%s,,,,,J_SV_WALL_PARSE_ERROR\n' "$case_name" "$mesh" "$Z_STATION" >> "$SUMMARY_CSV"
     append_error_row "$case_name" "$mesh" "J_SV_WALL_PARSE_ERROR"
@@ -285,7 +291,9 @@ for yaml in "${cases[@]}"; do
     continue
   fi
 
-  read -r rel_error status < <(compare_values "$j_wall" "$j_sp" "$REL_TOL")
+  read -r rel_error status <<EOF
+$(compare_values "$j_wall" "$j_sp" "$REL_TOL")
+EOF
 
   printf '%s,%s,%s,%.17g,%s,%.17g,%s,%s\n' \
     "$case_name" \
@@ -305,7 +313,7 @@ for yaml in "${cases[@]}"; do
   printf '    J_sv_wall=%s  t=%s  SP e.j=%s  rel_error=%s (%s)  %s\n' \
     "$j_wall" "$t_wall" "$j_sp" "$rel_error" "$rel_pct" "$status"
 
-  if [[ "$status" != "PASS" ]]; then
+  if [ "$status" != "PASS" ]; then
     failures=$((failures + 1))
   fi
 done
@@ -319,7 +327,7 @@ echo
 echo "CSV summary:   $SUMMARY_CSV"
 echo "Text summary:  $SUMMARY_TXT"
 
-if (( failures > 0 )); then
+if [ "$failures" -gt 0 ]; then
   echo "FAILED cases: $failures"
   exit 1
 fi
