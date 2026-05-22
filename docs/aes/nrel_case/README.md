@@ -53,6 +53,9 @@ In particular, the action reports make the continuous section field observable a
 
 The baseline action file is applied to `NREL-5-MW.yaml`, while the degraded action file is applied to `NREL-5-MW-degr.yaml`.
 
+
+
+
 ### CSF-OpenSees model
 
 - `run_csf_opensees.py`
