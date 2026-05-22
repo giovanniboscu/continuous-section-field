@@ -1,8 +1,8 @@
 # CSF Actions
 
-csf-acrions j_sv_geometry.yaml j_sv_action.yaml
+csf-actions j_sv_geometry.yaml j_sv_action.yaml
 
-csf-acrions  annulus.yaml annulus_action.yaml
+csf-actions  annulus.yaml annulus_action.yaml
 
 
 
