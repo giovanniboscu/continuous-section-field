@@ -1,7 +1,37 @@
 # Parametric CSF Geometry Guide  
 ## Variable rounded-rectangle / circle section with optional twist, two internal rebar rows, and paired weight laws
 
-This guide explains how to use the Python generator `writegeometry_rio_v2.py` through its launcher script (`un_writegeometry_v6_twist.sh` on Linux and the corresponding `.ps1` file on Windows).
+This guide explains how to use the Python generator `writegeometry_rio_v2.py`
+through its launcher script (`un_writegeometry_v6_twist.sh` on Linux and the
+corresponding `.ps1` file on Windows).
+
+The generator creates a CSF geometry in which the external section can vary
+parametrically along the member axis, ranging from rounded-rectangle layouts to
+circle-like polygonal sections. Optional twist can also be applied, allowing the
+section orientation to rotate progressively between the initial and final
+stations.
+
+In addition to the external boundary, the script can generate two internal
+polygonal lines representing longitudinal reinforcement bars. These internal
+polygon rows are written as CSF polygons and can be assigned their own weights
+and longitudinal variation laws. In this way, the generated model can represent
+both the surrounding section body and two distinct rows of embedded bars within
+the same continuous-section description.
+
+The two bar rows are useful for modelling reinforcement layouts where the
+material contribution of the bars must be tracked separately from the main
+section. Each row can be positioned parametrically, discretized as a polygonal
+line, and associated with paired weight laws so that the axial/bending carrier
+and the shear/torsional carrier can be controlled independently.
+
+The resulting YAML file is therefore not only a geometric description, but also
+a parametric CSF input model combining:
+
+- variable external section geometry;
+- optional longitudinal twist;
+- two internal bar rows represented by polygonal paths;
+- independent weight laws for section-property contribution;
+- paired shear/torsional weight laws for torsional verification workflows.
 
 <img width="502" height="466" alt="Screenshot 2026-05-17 at 17 01 20" src="https://github.com/user-attachments/assets/52db32f9-0523-4e4d-9652-fb2503d18f1d" />
 
