@@ -382,18 +382,34 @@ Agreement between the CSF-OpenSees results and the analytical reference supports
 
 ## Convergence behaviour
 
+The final convergence comparison is reported in:
+
+[Validation comparison - all scenarios](validation_comparison_summary_all_b.md)
+
+![Undegraded NREL tower - convergence](validation_comparison_summary_all_b.md)
+
+That document collects the CSF-to-OpenSees results and compares them against the independent analytical reference for both tower configurations:
+
+- the undegraded NREL tower;
+- the degraded NREL tower.
+
 The non-degraded case is expected to converge rapidly. Since the stiffness varies smoothly and monotonically with the tower taper, even a coarse beam discretization can capture the global response reasonably well.
 
 The degraded case is more demanding. The local stiffness reductions introduce sharper variations along the member axis. As a result, coarse discretizations can be less reliable and may show a less regular convergence trend.
 
-This behaviour highlights one of the main motivations for using a continuous section-field representation. A simple piecewise model with too few stations may miss or underrepresent local stiffness variations, while a denser discretization converges toward the continuous reference.
+This behaviour highlights one of the main motivations for using a continuous section-field representation. A simple piecewise model with too few stations may miss or underrepresent local stiffness variations, while a denser discretization converges toward the continuous analytical reference.
+
+The comparison report provides the final validation evidence through:
+
+- numerical tables of tip displacement and torsional rotation;
+- relative errors against the independent analytical reference;
+- convergence plots for both undegraded and degraded scenarios.
 
 The comparison therefore supports two conclusions:
 
 1. for smooth non-degraded variation, the model converges quickly;
-2. for localized degradation, the response is more sensitive to the axial discretization, and convergence requires a finer representation.
+2. for localized degradation, the response is more sensitive to axial discretization, and convergence requires a finer representation.
 
-![Undegraded NREL tower - convergence](validation_comparison_summary_all_b.md)
 
 ## Summary
 
