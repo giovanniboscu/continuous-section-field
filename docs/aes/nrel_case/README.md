@@ -10,14 +10,14 @@ This document describes a fully reproducible validation workflow for the NREL 5-
 The objective is to compare two modelling paths:
 
 1. a CSF-to-OpenSees numerical model;
-2. an independent analytical reference that reads the same YAML input but does not use CSF section-analysis APIs or OpenSees.
+2. an independent analytical reference that reads the same YAML input but does not rely on CSF section-analysis APIs or OpenSees.
 
-The workflow is used for two scenarios:
+The workflow is applied to two scenarios:
 
 - the baseline tower, without degradation;
 - the same tower with a longitudinal stiffness degradation law.
 
-The two scenarios share the same geometry. The degraded scenario modifies only the longitudinal stiffness law through `weight_laws`.
+Both scenarios use the same geometry. The degraded case modifies only the longitudinal stiffness distribution through `weight_laws`.
 
 ## Files used in the workflow
 
