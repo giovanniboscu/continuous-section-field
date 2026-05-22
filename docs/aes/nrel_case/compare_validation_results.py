@@ -171,9 +171,9 @@ def group_by_scenario(rows: Iterable[TipRow]) -> Dict[str, List[TipRow]]:
 
 def scenario_title(scenario: str) -> str:
     if scenario == "NREL-5-MW":
-        return "Case A — undegraded NREL tower"
+        return "Case A - undegraded NREL tower"
     if scenario == "NREL-5-MW-degr":
-        return "Case B — degraded NREL tower"
+        return "Case B - degraded NREL tower"
     return scenario
 
 
@@ -308,7 +308,7 @@ def run_scenario(path: Path) -> List[TipRow]:
     write_markdown(
         rows,
         path / "validation_comparison_summary.md",
-        title=f"Validation comparison — {scenario_name}",
+        title=f"Validation comparison - {scenario_name}",
     )
 
     return rows
@@ -332,7 +332,7 @@ def main() -> None:
     write_markdown(
         all_rows,
         Path("validation_comparison_summary_all.md"),
-        title="Validation comparison — all scenarios",
+        title="Validation comparison - all scenarios",
     )
 
     print()
