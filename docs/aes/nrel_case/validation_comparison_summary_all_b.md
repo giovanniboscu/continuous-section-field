@@ -1,4 +1,4 @@
-# Validation comparison — all scenarios
+# Validation comparison - all scenarios
 
 This report compares the CSF-OpenSees tip response against an independent analytical reference.
 
@@ -15,15 +15,15 @@ The same beam formulation exhibits markedly different convergence behaviour depe
 - `Section evaluations`: number of CSF section evaluations used by the model.
 - Relative error: `(OpenSees - reference) / reference`, reported as a percentage.
 
-## Case A — undegraded NREL tower
+## Case A - undegraded NREL tower
 
 This case validates the CSF-OpenSees coupling on a smooth, undegraded reference configuration. The response converges rapidly, showing that a small number of beam elements is sufficient when the sectional stiffness variation is regular.
 
 The strongest visual evidence for this case is provided by the convergence plots:
 
-![Undegraded NREL tower — tip displacement convergence](openseeslab_output_NREL-5-MW/plot_tip_displacement_convergence.png)
+![Undegraded NREL tower - tip displacement convergence](openseeslab_output_NREL-5-MW/plot_tip_displacement_convergence.png)
 
-![Undegraded NREL tower — tip torsional rotation convergence](openseeslab_output_NREL-5-MW/plot_tip_torsional_rotation_convergence.png)
+![Undegraded NREL tower - tip torsional rotation convergence](openseeslab_output_NREL-5-MW/plot_tip_torsional_rotation_convergence.png)
 
 | Model | Elements | Section evaluations | Uy OpenSees | Uy reference | Uy rel. error | Rz OpenSees | Rz reference | Rz rel. error |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -35,7 +35,7 @@ The strongest visual evidence for this case is provided by the convergence plots
 | Uniform-24 | 24 | 73 | 4.425823e-01 | 4.425810e-01 | 0.0003% | 1.355443e-03 | 1.355541e-03 | -0.0073% |
 | Uniform-32 | 32 | 97 | 4.425823e-01 | 4.425810e-01 | 0.0003% | 1.355443e-03 | 1.355541e-03 | -0.0073% |
 
-## Case B — degraded NREL tower
+## Case B - degraded NREL tower
 
 This case introduces localized stiffness degradation. The low-order piecewise discretizations show a less regular convergence pattern, highlighting the need for finer sectional sampling when the stiffness field varies sharply along the tower.
 
@@ -43,9 +43,9 @@ The degraded configuration shows that convergence cannot be assumed from coarse 
 
 The strongest visual evidence for this case is provided by the convergence plots:
 
-![Degraded NREL tower — tip displacement convergence](openseeslab_output_NREL-5-MW-degr/plot_tip_displacement_convergence.png)
+![Degraded NREL tower - tip displacement convergence](openseeslab_output_NREL-5-MW-degr/plot_tip_displacement_convergence.png)
 
-![Degraded NREL tower — tip torsional rotation convergence](openseeslab_output_NREL-5-MW-degr/plot_tip_torsional_rotation_convergence.png)
+![Degraded NREL tower - tip torsional rotation convergence](openseeslab_output_NREL-5-MW-degr/plot_tip_torsional_rotation_convergence.png)
 
 | Model | Elements | Section evaluations | Uy OpenSees | Uy reference | Uy rel. error | Rz OpenSees | Rz reference | Rz rel. error |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
