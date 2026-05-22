@@ -98,6 +98,9 @@ This produces the CSF report outputs for the non-degraded NREL tower.
 ```bash
 csf-actions NREL-5-MW-degr.yaml action_nrel-degr.yaml
 ```
+<img width="992" height="654" alt="image" src="https://github.com/user-attachments/assets/29232887-e724-46bb-9bb7-ff635c08742f" />
+
+
 
 This produces the CSF report outputs for the degraded NREL tower.
 
