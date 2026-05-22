@@ -201,19 +201,37 @@ The autonomous integration procedure provides independent values for:
 These results are used as the baseline continuous-reference solution. They are later compared with the CSF-to-OpenSees outputs to verify that the numerical beam model reproduces the same structural response when driven by the same YAML-defined tower data.
 
 
+
 ### 6. Run the CSF-OpenSees model for the degraded case
+
+After the baseline response has been computed, the same CSF-to-OpenSees workflow is repeated for the degraded tower model.
+
+The degraded model uses the same tower geometry as the baseline case. The difference is introduced only through the longitudinal stiffness reduction law defined in `NREL-5-MW-degr.yaml`. This allows the effect of degradation to be isolated from any geometric change.
+
+The degraded CSF-to-OpenSees model is executed with:
 
 ```bash
 python3 run_csf_opensees.py NREL-5-MW-degr.yaml
 ```
 
-This computes the tip displacement and torsional rotation for the degraded model.
+The script reads the degraded YAML model, samples the modified stiffness distribution along the tower axis, and transfers the resulting sectional properties to the OpenSees beam model.
 
-The outputs are written to a scenario-specific directory:
+The analysis computes the degraded structural response in terms of:
+
+- tower tip displacement;
+- tower tip rotation;
+- torsional response.
+
+The outputs are written to the scenario-specific directory:
 
 ```text
 openseeslab_output_NREL-5-MW-degr
 ```
+
+This directory contains the numerical response reports, plots, and structural-analysis outputs for the degraded validation scenario.
+
+Comparing this directory with the baseline output directory allows the influence of the longitudinal degradation law to be evaluated directly.
+
 
 ### 7. Run the analytical reference for the degraded case
 
