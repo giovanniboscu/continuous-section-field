@@ -113,6 +113,34 @@ csf-actions NREL-5-MW.yaml action_nrel.yaml
 
 This produces the CSF report outputs for the non-degraded NREL tower.
 
+The generated section-property report is then checked against the official NREL 5-MW tower data reported in Table 6-1. In this comparison, the CSF sectional quantities reproduce the reference stiffness values with direct correspondence:
+
+- `Ix` corresponds to `TwFAStif`;
+- `Iy` corresponds to `TwSSStif`;
+- `J_sv_cell` corresponds to `TwGJStif`;
+- `A` corresponds to `TwEAStif`.
+
+For example, at the tower base (`z = 0.00 m`), the CSF report gives:
+
+```text
+Ix        = 6.14340962544e+11
+Iy        = 6.14340962544e+11
+J_sv_cell = 4.72585963926e+11
+A         = 1.38127060565e+11
+```
+
+These values match the corresponding NREL reference values:
+
+```text
+TwFAStif = 6.143e+11
+TwSSStif = 6.143e+11
+TwGJStif = 4.728e+11
+TwEAStif = 1.381e+11
+```
+
+The same agreement is observed along the full tower height, confirming that the CSF geometry and stiffness-carrier representation reproduce the official NREL sectional stiffness distribution before any degradation law is applied.
+
+
 ### 3. Run the CSF action report for the degraded case
 
 ```bash
