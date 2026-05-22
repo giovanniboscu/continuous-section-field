@@ -40,10 +40,18 @@ The script also creates the output directories used by the CSF action reports, s
 
 ### CSF action reports
 
+After the YAML models have been generated, the next step is to run the CSF action files.
+
+The action files are:
+
 - `action_nrel.yaml`
 - `action_nrel-degr.yaml`
 
-These files are used with `csf-actions` to produce section-property and plotting outputs for the two scenarios.
+These files define the post-processing operations applied to the two tower models. They are executed with `csf-actions` and produce the section-property reports and plots used to inspect the baseline and degraded scenarios.
+
+In particular, the action reports make the continuous section field observable along the tower axis. They provide the sampled sectional quantities, the corresponding plots, and the intermediate outputs needed to check that the geometry and stiffness laws have been correctly interpreted before running the structural OpenSees validation.
+
+The baseline action file is applied to `NREL-5-MW.yaml`, while the degraded action file is applied to `NREL-5-MW-degr.yaml`.
 
 ### CSF-OpenSees model
 
