@@ -1,3 +1,5 @@
+<img width="631" height="547" alt="image" src="https://github.com/user-attachments/assets/2bf9827f-df1d-44ee-9937-bacb486373d8" />
+
 # NREL 5-MW Tower Validation Case
 
 ## Purpose of this document
