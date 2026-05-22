@@ -200,7 +200,7 @@ The comparison therefore supports two conclusions:
 1. for smooth non-degraded variation, the model converges quickly;
 2. for localized degradation, the response is more sensitive to the axial discretization, and convergence requires a finer representation.
 
-![Undegraded NREL tower - tip torsional rotation convergence](openseeslab_output_NREL-5-MW/plot_tip_torsional_rotation_convergence.png)
+![Undegraded NREL tower - tip torsional rotation convergence](validation_comparison_summary_all_b.md)
 
 ## Summary
 
