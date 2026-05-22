@@ -1,0 +1,16 @@
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons: &tell
+        vertical_bar@wall:
+          weight: 1.0
+          vertices:
+            - [-0.0125, -0.200]
+            - [ 0.0125, -0.200]
+            - [ 0.0125,  0.200]
+            - [-0.0125,  0.200]
+
+    S1:
+      z: 20.0
+      polygons: *tell

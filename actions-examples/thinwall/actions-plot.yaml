@@ -1,0 +1,69 @@
+CSF_ACTIONS:
+  # ---------------------------------------------------------------------------
+  # COMMON ACTION FILE FOR @wall / THIN-WALL TEST CASES
+  # ---------------------------------------------------------------------------
+  # This file defines the shared analysis workflow used by the thinwall examples
+  # and automated checks.
+  #
+  # The target quantity for these cases is J_sv_wall, the CSF thin-wall
+  # Saint-Venant torsional indicator for open thin-walled components tagged
+  # with the @wall suffix.
+  #
+  # The same action file can be reused with multiple geometry YAML files in
+  # order to compare area, centroid, inertia, section moduli, and torsional
+  # indicators under a consistent sampling scheme.
+  # ---------------------------------------------------------------------------
+
+  # ---------------------------------------------------------------------------
+  # STATION SETS
+  # ---------------------------------------------------------------------------
+  # Named lists of absolute z coordinates used by the analysis actions.
+  # Keeping stations centralized makes the test cases easier to reuse and
+  # keeps all geometry/property checks aligned across examples.
+  # ---------------------------------------------------------------------------
+  stations:
+    station_start: [0]
+
+  actions:
+    # -------------------------------------------------------------------------
+    # SELECTED SECTION ANALYSIS
+    # -------------------------------------------------------------------------
+    # Compute section properties at selected stations and print them to stdout.
+    #
+    # The reported properties are intended for automatic regression checks and
+    # manual inspection of @wall behaviour.
+    #
+    # Key quantities:
+    # - A, Cx, Cy: area and centroid;
+    # - Ix, Iy, Ixy, Ip, I1, I2: second moments and principal inertias;
+    # - rx, ry: radii of gyration;
+    # - Wx, Wy: elastic section moduli;
+    # - Q_na: first moment about the neutral axis;
+    # - J_sv_wall: CSF open thin-wall Saint-Venant torsional indicator;
+    # - J_s_vroark: equivalent-rectangle Roark torsional indicator;
+    # - J_s_vroark_fidelity: reliability indicator for the Roark mapping.
+    # -------------------------------------------------------------------------
+    - section_selected_analysis:
+        stations: [station_start]
+        output:
+          - [stdout,section_selected_analysis.txt]
+        params:
+          fmt_display: ".20g"
+        properties:
+          - A
+          - Cx
+          - Cy
+          - Ix
+          - Iy
+          - Ixy
+          - Ip
+          - I1
+          - I2
+          - rx
+          - ry
+          - Wx
+          - Wy
+          - J_sv_wall
+          - Q_na
+          - J_s_vroark
+          - J_s_vroark_fidelity

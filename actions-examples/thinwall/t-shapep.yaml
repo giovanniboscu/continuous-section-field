@@ -1,0 +1,24 @@
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons: &tell
+        flange@wall:
+          weight: 1.0
+          vertices:
+            - [-0.150,  0.175]
+            - [ 0.150,  0.175]
+            - [ 0.150,  0.200]
+            - [-0.150,  0.200]
+
+        web@wall:
+          weight: 1.0
+          vertices:
+            - [-0.0125, -0.200]
+            - [ 0.0125, -0.200]
+            - [ 0.0125,  0.175]
+            - [-0.0125,  0.175]
+
+    S1:
+      z: 20.0
+      polygons: *tell
