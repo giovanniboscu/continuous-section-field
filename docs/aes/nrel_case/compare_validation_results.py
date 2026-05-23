@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Compare CSF-OpenSees results against the analytical reference.
 
