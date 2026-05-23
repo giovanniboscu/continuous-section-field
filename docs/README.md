@@ -17,13 +17,6 @@ Compact overview of where CSF sits in the workflow.
 | [writegeometry_rio_v2 - User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/writegeometry_rio_v2_guide.md) | CLI reference for the parametric geometry generator: shape families (circle, rounded rectangle, sharp rectangle), rebar rows, degradation weight laws, twist, and worked examples. |
 
 
-
-## Validation Cases
-
-| Resource | Description |
-|----------|-------------|
-| [NREL 5-MW Tower Validation Case](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case) | Reproducible CSF-to-OpenSees validation workflow for the NREL 5-MW reference tower. Includes undegraded and longitudinally degraded stiffness-field cases, independent analytical reference integration, convergence studies, and comparison of continuous versus piecewise sectional representations. |
-
 ---
 
 ## Actions Runner (No-Code Workflow)
@@ -92,6 +85,15 @@ Compact overview of where CSF sits in the workflow.
 | [CLI Tapered Examples](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/cli_tapered_examples.md) | CLI examples for tapered same-family sections, where `S0` and `S1` use the same section type with different dimensions along `z`. |
 | [Morphing CLI-Compatible Catalog](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/morphing_cli_compatible_catalog.md) | Catalog of morphing examples compatible with the current scalar `sp_csf` CLI syntax. |
 | [Morphing Policy](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/morphingpolicy.md) | Policy defining the rules, scope, and intended behavior of the morphing workflow between different section families. |
+
+---
+
+
+## Validation Cases
+
+| Resource | Description |
+|----------|-------------|
+| [NREL 5-MW Tower Validation Case](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case) | Reproducible CSF-to-OpenSees validation workflow for the NREL 5-MW reference tower. Includes undegraded and longitudinally degraded stiffness-field cases, independent analytical reference integration, convergence studies, and comparison of continuous versus piecewise sectional representations. |
 
 ---
 
