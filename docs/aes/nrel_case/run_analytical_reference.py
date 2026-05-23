@@ -31,11 +31,19 @@ DEFAULT_YAML = "NREL-5-MW.yaml"
 N_REF = 2001
 NU = 0.3
 
-FY_TIP = 1.2e6
-FZ_TIP = -5.0e6
-MX_TIP = 8.0e6
-MZ_TIP = 3.0e6
-WY_DIST = 8.0e3
+
+# Load case used for the structural response comparison.
+# FY_TIP, MX_TIP, and WY_DIST contribute to the transverse tip displacement Uy.
+# MZ_TIP contributes to the torsional tip rotation Rz.
+# FZ_TIP is applied in the OpenSees model as axial load, but it is not used
+# in the independent analytical reference because that check does not evaluate
+# axial shortening or second-order geometric effects.
+
+FY_TIP = 1.2e6   # Transverse concentrated tip force in global Y.
+FZ_TIP = -5.0e6  # Axial tip force; excluded from Uy/Rz analytical checks.
+MX_TIP = 8.0e6   # Concentrated bending moment about global X.
+MZ_TIP = 3.0e6   # Concentrated torsional moment about global Z.
+WY_DIST = 8.0e3  # Uniform transverse distributed load in global/local Y.
 
 
 def simpson(y, x):
