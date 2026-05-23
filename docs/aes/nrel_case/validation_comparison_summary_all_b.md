@@ -73,6 +73,8 @@ The complete numerical comparison tables are maintained in the generated CSV fil
 
 The CSV file is the reference source for the numerical values.
 
+The relative-error columns are reported in percent and are computed as `100 * (OpenSees - reference) / reference`. In the undegraded case, the torsional response converges rapidly and remains within a small nearly constant offset of order `10^-3 %`; this reflects the discrete beam representation and axial sampling of the continuous `GJ(z)` field, while the analytical reference is obtained by Simpson integration over 2001 axial points.
+
 ## Generate the comparison report
 
 After the OpenSees analyses and the independent analytical references have been executed for both scenarios, the final comparison report is generated with:
