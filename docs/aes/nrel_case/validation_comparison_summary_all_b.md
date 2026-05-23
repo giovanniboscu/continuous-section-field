@@ -71,7 +71,7 @@ The complete numerical comparison tables are maintained in the generated CSV fil
 
 [validation_comparison_summary_all.csv](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all.csv)
 
-This markdown report keeps the narrative interpretation and convergence plots. The CSV file is the reference source for the numerical values.
+The CSV file is the reference source for the numerical values.
 
 ## Generate the comparison report
 
