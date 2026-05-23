@@ -173,6 +173,27 @@ TwEAStif = 1.381e+11
 
 The same agreement is observed along the full tower height, confirming that the CSF geometry and stiffness-carrier representation reproduce the official NREL sectional stiffness distribution before any degradation law is applied.
 
+> **Volume consistency note.**  
+> The theoretical shell volume of the tapered NREL tower is
+>
+> ```text
+> V = ∫₀ᴸ π(ro(z)² - ri(z)²) dz
+> ```
+>
+> with
+>
+> ```text
+> ri(z) = ro(z) - t(z)
+> ```
+>
+> Using the tower dimensions reported in Section 6 of NREL/TP-500-38060 gives:
+>
+> ```text
+> V ≈ 40.8676 m³
+> ```
+>
+> which is consistent with the CSF integrated volume report.
+
 ### 3. Run the CSF action report for the degraded case
 
 ```bash
