@@ -73,7 +73,7 @@ The complete numerical comparison tables are maintained in the generated CSV fil
 
 The CSV file is the reference source for the numerical values.
 
-The relative-error columns are reported in percent and are computed as `100 * (OpenSees - reference) / reference`. In the undegraded case, the torsional response stabilizes rapidly: beyond approximately 8–12 beam elements, further axial refinement produces only negligible variation in `Rz`. The remaining offset relative to the independent analytical reference stays very small, of order `10^-3 %`; therefore, it is not interpreted here as a dominant mesh-convergence effect. The analytical reference is obtained by Simpson integration over 2001 axial points.
+The relative-error columns are reported in percent and are computed as `100 * (OpenSees - reference) / reference`. In the undegraded case, the torsional response stabilizes rapidly: beyond approximately 8–12 beam elements, further axial refinement produces only negligible variation in `Rz`. The remaining offset relative to the independent analytical reference stays very small, of order `10^-3 %` (specifically ≈ `3.4×10^-3 %`); therefore, it is not interpreted here as a dominant mesh-convergence effect. The analytical reference is obtained by Simpson integration over 2001 axial points.
 
 ## Generate the comparison report
 
