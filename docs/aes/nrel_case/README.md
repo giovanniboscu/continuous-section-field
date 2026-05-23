@@ -1,12 +1,17 @@
 # NREL 5-MW Tower Validation Case
 <img width="631" height="547" alt="image" src="https://github.com/user-attachments/assets/2bf9827f-df1d-44ee-9937-bacb486373d8" />
 
->### Reproducibility environment
+> ### Reproducibility environment
 >
->This validation case assumes that the repository and Python environment have been configured as described in:
+> This validation case assumes that the repository and Python environment have been configured as described in:
 >
->[Reproducibility environment](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/reproducibility_environment.md)
-> 
+> [Reproducibility environment](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/reproducibility_environment.md)
+>
+> The commands in this document must be executed from:
+>
+> ```bash
+> docs/aes/nrel_case
+> ```
 
 ## Purpose of this document
 
