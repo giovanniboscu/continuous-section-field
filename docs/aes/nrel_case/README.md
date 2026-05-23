@@ -317,7 +317,7 @@ The OpenSees model applies:
 The independent analytical reference uses the load components that contribute directly to the reported checks: `FY_TIP`, `MX_TIP`, and `WY_DIST` for the transverse tip displacement `Uy`, and `MZ_TIP` for the torsional tip rotation `Rz`.
 
 The axial tip force `FZ_TIP` is applied in the OpenSees model, but it is not included in the analytical reference because the reported checks do not evaluate axial shortening or second-order geometric effects.
-
+The distributed load `WY_DIST` is applied through the OpenSees `-beamUniform` element load, which acts in the element local transverse coordinate system rather than directly in the global frame. For the present vertical tower configuration, the resulting contribution to the global transverse response has opposite sign with respect to the concentrated tip force `FY_TIP`. This sign convention is reproduced consistently in both the OpenSees model and the independent analytical reference.
 ### 4. Run the CSF-OpenSees model for the baseline case
 
 Once the sectional properties have been verified against the official NREL reference data, the next step is to evaluate the structural response of the tower using the CSF-generated stiffness distribution inside an OpenSees beam model.
