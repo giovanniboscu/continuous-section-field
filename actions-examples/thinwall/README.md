@@ -10,6 +10,14 @@ independent finite-element section analysis.
 The cases are intended to support reproducible verification of the `@wall`
 classification used for open thin-walled components.
 
+## Requirements
+
+These cases require `sectionproperties` to be installed:
+
+```bash
+pip install sectionproperties
+```
+
 ## Included Cases
 
 The verification set contains the following geometry files:
