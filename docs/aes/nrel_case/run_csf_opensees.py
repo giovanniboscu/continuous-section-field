@@ -14,7 +14,8 @@ that OpenSees returns at model nodes / element ends:
     - tip torsional rotation;
     - raw nodal axial resultant N(z);
     - raw nodal shear resultant T(z);
-    - raw nodal moment resultant M(z).
+    - raw nodal bending moment resultant MB(z): norm of the moment components transverse to the element axis;
+    - raw nodal torsional moment resultant MT(z): moment component along the element axis.
 
 No action interpolation, no trunk representative values, no section-integration
 point reporting, and no delta plots are produced. The Gauss integration-point
@@ -121,12 +122,19 @@ class SectionRecord:
 
 @dataclass
 class RawNodalResultants:
-    """Raw section resultants at model station nodes."""
+    """Raw section resultants at model station nodes.
+
+    MB_nodes: bending moment magnitude, norm of the moment components transverse
+              to the element axis = sqrt(Mx^2 + My^2) for a tower along Z.
+    MT_nodes: torsional moment magnitude, moment component along the element axis
+              = |Mz| for a tower along Z.
+    """
 
     z_nodes: np.ndarray
     N_nodes: np.ndarray
     T_nodes: np.ndarray
-    M_nodes: np.ndarray
+    MB_nodes: np.ndarray
+    MT_nodes: np.ndarray
 
 
 @dataclass
@@ -370,7 +378,7 @@ def define_opensees_sections(ops, sections: List[SectionRecord]) -> None:
             float(s.Iz),
             float(s.Iy),
             G,
-            float(max(abs(s.J), 1.0e-18)),
+            float(s.J),
         )
 
 
@@ -567,8 +575,15 @@ def _project_force_components(force_vec: np.ndarray, axis: np.ndarray) -> Tuple[
     return n, t
 
 
-def _element_end_resultants(arr: np.ndarray, axis: np.ndarray) -> Tuple[float, float, float, float, float, float]:
-    """Extract scalar resultants from one OpenSees element force vector."""
+def _element_end_resultants(arr: np.ndarray, axis: np.ndarray) -> Tuple[float, float, float, float, float, float, float, float]:
+    """Extract scalar resultants from one OpenSees element force vector.
+
+    The moment vector [Mx, My, Mz] is decomposed into:
+      - MT: torsional moment, component along the element axis;
+      - MB: bending moment magnitude, norm of the transverse moment components.
+
+    This avoids collapsing bending and torsion into a single norm.
+    """
     arr = np.asarray(arr, dtype=float)
     if arr.size < 12:
         raise ValueError(f"Unexpected eleForce size: {arr.size}. Expected at least 12.")
@@ -578,13 +593,18 @@ def _element_end_resultants(arr: np.ndarray, axis: np.ndarray) -> Tuple[float, f
     F_j = arr[6:9]
     M_j_vec = arr[9:12]
 
+    e = axis / np.linalg.norm(axis)
+
     N_i, T_i = _project_force_components(F_i, axis)
     N_j, T_j = _project_force_components(F_j, axis)
 
-    M_i = float(np.linalg.norm(M_i_vec))
-    M_j = float(np.linalg.norm(M_j_vec))
+    MT_i = float(np.dot(M_i_vec, e))
+    MB_i = float(np.linalg.norm(M_i_vec - MT_i * e))
 
-    return abs(N_i), T_i, M_i, abs(N_j), T_j, M_j
+    MT_j = float(np.dot(M_j_vec, e))
+    MB_j = float(np.linalg.norm(M_j_vec - MT_j * e))
+
+    return abs(N_i), T_i, MB_i, abs(MT_i), abs(N_j), T_j, MB_j, abs(MT_j)
 
 
 def recover_raw_nodal_resultants(
@@ -601,10 +621,11 @@ def recover_raw_nodal_resultants(
 
     N_acc: List[List[float]] = [[] for _ in range(n_nodes)]
     T_acc: List[List[float]] = [[] for _ in range(n_nodes)]
-    M_acc: List[List[float]] = [[] for _ in range(n_nodes)]
+    MB_acc: List[List[float]] = [[] for _ in range(n_nodes)]
+    MT_acc: List[List[float]] = [[] for _ in range(n_nodes)]
 
     for eidx, (force_vec, axis) in enumerate(zip(ele_forces, element_axes)):
-        N_i, T_i, M_i, N_j, T_j, M_j = _element_end_resultants(
+        N_i, T_i, MB_i, MT_i, N_j, T_j, MB_j, MT_j = _element_end_resultants(
             np.asarray(force_vec, dtype=float),
             np.asarray(axis, dtype=float),
         )
@@ -614,21 +635,25 @@ def recover_raw_nodal_resultants(
 
         N_acc[left].append(N_i)
         T_acc[left].append(T_i)
-        M_acc[left].append(M_i)
+        MB_acc[left].append(MB_i)
+        MT_acc[left].append(MT_i)
 
         N_acc[right].append(N_j)
         T_acc[right].append(T_j)
-        M_acc[right].append(M_j)
+        MB_acc[right].append(MB_j)
+        MT_acc[right].append(MT_j)
 
     N_nodes = np.array([float(np.mean(v)) for v in N_acc], dtype=float)
     T_nodes = np.array([float(np.mean(v)) for v in T_acc], dtype=float)
-    M_nodes = np.array([float(np.mean(v)) for v in M_acc], dtype=float)
+    MB_nodes = np.array([float(np.mean(v)) for v in MB_acc], dtype=float)
+    MT_nodes = np.array([float(np.mean(v)) for v in MT_acc], dtype=float)
 
     return RawNodalResultants(
         z_nodes=np.asarray(z_nodes, dtype=float),
         N_nodes=N_nodes,
         T_nodes=T_nodes,
-        M_nodes=M_nodes,
+        MB_nodes=MB_nodes,
+        MT_nodes=MT_nodes,
     )
 
 
@@ -650,7 +675,8 @@ def build_comparison(results: List[ModelResult]) -> Dict[str, Dict[str, np.ndarr
             "raw_z_nodes": r.raw.z_nodes,
             "raw_N_nodes": r.raw.N_nodes,
             "raw_T_nodes": r.raw.T_nodes,
-            "raw_M_nodes": r.raw.M_nodes,
+            "raw_MB_nodes": r.raw.MB_nodes,
+            "raw_MT_nodes": r.raw.MT_nodes,
         }
 
     return out
@@ -671,7 +697,8 @@ def write_raw_nodal_csv(output_dir: Path, comparison: Dict[str, Dict[str, np.nda
             "z_node",
             "N_node",
             "T_node",
-            "M_node",
+            "MB_node",
+            "MT_node",
         ])
 
         for model_id in MODEL_IDS:
@@ -679,7 +706,8 @@ def write_raw_nodal_csv(output_dir: Path, comparison: Dict[str, Dict[str, np.nda
             z_nodes = np.asarray(data["raw_z_nodes"], dtype=float)
             N_nodes = np.asarray(data["raw_N_nodes"], dtype=float)
             T_nodes = np.asarray(data["raw_T_nodes"], dtype=float)
-            M_nodes = np.asarray(data["raw_M_nodes"], dtype=float)
+            MB_nodes = np.asarray(data["raw_MB_nodes"], dtype=float)
+            MT_nodes = np.asarray(data["raw_MT_nodes"], dtype=float)
 
             for i, z in enumerate(z_nodes):
                 writer.writerow([
@@ -690,7 +718,8 @@ def write_raw_nodal_csv(output_dir: Path, comparison: Dict[str, Dict[str, np.nda
                     f"{z:.12e}",
                     f"{N_nodes[i]:.12e}",
                     f"{T_nodes[i]:.12e}",
-                    f"{M_nodes[i]:.12e}",
+                    f"{MB_nodes[i]:.12e}",
+                    f"{MT_nodes[i]:.12e}",
                 ])
 
     return csv_file
@@ -772,19 +801,20 @@ def write_markdown_report(output_dir: Path, comparison: Dict[str, Dict[str, np.n
             )
 
         f.write("\n## Output files\n\n")
-        f.write("- `openseeslab_raw_nodal_values.csv`: absolute nodal OpenSees resultants N, T, M for every sampled node of every model.\n")
+        f.write("- `openseeslab_raw_nodal_values.csv`: absolute nodal OpenSees resultants N, T, MB, MT for every sampled node of every model.\n")
         f.write("- `openseeslab_tip_response.csv`: tip displacement and torsional rotation for each model.\n")
-        f.write("- `plot_N/T/M_raw_nodal_values.png`: absolute nodal OpenSees resultants.\n")
+        f.write("- `plot_N/T/MB/MT_raw_nodal_values.png`: absolute nodal OpenSees resultants. MB is the bending moment magnitude (transverse to element axis); MT is the torsional moment magnitude (along element axis).\n")
 
     return report_file
 
 
 def plot_raw_nodal_values(output_dir: Path, comparison: Dict[str, Dict[str, np.ndarray | float | str]]) -> None:
-    """Plot raw nodal N(z), T(z), M(z) for every model."""
+    """Plot raw nodal N(z), T(z), MB(z), MT(z) for every model."""
     for key, title, ylabel, filename in [
-        ("raw_N_nodes", "Raw nodal axial resultant", "N", "plot_N_raw_nodal_values.png"),
-        ("raw_T_nodes", "Raw nodal shear resultant", "T", "plot_T_raw_nodal_values.png"),
-        ("raw_M_nodes", "Raw nodal moment resultant", "M", "plot_M_raw_nodal_values.png"),
+        ("raw_N_nodes",  "Raw nodal axial resultant",              "N",   "plot_N_raw_nodal_values.png"),
+        ("raw_T_nodes",  "Raw nodal shear resultant",              "T",   "plot_T_raw_nodal_values.png"),
+        ("raw_MB_nodes", "Raw nodal bending moment (transverse)",  "MB",  "plot_MB_raw_nodal_values.png"),
+        ("raw_MT_nodes", "Raw nodal torsional moment (axial)",     "MT",  "plot_MT_raw_nodal_values.png"),
     ]:
         fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -966,7 +996,7 @@ def main() -> None:
     print(f"Raw nodal CSV: {raw_csv_file}")
     print(f"Tip response CSV: {tip_csv_file}")
     print(f"Markdown report: {report_file}")
-    print("Nodal resultant plots: plot_N/T/M_raw_nodal_values.png")
+    print("Nodal resultant plots: plot_N/T/MB/MT_raw_nodal_values.png")
     print("Tip displacement plot: plot_tip_displacement_convergence.png")
     print("Tip torsional rotation plot: plot_tip_torsional_rotation_convergence.png")
     print("\nTip response:")

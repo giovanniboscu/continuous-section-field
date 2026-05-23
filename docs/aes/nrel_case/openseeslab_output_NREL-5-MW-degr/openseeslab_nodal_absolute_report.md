@@ -52,6 +52,6 @@ No action interpolation, no nodal deltas, no trunk representative values, and no
 
 ## Output files
 
-- `openseeslab_raw_nodal_values.csv`: absolute nodal OpenSees resultants N, T, M for every sampled node of every model.
+- `openseeslab_raw_nodal_values.csv`: absolute nodal OpenSees resultants N, T, MB, MT for every sampled node of every model.
 - `openseeslab_tip_response.csv`: tip displacement and torsional rotation for each model.
-- `plot_N/T/M_raw_nodal_values.png`: absolute nodal OpenSees resultants.
+- `plot_N/T/MB/MT_raw_nodal_values.png`: absolute nodal OpenSees resultants. MB is the bending moment magnitude (transverse to element axis); MT is the torsional moment magnitude (along element axis).
