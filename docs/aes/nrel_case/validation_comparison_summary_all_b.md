@@ -1,5 +1,17 @@
 # Validation comparison - all scenarios
 
+> ### Reproducibility environment
+>
+> This validation case assumes that the repository and Python environment have been configured as described in:
+>
+> [Reproducibility environment](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/reproducibility_environment.md)
+>
+> The commands in this document must be executed from:
+>
+> ```bash
+> docs/aes/nrel_case
+> ```
+
 This report compares the tip response obtained from the CSF-to-OpenSees workflow with an independent analytical reference.
 
 The comparison is performed for two tower configurations:
