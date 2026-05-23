@@ -61,7 +61,8 @@ The script generates two YAML models:
 The two files define the same tower geometry. The difference between them is limited to the stiffness weighting law assigned through `weight_laws`.
 
 The script also creates the output directories used by the CSF action reports, so that the following analysis steps can write their results in a reproducible folder structure.
-In this validation workflow, the material stiffness weighting is applied at the CSF section-field level before the beam model is assembled. The OpenSees model therefore receives effective sectional stiffness quantities derived from the continuous section field.
+
+>The CSF section field returns stiffness-weighted sectional quantities, such as `EA`, `EI`, and `GJ`. Since the OpenSees `Elastic` section expects separate scalar carriers (`E`, `G`) and geometric section terms (`A`, `I`, `J`), the validation model uses neutral carriers (`E = G = 1.0`) and passes the weighted quantities directly as `A = EA`, `I = EI`, and `J = GJ`. This avoids applying the material stiffness twice and preserves the effective sectional stiffness defined by the continuous section field.
 
 ### CSF action reports
 
