@@ -340,7 +340,8 @@ This computes the independent continuous-reference response for the degraded YAM
 
 The purpose of this step is the same as in the baseline analytical reference, but applied to the degraded stiffness field. The calculation does not use the CSF analysis library and does not use OpenSees. It reads the degraded YAML input, reconstructs the required stiffness distributions, and integrates the response through an autonomous analytical procedure.
 
-This provides an independent reference for the degraded tower response. Since the degraded case introduces local stiffness variation along the tower height, this comparison is more demanding than the baseline case. It checks whether the CSF-to-OpenSees discretized beam model converges toward the same response obtained from the continuous degraded stiffness field.
+This provides an independent reference for the degraded tower response. Since the degraded case introduces local stiffness variation along the tower height, this comparison is more demanding than the baseline case. 
+This model provides a reference for verifying the corresponding CSF-to-OpenSees discretized beam model.
 
 The degraded analytical reference is therefore used to assess both:
 
