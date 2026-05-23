@@ -29,11 +29,11 @@ The workflow is applied to two scenarios:
 
 Both scenarios use the same geometry. The degraded case modifies only the longitudinal stiffness distribution through `weight_laws`.
 
-## Files used in the workflow
+## The workflow
 
 ---
 
-### Workflow overview before step-by-step execution
+### Workflow overview
 ### Geometry and action generation
 
 The first step of the workflow is the generation of the CSF input files that describe the NREL 5-MW reference tower geometry and material stiffness distribution.
