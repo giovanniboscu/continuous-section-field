@@ -1,4 +1,4 @@
-scenario,model_id,model_label,n_elems,n_section_calls,Uy_OpenSees,Uy_reference,Uy_abs_error,Uy_rel_error,Rz_OpenSees,Rz_reference,Rz_abs_error,Rz_rel_error
+scenario,model_id,model_label,n_elems,n_section_calls,Uy_OpenSees,Uy_reference,Uy_abs_error,Uy_rel_error,Rz_OpenSees,Rz_reference,Rz_abs_error,Rz_rel_error (%)
 NREL-5-MW,model_0,Model 0 - uniform 4 (4 elements),4,13,4.424887123310e-01,4.425809613536e-01,-9.224902259997e-05,-2.084342315987e-02,1.355401360628e-03,1.355489281415e-03,-8.792078699999e-08,-6.486276815720e-03
 NREL-5-MW,model_1,Model 1 - uniform 6 (6 elements),6,19,4.425632790513e-01,4.425809613536e-01,-1.768230229998e-05,-3.995269531229e-03,1.355434362010e-03,1.355489281415e-03,-5.491940499982e-08,-4.051629603628e-03
 NREL-5-MW,model_2,Model 2 - uniform 8 (8 elements),8,25,4.425762495946e-01,4.425809613536e-01,-4.711758999965e-06,-1.064609509084e-03,1.355440017043e-03,1.355489281415e-03,-4.926437200000e-08,-3.634434641089e-03

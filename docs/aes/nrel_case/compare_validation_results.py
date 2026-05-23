@@ -135,7 +135,7 @@ def write_csv(rows: Iterable[TipRow], output_file: Path) -> None:
             "Rz_OpenSees",
             "Rz_reference",
             "Rz_abs_error",
-            "Rz_rel_error",
+            "Rz_rel_error (%)",
         ])
 
         for r in rows:
