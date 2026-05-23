@@ -40,7 +40,7 @@ The first step of the workflow is the generation of the CSF input files that des
 
 This step is executed by:
 
-- `create_yaml_nrel.sh`
+- `create_yaml_nrel.py`
 
 The script uses the CSF geometry-generation tool documented in:
 
