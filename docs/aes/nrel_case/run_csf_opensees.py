@@ -97,7 +97,7 @@ E_CARRIER = 1.0
 G_CARRIER = 1.0
 
 # Output formatting.
-DISP_OUTPUT_SCALE = 1000.0
+DISP_OUTPUT_SCALE = 1.0
 DISP_OUTPUT_UNIT = "mm"
 
 
