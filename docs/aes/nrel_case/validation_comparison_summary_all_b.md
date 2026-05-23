@@ -61,10 +61,17 @@ The comparison focuses on the following response quantities:
 - `Uy`: transverse tip displacement;
 - `Rz`: torsional tip rotation;
 - `Section evaluations`: number of CSF section evaluations used by the OpenSees model;
-- relative error: `(OpenSees - reference) / reference`, reported as a percentage.
+- relative error: `100 * (OpenSees - reference) / reference`, reported as a percentage.
 
 The number of section evaluations is reported because it indicates the amount of axial sampling used to transfer the continuous section field into the beam model.
 
+## Numerical tables
+
+The complete numerical comparison tables are maintained in the generated CSV file:
+
+[validation_comparison_summary_all.csv](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all.csv)
+
+This markdown report keeps the narrative interpretation and convergence plots. The CSV file is the reference source for the numerical values.
 
 ## Generate the comparison report
 
@@ -105,17 +112,10 @@ The convergence plots provide the clearest visualization of this behaviour.
 
 ![Undegraded NREL tower - tip torsional rotation convergence](openseeslab_output_NREL-5-MW/plot_tip_torsional_rotation_convergence.png)
 
-| Model | Elements | Section evaluations | Uy OpenSees | Uy reference | Uy rel. error | Rz OpenSees | Rz reference | Rz rel. error |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Uniform-4 | 4 | 13 | 4.424887e-01 | 4.425810e-01 | -0.0208% | 1.355401e-03 | 1.355541e-03 | -0.0103% |
-| Uniform-6 | 6 | 19 | 4.425633e-01 | 4.425810e-01 | -0.0040% | 1.355434e-03 | 1.355541e-03 | -0.0079% |
-| Uniform-8 | 8 | 25 | 4.425762e-01 | 4.425810e-01 | -0.0011% | 1.355440e-03 | 1.355541e-03 | -0.0075% |
-| Uniform-12 | 12 | 37 | 4.425811e-01 | 4.425810e-01 | 0.0000% | 1.355442e-03 | 1.355541e-03 | -0.0073% |
-| Uniform-16 | 16 | 49 | 4.425820e-01 | 4.425810e-01 | 0.0002% | 1.355442e-03 | 1.355541e-03 | -0.0073% |
-| Uniform-24 | 24 | 73 | 4.425823e-01 | 4.425810e-01 | 0.0003% | 1.355443e-03 | 1.355541e-03 | -0.0073% |
-| Uniform-32 | 32 | 97 | 4.425823e-01 | 4.425810e-01 | 0.0003% | 1.355443e-03 | 1.355541e-03 | -0.0073% |
+The numerical values for this case are reported in [validation_comparison_summary_all.csv](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all.csv).
 
-The numerical results confirm the expected behaviour. The transverse displacement `Uy` converges very rapidly. With only 4 elements, the relative error is already approximately `-0.0208%`; with 8 elements, it is approximately `-0.0011%`.
+
+The numerical results confirm the expected behaviour. The transverse displacement `Uy` converges very rapidly, with small error already at low discretization levels.
 
 The torsional rotation `Rz` is also stable across the discretization sequence. The remaining difference is small and nearly constant over the tested mesh refinements.
 
@@ -135,19 +135,12 @@ The convergence plots provide the clearest visualization of this behaviour.
 
 ![Degraded NREL tower - tip torsional rotation convergence](openseeslab_output_NREL-5-MW-degr/plot_tip_torsional_rotation_convergence.png)
 
-| Model | Elements | Section evaluations | Uy OpenSees | Uy reference | Uy rel. error | Rz OpenSees | Rz reference | Rz rel. error |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Uniform-4 | 4 | 13 | 4.515337e-01 | 4.510653e-01 | 0.1039% | 1.384136e-03 | 1.381202e-03 | 0.2124% |
-| Uniform-6 | 6 | 19 | 4.517698e-01 | 4.510653e-01 | 0.1562% | 1.383296e-03 | 1.381202e-03 | 0.1516% |
-| Uniform-8 | 8 | 25 | 4.502834e-01 | 4.510653e-01 | -0.1733% | 1.378374e-03 | 1.381202e-03 | -0.2048% |
-| Uniform-12 | 12 | 37 | 4.514388e-01 | 4.510653e-01 | 0.0828% | 1.382211e-03 | 1.381202e-03 | 0.0730% |
-| Uniform-16 | 16 | 49 | 4.510459e-01 | 4.510653e-01 | -0.0043% | 1.381071e-03 | 1.381202e-03 | -0.0095% |
-| Uniform-24 | 24 | 73 | 4.510696e-01 | 4.510653e-01 | 0.0010% | 1.381111e-03 | 1.381202e-03 | -0.0066% |
-| Uniform-32 | 32 | 97 | 4.510665e-01 | 4.510653e-01 | 0.0003% | 1.381101e-03 | 1.381202e-03 | -0.0073% |
+The numerical values for this case are reported in [validation_comparison_summary_all.csv](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all.csv).
+
 
 The degraded case shows a less regular convergence pattern at low discretization levels. The relative errors do not decrease monotonically from 4 to 12 elements. This is consistent with the presence of localized stiffness variation: the accuracy depends not only on the number of elements, but also on how well the sampling locations represent the degraded portions of the stiffness field.
 
-The response becomes stable when the discretization is refined. At 16 elements, the transverse displacement error drops to approximately `-0.0043%`, and the torsional rotation error drops to approximately `-0.0095%`. Further refinement to 24 and 32 elements keeps the response close to the independent reference.
+The response becomes stable when the discretization is refined. Further refinement keeps the response close to the independent reference, as reported in the generated CSV table.
 
 This case demonstrates why the degraded configuration is a more severe validation case than the undegraded tower. The same OpenSees beam formulation and the same transfer workflow are used, but the localized stiffness field requires finer axial representation to recover stable convergence.
 
@@ -170,5 +163,4 @@ The comparison supports the following conclusions:
 3. Coarse piecewise beam discretizations can be adequate for smooth tapering but less reliable when stiffness reductions are localized.
 4. The independent analytical reference confirms that the observed convergence behaviour is not an artifact of the OpenSees model alone.
 5. The degraded case provides the most informative validation scenario because it exposes the need for adequate sampling of the continuous stiffness field.
-
 
