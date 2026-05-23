@@ -131,4 +131,14 @@ CSF_ACTIONS:
         params:
           num_points: 100
         properties: [J_sv_cell, A, Ix]
-  
+    # -------------------------------------------------------------------------
+    # Volume report integrated along z using Gauss-Legendre quadrature.
+    # Reports both occupied and homogenized (weight-adjusted) volume.
+    # n_points controls the integration accuracy.
+    # -------------------------------------------------------------------------          
+    - volume:
+          stations: station_edges
+          output: [stdout, out/nrel_volume.txt]   # optional; if omitted -> [stdout]
+          params:
+            n_points: 20           # optional (Gauss–Legendre points)
+            fmt_display: ".6f"     # optional
