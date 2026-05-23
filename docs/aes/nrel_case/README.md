@@ -112,7 +112,7 @@ Run the complete validation workflow in this order.
 ### 1. Generate the YAML input files
 
 ```bash
-./create_yaml_nrel.sh
+python3 create_yaml_nrel.py
 ```
 
 Expected result:
