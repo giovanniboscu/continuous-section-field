@@ -28,4 +28,4 @@ Uy_reference               : 4.510652855665e-01
 
 CHECK 2 - TIP TORSIONAL ROTATION Rz
 ------------------------------------------------------------------------------
-Rz_reference               : 1.381202409437e-03 rad
+Rz_reference               : 1.381149499843e-03 rad

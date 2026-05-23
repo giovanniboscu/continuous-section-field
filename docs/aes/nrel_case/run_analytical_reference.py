@@ -148,8 +148,6 @@ def main():
     r_outer = ro0 + (ro1 - ro0) * eta
     r_inner = ri0 + (ri1 - ri0) * eta
 
-    r_mean = 0.5 * (r_outer + r_inner)
-    thickness = r_outer - r_inner
 
     E = np.array(
         [float(weight_fn(zi, L)) for zi in z],
@@ -162,7 +160,7 @@ def main():
 
     EI = E * I
 
-    J = 2.0 * math.pi * r_mean**3 * thickness
+    J = 0.5 * math.pi * (r_outer**4 - r_inner**4)
 
     GJ = G * J
 

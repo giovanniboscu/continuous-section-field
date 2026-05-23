@@ -1,4 +1,4 @@
-# Validation comparison — NREL-5-MW-degr
+# Validation comparison - NREL-5-MW-degr
 
 This report compares the CSF-OpenSees tip response against an independent analytical reference.
 
@@ -13,7 +13,7 @@ Two configurations are compared. The undegraded NREL tower is used as the baseli
 - `Section evaluations`: number of CSF section evaluations used by the model.
 - Relative error: `(OpenSees - reference) / reference`.
 
-## Case B — degraded NREL tower
+## Case B - degraded NREL tower
 
 This case introduces localized stiffness degradation. The low-order piecewise discretizations show a less regular convergence pattern, highlighting the need for finer sectional sampling when the stiffness field varies sharply along the tower.
 
