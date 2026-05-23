@@ -62,7 +62,7 @@ The two files define the same tower geometry. The difference between them is lim
 
 The script also creates the output directories used by the CSF action reports, so that the following analysis steps can write their results in a reproducible folder structure.
 
->The CSF section field returns stiffness-weighted sectional quantities, such as `EA`, `EI`, and `GJ`. Since the OpenSees `Elastic` section expects separate scalar carriers (`E`, `G`) and geometric section terms (`A`, `I`, `J`), the validation model uses neutral carriers (`E = G = 1.0`) and passes the weighted quantities directly as `A = EA`, `I = EI`, and `J = GJ`. This avoids applying the material stiffness twice and preserves the effective sectional stiffness defined by the continuous section field.
+> The CSF section field returns stiffness-weighted sectional quantities, such as `EA`, `EI`, and `GJ`. Since the OpenSees `Elastic` section expects separate scalar carriers (`E`, `G`) and geometric section terms (`A`, `I`, `J`), the validation model uses neutral carriers (`E = G = 1.0`) and passes the weighted quantities directly as `A = EA`, `I = EI`, and `J = GJ`. This avoids applying the material stiffness twice and preserves the effective sectional stiffness defined by the continuous section field.
 
 ### CSF action reports
 
@@ -297,6 +297,26 @@ The objective of this law is to create a more demanding convergence scenario for
 
 This makes the degraded configuration suitable for evaluating how the OpenSees discretization converges toward the continuous-reference solution as the number of beam elements increases.
 
+## Structural loading configuration
+
+The validation uses the same structural loading configuration for both the undegraded and degraded tower models.
+
+The tower is modelled as a cantilever beam:
+
+- fixed base at `z = 0`;
+- free tip at `z = L`.
+
+The OpenSees model applies:
+
+- transverse tip force `FY_TIP = 1.2 × 10^6 N`;
+- axial tip force `FZ_TIP = -5.0 × 10^6 N`;
+- tip bending moment `MX_TIP = 8.0 × 10^6 N·m`;
+- tip torsional moment `MZ_TIP = 3.0 × 10^6 N·m`;
+- uniform transverse distributed load `WY_DIST = 8.0 × 10^3 N/m`.
+
+The independent analytical reference uses the load components that contribute directly to the reported checks: `FY_TIP`, `MX_TIP`, and `WY_DIST` for the transverse tip displacement `Uy`, and `MZ_TIP` for the torsional tip rotation `Rz`.
+
+The axial tip force `FZ_TIP` is applied in the OpenSees model, but it is not included in the analytical reference because the reported checks do not evaluate axial shortening or second-order geometric effects.
 
 ### 4. Run the CSF-OpenSees model for the baseline case
 
