@@ -45,11 +45,11 @@ class TipRow:
 
     @property
     def uy_rel_error(self) -> float:
-        return self.uy_abs_error / self.uy_reference
+        return 100.0 * self.uy_abs_error / self.uy_reference
 
     @property
     def rz_rel_error(self) -> float:
-        return self.rz_abs_error / self.rz_reference
+        return 100.0 * self.rz_abs_error / self.rz_reference
 
     @property
     def compact_model_label(self) -> str:
@@ -202,8 +202,8 @@ def scenario_interpretation(scenario: str) -> str:
 def write_markdown_table(lines: List[str], rows: List[TipRow]) -> None:
     lines.append(
         "| Model | Elements | Section evaluations | "
-        "Uy OpenSees | Uy reference | Uy rel. error | "
-        "Rz OpenSees | Rz reference | Rz rel. error |"
+        "Uy OpenSees | Uy reference | Uy rel. error [%] | "
+        "Rz OpenSees | Rz reference | Rz rel. error [%] |"
     )
     lines.append(
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|"
@@ -252,7 +252,7 @@ def write_markdown(rows: List[TipRow], output_file: Path, title: str) -> None:
     lines.append("- `Uy`: transverse tip displacement.")
     lines.append("- `Rz`: torsional tip rotation.")
     lines.append("- `Section evaluations`: number of CSF section evaluations used by the model.")
-    lines.append("- Relative error: `(OpenSees - reference) / reference`.")
+    lines.append("- Relative error: `100 * (OpenSees - reference) / reference`.")
     lines.append("")
 
     for scenario, scenario_rows in grouped.items():

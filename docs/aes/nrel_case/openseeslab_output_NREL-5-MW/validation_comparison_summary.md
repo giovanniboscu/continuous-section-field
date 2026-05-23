@@ -11,21 +11,21 @@ Two configurations are compared. The undegraded NREL tower is used as the baseli
 - `Uy`: transverse tip displacement.
 - `Rz`: torsional tip rotation.
 - `Section evaluations`: number of CSF section evaluations used by the model.
-- Relative error: `(OpenSees - reference) / reference`.
+- Relative error: `100 * (OpenSees - reference) / reference`.
 
 ## Case A - undegraded NREL tower
 
 This case validates the CSF-OpenSees coupling on a smooth, undegraded reference configuration. The response converges rapidly, showing that a small number of beam elements is sufficient when the sectional stiffness variation is regular.
 
-| Model | Elements | Section evaluations | Uy OpenSees | Uy reference | Uy rel. error | Rz OpenSees | Rz reference | Rz rel. error |
+| Model | Elements | Section evaluations | Uy OpenSees | Uy reference | Uy rel. error [%] | Rz OpenSees | Rz reference | Rz rel. error [%] |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Uniform-4 | 4 | 13 | 4.424887e-01 | 4.425810e-01 | -2.084342e-04 | 1.355401e-03 | 1.355541e-03 | -1.031783e-04 |
-| Uniform-6 | 6 | 19 | 4.425633e-01 | 4.425810e-01 | -3.995270e-05 | 1.355434e-03 | 1.355541e-03 | -7.883276e-05 |
-| Uniform-8 | 8 | 25 | 4.425762e-01 | 4.425810e-01 | -1.064610e-05 | 1.355440e-03 | 1.355541e-03 | -7.466097e-05 |
-| Uniform-12 | 12 | 37 | 4.425811e-01 | 4.425810e-01 | 3.933018e-07 | 1.355442e-03 | 1.355541e-03 | -7.309946e-05 |
-| Uniform-16 | 16 | 49 | 4.425820e-01 | 4.425810e-01 | 2.266791e-06 | 1.355442e-03 | 1.355541e-03 | -7.283548e-05 |
-| Uniform-24 | 24 | 73 | 4.425823e-01 | 4.425810e-01 | 2.965142e-06 | 1.355443e-03 | 1.355541e-03 | -7.273724e-05 |
-| Uniform-32 | 32 | 97 | 4.425823e-01 | 4.425810e-01 | 3.082899e-06 | 1.355443e-03 | 1.355541e-03 | -7.272068e-05 |
+| Uniform-4 | 4 | 13 | 4.424887e-01 | 4.425810e-01 | -2.084342e-02 | 1.355401e-03 | 1.355489e-03 | -6.486277e-03 |
+| Uniform-6 | 6 | 19 | 4.425633e-01 | 4.425810e-01 | -3.995270e-03 | 1.355434e-03 | 1.355489e-03 | -4.051630e-03 |
+| Uniform-8 | 8 | 25 | 4.425762e-01 | 4.425810e-01 | -1.064610e-03 | 1.355440e-03 | 1.355489e-03 | -3.634435e-03 |
+| Uniform-12 | 12 | 37 | 4.425811e-01 | 4.425810e-01 | 3.933018e-05 | 1.355442e-03 | 1.355489e-03 | -3.478278e-03 |
+| Uniform-16 | 16 | 49 | 4.425820e-01 | 4.425810e-01 | 2.266791e-04 | 1.355442e-03 | 1.355489e-03 | -3.451879e-03 |
+| Uniform-24 | 24 | 73 | 4.425823e-01 | 4.425810e-01 | 2.965142e-04 | 1.355443e-03 | 1.355489e-03 | -3.442054e-03 |
+| Uniform-32 | 32 | 97 | 4.425823e-01 | 4.425810e-01 | 3.082899e-04 | 1.355443e-03 | 1.355489e-03 | -3.440399e-03 |
 
 ## Input files
 
