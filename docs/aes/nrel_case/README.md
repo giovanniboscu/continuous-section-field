@@ -105,7 +105,7 @@ The purpose of this second path is to avoid validating one numerical model only 
 
 ---
 
-## Execution sequence
+##  Workflow execution sequence
 
 Run the complete validation workflow in this order.
 
