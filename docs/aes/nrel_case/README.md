@@ -61,7 +61,7 @@ The script generates two YAML models:
 The two files define the same tower geometry. The difference between them is limited to the stiffness weighting law assigned through `weight_laws`.
 
 The script also creates the output directories used by the CSF action reports, so that the following analysis steps can write their results in a reproducible folder structure.
-
+In this validation workflow, the material stiffness weighting is applied at the CSF section-field level before the beam model is assembled. The OpenSees model therefore receives effective sectional stiffness quantities derived from the continuous section field.
 ### CSF action reports
 
 After the YAML models have been generated, the next step is to run the CSF action files.
