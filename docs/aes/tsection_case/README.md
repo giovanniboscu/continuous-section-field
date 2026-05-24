@@ -12,9 +12,9 @@ The CSF report for this case documents the continuous evolution of the sectional
 
 Torsional stiffness is intentionally omitted from this report. Because the section has open geometry, the internal thin-wall torsional approximation is not sufficiently reliable for this case, and CSF excludes the quantity rather than reporting a potentially non-physical estimate.
 
-When a torsional analysis is required for this type of section, the recommended repository-level workflow is to use the `csf_sp` bridge to `sectionproperties`. The `csf_sp` tool samples the same CSF definition at selected axial stations, generates the corresponding `sectionproperties` model, and allows Saint-Venant torsional quantities to be evaluated through the FEM warping analysis available in `sectionproperties`. For cases with independent longitudinal and shear participation fields, the dedicated torsion-carrier workflow should be used so that torsion is evaluated with the shear/torsional carrier required by the CSF model.
-
-Reference repository document:
-
-- [`csf_sp` User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md)
+>When a torsional analysis is required for this type of section, the recommended repository-level workflow is to use the `csf_sp` bridge to `sectionproperties`. The `csf_sp` tool samples the same CSF definition at selected axial stations, generates the corresponding `sectionproperties` model, and allows Saint-Venant torsional quantities to be evaluated through the FEM warping analysis available in `sectionproperties`. For cases with independent longitudinal and shear participation fields, the dedicated torsion-carrier workflow should be used so that torsion is evaluated with the shear/torsional carrier required by the CSF model.
+>
+>Reference repository document:
+>
+>- [`csf_sp` User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md)
 
