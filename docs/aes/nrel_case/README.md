@@ -233,11 +233,12 @@ The resulting distribution is shown below.
 
 The law defines a baseline stiffness of `2.10 × 10^11` and introduces two localized Gaussian-shaped reductions along the tower height. The first reduction is centered at `z = 0.33 L` with amplitude `0.10`. The second is centered at `z = 0.67 L` with amplitude `0.14`. Both zones use the same characteristic width of `0.03 L`.
 
-The expression `np.maximum(0.84, ...)` imposes a lower bound on the normalized stiffness factor, preventing the stiffness from dropping below `0.84 × 2.10 × 10^11 = 1.764 × 10^11`. In the plotted field, the observed minimum is slightly above this bound because the sampled plotting points do not necessarily coincide exactly with the analytical minimum of the continuous function.
+The expression `np.maximum(0.84, ...)` sets a lower bound on the stiffness reduction. With the current parameters the two Gaussian zones do not overlap significantly, so the bound is not active. It acts as a safeguard if the parameters are changed.
 
 The degradation field is intentionally continuous and smooth. No geometric discontinuities are introduced. This allows the validation to isolate the influence of localized stiffness variation without mixing it with geometric changes.
 
 The objective of this law is to create a more demanding convergence scenario for the beam discretization. In the undegraded tower, the stiffness varies smoothly because of the tower taper alone. In the degraded case, the additional local reductions create sharper axial gradients that are more difficult to reproduce with coarse beam discretizations. This makes the degraded configuration suitable for evaluating how the beam model converges toward the continuous analytical reference as the number of elements increases.
+
 ## Structural loading configuration
 
 The validation uses the same structural loading configuration for both the undegraded and degraded tower models.
@@ -259,6 +260,7 @@ The independent analytical reference uses the load components that contribute di
 
 The axial tip force `FZ_TIP` is applied in the OpenSees model, but it is not included in the analytical reference because the reported checks do not evaluate axial shortening or second-order geometric effects.
 The distributed load `WY_DIST` is applied through the OpenSees `-beamUniform` element load, which acts in the element local transverse coordinate system rather than directly in the global frame. For the present vertical tower configuration, the resulting contribution to the global transverse response has opposite sign with respect to the concentrated tip force `FY_TIP`. This sign convention is reproduced consistently in both the OpenSees model and the independent analytical reference.
+
 ### 4. Run the CSF-OpenSees model for the baseline case
 
 Once the sectional properties have been verified against the official NREL reference data, the next step is to evaluate the structural response of the tower using the CSF-generated stiffness distribution inside an OpenSees beam model.
