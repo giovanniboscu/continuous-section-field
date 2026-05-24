@@ -159,7 +159,7 @@ The convergence plots make the difference between the two convergence regimes im
 
 The continuous stiffness function provided by CSF is used as the reference model. The beam discretization is therefore assessed by its convergence toward this continuous representation, rather than toward an external benchmark. The two-point Gauss integration used in the beam elements is part of the downstream finite-element discretization and is not the reference procedure of the validation.
 
-Two independent computational paths read the same continuous stiffness definition and produce consistent structural responses. This agreement supports the internal consistency and physical validity of the continuous representation.
+Two independent computational paths read the same continuous stiffness definition and produce consistent structural responses.
 
 The degraded configuration shows that localized stiffness variations are captured by the continuous model and may be missed by a coarse piecewise discretization. This is a consequence of the richer information content carried by the continuous function, not a limitation of the beam formulation itself.
 
