@@ -158,11 +158,8 @@ The convergence plots make the difference between the two convergence regimes im
 
 ## Main conclusions
 
-The comparison supports the following conclusions:
+The continuous stiffness function provided by CSF is used as the reference model. The beam discretization is therefore assessed by its convergence toward this continuous representation, rather than toward an external benchmark.
 
-1. For smooth, non-degraded stiffness variation, the beam model converges rapidly toward the independent analytical reference.
-2. For localized degradation, the response is more sensitive to axial discretization.
-3. Coarse piecewise beam discretizations can be adequate for smooth tapering but less reliable when stiffness reductions are localized.
-4. The independent analytical reference confirms that the observed convergence behaviour is not an artifact of the OpenSees model alone.
-5. The degraded case provides the most informative validation scenario because it exposes the need for adequate axial sampling of the stiffness distribution.
+Two independent computational paths read the same continuous stiffness definition and produce consistent structural responses. This agreement supports the internal consistency and physical usability of the continuous representation.
 
+The degraded configuration shows that localized stiffness variations are captured by the continuous model and may be missed by a coarse piecewise discretization. This is a consequence of the richer information content carried by the continuous function, not a limitation of the beam formulation itself.
