@@ -15,7 +15,7 @@
 
 ## Purpose of this document
 
-This document describes a fully reproducible validation workflow for the NREL 5-MW reference tower case.
+This document describes a fully reproducible validation workflow for the transverse tip displacement and torsional tip rotation of a cantilever tower under combined loading.
 
 The objective is to compare two modelling paths:
 
