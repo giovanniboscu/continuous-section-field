@@ -136,7 +136,7 @@ The convergence plots provide the clearest visualization of this behaviour.
 
 ![Degraded NREL tower - tip torsional rotation convergence](openseeslab_output_NREL-5-MW-degr/plot_tip_torsional_rotation_convergence.png)
 
-The numerical values for this case are reported in [validation_comparison_summary_all.csv](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all.csv).
+The numerical values for this case are reported in [validation_comparison_summary_all.csv](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all.md).
 
 
 The degraded case shows a less regular convergence pattern at low discretization levels. The relative errors do not decrease monotonically from 4 to 12 elements. This is consistent with the presence of localized stiffness variation: the accuracy depends not only on the number of elements, but also on how well the sampling locations represent the degraded portions of the stiffness field.
