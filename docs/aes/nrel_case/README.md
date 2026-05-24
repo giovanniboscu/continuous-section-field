@@ -64,7 +64,7 @@ The two files define the same tower geometry. The difference between them is lim
 
 The script also creates the output directories used by the CSF action reports, so that the following analysis steps can write their results in a reproducible folder structure.
 
-> A compatibility requirement exists between the CSF output format and the OpenSees input format. The CSF section field returns stiffness-weighted sectional quantities, such as `EA`, `EI`, and `GJ`. Since the OpenSees `Elastic` section expects separate scalar carriers (`E`, `G`) and geometric section terms (`A`, `I`, `J`), the validation model uses neutral carriers (`E = G = 1.0`) and passes the weighted quantities directly as `A = EA`, `I = EI`, and `J = GJ`. This avoids applying the material stiffness twice and preserves the effective sectional stiffness defined by the continuous section field.
+> The YAML files define the tower geometry with the steel material already incorporated. The sectional quantities - such as `EA`, `EI`, and `GJ` - therefore already include the material stiffness. When transferring these to a structural solver such as OpenSees, the material must not be applied a second time. For this reason, the validation model uses neutral carriers (`E = G = 1.0`) and passes the weighted quantities directly as `A = EA`, `I = EI`, and `J = GJ`.
 
 ### CSF action reports
 
