@@ -83,7 +83,7 @@ The baseline action file is applied to `NREL-5-MW.yaml`, while the degraded acti
 
 - `run_csf_opensees.py`
 
-This script reads the tower YAML file, extracts the sectional properties along the tower axis, and builds a beam finite-element model using force-based beam-column elements with two-point Gauss integration. The tip displacement and torsional rotation are computed for several uniform discretizations, from 4 to 32 elements.
+This script reads the tower YAML file, extracts the sectional properties along the tower axis, and builds a beam finite-element model. The tower is loaded with a transverse tip force, a torsional tip moment, and a uniform distributed transverse load. The tip displacement and torsional rotation are computed for several uniform discretizations, from 4 to 32 elements.
 
 The beam model uses force-based beam-column elements with two-point Gauss integration per element.
 
