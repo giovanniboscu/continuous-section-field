@@ -380,17 +380,17 @@ Each OpenSees output directory contains:
 
 The baseline and degraded cases are intended to verify different aspects of the workflow.
 
-The baseline case checks that the CSF-to-OpenSees model reproduces the response of a smooth tapered tower with no longitudinal stiffness degradation.
+The baseline case checks that the beam model reproduces the response of a smooth tapered tower with no longitudinal stiffness degradation.
 
 The degraded case checks that the same workflow remains consistent when the stiffness field varies locally along the tower height.
 
-The analytical reference provides an independent check because it does not use OpenSees and does not rely on CSF section-analysis APIs. It only reads the same YAML input and performs the continuous analytical integration.
+The analytical reference provides an independent check because it does not use OpenSees and does not use the same computational tools. It only reads the same YAML input and performs the analytical integration directly.
 
-Agreement between the CSF-OpenSees results and the analytical reference supports the consistency of:
+Agreement between the beam model results and the analytical reference supports the consistency of:
 
 - the YAML definition;
-- the CSF continuous section field;
-- the OpenSees beam discretization;
+- the sectional property distribution;
+- the beam discretization;
 - the stiffness degradation law;
 - the independent analytical formulation.
 
@@ -410,7 +410,7 @@ The non-degraded case is expected to converge rapidly. Since the stiffness varie
 
 The degraded case is more demanding. The local stiffness reductions introduce sharper variations along the member axis. As a result, coarse discretizations can be less reliable and may show a less regular convergence trend.
 
-This behaviour highlights one of the main motivations for using a continuous section-field representation. A simple piecewise model with too few stations may miss or underrepresent local stiffness variations, while a denser discretization converges toward the continuous analytical reference.
+This behaviour highlights one of the main motivations for using a ontinuous stiffness representation. A simple piecewise model with too few stations may miss or underrepresent local stiffness variations, while a denser discretization converges toward the continuous analytical reference.
 
 The comparison report provides the final validation evidence through:
 
