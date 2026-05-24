@@ -229,13 +229,33 @@ Not valid when:
   - walls are connected to a cell boundary
   - cells share walls
   - section is thick-walled
+    
+---
 
+## 8. How to Construct a `@cell` Polygon
+
+
+A `@cell` polygon describes a closed hollow section - any shape: circular,
+rectangular, or arbitrary. Think of it as a single continuous pen stroke:
+
+1. Start at a point on the **outer boundary**.
+2. Trace the outer boundary until you return to the starting point.
+3. From the starting point, move inward and trace the **inner boundary**,
+   ending where the inner shape closes.
+
+The total signed area of the resulting sequence must be **positive**. If it is
+negative, reverse the winding of one of the two loops.
+
+The starting point appears twice in the vertex sequence: once as the first
+vertex of the outer boundary, and once as the point where the pen returns
+before starting the inner trace. This repeated vertex is the separator between
+the two loops.
 
 ---
 
-## 8. References
+## 9. References
 
-- Timoshenko, S.P. & Goodier, J.N. — *Theory of Elasticity*, McGraw-Hill
+- Timoshenko, S.P. & Goodier, J.N. - *Theory of Elasticity*, McGraw-Hill
 - Vlasov, V.Z. - *Thin-Walled Elastic Beams*, Israel Program for Scientific Translations
 - Pilkey, W.D. - *Analysis and Design of Elastic Beams*, Wiley
 - EN 1993-1-3 - Eurocode 3, Annex C (thin-walled open sections)
