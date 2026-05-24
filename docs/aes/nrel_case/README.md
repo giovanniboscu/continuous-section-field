@@ -170,7 +170,7 @@ TwGJStif = 4.728e+11
 TwEAStif = 1.381e+11
 ```
 
-The same agreement is observed along the full tower height, confirming that the geometry and stiffness distribution reproduce the official NREL sectional stiffness distribution before any degradation law is applied.
+These values agree with the corresponding NREL reference values to within 0.04% along the full tower height, confirming that the geometry and stiffness distribution reproduce the official NREL sectional stiffness distribution before any degradation law is applied.
 > **Volume consistency note.**  
 > This volume check is not intended as the main validation metric. Its role is to document that the generated CSF geometry is also integrated consistently by the same workflow used to produce the sectional reports and the downstream OpenSees model. The corresponding CSF volume report is:
 >
