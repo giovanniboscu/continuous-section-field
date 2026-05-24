@@ -15,7 +15,6 @@
 
 ## Purpose of this document
 
-
 This document describes a fully reproducible validation workflow for the transverse tip displacement and torsional tip rotation of a cantilever tower under combined loading. The tower is the NREL 5-MW reference wind turbine tower, modelled as a tapered thin-walled steel tube fixed at the base. The validation checks that two independent computation paths produce consistent results for both the undegraded tower and a tower with localized longitudinal stiffness degradation.
 
 The objective is to compare two modelling paths:
@@ -33,7 +32,9 @@ Both scenarios use the same geometry. The degraded case modifies only the longit
 ## The workflow
 
 ### Workflow overview
+
 The workflow consists of four steps: generating the input files, verifying the section properties, computing the structural response with a numerical model, and checking it against an independent analytical reference.
+
 ### Geometry and action generation
 
 CSF (Continuous Section Field) is the tool used to compute and represent the sectional properties of the tower continuously along its axis.
@@ -53,7 +54,7 @@ This tool generates a YAML geometry file for a single segment with two boundary 
 - `S0` at the initial axial coordinate `z0`;
 - `S1` at the final axial coordinate `z1`.
 
-In this validation case, the generated geometry represents the tapered NREL 5-MW reference tower as a CSF segment. The tower is therefore defined by two boundary sections and by the continuous interpolation of the cross-sectional geometry and stiffness carriers along the member axis.
+In this validation case, the generated geometry represents the tapered NREL 5-MW reference tower as a CSF segment. The tower is therefore defined by two boundary sections and by the continuous interpolation of the cross-sectional geometry along the member axis.
 
 The script generates two YAML models:
 
@@ -64,7 +65,7 @@ The two files define the same tower geometry. The difference between them is lim
 
 The script also creates the output directories used by the CSF action reports, so that the following analysis steps can write their results in a reproducible folder structure.
 
-> The YAML files define the tower geometry with the steel material already incorporated. The sectional quantities - such as `EA`, `EI`, and `GJ` - therefore already include the material stiffness. When transferring these to a structural solver such as OpenSees, the material must not be applied a second time. For this reason, the validation model uses neutral carriers (`E = G = 1.0`) and passes the weighted quantities directly as `A = EA`, `I = EI`, and `J = GJ`.
+> The YAML files define the tower geometry with the steel material already incorporated. The sectional quantities - such as `EA`, `EI`, and `GJ` -  therefore already include the material stiffness. When transferring these to a structural solver such as OpenSees, the material must not be applied a second time. For this reason, the validation model uses neutral carriers (`E = G = 1.0`) and passes the weighted quantities directly as `A = EA`, `I = EI`, and `J = GJ`.
 
 ### CSF action reports
 
@@ -161,16 +162,8 @@ J_sv_cell = 4.72585963926e+11
 A         = 1.38127060565e+11
 ```
 
-These values match the corresponding NREL reference values:
-
-```text
-TwFAStif = 6.143e+11
-TwSSStif = 6.143e+11
-TwGJStif = 4.728e+11
-TwEAStif = 1.381e+11
-```
-
 These values agree with the corresponding NREL reference values to within 0.04% along the full tower height, confirming that the geometry and stiffness distribution reproduce the official NREL sectional stiffness distribution before any degradation law is applied.
+
 > **Volume consistency note.**  
 > This volume check is not intended as the main validation metric. Its role is to document that the generated CSF geometry is also integrated consistently by the same workflow used to produce the sectional reports and the downstream OpenSees model. The corresponding CSF volume report is:
 >
@@ -210,7 +203,7 @@ This produces the section-property report for the degraded tower.
 
 The purpose of this step is to verify that the degradation law has been correctly introduced into the stiffness distribution before running the structural analysis. The degraded model uses the same tower geometry as the baseline model; only the longitudinal stiffness distribution is modified through `weight_laws`.
 
-The action report provides a direct check of the degraded stiffness field, allowing the sectional quantities and plots to be inspected along the tower height and confirming that the reduction is applied to the intended stiffness carriers.
+The action report provides a direct check of the degraded stiffness field, allowing the sectional quantities and plots to be inspected along the tower height and confirming that the reduction is applied correctly to the tower wall stiffness.
 
 This step is important because the degraded structural response is meaningful only if the degradation law has first been verified at the section level. The degradation is inspected as a continuous field along the tower height before being transferred to the structural beam model.
 
@@ -237,7 +230,7 @@ The expression `np.maximum(0.84, ...)` sets a lower bound on the stiffness reduc
 
 The degradation field is intentionally continuous and smooth. No geometric discontinuities are introduced. This allows the validation to isolate the influence of localized stiffness variation without mixing it with geometric changes.
 
-The objective of this law is to create a more demanding convergence scenario for the beam discretization. In the undegraded tower, the stiffness varies smoothly because of the tower taper alone. In the degraded case, the additional local reductions create sharper axial gradients that are more difficult to reproduce with coarse beam discretizations. This makes the degraded configuration suitable for evaluating how the beam model converges toward the continuous analytical reference as the number of elements increases.
+The objective of this law is to create a more demanding convergence scenario for the beam discretization. In the undegraded tower, the stiffness varies smoothly because of the tower taper alone. In the degraded case, the additional local reductions create sharper axial gradients that are more difficult to reproduce with coarse beam discretizations. This makes the degraded configuration suitable for evaluating how the beam model converges toward the continuous stiffness function that CSF provides as the reference model.
 
 ## Structural loading configuration
 
@@ -259,6 +252,7 @@ The OpenSees model applies:
 The independent analytical reference uses the load components that contribute directly to the reported checks: `FY_TIP`, `MX_TIP`, and `WY_DIST` for the transverse tip displacement `Uy`, and `MZ_TIP` for the torsional tip rotation `Rz`.
 
 The axial tip force `FZ_TIP` is applied in the OpenSees model, but it is not included in the analytical reference because the reported checks do not evaluate axial shortening or second-order geometric effects.
+
 The distributed load `WY_DIST` is applied through the OpenSees `-beamUniform` element load, which acts in the element local transverse coordinate system rather than directly in the global frame. For the present vertical tower configuration, the resulting contribution to the global transverse response has opposite sign with respect to the concentrated tip force `FY_TIP`. This sign convention is reproduced consistently in both the OpenSees model and the independent analytical reference.
 
 ### 4. Run the CSF-OpenSees model for the baseline case
@@ -285,12 +279,11 @@ This directory contains the structural response reports, numerical outputs, and 
 
 > The numerical results and their comparison with the independent analytical reference are reported in the validation comparison document.
 
-
 ### 5. Run the independent analytical reference for the baseline case
 
-After the CSF-to-OpenSees model has been executed, the same baseline YAML input is evaluated with an independent analytical reference procedure.
+After the beam model has been executed, the same baseline YAML input is evaluated with an independent analytical reference procedure.
 
-The purpose of this step is to provide a second response calculation that is independent from both computational paths used in the numerical model. In particular, this reference calculation does not use the CSF analysis library and does not use OpenSees. It is implemented as an autonomous integration procedure that reads the same YAML input data and computes the structural response directly from the stiffness distributions defined in the file.
+The purpose of this step is to provide a second response calculation that is independent from the numerical model. This reference calculation does not use the CSF library and does not use OpenSees. It reads the same YAML input data and computes the structural response directly from the stiffness distributions defined in the file.
 
 The analytical reference is executed with:
 
@@ -298,17 +291,13 @@ The analytical reference is executed with:
 python3 run_analytical_reference.py NREL-5-MW.yaml
 ```
 
-The script reads the same `NREL-5-MW.yaml` input file used by the CSF-to-OpenSees model. It then reconstructs the tower geometry and stiffness distributions required for the calculation and performs the response integration independently.
+The script reads the same `NREL-5-MW.yaml` input file used by the beam model. It then reconstructs the tower geometry and stiffness distributions required for the calculation and performs the response integration independently.
 
 In this baseline case, no degradation law is applied. Therefore, the computed response represents the reference behaviour of the original NREL tower stiffness distribution.
 
-The autonomous integration procedure provides independent values for:
+The analytical procedure provides independent values for the transverse tip displacement and the torsional tip rotation. These results are used as the baseline continuous-reference solution and are later compared with the beam model outputs to verify that the numerical model reproduces the same structural response when driven by the same YAML-defined tower data.
 
-- tower tip displacement;
-- tower tip rotation;
-- torsional rotation.
-
-These results are used as the baseline continuous-reference solution. They are later compared with the CSF-to-OpenSees outputs to verify that the numerical beam model reproduces the same structural response when driven by the same YAML-defined tower data.### 6. Run the CSF-OpenSees model for the degraded case
+### 6. Run the CSF-OpenSees model for the degraded case
 
 After the baseline response has been computed, the same workflow is repeated for the degraded tower model.
 
@@ -338,17 +327,16 @@ Comparing this directory with the baseline output directory allows the influence
 python3 run_analytical_reference.py NREL-5-MW-degr.yaml
 ```
 
-This computes the independent continuous-reference response for the degraded YAML input.
+This computes the independent analytical reference response for the degraded YAML input.
 
-The purpose of this step is the same as in the baseline analytical reference, but applied to the degraded stiffness field. The calculation does not use the CSF analysis library and does not use OpenSees. It reads the degraded YAML input, reconstructs the required stiffness distributions, and integrates the response through an autonomous analytical procedure.
+The purpose of this step is the same as in the baseline analytical reference, but applied to the degraded stiffness field. The calculation does not use the CSF library and does not use OpenSees. It reads the degraded YAML input, reconstructs the required stiffness distributions, and integrates the response through an autonomous analytical procedure.
 
-This provides an independent reference for the degraded tower response. Since the degraded case introduces local stiffness variation along the tower height, this comparison is more demanding than the baseline case. 
-This model provides a reference for verifying the corresponding CSF-to-OpenSees discretized beam model.
+This provides an independent reference for the degraded tower response. Since the degraded case introduces local stiffness variation along the tower height, this comparison is more demanding than the baseline case.
 
 The degraded analytical reference is therefore used to assess both:
 
 - the correctness of the degraded stiffness interpretation;
-- the sensitivity of the OpenSees beam discretization to localized stiffness variation.
+- the sensitivity of the beam discretization to localized stiffness variation.
 
 ## Expected output organization
 
@@ -400,8 +388,7 @@ The final convergence comparison is reported in:
 
 [Validation comparison - all scenarios](validation_comparison_summary_all_b.md)
 
-
-That document collects the CSF-to-OpenSees results and compares them against the independent analytical reference for both tower configurations:
+That document collects the beam model results and compares them against the independent analytical reference for both tower configurations:
 
 - the undegraded NREL tower;
 - the degraded NREL tower.
@@ -410,7 +397,7 @@ The non-degraded case is expected to converge rapidly. Since the stiffness varie
 
 The degraded case is more demanding. The local stiffness reductions introduce sharper variations along the member axis. As a result, coarse discretizations can be less reliable and may show a less regular convergence trend.
 
-This behaviour highlights one of the main motivations for using a ontinuous stiffness representation. A simple piecewise model with too few stations may miss or underrepresent local stiffness variations, while a denser discretization converges toward the continuous analytical reference.
+This behaviour highlights one of the main motivations for using a continuous stiffness representation. A simple piecewise model with too few stations may miss or underrepresent local stiffness variations, while a denser discretization converges toward the continuous analytical reference.
 
 The comparison report provides the final validation evidence through:
 
@@ -422,7 +409,6 @@ The comparison therefore supports two conclusions:
 
 1. for smooth non-degraded variation, the model converges quickly;
 2. for localized degradation, the response is more sensitive to axial discretization, and convergence requires a finer representation.
-
 
 ## Summary
 
