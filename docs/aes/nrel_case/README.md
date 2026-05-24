@@ -32,12 +32,13 @@ Both scenarios use the same geometry. The degraded case modifies only the longit
 
 ## The workflow
 
----
-
 ### Workflow overview
+The workflow consists of four steps: generating the input files, verifying the section properties, computing the structural response with a numerical model, and checking it against an independent analytical reference.
 ### Geometry and action generation
 
-The first step of the workflow is the generation of the CSF input files that describe the NREL 5-MW reference tower geometry and material stiffness distribution.
+CSF (Continuous Section Field) is the tool used to compute and represent the sectional properties of the tower continuously along its axis.
+
+The first step of the workflow is the generation of the input files that describe the NREL 5-MW reference tower geometry and material stiffness distribution.
 
 This step is executed by:
 
@@ -47,7 +48,7 @@ The script uses the CSF geometry-generation tool documented in:
 
 [writegeometry_rio_v2 - User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/writegeometry_rio_v2_guide.md)
 
-This tool generates a CSF-compatible YAML geometry file for a single segment with two boundary cross-sections:
+This tool generates a YAML geometry file for a single segment with two boundary cross-sections:
 
 - `S0` at the initial axial coordinate `z0`;
 - `S1` at the final axial coordinate `z1`.
@@ -63,7 +64,7 @@ The two files define the same tower geometry. The difference between them is lim
 
 The script also creates the output directories used by the CSF action reports, so that the following analysis steps can write their results in a reproducible folder structure.
 
-> The CSF section field returns stiffness-weighted sectional quantities, such as `EA`, `EI`, and `GJ`. Since the OpenSees `Elastic` section expects separate scalar carriers (`E`, `G`) and geometric section terms (`A`, `I`, `J`), the validation model uses neutral carriers (`E = G = 1.0`) and passes the weighted quantities directly as `A = EA`, `I = EI`, and `J = GJ`. This avoids applying the material stiffness twice and preserves the effective sectional stiffness defined by the continuous section field.
+> A compatibility requirement exists between the CSF output format and the OpenSees input format. The CSF section field returns stiffness-weighted sectional quantities, such as `EA`, `EI`, and `GJ`. Since the OpenSees `Elastic` section expects separate scalar carriers (`E`, `G`) and geometric section terms (`A`, `I`, `J`), the validation model uses neutral carriers (`E = G = 1.0`) and passes the weighted quantities directly as `A = EA`, `I = EI`, and `J = GJ`. This avoids applying the material stiffness twice and preserves the effective sectional stiffness defined by the continuous section field.
 
 ### CSF action reports
 
