@@ -1,5 +1,4 @@
 # Validation comparison - all scenarios
-the objective is not only to verify numerical agreement, but also to observe how the convergence behaviour changes when the underlying sectional stiffness field becomes less smooth
 > ### Reproducibility environment
 >
 > This validation case assumes that the repository and Python environment have been configured as described in:
