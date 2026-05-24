@@ -83,12 +83,12 @@ The baseline action file is applied to `NREL-5-MW.yaml`, while the degraded acti
 
 - `run_csf_opensees.py`
 
-This script reads a CSF YAML file, samples the continuous section field, builds the OpenSees beam model, and computes the tip displacement and torsional rotation for several beam discretizations.
+This script reads the tower YAML file, extracts the sectional properties along the tower axis, builds a beam finite-element model, and computes the tip displacement and torsional rotation for several beam discretizations.
 
 This is the numerical path:
 
 ```text
-CSF YAML → CSF section field → OpenSees model → tip response
+YAML input → sectional properties → beam model → tip response
 ```
 
 ### Independent analytical reference
