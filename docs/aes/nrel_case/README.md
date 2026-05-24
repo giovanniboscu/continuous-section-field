@@ -206,16 +206,13 @@ csf-actions NREL-5-MW-degr.yaml action_nrel-degr.yaml
 
 <img width="992" height="654" alt="image" src="https://github.com/user-attachments/assets/29232887-e724-46bb-9bb7-ff635c08742f" />
 
+This produces the section-property report for the degraded tower.
 
-This produces the CSF report outputs for the degraded NREL tower.
+The purpose of this step is to verify that the degradation law has been correctly introduced into the stiffness distribution before running the structural analysis. The degraded model uses the same tower geometry as the baseline model; only the longitudinal stiffness distribution is modified through `weight_laws`.
 
-The purpose of this step is to verify that the degradation law has been correctly introduced into the continuous section field before running the structural analysis. The degraded model uses the same tower geometry as the baseline model; only the longitudinal stiffness distribution is modified through `weight_laws`.
+The action report provides a direct check of the degraded stiffness field, allowing the sectional quantities and plots to be inspected along the tower height and confirming that the reduction is applied to the intended stiffness carriers.
 
-The action report therefore provides a direct check of the degraded stiffness field. It allows the sampled sectional quantities and plots to be inspected along the tower height, confirming that the reduction is applied to the intended stiffness carriers and that the resulting field remains consistent with the baseline geometry.
-
-This step is important because the degraded structural response is meaningful only if the degradation law has first been verified at section-field level. In other words, the OpenSees model should not be treated as the first place where the degradation is checked. The degradation is first inspected as a CSF continuous field, then transferred to the structural beam model.
-
-
+This step is important because the degraded structural response is meaningful only if the degradation law has first been verified at the section level. The degradation is inspected as a continuous field along the tower height before being transferred to the structural beam model.
 
 ## Longitudinal stiffness degradation law
 
