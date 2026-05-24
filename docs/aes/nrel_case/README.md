@@ -56,8 +56,8 @@ This tool generates a YAML geometry file for a single segment with two boundary 
 
 In this validation case, the generated geometry represents the tapered NREL 5-MW reference tower as a CSF segment. The tower is therefore defined by two boundary sections and by the continuous interpolation of the cross-sectional geometry along the member axis.
 
-Each cross-section is an annular closed cell encoded as a single `@cell` polygon using zero-area bridge segments between the outer and inner contours. The bridge segments are topological connections only and do not represent physical radial walls.
 
+Each cross-section is an annular closed cell encoded as a single `@cell` polygonal path composed of the outer and inner contours with opposite orientation (a duplicated vertex closes the first contour, while the contour connection is handled internally by CSF and has no physical wall meaning).
 
 The script generates two YAML models:
 
