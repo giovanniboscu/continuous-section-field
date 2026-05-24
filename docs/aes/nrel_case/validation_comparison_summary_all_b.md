@@ -161,9 +161,9 @@ The convergence plots make the difference between the two convergence regimes im
 
 The comparison supports the following conclusions:
 
-1. For smooth, non-degraded stiffness variation, the CSF-to-OpenSees model converges rapidly toward the independent analytical reference.
+1. For smooth, non-degraded stiffness variation, the beam model converges rapidly toward the independent analytical reference.
 2. For localized degradation, the response is more sensitive to axial discretization.
 3. Coarse piecewise beam discretizations can be adequate for smooth tapering but less reliable when stiffness reductions are localized.
 4. The independent analytical reference confirms that the observed convergence behaviour is not an artifact of the OpenSees model alone.
-5. The degraded case provides the most informative validation scenario because it exposes the need for adequate sampling of the continuous stiffness field.
+5. The degraded case provides the most informative validation scenario because it exposes the need for adequate axial sampling of the stiffness distribution.
 
