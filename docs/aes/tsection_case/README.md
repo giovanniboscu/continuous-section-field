@@ -1,9 +1,12 @@
 == DRAFT ==
 
-Structural members in composite construction often combine materials with different elastic properties. When the contribution of each material varies along the member axis, the resulting sectional stiffness is no longer constant, even when the geometry itself remains unchanged.
+# Prismatic composite section with localized web degradation
 
-This case considers a prismatic composite section in which the longitudinal and shear participation of one component vary independently along the axis. The cross-sectional geometry is identical at both ends of the member. All longitudinal variation of the sectional properties therefore arises exclusively from the material participation fields, defined as independent smooth functions of the axial coordinate.
+Structural members in composite construction often combine components with different elastic properties. When the material participation of one component varies along the member axis, the resulting sectional stiffness becomes a continuous function of the axial coordinate, even if the cross-sectional geometry remains unchanged.
 
-Because the two fields follow different laws, the ratio between longitudinal and shear stiffness evolves continuously along the member. The section therefore requires a two-modulus representation in which E(z) and G(z) are treated as independent fields rather than being linked through a fixed Poisson ratio.
+This case considers a prismatic composite section in which the lower part of the web progressively degrades along the member axis, while the remaining parts of the section retain isotropic elastic behaviour. The geometry of the cross-section is identical at both ends of the member. Therefore, all longitudinal variation in the sectional properties is produced exclusively by the material participation fields assigned to the degraded web region.
 
-The CSF report for this case shows the continuous evolution of the sectional properties along the member axis, including the effect of the independent participation laws on area, bending stiffness, and polar moment of inertia. Torsional stiffness is intentionally omitted. The open geometry of the section makes the thin-wall torsional approximation unreliable, and CSF excludes the quantity rather than reporting a potentially non-physical estimate.
+The degraded web is described by two independent smooth participation laws: one associated with longitudinal stiffness and one associated with shear stiffness. Since these two fields do not follow the same axial law, the ratio between longitudinal and shear stiffness changes continuously along the member. The section therefore requires a two-modulus representation in which the effective longitudinal modulus \(E(z)\) and shear modulus \(G(z)\) are treated as independent quantities, rather than being linked through a fixed Poisson ratio.
+
+The CSF report for this case documents the continuous evolution of the sectional properties along the member axis. The reported quantities include the effects of the independent participation laws on area, bending stiffness, and polar moment of inertia. Torsional stiffness is intentionally omitted. Because the section has open geometry, the thin-wall torsional approximation is not sufficiently reliable for this case, and CSF excludes the quantity rather than reporting a potentially non-physical estimate.
+
