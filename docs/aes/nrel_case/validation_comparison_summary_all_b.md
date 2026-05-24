@@ -84,7 +84,7 @@ After the OpenSees analyses and the independent analytical references have been 
 python3 compare_validation_results.py
 ```
 
-This script collects the numerical outputs produced by the CSF-to-OpenSees runs and compares them with the independent analytical reference values.
+This script collects the numerical outputs produced by the beam model analyses and compares them with the independent analytical reference values.
 
 The comparison includes both validation scenarios:
 
@@ -105,7 +105,7 @@ The purpose of this step is to assemble the final validation evidence in a singl
 
 The undegraded NREL tower is the baseline validation case.
 
-In this configuration, the sectional stiffness varies smoothly and monotonically along the tower height. This makes the case suitable for checking that the CSF-defined tower properties are correctly transferred to the OpenSees beam formulation.
+In this configuration, the sectional stiffness varies smoothly and monotonically along the tower height. This makes the case suitable for checking that the tower stiffness distribution is correctly transferred to the beam model.
 
 The expected behaviour is rapid convergence. Since the stiffness field is smooth, even a limited number of beam elements should reproduce the reference response with small error.
 
@@ -122,13 +122,13 @@ The numerical results confirm the expected behaviour. The transverse displacemen
 
 The torsional rotation `Rz` is also stable across the discretization sequence. The remaining difference is small and nearly constant over the tested mesh refinements.
 
-This case therefore verifies that, for a smooth sectional stiffness field, the CSF-to-OpenSees workflow reproduces the independent reference response with very limited discretization demand.
+This case therefore verifies that, for a smooth sectional stiffness field, the beam model reproduces the independent reference response with few beam elements.
 
 ## Case B - degraded NREL tower
 
 The degraded NREL tower is the critical convergence case.
 
-In this configuration, the tower geometry is unchanged, but the longitudinal stiffness field is locally reduced. The degradation law introduces sharper variations along the member axis. This makes the response more sensitive to how the continuous stiffness field is sampled and transferred into the beam model.
+In this configuration, the tower geometry is unchanged, but the longitudinal stiffness field is locally reduced. The degradation law introduces sharper variations along the member axis. This makes the response more sensitive to how the stiffness distribution is sampled along the tower axis.
 
 The degraded configuration shows that convergence quality cannot be inferred solely from the behaviour observed in smooth undegraded configurations. A discretization that is sufficient for the baseline tower may be less reliable when localized stiffness reductions are present.
 
@@ -145,7 +145,7 @@ The degraded case shows a less regular convergence pattern at low discretization
 
 The response becomes stable when the discretization is refined. Further refinement keeps the response close to the independent reference, as reported in the generated CSV table.
 
-This case demonstrates why the degraded configuration is a more severe validation case than the undegraded tower. The same OpenSees beam formulation and the same transfer workflow are used, but the localized stiffness field requires finer axial representation to recover stable convergence.
+This case demonstrates why the degraded configuration is a more severe validation case than the undegraded tower. The same beam formulation is used, but the localized stiffness field requires finer axial representation to recover stable convergence.
 
 ## Observations
 
@@ -153,7 +153,7 @@ The undegraded configuration converges rapidly even with a limited number of bea
 
 The degraded configuration requires finer discretization to recover stable convergence. The local stiffness reductions introduce sharper axial variation, making coarse piecewise discretizations less reliable.
 
-This behaviour highlights one of the main motivations for using a continuous section-field representation. A simple piecewise model with too few stations may miss or underrepresent local stiffness variations, while a denser discretization converges toward the continuous reference.
+This behaviour highlights one of the main motivations for using a continuous stiffness representation. A simple piecewise model with too few stations may miss or underrepresent local stiffness variations, while a denser discretization converges toward the continuous analytical reference.
 
 The convergence plots make the difference between the two convergence regimes immediately observable. The undegraded case shows rapid and regular convergence, while the degraded case shows higher sensitivity to axial discretization before stabilizing.
 
