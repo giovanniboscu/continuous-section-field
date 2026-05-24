@@ -140,24 +140,17 @@ The script also creates the output directories for the CSF action reports.
 csf-actions NREL-5-MW.yaml action_nrel.yaml
 ```
 
-<img width="991" height="663" alt="image" src="https://github.com/user-attachments/assets/6ac09363-c878-40ee-93f2-af3845db27d8" />
+This produces the section-property report for the baseline tower.
 
-This produces the CSF report outputs for the non-degraded NREL tower.
+The generated report is then checked against the official NREL 5-MW tower data reported in Table 6-1. The CSF section-property output uses the following notation, which maps directly to the NREL reference quantities:
 
-The generated section-property report is then checked against the official NREL 5-MW tower data reported in Table 6-1. In this comparison, the CSF sectional quantities reproduce the reference stiffness values with direct correspondence:
-
-[NREL/TP-500-38060 PDF](https://docs.nrel.gov/docs/fy09osti/38060.pdf)
+- `Ix` (bending stiffness, fore-aft) corresponds to `TwFAStif`;
+- `Iy` (bending stiffness, side-side) corresponds to `TwSSStif`;
+- `J_sv_cell` (Saint-Venant torsional stiffness) corresponds to `TwGJStif`;
+- `A` (axial stiffness) corresponds to `TwEAStif`.
 
 > **Note on the NREL tower reference data.**  
-> The validation uses the official NREL 5-MW tower data from NREL/TP-500-38060, Section 6, Table 6-1, “Distributed Tower Properties”. The table reports the distributed quantities along the tower elevation, including `TMassDen`, `TwFAStif`, `TwSSStif`, `TwGJStif`, and `TwEAStif`. The geometric dimensions used to generate these values require one clarification: Section 6 first reports the DOWEC-derived tower dimensions as base diameter/thickness `6.0 m / 0.027 m` and top diameter/thickness `3.87 m / 0.019 m`, but then states that the wall thickness was increased by 30% before producing the final distributed tower properties. Therefore, the CSF model uses the same diameters, but the increased wall thicknesses: `t_base = 0.027 × 1.30 = 0.0351 m` and `t_top = 0.019 × 1.30 = 0.0247 m`.
-
-
-
-
-- `Ix` corresponds to `TwFAStif`;
-- `Iy` corresponds to `TwSSStif`;
-- `J_sv_cell` corresponds to `TwGJStif`;
-- `A` corresponds to `TwEAStif`.
+> The validation uses the official NREL 5-MW tower data from NREL/TP-500-38060, Section 6, Table 6-1, "Distributed Tower Properties". The table reports the distributed quantities along the tower elevation, including `TMassDen`, `TwFAStif`, `TwSSStif`, `TwGJStif`, and `TwEAStif`. The geometric dimensions used to generate these values require one clarification: Section 6 first reports the DOWEC-derived tower dimensions as base diameter/thickness `6.0 m / 0.027 m` and top diameter/thickness `3.87 m / 0.019 m`, but then states that the wall thickness was increased by 30% before producing the final distributed tower properties. Therefore, the CSF model uses the same diameters, but the increased wall thicknesses: `t_base = 0.027 × 1.30 = 0.0351 m` and `t_top = 0.019 × 1.30 = 0.0247 m`.
 
 For example, at the tower base (`z = 0.00 m`), the CSF report gives:
 
@@ -177,8 +170,7 @@ TwGJStif = 4.728e+11
 TwEAStif = 1.381e+11
 ```
 
-The same agreement is observed along the full tower height, confirming that the CSF geometry and stiffness-carrier representation reproduce the official NREL sectional stiffness distribution before any degradation law is applied.
-
+The same agreement is observed along the full tower height, confirming that the geometry and stiffness distribution reproduce the official NREL sectional stiffness distribution before any degradation law is applied.
 > **Volume consistency note.**  
 > This volume check is not intended as the main validation metric. Its role is to document that the generated CSF geometry is also integrated consistently by the same workflow used to produce the sectional reports and the downstream OpenSees model. The corresponding CSF volume report is:
 >
