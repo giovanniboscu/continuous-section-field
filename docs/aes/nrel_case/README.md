@@ -283,6 +283,9 @@ openseeslab_output_NREL-5-MW
 
 This directory contains the structural response reports, numerical outputs, and plots generated for the baseline validation case.
 
+> The numerical results and their comparison with the independent analytical reference are reported in the validation comparison document.
+
+
 ### 5. Run the independent analytical reference for the baseline case
 
 After the CSF-to-OpenSees model has been executed, the same baseline YAML input is evaluated with an independent analytical reference procedure.
@@ -305,37 +308,29 @@ The autonomous integration procedure provides independent values for:
 - tower tip rotation;
 - torsional rotation.
 
-These results are used as the baseline continuous-reference solution. They are later compared with the CSF-to-OpenSees outputs to verify that the numerical beam model reproduces the same structural response when driven by the same YAML-defined tower data.
+These results are used as the baseline continuous-reference solution. They are later compared with the CSF-to-OpenSees outputs to verify that the numerical beam model reproduces the same structural response when driven by the same YAML-defined tower data.### 6. Run the CSF-OpenSees model for the degraded case
 
-### 6. Run the CSF-OpenSees model for the degraded case
-
-After the baseline response has been computed, the same CSF-to-OpenSees workflow is repeated for the degraded tower model.
+After the baseline response has been computed, the same workflow is repeated for the degraded tower model.
 
 The degraded model uses the same tower geometry as the baseline case. The difference is introduced only through the longitudinal stiffness reduction law defined in `NREL-5-MW-degr.yaml`. This allows the effect of degradation to be isolated from any geometric change.
 
-The degraded CSF-to-OpenSees model is executed with:
+The degraded model is executed with:
 
 ```bash
 python3 run_csf_opensees.py NREL-5-MW-degr.yaml
 ```
 
-The script reads the degraded YAML model, samples the modified stiffness distribution along the tower axis, and transfers the resulting sectional properties to the OpenSees beam model.
+The script reads the degraded YAML file, extracts the modified stiffness distribution along the tower axis, and builds the corresponding beam model. The analysis computes the transverse tip displacement, the torsional tip rotation, and the nodal resultants along the tower height.
 
-The analysis computes the degraded structural response in terms of:
-
-- tower tip displacement;
-- tower tip rotation;
-- torsional response.
-
-The outputs are written to the scenario-specific directory:
+The outputs are written to:
 
 ```text
 openseeslab_output_NREL-5-MW-degr
 ```
 
-This directory contains the numerical response reports, plots, and structural-analysis outputs for the degraded validation scenario.
-
 Comparing this directory with the baseline output directory allows the influence of the longitudinal degradation law to be evaluated directly.
+
+> The numerical results and their comparison with the independent analytical reference are reported in the validation comparison document.
 
 ### 7. Run the independent analytical reference for the degraded case
 
