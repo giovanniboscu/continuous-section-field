@@ -67,7 +67,7 @@ The number of section evaluations is reported because it indicates the axial res
 
 The complete numerical comparison tables are maintained in the generated CSV file:
 
-[validation_comparison_summary_all.csv](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all.csv)
+[validation_comparison_summary_all]( https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all.md)
 
 The CSV file is the reference source for the numerical values.
 
