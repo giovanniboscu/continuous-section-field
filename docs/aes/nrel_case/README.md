@@ -218,7 +218,7 @@ This step is important because the degraded structural response is meaningful on
 
 The degraded tower configuration uses the same geometry as the undegraded NREL tower. Only the longitudinal stiffness distribution is modified.
 
-The degradation is introduced through a continuous weight law applied to the stiffness carriers of the tower shell polygons. The weight field is defined as a smooth longitudinal function of the axial coordinate `z`.
+The degradation is introduced through a continuous weight law applied to the longitudinal stiffness of the tower wall. The weight field is defined as a smooth function of the axial coordinate `z`.
 
 The exact degradation law used in the model is:
 
@@ -231,65 +231,13 @@ The resulting distribution is shown below.
 
 <img width="985" height="467" alt="image" src="https://github.com/user-attachments/assets/50866952-f5ca-4ca3-969b-caf1a0b69934" />
 
+The law defines a baseline stiffness of `2.10 × 10^11` and introduces two localized Gaussian-shaped reductions along the tower height. The first reduction is centered at `z = 0.33 L` with amplitude `0.10`. The second is centered at `z = 0.67 L` with amplitude `0.14`. Both zones use the same characteristic width of `0.03 L`.
 
-The law defines a baseline stiffness value of:
-
-```text
-2.10 × 10^11
-```
-
-and introduces two localized Gaussian-shaped longitudinal reductions along the tower height.
-
-The first reduction is centered approximately at:
-
-```text
-z = 0.33 L
-```
-
-and applies a moderate stiffness decrease with amplitude:
-
-```text
-0.10
-```
-
-The second reduction is centered approximately at:
-
-```text
-z = 0.67 L
-```
-
-and applies the strongest degradation with amplitude:
-
-```text
-0.14
-```
-
-Both degradation zones use the same characteristic width:
-
-```text
-0.03 L
-```
-
-The expression:
-
-```python
-np.maximum(0.84, ...)
-```
-
-imposes a lower bound on the normalized stiffness factor. This prevents the degradation law from reducing the stiffness below:
-
-```text
-0.84 × 2.10 × 10^11 = 1.764 × 10^11
-```
-
-In the plotted field, the observed minimum is slightly above this bound because the sampled plotting points do not necessarily coincide exactly with the analytical minimum of the continuous function.
+The expression `np.maximum(0.84, ...)` imposes a lower bound on the normalized stiffness factor, preventing the stiffness from dropping below `0.84 × 2.10 × 10^11 = 1.764 × 10^11`. In the plotted field, the observed minimum is slightly above this bound because the sampled plotting points do not necessarily coincide exactly with the analytical minimum of the continuous function.
 
 The degradation field is intentionally continuous and smooth. No geometric discontinuities are introduced. This allows the validation to isolate the influence of localized stiffness variation without mixing it with geometric changes.
 
-The objective of this law is to create a more demanding convergence scenario for the beam discretization. In the undegraded tower, the stiffness field varies smoothly because of the tower taper alone. In the degraded case, the additional local reductions create sharper axial gradients that are more difficult to reproduce with coarse piecewise beam models.
-
-This makes the degraded configuration suitable for evaluating how the OpenSees discretization converges toward the continuous-reference solution as the number of beam elements increases.
-
+The objective of this law is to create a more demanding convergence scenario for the beam discretization. In the undegraded tower, the stiffness varies smoothly because of the tower taper alone. In the degraded case, the additional local reductions create sharper axial gradients that are more difficult to reproduce with coarse beam discretizations. This makes the degraded configuration suitable for evaluating how the beam model converges toward the continuous analytical reference as the number of elements increases.
 ## Structural loading configuration
 
 The validation uses the same structural loading configuration for both the undegraded and degraded tower models.
