@@ -229,7 +229,7 @@ CSF:
           # The outer loop is a 3x3 rectangle written in CCW order.
           # The repeated point [2.0, 3.0] explicitly closes the outer loop.
           # After that, the vertex stream continues with the inner loop.
-          # The bridge is intentionally kept very close to the outer boundary
+          # The inner polygon is  kept very close to the outer boundary
           # so that the section represents a genuinely thin profile.
           # The inner loop is written in CW order.
           vertices:
