@@ -215,7 +215,7 @@ It is a single geometric representation of what would otherwise be described as 
 This YAML example defines the same thin-walled closed-cell polygon in both reference sections,
 `S0` and `S1`, at `z = 0.0` and `z = 10.0`.
 
-The polygon is tagged as `@cell`, has weight `1.0`, and is described by a single ordered vertex sequence that contains both the outer and inner loops. The outer loop is a `3 x 3` rectangle written in counter-clockwise (CCW) order and explicitly closed by repeating the point `[2.0, 3.0]`. The inner loop is written in clockwise (CW) order, offset inward by about `0.1`, and is also explicitly closed by repeating the point `[2.1, 3.0]`. Using the same polygon name in `S0` and `S1` preserves the correspondence between the two sections and defines a prismatic thin-walled cell along the element length.
+The polygon is tagged as `@cell`, has weight `1.0`, and is described by a single ordered vertex sequence that contains both the outer and inner loops. The outer loop is a `3 x 3` rectangle written in counter-clockwise (CCW) order and explicitly closed by repeating the point `[2.0, 3.0]`. The inner loop is written in clockwise (CW) order, and is also explicitly closed by repeating the point `[2.1, 3.0]`. Using the same polygon name in `S0` and `S1` preserves the correspondence between the two sections and defines a prismatic thin-walled cell along the element length.
 
 ```
 CSF:
@@ -241,7 +241,7 @@ CSF:
             - [2.0, 5.0]
             - [2.0, 3.0]
 
-            # Inner loop (CW), offset inward by about 0.1
+            # Inner loop (CW)
             - [2.1, 3.0]
             - [2.1, 4.9]
             - [4.9, 4.9]
