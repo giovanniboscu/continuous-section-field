@@ -74,7 +74,7 @@ consumed by a specific tool.
 
 ## 2. The CSF Section Model
 
-### 2.1 Motivation and scope
+### 2.1 scope
 
 In a standard beam model, section properties are expressed as a separable
 product of a material function and a geometric constant:
