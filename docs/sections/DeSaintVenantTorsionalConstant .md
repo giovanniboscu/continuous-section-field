@@ -235,21 +235,18 @@ Not valid when:
 ## 8. How to Construct a `@cell` Polygon
 
 
-A `@cell` polygon describes a closed hollow section - any shape: circular,
-rectangular, or arbitrary. Think of it as a single continuous pen stroke:
+A `@cell` polygon describes a closed hollow section of arbitrary shape: circular, rectangular, or general polygonal.
 
-1. Start at a point on the **outer boundary**.
-2. Trace the outer boundary until you return to the starting point.
-3. From the starting point, move inward and trace the **inner boundary**,
-   ending where the inner shape closes.
+It is encoded as a single vertex sequence containing two explicitly closed contours:
 
-The total signed area of the resulting sequence must be **positive**. If it is
-negative, reverse the winding of one of the two loops.
+1. the outer boundary;
+2. the inner boundary.
 
-The starting point appears twice in the vertex sequence: once as the first
-vertex of the outer boundary, and once as the point where the pen returns
-before starting the inner trace. This repeated vertex is the separator between
-the two loops.
+Each contour must be closed independently, i.e. its last vertex must coincide with its first vertex. This explicit closure is mandatory for `@cell` polygons and is the only exception to the standard CSF polygon construction rule.
+
+The outer contour must have counter-clockwise orientation. The inner contour must have clockwise orientation, so that the internal region is treated as a void.
+
+If a polygon marked as `@cell` does not contain two explicitly closed contours with the required orientation, CSF raises an explicit error.
 
 ---
 
