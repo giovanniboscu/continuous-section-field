@@ -292,20 +292,10 @@ The example therefore represents a simplified three-wall `IPE100`-type section c
 #
 # Why @t is needed
 # ----------------
-# The automatic thickness estimate uses:
-#     t_est = 2A / P
-# where A is polygon area and P is polygon perimeter.
-#
-# For a rectangular wall strip (length b, thickness t):
-#     A = b*t
-#     P = 2(b+t)
-# so:
-#     t_est = 2A/P = (b*t)/(b+t)
-#
-# This is NOT exactly t.
-# It approaches t only in the very thin-strip limit (b >> t):
-#     (b*t)/(b+t) ≈ t
-# Otherwise it underestimates thickness, and this directly affects torsion.
+# For a rectangular wall strip with unknown equivalent thickness t:
+#     A = t * (P/2 - 2*t)
+# Solving for t gives:
+#     t_global = (P - sqrt(P**2 - 16*A)) / 4
 #
 # Impact on J_sv_wall
 # -------------------
