@@ -15,8 +15,7 @@ properties such as area, centroid, second moments of area, principal inertias,
 section moduli, torsional constants, stiffness-weighted quantities, and
 mass-related properties at any requested station.
 
-The key modelling distinction is the explicit separation between geometry and sectional participation  Geometry defines where each polygonal region is
-located along the member. Two independent longitudinal participation fields
+The central contribution is the explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two independent longitudinal participation fields
 define how much each region contributes: the axial/bending field `w_i(z)` and
 the shear/torsion field `shear_w_i(z)`. These fields can represent stiffness
 ratios, degraded regions, reinforcement, voids, density-like quantities, or
