@@ -182,7 +182,6 @@ and cross-sectional evolution.
 
 ### 2.6 Relation to existing tools and structural limitations
 
-
 Most section properties evaluated by CSF follow directly from the weighted
 area-integral formulation of Section 2.2. The Saint-Venant torsional constant
 $J_\mathrm{sv}$ is the one exception: it depends on the full geometry of the
@@ -191,18 +190,19 @@ integral.
 
 CSF provides an internal approximation of $J_\mathrm{sv}$ when the user
 explicitly tags polygons as closed cells (`@cell`) or open thin walls
-(`@wall`). Untagged polygons do not contribute to the torsional constant.
-For each category, CSF computes and reports the contributions independently:
+(`@wall`). Untagged polygons are ignored by the internal CSF torsional
+approximation. For each category, CSF computes and reports the contributions
+independently:
 
 $$J_\mathrm{sv,cell} = \sum_k \frac{4 A_{m,k}^2\, t_k}{b_{m,k}}, \qquad
 J_\mathrm{sv,wall} = \sum_i \frac{b_i\, t_i^3}{3}$$
 
-where the first term applies the Bredt formula to each closed cell using
-mean area and perimeter quantities, and the second term sums the thin-wall
+where the first term applies the Bredt formula to each closed cell using the
+mean enclosed area and mean perimeter, and the second term sums the thin-wall
 contribution of each open wall. The two quantities are presented separately
 so that the user can inspect the relative weight of each contribution and
-verify that each component is physically meaningful. Their combination is
-left to the user and is valid only under the following hypotheses: cells and
+verify that each component is physically meaningful. Their combination is not
+enforced by CSF and is valid only under the following hypotheses: cells and
 walls do not share closed contours, all components have the same unit twist,
 open walls have free ends, and thin-wall assumptions hold throughout.
 
