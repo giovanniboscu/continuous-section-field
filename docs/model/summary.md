@@ -371,30 +371,10 @@ be passed to an external finite-element section solver such as
 layers in a pre-processing pipeline, each operating at its own level of
 abstraction.
 
----
-
-## 5. Validation strategy
-
-The validation of CSF should be framed as validation of the field formulation
-and of its numerical implementation. Suitable validation cases include:
-
-- analytical sections with known area, centroid, inertia, and torsional
-  quantities;
-- non-prismatic members with predictable geometric evolution;
-- hollow or nested sections with known reference behaviour;
-- multi-region sections with independent participation fields;
-- comparisons with finite-element section analysis at selected stations;
-- convergence checks under station refinement or mesh refinement where
-  applicable.
-
-The validation should show that CSF correctly constructs the continuous
-geometric field, evaluates the participation laws consistently, and produces
-station-wise sectional quantities compatible with independent analytical or
-numerical references.
 
 ---
 
-## 6. Application examples
+## 5. Application examples
 ## Application: NREL 5-MW reference tower
 
 ### Overview
@@ -553,7 +533,7 @@ in the project repository [REF].
 
 ---
 
-## 7. Research contribution
+## 6. Research contribution
 
 The main contribution of CSF is the extraction of the sectional field
 definition from the solver into an independent, declarative pre-solver layer.
