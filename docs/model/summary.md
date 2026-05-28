@@ -533,14 +533,14 @@ station discretization.
 
 
 
-### Observations
+## Observations
 
 The two cases exhibit qualitatively different convergence regimes under the
 same beam formulation. The undegraded case converges rapidly and uniformly,
 whereas the degraded case is more sensitive to axial discretization before
 stabilising.
 
-This behaviour is a consequence of the richness of the continuous
+This behaviour is a consequence of the continuous nature of the sectional
 representation, rather than a limitation of the beam formulation itself.
 The continuous field defines the reference; the discretization quality is
 assessed by its convergence toward that reference. This design choice makes
@@ -548,6 +548,7 @@ the validation independent of any particular downstream solver.
 
 The complete workflow, convergence plots, and numerical tables are available
 in the project repository [REF].
+
 
 
 ---
