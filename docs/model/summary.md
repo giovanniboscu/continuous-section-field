@@ -38,7 +38,6 @@ formulations, but they do not define the field itself. This distinction allows
 CSF to preserve a continuous member representation while generating
 solver-facing station-wise data when required. 
 
----
 
 ## 1. Motivation
 
