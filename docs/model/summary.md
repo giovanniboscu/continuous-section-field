@@ -222,7 +222,6 @@ field serves as the input to a more detailed analysis, with the station
 sampling fully controlled by the user.
 
 ---
-
 ## 3. Declarative numerical workflow
 
 CSF can be used as a Python library or through a file-based YAML workflow.
@@ -236,7 +235,7 @@ The geometry file defines:
 - polygonal regions;
 - vertex coordinates;
 - endpoint participation values;
-- longitudinal laws for `w_i(z)` and `shear_w_i(z)`.
+- longitudinal laws for $w_i(z)$ and $\kappa_i(z)$.
 
 The action file defines:
 
@@ -251,6 +250,101 @@ This separation makes the same continuous model reusable across different
 numerical studies. A single member definition can be sampled at dense
 stations for inspection, at Gauss-Lobatto stations for quadrature-compatible
 beam input, or at user-defined stations for comparison with external data.
+
+### 3.1 Geometry file - minimal example
+
+The following listing defines a linearly tapered circular tube between two
+stations. A single polygon tagged `@wall` is defined at the base; its
+vertices at the top station are specified separately, and CSF interpolates
+all intermediate cross-sections automatically.
+
+```yaml
+CSF:
+
+  weight_laws:
+    tower_wall@wall: linear
+
+  shear_weight_laws:
+    tower_wall@wall: iso(0.3)
+
+  sections:
+    S0:                          # base station
+      z: 0.0
+      polygons:
+        tower_wall@wall:
+          weight: 210000000000
+          vertices:
+            # outer contour (CCW), inner contour (CW)
+            - [ 3.000,  0.000]
+            - [ 0.000,  3.000]
+            - [-3.000,  0.000]
+            - [ 0.000, -3.000]
+            - [ 2.973,  0.000]
+            - [ 0.000,  2.973]
+            - [-2.973,  0.000]
+            - [ 0.000, -2.973]
+
+    S1:                          # top station
+      z: 87.6
+      polygons:
+        tower_wall@wall:
+          weight: 210000000000
+          vertices:
+            - [ 1.935,  0.000]
+            - [ 0.000,  1.935]
+            - [-1.935,  0.000]
+            - [ 0.000, -1.935]
+            - [ 1.916,  0.000]
+            - [ 0.000,  1.916]
+            - [-1.916,  0.000]
+            - [ 0.000, -1.916]
+```
+
+The `weight_laws` block controls the longitudinal variation of the axial and
+bending stiffness carrier, while `shear_weight_laws` controls the corresponding
+shear and torsion carrier. In this example, the shear/torsion carrier is
+generated from the Young's modulus carrier through the isotropic shortcut
+`iso(0.3)`.
+
+For tapered members, separate vertex sets are provided at each reference
+station and CSF interpolates between them.
+
+### 3.2 Action file - minimal example
+
+The action file is independent of the geometry file. The following example
+requests a section analysis at $z = 0$ and exports the computed properties
+to a format suitable for a beam solver.
+
+```yaml
+actions:
+  - type: section_selected_analysis
+    z: 0.0
+
+  - type: export_stations
+    z: [0.0, 8.76, 17.52, 26.28, 35.04,
+        43.80, 52.56, 61.32, 70.08, 78.84, 87.60]
+    output: tower_properties.csv
+```
+
+The same geometry file can be paired with a different action file to sample
+at Gauss-Lobatto stations for quadrature-compatible beam input, or at
+arbitrary stations for comparison with tabulated reference data - without
+modifying the member definition.
+
+### 3.3 Reusability across studies
+
+The decoupling between member definition and numerical action is the
+principal design choice of the YAML workflow. Table 1 illustrates three
+typical uses of the same geometry file.
+
+| Study | Station set | Purpose |
+|---|---|---|
+| Visual inspection | Dense uniform grid (100+ stations) | Section plots, centroid locus |
+| Beam model input | 11 Gauss-Lobatto stations | OpenSees / BeamDyn tables |
+| Reference comparison | Stations from external dataset | Validation against tabulated data |
+
+In all cases the continuous geometric field is evaluated on demand; no
+re-meshing or re-definition of the member is required.
 
 ---
 
