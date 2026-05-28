@@ -429,7 +429,7 @@ $$
 \quad [\%]
 $$
 
-### Case A — undegraded tower
+### Case A - undegraded tower
 
 For the undegraded configuration, the stiffness field varies smoothly and
 monotonically. Convergence is rapid: a small number of beam elements is
@@ -443,7 +443,7 @@ torsional approximation adopted internally by the CSF workflow, whereas the
 analytical reference uses the exact circular torsional constant
 $J = \tfrac{\pi}{2}(R_o^4 - R_i^4)$.
 
-### Case B — degraded tower
+### Case B - degraded tower
 
 In the degraded configuration, the geometry is unchanged but the
 participation field $w_i(z)$ introduces localized stiffness reductions along
@@ -492,8 +492,8 @@ configurations.
 
 
 The continuous stiffness representation enables this convergence study.
-With a fixed discrete table — as in the original NREL reference definition,
-which provides properties at 11 stations — the structural description is
+With a fixed discrete table - as in the original NREL reference definition,
+which provides properties at 11 stations - the structural description is
 tied to the prescribed stations and its axial resolution cannot be refined
 independently. The continuous representation decouples the member definition
 from its numerical discretization: the same YAML input can be sampled at any
@@ -501,7 +501,7 @@ resolution, allowing convergence toward the reference solution to be
 progressively assessed.
 
 The degraded case makes this distinction explicit. At 8 elements the error
-in $U_y$ is larger than at 6, and the sign reverses — a non-monotone
+in $U_y$ is larger than at 6, and the sign reverses - a non-monotone
 behaviour indicating insufficient axial resolution near the degraded region.
 This diagnostic is only possible because the reference stiffness field is
 defined continuously. Without a continuous reference representation,
