@@ -526,8 +526,8 @@ The continuous field defines the reference; the discretization quality is
 assessed by its convergence toward that reference. This design choice makes
 the validation independent of any particular downstream solver.
 
-The complete workflow, convergence plots, and numerical tables are available
-in the project repository [REF].
+
+[Complete workflow, convergence plots, and numerical tables for the NREL validation case](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case)
 
 
 
