@@ -260,44 +260,33 @@ all intermediate cross-sections automatically.
 
 ```yaml
 CSF:
-
   weight_laws:
-    tower_wall@wall: linear
-
+    # parabolic increase: 72% at base (z=0), full section at top (z=10)
+    - 'tower_wall,tower_wall: 1.0 - 0.28 * (1 - (z / 10.0)**2)'
   shear_weight_laws:
-    tower_wall@wall: iso(0.3)
-
+    - 'iso(0.3)'
   sections:
-    S0:                          # base station
+    S0:
       z: 0.0
       polygons:
-        tower_wall@wall:
+        tower_wall:
           weight: 210000000000
           vertices:
-            # outer contour (CCW), inner contour (CW)
             - [ 3.000,  0.000]
             - [ 0.000,  3.000]
             - [-3.000,  0.000]
             - [ 0.000, -3.000]
-            - [ 2.973,  0.000]
-            - [ 0.000,  2.973]
-            - [-2.973,  0.000]
-            - [ 0.000, -2.973]
 
-    S1:                          # top station
-      z: 87.6
+    S1:
+      z: 5
       polygons:
-        tower_wall@wall:
+        tower_wall:
           weight: 210000000000
           vertices:
             - [ 1.935,  0.000]
             - [ 0.000,  1.935]
             - [-1.935,  0.000]
             - [ 0.000, -1.935]
-            - [ 1.916,  0.000]
-            - [ 0.000,  1.916]
-            - [-1.916,  0.000]
-            - [ 0.000, -1.916]
 ```
 
 The `weight_laws` block controls the longitudinal variation of the axial and
@@ -316,14 +305,40 @@ requests a section analysis at $z = 0$ and exports the computed properties
 to a format suitable for a beam solver.
 
 ```yaml
-actions:
-  - type: section_selected_analysis
-    z: 0.0
-
-  - type: export_stations
-    z: [0.0, 8.76, 17.52, 26.28, 35.04,
-        43.80, 52.56, 61.32, 70.08, 78.84, 87.60]
-    output: tower_properties.csv
+CSF_ACTIONS:
+  stations:
+    station_edges: [0,5]
+  actions:
+    - plot_section_2d:
+        stations:
+          - station_start    
+    - plot_volume_3d:
+        params:
+          title: "Not prismatic"         
+    - section_selected_analysis:
+        stations: [station_edges]
+        output:
+          - [stdout,section_selected_analysis.txt]
+        params:
+          fmt_display: ".20g"
+        properties:
+          - A
+          - Cx
+          - Cy
+          - Ix
+          - Iy
+          - Ixy
+          - Ip
+          - I1
+          - I2
+          - rx
+          - ry
+          - Wx
+          - Wy
+          - J_sv_wall
+          - Q_na
+          - J_s_vroark
+          - J_s_vroark_fidelity
 ```
 
 The same geometry file can be paired with a different action file to sample
