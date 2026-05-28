@@ -533,37 +533,9 @@ the validation independent of any particular downstream solver.
 
 ---
 
-## 6. Research contribution
+## 6. Conclusion
 
-The main contribution of CSF is the extraction of the sectional field
-definition from the solver into an independent, declarative pre-solver layer.
-In conventional practice, the mapping from member geometry and material
-participation to section properties is embedded within the numerical solver
-and is therefore inseparable from its mesh, conventions, and output format.
-CSF makes this mapping explicit, continuous, and solver-agnostic.
-
-The framework represents a beam-like member as a coupled set of longitudinal
-fields - evolving polygonal geometry, axial/bending participation $w_i(z)$,
-and shear/torsion participation $\kappa_i(z)$ - that are defined and
-evaluated independently of any downstream solver. Station-wise data are a
-projection of this continuous model, not its definition. The same member
-description can therefore be sampled at different station sets, validated
-against analytical references, and exported to different solvers without
-modifying the underlying model.
-
-The continuous geometric field provided by CSF is designed to interface with
-external section-analysis solvers when detailed sectional properties are
-required. For many practical cases the properties computed directly by CSF
-are sufficient for downstream beam-level simulations. Where additional detail
-is needed, evaluating the field at any required set of stations - for example
-Gauss-Lobatto points - and passing the resulting polygonal geometry to a tool
-such as `sectionproperties` is a natural extension of the workflow. CSF and
-section solvers are therefore complementary layers in a pre-processing
-pipeline, each operating at its own level of abstraction.
-
-The contribution is the formulation of this pre-solver layer and its
-declarative implementation as a reusable computational framework for
-beam-like structural members with varying geometry and material participation.
+The main contribution of CSF is the formulation of an independent, declarative pre-solver layer in which polygonal geometry and material participation fields are defined as continuous entities, evaluable at arbitrary axial stations and separable from the downstream numerical discretization.
 
 ---
 
