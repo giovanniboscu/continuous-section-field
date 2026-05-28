@@ -112,7 +112,7 @@ $$S(z) = \{\,\Omega_i(z),\; w_i(z),\; \kappa_i(z)\,\}_{i=1}^{n}$$
 where:
 
 - $\Omega_i(z)$ is the polygonal domain of zone $i$ at station $z$;
-- $w_i(z)$ is the axial and bending participation weight of zone $i$;
+- $w_i(z)$ is the axial and bending stiffness carrier of zone $i$;
 - $\kappa_i(z)$ is the shear and torsion participation weight of zone $i$.
 
 Any section property that can be expressed as an area integral is evaluated
@@ -122,7 +122,7 @@ $$P(z) = \sum_{i=1}^{n} w_i(z) \iint_{\Omega_i(z)} f(x,y,z)\,\mathrm{d}A$$
 
 where $f(x,y,z)$ is the integrand corresponding to the property of interest
 (unity for area, $y^2$ for the second moment of area about the $x$-axis,
-and so on). Geometry $\Omega_i$ and material weight $w_i$ are fully decoupled:
+and so on). Geometry $\Omega_i$ and material carrier $w_i$ are fully decoupled:
 one can vary independently of the other.
 
 For polygonal domains, the area integrals are evaluated exactly via
@@ -132,9 +132,10 @@ no numerical quadrature is required, and the result is exact for the given
 polygonal geometry.
 
 The standard separable formulation is recovered as the special case in which
-all zones share the same weight law: $w_i(z) = w(z)$ for all $i$.
+all zones share the same stiffness carrier: $w_i(z) = w(z)$ for all $i$.
 
-For isotropic materials the two participation fields are linked by:
+For isotropic materials, when $w_i(z)$ represents the Young's modulus carrier,
+the shear and torsion participation field is obtained as:
 
 $$\kappa_i(z) = \frac{w_i(z)}{2(1+\nu)}$$
 
