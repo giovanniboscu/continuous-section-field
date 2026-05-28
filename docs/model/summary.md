@@ -30,12 +30,14 @@ inspections, station sampling, and exports. The YAML file does not define a
 discrete table of section properties; it defines the geometry and
 participation laws from which CSF constructs continuous sectional fields.
 
+
 Discrete stations are therefore evaluation points of an already defined
 continuous field. For example, Gauss-Lobatto stations obtained through yaml and 
 API can be used as quadrature-compatible sampling points for downstream beam
 formulations, but they do not define the field itself. This distinction allows
 CSF to preserve a continuous member representation while generating
 solver-facing station-wise data when required. 
+
 ---
 
 ## 1. Motivation
