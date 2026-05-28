@@ -305,40 +305,21 @@ quantities are extracted. It does not redefine the member geometry.
 ```yaml
 CSF_ACTIONS:
   stations:
-    station_edges: [0, 5]
-
+    station_edge: [0,5]
   actions:
-    - plot_section_2d:
-        stations:
-          - station_start
-
     - plot_volume_3d:
         params:
-          title: "Tapered section"
-
+          title: "Not prismatic"         
     - section_selected_analysis:
-        stations: [station_edges]
+        stations: [station_edge]
         output:
-          - [stdout, section_selected_analysis.txt]
+          - [stdout,section_selected_analysis.txt]
         params:
           fmt_display: ".20g"
-        properties:
-          - A
-          - Cx
-          - Cy
-          - Ix
-          - Iy
-          - Ixy
-          - Ip
-          - I1
-          - I2
-          - rx
-          - ry
-          - Wx
-          - Wy
-          - Q_na
-          - J_s_vroark
-          - J_s_vroark_fidelity
+        properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip,
+                     I1, I2, rx, ry, Wx, Wy, J_sv_wall,
+                    Q_na, J_s_vroark, J_s_vroark_fidelity]
+
 ```
 
 The same geometry file can therefore support visual inspection, property
