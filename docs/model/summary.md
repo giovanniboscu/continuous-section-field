@@ -35,8 +35,7 @@ continuous field. For example, Gauss-Lobatto stations obtained through yaml and
 API can be used as quadrature-compatible sampling points for downstream beam
 formulations, but they do not define the field itself. This distinction allows
 CSF to preserve a continuous member representation while generating
-solver-facing station-wise data when required. To the authors' knowledge, no existing tool formalises the continuous sectional field as an independent, solver-agnostic layer. This absence may partly reflect the fact that the problem has traditionally been addressed within specific solvers or formulations, rather than as a standalone pre-processing concern."
-
+solver-facing station-wise data when required. 
 ---
 
 ## 1. Motivation
@@ -78,7 +77,8 @@ The longitudinal variation of the member - including tapering geometry, spatiall
 
 On the theoretical side, Balduzzi et al. [Balduzzi 2016] showed that non-prismatic beam analysis requires careful treatment of continuously varying cross-sectional quantities along the member axis. This highlights the need for programmable descriptions capable of providing consistent geometric and constitutive quantities at arbitrary axial locations.
 
-CSF addresses this level of the workflow. It defines a continuous geometric and material participation field along the member axis, from which sectional properties can be sampled, exported, or passed to downstream beam and finite-element models. Detailed section analysis can still be delegated to tools such as `sectionproperties` when required. The two layers are therefore complementary: section-analysis tools compute the properties of a section, whereas CSF defines how the section and its participating materials vary continuously along the member.
+CSF addresses this level of the workflow. It defines a continuous geometric and material participation field along the member axis, from which sectional properties can be sampled, exported, or passed to downstream beam and finite-element models. Detailed section analysis can still be delegated to tools such as `sectionproperties` when required. The two layers are therefore complementary: section-analysis tools compute the properties of a section, whereas CSF defines how the section and its participating materials vary continuously along the member. To the authors' knowledge, no existing tool formalises the continuous sectional field as an independent, solver-agnostic layer. This absence may partly reflect the fact that the problem has traditionally been addressed within specific solvers or formulations, rather than as a standalone pre-processing concern."
+
 
 ---
 
