@@ -483,6 +483,56 @@ underrepresent local stiffness reductions, whereas the continuous field
 retains the full spatial description and the beam discretization can be
 refined independently until convergence is achieved.
 
+
+
+
+### Convergence results
+
+Table 1 reports the relative errors in tip displacement $U_y$ and torsional
+rotation $R_z$ as a function of the number of beam elements, for both
+configurations.
+
+| Scenario   | Elements | $\varepsilon_{U_y}$ (%) | $\varepsilon_{R_z}$ (%) |
+|-------------|----------:|------------------------:|------------------------:|
+| Undegraded | 4  | −2.08×10⁻² | −6.49×10⁻³ |
+| Undegraded | 6  | −3.99×10⁻³ | −4.05×10⁻³ |
+| Undegraded | 8  | −1.06×10⁻³ | −3.63×10⁻³ |
+| Undegraded | 12 | +3.93×10⁻⁵ | −3.48×10⁻³ |
+| Undegraded | 16 | +2.27×10⁻⁴ | −3.45×10⁻³ |
+| Undegraded | 24 | +2.97×10⁻⁴ | −3.44×10⁻³ |
+| Undegraded | 32 | +3.08×10⁻⁴ | −3.44×10⁻³ |
+| Degraded   | 4  | +1.04×10⁻¹ | +2.16×10⁻¹ |
+| Degraded   | 6  | +1.56×10⁻¹ | +1.55×10⁻¹ |
+| Degraded   | 8  | −1.73×10⁻¹ | −2.01×10⁻¹ |
+| Degraded   | 12 | +8.28×10⁻² | +7.69×10⁻² |
+| Degraded   | 16 | −4.29×10⁻³ | −5.67×10⁻³ |
+| Degraded   | 24 | +9.57×10⁻⁴ | −2.75×10⁻³ |
+| Degraded   | 32 | +2.80×10⁻⁴ | −3.48×10⁻³ |
+
+
+
+The continuous stiffness representation enables this convergence study.
+With a fixed discrete table — as in the original NREL reference definition,
+which provides properties at 11 stations — the structural description is
+tied to the prescribed stations and its axial resolution cannot be refined
+independently. The continuous representation decouples the member definition
+from its numerical discretization: the same YAML input can be sampled at any
+resolution, allowing convergence toward the reference solution to be
+progressively assessed.
+
+The degraded case makes this distinction explicit. At 8 elements the error
+in $U_y$ is larger than at 6, and the sign reverses — a non-monotone
+behaviour indicating insufficient axial resolution near the degraded region.
+This diagnostic is only possible because the reference stiffness field is
+defined continuously. Without a continuous reference representation,
+convergence behaviour cannot be assessed independently of the adopted
+station discretization.
+
+
+
+
+
+
 ### Observations
 
 The two cases exhibit qualitatively different convergence regimes under the
