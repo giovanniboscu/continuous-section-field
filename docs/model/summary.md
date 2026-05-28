@@ -395,19 +395,50 @@ numerical references.
 ---
 
 ## 6. Application examples
+## Continuous stiffness validation
 
-Representative applications should demonstrate the modelling level targeted
-by CSF:
+The validation considers the NREL 5-MW reference tower represented as a
+continuous CSF sectional field. Two configurations are analysed:
 
-- tapered members with continuously varying sectional geometry;
-- members with longitudinal stiffness degradation;
-- hybrid or multi-region sections with different participation laws;
-- tower-like members requiring distributed section-property tables;
-- cases where axial/bending and shear/torsion participation are
-  intentionally different.
+- the original undegraded tower;
+- the same tower with localized longitudinal stiffness degradation.
 
-The examples should emphasize that the same declarative model can generate
-different station-wise projections depending on the target numerical workflow.
+The geometry is identical in both cases. Only the longitudinal stiffness
+distribution changes through `weight_laws`.
+
+The validation compares two independent computational paths:
+
+```text
+YAML input → sectional properties → beam model → structural response
+```
+
+```text
+YAML input → continuous integration → analytical reference response
+```
+
+The first path transfers the CSF sectional properties to an OpenSees beam
+model. The second evaluates the same continuous stiffness field through an
+independent analytical integration procedure. The comparison therefore checks
+the consistency of the continuous representation independently of the beam
+implementation itself.
+
+The undegraded tower provides a smooth reference case. The degraded tower
+introduces localized stiffness reductions and therefore produces a more
+demanding axial convergence scenario.
+
+The comparison shows that coarse discretizations are generally sufficient for
+smooth stiffness variation, while localized degradation requires finer axial
+sampling in order to recover stable convergence toward the continuous
+reference solution.
+
+The complete workflow, generated reports, convergence plots, and numerical
+tables are available in:
+
+- NREL validation workflow:
+  https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/README.md
+
+- Numerical comparison:
+  https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all_b.md
 
 ---
 
