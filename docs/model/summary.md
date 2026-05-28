@@ -123,7 +123,13 @@ $$P(z) = \sum_{i=1}^{n} w_i(z) \iint_{\Omega_i(z)} f(x,y,z)\,\mathrm{d}A$$
 where $f(x,y,z)$ is the integrand corresponding to the property of interest
 (unity for area, $y^2$ for the second moment of area about the $x$-axis,
 and so on). Geometry $\Omega_i$ and material weight $w_i$ are fully decoupled:
-one can vary independently of the other. For polygonal domains, the area integrals in the above expression are evaluated exactly via Green's theorem, reducing each double integral to a closed-form sum over the polygon edges. No numerical quadrature is required; the result is exact for the given polygonal geometry.
+one can vary independently of the other.
+
+For polygonal domains, the area integrals are evaluated exactly via
+Green's theorem, reducing each double integral to a closed-form sum over
+the polygon edges. This is a distinguishing property of the CSF formulation:
+no numerical quadrature is required, and the result is exact for the given
+polygonal geometry.
 
 The standard separable formulation is recovered as the special case in which
 all zones share the same weight law: $w_i(z) = w(z)$ for all $i$.
@@ -132,10 +138,11 @@ For isotropic materials the two participation fields are linked by:
 
 $$\kappa_i(z) = \frac{w_i(z)}{2(1+\nu)}$$
 
-and can be specified through the `iso(nu)` shortcut. In the general case
-$w_i(z)$ and $\kappa_i(z)$ are assigned independently, allowing the model
-to represent non-isotropic participation, selective stiffness degradation,
-or hybrid material compositions.
+and can be specified through an isotropic shortcut parametrised by the
+Poisson ratio $\nu$. In the general case $w_i(z)$ and $\kappa_i(z)$ are
+assigned independently, allowing the model to represent non-isotropic
+participation, selective stiffness degradation, or hybrid material
+compositions.
 
 ### 2.3 Geometric field
 
