@@ -35,7 +35,7 @@ continuous field. For example, Gauss-Lobatto stations obtained through yaml and
 API can be used as quadrature-compatible sampling points for downstream beam
 formulations, but they do not define the field itself. This distinction allows
 CSF to preserve a continuous member representation while generating
-solver-facing station-wise data when required.
+solver-facing station-wise data when required. To the authors' knowledge, no existing tool formalises the continuous sectional field as an independent, solver-agnostic layer. This absence may partly reflect the fact that the problem has traditionally been addressed within specific solvers or formulations, rather than as a standalone pre-processing concern."
 
 ---
 
