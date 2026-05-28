@@ -88,23 +88,17 @@ In all cases, the continuous representation of the member as a solver-agnostic s
 
 ## 2. The CSF Section Model
 
-### 2.1 scope
+### 2.1 Scope
 
-In a standard beam model, section properties are expressed as a separable
-product of a material function and a geometric constant:
+Standard beam workflows often describe sectional stiffness through a single
+material variation applied to a fixed geometric section.
 
-$$EA(z) = E(z)\cdot A, \qquad EI(z) = E(z)\cdot I, \qquad GJ(z) = G(z)\cdot J$$
+This is insufficient for tapered, composite, or locally degraded members, where
+geometry and material participation may vary independently along the axis.
 
-This formulation is adequate for prismatic members with a single homogeneous
-material. It breaks down when the section is tapered, composed of multiple
-materials, locally degraded, or any combination of these, because geometry
-and material participation can no longer be described by a single shared
-function.
+CSF represents this case by assigning independent geometric and material
+participation fields to each zone of the section.
 
-CSF addresses the general case through an organisational model in which
-geometry and material participation are treated as fully independent fields
-along the longitudinal axis $z$, and every zone carries its own weight law
-independently of all others.
 
 ### 2.2 Zone-based continuous formulation
 
