@@ -1,5 +1,7 @@
 # A Field-Based Framework for the Continuous Modelling of Non-Prismatic Structural Members
 
+## Abstract
+
 Continuous Section Field (CSF) is a field-based computational framework for representing sectional geometry, material participation, and derived section properties as continuous functions along a member axis.  CSF is neither a structural solver nor a geometry kernel; instead, it connects these domains by transforming member-level geometric and material descriptions into continuous section-property fields and station-wise data suitable for beam, tower, bridge, and finite-element workflows.
 
 The central idea of CSF is to treat the cross-section as a field defined
