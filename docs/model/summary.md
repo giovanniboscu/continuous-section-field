@@ -84,8 +84,6 @@ Existing frameworks for the analysis of non-prismatic members can be grouped int
 
 In all cases, the continuous representation of the member as a solver-agnostic sectional-property field is not formalised as an independent modelling layer. CSF explicitly introduces this pre-solver layer: it defines polygonal geometry and material participation fields, such as $w_i(z)$ and $\kappa_i(z)$, as continuous entities evaluable at arbitrary axial stations, thereby separating the physical sectional model from its numerical discretisation.
 
-
-
 ---
 
 ## 2. The CSF Section Model
@@ -251,20 +249,24 @@ numerical studies. A single member definition can be sampled at dense
 stations for inspection, at Gauss-Lobatto stations for quadrature-compatible
 beam input, or at user-defined stations for comparison with external data.
 
-### 3.1 Geometry file - minimal example
+### 3.1 Geometry file
 
-The following listing defines a linearly tapered circular tube between two
-stations. A single polygon tagged `@wall` is defined at the base; its
-vertices at the top station are specified separately, and CSF interpolates
-all intermediate cross-sections automatically.
+The geometry file defines the continuous sectional model. The example below
+describes a tapered polygonal section between two reference stations. The
+cross-section is reduced from `S0` to `S1`, while the axial/bending
+participation follows an independent parabolic law along the member axis.
+The shear/torsion participation is derived from the same carrier through an
+isotropic relation.
 
 ```yaml
 CSF:
   weight_laws:
-    # parabolic increase: 72% at base (z=0), full section at top (z=10)
-    - 'tower_wall,tower_wall: 1.0 - 0.28 * (1 - (z / 10.0)**2)'
+    # parabolic increase: 72% at base (z=0), full section at top (z=5)
+    - 'tower_wall,tower_wall: 1.0 - 0.28 * (1 - (z / 5.0)**2)'
+
   shear_weight_laws:
     - 'iso(0.3)'
+
   sections:
     S0:
       z: 0.0
@@ -278,7 +280,7 @@ CSF:
             - [ 0.000, -3.000]
 
     S1:
-      z: 5
+      z: 5.0
       polygons:
         tower_wall:
           weight: 210000000000
@@ -289,36 +291,35 @@ CSF:
             - [ 0.000, -1.935]
 ```
 
-The `weight_laws` block controls the longitudinal variation of the axial and
-bending stiffness carrier, while `shear_weight_laws` controls the corresponding
-shear and torsion carrier. In this example, the shear/torsion carrier is
-generated from the Young's modulus carrier through the isotropic shortcut
-`iso(0.3)`.
+The example separates three ingredients that are usually collapsed into a
+single tabulated section-property description: the reference geometry, the
+longitudinal geometric interpolation, and the material participation law.
+Changing the station set or the requested output does not require modifying
+this member definition.
 
-For tapered members, separate vertex sets are provided at each reference
-station and CSF interpolates between them.
+### 3.2 Action file
 
-### 3.2 Action file - minimal example
-
-The action file is independent of the geometry file. The following example
-requests a section analysis at $z = 0$ and exports the computed properties
-to a format suitable for a beam solver.
+The action file specifies how the continuous model is sampled and which
+quantities are extracted. It does not redefine the member geometry.
 
 ```yaml
 CSF_ACTIONS:
   stations:
-    station_edges: [0,5]
+    station_edges: [0, 5]
+
   actions:
     - plot_section_2d:
         stations:
-          - station_start    
+          - station_start
+
     - plot_volume_3d:
         params:
-          title: "Not prismatic"         
+          title: "Tapered section"
+
     - section_selected_analysis:
         stations: [station_edges]
         output:
-          - [stdout,section_selected_analysis.txt]
+          - [stdout, section_selected_analysis.txt]
         params:
           fmt_display: ".20g"
         properties:
@@ -335,16 +336,14 @@ CSF_ACTIONS:
           - ry
           - Wx
           - Wy
-          - J_sv_wall
           - Q_na
           - J_s_vroark
           - J_s_vroark_fidelity
 ```
 
-The same geometry file can be paired with a different action file to sample
-at Gauss-Lobatto stations for quadrature-compatible beam input, or at
-arbitrary stations for comparison with tabulated reference data - without
-modifying the member definition.
+The same geometry file can therefore support visual inspection, property
+evaluation, solver export, or validation-oriented sampling. In each case the
+continuous field is evaluated at the stations requested by the action file.
 
 ### 3.3 Reusability across studies
 
