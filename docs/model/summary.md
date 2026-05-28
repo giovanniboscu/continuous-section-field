@@ -316,9 +316,8 @@ CSF_ACTIONS:
           - [stdout,section_selected_analysis.txt]
         params:
           fmt_display: ".20g"
-        properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip,
-                     I1, I2, rx, ry, Wx, Wy, J_sv_wall,
-                    Q_na, J_s_vroark, J_s_vroark_fidelity]
+        properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip,I1, I2, rx, ry, Wx,            
+                     Wy, J_sv_wall,Q_na, J_s_vroark, J_s_vroark_fidelity]
 
 ```
 
