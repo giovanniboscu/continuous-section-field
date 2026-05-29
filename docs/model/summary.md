@@ -200,28 +200,20 @@ can be passed to `sectionproperties` through the CSF bridge `csf_sp`
 
 ---
 
-
 ### 2.3 Geometric field
 
-The user defines each polygonal zone by its vertex coordinates at two
-reference stations $z_0$ and $z_1$. CSF generates the geometric field by
-linear interpolation of corresponding vertices:
+The user defines each polygonal zone by its vertex coordinates at two reference stations $z_0$ and $z_1$. CSF generates the geometric field by linear interpolation of corresponding vertices:
 
-$$\mathbf{v}_{i,k}(z) = \mathbf{v}_{i,k}^{(0)} + \frac{z - z_0}{z_1 - z_0}
-\bigl(\mathbf{v}_{i,k}^{(1)} - \mathbf{v}_{i,k}^{(0)}\bigr)$$
+$$
+\mathbf{v}_{i,k}(z) = \mathbf{v}_{i,k}^{(0)} + \frac{z - z_0}{z_1 - z_0}
+\bigl(\mathbf{v}_{i,k}^{(1)} - \mathbf{v}_{i,k}^{(0)}\bigr)
+$$
 
-where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$
-respectively, and $k$ indexes the vertices of zone $i$.
-This produces a smooth tapered geometry at any intermediate station.
-Multiple interpolation intervals can be composed in sequence to represent
-members with piecewise-varying cross-sectional evolution.
+where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$ respectively, and $k$ indexes the vertices of zone $i$. This produces a continuous, linearly tapered geometry at any intermediate station. Multiple interpolation intervals can be composed in sequence to represent members with piecewise-varying cross-sectional evolution.
 
 ### 2.4 Participation fields
 
-The weight laws $w_i(z)$ and $\kappa_i(z)$ are user-defined functions of
-the longitudinal coordinate. Supported forms include polynomials,
-exponentials, piecewise-linear laws, and discrete lookup tables. The only
-requirement is that the function be evaluable at any requested station.
+The participation fields $w_i(z)$ and $\kappa_i(z)$ are user-defined functions of the longitudinal coordinate (or, for $\kappa_i$, obtained from $w_i$ through the isotropic relation of §2.2). Supported forms include polynomials, exponentials, piecewise-linear laws, and discrete lookup tables. The only requirement is that the function be evaluable at any requested station.
 
 ### 2.5 Assumptions
 
@@ -232,9 +224,22 @@ requirement is that the function be evaluable at any requested station.
 | C | Polygonal representation | Curved boundaries must be approximated by polygon discretisation |
 | D | Straight element axis | CSF models a single element along a straight $z$-axis; curved members are not supported |
 
-Multiple straight elements can be composed in sequence - each with its own
-geometry and participation fields - to represent members of arbitrary length
-and cross-sectional evolution.
+Multiple straight elements can be composed in sequence - each with its own geometry and participation fields - to represent members of arbitrary length and cross-sectional evolution.
+
+### 2.6 Torsion
+
+The two participation fields enter the formulation asymmetrically, for a physical reason. Area-integral properties are separable: geometry and participation factor cleanly, and the axial/bending field $w_i(z)$ multiplies each zone integral as a station-wise scalar. Saint-Venant torsion is not separable: the torsional constant cannot be reduced to a weighted area integral, because the warping field couples geometry and material across the section. CSF therefore treats torsion separately.
+
+Internally, CSF evaluates a geometric torsional constant $J_{\mathrm{sv}}$ from thin-walled approximations - the Bredt formula for closed cells and the $b\,t^3/3$ estimate for open walls - combined by direct summation under documented non-interaction hypotheses. The shear/torsion participation then enters as a single section-level value, giving the torsional stiffness
+
+$$
+M_t = G\, J_{\mathrm{sv}}\, \vartheta' .
+$$
+
+The per-zone field $\kappa_i(z)$ is the general framework slot for shear/torsion participation; in the current torsional implementation it specialises to this single section-level shear modulus $G$. A detailed description of the implemented torsional formulations, including the validity hypotheses for the cell–wall summation, is available in the project repository ([De Saint-Venant torsional constant](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md)).
+
+
+For general solid sections, multi-cell configurations, connected cell–wall systems, or cases requiring higher accuracy - where the warping coupling is significant and the thin-walled summation is no longer valid - the continuous geometric field can be passed to `sectionproperties` through the CSF bridge `csf_sp` (see the [CSF–sectionproperties user guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md) and the [section full analysis](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md)).
 
 ---
 ## 3. Declarative numerical workflow
