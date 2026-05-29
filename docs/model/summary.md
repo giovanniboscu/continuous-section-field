@@ -12,11 +12,8 @@ corresponding polygon vertices to generate intermediate sections and evaluates
 properties such as area, centroid, second moments of area, principal inertias and
 section moduli at any requested station.
 
-The central contribution is the explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two independent longitudinal participation fields
-define how much each region contributes: the axial/bending field $w_i(z)$ and
-the shear/torsion field $\kappa_i(z)$ . These fields can represent stiffness
-ratios, degraded regions, reinforcement, voids, density-like quantities, or
-other user-defined sectional contributions. When the two fields derive from elastic behaviour, they may be coupled through an isotropic relation or remain independent, in both cases varying with the longitudinal coordinate and with geometric quantities.
+Two longitudinal participation fields define how much each region contributes: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. Their independence is foundational to CSF: the model imposes no relation between the two, so each field can be specified on its own. These fields can represent stiffness ratios, degraded regions, reinforcement, voids, density-like quantities, or other user-defined sectional contributions. When both derive from elastic behaviour, they may optionally be coupled through an isotropic relation, each varying with the longitudinal coordinate and with geometric quantities.
+
 
 The continuous model can be defined through a Python API or through a
 declarative YAML workflow. In the YAML workflow, one file defines the
