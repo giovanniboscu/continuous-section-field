@@ -566,7 +566,7 @@ the validation independent of any particular downstream solver.
 
 ## 6. Conclusion
 
-The main contribution of CSF is the formulation of an independent, declarative pre-solver layer in which polygonal geometry and material participation fields are defined as continuous entities, evaluable at arbitrary axial stations and separable from the downstream numerical discretization.
+The main contribution of CSF is the formulation of an independent, declarative pre-solver layer in which polygonal geometry and participation fields are defined as continuous entities, evaluable at arbitrary axial stations and separable from the downstream numerical discretization.
 
 ---
 
