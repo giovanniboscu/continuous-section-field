@@ -363,6 +363,10 @@ Table 2 reports the relative errors in tip displacement $U_y$ and torsional rota
 | Degraded   | 24 | +9.57×10⁻⁴ | −2.75×10⁻³ |
 | Degraded   | 32 | +2.80×10⁻⁴ | −3.48×10⁻³ |
 
+> **Note:** At high discretization levels the relative error in $U_y$ stabilises 
+> near zero ($\sim 10^{-4}\,\%$), reflecting the numerical precision of the 
+> 2001-point reference integration rather than a modelling inconsistency.
+
 The continuous stiffness representation enables this convergence study. With a fixed discrete table - as in the original NREL reference definition, which provides properties at 11 stations - the structural description is tied to the prescribed stations and its axial resolution cannot be refined independently. The continuous representation decouples the member definition from its numerical discretization: the same YAML input can be sampled at any resolution, allowing convergence toward the reference solution to be progressively assessed.
 
 The degraded case makes this distinction explicit. At 8 elements the error in $U_y$ is larger than at 6, and the sign reverses - a non-monotone behaviour indicating insufficient axial resolution near the degraded region. This diagnostic is only possible because the reference stiffness field is defined continuously. Without a continuous reference representation, convergence behaviour cannot be assessed independently of the adopted station discretization.
