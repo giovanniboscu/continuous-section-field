@@ -142,10 +142,6 @@ polynomial at each fixed $z$. They therefore do not change the nature of
 the cross-sectional integration: the spatial integrals remain closed-form
 polygonal quantities.
 
-This property does not extend to the Saint-Venant torsional constant, which
-requires the solution of a warping problem over the full section domain and
-is treated separately.
-
 The standard separable formulation is recovered as the special case in which
 all zones share the same stiffness carrier:
 
@@ -227,6 +223,24 @@ discretization along the member axis must therefore be driven by the
 downstream workflow, for example through uniform sampling, Gauss-Lobatto
 stations, solver integration points, or dense reference grids.
 
+
+
+
+
+
+
+The formulation above provides exact evaluation of all sectional quantities
+that can be expressed as weighted area integrals over the continuous field.
+For these quantities, the combination of polygonal geometry and participation
+fields yields a direct closed-form solution at any station, without numerical
+quadrature in the cross-sectional plane.
+
+The Saint-Venant torsional constant is a notable exception. Its evaluation
+requires the solution of a warping problem over the full section domain and
+cannot be reduced to a weighted area integral. For this reason, CSF delegates
+its computation to external section-analysis solvers such as
+`sectionproperties`, while retaining the same continuous geometric and
+participation-field description.
 
 ---
 
