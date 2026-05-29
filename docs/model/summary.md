@@ -18,13 +18,13 @@ In current structural analysis practice, the definition of section properties fo
 
 Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required input for a numerical model is not a single section, but a longitudinal field of section properties such as $A(z)$, $I_x(z)$, $I_y(z)$, $EI_x(z)$, $GJ(z)$, and mass-related quantities. When this field is defined inside the solver, it cannot be validated, inspected, or reused independently.
 
-CSF addresses this by extracting the sectional field definition into a dedicated pre-solver layer. A member is represented as a continuous sectional field composed of evolving polygonal geometry together with two participation fields: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. This representation is defined, evaluated, inspected, and validated independently of any downstream solver. The solver receives a station-wise projection of an already defined continuous field — not a table that defines the model itself.
+CSF addresses this by extracting the sectional field definition into a dedicated pre-solver layer. A member is represented as a continuous sectional field composed of evolving polygonal geometry together with two participation fields: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. This representation is defined, evaluated, inspected, and validated independently of any downstream solver. The solver receives a station-wise projection of an already defined continuous field - not a table that defines the model itself.
 
 The result is a clean separation between three concerns that are normally conflated: the continuous physical model of the member, the numerical sampling strategy required by the solver, and the exported data format consumed by a specific tool.
 
 Cross-section analysis tools such as VABS [REF] and BECAS [REF] provide accurate computation of beam sectional properties for arbitrary geometries and composite materials, and are widely adopted in wind-turbine and aerospace applications. Open-source alternatives such as `sectionproperties` [REF] offer similar capabilities within a Python ecosystem. These tools are primarily designed to analyse individual cross-sections: given a sectional geometry and material definition, they return the corresponding sectional properties at that station.
 
-The longitudinal variation of the member — including tapering geometry, spatially varying material participation, or local stiffness degradation — is therefore usually represented outside the section-analysis tool, either through user-defined station tables or through the discretization adopted by the downstream structural solver. As a consequence, the sectional description is often tied to a specific mesh or analysis workflow, rather than being defined as an independent continuous model.
+The longitudinal variation of the member - including tapering geometry, spatially varying material participation, or local stiffness degradation - is therefore usually represented outside the section-analysis tool, either through user-defined station tables or through the discretization adopted by the downstream structural solver. As a consequence, the sectional description is often tied to a specific mesh or analysis workflow, rather than being defined as an independent continuous model.
 
 On the theoretical side, Balduzzi et al. [Balduzzi 2016] showed that non-prismatic beam analysis requires the axial derivatives of cross-sectional quantities, such as $\frac{dA}{dz}$ and $\frac{dI}{dz}$, as explicit terms in the governing equations. The formulation therefore depends on continuous sectional functions, not solely on values evaluated at discrete stations. This highlights the need for programmable descriptions capable of generating consistent geometric and constitutive quantities, and their axial variation, at arbitrary locations along the member axis.
 
@@ -67,7 +67,7 @@ $$
 
 where $f(x,y)$ is the integrand corresponding to the property of interest (unity for area, $y^2$ for the second moment of area about the $x$-axis, and so on). Geometry $\Omega_i$ and the axial/bending field $w_i$ are fully decoupled: one can vary independently of the other.
 
-For polygonal domains, the area integrals are evaluated exactly via Green's theorem, reducing each double integral to a closed-form sum over the polygon edges. This applies to all integrals whose spatial integrands $f(x,y)$ are polynomial in $x$ and $y$ — area, first moments ($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and product of inertia ($I_{xy}$). The participation fields $w_i(z)$ and $\kappa_i(z)$ depend on $z$ only, not on $x$ and $y$; they factor out of the area integral as station-wise scalars, so the spatial integration remains polynomial at each fixed $z$ and the spatial integrals remain closed-form polygonal quantities.
+For polygonal domains, the area integrals are evaluated exactly via Green's theorem, reducing each double integral to a closed-form sum over the polygon edges. This applies to all integrals whose spatial integrands $f(x,y)$ are polynomial in $x$ and $y$ - area, first moments ($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and product of inertia ($I_{xy}$). The participation fields $w_i(z)$ and $\kappa_i(z)$ depend on $z$ only, not on $x$ and $y$; they factor out of the area integral as station-wise scalars, so the spatial integration remains polynomial at each fixed $z$ and the spatial integrals remain closed-form polygonal quantities.
 
 The standard separable formulation is recovered as the special case in which the axial/bending field is uniform across zones:
 
@@ -119,11 +119,11 @@ The longitudinal variation therefore arises from two independent mechanisms:
 
 The resulting sectional field is obtained through the composition of these two contributions.
 
-CSF does not prescribe or perform axial integration of these functions; it provides an evaluable continuous field. Any integration or discretisation along the member axis must therefore be driven by the downstream workflow — for example through uniform sampling, Gauss-Lobatto stations, solver integration points, or dense reference grids.
+CSF does not prescribe or perform axial integration of these functions; it provides an evaluable continuous field. Any integration or discretisation along the member axis must therefore be driven by the downstream workflow - for example through uniform sampling, Gauss-Lobatto stations, solver integration points, or dense reference grids.
 
 For all quantities that can be expressed as weighted area integrals, the combination of polygonal geometry and participation fields yields a direct closed-form evaluation at any station, without numerical quadrature in the cross-sectional plane.
 
-The Saint-Venant torsional constant is a notable exception. Area-integral properties are separable — geometry and participation factor cleanly — but Saint-Venant torsion is not: the torsional constant cannot be reduced to a weighted area integral, because the warping field couples geometry and material across the section. CSF therefore treats torsion separately. For sections tagged as closed cells or open thin walls, CSF evaluates an internal geometric torsional constant from thin-walled approximations (the Bredt formula for closed cells and the $b\,t^3/3$ estimate for open walls), and the shear/torsion participation enters as a single section-level value rather than zone by zone. For general solid sections, multi-cell configurations, connected cell–wall systems, or cases requiring higher accuracy, the continuous geometric field can be passed to `sectionproperties` through the CSF bridge `csf_sp` for a full warping analysis, while retaining the same continuous geometric and participation-field description.
+The Saint-Venant torsional constant is a notable exception. Area-integral properties are separable - geometry and participation factor cleanly - but Saint-Venant torsion is not: the torsional constant cannot be reduced to a weighted area integral, because the warping field couples geometry and material across the section. CSF therefore treats torsion separately. For sections tagged as closed cells or open thin walls, CSF evaluates an internal geometric torsional constant from thin-walled approximations (the Bredt formula for closed cells and the $b\,t^3/3$ estimate for open walls), and the shear/torsion participation enters as a single section-level value rather than zone by zone. For general solid sections, multi-cell configurations, connected cell–wall systems, or cases requiring higher accuracy, the continuous geometric field can be passed to `sectionproperties` through the CSF bridge `csf_sp` for a full warping analysis, while retaining the same continuous geometric and participation-field description.
 
 ---
 
@@ -151,7 +151,7 @@ The participation fields $w_i(z)$ and $\kappa_i(z)$ are user-defined functions o
 | C | Polygonal representation | Curved boundaries must be approximated by polygon discretisation |
 | D | Straight element axis | CSF models a single element along a straight $z$-axis; curved members are not supported |
 
-Multiple straight elements can be composed in sequence — each with its own geometry and participation fields — to represent members of arbitrary length and cross-sectional evolution.
+Multiple straight elements can be composed in sequence - each with its own geometry and participation fields - to represent members of arbitrary length and cross-sectional evolution.
 
 ---
 
@@ -313,13 +313,13 @@ $$
 \quad [\%]
 $$
 
-#### Case A — undegraded tower
+#### Case A - undegraded tower
 
 For the undegraded configuration, the stiffness field varies smoothly and monotonically. Convergence is rapid: a small number of beam elements is sufficient to reproduce the reference response with negligible error.
 
 The transverse displacement $U_y$ converges at low discretization levels. The torsional rotation $R_z$ stabilises quickly and exhibits a small residual offset of approximately $3.44 \times 10^{-3}\,\%$ across all tested discretization levels. This offset is attributed to the thin-walled torsional approximation adopted internally by the CSF workflow, whereas the analytical reference uses the exact circular torsional constant $J = \tfrac{\pi}{2}(R_o^4 - R_i^4)$.
 
-#### Case B — degraded tower
+#### Case B - degraded tower
 
 In the degraded configuration, the geometry is unchanged but the participation field $w_i(z)$ introduces localized stiffness reductions along a portion of the tower height. This produces sharper axial variation in the sectional stiffness distribution.
 
@@ -348,9 +348,9 @@ Table 2 reports the relative errors in tip displacement $U_y$ and torsional rota
 | Degraded   | 24 | +9.57×10⁻⁴ | −2.75×10⁻³ |
 | Degraded   | 32 | +2.80×10⁻⁴ | −3.48×10⁻³ |
 
-The continuous stiffness representation enables this convergence study. With a fixed discrete table — as in the original NREL reference definition, which provides properties at 11 stations — the structural description is tied to the prescribed stations and its axial resolution cannot be refined independently. The continuous representation decouples the member definition from its numerical discretization: the same YAML input can be sampled at any resolution, allowing convergence toward the reference solution to be progressively assessed.
+The continuous stiffness representation enables this convergence study. With a fixed discrete table - as in the original NREL reference definition, which provides properties at 11 stations - the structural description is tied to the prescribed stations and its axial resolution cannot be refined independently. The continuous representation decouples the member definition from its numerical discretization: the same YAML input can be sampled at any resolution, allowing convergence toward the reference solution to be progressively assessed.
 
-The degraded case makes this distinction explicit. At 8 elements the error in $U_y$ is larger than at 6, and the sign reverses — a non-monotone behaviour indicating insufficient axial resolution near the degraded region. This diagnostic is only possible because the reference stiffness field is defined continuously. Without a continuous reference representation, convergence behaviour cannot be assessed independently of the adopted station discretization.
+The degraded case makes this distinction explicit. At 8 elements the error in $U_y$ is larger than at 6, and the sign reverses - a non-monotone behaviour indicating insufficient axial resolution near the degraded region. This diagnostic is only possible because the reference stiffness field is defined continuously. Without a continuous reference representation, convergence behaviour cannot be assessed independently of the adopted station discretization.
 
 #### Observations
 
