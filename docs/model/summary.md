@@ -464,12 +464,12 @@ weight law differs between the two cases.
 
 ### Validation design
 
-The validation compares two independent computational paths that share the
-same YAML input:
+Both paths start from the same YAML definition of the continuous sectional
+field, but they evaluate it through different computational procedures::
 
 ```text
 Path 1:  YAML → CSF sectional properties → OpenSees beam model → tip response
-Path 2:  YAML → CSF continuous field → dense numerical integration → reference response
+Path 2:  YAML → independent continuous field evaluation → dense numerical integration → reference response
 ```
 
 Path 1 samples the continuous stiffness field at a finite number of stations,
