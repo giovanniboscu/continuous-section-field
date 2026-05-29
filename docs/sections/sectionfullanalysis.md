@@ -1,324 +1,226 @@
-# CSF  Section Full Analysis Output
+# CSF - Section Full Analysis Output
 
-This document explains **all quantities reported by the CSF _Section Full Analysis_**.
+This document explains **all quantities reported by the CSF _Section Full Analysis_**. It is intended as a clear, engineering-oriented reference for users who want to:
 
-It is intended as a **clear, engineering-oriented reference** for users who want to:
 - understand what each value represents,
 - know how it is computed in CSF,
-- understand **the validity domain and limitations** of each quantity.
+- understand the **validity domain and limitations** of each quantity.
 
-Whenever a quantity depends on **a specific modelling choice or policy** defined elsewhere (e.g. torsion selection rules), this is marked with **double asterisks `**`** and explicitly noted.
+Whenever a quantity depends on a specific modelling choice or policy defined elsewhere (e.g. torsion selection rules), this is explicitly noted.
 
-[CSF sectionproperties mapping table](#csf-sectionproperties-mapping-table)
+[CSF–sectionproperties mapping table](#csfsectionproperties-mapping-table)
 
 ---
 
-### Relation to existing tools and structural limitations
+## Relation to existing tools and structural limitations
 
-Most section properties evaluated by CSF follow directly from the weighted
-area-integral formulation. The Saint-Venant torsional constant
-$J_\mathrm{sv}$ is the one exception: it depends on the full geometry of the
-section through a warping problem and cannot be obtained from a direct area
-integral.
+Most section properties evaluated by CSF follow directly from the weighted area-integral formulation. The Saint-Venant torsional constant $J_\mathrm{sv}$ is the one exception: it depends on the full geometry of the section through a warping problem and cannot be obtained from a direct area integral.
 
-CSF provides an internal approximation of $J_\mathrm{sv}$ when the user
-explicitly tags polygons as closed cells (`@cell`) or open thin walls
-(`@wall`). Untagged polygons are ignored by the internal CSF torsional
-approximation. For each category, CSF computes and reports the contributions
-independently:
+CSF provides an internal approximation of $J_\mathrm{sv}$ when the user explicitly tags polygons as closed cells (`@cell`) or open thin walls (`@wall`). Untagged polygons are ignored by the internal CSF torsional approximation. For each category, CSF computes and reports the contributions independently:
 
 $$J_\mathrm{sv,cell} = \sum_k \frac{4 A_{m,k}^2\, t_k}{b_{m,k}}, \qquad
 J_\mathrm{sv,wall} = \sum_i \frac{b_i\, t_i^3}{3}$$
 
-where the first term applies the Bredt formula to each closed cell using the
-mean enclosed area and mean perimeter, and the second term sums the thin-wall
-contribution of each open wall. The two quantities are presented separately
-so that the user can inspect the relative weight of each contribution and
-verify that each component is physically meaningful. Their combination is not
-enforced by CSF and is valid only under the following hypotheses: cells and
-walls do not share closed contours, all components have the same unit twist,
-open walls have free ends, and thin-wall assumptions hold throughout.
+where the first term applies the Bredt formula to each closed cell using the mean enclosed area and mean perimeter, and the second term sums the thin-wall contribution of each open wall. The two quantities are presented separately so that the user can inspect the relative weight of each contribution and verify that each component is physically meaningful. Their combination is not enforced by CSF and is valid only under the following hypotheses: cells and walls do not share closed contours, all components have the same unit twist, open walls have free ends, and thin-wall assumptions hold throughout.
 
-Beyond these hypotheses - thick-walled sections, multi-cell configurations
-with shared walls, or open walls physically connected to a cell boundary -
-the internal CSF approximation is no longer valid. In those cases CSF must
-export the polygonal geometry at the required stations to a finite-element
-section solver such as `sectionproperties` for a full Saint-Venant warping
-analysis.
+Beyond these hypotheses - thick-walled sections, multi-cell configurations with shared walls, or open walls physically connected to a cell boundary - the internal CSF approximation is no longer valid. In those cases CSF must export the polygonal geometry at the required stations to a finite-element section solver such as `sectionproperties` for a full Saint-Venant warping analysis.
 
-More broadly, CSF is not a section-analysis tool and does not replace
-finite-element section solvers. Its role is to provide a continuous,
-evaluable geometric and participation field. Where the properties computed
-directly by CSF are sufficient, as in many practical beam and tower models,
-no external solver is required. Where they are not, the continuous geometric
-field serves as the input to a more detailed analysis, with the station
-sampling fully controlled by the user.
-
+More broadly, CSF is not a section-analysis tool and does not replace finite-element section solvers. Its role is to provide a continuous, evaluable geometric and participation field. Where the properties computed directly by CSF are sufficient, as in many practical beam and tower models, no external solver is required. Where they are not, the continuous geometric field serves as the input to a more detailed analysis, with the station sampling fully controlled by the user.
 
 ---
 
 ## General Notes
 
-- All quantities are computed **purely from geometry and polygon weight or shear_weight**. Weight is used for axial and flexural sectional properties;
-shear_weight is used for torsional stiffness. 
+- All quantities are computed **purely from geometry and polygon `weight` or `shear_weight`**. `weight` is used for axial and flexural sectional properties; `shear_weight` is used for torsional stiffness. (`weight` corresponds to the axial/bending field $w_i$ and `shear_weight` to the shear/torsion field $\kappa_i$.)
 - No assumptions are made about profile families (I, H, box, tube, etc.).
 - Polygon `weight` is treated as a **scalar field multiplier** (e.g. modular ratio, material factor).
 
 ---
 
-## 1. Area (A)
+## Section property quantities (1–15)
+
+### 1. Area (A)
 
 **Key:** `A`
 
-**Definition**  
-Total **cross-sectional area**, including the effect of polygon weights.
+**Definition** - Total cross-sectional area, including the effect of polygon weights.
 
-Plain-text formula:
+`A = Σ_i ( w_i · A_i )`
 
-A = sum( w_i * A_i )
-
-where:
-- A_i = signed area of polygon i
-- w_i = polygon weight
+where `A_i` is the signed area of polygon `i` and `w_i` is the polygon weight.
 
 **Notes**
 - Can be reduced or increased by weighted sub-domains.
 - Must be non-zero for a valid section.
 
----
-
-## 2. Centroid Cx
+### 2. Centroid Cx
 
 **Key:** `Cx`
 
-Horizontal coordinate of the **geometric centroid**.
+Horizontal coordinate of the geometric centroid.
 
-Plain-text formula:
+`Cx = Σ_i ( w_i · A_i · x_i ) / Σ_i ( w_i · A_i )`
 
-Cx = sum( w_i * A_i * x_i ) / sum( w_i * A_i )
-
----
-
-## 3. Centroid Cy
+### 3. Centroid Cy
 
 **Key:** `Cy`
 
-Vertical coordinate of the **geometric centroid**.
+Vertical coordinate of the geometric centroid.
 
-Plain-text formula:
+`Cy = Σ_i ( w_i · A_i · y_i ) / Σ_i ( w_i · A_i )`
 
-Cy = sum( w_i * A_i * y_i ) / sum( w_i * A_i )
-
----
-
-## 4. Inertia Ix
+### 4. Inertia Ix
 
 **Key:** `Ix`
 
-Second moment of area about the **centroidal X-axis**.
+Second moment of area about the centroidal X-axis. Computed using Green's theorem with parallel-axis correction.
 
-Computed using Green’s theorem with parallel-axis correction.
-
----
-
-## 5. Inertia Iy
+### 5. Inertia Iy
 
 **Key:** `Iy`
 
-Second moment of area about the **centroidal Y-axis**.
+Second moment of area about the centroidal Y-axis.
 
----
-
-## 6. Inertia Ixy
+### 6. Inertia Ixy
 
 **Key:** `Ixy`
 
 Product of inertia about centroidal axes.
 
 **Notes**
-- Zero value indicates symmetry with respect to X or Y axes.
+- A zero value indicates symmetry with respect to the X or Y axis.
 
----
-
-## 7. Polar Moment (Ip)
+### 7. Polar Moment (Ip)
 
 **Key:** `Ip`
 
 Polar second moment of area:
 
-Ip = Ix + Iy
+`Ip = Ix + Iy`
 
 **Notes**
 - Purely geometric.
 - **Not** a torsional stiffness for non-circular sections.
 
----
-
-## 8. Principal Inertia I1
+### 8. Principal Inertia I1
 
 **Key:** `I1`
 
 Major principal second moment of area.
 
----
-
-## 9. Principal Inertia I2
+### 9. Principal Inertia I2
 
 **Key:** `I2`
 
 Minor principal second moment of area.
 
----
-
-## 10. Radius of Gyration rx
+### 10. Radius of Gyration rx
 
 **Key:** `rx`
 
-Plain-text formula:
-
-rx = sqrt( Ix / A )
+`rx = sqrt( Ix / A )`
 
 Represents the distribution of area relative to the X-axis.
 
----
-
-## 11. Radius of Gyration ry
+### 11. Radius of Gyration ry
 
 **Key:** `ry`
 
-Plain-text formula:
+`ry = sqrt( Iy / A )`
 
-ry = sqrt( Iy / A )
-
----
-
-## 12. Elastic Section Modulus Wx
+### 12. Elastic Section Modulus Wx
 
 **Key:** `Wx`
 
-Elastic section modulus for bending about the **X-axis**.
+Elastic section modulus for bending about the X-axis.
 
-Plain-text formula:
+`Wx = Ix / c_y,max`
 
-Wx = Ix / c_y,max
+where `c_y,max` is the maximum distance from the centroid to the extreme fibres.
 
-where c_y,max is the maximum distance from the centroid to the extreme fibers.
-
----
-
-## 13. Elastic Section Modulus Wy
+### 13. Elastic Section Modulus Wy
 
 **Key:** `Wy`
 
-Elastic section modulus for bending about the **Y-axis**.
+Elastic section modulus for bending about the Y-axis.
 
-Plain-text formula:
+`Wy = Iy / c_x,max`
 
-Wy = Iy / c_x,max
-
----
-
-## 14. Torsional Rigidity K
+### 14. Torsional Rigidity K
 
 **Key:** `K_torsion`
 
 Semi-empirical torsional stiffness approximation.
 
-Plain-text formula:
-
-K ≈ A^4 / (40 * Ip)
-
-where Ip = Ix + Iy.
+`K ≈ A^4 / ( 40 · Ip )`,  with `Ip = Ix + Iy`.
 
 **Notes**
 - Always defined.
 - Low physical fidelity.
 
----
-
-## 15. First Moment of Area `Q_na`
+### 15. First Moment of Area (Q_na)
 
 **Key:** `Q_na`
 
-First moment of area of the **portion of the section located on one side of the neutral axis** (used in shear stress evaluation).
+First moment of area of the portion of the section located on one side of the neutral axis (used in shear-stress evaluation).
 
 Let the neutral axis be the centroidal axis `y = 0`. Then:
 
-`Q_na(z) = Σ_i w_i(z) * ∫_{A_i(y > 0)} y dA`
+`Q_na(z) = Σ_i w_i(z) · ∫_{A_i(y > 0)} y dA`
 
-where the integral is taken over the sub-area above the neutral axis  
-(the lower portion may equivalently be used in absolute value).
+where the integral is taken over the sub-area above the neutral axis (the lower portion may equivalently be used in absolute value).
 
-Note:
-
-- Over the **entire section**, `∫_A y dA = 0` for centroidal axes.
-- `Q_na` is therefore computed over a **partial area**, not the full section.
-
-Typical use in shear stress estimation:
-
-`tau = V * Q / (I * b)`
-
-where `Q` is the first moment of the sub-area cut by the neutral axis,
-evaluated consistently with the same weighted section model.
+**Notes**
+- Over the entire section, `∫_A y dA = 0` for centroidal axes; `Q_na` is therefore computed over a **partial** area, not the full section.
+- Typical use in shear-stress estimation: `tau = V · Q / ( I · b )`, where `Q` is the first moment of the sub-area cut by the neutral axis, evaluated consistently with the same weighted section model.
 
 ---
-## 16 - 17 Torsion constant methods for tagged polygons (`@cell` / `@wall`)
 
-The torsional constants computed from polygons tagged as `@cell` or `@wall` are CSF thin-wall estimates.
+## Torsion constants (16–19)
 
-They provide fast geometry-based approximations and, depending on the polygon geometry, may reach a very acceptable level of accuracy.
+The torsional constants computed from polygons tagged `@cell` or `@wall` are CSF thin-wall estimates. They provide fast geometry-based approximations and, depending on the polygon geometry, may reach a very acceptable level of accuracy. The assessment of applicability and accuracy remains the user's responsibility. For a more complete torsional analysis, CSF can be coupled with `sectionproperties` through the `csf_sp` bridge.
 
-The assessment of applicability and accuracy remains the user’s responsibility.
+CSF reports several torsion-related quantities; use the right one for the geometry:
 
-For a more complete torsional analysis, CSF can be coupled with `sectionproperties` through the `csf_sp` bridge.
+- **`J_sv_cell` / `J_sv_wall`** (§16–17) - thin-walled estimates for sections tagged as closed cells / open walls.
+- **`J_s_vroark`** (§18) - equivalent-rectangle estimate for compact solid sections (tag-free).
+- **`K_torsion`** (§14) - low-fidelity empirical fallback, always defined.
 
-[Saint-Venant Torsional Constant - CSF Summation Assumptions ](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md)
+For the validity hypotheses of the cell–wall summation, see [Saint-Venant Torsional Constant - CSF summation assumptions](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md).
 
-**Key:** `J_sv_cell`   `J_sv_wall` 
+### Tags: `@cell` and `@wall`
 
-### Thin-walled torsion tags: `@cell` and `@wall`
+In CSF, `@cell` and `@wall` are **tags applied to polygon names**. They classify specific polygons for dedicated thin-walled torsion calculations:
 
-In CSF, `@cell` and `@wall` are **tags applied to polygon names**.\
-They classify specific polygons for dedicated thin-walled torsion
-calculations.
+- `@cell` → polygon is treated as a **closed thin-walled cell**
+- `@wall` → polygon is treated as an **open thin-walled wall**
 
--   `@cell` → polygon is treated as a **closed thin-walled cell**
--   `@wall` → polygon is treated as an **open thin-walled wall**
+These tags are **not geometric operations**: they do not modify the shape. They only define which polygons are included in the corresponding torsional path.
 
-These tags are **not geometric operations**: they do not modify the
-shape.\
-They only define which polygons are included in the corresponding
-torsional path.
+**Selection rule** (case-insensitive):
 
-Polygons without these tags are **ignored** in `J_sv` computations.
+- Cell path: name contains `@cell` or `@closed`
+- Wall path: name contains `@wall`
 
+All other polygons are **ignored** by these functions and do not contribute to `J_sv`.
 
 > In section-analysis outputs, `J_sv_cell` and `J_sv_wall` may carry the torsional contribution together with the associated thickness parameter `t` when the tagged geometry is represented by a single polygon.
 
-------------------------------------------------------------------------
+**Behavior.** `J_sv` (both `@cell` and `@wall`) is computed exclusively from the tagged polygons:
 
-### Behavior
+- only their **midline geometry** and **thickness** are used;
+- each tagged polygon is treated as an **independent entity**;
+- there is **no interaction** with other polygons (including nesting/composition).
 
-`J_sv` (both `@cell` and `@wall`) is computed exclusively from the
-tagged polygons:
+Any additional polygons or inclusions (e.g. rebars, inner shapes):
 
--   only their **midline geometry** and **thickness** are used
--   each tagged polygon is treated as an **independent entity**
--   **no interaction** with other polygons (including
-    nesting/composition)
+- do **not** modify the wall path,
+- do **not** contribute to `J_sv`,
+- may still contribute to homogenized/global properties (`A`, `Ix`, `Iy`, …).
 
-Any additional polygons or inclusions (e.g. rebars, inner shapes):
+**Example.**
 
--   do **not** modify the wall path
--   do **not** contribute to `J_sv`
--   may still contribute to homogenized/global properties (`A`, `Ix`,
-    `Iy`, ...)
-
-------------------------------------------------------------------------
-
-### Example
-
-``` yaml
+```yaml
 polygons:
   - name: outer_shell@cell
     points: [...]
@@ -339,194 +241,69 @@ polygons:
 
 Interpretation:
 
--   `outer_shell@cell` → used to compute `J_sv_cell`
--   `inner_void` → ignored in `J_sv_cell` (even if inside)
--   `rebar_row_*` → ignored in `J_sv_cell`, but included in `A`, `Ix`,
-    `Iy`
+- `outer_shell@cell` → used to compute `J_sv_cell`
+- `inner_void` → ignored in `J_sv_cell` (even if inside)
+- `rebar_row_*` → ignored in `J_sv_cell`, but included in `A`, `Ix`, `Iy`
 
----
-
-### Key point
-
-`@cell` / `@wall` define **which polygons enter the torsional model**,\
-not how the global geometry is composed.
-
-
-### Torsional contribution of `@cell` and `@wall` polygons
-
-The torsional stiffness is computed as the sum of the contributions of all polygons participating in the torsion path.
-
-This note documents the *implemented* methods used by:
-
-- `compute_saint_venant_J_cell(section)`
-- `compute_saint_venant_J_wall(section)`
-
-These routines do **not** solve the general Saint-Venant torsion boundary-value problem (Prandtl stress function / warping).
-They compute **model-based** torsion constants under thin-walled assumptions, restricted to **user-selected polygons**.
-
-> **Note:** `@t=` can be defined with different values at `S0` and `S1`.  
-> Intermediate sections use **linear interpolation** of `t` along `z`.
-
+**Key point.** `@cell` / `@wall` define **which polygons enter the torsional model**, not how the global geometry is composed.
 
 ![softwarex_props](https://github.com/user-attachments/assets/c4b03d5c-544c-4d18-9821-e05facd651b7)
 
+### Thickness handling
 
----
+A thickness may be encoded in the polygon name as `...@t=<value>` (metres, e.g. `...@t=0.010`). Parsing rules: `@t=` is case-insensitive; parsing stops at the first character not in `0–9 . + - e E`; the thickness must be strictly positive (`t > 0`) or it is rejected.
 
-## Common inputs and conventions
+**Priority.** For each tagged polygon the thickness is selected as follows:
 
-### Tagging (polygon selection)
-
-Only polygons whose **name** contains the relevant token are used:
-
-- **Cell method:** name contains `@cell` or `@closed` (case-insensitive)
-- **Wall method:** name contains `@wall` (case-insensitive)
-
-All other polygons are **ignored** by these functions.
-
-### Thickness token (`@t=<value>`)
-
-A thickness may be encoded in the polygon name as:
-
-- `...@t=0.010`  (meters)
-
-Parsing rules (both functions):
-
-- Case-insensitive `@t=`
-- Parsing stops at the first character that is not one of: `0–9 . + - e E`
-- Thickness must be strictly positive (`t > 0`) or it is rejected
-
----
-
-## Thickness 
-### Required parameters (user-specified)
-
-
-
-### Important: Thickness Rule for `@cell` and @wall Polygons
-
-The thickness parameter `t` follows the rules below.
-
-### 1. `@cell` without `t`
-
-If no thickness is provided, it is **deduced from geometry**:
-
-`t = 2A / P`
-
-where:
-
--   `A` = polygonal cell area
--   `P` = total cell perimeter (outer + inner boundaries)
-
-This rule assumes a **thin‑walled closed cell with uniform thickness**.
-
-
-###  Variation along the member axis
-
-###  `t` provided in both sections
-
-If thickness is specified in **both** sections (`S0` and `S1`), it is **linearly interpolated** along the member axis:
-
-`t(z) = t0 + (t1 - t0) * (z - z0) / (z1 - z0)`
-
-where
-
-- `t0`, `t1` are the thickness values at sections `S0` and `S1`
-- `z0`, `z1` are the corresponding axial coordinates
-
-### `t` provided in only one section
-
-If thickness is specified in **only one section**, it is assumed **constant** along the member:
-
-`t(z) = t_provided`
-
----
-
-### Summary
-
-| Case | Behavior |
-|-----|-----|
-| `t` not provided in S0 and S1 | `t(z) = 2A(z) / P(z)` |
-| `t` provided in both sections | linear interpolation |
-| `t` provided in only one section | constant thickness |
-
-
-
-
-
-
-
-## 16. `compute_saint_venant_J_cell(section)`
-
-**Key:** `J_sv_cell`  
-
-## Purpose
-
-Compute a **closed single-cell** torsional constant using a **Bredt–Batho** style formula
-for a **thin-walled closed section** with (assumed) **constant thickness**.
-
-This function only uses polygons tagged `@cell` or `@closed`.
-
-If no `@cell` polygons are present, the current implementation returns `0`.
-
-## `@cell` Polygon Encoding Requirements
-
-This note describes the **strict geometric and data-encoding conditions** required by the current CSF closed-cell torsion routine:
-
-- `compute_saint_venant_J_cell(section)`
-- Bredt–Batho **single-cell**, **thin-walled**, **constant thickness** (`@t=...`)
-- A closed cell is represented as **two loops encoded inside one polygon** (the “slit” encoding).
-
----
-## Required naming and parameters
-
-### Tag to activate the closed-cell path
-The polygon **must** be tagged in its name:
-
-- `@cell`  (preferred)
-
-Example:
-
-```yaml
-poly@cell@t=0.5
+```text
+1. explicit thickness from polygon name: @t=<value>
+2. automatic geometric estimate
 ```
 
----
+The explicit form has priority (e.g. `polygon_name@wall@t=0.02`); if `@t=` is present, the estimator is not used.
 
-## Required vertex encoding: **two closed loops in one `vertices` list**
+**Geometric estimate (no `@t=`):**
 
-A single `@cell` polygon encodes **two loops** concatenated into one `vertices` array.
+- `@cell` → `t = 2A / P`, where `A` is the cell area and `P` is the total cell perimeter (outer + inner). Assumes a thin-walled closed cell of uniform thickness.
+- `@wall` → `t_global = ( P − sqrt( P² − 16A ) ) / 4`, obtained from the rectangular-strip relations `A = L·t`, `P = 2L + 2t` solved for the smaller dimension `t`. For open walls `t_global` is preferred over `2A/P` because `2A/P` underestimates the thickness of a strip.
 
-### Exactly two loops
-The routine expects **exactly two** closed loops:
+**Variation along the member axis.** If the thickness is given at both reference stations `S0` and `S1`, it is linearly interpolated: `t(z) = t0 + (t1 − t0)·(z − z0)/(z1 − z0)`. If given at only one station, it is held constant: `t(z) = t_provided`. If given at neither, the geometric estimate above is evaluated at each station.
 
-- one outer boundary
-- one inner boundary
+**Summary.**
 
-(“Multiple holes” inside the same `@cell` polygon are **not** supported by this routine.)
+```text
+@wall@t=<value>  -> explicit thickness
+@wall            -> Tglobal estimate
+@cell            -> 2A/P estimate
+```
 
----
+| Case | Behavior |
+|---|---|
+| `t` not provided | geometric estimate per station |
+| `t` provided at both `S0` and `S1` | linear interpolation |
+| `t` provided at one section only | constant thickness |
 
-##  Orientation conventions
+> The routines `compute_saint_venant_J_cell(section)` and `compute_saint_venant_J_wall(section)` do **not** solve the general Saint-Venant boundary-value problem (Prandtl stress function / warping). They compute **model-based** torsion constants under thin-walled assumptions, restricted to user-selected polygons.
 
-For consistency with CSF conventions, use:
+### 16. `compute_saint_venant_J_cell` - `J_sv_cell`
 
-- **Outer loop:** counter-clockwise (**CCW**)
-- **Inner loop:** clockwise (**CW**)
+**Key:** `J_sv_cell`
 
-This is an **input convention**. The routine may internally normalize orientation for midline construction, but you should keep the encoding consistent to avoid confusion and reduce failure modes.
+**Purpose.** Compute a closed single-cell torsional constant using a Bredt–Batho style formula for a thin-walled closed section with (assumed) constant thickness. This function uses only polygons tagged `@cell` or `@closed`. If no `@cell` polygons are present, the current implementation returns `0`.
 
----
-## Minimal YAML examples
+**Vertex encoding.** A single `@cell` polygon encodes **two closed loops** concatenated into one `vertices` array (the "slit" encoding): exactly one outer boundary and one inner boundary. Multiple holes inside the same `@cell` polygon are not supported.
+
+**Orientation convention** (input): outer loop counter-clockwise (CCW), inner loop clockwise (CW). The routine may internally normalize orientation for midline construction, but consistent encoding reduces failure modes.
+
+**Minimal YAML example.**
 
 ```yaml
-
 CSF:
   sections:
     S0:
       z: 0.000000
       polygons:
-        box1@cell: #or  box1@cell@t=1
+        box1@cell: # or box1@cell@t=1
           weight: 1.000000
           vertices:
             # OUTER loop (CCW)
@@ -542,11 +319,10 @@ CSF:
             - [9.0, 5.0]
             - [9.0, 1.0]
             - [1.0, 1.0]
-
     S1:
       z: 10.000000
       polygons:
-        box1@cell:#or  box1@cell@t=1
+        box1@cell: # or box1@cell@t=1
           weight: 1.000000
           vertices:
             # OUTER loop (CCW)
@@ -562,220 +338,45 @@ CSF:
             - [9.0, 5.0]
             - [9.0, 1.0]
             - [1.0, 1.0]
-
-
 ```
 
+**Practical checklist.** A `@cell` polygon is valid if all of the following hold:
 
+1. name includes `@cell` (or `@closed`);
+2. name includes `@t=<t>` with `t > 0`;
+3. `vertices` contains **two** loops;
+4. the outer loop encloses the inner loop and has the larger area magnitude.
 
-Notes:
+### 17. `compute_saint_venant_J_wall` - `J_sv_wall`
 
-- The example follows the input orientation convention: inner CW, outer CCW.
-- Use the same encoding for `S1` and any other station.
-
----
-
-## Practical guidance
-
-Use `@cell ... @t=` when you have a **closed thin-walled** single-cell representation and you can provide a reliable wall thickness.
-
-##  Practical checklist
-
-A `@cell` polygon is valid for v2 if all items below are true:
-
-
-1. Name includes `@cell` (or `@closed`).
-2. Name includes `@t=<t>` with $t > 0$.
-3. `vertices` contains **two** loops.
-4. Outer encloses inner and has **larger area magnitude**.
-
----
-
-## 17 compute_saint_venant_J_wall
 **Key:** `J_sv_wall`
 
-## Purpose
+**Purpose.** Compute a torsional constant for open thin-walled components, using polygons tagged `@wall`. This is an open-section thin-walled approximation applied per selected polygon, with an optional thickness override. If no `@wall` polygons are present, the current implementation returns `0`.
 
-Compute a torsional constant for **open thin-walled** components, using polygons tagged `@wall`.
-
-This is an **open-section thin-walled approximation** applied per selected polygon,
-with an optional thickness override.
-
-If no `@wall` polygons are present, the current implementation returns `0`.
-**Automatic wall-thickness estimate**
-
-For open thin-walled `@wall` polygons, when no explicit `@t=<value>` is provided, CSF estimates the effective thickness as:
+**Formula.** For each open wall `i`,
 
 $$
-t = \frac{P - \sqrt{P^2 - 16A}}{4}
+J_{\mathrm{sv,wall},i} \approx \frac{b_i\, t_i^3}{3} = \frac{A_i\, t_i^2}{3}
 $$
 
-where:
+where `b_i` is the wall length, `t_i` the effective thickness, and `A_i = b_i t_i` the polygon area; the two forms are identical. The total is `J_sv_wall = Σ_i J_sv,wall,i`. (Thickness selection and estimation follow the **Thickness handling** section above.)
 
-- \(P\) is the polygon perimeter;
-- \(A\) is the polygon area.
+**Geometry requirements.** The `@wall` routine does not reconstruct cells and does not support multi-loop encodings; it treats each `@wall` polygon as a single material patch. Each patch must be a **thin strip** ("rectanguloid"): two long edges along the midline, two short edges across the thickness, with midline length `b ≫ t`. If the patch is not strip-like, the formula `J ≈ A t²/3` is not a valid model. Prefer an explicit thickness for strips with noticeable curvature, non-rectangular ends, varying width, or local fillets/indentations.
 
-See Section 4.2.
+**Assumptions and limitations.**
 
-## Parameters: optional vs required
+- Intended for open thin-walled components represented as wall polygons.
+- Thickness may be user-specified (`@t=`) or estimated; the estimator is a geometric proxy and does not verify thin-wall validity.
+- Warping and shear-deformation effects are **not** modelled; no warping constants are computed.
+- Only tagged polygons are considered; untagged geometry is ignored.
+- Not intended for compact solids or general thick-walled regions.
 
-### Required
+**Recommended modelling pattern.** Model an open thin-walled section as a set of separate wall patches, one polygon per patch (web plates, flange plates, stiffener plates). Each patch can have its own `weight` and its own `@t=`.
 
-- `section` with at least one polygon tagged `@wall`
-
-### Optional (per wall polygon)
-
-- `@t=<value>` thickness override (meters)
-
-If `@t=` is absent, thickness is estimated from geometry (see below).
-
-
-## Assumptions and limitations
-
-- Intended for **open thin-walled** components represented as wall polygons.
-- Thickness may be **user-specified** (`@t=`) or **estimated** (`t = 2A/P`).
-- Using `t = (P - sqrt(P² - 16A)) / 4` is a geometric proxy; it does **not** verify thin-wall validity.
-- Warping and shear deformation effects are **not** modeled.
-- Only considers **tagged polygons**; untagged geometry is ignored.
-
----
-
-## Practical guidance
-
-- Use `@wall` for **open thin-walled** components (webs, flanges, plates) where strip-type torsion is appropriate.
-- If you need general torsion constants outside thin-walled assumptions, these routines are not sufficient (a Prandtl/warping solver is required).
-
-
-## Selection rule
-
-A polygon is handled by the `@wall` path if its name contains (case-insensitive):
-
----
-
-## Geometry requirements (non-obvious constraints)
-
-The `@wall` routine does **not** reconstruct cells and does **not** support multi-loop encodings. It treats each `@wall` polygon as a single material patch.
-
-
-### 4.2 Thin-strip (strip-like) shape (mandatory for validity)
-
-Each `@wall` polygon must represent a **thin strip of material**, i.e. a wall patch whose midline length $b$ is much larger than thickness $t$.
-This polygon is assumed to represent a thin rectangular wall patch (“rettangoloid” in 2D), i.e. a polygon that is well-approximated by a rectangle with:
-
-two long edges (wall midline direction),
-
-two short edges (thickness direction),
-
-thickness t much smaller than the long dimension.
-
----
-
-For open thin-wall polygons tagged as `@wall`, CSF needs an effective wall thickness $t$ to evaluate the Saint-Venant torsional approximation:
+**Minimal YAML example.** A thin rectangular strip of length `b = 1.0 m` and thickness `t = 0.02 m`:
 
 $$
-J_{\text{wall}} \approx \sum_i \frac{A_i t_i^2}{3}
-$$
-
-where $A_i$ is the polygon area and $t_i$ is the effective wall thickness.
-
-### Thickness priority
-
-For `@wall` polygons, the thickness is selected as follows:
-
-```text
-1. explicit thickness from polygon name: @t=<value>
-2. automatic global estimate: Tglobal
-```
-
-The explicit form has priority:
-
-```text
-polygon_name@wall@t=0.02
-```
-
-If `@t=` is present, the automatic estimator is not used.
-
-### Global estimator for open walls
-
-When no explicit thickness is provided, CSF estimates:
-
-$$
-t_{\text{global}} = \frac{P - \sqrt{P^2 - 16A}}{4}
-$$
-
-where:
-
-- $A$ is the polygon area;
-- $P$ is the polygon perimeter.
-
-This estimator comes from the rectangular strip relations:
-
-$$
-A = Lt
-$$
-
-$$
-P = 2L + 2t
-$$
-
-solved for the smaller dimension $t$.
-
-For open thin-wall polygons (`@wall`), `Tglobal` is preferred because it recovers the correct thickness for a rectangular strip, while `2A/P` underestimates it.
-
-## Summary
-
-```text
-@wall@t=<value>  -> use explicit thickness
-@wall            -> use Tglobal
-@cell            -> use 2A/P
-```
-
----
-
-Operationally:
-
-- the polygon should look like an “offset” of a centerline with two short closing edges
-- two long sides are roughly parallel
-- the patch is not a “block” or a “compact” solid region.
-
-If the patch is not strip-like, the formula $J_i \approx A t^2/3$ is not a valid model.
-
-### Prefer explicit thickness for complex shapes
-
-If the strip has:
-- noticeable curvature
-- non-rectangular ends
-- varying width
-- local fillets/indentations
-
----
-
-## 5) Recommended modeling pattern
-
-Model an open thin-walled section as a **set of separate wall patches**, one polygon per patch:
-
-- web plates
-- flange plates
-- stiffener plates
-
-Each patch can have its own `weight` and its own `@t=`.
-
----
-
-## 6) Minimal YAML example
-
-The following example models one thin rectangular strip of length $b=1.0\,m$ and thickness $t=0.02\,m$.
-
-Analytical (thin strip):
-
-$$
-J \approx \frac{b\,t^3}{3} = \frac{1.0\cdot 0.02^3}{3} = 2.666\times 10^{-6}\,m^4
-$$
-
-With $A=b\,t=0.02$, the code uses:
-
-$$
-J \approx \frac{A\,t^2}{3} = \frac{0.02\cdot 0.02^2}{3} = 2.666\times 10^{-6}\,m^4
+J \approx \frac{b\,t^3}{3} = \frac{1.0\cdot 0.02^3}{3} = 2.666\times 10^{-6}\,\mathrm{m}^4
 $$
 
 ```yaml
@@ -795,139 +396,81 @@ CSF:
             - [0.00, 0.00]
 ```
 
-Notes:
+**Practical checklist.** A polygon is valid for `@wall` torsion if all of the following hold:
 
-- For more complex open sections, use multiple `@wall` polygons.
+1. name includes `@wall`;
+2. `vertices` define **one** closed loop (no concatenated loops);
+3. the polygon represents a thin strip (midline length `b ≫ t`);
+4. thickness is provided as `@t=...` (recommended);
+5. if the thickness varies physically, the wall is split into multiple patches with separate polygons.
 
----
-
-## Practical checklist
-
-A polygon is valid for `@wall` torsion (v2) if all items below are true:
-
-1. Name includes `@wall`.
-2. `vertices` define **one** closed loop (no concatenated loops).
-3. The polygon represents a **thin strip** (midline length $b \gg t$).
-4. Thickness is provided as `@t=...` (recommended)
-5. If thickness varies physically, the wall is split into multiple patches with separate polygons.
-
----
-
-## Scope limitations
-
-By design, this routine:
-
-- approximates **open** thin-walled torsion (no cell closure effects)
-- assumes one constant thickness per patch
-- does not compute warping constants
-- shape must be rectanguloid
-- is not intended for compact solids or general thick-walled regions.
-
----
-**
-## 18. Torsional Constant (Roark – Equivalent Rectangle)
+### 18. Torsional Constant - Roark equivalent rectangle (`J_s_vroark`)
 
 **Key:** `J_s_vroark`
 
-General-purpose torsional constant estimate obtained by mapping the composite section to an **equivalent solid rectangle** (from effective area and principal inertias) and applying **Roark's torsion formula for a solid rectangle**.
+General-purpose torsional constant estimate obtained by mapping the composite section to an **equivalent solid rectangle** (from effective area and principal inertias) and applying Roark's torsion formula for a solid rectangle.
 
-Notes:
-- Tag-free: independent of `@cell/@wall`.
-- Not a thin-walled closed-cell (Bredt–Batho) formulation; closed/open thin-walled 
-  torsion is handled by the dedicated `@cell/@wall` paths.
-- The equivalent-rectangle mapping is a heuristic procedure internal to CSF. 
-  Only the final torsion formula is from Roark; no literature reference exists 
-  for the mapping step itself.
-- Intended for compact solid sections (e.g. solid piles, filled profiles) where 
-  `@cell/@wall` tagging is not applicable. Check `J_s_vroark_fidelity` before use: 
-  reliable only when fidelity >= 0.6.
+**Notes**
+- Tag-free: independent of `@cell` / `@wall`.
+- Not a thin-walled closed-cell (Bredt–Batho) formulation; closed/open thin-walled torsion is handled by the dedicated `@cell` / `@wall` paths.
+- The equivalent-rectangle mapping is a heuristic procedure internal to CSF. Only the final torsion formula is from Roark; no literature reference exists for the mapping step itself.
+- Intended for compact solid sections (e.g. solid piles, filled profiles) where `@cell` / `@wall` tagging is not applicable. Check `J_s_vroark_fidelity` before use: reliable only when fidelity ≥ 0.6.
 
----
+### 19. Roark Fidelity Index (`J_s_vroark_fidelity`)
 
-## 19. Roark Fidelity Index
-
-**Key:** `J_s_vroark_fidelity`
+**Key:** `J_s_vroark_fidelity` - **Range:** `[0, 1]`
 
 **References:**
 - [J_s_vroark usage guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J_vroark_usage_guide.md)
 - Engineering note: `roark_torsional_indicator_note.md` (conceptual background on `J_s_vroark` and the fidelity mechanism)
 
-**Range:** `[0, 1]`
-
----
-
-## What `J_s_vroark_fidelity` means
-
-`J_s_vroark_fidelity` is a **geometric validity indicator** for the equivalent-rectangle mapping behind `J_s_vroark`. It answers a single question: *is this cross-section still close enough to a filled rectangle for a Roark rectangle formula to be meaningful?*
-
-It is not a torsion value, and it does not measure physical accuracy in absolute terms. It measures whether the simplifying assumptions of the Roark method still hold for the current geometry.
+**What it means.** `J_s_vroark_fidelity` is a **geometric validity indicator** for the equivalent-rectangle mapping behind `J_s_vroark`. It answers a single question: *is this cross-section still close enough to a filled rectangle for a Roark rectangle formula to be meaningful?* It is not a torsion value, and it does not measure physical accuracy in absolute terms - it measures whether the simplifying assumptions of the Roark method still hold for the current geometry.
 
 Use it to:
 
 - decide whether `J_s_vroark` can be trusted for the current section,
 - identify regions along `z` where the Roark mapping degrades,
-- flag sections that require a different torsion method (`J_s_v_cell` for closed thin-walled shapes, `J_s_v_wall` for open thin-walled shapes).
+- flag sections that require a different torsion method (`J_sv_cell` for closed thin-walled shapes, `J_sv_wall` for open thin-walled shapes).
 
-Do not use it as:
+Do **not** use it as:
 
 - an absolute, method-independent accuracy metric,
 - a substitute for a physically rigorous torsion computation,
 - a quantitative estimate of the error on `J_s_vroark`.
 
----
+**How to read the value.**
 
-## How to read the value
-
-- **≥ 0.9** - the section is compact and rectangle-like; `J_s_vroark` is a reasonable estimate.
-- **0.7 – 0.9** - borderline geometry, typically mild asymmetry or light non-structural material; `J_s_vroark` remains usable, with visible error.
-- **< 0.7** - the geometry is no longer rectangle-like (T, H, I, internal voids, extreme weight dispersion); `J_s_vroark` should be discarded in favor of `J_s_v_cell` or `J_s_v_wall`.
+- **≥ 0.9** - compact, rectangle-like section; `J_s_vroark` is a reasonable estimate.
+- **0.7 – 0.9** - borderline geometry (mild asymmetry or light non-structural material); `J_s_vroark` remains usable, with visible error.
+- **< 0.7** - geometry no longer rectangle-like (T, H, I, internal voids, extreme weight dispersion); discard `J_s_vroark` in favour of `J_sv_cell` or `J_sv_wall`.
 
 A practical rule for automated pipelines is to reject `J_s_vroark` whenever fidelity drops below 0.7.
 
----
-
-## How to read the fidelity plot along z
-
-When you plot `J_s_vroark_fidelity(z)`:
+**How to read the fidelity plot along `z`.**
 
 1. **Prefer trend over point values.** Persistent degradation over a `z` interval is meaningful; an isolated sharp point often corresponds to a principal-inertia branch swap (`Ix − Iy` changing sign), not a solver failure.
-
 2. **Correlate with the inertias.** Plot `Ix`, `Iy`, and `I2` together. Kinks in fidelity frequently align with principal-axis rotations, which are geometric transitions rather than errors.
+3. **Cross-check the torsion value.** Where fidelity is high, compare `J_s_vroark` with `J_sv_cell` or `J_sv_wall` when available. Agreement at high fidelity increases confidence in all three methods for that section family. This combination avoids misreading isolated curves.
 
-3. **Cross-check the torsion value.** Where fidelity is high, compare `J_s_vroark` with `J_s_v_cell` or `J_s_v_wall` when available. Agreement at high fidelity increases confidence in all three methods for that section family.
-
----
-
-## Suggested wording for reports
+**Suggested wording for reports.**
 
 > `J_s_vroark_fidelity` quantifies the geometric validity of the equivalent-rectangle mapping used to compute `J_s_vroark`. It reflects how close the actual cross-section is to a filled rectangle, not the absolute error on the torsional constant. Values above 0.9 indicate reliable Roark applicability; values below 0.7 indicate that the section should be treated with a thin-walled or full Saint-Venant method.
 
->## A note on Adhémar Jean Claude Barré de Saint-Venant
->
->The torsional constant *J* that this library estimates and validates bears the
->name of Adhémar Jean Claude Barré de Saint-Venant (1797–1886), one of the
->founders of the mathematical theory of elasticity.
->
->In his 1855 memoir *Mémoire sur la torsion des prismes*, Saint-Venant solved
->the torsion problem for prismatic bars of arbitrary cross-section, a result
->that had resisted earlier attempts by Coulomb and Navier. His approach
->introduced the warping function, reduced the problem to a boundary-value
->equation, and produced exact solutions for elliptical and rectangular sections
->that remain in use today.
->
->The formula implemented in `_roark_torsion_rect` is a compact approximation
->of Saint-Venant's exact series solution for the rectangle, later tabulated by
->Roark (1938) and condensed into continuous form by Timoshenko & Goodier (1951).
->The FEM warping analysis performed by `sectionproperties` solves the same
->boundary-value problem numerically, for arbitrary geometry, using the
->mathematical framework Saint-Venant laid down nearly 170 years ago.
->
-> *"The problem of torsion is one of the most beautiful in the whole of
-> mathematical physics."*
-> - attributed to Saint-Venant
+---
+
+## A note on Adhémar Jean Claude Barré de Saint-Venant
+
+The torsional constant *J* that this library estimates and validates bears the name of Adhémar Jean Claude Barré de Saint-Venant (1797–1886), one of the founders of the mathematical theory of elasticity.
+
+In his 1855 memoir *Mémoire sur la torsion des prismes*, Saint-Venant solved the torsion problem for prismatic bars of arbitrary cross-section, a result that had resisted earlier attempts by Coulomb and Navier. His approach introduced the warping function, reduced the problem to a boundary-value equation, and produced exact solutions for elliptical and rectangular sections that remain in use today.
+
+The formula implemented in `_roark_torsion_rect` is a compact approximation of Saint-Venant's exact series solution for the rectangle, later tabulated by Roark (1938) and condensed into continuous form by Timoshenko & Goodier (1951). The FEM warping analysis performed by `sectionproperties` solves the same boundary-value problem numerically, for arbitrary geometry, using the mathematical framework Saint-Venant laid down nearly 170 years ago.
+
+> *"The problem of torsion is one of the most beautiful in the whole of mathematical physics."* - attributed to Saint-Venant
 
 ---
-## CSF sectionproperties mapping table
+
+## CSF–sectionproperties mapping table
 
 | CSF | SP field | Type | Notes |
 |---|---|---|---|
@@ -941,12 +484,8 @@ When you plot `J_s_vroark_fidelity(z)`:
 | `I1` | `e.i11_c` | homogenized | principal second moment |
 | `I2` | `e.i22_c` | homogenized | principal second moment |
 | `rx` | `rx` | homogenized-derived | consistent with `sqrt(e.ixx_c / e.a)` |
-| `ry` | `ry` | homogenized-derived |  consistent with `sqrt(e.iyy_c / e.a)` |
-| `Wx` | `e.zxx+`, `e.zxx-` | homogenized | CSF computes `Wx = Ix / c_y,max`, so it corresponds to the controlling modulus, i.e. `min(e.zxx+, e.zxx-)` |
-| `Wy` | `e.zyy+`, `e.zyy-` | homogenized | CSF computes `Wy = Iy / c_x,max`, so it corresponds to the controlling modulus, i.e. `min(e.zyy+, e.zyy-)` |
-| `J_sv_cell/wall` | `e.j` | torsion cell/wall polygon |  [De Saint-Venant Torsional Constant](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md) |
-| `Q_na` | - | CSF-only |First Moment of Area |
-
-This combination avoids misreading isolated curves.**
-
----
+| `ry` | `ry` | homogenized-derived | consistent with `sqrt(e.iyy_c / e.a)` |
+| `Wx` | `e.zxx+`, `e.zxx-` | homogenized | CSF computes `Wx = Ix / c_y,max`, i.e. the controlling modulus `min(e.zxx+, e.zxx-)` |
+| `Wy` | `e.zyy+`, `e.zyy-` | homogenized | CSF computes `Wy = Iy / c_x,max`, i.e. the controlling modulus `min(e.zyy+, e.zyy-)` |
+| `J_sv_cell` / `J_sv_wall` | `e.j` | torsion (cell/wall polygon) | [De Saint-Venant Torsional Constant](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md) |
+| `Q_na` | - | CSF-only | first moment of area |
