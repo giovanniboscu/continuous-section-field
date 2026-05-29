@@ -17,10 +17,7 @@ The central contribution is the explicit separation between the geometric descri
 define how much each region contributes: the axial/bending field $w_i(z)$ and
 the shear/torsion field $\kappa_i(z)$ . These fields can represent stiffness
 ratios, degraded regions, reinforcement, voids, density-like quantities, or
-other user-defined sectional contributions. They may be interpolated from
-endpoint values, derived from an isotropic relation, or specified through
-custom laws depending on the longitudinal coordinate and on geometric
-quantities.
+other user-defined sectional contributions. When the two fields derive from elastic behaviour, they may be coupled through an isotropic relation or remain independent, in both cases varying with the longitudinal coordinate and with geometric quantities.
 
 The continuous model can be defined through a Python API or through a
 declarative YAML workflow. In the YAML workflow, one file defines the
