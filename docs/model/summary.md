@@ -112,7 +112,7 @@ $$
 where:
 
 - $\Omega_i(z)$ is the polygonal domain of zone $i$ at station $z$;
-- $w_i(z)$ is the axial and bending stiffness carrier of zone $i$;
+- $w_i(z)$ is the axial and material carrier of zone $i$;
 - $\kappa_i(z)$ is the shear and torsion participation weight of zone $i$.
 
 Any section property that can be expressed as an area integral is evaluated
