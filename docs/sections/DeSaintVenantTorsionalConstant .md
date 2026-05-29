@@ -11,7 +11,7 @@ In the current CSF implementation, `J_sv_cell` and `J_sv_wall` are computed from
 >
 > These two quantities are reported **individually** in the section output, so the user can inspect the relative weight of each contribution.
 >
-> When exporting to **OpenSees** or **SAP2000**, CSF provides a single scalar $J$ obtained by **direct summation**:
+> When exporting to OpenSees or others, CSF provides a single scalar $J$ obtained by **direct summation**:
 >
 > $$\boxed{J_{\mathrm{sv}} = J_{\mathrm{sv,cell}} + J_{\mathrm{sv,wall}}}$$
 >
