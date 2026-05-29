@@ -173,27 +173,6 @@ $$
 
 are polynomial functions of the axial coordinate $z$.
 
-| Property | Functional form in $\zeta$ |
-|-----------|-----------|
-| $A(\zeta)$ | $P_2(\zeta)$ |
-| $S_x(\zeta)$, $S_y(\zeta)$ | $P_3(\zeta)$ |
-| $I_x(\zeta)$, $I_y(\zeta)$, $I_{xy}(\zeta)$ | $P_4(\zeta)$ |
-| $\bar{x}(\zeta)$ | $\dfrac{P_3(\zeta)}{P_2(\zeta)}$ |
-| $\bar{y}(\zeta)$ | $\dfrac{P_3(\zeta)}{P_2(\zeta)}$ |
-| $I_{x,c}(\zeta)$ | $\dfrac{P_4(\zeta)P_2(\zeta)-P_3(\zeta)^2}{P_2(\zeta)}$ |
-| $I_{y,c}(\zeta)$ | $\dfrac{P_4(\zeta)P_2(\zeta)-P_3(\zeta)^2}{P_2(\zeta)}$ |
-| $I_{xy,c}(\zeta)$ | $\dfrac{P_4(\zeta)P_2(\zeta)-P_3(\zeta)P_3(\zeta)}{P_2(\zeta)}$ |
-| $I_p(\zeta)=I_x(\zeta)+I_y(\zeta)$ | $P_4(\zeta)$ |
-| $I_{p,c}(\zeta)=I_{x,c}(\zeta)+I_{y,c}(\zeta)$ | Rational function |
-| $I_1(\zeta)$, $I_2(\zeta)$ | Algebraic function of $P_4(\zeta)$ and $P_2(\zeta)$ |
-| $\theta(\zeta)$ | $\frac{1}{2}\arctan\!\left(\dfrac{2I_{xy,c}(\zeta)}{I_{x,c}(\zeta)-I_{y,c}(\zeta)}\right)$ |
-| $r_x(\zeta)=\sqrt{I_{x,c}(\zeta)/A(\zeta)}$ | Algebraic function |
-| $r_y(\zeta)=\sqrt{I_{y,c}(\zeta)/A(\zeta)}$ | Algebraic function |
-| $W_x(\zeta)=I_{x,c}(\zeta)/c_y(\zeta)$ | Rational function* |
-| $W_y(\zeta)=I_{y,c}(\zeta)/c_x(\zeta)$ | Rational function* |
-
-\* Assuming the extreme-fibre distances $c_x(\zeta)$ and $c_y(\zeta)$ vary linearly with the vertex interpolation.
-
 Centroidal quantities such as
 
 $$
@@ -644,6 +623,29 @@ and interoperability workflows.
 
 ---
 
+
+
+| Property | Functional form in $\zeta$ |
+|-----------|-----------|
+| $A(\zeta)$ | $P_2(\zeta)$ |
+| $S_x(\zeta)$, $S_y(\zeta)$ | $P_3(\zeta)$ |
+| $I_x(\zeta)$, $I_y(\zeta)$, $I_{xy}(\zeta)$ | $P_4(\zeta)$ |
+| $\bar{x}(\zeta)$ | $\dfrac{P_3(\zeta)}{P_2(\zeta)}$ |
+| $\bar{y}(\zeta)$ | $\dfrac{P_3(\zeta)}{P_2(\zeta)}$ |
+| $I_{x,c}(\zeta)$ | $\dfrac{P_4(\zeta)P_2(\zeta)-P_3(\zeta)^2}{P_2(\zeta)}$ |
+| $I_{y,c}(\zeta)$ | $\dfrac{P_4(\zeta)P_2(\zeta)-P_3(\zeta)^2}{P_2(\zeta)}$ |
+| $I_{xy,c}(\zeta)$ | $\dfrac{P_4(\zeta)P_2(\zeta)-P_3(\zeta)P_3(\zeta)}{P_2(\zeta)}$ |
+| $I_p(\zeta)=I_x(\zeta)+I_y(\zeta)$ | $P_4(\zeta)$ |
+| $I_{p,c}(\zeta)=I_{x,c}(\zeta)+I_{y,c}(\zeta)$ | Rational function |
+| $I_1(\zeta)$, $I_2(\zeta)$ | Algebraic function of $P_4(\zeta)$ and $P_2(\zeta)$ |
+| $\theta(\zeta)$ | $\frac{1}{2}\arctan\!\left(\dfrac{2I_{xy,c}(\zeta)}{I_{x,c}(\zeta)-I_{y,c}(\zeta)}\right)$ |
+| $r_x(\zeta)=\sqrt{I_{x,c}(\zeta)/A(\zeta)}$ | Algebraic function |
+| $r_y(\zeta)=\sqrt{I_{y,c}(\zeta)/A(\zeta)}$ | Algebraic function |
+| $W_x(\zeta)=I_{x,c}(\zeta)/c_y(\zeta)$ | Rational function* |
+| $W_y(\zeta)=I_{y,c}(\zeta)/c_x(\zeta)$ | Rational function* |
+
+\* Assuming the extreme-fibre distances $c_x(\zeta)$ and $c_y(\zeta)$ vary linearly with the vertex interpolation.
+---
 ## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
 
 During the preparation of this work, the author used ChatGPT and Claude for
