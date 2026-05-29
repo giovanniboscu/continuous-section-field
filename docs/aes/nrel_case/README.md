@@ -153,19 +153,66 @@ The generated report is then checked against the official NREL 5-MW tower data r
 - `J_sv_cell` (Saint-Venant torsional stiffness) corresponds to `TwGJStif`;
 - `A` (axial stiffness) corresponds to `TwEAStif`.
 
-> **Note on the NREL tower reference data.**  
-> The validation uses the NREL 5-MW tower data from NREL/TP-500-38060, Section 6, Table 6-1. The table reports the final distributed tower properties. For the geometry, the CSF model uses the reported base and top diameters, 6.0 m and 3.87 m, together with the wall thicknesses after the 30% increase stated in Section 6: 0.0351 m at the base and 0.0247 m at the top.
 
-For example, at the tower base (`z = 0.00 m`), the CSF report gives:
+# NREL 5-MW tower validation tables
 
-```text
-Ix        = 6.14340962544e+11
-Iy        = 6.14340962544e+11
-J_sv_cell = 4.72585963926e+11
-A         = 1.38127060565e+11
-```
+The validation uses the NREL 5-MW tower data from NREL/TP-500-38060, Section 6, Table 6-1. The CSF geometry uses the reported base and top diameters, with the 30% wall-thickness increase stated in Section 6: 6.0 m / 0.0351 m at the base and 3.87 m / 0.0247 m at the top. The radius and thickness are linearly tapered along the 87.6 m tower height.
 
-These values agree with the corresponding NREL reference values to within 0.04% along the full tower height, confirming that the geometry and stiffness distribution reproduce the official NREL sectional stiffness distribution before any degradation law is applied.
+Agreement with the NREL reference values is better than 0.04% over the full tower height, confirming that the adopted geometry accurately reproduces the original NREL sectional stiffness distribution prior to the application of any degradation law.
+
+## 1. NREL reference values
+
+| Elev. [m] | HtFract | TwFAStif [N m²] | TwSSStif [N m²] | TwGJStif [N m²] | TwEAStif [N] |
+|---:|---:|---:|---:|---:|---:|
+| 0.00 | 0.0 | 614.340E9 | 614.340E9 | 472.750E9 | 138.130E9 |
+| 8.76 | 0.1 | 534.820E9 | 534.820E9 | 411.560E9 | 129.270E9 |
+| 17.52 | 0.2 | 463.270E9 | 463.270E9 | 356.500E9 | 120.710E9 |
+| 26.28 | 0.3 | 399.130E9 | 399.130E9 | 307.140E9 | 112.430E9 |
+| 35.04 | 0.4 | 341.880E9 | 341.880E9 | 263.090E9 | 104.450E9 |
+| 43.80 | 0.5 | 291.010E9 | 291.010E9 | 223.940E9 | 96.760E9 |
+| 52.56 | 0.6 | 246.030E9 | 246.030E9 | 189.320E9 | 89.360E9 |
+| 61.32 | 0.7 | 206.460E9 | 206.460E9 | 158.870E9 | 82.250E9 |
+| 70.08 | 0.8 | 171.850E9 | 171.850E9 | 132.240E9 | 75.430E9 |
+| 78.84 | 0.9 | 141.780E9 | 141.780E9 | 109.100E9 | 68.900E9 |
+| 87.60 | 1.0 | 115.820E9 | 115.820E9 | 89.100E9 | 62.660E9 |
+
+## 2. CSF values
+
+| Elev. [m] | HtFract | TwFAStif [N m²] | TwSSStif [N m²] | TwGJStif [N m²] | TwEAStif [N] |
+|---:|---:|---:|---:|---:|---:|
+| 0.00 | 0.0 | 614.341E9 | 614.341E9 | 472.586E9 | 138.127E9 |
+| 8.76 | 0.1 | 534.819E9 | 534.819E9 | 411.414E9 | 129.272E9 |
+| 17.52 | 0.2 | 463.266E9 | 463.266E9 | 356.371E9 | 120.707E9 |
+| 26.28 | 0.3 | 399.130E9 | 399.130E9 | 307.034E9 | 112.433E9 |
+| 35.04 | 0.4 | 341.881E9 | 341.881E9 | 262.995E9 | 104.450E9 |
+| 43.80 | 0.5 | 291.011E9 | 291.011E9 | 223.862E9 | 96.758E9 |
+| 52.56 | 0.6 | 246.026E9 | 246.026E9 | 189.258E9 | 89.357E9 |
+| 61.32 | 0.7 | 206.457E9 | 206.457E9 | 158.819E9 | 82.247E9 |
+| 70.08 | 0.8 | 171.851E9 | 171.851E9 | 132.198E9 | 75.427E9 |
+| 78.84 | 0.9 | 141.776E9 | 141.776E9 | 109.063E9 | 68.899E9 |
+| 87.60 | 1.0 | 115.820E9 | 115.820E9 | 89.096E9 | 62.661E9 |
+
+## 3. Difference [%], CSF vs NREL
+
+| Elev. [m] | HtFract | TwFAStif [%] | TwSSStif [%] | TwGJStif [%] | TwEAStif [%] |
+|---:|---:|---:|---:|---:|---:|
+| 0.00 | 0.0 | +0.0002 | +0.0002 | -0.0347 | -0.0021 |
+| 8.76 | 0.1 | -0.0001 | -0.0001 | -0.0355 | +0.0012 |
+| 17.52 | 0.2 | -0.0009 | -0.0009 | -0.0363 | -0.0026 |
+| 26.28 | 0.3 | -0.0001 | -0.0001 | -0.0346 | +0.0028 |
+| 35.04 | 0.4 | +0.0004 | +0.0004 | -0.0361 | +0.0002 |
+| 43.80 | 0.5 | +0.0002 | +0.0002 | -0.0346 | -0.0019 |
+| 52.56 | 0.6 | -0.0016 | -0.0016 | -0.0328 | -0.0034 |
+| 61.32 | 0.7 | -0.0016 | -0.0016 | -0.0322 | -0.0041 |
+| 70.08 | 0.8 | +0.0004 | +0.0004 | -0.0319 | -0.0038 |
+| 78.84 | 0.9 | -0.0029 | -0.0029 | -0.0342 | -0.0022 |
+| 87.60 | 1.0 | -0.0000 | -0.0000 | -0.0046 | +0.0012 |
+
+
+
+
+
+Agreement with the NREL reference values is better than 0.04% over the full tower height, confirming that the adopted geometry accurately reproduces the original NREL sectional stiffness distribution prior to the application of any degradation law.
 
 > **Volume consistency note.**  
 > This volume check is not intended as the main validation metric. Its role is to document that the generated CSF geometry is also integrated consistently by the same workflow used to produce the sectional reports and the downstream OpenSees model. The corresponding CSF volume report is:
