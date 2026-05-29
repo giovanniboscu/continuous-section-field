@@ -82,7 +82,10 @@ On the theoretical side, Balduzzi et al. [Balduzzi 2016] showed that non-prismat
 
 Existing frameworks for the analysis of non-prismatic members can be grouped into three categories. First, sectional analysis tools such as VABS, BECAS, and `sectionproperties` compute the properties of individual cross-sections with high accuracy, while the longitudinal variation of the member is handled externally. Second, structural solvers such as OpenSees, ABAQUS, and ANSYS incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations. Third, aeroelastic codes such as OpenFAST rely on distributed sectional-property tables along the member axis.
 
-In all cases, the continuous representation of the member as a solver-agnostic sectional-property field is not formalised as an independent modelling layer. CSF explicitly introduces this pre-solver layer: it defines polygonal geometry and material participation fields, such as $w_i(z)$ and $\kappa_i(z)$, as continuous entities evaluable at arbitrary axial stations, thereby separating the physical sectional model from its numerical discretisation. The lack of established continuous sectional-field tools is both a limitation and a motivation: it makes direct tool-to-tool benchmarking difficult, but it also defines the methodological gap addressed by CSF
+To the authors' knowledge, the continuous representation of a member as a solver-agnostic sectional-property field is generally not formalised as an independent modelling layer. Existing approaches typically embed longitudinal variation within section-analysis tools, structural solvers, or application-specific workflows, rather than representing it as an explicit reusable field.
+
+The lack of established continuous sectional-field tools is both a limitation and a motivation: it makes direct tool-to-tool benchmarking difficult, but it also defines the methodological gap addressed by CSF.
+
 
 ---
 
