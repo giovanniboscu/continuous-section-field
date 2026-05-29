@@ -151,6 +151,21 @@ Poisson ratio $\nu$. In the general case $w_i(z)$ and $\kappa_i(z)$ are
 assigned independently, allowing the model to represent non-isotropic
 participation, selective stiffness degradation, or hybrid material
 compositions.
+
+
+When the participation fields are constant and the vertex coordinates vary
+linearly between reference stations, the resulting sectional quantities are
+not arbitrary interpolants. Area, first moments, and second moments are
+polynomial functions of the axial coordinate, while centroidal quantities
+generally become rational functions.
+
+Once the participation fields $w_i(z)$ and $\kappa_i(z)$ are introduced,
+the resulting stiffness laws may become general functions of \(z\), depending
+on the user-defined weight laws. CSF does not prescribe or perform axial
+integration of these functions. Instead, it provides an evaluable continuous
+field. Any integration or discretization along the member axis must therefore
+be driven by the downstream workflow, for example through uniform sampling,
+Gauss-Lobatto stations, solver integration points, or dense reference grids.
 ### 2.3 Geometric field
 
 The user defines each polygonal zone by its vertex coordinates at two
