@@ -136,7 +136,7 @@ $$
 \bigl(\mathbf{v}_{i,k}^{(1)} - \mathbf{v}_{i,k}^{(0)}\bigr)
 $$
 
-where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$ respectively, and $k$ indexes the vertices of zone $i$. This produces a continuous, linearly tapered geometry at any intermediate station. Multiple interpolation intervals can be composed in sequence to represent members with piecewise-varying cross-sectional evolution.
+where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$ respectively, and $k$ indexes the vertices of zone $i$. This produces a continuous, linearly tapered geometry at any intermediate station. Multiple interpolation intervals can be composed in sequence through the CSFStack Python module. Each interval is instantiated as an independent CSF object with its own reference stations, zone geometry, and participation fields; CSFStack concatenates them along the member axis, preserving continuity of the section-property field at the junctions. The resulting stack represents members of arbitrary length with piecewise-varying cross-sectional evolution, while each segment retains the same closed-form polygonal evaluation.
 
 ### 2.4 Participation fields
 
