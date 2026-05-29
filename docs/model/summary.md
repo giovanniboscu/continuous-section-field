@@ -127,12 +127,11 @@ Green's theorem, reducing each double integral to a closed-form sum over
 the polygon edges. This applies to all integrals of the form above whose
 spatial integrands $f(x,y)$ are polynomial in $x$ and $y$ - specifically,
 area, first moments ($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and
-product of inertia ($I_{xy}$). The participation weights $w_i(z)$ and
-$\kappa_i(z)$ are functions of $z$ only, not of $x$ and $y$; they factor
-out of the area integral as station-wise scalars, so the spatial integration
-remains polynomial at each fixed $z$. No numerical quadrature is required,
-and the result is exact in the cross-sectional variables for any evaluable
-weight law.
+product of inertia ($I_{xy}$). The participation weights $w_i(z)$ and $\kappa_i(z)$ are functions of $z$
+only, not of $x$ and $y$; they factor out of the area integral as
+station-wise scalars, so the spatial integration remains polynomial at each
+fixed $z$. They therefore do not change the nature of the cross-sectional
+integration: the spatial integrals remain closed-form polygonal quantities.
 
 This property does not extend to the Saint-Venant torsional constant, which
 requires the solution of a warping problem over the full section domain and
@@ -160,11 +159,6 @@ polynomial functions of the axial coordinate, while centroidal quantities
 generally become rational functions.
 
 
-At a fixed station $z$, the participation fields $w_i(z)$ and
-$\kappa_i(z)$ act as scalar carriers multiplying the exact polygonal
-integrals over the $x,y$ plane. They therefore do not change the nature of
-the cross-sectional integration: the spatial integrals remain closed-form
-polygonal quantities.
 
 As $z$ varies, however, the same carriers define the longitudinal stiffness
 laws of the member. Once user-defined functions $w_i(z)$ and $\kappa_i(z)$
