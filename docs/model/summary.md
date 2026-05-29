@@ -10,8 +10,7 @@ and material descriptions into continuous section-property fields and station-wi
 The central idea of CSF is to treat the cross-section as a field defined along the member axis, rather than as a single isolated object. The geometry and material participation are specified at reference stations, and continuous intermediate cross-sections are obtained through interpolation of the sectional description; CSF interpolates
 corresponding polygon vertices to generate intermediate sections and evaluates
 properties such as area, centroid, second moments of area, principal inertias,
-section moduli, torsional constants, stiffness-weighted quantities, and
-mass-related properties at any requested station.
+section moduli, at any requested station.
 
 The central contribution is the explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two independent longitudinal participation fields
 define how much each region contributes: the axial/bending field $w_i(z)$ and
@@ -26,11 +25,7 @@ inspections, station sampling, and exports. The YAML file does not define a
 discrete table of section properties; it defines the geometry and
 participation laws from which CSF constructs continuous sectional fields.
 
-
-Discrete stations are therefore evaluation points of an already defined
-continuous field. For example, Gauss-Lobatto stations obtained through yaml and 
-API can be used as quadrature-compatible sampling points for downstream beam
-formulations, but they do not define the field itself. This distinction allows
+This distinction allows
 CSF to preserve a continuous member representation while generating
 solver-facing station-wise data when required. 
 
