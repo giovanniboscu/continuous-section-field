@@ -124,9 +124,19 @@ one can vary independently of the other.
 
 For polygonal domains, the area integrals are evaluated exactly via
 Green's theorem, reducing each double integral to a closed-form sum over
-the polygon edges. This is a distinguishing property of the CSF formulation:
-no numerical quadrature is required, and the result is exact for the given
-polygonal geometry.
+the polygon edges. This applies to all integrals of the form above whose
+spatial integrands $f(x,y)$ are polynomial in $x$ and $y$ - specifically,
+area, first moments ($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and
+product of inertia ($I_{xy}$). The participation weights $w_i(z)$ and
+$\kappa_i(z)$ are functions of $z$ only, not of $x$ and $y$; they factor
+out of the area integral as station-wise scalars, so the spatial integration
+remains polynomial at each fixed $z$. No numerical quadrature is required,
+and the result is exact in the cross-sectional variables for any evaluable
+weight law.
+
+This property does not extend to the Saint-Venant torsional constant, which
+requires the solution of a warping problem over the full section domain and
+is treated separately.
 
 The standard separable formulation is recovered as the special case in which
 all zones share the same stiffness carrier: $w_i(z) = w(z)$ for all $i$.
@@ -141,7 +151,6 @@ Poisson ratio $\nu$. In the general case $w_i(z)$ and $\kappa_i(z)$ are
 assigned independently, allowing the model to represent non-isotropic
 participation, selective stiffness degradation, or hybrid material
 compositions.
-
 ### 2.3 Geometric field
 
 The user defines each polygonal zone by its vertex coordinates at two
