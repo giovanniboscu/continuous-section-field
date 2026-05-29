@@ -4,15 +4,14 @@
 
 In the current CSF implementation, `J_sv_cell` and `J_sv_wall` are computed from polygons explicitly tagged `@cell` and `@wall`. Untagged polygons do not contribute to these two quantities.
 
-
-> When presenting a cross-section, the CSF reports the De Saint-Venant torsional constant $J$ broken down into **two separate contributions**:
+> When presenting a cross-section, CSF reports the De Saint-Venant torsional constant $J$ broken down into **two separate contributions**:
 >
 > - $J_{\mathrm{sv,cell}}$ - contribution from all closed cells (Bredt formula)
 > - $J_{\mathrm{sv,wall}}$ - contribution from all open thin walls
 >
 > These two quantities are reported **individually** in the section output, so the user can inspect the relative weight of each contribution.
 >
-> When exporting to **OpenSees** or **SAP2000**, the CSF provides a single scalar $J$ obtained by **direct summation**:
+> When exporting to **OpenSees** or **SAP2000**, CSF provides a single scalar $J$ obtained by **direct summation**:
 >
 > $$\boxed{J_{\mathrm{sv}} = J_{\mathrm{sv,cell}} + J_{\mathrm{sv,wall}}}$$
 >
@@ -28,7 +27,7 @@ $$M_t = G \cdot J_{\mathrm{sv}} \cdot \vartheta'$$
 
 where $G$ is the shear modulus and $\vartheta'$ is the twist per unit length.
 
-For sections composed of both closed cells and open walls, the CSF decomposes $J_{\mathrm{sv}}$ into two physically distinct contributions, computed independently and then summed.
+For sections composed of both closed cells and open walls, CSF decomposes $J_{\mathrm{sv}}$ into two physically distinct contributions, computed independently and then summed.
 
 ---
 
@@ -56,26 +55,21 @@ $$J_{\mathrm{sv,cell}} = \sum_{k=1}^{n_c} J_{\mathrm{sv,cell},k}$$
 
 ### 2.2 Open-wall contribution - $J_{\mathrm{sv,wall}}$
 
-
 Each thin open wall $i$ (slender rectangle) contributes:
 
 $$J_{\mathrm{sv,wall},i} = \frac{b_i \, t_i^3}{3}$$
 
-where $b_i$ is the wall length and $t_i$ is the thickness.
+where $b_i$ is the wall length and $t_i$ is the thickness. Since the polygon area of a slender wall is $A_i = b_i t_i$, this is equivalently written in the area-based form used internally:
+
+$$J_{\mathrm{sv,wall},i} = \frac{b_i \, t_i^3}{3} = \frac{A_i \, t_i^2}{3}$$
 
 The total open-wall contribution is:
 
 $$J_{\mathrm{sv,wall}} = \sum_{i=1}^{n_w} J_{\mathrm{sv,wall},i}$$
 
-CSF needs an effective wall thickness $t$ to evaluate the Saint-Venant torsional approximation:
+Evaluating this contribution requires an effective wall thickness $t_i$ for each `@wall` polygon, selected as described below.
 
-$$
-J_{\text{wall}} \approx \sum_i \frac{A_i t_i^2}{3}
-$$
-
-where $A_i$ is the polygon area and $t_i$ is the effective wall thickness.
-
-### Thickness priority
+#### Thickness priority
 
 For `@wall` polygons, the thickness is selected as follows:
 
@@ -92,7 +86,7 @@ polygon_name@wall@t=0.02
 
 If `@t=` is present, the automatic estimator is not used.
 
-## Global estimator for open walls
+#### Global estimator for open walls
 
 When no explicit thickness is provided, CSF estimates:
 
@@ -117,7 +111,7 @@ $$
 
 solved for the smaller dimension $t$.
 
-## Relation with `2A/P`
+#### Relation with `2A/P`
 
 The estimate
 
@@ -129,7 +123,7 @@ is retained for closed thin-cell logic (`@cell`).
 
 For open thin-wall polygons (`@wall`), `Tglobal` is preferred because it recovers the correct thickness for a rectangular strip, while `2A/P` underestimates it.
 
-## Summary
+#### Thickness selection summary
 
 ```text
 @wall@t=<value>  -> use explicit thickness
@@ -145,14 +139,13 @@ $$\boxed{J_{\mathrm{sv}} = J_{\mathrm{sv,cell}} + J_{\mathrm{sv,wall}}}$$
 
 ## 3. How CSF Presents the Results
 
-The CSF reports the two contributions **separately** before combining them:
+CSF reports the two contributions **separately** before combining them:
 
 | Quantity | Formula | Description |
 |---|---|---|
 | $J_{\mathrm{sv,cell}}$ | $\sum_k \dfrac{4 A_{m,k}^2 \, t_k}{b_{m,k}}$ | Sum over all closed cells using global mean quantities, with $A_{m,k} = (A_{\mathrm{outer},k}+A_{\mathrm{inner},k})/2$ and $b_{m,k} = (P_{\mathrm{outer},k}+P_{\mathrm{inner},k})/2$ |
 | $J_{\mathrm{sv,wall}}$ | $\sum_i \dfrac{b_i t_i^3}{3}$ | Sum over all open walls |
 | $J_{\mathrm{sv}}$ | $J_{\mathrm{sv,cell}} + J_{\mathrm{sv,wall}}$ | **Total - used for export** |
-
 
 This breakdown allows the user to verify that each component is physically meaningful and to assess the relative importance of cells vs. walls in the torsional response.
 
@@ -181,7 +174,7 @@ The sum $J_{\mathrm{sv}} = J_{\mathrm{sv,cell}} + J_{\mathrm{sv,wall}}$ is **val
 | Separate closed cells + separate open walls | Valid | No shared contour; H1 satisfied by geometry |
 | Open walls modelled as non-interacting with cells | Valid as model | Good approximation when $t_{\mathrm{wall}} \ll t_{\mathrm{cell}}$ |
 | Thin open section only (T, L, I, channel) | Valid | $J_{\mathrm{sv,cell}} = 0$; classic result |
-| Multiple independent closed cells | Valis | Each cell via Bredt, no shared walls |
+| Multiple independent closed cells | Valid | Each cell via Bredt, no shared walls |
 
 ## 6. When the Summation Does NOT Hold
 
@@ -192,7 +185,7 @@ The sum $J_{\mathrm{sv}} = J_{\mathrm{sv,cell}} + J_{\mathrm{sv,wall}}$ is **val
 | Box girder with welded protruding flanges | Flange and cell share a contour segment; simple sum over/underestimates $J_{\mathrm{sv}}$ |
 | Thick-walled sections | Thin-wall assumption breaks down; full Saint-Venant warping analysis required |
 
-> **Warning:** : if cells and walls share contour segments in the geometry definition, the simple summation is no longer physically valid. In that case, validity of the modelling assumptions remains the user's responsibility.
+> **Warning:** if cells and walls share contour segments in the geometry definition, the simple summation is no longer physically valid. In that case, validity of the modelling assumptions remains the user's responsibility.
 
 ---
 
@@ -229,11 +222,10 @@ Not valid when:
   - walls are connected to a cell boundary
   - cells share walls
   - section is thick-walled
-    
+
 ---
 
 ## 8. How to Construct a `@cell` Polygon
-
 
 A `@cell` polygon describes a closed hollow section of arbitrary shape: circular, rectangular, or general polygonal.
 
