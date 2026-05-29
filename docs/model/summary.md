@@ -230,7 +230,7 @@ stations, solver integration points, or dense reference grids.
 The formulation above provides exact evaluation of all sectional quantities
 that can be expressed as weighted area integrals over the continuous field.
 For these quantities, the combination of polygonal geometry and participation
-fields yields a direct closed-form solution at any station, without numerical
+fields yields a direct closed-form evaluation at any station, without numerical
 quadrature in the cross-sectional plane.
 
 The Saint-Venant torsional constant cannot be reduced to a weighted area
