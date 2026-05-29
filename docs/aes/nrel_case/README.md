@@ -154,7 +154,7 @@ The generated report is then checked against the official NREL 5-MW tower data r
 - `A` (axial stiffness) corresponds to `TwEAStif`.
 
 > **Note on the NREL tower reference data.**  
-> The validation uses the official NREL 5-MW tower data from NREL/TP-500-38060, Section 6, Table 6-1, "Distributed Tower Properties". The table reports the distributed quantities along the tower elevation, including `TMassDen`, `TwFAStif`, `TwSSStif`, `TwGJStif`, and `TwEAStif`. The geometric dimensions used to generate these values require one clarification: Section 6 first reports the DOWEC-derived tower dimensions as base diameter/thickness `6.0 m / 0.027 m` and top diameter/thickness `3.87 m / 0.019 m`, but then states that the wall thickness was increased by 30% before producing the final distributed tower properties. Therefore, the CSF model uses the same diameters, but the increased wall thicknesses: `t_base = 0.027 × 1.30 = 0.0351 m` and `t_top = 0.019 × 1.30 = 0.0247 m`.
+> The validation uses the NREL 5-MW tower data from NREL/TP-500-38060, Section 6, Table 6-1. The table reports the final distributed tower properties. For the geometry, the CSF model uses the reported base and top diameters, 6.0 m and 3.87 m, together with the wall thicknesses after the 30% increase stated in Section 6: 0.0351 m at the base and 0.0247 m at the top.
 
 For example, at the tower base (`z = 0.00 m`), the CSF report gives:
 
