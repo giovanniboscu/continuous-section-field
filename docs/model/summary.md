@@ -7,9 +7,7 @@ and derived section properties as continuous functions along a member axis.
 CSF is neither a structural solver nor a geometry kernel; instead, it connects these domains by transforming member-level geometric 
 and material descriptions into continuous section-property fields and station-wise data suitable for beam, tower, bridge, and finite-element workflows.
 
-The central idea of CSF is to treat the cross-section as a field defined
-along `z`, rather than as a single isolated object. A user defines polygonal
-cross-sections at reference stations, called `S0` and `S1`; CSF interpolates
+The central idea of CSF is to treat the cross-section as a field defined along the member axis, rather than as a single isolated object. The geometry and material participation are specified at reference stations, and continuous intermediate cross-sections are obtained through interpolation of the sectional description; CSF interpolates
 corresponding polygon vertices to generate intermediate sections and evaluates
 properties such as area, centroid, second moments of area, principal inertias,
 section moduli, torsional constants, stiffness-weighted quantities, and
