@@ -102,13 +102,14 @@ geometry and material participation may vary independently along the axis.
 CSF represents this case by assigning independent geometric and material
 participation fields to each zone of the section.
 
-
 ### 2.2 Zone-based continuous formulation
 
 The cross-section at station $z$ is represented as an ordered set of $n$
 polygonal zones:
 
-$$S(z) = \{\,\Omega_i(z),\; w_i(z),\; \kappa_i(z)\,\}_{i=1}^{n}$$
+$$
+S(z) = \{\,\Omega_i(z),\; w_i(z),\; \kappa_i(z)\,\}_{i=1}^{n}
+$$
 
 where:
 
@@ -119,35 +120,46 @@ where:
 Any section property that can be expressed as an area integral is evaluated
 as a weighted sum over the zones:
 
-$$P(z) = \sum_{i=1}^{n} w_i(z) \iint_{\Omega_i(z)} f(x,y,z)\,\mathrm{d}A$$
+$$
+P(z) = \sum_{i=1}^{n} w_i(z)
+\iint_{\Omega_i(z)} f(x,y)\,\mathrm{d}A
+$$
 
-where $f(x,y,z)$ is the integrand corresponding to the property of interest
+where $f(x,y)$ is the integrand corresponding to the property of interest
 (unity for area, $y^2$ for the second moment of area about the $x$-axis,
-and so on). Geometry $\Omega_i$ and material carrier $w_i$ are fully decoupled:
-one can vary independently of the other.
+and so on). Geometry $\Omega_i$ and material carrier $w_i$ are fully
+decoupled: one can vary independently of the other.
 
 For polygonal domains, the area integrals are evaluated exactly via
 Green's theorem, reducing each double integral to a closed-form sum over
-the polygon edges. This applies to all integrals of the form above whose
-spatial integrands $f(x,y)$ are polynomial in $x$ and $y$ - specifically,
-area, first moments ($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and
-product of inertia ($I_{xy}$). The participation weights $w_i(z)$ and $\kappa_i(z)$ are functions of $z$
-only, not of $x$ and $y$; they factor out of the area integral as
-station-wise scalars, so the spatial integration remains polynomial at each
-fixed $z$. They therefore do not change the nature of the cross-sectional
-integration: the spatial integrals remain closed-form polygonal quantities.
+the polygon edges. This applies to all integrals whose spatial integrands
+$f(x,y)$ are polynomial in $x$ and $y$, specifically area, first moments
+($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and product of inertia
+($I_{xy}$). The participation weights $w_i(z)$ and $\kappa_i(z)$ are
+functions of $z$ only, not of $x$ and $y$; they factor out of the area
+integral as station-wise scalars, so the spatial integration remains
+polynomial at each fixed $z$. They therefore do not change the nature of
+the cross-sectional integration: the spatial integrals remain closed-form
+polygonal quantities.
 
 This property does not extend to the Saint-Venant torsional constant, which
 requires the solution of a warping problem over the full section domain and
 is treated separately.
 
 The standard separable formulation is recovered as the special case in which
-all zones share the same stiffness carrier: $w_i(z) = w(z)$ for all $i$.
+all zones share the same stiffness carrier:
 
-For isotropic materials, when $w_i(z)$ represents the Young's modulus carrier,
-the shear and torsion participation field is obtained as:
+$$
+w_i(z) = w(z)
+\qquad \forall i
+$$
 
-$$\kappa_i(z) = \frac{w_i(z)}{2(1+\nu)}$$
+For isotropic materials, when $w_i(z)$ represents the Young's modulus
+carrier, the shear and torsion participation field is obtained as
+
+$$
+\kappa_i(z) = \frac{w_i(z)}{2(1+\nu)}
+$$
 
 and can be specified through an isotropic shortcut parametrised by the
 Poisson ratio $\nu$. In the general case $w_i(z)$ and $\kappa_i(z)$ are
@@ -155,28 +167,9 @@ assigned independently, allowing the model to represent non-isotropic
 participation, selective stiffness degradation, or hybrid material
 compositions.
 
-
-When the participation fields are constant and the vertex coordinates vary
-linearly between reference stations, the resulting sectional quantities are
-not arbitrary interpolants. Area, first moments, and second moments are
-polynomial functions of the axial coordinate, while centroidal quantities
-generally become rational functions.
-
-
-
-As $z$ varies, however, the same carriers define the longitudinal stiffness
-laws of the member. Once user-defined functions $w_i(z)$ and $\kappa_i(z)$
-are introduced, the resulting sectional stiffness quantities may become
-general functions of the axial coordinate.
-
-CSF does not prescribe or perform axial integration of these functions.
-Instead, it provides an evaluable continuous field. Any integration or
-discretization along the member axis must therefore be driven by the
-downstream workflow, for example through uniform sampling, Gauss-Lobatto
-stations, solver integration points, or dense reference grids.
-
----
-When the participation fields are constant and the vertex coordinates are interpolated linearly between reference stations, the resulting sectional quantities are not arbitrary interpolants.
+When the participation fields are constant and the vertex coordinates are
+interpolated linearly between reference stations, the resulting sectional
+quantities are not arbitrary interpolants.
 
 The geometric quantities
 
@@ -192,7 +185,8 @@ $$
 I_x^c(z), \quad I_y^c(z), \quad I_{xy}^c(z)
 $$
 
-generally become rational functions because they depend on the section centroid. For example,
+generally become rational functions because they depend on the section
+centroid. For example,
 
 $$
 I_x^c(z) = I_x(z) - A(z)\,\bar{y}(z)^2
@@ -204,43 +198,35 @@ $$
 \bar{y}(z) = \frac{Q_x(z)}{A(z)}.
 $$
 
-Once the participation fields $w_i(z)$ and $\kappa_i(z)$ are introduced, the final sectional laws become the composition of geometric variation and participation variation. A generic sectional quantity can be written as
+Once the participation fields $w_i(z)$ and $\kappa_i(z)$ are introduced,
+the final sectional laws become the composition of geometric variation and
+participation variation. A generic sectional quantity can be written as
 
 $$
-P(z)
-=
-\sum_i
-w_i(z)\,
-P_i^{\mathrm{geom}}(z),
+P(z) = \sum_i w_i(z)\,P_i^{\mathrm{geom}}(z),
 $$
 
-where
-
-$$
-P_i^{\mathrm{geom}}(z)
-$$
-
-denotes the geometric contribution associated with zone $i$.
+where $P_i^{\mathrm{geom}}(z)$ denotes the geometric contribution associated
+with zone $i$.
 
 The longitudinal variation therefore arises from two independent mechanisms:
 
-1. The geometric evolution of the polygonal domains
+1. The geometric evolution of the polygonal domains $\Omega_i(z)$, which
+   generates polynomial or rational sectional quantities under linear
+   vertex interpolation.
 
-$$
-\Omega_i(z),
-$$
+2. The participation fields $w_i(z)$ and $\kappa_i(z)$, which may follow
+   arbitrary user-defined functions of the axial coordinate.
 
-which generates polynomial or rational sectional laws under linear vertex interpolation.
+The resulting sectional field is obtained through the composition of these
+two contributions.
 
-2. The participation fields
+CSF does not prescribe or perform axial integration of these functions.
+Instead, it provides an evaluable continuous field. Any integration or
+discretization along the member axis must therefore be driven by the
+downstream workflow, for example through uniform sampling, Gauss-Lobatto
+stations, solver integration points, or dense reference grids.
 
-$$
-w_i(z), \qquad \kappa_i(z),
-$$
-
-which may follow arbitrary user-defined functions of the axial coordinate.
-
-The resulting sectional field is obtained through the composition of these two contributions.
 
 ---
 
