@@ -15,50 +15,25 @@ This distinction allows CSF to preserve a continuous member representation while
 
 ## 1. Motivation
 
-In current structural analysis practice, the definition of section properties
-for non-prismatic members is typically embedded within the solver itself.
-Geometry and material participation are not treated as independent fields;
-instead, they are collapsed into a discrete table of section properties
-evaluated at a fixed set of stations, tied to the solver mesh and conventions.
-This coupling makes the sectional model difficult to inspect, reuse, or
-transfer across different solvers, and it obscures the distinction between
-the continuous physical model and its numerical discretisation.
+In current structural analysis practice, the definition of section properties for non-prismatic members is typically embedded within the solver itself. Geometry and material participation are not treated as independent fields; instead, they are collapsed into a discrete table of section properties evaluated at a fixed set of stations, tied to the solver mesh and conventions. This coupling makes the sectional model difficult to inspect, reuse, or transfer across different solvers, and it obscures the distinction between the continuous physical model and its numerical discretisation.
 
-Many structural and mechanical engineering problems involve members whose
-cross-section changes along their length: tapered towers, variable-depth
-beams, haunched bridge girders, repaired or degraded members, hybrid material
-sections, and staged or homogenized structural models. In these cases, the
-required input for a numerical model is not a single section, but a
-longitudinal field of section properties such as $A(z)$, $I_x(z)$, $I_y(z)$,
-$EI_x(z)$, $GJ(z)$, and mass-related quantities. When this field is defined
-inside the solver, it cannot be validated, inspected, or reused independently.
+Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required input for a numerical model is not a single section, but a longitudinal field of section properties such as $A(z)$, $I_x(z)$, $I_y(z)$, $EI_x(z)$, $GJ(z)$, and mass-related quantities. When this field is defined inside the solver, it cannot be validated, inspected, or reused independently.
 
-CSF addresses this by extracting the sectional field definition into a
-dedicated pre-solver layer. A member is represented as a continuous sectional
-field composed of evolving polygonal geometry, axial/bending participation
-$w_i(z)$, and shear/torsion participation $\kappa_i(z)$. This representation
-is defined, evaluated, inspected, and validated independently of any
-downstream solver. The solver receives a station-wise projection of an
-already defined continuous field - not a table that defines the model itself.
+CSF addresses this by extracting the sectional field definition into a dedicated pre-solver layer. A member is represented as a continuous sectional field composed of evolving polygonal geometry together with two participation fields: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. This representation is defined, evaluated, inspected, and validated independently of any downstream solver. The solver receives a station-wise projection of an already defined continuous field - not a table that defines the model itself.
 
-The result is a clean separation between three concerns that are normally
-conflated: the continuous physical model of the member, the numerical
-sampling strategy required by the solver, and the exported data format
-consumed by a specific tool.
+The result is a clean separation between three concerns that are normally conflated: the continuous physical model of the member, the numerical sampling strategy required by the solver, and the exported data format consumed by a specific tool.
 
 Cross-section analysis tools such as VABS [REF] and BECAS [REF] provide accurate computation of beam sectional properties for arbitrary geometries and composite materials, and are widely adopted in wind-turbine and aerospace applications. Open-source alternatives such as `sectionproperties` [REF] offer similar capabilities within a Python ecosystem. These tools are primarily designed to analyse individual cross-sections: given a sectional geometry and material definition, they return the corresponding sectional properties at that station.
 
 The longitudinal variation of the member - including tapering geometry, spatially varying material participation, or local stiffness degradation - is therefore usually represented outside the section-analysis tool, either through user-defined station tables or through the discretization adopted by the downstream structural solver. As a consequence, the sectional description is often tied to a specific mesh or analysis workflow, rather than being defined as an independent continuous model.
 
-On the theoretical side, Balduzzi et al. [Balduzzi 2016][REF] showed that non-prismatic beam analysis requires the axial derivatives of cross-sectional quantities, such as $\frac{dA}{dz}$ and $\frac{dI}{dz}$, as explicit terms in the governing equations. The formulation therefore depends on continuous sectional functions, not solely on values evaluated at discrete stations. This highlights the need for programmable descriptions capable of generating consistent geometric and constitutive quantities, and their axial variation, at arbitrary locations along the member axis.
-
+On the theoretical side, Balduzzi et al. [Balduzzi 2016] showed that non-prismatic beam analysis requires the axial derivatives of cross-sectional quantities, such as $\frac{dA}{dz}$ and $\frac{dI}{dz}$, as explicit terms in the governing equations. The formulation therefore depends on continuous sectional functions, not solely on values evaluated at discrete stations. This highlights the need for programmable descriptions capable of generating consistent geometric and constitutive quantities, and their axial variation, at arbitrary locations along the member axis.
 
 Existing frameworks for the analysis of non-prismatic members can be grouped into three categories. First, sectional analysis tools such as VABS, BECAS, and `sectionproperties` compute the properties of individual cross-sections with high accuracy, while the longitudinal variation of the member is handled externally. Second, structural solvers such as OpenSees, ABAQUS, and ANSYS incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations. Third, aeroelastic codes such as OpenFAST rely on distributed sectional-property tables along the member axis.
 
 To the authors' knowledge, the continuous representation of a member as a solver-agnostic sectional-property field is generally not formalised as an independent modelling layer. Existing approaches typically embed longitudinal variation within section-analysis tools, structural solvers, or application-specific workflows, rather than representing it as an explicit reusable field.
 
 The lack of established continuous sectional-field tools is both a limitation and a motivation: it makes direct tool-to-tool benchmarking difficult, but it also defines the methodological gap addressed by CSF.
-
 
 ---
 
