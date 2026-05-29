@@ -1,30 +1,16 @@
 # A Field-Based Framework for the Continuous Modelling of Non-Prismatic Structural Members
 
-## Abstract
+# Abstract
 
-Continuous Section Field (CSF) is a field-based computational framework for representing sectional geometry, material participation,
-and derived section properties as continuous functions along a member axis. 
-CSF is neither a structural solver nor a geometry kernel; instead, it connects these domains by transforming member-level geometric 
-and material descriptions into continuous section-property fields and station-wise data suitable for beam, tower, bridge, and finite-element workflows.
+Continuous Section Field (CSF) is a field-based computational framework for representing sectional geometry, material participation, and derived section properties as continuous functions along a member axis. CSF is neither a structural solver nor a geometry kernel; instead, it connects these domains by transforming member-level geometric and material descriptions into continuous section-property fields and station-wise data suitable for beam, tower, bridge, and finite-element workflows.
 
-The central idea of CSF is to treat the cross-section as a field defined along the member axis, rather than as a single isolated object. The geometry and material participation are specified at reference stations, and continuous intermediate cross-sections are obtained through interpolation of the sectional description; CSF interpolates
-corresponding polygon vertices to generate intermediate sections and evaluates
-properties such as area, centroid, second moments of area, principal inertias and
-section moduli at any requested station.
+The central idea of CSF is to treat the cross-section as a field defined along the member axis, rather than as a single isolated object. The geometry and material participation are specified at reference stations, and continuous intermediate cross-sections are obtained through interpolation of the sectional description; CSF interpolates corresponding polygon vertices to generate intermediate sections and evaluates properties such as area, centroid, second moments of area, principal inertias and section moduli at any requested station.
 
-Two longitudinal participation fields define how much each region contributes: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. Their independence is foundational to CSF: the model imposes no relation between the two, so each field can be specified on its own. These fields can represent stiffness ratios, degraded regions, reinforcement, voids, density-like quantities, or other user-defined sectional contributions. When both derive from elastic behaviour, they may optionally be coupled through an isotropic relation, each varying with the longitudinal coordinate and with geometric quantities.
+CSF makes an explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two longitudinal participation fields define how much each region contributes: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. Their independence is foundational to CSF: the model imposes no relation between the two, so each field can be specified on its own. These fields can represent stiffness ratios, degraded regions, reinforcement, voids, density-like quantities, or other user-defined sectional contributions. When both derive from elastic behaviour, they may optionally be coupled through an isotropic relation, each varying with the longitudinal coordinate and with geometric quantities.
 
+The continuous model can be defined through a Python API or through a declarative YAML workflow. In the YAML workflow, one file defines the continuous member and another file defines the requested computations, plots, inspections, station sampling, and exports. The YAML file does not define a discrete table of section properties; it defines the geometry and participation laws from which CSF constructs continuous sectional fields.
 
-The continuous model can be defined through a Python API or through a
-declarative YAML workflow. In the YAML workflow, one file defines the
-continuous member and another file defines the requested computations, plots,
-inspections, station sampling, and exports. The YAML file does not define a
-discrete table of section properties; it defines the geometry and
-participation laws from which CSF constructs continuous sectional fields.
-
-This distinction allows
-CSF to preserve a continuous member representation while generating
-solver-facing station-wise data when required. 
+This distinction allows CSF to preserve a continuous member representation while generating solver-facing station-wise data when required.
 
 
 ## 1. Motivation
@@ -64,7 +50,7 @@ Cross-section analysis tools such as VABS [REF] and BECAS [REF] provide accurate
 
 The longitudinal variation of the member - including tapering geometry, spatially varying material participation, or local stiffness degradation - is therefore usually represented outside the section-analysis tool, either through user-defined station tables or through the discretization adopted by the downstream structural solver. As a consequence, the sectional description is often tied to a specific mesh or analysis workflow, rather than being defined as an independent continuous model.
 
-On the theoretical side, Balduzzi et al. [Balduzzi 2016] showed that non-prismatic beam analysis requires the axial derivatives of cross-sectional quantities, such as $\frac{dA}{dz}$ and $\frac{dI}{dz}$, as explicit terms in the governing equations. The formulation therefore depends on continuous sectional functions, not solely on values evaluated at discrete stations. This highlights the need for programmable descriptions capable of generating consistent geometric and constitutive quantities, and their axial variation, at arbitrary locations along the member axis.
+On the theoretical side, Balduzzi et al. [Balduzzi 2016][REF] showed that non-prismatic beam analysis requires the axial derivatives of cross-sectional quantities, such as $\frac{dA}{dz}$ and $\frac{dI}{dz}$, as explicit terms in the governing equations. The formulation therefore depends on continuous sectional functions, not solely on values evaluated at discrete stations. This highlights the need for programmable descriptions capable of generating consistent geometric and constitutive quantities, and their axial variation, at arbitrary locations along the member axis.
 
 
 Existing frameworks for the analysis of non-prismatic members can be grouped into three categories. First, sectional analysis tools such as VABS, BECAS, and `sectionproperties` compute the properties of individual cross-sections with high accuracy, while the longitudinal variation of the member is handled externally. Second, structural solvers such as OpenSees, ABAQUS, and ANSYS incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations. Third, aeroelastic codes such as OpenFAST rely on distributed sectional-property tables along the member axis.
