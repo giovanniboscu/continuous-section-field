@@ -280,15 +280,6 @@ Multiple straight elements can be composed in sequence - each with its own
 geometry and participation fields - to represent members of arbitrary length
 and cross-sectional evolution.
 
-### 2.6 Torsional analysis
-
-The Saint-Venant torsional constant is not obtained from the weighted
-area-integral formulation described above. Its evaluation requires the
-solution of a warping problem over the full section domain. CSF therefore
-retains the continuous geometric and participation-field representation
-while delegating torsional analysis to dedicated section solvers when
-required.
-
 ---
 ## 3. Declarative numerical workflow
 
