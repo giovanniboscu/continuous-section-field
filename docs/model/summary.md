@@ -465,7 +465,7 @@ weight law differs between the two cases.
 ### Validation design
 
 Both paths start from the same YAML definition of the continuous sectional
-field, but they evaluate it through different computational procedures::
+field, but they evaluate it through different computational procedures:
 
 ```text
 Path 1:  YAML → CSF sectional properties → OpenSees beam model → tip response
@@ -503,10 +503,17 @@ sufficient to reproduce the reference response with negligible error.
 The transverse displacement $U_y$ converges at low discretization levels.
 The torsional rotation $R_z$ stabilises quickly and exhibits a small
 residual offset of approximately $3.44 \times 10^{-3}$\% across all tested
-discretization levels. This offset is attributed to the thin-walled
-torsional approximation adopted internally by the CSF workflow, whereas the
-analytical reference uses the exact circular torsional constant
-$J = \tfrac{\pi}{2}(R_o^4 - R_i^4)$.
+discretization levels.  This offset is attributed to the thin-walled torsional approximation adopted
+internally by the CSF workflow, whereas the analytical reference uses the
+exact circular torsional constant
+
+$$
+J = \frac{\pi}{2}\left(R_o^4 - R_i^4\right).
+$$
+
+The internal CSF torsional approximation and its assumptions are documented
+separately in the project repository:
+[De Saint-Venant torsional constant in CSF](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md).
 
 ### Case B - degraded tower
 
@@ -572,9 +579,6 @@ This diagnostic is only possible because the reference stiffness field is
 defined continuously. Without a continuous reference representation,
 convergence behaviour cannot be assessed independently of the adopted
 station discretization.
-
-
-
 
 
 
