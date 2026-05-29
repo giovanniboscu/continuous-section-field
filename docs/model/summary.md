@@ -10,7 +10,7 @@ and material descriptions into continuous section-property fields and station-wi
 The central idea of CSF is to treat the cross-section as a field defined along the member axis, rather than as a single isolated object. The geometry and material participation are specified at reference stations, and continuous intermediate cross-sections are obtained through interpolation of the sectional description; CSF interpolates
 corresponding polygon vertices to generate intermediate sections and evaluates
 properties such as area, centroid, second moments of area, principal inertias and
-section moduli, at any requested station.
+section moduli at any requested station.
 
 The central contribution is the explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two independent longitudinal participation fields
 define how much each region contributes: the axial/bending field $w_i(z)$ and
