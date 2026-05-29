@@ -408,13 +408,13 @@ Interoperability with sectionproperties is provided through two companion module
 ## 4. Station-wise evaluation and solver-facing output
 
 A central feature of CSF is that station-wise data are generated from the
-continuous field. The user may request properties at arbitrary stations,
-including uniformly spaced stations, manually defined stations, or
-integration-compatible points.
+continuous field. The user may request properties at arbitrary axial
+locations, including uniformly spaced stations, manually defined stations,
+or integration-compatible points.
 
 For example, a beam formulation may require section properties at
-Gauss-Lobatto points. CSF can evaluate the continuous field directly at
-those points and export the corresponding values. The sampling strategy is
+Gauss-Lobatto points. CSF evaluates the continuous field directly at those
+points and exports the corresponding values. The sampling strategy is
 therefore tied to the downstream numerical method, while the underlying
 member model remains unchanged.
 
@@ -424,13 +424,12 @@ This provides a clean distinction between:
 - the station set used for numerical evaluation;
 - the exported table consumed by an external solver.
 
-For many practical cases the properties computed directly by CSF are
-sufficient for downstream beam-level simulations. Where detailed section
-analysis is required, the polygonal geometry evaluated at any station can
-be passed to an external finite-element section solver such as
-`sectionproperties`. CSF and section solvers are therefore complementary
-layers in a pre-processing pipeline, each operating at its own level of
-abstraction.
+Where the properties computed directly by CSF are sufficient, the sampled
+field can be exported directly to downstream beam-level models. Where
+additional section analysis is required, the polygonal geometry evaluated at
+any station can be passed to an external section solver. CSF and section
+solvers are therefore complementary layers in the same pre-processing
+pipeline.
 
 
 ---
