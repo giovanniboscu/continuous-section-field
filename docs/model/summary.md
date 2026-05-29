@@ -171,6 +171,74 @@ discretization along the member axis must therefore be driven by the
 downstream workflow, for example through uniform sampling, Gauss-Lobatto
 stations, solver integration points, or dense reference grids.
 
+---
+When the participation fields are constant and the vertex coordinates are interpolated linearly between reference stations, the resulting sectional quantities are not arbitrary interpolants.
+
+The geometric quantities
+
+$$
+A(z), \quad Q(z), \quad I(z)
+$$
+
+are polynomial functions of the axial coordinate $z$.
+
+Centroidal quantities such as
+
+$$
+I_x^c(z), \quad I_y^c(z), \quad I_{xy}^c(z)
+$$
+
+generally become rational functions because they depend on the section centroid. For example,
+
+$$
+I_x^c(z) = I_x(z) - A(z)\,\bar{y}(z)^2
+$$
+
+with
+
+$$
+\bar{y}(z) = \frac{Q_x(z)}{A(z)}.
+$$
+
+Once the participation fields $w_i(z)$ and $\kappa_i(z)$ are introduced, the final sectional laws become the composition of geometric variation and participation variation. A generic sectional quantity can be written as
+
+$$
+P(z)
+=
+\sum_i
+w_i(z)\,
+P_i^{\mathrm{geom}}(z),
+$$
+
+where
+
+$$
+P_i^{\mathrm{geom}}(z)
+$$
+
+denotes the geometric contribution associated with zone $i$.
+
+The longitudinal variation therefore arises from two independent mechanisms:
+
+1. The geometric evolution of the polygonal domains
+
+$$
+\Omega_i(z),
+$$
+
+which generates polynomial or rational sectional laws under linear vertex interpolation.
+
+2. The participation fields
+
+$$
+w_i(z), \qquad \kappa_i(z),
+$$
+
+which may follow arbitrary user-defined functions of the axial coordinate.
+
+The resulting sectional field is obtained through the composition of these two contributions.
+
+---
 
 
 ### 2.3 Geometric field
