@@ -235,12 +235,14 @@ For these quantities, the combination of polygonal geometry and participation
 fields yields a direct closed-form solution at any station, without numerical
 quadrature in the cross-sectional plane.
 
-The Saint-Venant torsional constant is a notable exception. Its evaluation
-requires the solution of a warping problem over the full section domain and
-cannot be reduced to a weighted area integral. For this reason, CSF delegates
-its computation to external section-analysis solvers such as
-`sectionproperties`, while retaining the same continuous geometric and
-participation-field description.
+The Saint-Venant torsional constant cannot be reduced to a weighted area
+integral. For this reason, CSF treats torsion separately. It provides a
+direct internal evaluation for thin-walled sections explicitly identified as
+closed cells or open walls, using the Bredt formula for closed cells and the
+$b\,t^3/3$ approximation for open walls. For general solid sections,
+multi-cell configurations, connected cell-wall systems, or cases requiring
+higher accuracy, the continuous geometric field can be exported to external
+finite-element section solvers such as `sectionproperties`.
 
 ---
 
