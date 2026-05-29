@@ -11,6 +11,49 @@ Whenever a quantity depends on **a specific modelling choice or policy** defined
 
 [CSF sectionproperties mapping table](#csf-sectionproperties-mapping-table)
 
+---
+
+### Relation to existing tools and structural limitations
+
+Most section properties evaluated by CSF follow directly from the weighted
+area-integral formulation. The Saint-Venant torsional constant
+$J_\mathrm{sv}$ is the one exception: it depends on the full geometry of the
+section through a warping problem and cannot be obtained from a direct area
+integral.
+
+CSF provides an internal approximation of $J_\mathrm{sv}$ when the user
+explicitly tags polygons as closed cells (`@cell`) or open thin walls
+(`@wall`). Untagged polygons are ignored by the internal CSF torsional
+approximation. For each category, CSF computes and reports the contributions
+independently:
+
+$$J_\mathrm{sv,cell} = \sum_k \frac{4 A_{m,k}^2\, t_k}{b_{m,k}}, \qquad
+J_\mathrm{sv,wall} = \sum_i \frac{b_i\, t_i^3}{3}$$
+
+where the first term applies the Bredt formula to each closed cell using the
+mean enclosed area and mean perimeter, and the second term sums the thin-wall
+contribution of each open wall. The two quantities are presented separately
+so that the user can inspect the relative weight of each contribution and
+verify that each component is physically meaningful. Their combination is not
+enforced by CSF and is valid only under the following hypotheses: cells and
+walls do not share closed contours, all components have the same unit twist,
+open walls have free ends, and thin-wall assumptions hold throughout.
+
+Beyond these hypotheses - thick-walled sections, multi-cell configurations
+with shared walls, or open walls physically connected to a cell boundary -
+the internal CSF approximation is no longer valid. In those cases CSF must
+export the polygonal geometry at the required stations to a finite-element
+section solver such as `sectionproperties` for a full Saint-Venant warping
+analysis.
+
+More broadly, CSF is not a section-analysis tool and does not replace
+finite-element section solvers. Its role is to provide a continuous,
+evaluable geometric and participation field. Where the properties computed
+directly by CSF are sufficient, as in many practical beam and tower models,
+no external solver is required. Where they are not, the continuous geometric
+field serves as the input to a more detailed analysis, with the station
+sampling fully controlled by the user.
+
 
 ---
 
