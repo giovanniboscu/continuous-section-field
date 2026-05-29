@@ -159,13 +159,26 @@ not arbitrary interpolants. Area, first moments, and second moments are
 polynomial functions of the axial coordinate, while centroidal quantities
 generally become rational functions.
 
-Once the participation fields $w_i(z)$ and $\kappa_i(z)$ are introduced,
-the resulting stiffness laws may become general functions of \(z\), depending
-on the user-defined weight laws. CSF does not prescribe or perform axial
-integration of these functions. Instead, it provides an evaluable continuous
-field. Any integration or discretization along the member axis must therefore
-be driven by the downstream workflow, for example through uniform sampling,
-Gauss-Lobatto stations, solver integration points, or dense reference grids.
+
+At a fixed station $z$, the participation fields $w_i(z)$ and
+$\kappa_i(z)$ act as scalar carriers multiplying the exact polygonal
+integrals over the $x,y$ plane. They therefore do not change the nature of
+the cross-sectional integration: the spatial integrals remain closed-form
+polygonal quantities.
+
+As $z$ varies, however, the same carriers define the longitudinal stiffness
+laws of the member. Once user-defined functions $w_i(z)$ and $\kappa_i(z)$
+are introduced, the resulting sectional stiffness quantities may become
+general functions of the axial coordinate.
+
+CSF does not prescribe or perform axial integration of these functions.
+Instead, it provides an evaluable continuous field. Any integration or
+discretization along the member axis must therefore be driven by the
+downstream workflow, for example through uniform sampling, Gauss-Lobatto
+stations, solver integration points, or dense reference grids.
+
+
+
 ### 2.3 Geometric field
 
 The user defines each polygonal zone by its vertex coordinates at two
