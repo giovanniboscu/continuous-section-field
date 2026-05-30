@@ -457,7 +457,14 @@ The sectional properties were evaluated at eleven Gauss-Lobatto stations. The sa
 
 The principal bending stiffness $I_x$ exhibits a pronounced reduction toward the centre of the member, whereas $I_y$ remains comparatively less affected. Consequently, the sectional response evolves continuously despite the absence of any geometric modification. This behaviour demonstrates that CSF can represent longitudinal stiffness variation independently of geometric variation.
 
-The anisotropic configuration further illustrates the separation between axial/bending and shear/torsion participation fields. In this case, $w(z)$ and $\kappa(z)$ are prescribed independently, so the torsional participation is no longer constrained by the isotropic relation of Section 2.2. The resulting sectional field therefore cannot be represented by a single isotropic participation law.
+
+In the sampled anisotropic case, the axial/bending participation of the lower web reaches its minimum at mid-span, decreasing from its end value to 35% of that value. The corresponding shear/torsion participation law reaches 20% of its end value at the same station.
+
+![T-section anisotropic participation fields](path/to/figure.png)
+
+The anisotropic configuration further illustrates the separation between axial/bending and shear/torsion participation fields.
+
+In this case, $w(z)$ and $\kappa(z)$ are prescribed independently, so the torsional participation is no longer constrained by the isotropic relation of Section 2.2. The resulting sectional field therefore departs from the isotropic relation of Section 2.2.
 
 For this reason, torsional properties are not resolved through the isotropic `sectionproperties` workflow. The export reports `J_tors skip`; therefore, the anisotropic case is used here to document the sampled continuous fields, rather than to provide a torsional constant from the isotropic backend. The continuous field representation, however, remains fully defined and exportable at all Gauss-Lobatto stations.
 
