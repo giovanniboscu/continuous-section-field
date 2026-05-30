@@ -384,7 +384,7 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 </p>
 
-Table 2 reports the relative errors in tip displacement $U_y$ and torsional rotation $R_z$ as a function of the number of beam elements, for both configurations.
+Table X reports the relative errors in tip displacement $U_y$ and torsional rotation $R_z$ as a function of the number of beam elements, for both configurations.
 
 | Scenario   | Elements | $\varepsilon_{U_y}$ (%) | $\varepsilon_{R_z}$ (%) |
 |-------------|----------:|------------------------:|------------------------:|
