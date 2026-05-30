@@ -406,7 +406,7 @@ This configuration is compatible with station-wise Saint-Venant torsional analys
 
 In the second scenario, the same geometry is retained, but the participation fields are assigned independently. The quantities $w(z)$ and $\kappa(z)$ are prescribed separately, and no isotropic relation is imposed between them. The resulting model represents a generalized sectional field in which axial/bending and shear/torsion participation may evolve independently along the member axis.
 
-
+The relevant YAML is reported below. The repeated polygon block defines the fixed T-section geometry at both end stations, while the longitudinal variation is introduced only through `weight_laws` and `shear_weight_laws`.
 
 ```yaml
 CSF:
