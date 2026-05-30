@@ -306,7 +306,7 @@ Two configurations are analysed:
 - **Case A**: the undegraded tower, representing a smooth reference case in
   which sectional stiffness varies regularly along the height.
 - **Case B**: the same tower with a localized longitudinal stiffness
-  degradation introduced through the participation field $w_i(z)$, leaving
+  degradation [Kenna](#KENNA) introduced through the participation field $w_i(z)$, leaving
   the polygonal geometry unchanged.
 
 Both configurations are defined in a single YAML geometry file. Only the
@@ -594,6 +594,8 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
 
 - **[Balduzzi 2016]** <a id="Balduzzi-2016"></a>  *Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). Non-prismatic beams: A simple and effective Timoshenko-like model. International Journal of Solids and Structures*, 90, 236–250.
   https://doi.org/10.1016/j.ijsolstr.2016.02.017
+
+- **[KENNA]** <a id="KENNA"></a> *A. Kenna and B. Basu, “Damage Detection in Wind Turbine Towers using a Finite Element Model and Discrete Wavelet Transform of Strain Signals,”* Journal of Physics: Conference Series, vol. 628, no. 1, p. 012067, 2015. doi:10.1088/1742-6596/628/1/012067.
 
 - **[VABS]** <a id="vabs"></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
 
