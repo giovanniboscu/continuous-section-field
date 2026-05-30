@@ -348,6 +348,11 @@ The transverse displacement $U_y$ converges at low discretization levels. The to
 <p align="center">
   <em>Figure X. CSF 3D representation of the degraded NREL tower case. The geometry remains tapered and continuous, while the longitudinal stiffness reduction is introduced through the participation field.</em>
   <img width="631" height="547" alt="image" src="https://github.com/user-attachments/assets/2bf9827f-df1d-44ee-9937-bacb486373d8" />
+</p>
+
+<p align="center">
+  <em>Figure X. Longitudinal stiffness degradation law applied to the NREL tower through the axial/bending participation field. The two localized reductions are centred at 0.33L and 0.67L.</em>
+  <img width="985" height="467" alt="image" src="https://github.com/user-attachments/assets/50866952-f5ca-4ca3-969b-caf1a0b69934" />
 
 </p>
 
@@ -358,6 +363,12 @@ The convergence behaviour changes markedly relative to Case A. At low discretiza
 This behaviour illustrates the main motivation for a continuous sectional representation. A coarse piecewise model with too few stations may miss or underrepresent local stiffness reductions, whereas the continuous field retains the full spatial description and the beam discretization can be refined independently until convergence is achieved.
 
 #### Convergence results
+
+<p align="center">
+  <em>Figure X. Continuous variation of selected sectional properties for the degraded NREL tower case. The two localized reductions are clearly visible in both A(z) and Ix(z), while the overall trend remains governed by the tower taper. </em>
+  <img width="992" height="654" alt="image" src="https://github.com/user-attachments/assets/29232887-e724-46bb-9bb7-ff635c08742f" />
+</p>
+
 
 Table 2 reports the relative errors in tip displacement $U_y$ and torsional rotation $R_z$ as a function of the number of beam elements, for both configurations.
 
@@ -377,6 +388,7 @@ Table 2 reports the relative errors in tip displacement $U_y$ and torsional rota
 | Degraded   | 16 | −4.29×10⁻³ | −5.67×10⁻³ |
 | Degraded   | 24 | +9.57×10⁻⁴ | −2.75×10⁻³ |
 | Degraded   | 32 | +2.80×10⁻⁴ | −3.48×10⁻³ |
+
 
 > **Note:** At high discretization levels the relative error in $U_y$ stabilises 
 > near zero ($\sim 10^{-4}\,\%$), reflecting the numerical precision of the 
