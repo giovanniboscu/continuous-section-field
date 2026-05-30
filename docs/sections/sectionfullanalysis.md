@@ -14,7 +14,7 @@ Whenever a quantity depends on a specific modelling choice or policy defined els
 
 ## General Notes
 
-- All quantities are computed **purely from geometry and polygon `weight` or `shear_weight`**. `weight` is used for axial and flexural sectional properties; `shear_weight` is used for torsional stiffness. (`weight` corresponds to the axial/bending field $w_i$ and `shear_weight` to the shear/torsion field $\kappa_i$.)
+- All quantities are computed **from geometry and polygon `weight` or `shear_weight`**. `weight` is used for axial and flexural sectional properties; `shear_weight` is used for torsional stiffness. (`weight` corresponds to the axial/bending field $w_i$ and `shear_weight` to the shear/torsion field $\kappa_i$.)
 - No assumptions are made about profile families (I, H, box, tube, etc.).
 - Polygon `weight` is treated as a **scalar field multiplier** (e.g. modular ratio, material factor).
 
