@@ -397,7 +397,7 @@ General-purpose torsional constant estimate obtained by mapping the composite se
 - Tag-free: independent of `@cell` / `@wall`.
 - Not a thin-walled closed-cell (Bredt–Batho) formulation; closed/open thin-walled torsion is handled by the dedicated `@cell` / `@wall` paths.
 - The equivalent-rectangle mapping is a heuristic procedure internal to CSF. Only the final torsion formula is from Roark; no literature reference exists for the mapping step itself.
-- Intended for compact solid sections (e.g. solid piles, filled profiles) where `@cell` / `@wall` tagging is not applicable. Check `J_s_vroark_fidelity` before use: reliable only when fidelity ≥ 0.6.
+- Intended for compact solid sections (e.g. solid piles, filled profiles) where `@cell` / `@wall` tagging is not applicable. Check `J_s_vroark_fidelity` before use: reliable only when fidelity ≥ 0.9
 
 ### 19. Roark Fidelity Index (`J_s_vroark_fidelity`)
 
@@ -427,7 +427,7 @@ Do **not** use it as:
 - **0.8 – 0.9** - borderline geometry (mild asymmetry or light non-structural material); `J_s_vroark` remains usable, with visible error.
 - **< 0.8** - geometry no longer rectangle-like (T, H, I, internal voids, extreme weight dispersion); discard `J_s_vroark` in favour of  `J_sv_wall`.
 
-A practical rule for automated pipelines is to reject `J_s_vroark` whenever fidelity drops below 0.7.
+A practical rule for automated pipelines is to reject `J_s_vroark` whenever fidelity drops below 0.9
 
 **How to read the fidelity plot along `z`.**
 
