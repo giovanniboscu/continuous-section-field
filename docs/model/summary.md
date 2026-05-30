@@ -22,7 +22,7 @@ CSF addresses this by extracting the sectional field definition into a dedicated
 
 The result is a clean separation between three concerns that are normally conflated: the continuous physical model of the member, the numerical sampling strategy required by the solver, and the exported data format consumed by a specific tool.
 
-Cross-section analysis tools such as VABS [REF] and BECAS [REF] provide accurate computation of beam sectional properties for arbitrary geometries and composite materials, and are widely adopted in wind-turbine and aerospace applications. Open-source alternatives such as `sectionproperties` [REF] offer similar capabilities within a Python ecosystem. These tools are primarily designed to analyse individual cross-sections: given a sectional geometry and material definition, they return the corresponding sectional properties at that station.
+Cross-section analysis tools such as VABS [VABS] and BECAS [REF] provide accurate computation of beam sectional properties for arbitrary geometries and composite materials, and are widely adopted in wind-turbine and aerospace applications. Open-source alternatives such as `sectionproperties` [SEC_PROP] offer similar capabilities within a Python ecosystem. These tools are primarily designed to analyse individual cross-sections: given a sectional geometry and material definition, they return the corresponding sectional properties at that station.
 
 The longitudinal variation of the member - including tapering geometry, spatially varying material participation, or local stiffness degradation - is therefore usually represented outside the section-analysis tool, either through user-defined station tables or through the discretization adopted by the downstream structural solver. As a consequence, the sectional description is often tied to a specific mesh or analysis workflow, rather than being defined as an independent continuous model.
 
@@ -31,7 +31,7 @@ On the theoretical side, Balduzzi et al. [Balduzzi 2016] showed that non-prismat
 Existing frameworks for the analysis of non-prismatic members can be grouped into three categories. First, sectional analysis tools such as VABS, BECAS, and `sectionproperties` compute the properties of individual cross-sections with high accuracy, while the longitudinal variation of the member is handled externally. Second, structural solvers such as OpenSees, ABAQUS, and ANSYS incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations. 
 
 
-Third, wind-energy simulation and design workflows embed non-prismaticity in application-specific representations. Aeroelastic codes such as OpenFAST [NREL OpenFAST; Wang et al. 2017] rely on distributed sectional-property tables along the member axis, whereas systems-engineering tools such as NREL's WISDEM [NREL WISDEM] represent the tower as a tapered circular tube with closed-form sectional properties, analysed through the external frame finite-element code Frame3DD [Gavin]. In both cases the longitudinal variation is bound to a specific geometry or workflow rather than expressed as an independent, reusable sectional field.
+Third, wind-energy simulation and design workflows embed non-prismaticity in application-specific representations. Aeroelastic codes such as OpenFAST [NRELOpenFAST]; Wang et al. 2017] rely on distributed sectional-property tables along the member axis, whereas systems-engineering tools such as NREL's WISDEM [NREL WISDEM] represent the tower as a tapered circular tube with closed-form sectional properties, analysed through the external frame finite-element code Frame3DD [Gavin]. In both cases the longitudinal variation is bound to a specific geometry or workflow rather than expressed as an independent, reusable sectional field.
 
 
 To the authors' knowledge, the continuous representation of a member as a solver-agnostic sectional-property field is generally not formalised as an independent modelling layer. Existing approaches typically embed longitudinal variation within section-analysis tools, structural solvers, or application-specific workflows, rather than representing it as an explicit reusable field.
@@ -841,6 +841,8 @@ https://github.com/robbievanleeuwen/section-properties
 - **[NRELOpenFAST]**  *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool.*.
   https://github.com/OpenFAST/openfast
 - **[NREL WISDEM]**  National Renewable Energy Laboratory. *WISDEM: Wind-Plant Integrated System Design and Engineering Model.*: https://github.com/WISDEM/WISDEM
+  
+- **[Gavin]**  *Gavin, H. P. *Frame3DD: Static and dynamic structural analysis of 2D and 3D frames.* http://frame3dd.sourceforge.net/
 
 ---
   
@@ -860,5 +862,5 @@ Available: https://github.com/giovanniboscu/continuous-section-field/blob/main/d
 
 
   
-- **[Gavin]** — Gavin, H. P. *Frame3DD: Static and dynamic structural analysis of 2D and 3D frames.* http://frame3dd.sourceforge.net/
+
 
