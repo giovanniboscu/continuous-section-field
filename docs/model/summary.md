@@ -824,8 +824,11 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
 
 - [Balduzzi 2016] *Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). Non-prismatic beams: A simple and effective Timoshenko-like model. International Journal of Solids and Structures*, 90, 236–250.
   https://doi.org/10.1016/j.ijsolstr.2016.02.017
- - [VABS]: #QUI https://analyswift.com/vabs/
- *VABS is a cross-sectional analysis tool based on variational asymptotic beam*.
+
+[VABS]: https://analyswift.com/vabs/
+
+- [VABS] VABS: Variational Asymptotic Beam Sectional Analysis.
+
 
 - **[SEC_PROP]** *python package for the analysis of arbitrary cross-sections using the finite element method*.
  https://github.com/robbievanleeuwen/section-properties
