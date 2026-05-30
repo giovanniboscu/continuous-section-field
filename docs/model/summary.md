@@ -260,7 +260,7 @@ In all cases the continuous geometric field is evaluated on demand; no re-meshin
 
 ### 3.4 Interoperability with `sectionproperties`
 
-Interoperability with `sectionproperties` is provided through two companion modules, `csf_sp` and `sp_csf`, available as both Python API and CLI tools. `csf_sp` exports polygonal geometry at requested stations to `sectionproperties` for full warping analysis. `sp_csf` performs the inverse operation, importing single geometries from `sectionproperties` into CSF, enabling the definition of members with geometrically distinct `S0` and `S1` cross-sections.
+Interoperability with `sectionproperties` is provided through two companion modules, `csf_sp` and `sp_csf`, available as both Python API and CLI tools. `csf_sp` exports polygonal geometry at requested stations to `sectionproperties` for full warping analysis. `sp_csf` performs the inverse operation, importing individual section geometries from `sectionproperties` into CSF, enabling the definition of members with geometrically distinct `S0` and `S1` cross-sections.
 
 ---
 
