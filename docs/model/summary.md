@@ -22,7 +22,7 @@ CSF addresses this by extracting the sectional field definition into a dedicated
 
 The result is a clean separation between three concerns that are normally conflated: the continuous physical model of the member, the numerical sampling strategy required by the solver, and the exported data format consumed by a specific tool.
 
-Cross-section analysis tools such as [VABS](#VABS) and BECAS [BECAS] provide accurate computation of beam sectional properties for arbitrary geometries and composite materials, and are widely adopted in wind-turbine and aerospace applications. Open-source alternatives such as `sectionproperties` [SEC_PROP] offer similar capabilities within a Python ecosystem. These tools are primarily designed to analyse individual cross-sections: given a sectional geometry and material definition, they return the corresponding sectional properties at that station.
+Cross-section analysis tools such as [VABS](#VABS) and BECAS [BECAS](#bacas) provide accurate computation of beam sectional properties for arbitrary geometries and composite materials, and are widely adopted in wind-turbine and aerospace applications. Open-source alternatives such as `sectionproperties` [SEC_PROP] offer similar capabilities within a Python ecosystem. These tools are primarily designed to analyse individual cross-sections: given a sectional geometry and material definition, they return the corresponding sectional properties at that station.
 
 The longitudinal variation of the member - including tapering geometry, spatially varying material participation, or local stiffness degradation - is therefore usually represented outside the section-analysis tool, either through user-defined station tables or through the discretization adopted by the downstream structural solver. As a consequence, the sectional description is often tied to a specific mesh or analysis workflow, rather than being defined as an independent continuous model.
 
@@ -822,10 +822,10 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
 
 ## References
 
-- [Balduzzi 2016] <a id="Balduzzi-2016"></a>  *Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). Non-prismatic beams: A simple and effective Timoshenko-like model. International Journal of Solids and Structures*, 90, 236–250.
+- **[Balduzzi 2016]** <a id="Balduzzi-2016"></a>  *Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). Non-prismatic beams: A simple and effective Timoshenko-like model. International Journal of Solids and Structures*, 90, 236–250.
   https://doi.org/10.1016/j.ijsolstr.2016.02.017
 
-- [VABS] <a id="vabs"></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
+- **[VABS]** <a id="vabs"></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
 
 
 - **[SEC_PROP]** *python package for the analysis of arbitrary cross-sections using the finite element method*.
@@ -843,7 +843,7 @@ https://github.com/robbievanleeuwen/section-properties
   
 - **[Gavin]**  *Gavin, H. P. *Frame3DD: Static and dynamic structural analysis of 2D and 3D frames.* http://frame3dd.sourceforge.net/
 
-- **[BECAS]** *Finite-element-based cross-sectional analysis software*. https://becas.dtu.dk/
+- **[BECAS]**  <a id="becas"></a> *Finite-element-based cross-sectional analysis software*. https://becas.dtu.dk/
 
 ---
   
