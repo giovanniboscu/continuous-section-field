@@ -425,7 +425,7 @@ Do **not** use it as:
 
 - **≥ 0.9** - compact, rectangle-like section; `J_s_vroark` is a reasonable estimate.
 - **0.7 – 0.9** - borderline geometry (mild asymmetry or light non-structural material); `J_s_vroark` remains usable, with visible error.
-- **< 0.7** - geometry no longer rectangle-like (T, H, I, internal voids, extreme weight dispersion); discard `J_s_vroark` in favour of `J_sv_cell` or `J_sv_wall`.
+- **< 0.7** - geometry no longer rectangle-like (T, H, I, internal voids, extreme weight dispersion); discard `J_s_vroark` in favour of  `J_sv_wall`.
 
 A practical rule for automated pipelines is to reject `J_s_vroark` whenever fidelity drops below 0.7.
 
@@ -433,7 +433,7 @@ A practical rule for automated pipelines is to reject `J_s_vroark` whenever fide
 
 1. **Prefer trend over point values.** Persistent degradation over a `z` interval is meaningful; an isolated sharp point often corresponds to a principal-inertia branch swap (`Ix − Iy` changing sign), not a solver failure.
 2. **Correlate with the inertias.** Plot `Ix`, `Iy`, and `I2` together. Kinks in fidelity frequently align with principal-axis rotations, which are geometric transitions rather than errors.
-3. **Cross-check the torsion value.** Where fidelity is high, compare `J_s_vroark` with `J_sv_cell` or `J_sv_wall` when available. Agreement at high fidelity increases confidence in all three methods for that section family. This combination avoids misreading isolated curves.
+3. **Cross-check the torsion value.** Where fidelity is high, compare `J_s_vroark` with `J_sv_wall` when available. Agreement at high fidelity increases confidence in all three methods for that section family. This combination avoids misreading isolated curves.
 
 **Suggested wording for reports.**
 
