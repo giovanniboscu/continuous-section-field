@@ -185,7 +185,7 @@ This separation makes the same continuous model reusable across different numeri
 
 ### 3.1 Geometry file
 
-The geometry file defines the continuous sectional model. The example below describes a tapered polygonal section between two reference stations. The cross-section is reduced from `S0` to `S1`, while the axial/bending field follows an independent parabolic law along the member axis. The shear/torsion field is derived from $w_i$ through an isotropic relation.
+The geometry file defines the continuous sectional model. The example below describes a tapered polygonal section between two reference stations. The cross-section tapers from `S0` to `S1`, while the axial/bending field follows a parabolic law along the member axis.
 
 ```yaml
 CSF:
@@ -220,7 +220,7 @@ CSF:
             - [ 0.000, -1.935]
 ```
 
-The example separates three ingredients that are usually collapsed into a single tabulated section-property description: the reference geometry, the longitudinal geometric interpolation, and the material participation law. Changing the station set or the requested output does not require modifying this member definition.
+The example separates three ingredients that are often collapsed into a single tabulated section-property description: the reference geometry, the longitudinal geometric interpolation, and the material participation law. Changing the station set or the requested output does not require modifying this member definition.
 
 ### 3.2 Action file
 
