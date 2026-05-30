@@ -169,7 +169,7 @@ The geometry file defines:
 - pairs of reference stations defining one or more longitudinal interpolation intervals;
 - polygonal regions;
 - vertex coordinates;
-- endpoint participation values;
+- endpoint values of the participation fields;
 - longitudinal laws for $w_i(z)$ and $\kappa_i(z)$.
 
 The action file defines:
