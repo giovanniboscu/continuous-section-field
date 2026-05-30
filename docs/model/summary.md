@@ -31,7 +31,7 @@ On the theoretical side, Balduzzi [Balduzzi 2016](#Balduzzi-2016) showed that no
 Existing frameworks for the analysis of non-prismatic members can be grouped into three categories. First, sectional analysis tools such as VABS, BECAS, and sectionproperties compute the properties of individual cross-sections with high accuracy, while the longitudinal variation of the member is handled externally. Second, structural solvers such as [OpenSees](#OPENSEES), [ABAQUS](#ABAQUS), and [ANSYS](#ANSYS) incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations. 
 
 
-Third, wind-energy simulation and design workflows embed non-prismaticity in application-specific representations. Aeroelastic codes such as BeamDyn [wang](#wang);  rely on distributed sectional-property tables along the member axis, whereas systems-engineering tools such as [NREL's WISDEM](#wisdem)  represent the tower as a tapered circular tube with closed-form sectional properties, analysed through the external frame finite-element code Frame3DD [Gavin](#gavin). In both cases the longitudinal variation is bound to a specific geometry or workflow rather than expressed as an independent, reusable sectional field.
+Third, wind-energy simulation and design workflows embed non-prismaticity in application-specific representations. Aeroelastic codes such as BeamDyn [wang](#wang)  rely on distributed sectional-property tables along the member axis, whereas systems-engineering tools such as [NREL's WISDEM](#wisdem)  represent the tower as a tapered circular tube with closed-form sectional properties, analysed through the external frame finite-element code Frame3DD [Gavin](#gavin). In both cases the longitudinal variation is bound to a specific geometry or workflow rather than expressed as an independent, reusable sectional field.
 
 
 To the authors' knowledge, the continuous representation of a member as a solver-agnostic sectional-property field is generally not formalised as an independent modelling layer. Existing approaches typically embed longitudinal variation within section-analysis tools, structural solvers, or application-specific workflows, rather than representing it as an explicit reusable field.
@@ -827,16 +827,14 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
 
 - **[VABS]** <a id="vabs"></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
 
-- **[NRELOpenFAST]**  <a id="NRELOpenFAST "></a> *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool*. https://github.com/OpenFAST/openfast
-- **[NREL WISDEM]** <a id="wisdem"></a>  *National Renewable Energy Laboratory. *WISDEM: Wind-Plant Integrated System Design and Engineering Model*. https://github.com/WISDEM/WISDEM
+- **[NRELOpenFAST]**  <a id="NRELOpenFAST"></a> *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool*. https://github.com/OpenFAST/openfast
+- **[NREL WISDEM]** <a id="wisdem"></a>  *National Renewable Energy Laboratory. WISDEM: Wind-Plant Integrated System Design and Engineering Model*. https://github.com/WISDEM/WISDEM
 
 - **[SEC_PROP]** <a id="sec_prop"></a>  *python package for the analysis of arbitrary cross-sections using the finite element method.*.
 https://github.com/robbievanleeuwen/section-properties
+
 - **[WANG]**  <a id="wang"></a>   *Wang et al. 2017 - Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework. Wind Energy, 20(8), 1439–1462*.  https://doi.org/10.1002/we.2101
-  
-- **[NRELOpenFAST]**  <a id="NRELOpenFAST"></a>  *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool.*.
-  https://github.com/OpenFAST/openfast
-  
+    
 - **[Gavin]**  <a id="gavin"></a>  *Gavin, H. P. Frame3DD: Static and dynamic structural analysis of 2D and 3D frames*. http://frame3dd.sourceforge.net/
 
 - **[BECAS]**  <a id="becas"></a> *Finite-element-based cross-sectional analysis software*. https://becas.dtu.dk/
@@ -845,8 +843,8 @@ https://github.com/robbievanleeuwen/section-properties
 
 - **[ABAQUS]**  <a id="ABAQUS"></a> *Dassault Systèmes Simulia Corp. ABAQUS*. https://www.3ds.com/products/simulia/abaqus/
 
-- **[OPENSEES]**  <a id="OPENSEES"></a> *McKenna, F. OpenSees: A Framework for Earthquake Engineering Simulation. Computing in Science & Engineering, 13(4), 58–66, 2011*. https://doi.org/10.1109/MCSE.2011.66 https://opensees.berkeley.edu/
-
+- **[OPENSEES]** <a id="OPENSEES"></a> *McKenna, F. OpenSees: A Framework for Earthquake Engineering Simulation. Computing in Science & Engineering, 13(4), 58–66, 2011*. https://doi.org/10.1109/MCSE.2011.66  
+  Project website: https://opensees.berkeley.edu/
 ---
   
 - **[SUMMB_NREL]** <a id="SUMMB_NREL"></a>  *G. Boscu, Continuous Section Field: NREL validation comparison summary*. Repository documentation, 2026.
@@ -855,7 +853,7 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nre
 - **[CSF_SP]** <a id="CSF_SP"></a>  *G. Boscu, Continuous Section Field: Continuous Section Field csf_sp User Guide*.  Repository documentation, 2026.
  https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md
 
-- **[FULL_AN]** <a id="FULL_AN"></a> *G. Boscu, Continuous Section Field: Section Full Analysis Output*. Repository documentation, 2026*.
+- **[FULL_AN]** <a id="FULL_AN"></a> *G. Boscu, Continuous Section Field: Section Full Analysis Output*. Repository documentation, 2026.
 https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md
 
 - **[SAINT_VEN]** <a id="SAINT_VEN"></a> *G. Boscu, Continuous Section Field: Saint-Venant Torsional Constant*. Repository documentation, 2026.
