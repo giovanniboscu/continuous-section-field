@@ -351,6 +351,8 @@ G(z)=\frac{E(z)}{2(1+\nu)}.$$
 The reference transverse displacement is then obtained by direct numerical integration of the bending-curvature contribution induced by the transverse tip force, the tip bending moment, and the uniform transverse load. The torsional reference rotation is obtained by integrating $M_z/GJ(z)$ along the tower height. Simpson integration over the dense axial grid is used for both response quantities.
 
 This reference is therefore independent of the OpenSees beam discretization and of the CSF station-wise section export. It uses the same YAML-defined physical model, but evaluates the response through a separate continuous-integration procedure.
+The NREL tower provides a convenient reference because its sectional properties admit analytical expressions. The continuous-field representation adopted by CSF is more general: it is not restricted to circular sections or to cases for which closed-form sectional laws are available. The same framework can be applied to arbitrary polygonal geometries while retaining the continuous description of geometry and participation fields.
+
 
 #### Loading configuration
 
