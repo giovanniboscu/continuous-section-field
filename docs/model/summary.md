@@ -404,7 +404,8 @@ $$
 
 This configuration is compatible with station-wise Saint-Venant torsional analysis through the `sectionproperties` backend.
 
-In the second scenario, the same geometry is retained, but the participation fields are assigned independently. The quantities $w(z)$ and $\kappa(z)$ are prescribed separately, and no isotropic relation is imposed between them. The resulting model represents a generalized sectional field in which axial/bending and shear/torsion participation may evolve independently along the member axis.
+In the second scenario, the same geometry is retained, but the participation fields are assigned independently. The quantities $w(z)$ and $\kappa(z)$ are prescribed separately, and no isotropic relation is imposed between them. 
+The resulting sectional field is therefore not described by the isotropic relation of Section 2.2.
 
 
 A representative YAML fragment is reported below. The repeated polygon block defines the fixed T-section geometry at both end stations, while the longitudinal variation is introduced only through `weight_laws` and `shear_weight_laws`.
@@ -446,6 +447,22 @@ For both cases, CSF generates a station-wise sectional-property table at the Gau
 The isotropic configuration provides a reference case in which the torsional response can be evaluated through a conventional sectional-analysis backend. The anisotropic configuration demonstrates that the CSF representation remains valid even when no isotropic relation exists between axial/bending and shear/torsion participation, leaving the corresponding torsional solution to a dedicated finite-element sectional formulation.
 
 This example complements the NREL tower validation by demonstrating that the CSF representation is not restricted to axisymmetric thin-walled structures. The same continuous-field formulation can be applied to non-axisymmetric open sections while preserving the distinction between geometry, participation fields, and numerical sampling.
+
+
+### Results and discussion
+
+The T-section example highlights a different aspect of the CSF formulation than the NREL tower validation. In this case, the geometry remains fixed along the member axis, while the participation fields vary continuously with $z$. The resulting variation of the sectional properties is therefore produced entirely by the participation-field definition rather than by geometric interpolation.
+
+The sectional properties were evaluated at eleven Gauss-Lobatto stations. The sampled distributions are symmetric with respect to the mid-span station, reflecting the symmetry of the prescribed participation laws. The minimum values of area and bending stiffness occur near $z=L/2$, where the participation reduction reaches its maximum, while the end stations recover the original sectional properties.
+
+The principal bending stiffness $I_x$ exhibits a pronounced reduction toward the centre of the member, whereas $I_y$ remains comparatively less affected. Consequently, the sectional response evolves continuously despite the absence of any geometric modification. This behaviour demonstrates that CSF can represent longitudinal stiffness variation independently of geometric variation.
+
+The anisotropic configuration further illustrates the separation between axial/bending and shear/torsion participation fields. In this case, $w(z)$ and $\kappa(z)$ are prescribed independently, so the torsional participation is no longer constrained by the isotropic relation of Section 2.2. The resulting sectional field therefore cannot be represented by a single isotropic participation law.
+
+For this reason, torsional properties are not resolved through the isotropic `sectionproperties` workflow. The export reports `J_tors skip`; therefore, the anisotropic case is used here to document the sampled continuous fields, rather than to provide a torsional constant from the isotropic backend. The continuous field representation, however, remains fully defined and exportable at all Gauss-Lobatto stations.
+
+This example complements the NREL tower case by showing that CSF is able to represent continuous variation arising solely from participation fields, independently of any geometric tapering. The same framework therefore supports both geometry-driven and participation-driven sectional evolution within a unified continuous representation.
+
 
 ---
 
