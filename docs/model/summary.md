@@ -406,80 +406,27 @@ This configuration is compatible with station-wise Saint-Venant torsional analys
 
 In the second scenario, the same geometry is retained, but the participation fields are assigned independently. The quantities $w(z)$ and $\kappa(z)$ are prescribed separately, and no isotropic relation is imposed between them. The resulting model represents a generalized sectional field in which axial/bending and shear/torsion participation may evolve independently along the member axis.
 
-The relevant YAML is reported below. The repeated polygon block defines the fixed T-section geometry at both end stations, while the longitudinal variation is introduced only through `weight_laws` and `shear_weight_laws`.
+The YAML fragment below illustrates the definition of the fixed geometry and the longitudinal participation fields.
 
 ```yaml
 CSF:
   sections:
     S0:
       z: 0
-      polygons: &pol
-        fc:
-          weight: 30000000000
-          vertices:
-            - [-300, -100]
-            - [300, -100]
-            - [300, 0]
-            - [-300, 0]
-        wu:
-          weight: 30000000000
-          vertices:
-            - [-50, -425]
-            - [50, -425]
-            - [50, -100]
-            - [-50, -100]
-        wl:
-          weight: 30000000000
-          vertices:
-            - [-50, -600]
-            - [50, -600]
-            - [50, -425]
-            - [-50, -425]
-        sf1:
-          weight: 210000000000
-          vertices:
-            - [-289, -29]
-            - [-271, -29]
-            - [-271, -11]
-            - [-289, -11]
-        sf2:
-          weight: 210000000000
-          vertices:
-            - [271, -29]
-            - [289, -29]
-            - [289, -11]
-            - [271, -11]
-        sf3:
-          weight: 210000000000
-          vertices:
-            - [-289, -89]
-            - [-271, -89]
-            - [-271, -71]
-            - [-289, -71]
-        sf4:
-          weight: 210000000000
-          vertices:
-            - [271, -89]
-            - [289, -89]
-            - [289, -71]
-            - [271, -71]
-        sw1:
-          weight: 210000000000
-          vertices:
-            - [-39, -589]
-            - [-21, -589]
-            - [-21, -571]
-            - [-39, -571]
-        sw2:
-          weight: 210000000000
-          vertices:
-            - [21, -589]
-            - [39, -589]
-            - [39, -571]
-            - [21, -571]
+      polygons: &t_section_geometry
+        fc:  { weight: 3.0e10, vertices: [...] }
+        wu:  { weight: 3.0e10, vertices: [...] }
+        wl:  { weight: 3.0e10, vertices: [...] }
+        sf1: { weight: 2.1e11, vertices: [...] }
+        sf2: { weight: 2.1e11, vertices: [...] }
+        sf3: { weight: 2.1e11, vertices: [...] }
+        sf4: { weight: 2.1e11, vertices: [...] }
+        sw1: { weight: 2.1e11, vertices: [...] }
+        sw2: { weight: 2.1e11, vertices: [...] }
+
     S1:
       z: 10
-      polygons: *pol
+      polygons: *t_section_geometry
 
   weight_laws:
     - 'wl,wl: 30000000000 * (0.35 + (1.0 - 0.35) * (((z/10 - 0.5)*(z/10 - 0.5)) / 0.25)**1)'
