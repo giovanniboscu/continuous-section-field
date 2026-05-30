@@ -404,6 +404,8 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
 
 ## References
 
+<a id="ref-23"></a>
+[23] G. Boscu, *Continuous Section Field: NREL validation comparison summary*, project repository documentation, 2026. Available: https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all_b.md
 - **Wang et al. 2017** — Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). *BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework.* Wind Energy, 20(8), 1439–1462. https://doi.org/10.1002/we.2101
 - **NREL OpenFAST** — National Renewable Energy Laboratory. *OpenFAST: open-source wind turbine simulation tool.* https://github.com/OpenFAST/openfast
 - **NREL WISDEM** — National Renewable Energy Laboratory. *WISDEM: Wind-Plant Integrated System Design and Engineering Model.* https://github.com/WISDEM/WISDEM
