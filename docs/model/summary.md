@@ -306,7 +306,7 @@ Two configurations are analysed:
 - **Case A**: the undegraded tower, representing a smooth reference case in
   which sectional stiffness varies regularly along the height.
 - **Case B**: the same tower with a localized longitudinal stiffness
-  degradation [Kenna](#KENNA) introduced through the participation field $w_i(z)$, leaving
+  degradation introduced through the participation field $w_i(z)$, leaving
   the polygonal geometry unchanged.
 
 Both configurations are defined in a single YAML geometry file. Only the
