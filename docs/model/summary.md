@@ -827,21 +827,17 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
 
 - **[VABS]** <a id="vabs"></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
 
+- **[NRELOpenFAST]**  <a id="NRELOpenFAST "></a> *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool*. https://github.com/OpenFAST/openfast
+- **[NREL WISDEM]** <a id="NREL_WISDEM "></a>  *National Renewable Energy Laboratory. *WISDEM: Wind-Plant Integrated System Design and Engineering Model*. https://github.com/WISDEM/WISDEM
 
-- **[SEC_PROP]** *python package for the analysis of arbitrary cross-sections using the finite element method*.
- https://github.com/robbievanleeuwen/section-properties
-- **[WANG]** *Wang et al. 2017 — Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework. Wind Energy, 20(8), 1439–1462*. https://doi.org/10.1002/we.2101
-- **[NRELOpenFAST]**  *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool*. https://github.com/OpenFAST/openfast
-- **[NREL WISDEM]** *National Renewable Energy Laboratory. *WISDEM: Wind-Plant Integrated System Design and Engineering Model*. https://github.com/WISDEM/WISDEM
-
-- **[SEC_PROP]** *python package for the analysis of arbitrary cross-sections using the finite element method.*.
+- **[SEC_PROP]** <a id="sec_prop "></a>  *python package for the analysis of arbitrary cross-sections using the finite element method.*.
 https://github.com/robbievanleeuwen/section-properties
-- **[WANG]** *Wang et al. 2017 — Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework. Wind Energy, 20(8), 1439–1462*.  https://doi.org/10.1002/we.2101
+- **[WANG]**  <a id="wang"></a>   *Wang et al. 2017 — Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework. Wind Energy, 20(8), 1439–1462*.  https://doi.org/10.1002/we.2101
   
-- **[NRELOpenFAST]**  *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool.*.
+- **[NRELOpenFAST]**  <a id="NRELOpenFAST"></a>  *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool.*.
   https://github.com/OpenFAST/openfast
   
-- **[Gavin]**  *Gavin, H. P. *Frame3DD: Static and dynamic structural analysis of 2D and 3D frames.* http://frame3dd.sourceforge.net/
+- **[Gavin]**  <a id="gavin"></a>  *Gavin, H. P. *Frame3DD: Static and dynamic structural analysis of 2D and 3D frames.* http://frame3dd.sourceforge.net/
 
 - **[BECAS]**  <a id="becas"></a> *Finite-element-based cross-sectional analysis software*. https://becas.dtu.dk/
 
