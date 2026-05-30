@@ -378,7 +378,7 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 
 <p align="center">
-  <em>Figure X. Tip-displacement convergence for the undegraded NREL tower case.</em>
+  <em>Figure X. Tip-displacement convergence for the degraded NREL tower case.</em>
 
 <img width="1600" height="1000" alt="image" src="https://github.com/user-attachments/assets/220ea5ec-d42e-4b75-b04f-16b9e9303161" />
 
