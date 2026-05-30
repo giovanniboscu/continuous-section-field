@@ -386,6 +386,119 @@ This behaviour is a consequence of the continuous nature of the sectional repres
 
 [Complete workflow, convergence plots, and numerical tables for the NREL validation case](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case)
 
+
+
+### 6. T-section with independent participation fields
+
+The NREL tower case demonstrates the ability of CSF to reproduce the continuous stiffness distribution of a real engineering structure and to transfer the resulting sectional properties to a downstream beam solver. A second example is introduced to illustrate a different capability of the framework: the independent specification of axial/bending and shear/torsion participation fields on a non-axisymmetric open section.
+
+The test case consists of a continuous T-section of length $L=10$. The geometry is fixed along the member axis, while the participation fields vary continuously with $z$. The continuous field is evaluated at eleven Gauss-Lobatto stations.
+
+Two constitutive scenarios are considered.
+
+In the first scenario, the section is treated as isotropic. The axial/bending participation field $w(z)$ is prescribed directly, and the shear/torsion participation field is obtained through the isotropic relation introduced in Section 2.2:
+
+$$
+\kappa(z)=\frac{w(z)}{2(1+\nu)}.
+$$
+
+This configuration is compatible with station-wise Saint-Venant torsional analysis through the `sectionproperties` backend.
+
+In the second scenario, the same geometry is retained, but the participation fields are assigned independently. The quantities $w(z)$ and $\kappa(z)$ are prescribed separately, and no isotropic relation is imposed between them. The resulting model represents a generalized sectional field in which axial/bending and shear/torsion participation may evolve independently along the member axis.
+
+
+
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0
+      polygons: &pol
+        fc:
+          weight: 30000000000
+          vertices:
+            - [-300, -100]
+            - [300, -100]
+            - [300, 0]
+            - [-300, 0]
+        wu:
+          weight: 30000000000
+          vertices:
+            - [-50, -425]
+            - [50, -425]
+            - [50, -100]
+            - [-50, -100]
+        wl:
+          weight: 30000000000
+          vertices:
+            - [-50, -600]
+            - [50, -600]
+            - [50, -425]
+            - [-50, -425]
+        sf1:
+          weight: 210000000000
+          vertices:
+            - [-289, -29]
+            - [-271, -29]
+            - [-271, -11]
+            - [-289, -11]
+        sf2:
+          weight: 210000000000
+          vertices:
+            - [271, -29]
+            - [289, -29]
+            - [289, -11]
+            - [271, -11]
+        sf3:
+          weight: 210000000000
+          vertices:
+            - [-289, -89]
+            - [-271, -89]
+            - [-271, -71]
+            - [-289, -71]
+        sf4:
+          weight: 210000000000
+          vertices:
+            - [271, -89]
+            - [289, -89]
+            - [289, -71]
+            - [271, -71]
+        sw1:
+          weight: 210000000000
+          vertices:
+            - [-39, -589]
+            - [-21, -589]
+            - [-21, -571]
+            - [-39, -571]
+        sw2:
+          weight: 210000000000
+          vertices:
+            - [21, -589]
+            - [39, -589]
+            - [39, -571]
+            - [21, -571]
+    S1:
+      z: 10
+      polygons: *pol
+
+  weight_laws:
+    - 'wl,wl: 30000000000 * (0.35 + (1.0 - 0.35) * (((z/10 - 0.5)*(z/10 - 0.5)) / 0.25)**1)'
+
+  shear_weight_laws:
+    - 'iso(0.30)'
+    - 'fc,fc: iso(0.20)'
+    - 'wu,wu: iso(0.20)'
+    - 'wl,wl: 12500000000 * (0.2 + (1.0 - 0.2) * (((z/10 - 0.5)*(z/10 - 0.5)) / 0.25)**2)'
+```
+
+The two cases share the same geometry, interpolation rule, sampling stations, and export procedure. The constitutive field is therefore the only difference between the two configurations. This makes the comparison suitable for isolating the effect of independent participation fields while keeping all geometric aspects unchanged.
+
+For both cases, CSF generates a station-wise sectional-property table at the Gauss-Lobatto locations. These stations can be transferred directly to downstream beam formulations or used as input to external sectional solvers. The example therefore illustrates the separation between the continuous sectional representation and the numerical sampling strategy adopted by a specific analysis workflow.
+
+The isotropic configuration provides a reference case in which the torsional response can be evaluated through a conventional sectional-analysis backend. The anisotropic configuration demonstrates that the CSF representation remains valid even when no isotropic relation exists between axial/bending and shear/torsion participation, leaving the corresponding torsional solution to a dedicated finite-element sectional formulation.
+
+This example complements the NREL tower validation by demonstrating that the CSF representation is not restricted to axisymmetric thin-walled structures. The same continuous-field formulation can be applied to non-axisymmetric open sections while preserving the distinction between geometry, constitutive participation fields, and numerical sampling.
+
 ---
 
 ## 6. Conclusion
