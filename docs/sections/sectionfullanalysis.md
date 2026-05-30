@@ -424,8 +424,8 @@ Do **not** use it as:
 **How to read the value.**
 
 - **≥ 0.9** - compact, rectangle-like section; `J_s_vroark` is a reasonable estimate.
-- **0.7 – 0.9** - borderline geometry (mild asymmetry or light non-structural material); `J_s_vroark` remains usable, with visible error.
-- **< 0.7** - geometry no longer rectangle-like (T, H, I, internal voids, extreme weight dispersion); discard `J_s_vroark` in favour of  `J_sv_wall`.
+- **0.8 – 0.9** - borderline geometry (mild asymmetry or light non-structural material); `J_s_vroark` remains usable, with visible error.
+- **< 0.8** - geometry no longer rectangle-like (T, H, I, internal voids, extreme weight dispersion); discard `J_s_vroark` in favour of  `J_sv_wall`.
 
 A practical rule for automated pipelines is to reject `J_s_vroark` whenever fidelity drops below 0.7.
 
