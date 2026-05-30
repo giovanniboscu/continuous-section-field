@@ -445,7 +445,7 @@ For both cases, CSF generates a station-wise sectional-property table at the Gau
 
 The isotropic configuration provides a reference case in which the torsional response can be evaluated through a conventional sectional-analysis backend. The anisotropic configuration demonstrates that the CSF representation remains valid even when no isotropic relation exists between axial/bending and shear/torsion participation, leaving the corresponding torsional solution to a dedicated finite-element sectional formulation.
 
-This example complements the NREL tower validation by demonstrating that the CSF representation is not restricted to axisymmetric thin-walled structures. The same continuous-field formulation can be applied to non-axisymmetric open sections while preserving the distinction between geometry, constitutive participation fields, and numerical sampling.
+This example complements the NREL tower validation by demonstrating that the CSF representation is not restricted to axisymmetric thin-walled structures. The same continuous-field formulation can be applied to non-axisymmetric open sections while preserving the distinction between geometry, participation fields, and numerical sampling.
 
 ---
 
