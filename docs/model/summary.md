@@ -248,7 +248,7 @@ The same geometry file can therefore support visual inspection, property evaluat
 
 ### 3.3 Reusability across studies
 
-The decoupling between member definition and numerical action is the principal design choice of the YAML workflow. Table 1 illustrates three typical uses of the same geometry file.
+The decoupling between the member definition and the numerical operations applied to it is the principal design choice of the YAML workflow. Table 1 illustrates three typical uses of the same geometry file.
 
 | Study | Station set | Purpose |
 |---|---|---|
