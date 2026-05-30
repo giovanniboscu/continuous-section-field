@@ -469,14 +469,14 @@ In the sampled anisotropic case, the axial/bending participation of the lower we
 
 
 <p align="center">
-  <em>*Figure 2. Shear/torsion participation field used in the T-section example.*</em>
+  <em>Figure 2. Shear/torsion participation field used in the T-section example.</em>
 </p>
 
 <img width="1483" height="682" alt="rectangle_shear_weights__fig_002" src="https://github.com/user-attachments/assets/cf20a7ac-0e3c-41a4-b5aa-68d863c70935" />
 
 
 <p align="center">
-  <em>*Figure 3. Sectional properties sampled at the Gauss-Lobatto stations.*</em>
+  <em>Figure 3. Sectional properties sampled at the Gauss-Lobatto stations.</em>
 </p>
 
 
@@ -484,7 +484,7 @@ In the sampled anisotropic case, the axial/bending participation of the lower we
 
 
 <p align="center">
-  <em>*Figure 4. Continuous variation of selected sectional properties along the member axis.*</em>
+  <em>Figure 4. Continuous variation of selected sectional properties along the member axis.</em>
 </p>
 
 <img width="1484" height="1647" alt="aes_tsection_anisotropic_lobatto_properties" src="https://github.com/user-attachments/assets/996a7e13-a7b5-4ad7-a403-9b8ca61cbf60" />
