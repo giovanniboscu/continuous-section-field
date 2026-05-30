@@ -1,4 +1,4 @@
-Draft v2.1
+Draft v2.2
 # A Field-Based Framework for the Continuous Modelling of Non-Prismatic Structural Members
 
 ## Abstract
