@@ -595,16 +595,23 @@ This example complements the NREL tower case by showing that CSF is able to repr
 
 
 ---
-
-## 6. Conclusion
+## 6. Conclusions
 
 The main contribution of CSF is the formulation of an independent, declarative pre-solver layer in which polygonal geometry and material participation fields are defined as continuous entities, evaluable at arbitrary axial stations and separable from the downstream numerical discretization.
 
-The NREL tower validation shows that the same continuous sectional field can be sampled, transferred to a beam model, and compared against an independent reference response. The degraded tower case further demonstrates that localized stiffness reductions can be represented without changing the geometric model, and that the beam discretization can be refined independently of the underlying continuous field.
+The NREL tower validation shows that the same continuous sectional field can be sampled, transferred to a beam model, and compared against an independent reference response. The degraded tower case further demonstrates that localized stiffness reductions can be represented without changing the geometric model, and that the beam discretization can be refined independently of the underlying continuous field. The T-section example complements this validation by showing that CSF is not limited to tapered or axisymmetric members. A fixed non-axisymmetric open section can be combined with independently prescribed axial/bending and shear/torsion participation fields, producing station-wise solver-facing data at Gauss-Lobatto points.
 
-The T-section example complements this validation by showing that CSF is not limited to tapered or axisymmetric members. A fixed non-axisymmetric open section can be combined with independently prescribed axial/bending and shear/torsion participation fields, producing station-wise solver-facing data at Gauss-Lobatto points.
+Together, these examples show that CSF separates the definition of the sectional model from its numerical sampling and from the solver consuming the exported data. This separation makes the same member definition reusable across inspection, validation, and solver-preprocessing workflows.
 
-Together, these examples show that CSF separates the definition of the sectional model from its numerical sampling and from the solver consuming the exported data. This separation makes the same member definition reusable across inspection, validation, and solver-preprocessing workflows.cal discretization.
+### Limitations
+
+The current formulation assumes a straight element axis, linear vertex interpolation between reference stations, and fixed topology per interval. Curved members, disappearing or emerging zones, and higher-order geometric evolution are not supported. For torsion, the built-in thin-walled approximations are suitable for standard open and closed sections but not for general solid sections or multi-cell configurations, for which CSF delegates to `sectionproperties`.
+
+### Future work
+
+Three extensions are planned. First, the implementation of automatic differentiation for sectional-property derivatives would facilitate coupling with beam formulations that explicitly require longitudinal gradients of geometric and constitutive quantities. Second, support for curved member axes would extend the applicability of the framework beyond straight beam-like structures. Third, tighter integration with nonlinear structural solvers could allow participation fields to evolve during the analysis, enabling applications beyond the current static sectional representation.
+
+
 
 ---
 
