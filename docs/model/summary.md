@@ -4,7 +4,7 @@
 
 Continuous Section Field (CSF) is a field-based computational framework for representing sectional geometry, material participation, and derived section properties as continuous functions along a member axis. CSF is neither a structural solver nor a geometry kernel; instead, it connects these domains by transforming member-level geometric and material descriptions into continuous section-property fields and station-wise data suitable for beam, tower, bridge, and finite-element workflows.
 
-The central idea of CSF is to treat the cross-section as a field defined along the member axis, rather than as a single isolated object. The geometry is specified at reference stations and obtained by interpolating corresponding polygon vertices between them, producing continuous intermediate cross-sections. Material participation, by contrast, is not interpolated between stations but prescribed as a continuous longitudinal field along the member axis. At any requested station, CSF combines the interpolated geometry with the participation field to evaluate properties such as area, centroid, second moments of area, principal inertias and section moduli
+The central idea of CSF is to treat the cross-section as a field defined along the member axis, rather than as a single isolated object. The geometry is specified at reference stations and obtained by interpolating corresponding polygon vertices between them, producing continuous intermediate cross-sections. Material participation, by contrast, is not interpolated between stations but prescribed as a continuous longitudinal field along the member axis. At any requested station, CSF combines the interpolated geometry with the participation field to evaluate properties such as area, centroid, second moments of area, principal inertias and section moduli.
 
 CSF makes an explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two longitudinal material participation fields define how much each region contributes: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. Their independence is foundational to CSF: the model imposes no relation between the two, so each field can be specified on its own. These fields can represent stiffness ratios, degraded regions, reinforcement, voids, density-like quantities, or other user-defined sectional contributions. When both derive from elastic behaviour, they may optionally be coupled through an isotropic relation, each varying with the longitudinal coordinate and with geometric quantities.
 
@@ -232,7 +232,7 @@ CSF_ACTIONS:
   actions:
     - plot_volume_3d:
         params:
-          title: "Not prismatic"         
+          title: "Non-prismatic member"         
     - section_selected_analysis:
         stations: [station_edge]
         output:
@@ -586,7 +586,7 @@ The geometry file defines:
 - pairs of reference stations defining one or more longitudinal interpolation intervals;
 - polygonal regions;
 - vertex coordinates;
-- endpoint participation values;
+- endpoint values of the participation fields
 - longitudinal laws for $w_i(z)$ and $\kappa_i(z)$.
 
 The action file defines:
