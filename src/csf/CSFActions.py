@@ -440,6 +440,33 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
     ),
 
 
+    "plot_shear_weight": ActionSpec(
+        name="plot_shear_weight",
+        summary="Plot interpolated polygon shear weights shear_w(z) along the field axis.",
+        description=(
+            "Plots polygon shear-weight values shear_w(z) along the member axis by sampling between z0 and z1.\n"
+            "\n"
+            "YAML fields\n"
+            "- stations: NOT USED (forbidden). This action samples internally between endpoints.\n"
+            "- output:   OPTIONAL. Default is [stdout] (show a window at end of run, if supported).\n"
+            "           If output contains file path(s), the plot is saved to disk.\n"
+            "           If output does NOT include 'stdout', the action is file-only.\n"
+            "\n"
+            "Params\n"
+            "- num_points: number of sampling points between z0 and z1."
+        ),
+        params=(
+            ParamSpec(
+                name="num_points",
+                required=False,
+                typ="int",
+                default=100,
+                description="Number of sampling points along Z between z0 and z1.",
+            ),
+        ),
+    ),
+
+
     "weight_lab_zrelative": ActionSpec(
         name="weight_lab_zrelative",
         summary="Inspect weight-law expressions at user-provided *relative* z stations (text-only).",
@@ -500,14 +527,14 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
             ),
             ParamSpec(
                 name="E_ref",
-                required=True,
+                required=False,
                 typ="float",
                 default=None,
                 description="Reference Young's modulus (required).",
             ),
             ParamSpec(
                 name="nu",
-                required=True,
+                required=False,
                 typ="float",
                 default=None,
                 description="Poisson ratio (required).",
@@ -518,13 +545,14 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
 
     "write_sap2000_geometry": ActionSpec(
         name="write_sap2000_geometry",
-        summary="Write a SAP2000 template-pack text file (copy/paste helper) from the CSF field.",
+        summary="Export a solver model template-pack text file from the CSF field.\n",
         description=(
             "Generates a *template pack* text file that helps build a SAP2000 model for a variable section member.\n"
             "\n"
             "YAML fields\n"
             "- stations: OPTIONAL. If provided, uses explicit absolute stations; if omitted, stations are generated from n_intervals (Lobatto).\n"
             "- output:   REQUIRED. File-only: exactly one path (typically *.txt). 'stdout' is forbidden.\n"
+            "- Alias: export_model.\n"
             "\n"
             "Params (required)\n"
             "- n_intervals (int): number of Lobatto intervals (stations = n_intervals + 1).\n"
@@ -606,6 +634,7 @@ STATIONS_FORBIDDEN = {
     "plot_volume_3d",
     "plot_properties",
     "plot_weight",
+    "plot_shear_weight",
     "write_opensees_geometry",
 }
 # ---------------------------------------------------------------------------
@@ -726,6 +755,7 @@ def _precheck_corruption_actions(text: str) -> List[Issue]:
     """
     issues: List[Issue] = []
     lines = text.splitlines()
+    
 
     # A/A0: missing ':' patterns
     for i, raw in enumerate(lines, start=1):
@@ -984,6 +1014,7 @@ def _validate_action_params(
     filepath: str,
     text: str,
     line_hint: Optional[int],
+    action_display_name: Optional[str] = None,
 ) -> Tuple[List[Issue], Dict[str, Any]]:
     """
     Validate params mapping for one action using its ActionSpec.
@@ -991,7 +1022,7 @@ def _validate_action_params(
     """
     issues: List[Issue] = []
     spec = ACTION_SPECS[action]
-
+    action_label = action_display_name or action
     # Accept aliases (warn)
     params2 = _coerce_param_aliases(action, params, issues)
 
@@ -1001,6 +1032,7 @@ def _validate_action_params(
         v = params2["fmt_display"].strip()
         if v.startswith("="):
             issues.append(
+                #
                 CSFIssues.make(
                     "CSFA_W_FMT_LEADING_EQUALS",
                     path=f"{TOP_KEY}.actions.section_selected_analysis.params.fmt_display",
@@ -1040,10 +1072,11 @@ def _validate_action_params(
         if ps.name not in params2:
             if ps.required:
                 issues.append(
+                    #
                     CSFIssues.make(
                         "CSFA_E_PARAM_MISSING",
-                        path=f"{TOP_KEY}.actions.{action}.params.{ps.name}",
-                        message=f"Missing required parameter '{ps.name}' for action '{action}'.",
+                        path=f"{TOP_KEY}.actions.{action_label}.params.{ps.name}",
+                        message=f"Missing required parameter '{ps.name}' for action '{action_label}'.",
                         hint=ps.description or "Provide the missing parameter under 'params:'.",
                         context={"filepath": filepath, "snippet": _make_snippet(text, line_hint, 1)},
                     )
@@ -1054,11 +1087,11 @@ def _validate_action_params(
         if not _type_ok(v, ps.typ):
             issues.append(
                 CSFIssues.make(
+                    #
                     "CSFA_E_PARAM_TYPE",
-                    path=f"{TOP_KEY}.actions.{action}.params.{ps.name}",
-                    message=f"Parameter '{ps.name}' for action '{action}' has wrong type.",
-                    hint=f"Expected {ps.typ}.",
-                    context={"filepath": filepath, "found_type": type(v).__name__, "snippet": _make_snippet(text, line_hint, 1)},
+                    path=f"{TOP_KEY}.actions.{action_label}.params.{ps.name}",
+                    message=f"Parameter '{ps.name}' for action '{action_label}' has wrong type.",
+
                 )
             )
 
@@ -1328,8 +1361,17 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                 )
             )
             continue
+        #
 
-        action_name = next(iter(item.keys()))
+        action_name_raw = next(iter(item.keys()))
+
+        # User-facing alias.
+        # The internal canonical action name remains unchanged.
+        if action_name_raw == "export_model":
+            action_name = "write_sap2000_geometry"
+        else:
+            action_name = action_name_raw
+
         if action_name not in ACTION_SPECS:
             ln = _find_key_line(text, action_name) or ln_actions
             issues.append(
@@ -1343,7 +1385,7 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
             )
             continue
 
-        payload = item[action_name] if item[action_name] is not None else {}
+        payload = item[action_name_raw] if item[action_name_raw] is not None else {}
         if not isinstance(payload, dict):
             ln = _find_key_line(text, action_name) or ln_actions
             issues.append(
@@ -1433,8 +1475,8 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                         issues.append(
                             CSFIssues.make(
                                 "CSFA_E_PARAM_MISSING",
-                                path=f"{apath}.{action_name}.params.n_intervals",
-                                message="Missing required parameter 'n_intervals' for action 'write_sap2000_geometry' when 'stations' is omitted (Gauss–Lobatto mode).",
+                                path=f"{apath}.{action_name_raw}.params.n_intervals",
+                                message=f"Missing required parameter 'n_intervals' for action '{action_name_raw}' when 'stations' is omitted (Gauss–Lobatto mode).",
                                 hint="Add under params:\n  n_intervals: 7",
                                 context={"filepath": filepath, "snippet": _make_snippet(text, ln, 1)},
                             )
@@ -1447,8 +1489,8 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                         issues.append(
                             CSFIssues.make(
                                 "CSFA_E_PARAM_TYPE",
-                                path=f"{apath}.{action_name}.params.n_intervals",
-                                message="Parameter 'n_intervals' for action 'write_sap2000_geometry' has wrong type.",
+                                path=f"{apath}.{action_name_raw}.params.n_intervals",
+                                message=f"Parameter 'n_intervals' for action '{action_name_raw}' has wrong type.",
                                 hint="Expected int (e.g. 7).",
                                 context={"filepath": filepath, "found_type": type(v).__name__, "snippet": _make_snippet(text, ln, 1)},
                             )
@@ -1459,7 +1501,7 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
                         issues.append(
                             CSFIssues.make(
                                 "CSFA_E_PARAM_RANGE",
-                                path=f"{apath}.{action_name}.params.n_intervals",
+                                path=f"{apath}.{action_name_raw}.params.n_intervals",
                                 message="Parameter 'n_intervals' must be >= 1 for Gauss–Lobatto mode.",
                                 hint="Use an integer >= 1 (stations = n_intervals + 1).",
                                 context={"filepath": filepath, "value": v, "snippet": _make_snippet(text, ln, 1)},
@@ -1885,7 +1927,16 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
 
         # Per-action params validation + normalization (unknown params -> WARNING)
         ln = _find_key_line(text, action_name) or ln_actions
-        p_issues, params_norm = _validate_action_params(action_name, params, filepath, text, ln)
+
+        p_issues, params_norm = _validate_action_params(
+            action_name,
+            params,
+            filepath,
+            text,
+            ln,
+            action_display_name=action_name_raw,
+        )
+
 
         if action_name == "plot_section_2d":
             for k in ("show_ids", "show_weights", "show_vertex_ids"):
@@ -2113,6 +2164,7 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
         normalized_actions.append(
             {
                 "name": action_name,
+                "display_name": action_name_raw,
                 "stations": [str(x) for x in stations_ref],
                 "output": [str(x) for x in output_list],
                 "params": dict(params),
@@ -2245,7 +2297,7 @@ def _ensure_analysis_imports_or_error(
 
     need_field = bool(requested)  # any action implies we need the field class import
     need_analysis = any(n in requested for n in ("section_full_analysis", "section_selected_analysis"))
-    need_visualizer = any(n in requested for n in ("plot_section_2d", "plot_volume_3d", "plot_properties", "plot_weight"))
+    need_visualizer = any(n in requested for n in ("plot_section_2d", "plot_volume_3d", "plot_properties", "plot_weight", "plot_shear_weight"))
     need_weight_inspector = "weight_lab_zrelative" in requested
     need_opensees_export = "write_opensees_geometry" in requested
     need_sap2000_export = "write_sap2000_geometry" in requested
@@ -2465,6 +2517,14 @@ def _load_actions() -> None:
         ParamSpec=ParamSpec,
         Visualizer=Visualizer,
     )
+    # plot_shear_weight action migrated to actions/plot_shear_weight.py (explicit registration; no side effects).
+    from .actions.plot_shear_weight import register as register_plot_shear_weight  # local import to avoid import cycles
+    register_plot_shear_weight(
+        register_action,
+        ActionSpec=ActionSpec,
+        ParamSpec=ParamSpec,
+        Visualizer=Visualizer,
+    )
     # plot_section_2d action migrated to actions/plot_section_2d.py (explicit registration; no side effects).
     from .actions.plot_section_2d import register as register_plot_section_2d  # local import to avoid import cycles
     register_plot_section_2d(
@@ -2503,8 +2563,11 @@ def _run_actions(field: Any, actions_root: Dict[str, Any]) -> Tuple[bool, List[I
 
     # Execution loop
     for idx, action in enumerate(actions_list):
+
         name = action["name"]
-        print(f"\n=== Running action {idx+1}/{len(actions_list)}: {name} ===")
+        display_name = action.get("display_name", name)
+
+        print(f"\n=== Running action {idx+1}/{len(actions_list)}: {display_name} ===")
 
         runner = ACTION_RUNNERS.get(name)
         if runner is None:
@@ -2625,6 +2688,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         nargs="?",
         help=(
             "ACTIONS\n"
+            #
             "  Path to the CSF actions YAML file (execution plan).\n"
             "\n"
             "GOAL\n"
@@ -2657,13 +2721,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             "  params:\n"
             "    - Optional mapping of action-specific parameters (validated per action).\n"
             "\n"
-            "IMPLEMENTED ACTIONS (CURRENT)\n"
-            "  1) section_full_analysis  (stations REQUIRED)\n"
-            "     - stdout: human-readable report (tables per section)\n"
-            "     - *.csv : numeric table (z + analysis keys)\n"
-            "     - other : captured text report\n"
-            "\n"
-            "  1b) section_selected_analysis (stations REQUIRED)\n"
+            "  1) section_selected_analysis (stations REQUIRED)\n"
             "     - Compute only the requested section properties at each station\n"
             "     - Requires: properties: [ ... ] (non-empty; allowed keys are the same as plot_properties)\n"
             "     - stdout: compact report (selected keys only)\n"
@@ -2716,14 +2774,19 @@ def main(argv: Optional[List[str]] = None) -> int:
             "     - Calls Visualizer.plot_weight(num_points=...)\n"
             "     - output rules same as plot_section_2d (stdout => display; otherwise file-only)\n"
             "\n"
-            "  6) weight_lab_zrelative     (stations REQUIRED; TEXT-ONLY)\n"
+            "  6) plot_shear_weight       (stations FORBIDDEN)\n"
+            "     - Calls Visualizer.plot_shear_weight(num_points=...)\n"
+            "     - output rules same as plot_weight (stdout => display; otherwise file-only)\n"
+            "\n"
+
+            "  7) weight_lab_zrelative     (stations REQUIRED; TEXT-ONLY)\n"
             "     - Inspector for user weight-law formulas at RELATIVE z in [0..L]\n"
             "     - Requires: weight_law: ['expr1', 'expr2', ...]\n"
             "     - For each law, each z, and each polygon pair (p0->p1): prints evaluation\n"
             "     - file-only supported (e.g., out/weight_inspector.txt)\n"
             "\n"
                         "\n"
-            "  7) section_area_by_weight    (stations REQUIRED)\n"
+            "  8) section_area_by_weight    (stations REQUIRED)\n"
             "     - Computes an area breakdown grouped by ABSOLUTE weight W_abs(z).\n"
             "     - Intended for composite sections with deterministic nesting (no intersections).\n"
             "     - stdout: per-station report; *.csv: long-form table; other: captured text report.\n"
@@ -2736,15 +2799,15 @@ def main(argv: Optional[List[str]] = None) -> int:
             "     - Writes an OpenSees Tcl geometry file intended as a deterministic data contract.\n"
             "     - Requires params: n_points, E_ref, nu.\n"
             "\n"
-            " 10) write_sap2000_geometry    (stations OPTIONAL; FILE-ONLY)\n"
-            "     - Writes a SAP2000 template-pack text file (copy/paste helper) and optional preview plot.\n"
+            " 10) export_model              (stations OPTIONAL; FILE-ONLY; legacy: write_sap2000_geometry)\n"
+            "     - Exports a solver model template-pack text file and optional preview plot.\n"
             "     - Requires params: n_intervals, E_ref, nu. Optional: material_name, mode, include_plot, plot_filename.\n"
             "\n"
                         "\n"
             "ALIASES AND RESERVED ACTIONS\n"
             "  - weight_lab: recognized by schema for future work; execution is currently not available.\n"
             "\n"
-"YAML QUICK PRIMER (VERY SHORT)\n"
+            "YAML QUICK PRIMER (VERY SHORT)\n"
             "  - Indentation matters: use SPACES (recommended 2). No tabs.\n"
             "  - Lists use '-'. Example:\n"
             "      actions:\n"
@@ -2754,128 +2817,28 @@ def main(argv: Optional[List[str]] = None) -> int:
             "  - Booleans: true/false (lowercase).\n"
             "  - Comments start with '#'.\n"
             "\n"
-
-            "ACTIONS\n"
-            "  Path to the CSF actions YAML file (execution plan).\n"
-            "\n"
-            "export_yaml  (stations REQUIRED; FILE-ONLY)\n"
-            "  Purpose\n"
-            "    - Export a new CSF geometry YAML built from two intermediate sections.\n"
-            "    - Internally calls: field.write_section(z0, z1, yaml_path)\n"
-            "\n"
-            "  Input rule\n"
-            "    - The referenced station-set MUST contain EXACTLY TWO z values.\n"
-            "      If it contains 1 or >2 values, the runner raises a friendly error.\n"
-            "\n"
-            "  Output rule\n"
-            "    - output is REQUIRED and must contain exactly ONE YAML filepath.\n"
-            "    - 'stdout' is NOT supported for this action (it is file-only).\n"
-            "\n"
-            "  Example\n"
-            "    CSF_ACTIONS:\n"
-            "      stations:\n"
-            "        station_subpart: [1.0, 8.0]\n"
-            "      actions:\n"
-            "        - export_yaml:\n"
-            "            stations: [station_subpart]\n"
-            "            output: [out/station_subpart.yaml]\n"
-            "\n"
-            "Notes\n"
-            "  - The exported YAML is validated by write_section() itself.\n"
-            "  - Ensure the output directory exists (e.g., create 'out/' beforehand).\n"
-            "COMMON PITFALL\n"
-            "  - Duplicate YAML keys (e.g., two 'actions:' blocks) may silently overwrite earlier ones.\n"
-            "    Keep 'actions:' ONLY ONCE.\n"
-            "\n"
-            "IF OMITTED\n"
-            "  - The program prints usage and exits.\n"
-            "ACTIONS\n"
-                "  Path to the CSF actions YAML file (execution plan).\n"
+                "EXPORT_MODEL (action)  [SOLVER TEMPLATE PACK]\n"
+                "--------------------------------------------\n"
+                "Legacy name also accepted: write_sap2000_geometry.\n"
                 "\n"
-                "PURPOSE\n"
-                "  - Run CSF workflows WITHOUT writing Python.\n"
-                "  - The runner loads geometry.yaml, validates actions.yaml, then executes actions in order.\n"
-                "\n"
-                "REQUIRED ROOT KEY\n"
-                "  CSF_ACTIONS:\n"
-                "\n"
-                "MINIMAL STRUCTURE (EXAMPLE)\n"
-                "  CSF_ACTIONS:\n"
-                "    stations:\n"
-                "      station_edge:\n"
-                "        - 0.0\n"
-                "        - 10.0\n"
-                "    actions:\n"
-                "      - section_full_analysis:\n"
-                "          stations: [station_edge]\n"
-                "          output: [stdout]\n"
-                "\n"
-                "COMMON ACTION FIELDS (ENVELOPE)\n"
-                "  - stations:\n"
-                "      Usually REQUIRED for actions that operate at multiple z locations.\n"
-                "      Some actions FORBID stations (see action-specific notes).\n"
-                "  - output:\n"
-                "      Optional list. If the output key is missing, the default is: [stdout].\n"
-                "      If output is present but does NOT contain 'stdout', behavior is file-only (no display).\n"
-                "  - params:\n"
-                "      Optional mapping with action-specific parameters (validated per action).\n"
-                "\n"
-                "ACTION: write_opensees_geometry (FILE-ONLY, stations FORBIDDEN)\n"
-                "  WHAT IT DOES\n"
-                "    - Exports an OpenSees Tcl geometry file describing a CSF member discretized along z.\n"
-                "    - Internally calls:\n"
-                "        write_opensees_geometry(field, n_points, E_ref=..., nu=..., filename=...)\n"
-                "    - The output contains nodes, an optional geomTransf placeholder, and one Elastic section per\n"
-                "      integration station (plus comments with the z stations). Your downstream OpenSees script\n"
-                "      (OpenSeesPy or Tcl) is responsible for defining the final element/integration layout.\n"
-                "\n"
-                "  YAML SCHEMA\n"
-                "    - write_opensees_geometry:\n"
-                "        output:\n"
-                "          - out/geometry.tcl        # REQUIRED, exactly one path; stdout is NOT allowed\n"
-                "        params:\n"
-                "          n_points: 10              # REQUIRED int (number of integration stations)\n"
-                "          E_ref: 2.1e+11            # REQUIRED float (use e+ notation; 2.1e11 becomes a string)\n"
-                "          nu: 0.30                  # REQUIRED float\n"
-                "\n"
-                "  RULES / GOTCHAS\n"
-                "    - stations is FORBIDDEN for this action (it uses its own integration station generation).\n"
-                "    - output is REQUIRED and must be a single file path (file-only). Do not include 'stdout'.\n"
-                "    - Scientific notation: use 'e+NN' or 'e-NN' (example: 2.1e+11). Some YAML loaders parse\n"
-                "      '2.1e11' as a string.\n"
-                "    - Material assumption: the exporter uses an isotropic elastic reference.\n"
-                "      If the writer derives shear modulus, it typically uses: G = E_ref / (2*(1+nu)).\n"
-                "\n"
-                "YAML QUICK PRIMER\n"
-                "  - Indentation matters: use SPACES (recommended 2). Do NOT use tabs.\n"
-                "  - Lists use '-'. Example:\n"
-                "      output:\n"
-                "        - stdout\n"
-                "        - out/file.csv\n"
-                "  - Booleans: true/false (lowercase). Numbers: 1, 1.0, 2.1e+11.\n"
-                "  - Comments start with '#'.\n"
-                "  - Avoid duplicate keys (e.g., two 'actions:' blocks) because YAML may overwrite silently.\n"
-                "WRITE_SAP2000_GEOMETRY (action)  [SAP2000 TEMPLATE PACK]\n"
-                "-------------------------------------------------------\n"
                 "Purpose:\n"
-                "  Generate a SAP2000 \"template pack\" text file from the current CSF field.\n"
+                "  Generate a solver template-pack text file from the current CSF field.\n"
                 "  This is NOT a guaranteed importable .s2k. It is a complete, well-commented\n"
                 "  DATA + COPY/PASTE pack that contains:\n"
                 "    - Stations (absolute z) and section naming per station\n"
                 "    - Table C: core numeric properties per station (A, Cx, Cy, Ix, Iy, Ixy, Ip)\n"
-                "    - Candidate SAP2000 table blocks (JOINT COORDINATES, CONNECTIVITY - FRAME,\n"
-                "      FRAME SECTION PROPERTIES - GENERAL, FRAME SECTION ASSIGNMENTS)\n"
-                "    - A checklist of items you may still need to define in SAP2000\n"
+                "    - Candidate solver table blocks / copy-paste sections\n"
+                "    - A checklist of items you may still need to define in the target solver\n"
                 "\n"
                 "Stations:\n"
-                "  FORBIDDEN. Do NOT provide 'stations:' for this action.\n"
-                "  Stations are generated internally using Lobatto-type sampling over the full\n"
-                "  CSF domain [z0..z1].\n"
+                "  OPTIONAL.\n"
+                "  If stations are omitted, stations are generated internally using Lobatto-type sampling.\n"
+                "  If stations are provided, explicit absolute stations are used.\n"
                 "\n"
                 "Output:\n"
                 "  REQUIRED and file-only (stdout is NOT allowed).\n"
                 "  output must be a YAML LIST with exactly one path, e.g.:\n"
-                "    - write_sap2000_geometry:\n"
+                "    - export_model:\n"
                 "        output:\n"
                 "          - out/model_export_template.txt\n"
                 "        params:\n"
@@ -2888,43 +2851,36 @@ def main(argv: Optional[List[str]] = None) -> int:
                 "          plot_filename: \"section_variation.png\"\n"
                 "\n"
                 "Parameters (params:)\n"
-                "  n_intervals (int, required)\n"
+                "  n_intervals (int, required if stations are omitted)\n"
                 "    Number of intervals along the member. The number of stations is:\n"
                 "      n_stations = n_intervals + 1\n"
-                "    (Includes both endpoints. Frames/segments are built between consecutive stations.)\n"
                 "\n"
-                "  material_name (str, required)\n"
-                "    A label written into the candidate section property lines (SAP-side material name).\n"
+                "  material_name (str, optional)\n"
+                "    A label written into the candidate section property lines.\n"
                 "\n"
                 "  E_ref (float, required)\n"
-                "    \"Suggested\" Young modulus printed in the template header and material notes.\n"
-                "    Units are not enforced; keep your unit system consistent in SAP2000.\n"
+                "    Suggested Young modulus printed in the template header and material notes.\n"
+                "    Units are not enforced; keep the unit system consistent.\n"
                 "\n"
                 "  nu (float, required)\n"
-                "    \"Suggested\" Poisson ratio printed in the template header. The template also prints:\n"
+                "    Suggested Poisson ratio printed in the template header. The template also prints:\n"
                 "      G_ref = E_ref / (2*(1+nu))  (isotropic assumption)\n"
                 "\n"
-                "  mode (str, required)\n"
+                "  mode (str, optional)\n"
                 "    One of: \"CENTROIDAL_LINE\", \"REFERENCE_LINE\", \"BOTH\".\n"
-                "    - CENTROIDAL_LINE: joint coordinates follow the centroid Cx(z),Cy(z).\n"
-                "    - REFERENCE_LINE: joints are on a nominal axis (X=0,Y=0); Cx,Cy are provided\n"
-                "      as offsets/eccentricities (placeholder section).\n"
-                "    - BOTH: prints both blocks; in SAP you must choose ONE (do not paste both JOINT tables).\n"
                 "\n"
-                "  include_plot (bool, required)\n"
+                "  include_plot (bool, optional)\n"
                 "    If true and matplotlib is available, writes a preview PNG of property variation.\n"
                 "\n"
-                "  plot_filename (str, required)\n"
+                "  plot_filename (str, optional)\n"
                 "    Path for the preview plot PNG (written only if include_plot is true).\n"
-                "\n"
-                "Hard-coded behavior:\n"
-                "  - show_plot is forced to False (no interactive window). The preview, if enabled,\n"
-                "    is saved to plot_filename only.\n"
                 "\n"
                 "Common pitfalls:\n"
                 "  - Do not use 'stdout' in output (file-only).\n"
                 "  - Use numeric scientific notation that YAML parses as a number (e.g. 2.1e+11).\n"
                 "    Some YAML loaders treat '2.1e11' (missing +) as a string.\n"
+                "\n"                
+
                 "\n"
 
         ),

@@ -103,7 +103,7 @@ class Polygon:
         if self.shear_weight is None:
             object.__setattr__(self, "shear_weight", self.weight)
             
-from collections.abc import Mapping
+
 
 @dataclass(frozen=True)
 class Section:

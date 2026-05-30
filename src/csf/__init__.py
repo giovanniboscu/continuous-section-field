@@ -16,7 +16,6 @@ from .section_field import (
     safe_evaluate_weight_zrelative,
     write_sap2000_geometry,
     write_sap2000_template_pack,
-    plot_section_variation,
     list_polygons_with_contents,
     polygon_surface_w1_inners0,
     volume_polygon_list_report,
@@ -32,3 +31,4 @@ from .continuous_section_field import (
 )
 
 from .visualizer import Visualizer
+from .visualizer import plot_section_variation

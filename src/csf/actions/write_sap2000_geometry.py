@@ -14,7 +14,7 @@ Design constraints
 Behavioral contract (must remain stable)
 - 'stations' is optional: if provided, explicit absolute stations are used; otherwise Lobatto is used.
 - 'output' is REQUIRED and must be file-only: exactly one file path; 'stdout' is forbidden.
-- show_plot follows include_plot (local action behavior).
+- include_plot writes the preview PNG and queues that PNG for deferred display without blocking.
 """
 
 from __future__ import annotations
@@ -43,7 +43,7 @@ def register(
         *,
         debug_flag: bool = False,
     ) -> None:
-        """Action: write_sap2000_geometry (SAP2000 template pack)
+        """Action: export_model/write_sap2000_geometry (SAP2000 template pack)
 
         This action writes a *human-readable* text file designed to help users build
         a SAP2000 text-table import (or to manually copy/paste the relevant blocks).
@@ -53,7 +53,7 @@ def register(
         units or SAP-side modeling assumptions here).
 
         YAML shape (validated before execution):
-          - write_sap2000_geometry:
+          - export_model/write_sap2000_geometry:
               output: [out/model_export_template.txt]   # required, file-only (no stdout)
               params:
                 n_intervals: 6                          # required int (stations = n_intervals + 1)
@@ -64,18 +64,6 @@ def register(
                 include_plot: true                      # optional (default True)
                 plot_filename: section_variation.png    # optional (default 'section_variation.png')
 
-        Critical behavior note
-        ----------------------
-        - show_plot follows include_plot for this action only (local behavior).
-
-        Implementation
-        --------------
-        Delegates to:
-          sap2000_v2.write_sap2000_template_pack(field, n_intervals, template_filename, ...)
-
-        The sap2000_v2 module is an optional dependency: CSFActions can run without it
-        for non-SAP workflows. If this action is requested and the module is missing,
-        a friendly import error is raised earlier during runtime import checks.
         """
         # stations_map is unused by design (stations generated internally).
         _ = stations_map
@@ -85,7 +73,7 @@ def register(
 
         # Defensive import check (validation should have already ensured this).
         if write_sap2000_template_pack is None:
-            raise RuntimeError("write_sap2000_template_pack is not available (sap2000_v2 import failed).")
+            raise RuntimeError("export_model/write_sap2000_template_pack/export_model is not available (sap2000_v2 import failed).")
 
         # Read and normalize parameters.
         params = action.get("params", {}) or {}
@@ -139,7 +127,7 @@ def register(
         out_files = [o for o in output_list if isinstance(o, str) and o != "stdout"]
         if len(out_files) != 1:
             # Defensive check (should not happen if validation passed).
-            raise ValueError(f"write_sap2000_geometry requires exactly one output template path, got: {output_list}")
+            raise ValueError(f"export_model/write_sap2000_geometry requires exactly one output template path, got: {output_list}")
         template_path = Path(out_files[0])
 
         # Ensure the output directory exists. We do this here (runtime) in addition to
@@ -154,6 +142,11 @@ def register(
             pf = Path(plot_filename_str)
             if (not pf.is_absolute()) and (str(pf.parent) in (".", "")):
                 plot_filename_str = str(template_path.parent / pf.name)
+                pf = Path(plot_filename_str)
+
+            # Ensure the preview plot directory exists too.
+            if pf.parent and str(pf.parent) not in (".", ""):
+                pf.parent.mkdir(parents=True, exist_ok=True)
 
         # Determine station source with backward-compatible precedence:
         # 1) If action 'stations' are provided (resolved by hub into stations_map), use them.
@@ -171,13 +164,13 @@ def register(
         else:
             if len(action_stations) != 1:
                 raise RuntimeError(
-                    "write_sap2000_geometry accepts exactly one station set name in 'stations'."
+                    "export_model/write_sap2000_geometry accepts exactly one station set name in 'stations'."
                 )
 
             sname = action_stations[0]
             if sname not in stations_map:
                 raise RuntimeError(
-                    f"write_sap2000_geometry: station set '{sname}' not found in resolved stations."
+                    f"export_model/write_sap2000_geometry: station set '{sname}' not found in resolved stations."
                 )
 
             z_values = stations_map[sname]
@@ -210,36 +203,92 @@ def register(
 
 
         # Call the generator. The function writes the template pack and (optionally) the plot file.
-        # IMPORTANT: show_plot follows include_plot (local per-action visibility rule).
-        # We pass z_values when available; if the runtime function does not support it yet,
-        # we transparently fallback to the legacy call signature.
+        # IMPORTANT:
+        # - include_plot controls file generation of the preview PNG.
+        # - show_plot is forced to False because write_sap2000_template_pack may call plt.show(),
+        #   which blocks the later CSFActions deferred-display queue.
+        # - If include_plot=True, we reopen the saved PNG as a normal Matplotlib figure and label it
+        #   as plot2d_show, so CSFActions will display it at the end together with the other plots.
         try:
-            write_sap2000_template_pack(
-                field,
-                n_intervals=int(n_intervals) if n_intervals is not None else 20,
-                template_filename=str(template_path),
-                mode=mode_norm,  # type: ignore[arg-type]
-                material_name=str(material_name),
-                E_ref=float(E_ref),
-                nu=float(nu),
-                include_plot=include_plot_bool,
-                plot_filename=plot_filename_str,
-                show_plot=include_plot_bool,
-                z_values=z_values,
-            )
-        except TypeError:
-            # Legacy compatibility: older base function without z_values argument.
-            write_sap2000_template_pack(
-                field,
-                n_intervals=int(n_intervals) if n_intervals is not None else 20,
-                template_filename=str(template_path),
-                mode=mode_norm,  # type: ignore[arg-type]
-                material_name=str(material_name),
-                E_ref=float(E_ref),
-                nu=float(nu),
-                include_plot=include_plot_bool,
-                plot_filename=plot_filename_str,
-                show_plot=include_plot_bool,
-            )
+            import matplotlib.pyplot as plt  # type: ignore
+        except Exception:
+            plt = None  # type: ignore
+
+        figs_before = set(plt.get_fignums()) if plt is not None else set()
+
+        try:
+            try:
+                write_sap2000_template_pack(
+                    field,
+                    n_intervals=int(n_intervals) if n_intervals is not None else 20,
+                    template_filename=str(template_path),
+                    mode=mode_norm,  # type: ignore[arg-type]
+                    material_name=str(material_name),
+                    E_ref=float(E_ref),
+                    nu=float(nu),
+                    include_plot=include_plot_bool,
+                    plot_filename=plot_filename_str,
+                    show_plot=False,
+                    z_values=z_values,
+                )
+            except TypeError:
+                # Legacy compatibility: older base function without z_values argument.
+                write_sap2000_template_pack(
+                    field,
+                    n_intervals=int(n_intervals) if n_intervals is not None else 20,
+                    template_filename=str(template_path),
+                    mode=mode_norm,  # type: ignore[arg-type]
+                    material_name=str(material_name),
+                    E_ref=float(E_ref),
+                    nu=float(nu),
+                    include_plot=include_plot_bool,
+                    plot_filename=plot_filename_str,
+                    show_plot=False,
+                )
+        finally:
+            # Remove any unlabelled figures created internally by the generator.
+            # The only interactive figure we keep/create below is the labelled preview figure.
+            if plt is not None:
+                for num in set(plt.get_fignums()) - figs_before:
+                    try:
+                        plt.close(num)
+                    except Exception:
+                        pass
+
+        if include_plot_bool:
+            preview_path = Path(plot_filename_str)
+            if not preview_path.exists():
+                raise RuntimeError(
+                    f"include_plot=True but the preview image was not created: {preview_path}"
+                )
+
+            if plt is not None:
+                try:
+                    from PIL import Image  # type: ignore
+
+                    im = Image.open(preview_path).convert("RGB")
+
+                    # Display the already-saved preview image without adding
+                    # Matplotlib subplot margins around it.
+                    # This keeps export_model/include_plot non-blocking while
+                    # showing the PNG at its natural aspect ratio in the final
+                    # CSFActions deferred display.
+                    w_px, h_px = im.size
+                    dpi_display = 100.0
+                    fig = plt.figure(figsize=(w_px / dpi_display, h_px / dpi_display), dpi=dpi_display)
+                    ax = fig.add_axes([0.0, 0.0, 1.0, 1.0])
+                    ax.imshow(im)
+                    ax.set_axis_off()
+                    ax.set_position([0.0, 0.0, 1.0, 1.0])
+                    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
+                    fig.set_label("plot2d_show")
+                    try:
+                        fig.canvas.manager.set_window_title(str(preview_path.name))
+                    except Exception:
+                        pass
+                except Exception as e:
+                    raise RuntimeError(
+                        f"Preview image was created but could not be prepared for display: {preview_path} ({e})"
+                    )
 
     register_action(SPEC, RUN)

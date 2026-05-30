@@ -24,6 +24,75 @@ from .continuous_section_field import ContinuousSectionField
 from .continuous_section_field import _set_axes_equal_3d
 from .section_field import section_full_analysis
 
+def plot_section_variation(
+    
+    stations_data: Sequence[Dict[str, Any]],
+    filename: str = "section_variation.png",
+    show: bool = False,
+) -> str:
+    """
+    Plot a quick visual preview of how a few properties vary along z.
+
+    Notes
+    -----
+    - This function is optional. It only runs if matplotlib is available.
+    - Units are intentionally NOT printed; they depend on the user's consistent unit system.
+    - The function expects each station dict to have at least:
+        'z', 'A', 'Ix', 'Iy', 'Ip'
+
+    Parameters
+    ----------
+    stations_data:
+        List of station dictionaries produced by _compute_station_data(...)
+    filename:
+        Path to save the plot image.
+    show:
+        If True, calls plt.show(). Otherwise it only saves.
+
+    Returns
+    -------
+    str:
+        The image path written to disk.
+
+    Raises
+    ------
+    RuntimeError:
+        If matplotlib is not available.
+    """
+    
+    z = [st['z'] for st in stations_data]
+    area = [st['A'] for st in stations_data]
+    i33 = [st['Ix'] for st in stations_data]
+    i22 = [st['Iy'] for st in stations_data]
+    j = [st['Ip'] for st in stations_data]
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
+
+    # Plot Area
+    ax1.plot(z, area, 'o-', color='blue', label='Area')
+    ax1.set_ylabel('Cross Section Area')
+    ax1.grid(True, linestyle='--')
+    ax1.legend()
+    ax1.set_title('Variation of Geometric Properties along Z (Absolute)')
+
+    # Plot Inertia and Polar Moment
+    ax2.plot(z, i33, 's-', color='red', label='I33 (Ix)')
+    ax2.plot(z, i22, 'd-', color='green', label='I22 (Iy)')
+    ax2.plot(z, j, 'x--', color='purple', label='Ip')
+    ax2.set_xlabel('Z coordinate')
+    ax2.set_ylabel('Inertia / Polar Moment')
+    ax2.grid(True, linestyle='--')
+    ax2.legend()
+    
+    plt.tight_layout()
+    plt.savefig(filename)
+    #print(f"[PLOT] Preview saved as '{filename}'")
+    if show:
+        plt.show()
+
+
+
+
 class Visualizer:
     """
     Adds 2D and 3D plotting utilities on top of a ContinuousSectionField.
@@ -32,6 +101,8 @@ class Visualizer:
     def __init__(self, field: ContinuousSectionField):
         self.field = field
     # ----------------------------------------------------------------------------
+
+
 
 
     def plot_weight(self, num_points=100, tol=1e-12, poly_indices_to_plot=None):
@@ -354,13 +425,12 @@ class Visualizer:
                 idx_max = int(np.argmax(y))
                 w_min, w_max = float(y[idx_min]), float(y[idx_max])
                 z_min, z_max = float(z_values[idx_min]), float(z_values[idx_max])
-                '''
-                print(
-                    f"[{i}] s0:{p0.name} -> s1:{p1.name} | "
-                    f"min w={w_min:.12g} at z={z_min:.12g} | "
-                    f"max w={w_max:.12g} at z={z_max:.12g}"
-                )
-                '''
+                if 1==2:
+                  print(
+                      f"[{i}] s0:{p0.name} -> s1:{p1.name} | "
+                      f"min w={w_min:.12g} at z={z_min:.12g} | "
+                      f"max w={w_max:.12g} at z={z_max:.12g}"
+                  )
                 # Main curve
                 ax.plot(z_values, y, linewidth=1.5, label=f"s0 {p0.name} - s1 {p1.name}")
 
@@ -402,7 +472,7 @@ class Visualizer:
 
             # Same title on every window
             fig_w.suptitle(
-                f"Individual Polygon Shear Weight (w) Distributions (Interpolated # {num_points} points)",
+                f"Individual Polygon Shear Weight (sw) Distributions (Interpolated # {num_points} points)",
                 fontweight="bold"
             )
             
@@ -1043,12 +1113,11 @@ class Visualizer:
             mode = None
             seed_numeric = int(seed)
 
-        '''
-        print(
-            f"DEBUG plot_volume_3d seed_numeric: {seed_numeric} "
-            f"seed command: {seed} mode: {mode} resolution {resolution}"
-        )
-        '''
+
+        def _line_width_for_polygon(poly, base_lw, factor=1.8):
+            if len(poly.vertices) < 5:
+                return base_lw * factor
+            return base_lw        
         def _thickness_line_from_section_points(
             section,
             min_thickness=0.15,
@@ -1240,7 +1309,7 @@ class Visualizer:
                 if abs(weight_max) <= _tol.EPS_L:
                     return (0.5, 0.5, 0.5, 0.9)   # void 
                 else:
-                    return (0.0, 0.0, 0.0, 1)     # constant non-void -> black
+                    return (0.30, 0.30, 0.30, 1.0)    # constant non-void -> black
 
             if mode_name == "gray":
                 return (ratio, ratio, ratio)
@@ -1497,7 +1566,7 @@ class Visualizer:
 
                     z_a = z_planes_local[slice_idx]
                     z_b = z_planes_local[slice_idx + 1]
-
+                    '''
                     base_color = polygon_base_colors[poly_idx]
                     poly_weight = weights_by_polygon[poly_idx][slice_idx]
                     poly_weight_min = global_weight_min
@@ -1511,7 +1580,19 @@ class Visualizer:
                         weight_max=global_weight_max,
                         mode_name=mode,
                     )
+                    '''
+                    base_color = polygon_base_colors[poly_idx]
+                    poly_weight = weights_by_polygon[poly_idx][slice_idx]
+                    poly_weight_min, poly_weight_max = weight_range_by_polygon[poly_idx]
 
+                    segment_color = _get_semantic_color(
+                        base_color=base_color,
+                        weight_value=poly_weight,
+                        weight_min=poly_weight_min,
+                        weight_max=poly_weight_max,
+                        mode_name=mode,
+                    )                    
+                    
                     for v0, v1 in poly_lines:
                         _add_generator_segment(
                             v0,

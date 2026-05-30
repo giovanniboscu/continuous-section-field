@@ -31,6 +31,7 @@ import random as _random
 from typing import Literal,TYPE_CHECKING
 import numpy as np
 
+
 from . import _tol
 # ruff: noqa: F821
 if TYPE_CHECKING:
@@ -106,70 +107,7 @@ else:
 #     of each polygon (polygon area minus its immediate children areas).
 
 
-def plot_section_variation(
-    stations_data: Sequence[Dict[str, Any]],
-    filename: str = "section_variation.png",
-    show: bool = False,
-) -> str:
-    """
-    Plot a quick visual preview of how a few properties vary along z.
-
-    Notes
-    -----
-    - This function is optional. It only runs if matplotlib is available.
-    - Units are intentionally NOT printed; they depend on the user's consistent unit system.
-    - The function expects each station dict to have at least:
-        'z', 'A', 'Ix', 'Iy', 'Ip'
-
-    Parameters
-    ----------
-    stations_data:
-        List of station dictionaries produced by _compute_station_data(...)
-    filename:
-        Path to save the plot image.
-    show:
-        If True, calls plt.show(). Otherwise it only saves.
-
-    Returns
-    -------
-    str:
-        The image path written to disk.
-
-    Raises
-    ------
-    RuntimeError:
-        If matplotlib is not available.
-    """
-
-    z = [st['z'] for st in stations_data]
-    area = [st['A'] for st in stations_data]
-    i33 = [st['Ix'] for st in stations_data]
-    i22 = [st['Iy'] for st in stations_data]
-    j = [st['Ip'] for st in stations_data]
-
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
-
-    # Plot Area
-    ax1.plot(z, area, 'o-', color='blue', label='Area [m²]')
-    ax1.set_ylabel('Cross Section Area [m²]')
-    ax1.grid(True, linestyle='--')
-    ax1.legend()
-    ax1.set_title('Variation of Geometric Properties along Z (Absolute)')
-
-    # Plot Inertia and Torsion
-    ax2.plot(z, i33, 's-', color='red', label='I33 (Ix) [m⁴]')
-    ax2.plot(z, i22, 'd-', color='green', label='I22 (Iy) [m⁴]')
-    ax2.plot(z, j, 'x--', color='purple', label='J_tors [m⁴]')
-    ax2.set_xlabel('Z coordinate [m]')
-    ax2.set_ylabel('Inertia / Torsion [m⁴]')
-    ax2.grid(True, linestyle='--')
-    ax2.legend()
     
-    plt.tight_layout()
-    plt.savefig(filename)
-    #print(f"[PLOT] Preview saved as '{filename}'")
-    if show:
-        plt.show()
 
 # -----------------------------------------------------------------------------
 # Station generation
@@ -212,6 +150,9 @@ def get_lobatto_intervals(z_min: float, z_max: float, n_intervals: int) -> "np.n
     RuntimeError:
         If numpy is not available.
     """
+    
+
+
     if np is None:
         raise RuntimeError("numpy is required for get_lobatto_intervals().")
     if n_intervals < 1:
@@ -338,10 +279,11 @@ def write_sap2000_template_pack(
     nu: Optional[float] = None,
     include_plot: bool = True,
     plot_filename: str = "section_variation.png",
-    show_plot: bool = False,
+    show_plot: bool = True,
     z_values: Optional[List[float]] = None,
     float_fmt: str = ".9g",
 ) -> str:
+
     """
     Export a CSF field to a structured text pack for SAP2000 / OpenSees input.
 
@@ -439,15 +381,23 @@ def write_sap2000_template_pack(
     # Optional plot (best-effort).
     plot_path_written: Optional[str] = None
     if include_plot and plt is not None:
+            
+        from .visualizer import plot_section_variation as visualizer_plot_section_variation
         try:
-            plot_path_written = plot_section_variation(
+
+            #viz = Visualizer(section_field)
+    
+    
+            
+            plot_path_written = visualizer_plot_section_variation(
                 stations_data,
                 filename=plot_filename,
                 show=show_plot,
             )
-        except Exception:
-            # Plotting must never prevent template creation.
-            plot_path_written = None
+                        
+        except Exception as e:
+            print("DEBUG plot exception:", repr(e))
+            raise
 
     # -------------------------------------------------------------------------
     # _t fields (Bredt-Batho wall thickness) exist only for single-polygon
@@ -1902,7 +1852,7 @@ def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[fl
     # Helper: normalised weight-dispersion (coefficient of variation)
     # ------------------------------------------------------------------
 
-
+    
     def compute_shear_areas(
         section: Any,
         children_map: Mapping[int, Sequence[int]],
@@ -2344,6 +2294,7 @@ We therefore scale each polygon contribution by abs(weight), consistent with you
 compute_saint_venant_J_wall implementation.
 
 """
+
 def compute_saint_venant_J_cell(section: "Section") -> float:
     """
     Compute closed-cell Saint-Venant torsional constant J_sv [m^4]
@@ -2352,13 +2303,12 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
     Key parsing policy for @cell:
     - OUTER loop is detected by the first repeated occurrence of the first vertex.
     - INNER loop is the remaining tail after OUTER closure.
-    - INNER explicit repeated endpoint is optional; implicit closure is accepted.
+    - INNER must be repeated endpoint
     """
     
     TOKEN_CELL = "@cell"
     TOKEN_CLOSED = "@closed"
     TOKEN_T = "@t="
-    REQUIRE_EXPLICIT_T = False
     verbose = False
     polys = getattr(section, "polygons", None)
     if not polys:
@@ -2380,6 +2330,296 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
     # -------------------------------------------------------------------------
     # 1) Local helpers
     # -------------------------------------------------------------------------
+
+
+
+    @dataclass(frozen=True)
+    class CellGeometry:
+        """
+        Complete geometric result for one slit-encoded @cell polygon.
+
+        All quantities are purely geometric. No material, weight, or shear-weight
+        factor is included here.
+        """
+
+        # Topological split indices
+        outer_end: int
+        inner_start: int
+        inner_end: int
+
+        # Extracted loops without duplicated closure points
+        outer_xy: List[Tuple[float, float]]
+        inner_xy: List[Tuple[float, float]]
+
+        # Areas
+        A_outer: float
+        A_inner: float
+        A_wall: float
+
+        # Perimeters
+        P_outer: float
+        P_inner: float
+        P_total: float
+
+        # Global mid-line quantities
+        A_m: float
+        b_m: float
+
+        # Geometric thickness fallback
+        t_geom: float
+
+
+    def _same_point(
+        a: Tuple[float, float],
+        b: Tuple[float, float],
+    ) -> bool:
+        """
+        Return True if two points coincide within the global geometric tolerance.
+        """
+        dx = a[0] - b[0]
+        dy = a[1] - b[1]
+        return (dx * dx + dy * dy) <= _tol.EPS_A
+
+
+    def _find_cell_split_indices(
+        xy: List[Tuple[float, float]],
+        nm: str,
+    ) -> Tuple[int, int, int]:
+        """
+        Find the topological split indices of a slit-encoded @cell polygon.
+
+        OUTER starts at xy[0] and closes at the first later point coincident
+        with xy[0].
+
+        INNER starts immediately after OUTER closure and is represented by the
+        remaining tail of xy. The last point of xy must coincide with the first
+        INNER point, so INNER is explicitly closed on itself.
+        """
+        if len(xy) < 8:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has too few vertices "
+                f"for @cell encoding."
+            )
+
+        outer_end = None
+
+        for i in range(1, len(xy)):
+            if _same_point(xy[i], xy[0]):
+                outer_end = i
+                break
+
+        if outer_end is None or outer_end < 3:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' cannot close OUTER loop."
+            )
+
+        inner_start = outer_end + 1
+        inner_end = len(xy) - 1
+
+        if (inner_end - inner_start) < 3:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' INNER loop is degenerate."
+            )
+
+        if not _same_point(xy[inner_end], xy[inner_start]):
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' INNER closure is not valid."
+            )
+
+        return outer_end, inner_start, inner_end
+
+
+    def _validate_cell_split_indices(
+        xy: List[Tuple[float, float]],
+        nm: str,
+        split_indices: Tuple[int, int, int],
+    ) -> Tuple[int, int, int]:
+       
+        """
+        Validate @cell split indices against the current vertex sequence.
+
+        The split itself is detected by _find_cell_split_indices(). This function
+        only checks that the resulting OUTER and INNER closure indices are
+        topologically and geometrically valid.    
+    
+        """
+        outer_end, inner_start, inner_end = split_indices
+
+        if len(xy) < 8:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has too few vertices "
+                f"for @cell encoding."
+            )
+
+        if not (0 < outer_end < inner_start <= inner_end < len(xy)):
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has @cell split "
+                f"(outer_end={outer_end}, inner_start={inner_start}, inner_end={inner_end})."
+            )
+
+        if (inner_end - inner_start) < 3:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' INNER loop is degenerate."
+            )
+
+        if not _same_point(xy[outer_end], xy[0]):
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' OUTER closure is not valid."
+            )
+
+        if not _same_point(xy[inner_end], xy[inner_start]):
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' INNER closure is not valid."
+            )
+
+        return split_indices
+
+
+    def _build_cell_geometry_from_indices(
+        xy: List[Tuple[float, float]],
+        nm: str,
+        outer_end: int,
+        inner_start: int,
+        inner_end: int,
+    ) -> CellGeometry:
+        """
+        Build CellGeometry from already-known split indices.
+
+        The duplicated closure points are excluded from both loops.
+        """
+        outer_xy = xy[0:outer_end]
+        inner_xy = xy[inner_start:inner_end]
+
+        A_outer_signed = _signed_area_xy(outer_xy)
+        A_inner_signed = _signed_area_xy(inner_xy)
+
+
+        if A_outer_signed * A_inner_signed >= 0.0:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' OUTER and INNER loops "
+                f"must have opposite signed areas."
+            )
+
+
+        if A_outer_signed == 0.0 or A_inner_signed == 0.0:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has zero-area OUTER or INNER loop."
+            )
+
+
+        A_outer = abs(A_outer_signed)
+        A_inner = abs(A_inner_signed)
+
+        # The geometrically outer loop is the one with larger absolute area.
+        if A_inner > A_outer:
+            outer_xy, inner_xy = inner_xy, outer_xy
+            A_outer, A_inner = A_inner, A_outer
+
+        A_wall = A_outer - A_inner
+        if A_wall <= _tol.EPS_A:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has non-positive wall area "
+                f"(A_outer={A_outer:.12g}, A_inner={A_inner:.12g})."
+            )
+
+        P_outer = _perimeter_xy(outer_xy)
+        P_inner = _perimeter_xy(inner_xy)
+        P_total = P_outer + P_inner
+
+        if P_total <= _tol.EPS_L:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has near-zero total perimeter."
+            )
+
+        A_m = 0.5 * (A_outer + A_inner)
+        b_m = 0.5 * P_total
+        t_geom = 2.0 * A_wall / P_total
+
+        if A_m <= _tol.EPS_A or b_m <= _tol.EPS_L:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has degenerate global mid-line quantities."
+            )
+
+        return CellGeometry(
+            outer_end=outer_end,
+            inner_start=inner_start,
+            inner_end=inner_end,
+            outer_xy=outer_xy,
+            inner_xy=inner_xy,
+            A_outer=A_outer,
+            A_inner=A_inner,
+            A_wall=A_wall,
+            P_outer=P_outer,
+            P_inner=P_inner,
+            P_total=P_total,
+            A_m=A_m,
+            b_m=b_m,
+            t_geom=t_geom,
+        )
+
+
+    def _split_outer_inner_loops_global(
+        xy: List[Tuple[float, float]],
+        nm: str
+        #split_indices: Optional[Tuple[int, int, int]] = None,
+    ) -> Tuple[CellGeometry, Tuple[int, int, int]]:
+        """
+        Split a slit-encoded @cell polygon and compute all geometric quantities.
+
+        The OUTER/INNER split is detected from the current vertex sequence.
+        Areas, perimeters, mid-line quantities, and t_geom are recomputed from
+        the current coordinates.
+        """
+        
+        split_indices = _find_cell_split_indices(xy, nm)
+        _validate_cell_split_indices(xy, nm, split_indices)
+
+        outer_end, inner_start, inner_end = split_indices
+
+        cell_geom = _build_cell_geometry_from_indices(
+            xy=xy,
+            nm=nm,
+            outer_end=outer_end,
+            inner_start=inner_start,
+            inner_end=inner_end,
+        )
+
+        return cell_geom, split_indices
+
+
+    def _compute_J_cell_geom_from_global_mid_quantities(
+        cell_geom: CellGeometry,
+        t: float,
+        nm: str,
+        i_cell: int,
+        z_sec,
+    ) -> float:
+        """
+        Compute J using global mid-line quantities:
+
+            A_m = 0.5 * (A_outer + A_inner)
+            b_m = 0.5 * (P_outer + P_inner)
+            J   = 4 * A_m^2 * t / b_m
+        """
+        if cell_geom.A_m <= _tol.EPS_A or cell_geom.b_m <= _tol.EPS_L:
+            raise CSFError(
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' degenerate global mid quantities "
+                f"(A_m={cell_geom.A_m:.12g}, b_m={cell_geom.b_m:.12g})."
+            )
+
+        if verbose:
+            print(
+                f"[CELL-GEOM][idx={i_cell}][z={z_sec}][{nm}] \n"
+                f"A_outer={cell_geom.A_outer:.12g} A_inner={cell_geom.A_inner:.12g} "
+                f"A_wall={cell_geom.A_wall:.12g} \n"
+                f"P_outer={cell_geom.P_outer:.12g} P_inner={cell_geom.P_inner:.12g} "
+                f"P_total={cell_geom.P_total:.12g} \n"
+                f"A_m={cell_geom.A_m:.12g} b_m={cell_geom.b_m:.12g} t={t:.12g} \n"
+            )
+
+        return 4.0 * (cell_geom.A_m ** 2) * t / cell_geom.b_m
+
+    #--
     def _xy_list(poly) -> List[Tuple[float, float]]:
         """
         Return polygon vertices as [(x, y), ...], preserving original sequence.
@@ -2414,11 +2654,6 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         
         return area
 
-    def _key(pt: Tuple[float, float], ndigits: int = 12) -> Tuple[float, float]:
-        """
-        Quantized key for robust repeated-point detection.
-        """
-        return (round(pt[0], ndigits), round(pt[1], ndigits))
 
     def _parse_t(name: str) -> Optional[float]:
         """
@@ -2452,170 +2687,6 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         if tval <= 0.0:
             return None
         return tval
-
-    def _find_outer_bridge_index(xy: List[Tuple[float, float]], nm: str) -> int:
-        """
-        Return index of first point matching the first vertex within global tolerance.
-        Uses _tol.EPS_L as requested.
-        """
-        if not xy:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has empty vertex list."
-            )
-
-        x0, y0 = xy[0]
-        tol2 = _tol.EPS_L * _tol.EPS_L
-        i_outer_end = None
-
-        for i in range(1, len(xy)):
-            dx = xy[i][0] - x0
-            dy = xy[i][1] - y0
-            if (dx * dx + dy * dy) <= tol2:
-                i_outer_end = i
-                break
-
-        if i_outer_end is None or i_outer_end < 3:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' cannot split OUTER loop "
-                f"(missing repeated outer-start vertex within tol={_tol.EPS_L:.6e})."
-            )
-        
-        return i_outer_end
-
-    def _extract_inner_loop_after_outer(
-        xy: List[Tuple[float, float]],
-        keys: List[Tuple[float, float]],
-        i_outer_end: int,
-        nm: str,
-    ) -> List[Tuple[float, float]]:
-        """
-        Extract INNER loop from the tail after OUTER closure.
-
-        Policy:
-        - Implicit closure is accepted (no mandatory repeated last point).
-        - If tail starts and ends with the same key, treat last as explicit closure
-          and drop it.
-        """
-        #print(f"DEBUG xy {xy}")
-        rem_start = i_outer_end + 1
-        if rem_start >= len(xy):
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' missing INNER loop segment."
-            )
-
-        rem_xy = xy[rem_start:]
-        rem_keys = keys[rem_start:]
-
-        # At least 3 vertices are required for an implicitly closed loop.
-        if len(rem_xy) < 3:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' insufficient vertices for INNER loop."
-            )
-
-        # Optional explicit closure on inner tail.
-        if len(rem_xy) >= 2 and rem_keys[0] == rem_keys[-1]:
-            inner_xy = rem_xy[:-1]
-        else:
-            inner_xy = rem_xy
-
-        if len(inner_xy) < 3:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' INNER loop degenerate."
-            )
-
-        return inner_xy
-
-
-    def _split_outer_inner_loops(
-        xy: List[Tuple[float, float]], nm: str
-    ) -> Tuple[List[Tuple[float, float]], List[Tuple[float, float]], int]:
-        """
-        Split slit-encoded polygon into the two real geometric loops.
-
-        The returned loops must not contain bridge segments.
-        """
-        keys = [_key(pt) for pt in xy]
-        i_outer_end = _find_outer_bridge_index(xy, nm)
-
-        loop_a = xy[0:i_outer_end]
-
-        # Build inner loop from encoded tail.
-        loop_b = _extract_inner_loop_after_outer(xy, keys, i_outer_end, nm)
-
-        # Drop duplicated closure point if present.
-        if len(loop_a) >= 2 and _key(loop_a[0]) == _key(loop_a[-1]):
-            loop_a = loop_a[:-1]
-
-        if len(loop_b) >= 2 and _key(loop_b[0]) == _key(loop_b[-1]):
-            loop_b = loop_b[:-1]
-
-        # Remove bridge endpoint accidentally kept in inner loop.
-        # In slit encoding the inner loop must not start/end on the outer bridge node.
-        outer_start_key = _key(xy[0])
-
-        if len(loop_b) >= 1 and _key(loop_b[0]) == outer_start_key:
-            loop_b = loop_b[1:]
-
-        if len(loop_b) >= 1 and _key(loop_b[-1]) == outer_start_key:
-            loop_b = loop_b[:-1]
-
-        if len(loop_a) < 3 or len(loop_b) < 3:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' produced degenerate loops."
-            )
-        return loop_a, loop_b, i_outer_end
-
-    def _compute_J_geom_from_global_mid_quantities(
-        outer_xy: List[Tuple[float, float]],
-        inner_xy: List[Tuple[float, float]],
-        t: float,
-        nm: str,
-        i_cell: int,
-        z_sec,
-    ) -> float:
-        """
-        Compute J using global mid-quantities (no pointwise pairing):
-            A_m = 0.5*(A_outer + A_inner)
-            b_m = 0.5*(P_outer + P_inner)
-            J   = 4*A_m^2*t/b_m
-        """
-        
-        
-        A_outer_signed = _signed_area_xy(outer_xy)
-        A_inner_signed = _signed_area_xy(inner_xy)
-        
-        
-        A_outer = abs(A_outer_signed)
-        A_inner = abs(A_inner_signed)
-        A_wall = A_outer - A_inner
- 
-        if A_wall <= _tol.EPS_A:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has non-positive wall area "
-                f"(A_outer={A_outer:.12g}, A_inner={A_inner:.12g})."
-            )
-
-        P_outer = _perimeter_xy(outer_xy)
-        P_inner = _perimeter_xy(inner_xy)
-
-        A_m = 0.5 * (A_outer + A_inner)
-        b_m = 0.5 * (P_outer + P_inner)
-
-        if A_m <= _tol.EPS_A or b_m <= _tol.EPS_L:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' degenerate global mid quantities "
-                f"(A_m={A_m:.12g}, b_m={b_m:.12g})."
-            )
-        if verbose:
-            print(
-                f"[CELL-GEOM][idx={i_cell}][z={z_sec}][{nm}] \n"
-                f"A_outer={A_outer:.12g} A_inner={A_inner:.12g} A_wall={A_wall:.12g} \n"
-                f"P_outer={P_outer:.12g} P_inner={P_inner:.12g} \n"
-                f"A_m={A_m:.12g} b_m={b_m:.12g} t={t:.12g} \n"
-            )
-            
-        return 4.0 * (A_m ** 2) * t / b_m
-
     # -------------------------------------------------------------------------
     # 2) Accumulate contributions
     # -------------------------------------------------------------------------
@@ -2628,142 +2699,55 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
         shear_weight = float(getattr(p, "shear_weight"))
 
         if abs(shear_weight) < _tol.EPS_A:
-            t=0
             continue
 
         xy = _xy_list(p)
         
+        cell_geom, split_indices = _split_outer_inner_loops_global(
+            xy=xy,
+            nm=nm
+        )
         
-        z_sec = getattr(section, "z", None)
-        if verbose:
-            print(
-                f"[CELL-START][idx={i_cell}] z={z_sec} name={nm} "
-                f"id={id(p)} nverts={len(xy)} first={xy[0] if xy else None}"
-            )
-        
-
-        if len(xy) < 8:
-            raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' has too few vertices for slit-cell encoding."
-            )
-
-        # Thickness from @t=... (strict by policy).
         t = _parse_t(nm)
-        '''
-        # define t
-        '''       
-
-        # Split loops (inner explicit closure is optional).
-        loop_a, loop_b, i_outer_end = _split_outer_inner_loops(xy, nm)
-        if verbose:
-            print(f"verbose loop_a {loop_a}  loop_b {loop_b} i_outer_end  {i_outer_end}")
-            
-            print(
-                f"[OUTER_CLOSE][idx={i_cell}][z={z_sec}][{nm}] "
-                f"first={xy[0]} repeated={xy[i_outer_end]}"
-            )
-        area_a = abs(_signed_area_xy(loop_a))
-        area_b = abs(_signed_area_xy(loop_b))
-        if verbose:
-            print(
-                f"[CELL-LOOPS][idx={i_cell}][z={z_sec}][{nm}] "
-                f"len_loop_a={len(loop_a)} len_loop_b={len(loop_b)} "
-                f"area_a={area_a:.12g} area_b={area_b:.12g}"
-            )
-        
-        # OUTER is the loop with larger absolute area.
-        if area_a >= area_b:
-            outer_xy = loop_a
-            inner_xy = loop_b
-        else:
-            outer_xy = loop_b
-            inner_xy = loop_a
-
-        s_outer_before = _signed_area_xy(outer_xy)
-        s_inner_before = _signed_area_xy(inner_xy)
-
-
-        if s_outer_before * s_inner_before >= 0.0:
-            raise ValueError(
-                f"{getattr(p, 'name', '<unnamed @cell>')}: @cell OUTER and INNER loops outer_xy: {outer_xy} inner_xy: {inner_xy}"
-                " must have non-zero signed areas with opposite signs."
-            )
-        if s_outer_before < 0.0:
-            outer_xy = list(reversed(outer_xy))
-            
-        if s_inner_before < 0.0:
-            inner_xy = list(reversed(inner_xy))
-            
-            
-
-        s_outer_after = _signed_area_xy(outer_xy)
-        s_inner_after = _signed_area_xy(inner_xy)
         if t is None:
+            t = cell_geom.t_geom
             
-            if REQUIRE_EXPLICIT_T:
-                raise CSFError(
-                    f"compute_saint_venant_J_cell(v3): polygon '{nm}' is @cell/@closed but missing '@t=...'."
-                )
-               
-            # Use the pure geometric wall area from the split loops.
-            # Do not use polygon_area_centroid(p)[0] here, because that area may already
-            # include the polygon weight and would make w enter J twice.
-            A_outer = abs(_signed_area_xy(outer_xy))
-            A_inner = abs(_signed_area_xy(inner_xy))
-            A_wall_geom = A_outer - A_inner
-
-            if A_wall_geom <= _tol.EPS_A:
-                raise CSFError(
-                    f"compute_saint_venant_J_cell(v3): polygon '{nm}' has non-positive geometric wall area "
-                    f"(A_outer={A_outer:.12g}, A_inner={A_inner:.12g})."
-                )
-
-            P_outer = _perimeter_xy(outer_xy)
-            P_inner = _perimeter_xy(inner_xy)
-            P_poly_fallback = P_outer + P_inner
-
-            if P_poly_fallback < _tol.EPS_L:
-                raise CSFError(
-                    f"compute_saint_venant_J_cell(v3): polygon '{nm}' has near-zero perimeter."
-                )
-            
-            t = 2.0 * A_wall_geom / P_poly_fallback                
-
-        # end t calculation            
-
         if t < _tol.EPS_L:
             raise CSFError(
                 f"compute_saint_venant_J_cell(v3): polygon '{nm}' invalid thickness t={t}."
             )
-        if verbose:
-            print(
-                f"[CELL-ORIENT][idx={i_cell}][z={z_sec}][{nm}] "
-                f"s_outer_before={s_outer_before:.12g} s_outer_after={s_outer_after:.12g} "
-                f"s_inner_before={s_inner_before:.12g} s_inner_after={s_inner_after:.12g}"
-            )
-        # Optional area consistency warning.
-        A_outer = abs(_signed_area_xy(outer_xy))
-        A_inner = abs(_signed_area_xy(inner_xy))
-        A_wall = A_outer - A_inner
-        J_geom = _compute_J_geom_from_global_mid_quantities(
-            outer_xy, inner_xy, t, nm, i_cell, z_sec
+              
+
+        z_sec = getattr(section, "z", None)
+
+        J_geom = _compute_J_cell_geom_from_global_mid_quantities(
+            cell_geom=cell_geom,
+            t=t,
+            nm=nm,
+            i_cell=i_cell,
+            z_sec=z_sec,
         )
         contrib = shear_weight * J_geom
         if verbose:
             print(
-                f"[CELL-CONTRIB][idx={i_cell}][z={z_sec}][{nm}] "
-                f"w={w:.12g} J_geom={J_geom:.12g} contrib={contrib:.12g} J_total_before={J_total:.12g}"
+                f"[CELL-CHECK] z={z_sec} idx={i_cell} name={nm} "
+                f"n_outer={len(cell_geom.outer_xy)} n_inner={len(cell_geom.inner_xy)} "
+                f"A_outer={cell_geom.A_outer:.12e} "
+                f"A_inner={cell_geom.A_inner:.12e} "
+                f"A_wall={cell_geom.A_wall:.12e} "
+                f"P_outer={cell_geom.P_outer:.12e} "
+                f"P_inner={cell_geom.P_inner:.12e} "
+                f"P_total={cell_geom.P_total:.12e} "
+                f"A_m={cell_geom.A_m:.12e} "
+                f"b_m={cell_geom.b_m:.12e} "
+                f"t={t:.12e} "
+                f"J_geom={J_geom:.12e} "
+                f"GJ={contrib:.12e}"
             )
+
+
         J_total += contrib
-        if verbose:
-            print(f"[CELL-TOTAL][idx={i_cell}][z={z_sec}][{nm}] J_total_after={J_total:.12g}")
-
-
-        if t is None:
-                raise ValueError(
-                    "compute_saint_venant_J_cell: no @cell polygon contributed; thickness t is undefined."
-                )
-
+        
     if len(cell_polys) == 1:
         
         return J_total, t
@@ -2771,6 +2755,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
     else:
         
         return J_total
+
 
 """
 CSF torsion (Saint-Venant) - WALL-based variant with optional thickness override

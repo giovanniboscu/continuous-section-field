@@ -380,6 +380,34 @@ def _native_ring_to_vertices(
     if _signed_area(pts) < 0.0:
         pts = list(reversed(pts))
     return [(round(x, precision), round(y, precision)) for x, y in pts]
+
+
+def _cell_vertices_from_outer_inner(
+    outer: Sequence[Point],
+    inner: Sequence[Point],
+) -> List[Point]:
+    """Return the CSF @cell vertex sequence from one exterior and one hole.
+
+    The exterior ring is written first with CCW orientation. The inner ring is
+    written after it with CW orientation. Both rings are explicitly closed.
+    """
+    if len(outer) < 3 or len(inner) < 3:
+        raise ValueError("A @cell polygon requires one exterior ring and one hole")
+
+    outer_pts = list(outer)
+    inner_pts = list(inner)
+
+    if _signed_area(outer_pts) < 0.0:
+        outer_pts = list(reversed(outer_pts))
+    if _signed_area(inner_pts) > 0.0:
+        inner_pts = list(reversed(inner_pts))
+
+    if outer_pts[0] != outer_pts[-1]:
+        outer_pts.append(outer_pts[0])
+    if inner_pts[0] != inner_pts[-1]:
+        inner_pts.append(inner_pts[0])
+
+    return [*outer_pts, *inner_pts]
 # ---------------------------------------------------------------------------
 # Feature-aware morph helpers
 # ---------------------------------------------------------------------------
@@ -1147,11 +1175,15 @@ def _pair_to_blocks(
     twist0_deg: float,
     twist1_deg: float,
     morph_mode: str = "perimeter",
+    cell: bool = False,
 ) -> Tuple[List[str], List[str]]:
     """Convert one polygon pair (exterior + holes) into matching CSF YAML blocks.
 
     Both sections must have the same number of holes.
     Offset and twist are applied after resampling/alignment.
+
+    When cell=True, each polygon must have exactly one hole. The exterior and
+    the hole are written as one CSF @cell polygon.
 
     n=None (native mode): use SP native vertices without resampling.
         Correct for tapered sections of the same type — SP generates
@@ -1197,6 +1229,21 @@ def _pair_to_blocks(
             "Ensure n_r (and n for circular sections) are identical in --s0 and --s1."
         )
 
+    if cell:
+        if len(holes_s0) != 1 or len(holes_s1) != 1:
+            raise ValueError(
+                f"Polygon '{base_name}': --cell requires exactly one hole "
+                f"in S0 and S1"
+            )
+
+        h0 = _process(holes_s0[0].coords, cx0, cy0, dx0, dy0, twist0_deg, True)
+        h1 = _process(holes_s1[0].coords, cx1, cy1, dx1, dy1, twist1_deg, False)
+        cell_name = base_name if "@cell" in base_name.lower() else f"{base_name}@cell"
+        return (
+            [_poly_block(cell_name, solid_weight, _cell_vertices_from_outer_inner(ext0, h0), indent, precision)],
+            [_poly_block(cell_name, solid_weight, _cell_vertices_from_outer_inner(ext1, h1), indent, precision)],
+        )
+
     blocks_s0 = [_poly_block(base_name, solid_weight, ext0, indent, precision)]
     blocks_s1 = [_poly_block(base_name, solid_weight, ext1, indent, precision)]
 
@@ -1235,6 +1282,7 @@ def sp_to_csf_yaml(
     twist1_deg: float = 0.0,
     auto_align: bool = True,
     morph_mode: str = "perimeter",
+    cell: bool = False,
 ) -> Path:
     """Convert two sectionproperties geometries to a CSF YAML file.
 
@@ -1273,6 +1321,9 @@ def sp_to_csf_yaml(
         If True (default), automatically offset S0 and S1 so their centroids
         coincide in the CSF coordinate frame. Explicit dx/dy values override
         auto-alignment for the respective section.
+    cell : bool
+        If True, export one @cell polygon by joining the exterior ring and the
+        clockwise hole ring into a single vertex sequence.
 
     Returns
     -------
@@ -1341,6 +1392,7 @@ def sp_to_csf_yaml(
             dx0=_dx0, dy0=_dy0, dx1=_dx1, dy1=_dy1,
             twist0_deg=twist0_deg, twist1_deg=twist1_deg,
             morph_mode=morph_mode,
+            cell=cell,
         )
         blocks_s0.extend(local_s0)
         blocks_s1.extend(local_s1)
@@ -1352,6 +1404,7 @@ def sp_to_csf_yaml(
         f"# S0 at z={_fmt_float(z0, precision)}",
         f"# S1 at z={_fmt_float(z1, precision)}",
         f"# morph_mode={morph_mode}",
+        f"# cell={'ON' if cell else 'OFF'}",
         f"# Each ring resampled to n={n} equidistant vertices",
         f"# auto_align={'ON' if auto_align else 'OFF'}",
         align_note,
@@ -1686,6 +1739,7 @@ def sp_sections_to_csf_yaml(
     twist1_deg: float = 0.0,
     auto_align: bool = True,
     morph_mode: str = "perimeter",
+    cell: bool = False,
 ) -> Path:
     """High-level API using section names + parameter dictionaries.
 
@@ -1711,6 +1765,8 @@ def sp_sections_to_csf_yaml(
         )
 
     if morph_mode == "feature":
+        if cell:
+            raise ValueError("--cell is not supported with morph_mode='feature'")
         _, transform_s0 = _split_section_params(section_s0, params_s0)
         _, transform_s1 = _split_section_params(target_section_s1, params_s1)
         if _transform_is_active(transform_s0) or _transform_is_active(transform_s1):
@@ -1773,6 +1829,7 @@ def sp_sections_to_csf_yaml(
         twist1_deg=twist1_deg,
         auto_align=auto_align,
         morph_mode=morph_mode,
+        cell=cell,
     )
 
 
@@ -1835,7 +1892,7 @@ CSF_ACTIONS:
     - section_selected_analysis:
         stations:
           - station_3pt
-        properties: [A, Cx, Cy, Ix, Iy, Ip, I1, I2, rx, ry, Wx, Wy,J_s_vroark, J_s_vroark_fidelity]
+        properties: [A, Cx, Cy, Ix, Iy, Ip, I1, I2, rx, ry, Wx, Wy,J_sv_cell,J_s_vroark, J_s_vroark_fidelity]
 """
     output_path.write_text(content, encoding="utf-8")
     return output_path
@@ -1892,6 +1949,8 @@ def main() -> int:
                             "arc-length resampling; 'native' preserves the native SP "
                             "vertex order; 'feature' uses supported feature-block maps."
                         ))
+    parser.add_argument("--cell", action="store_true",
+                        help="Export each single-hole polygon as one CSF @cell polygon")
     parser.add_argument("--name", type=str, default="section",
                         help="Polygon base name (default: section)")
     parser.add_argument("--out", type=str, default=None,
@@ -1958,10 +2017,13 @@ def main() -> int:
     comment = (
         f"{section_s0}({args.s0}) -> {section_s1}({args.s1}) "
         f"{resample_label} morph_mode={args.morph_mode} "
-        f"twist0={args.twist0} twist1={args.twist1}"
+        f"cell={args.cell} twist0={args.twist0} twist1={args.twist1}"
     )
 
     if args.morph_mode == "feature":
+        if args.cell:
+            print("[ERROR] --cell is not supported with --morph-mode feature")
+            return 1
         if not args.morph:
             print("[ERROR] --morph-mode feature requires --morph")
             return 1
@@ -2028,6 +2090,7 @@ def main() -> int:
             auto_align=not args.no_align,
             precision=args.precision,
             morph_mode=args.morph_mode,
+            cell=args.cell,
         )
     except ValueError as e:
         print(f"[ERROR] {e}")

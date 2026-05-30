@@ -70,6 +70,7 @@ from shapely.ops import unary_union
 from sectionproperties.analysis import Section
 from sectionproperties.pre import CompoundGeometry, Geometry
 from shapely.ops import snap, unary_union
+from shapely.validation import explain_validity
 
 try:
     from sectionproperties.pre import Material
@@ -660,7 +661,17 @@ def _polygon_inputs_from_field(field, z: float) -> Dict[int, PolygonInput]:
 def _make_polygon(coords: List[Tuple[float, float]], label: str) -> ShapelyPolygon:
     """Build a shapely polygon without silently fixing invalid geometry."""
     poly = ShapelyPolygon(coords)
-
+    if verbose:
+        print(f"\n[DEBUG _make_polygon] {label}")
+        print(f"  n_coords      = {len(coords)}")
+        print(f"  first         = {coords[0] if coords else None}")
+        print(f"  last          = {coords[-1] if coords else None}")
+        print(f"  closed        = {coords[0] == coords[-1] if len(coords) > 1 else False}")
+        print(f"  geom_type     = {poly.geom_type}")
+        print(f"  is_empty      = {poly.is_empty}")
+        print(f"  is_valid      = {poly.is_valid}")
+        print(f"  area          = {poly.area}")
+        print(f"  reason        = {explain_validity(poly)}")
     if poly.is_empty:
         raise ValueError(f"{label}: shapely polygon is empty.")
     if not poly.is_valid:
@@ -703,6 +714,16 @@ def _split_cell_polygon(vertices: List[Tuple[float, float]], label: str) -> Tupl
 
     outer = vertices[:i_outer_end]
     inner = vertices[i_outer_end + 1 :]
+
+    if verbose:
+        print(f"\n[DEBUG _split_cell_polygon] {label}")
+        print(f"  total vertices = {len(vertices)}")
+        print(f"  first          = {first}")
+        print(f"  i_outer_end    = {i_outer_end}")
+        print(f"  outer raw n    = {len(outer)}")
+        print(f"  inner raw n    = {len(inner)}")
+        print(f"  inner first    = {inner[0] if inner else None}")
+        print(f"  inner last     = {inner[-1] if inner else None}")
 
     if len(inner) < 3:
         raise ValueError(f"{label}: insufficient INNER loop vertices.")
@@ -1313,13 +1334,25 @@ def main() -> None:
     )
     ap.add_argument("--mesh", type=float, default=1.0, help="Max mesh element area.")
     ap.add_argument("--plot", action="store_true", help="Plot geometry and mesh.")
+    
+    
     ap.add_argument(
         "--no-warping",
         dest="no_warping",
         action="store_true",
         help="Skip warping FEM. Native e.j and CSF torsion-carrier J are not computed.",
     )
+    ap.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print debug information while building the sectionproperties geometry.",
+    )
+
     args = ap.parse_args()
+
+    global verbose
+    verbose = args.verbose
+
 
     if args.yaml_path is not None:
         if args.path is not None:
