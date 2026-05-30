@@ -429,12 +429,10 @@ A second example is introduced to illustrate a different capability of the frame
 
 <p align="center">
   <em>T-section geometry and region subdivision used in the example.</em>
-  
-  <img width="345" height="354" alt="tsec" src="https://github.com/user-attachments/assets/c8144c5f-d776-46ad-ae46-e7fab5971ab6" />
-
 </p>
-
-
+<p align="center">
+<img width="345" height="354" alt="tsec" src="https://github.com/user-attachments/assets/c8144c5f-d776-46ad-ae46-e7fab5971ab6" />
+</p>
 
 The test case consists of a continuous T-section of length $L=10$. The geometry is fixed along the member axis, while the participation fields vary continuously with $z$. The continuous field is evaluated at eleven Gauss-Lobatto stations.
 
