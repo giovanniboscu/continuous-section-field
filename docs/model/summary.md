@@ -360,6 +360,8 @@ Both NREL configurations are analysed under the same loading conditions. The tow
 
 The same loading definition is used for the undegraded and degraded towers. Therefore, differences in the computed response are caused only by the sectional stiffness field and by the axial discretization used by the beam model, not by changes in loading or geometry.
 
+The NREL validation uses both CSF interaction modes, but for different purposes. The declarative YAML workflow is used to define the tower model, inspect the sectional-property distributions, and generate plots and station-wise reports. The Python API is used in the response calculations, where the continuous sectional field is evaluated programmatically to compute the tip displacement and torsional rotation. The two modes therefore serve complementary roles within the same validation workflow: YAML supports reproducible model definition and inspection, while the API supports direct numerical evaluation.
+
 #### Case A - undegraded tower
 
 For the undegraded configuration, the stiffness field varies smoothly and monotonically. Convergence is rapid: a small number of beam elements is sufficient to reproduce the reference response with negligible error.
