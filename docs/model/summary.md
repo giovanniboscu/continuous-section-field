@@ -433,7 +433,7 @@ A second example is introduced to illustrate a different capability of the frame
 <p align="center">
 
 <p align="center">
-<img width="677" height="593" alt="tsec_s2b" src="https://github.com/user-attachments/assets/9e50580c-05b8-43d0-bac7-1a9fcdb2647c" />
+<img width="673" height="468" alt="tsec_s2b" src="https://github.com/user-attachments/assets/01928485-883c-4c0c-aeac-f427a6566eef" />
  
 </p>
 
