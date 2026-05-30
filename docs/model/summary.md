@@ -826,9 +826,8 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
   https://doi.org/10.1016/j.ijsolstr.2016.02.017
 
 <a id="VABS"></a>
-[VABS]: https://analyswift.com/vabs/
-
 - [VABS] VABS: Variational Asymptotic Beam Sectional Analysis.
+ https://analyswift.com/vabs/
 
 
 - **[SEC_PROP]** *python package for the analysis of arbitrary cross-sections using the finite element method*.
