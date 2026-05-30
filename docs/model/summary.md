@@ -848,16 +848,16 @@ https://github.com/robbievanleeuwen/section-properties
 
 ---
   
-- **[SUMMB_NREL]** *G. Boscu, Continuous Section Field: NREL validation comparison summary*, repository documentation, 2026.
+- **[SUMMB_NREL]** <a id="SUMMB_NREL"></a>  *G. Boscu, Continuous Section Field: NREL validation comparison summary*, repository documentation, 2026.
 https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all_b.md
 
-- **[CSF_SP]** *G. Boscu, Continuous Section Field: Continuous Section Field csf_sp User Guide*  repository documentation, 2026.
+- **[CSF_SP]** <a id="CSF_SP"></a>  *G. Boscu, Continuous Section Field: Continuous Section Field csf_sp User Guide*  repository documentation, 2026.
  https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md
 
-- **[FULL_AN]** *G. Boscu, Continuous Section Field: Section Full Analysis Output*  repository documentation, 2026.
+- **[FULL_AN]** <a id="FULL_AN"></a> *G. Boscu, Continuous Section Field: Section Full Analysis Output*  repository documentation, 2026*.
 https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md
 
-- **[SAINT_VEN]** G. Boscu, *Continuous Section Field: Saint-Venant Torsional Constant* repository documentation, 2026.
+- **[SAINT_VEN]** <a id="SAINT_VEN"></a> *G. Boscu, Continuous Section Field: Saint-Venant Torsional Constant* repository documentation, 2026.
 Available: https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md
 
 ---
