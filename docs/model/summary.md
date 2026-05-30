@@ -335,6 +335,23 @@ $$
 \quad [\%]
 $$
 
+
+The independent reference is computed directly from the YAML definition without using the CSF section-sampling APIs. The reference procedure reads the end-section geometry and the longitudinal `weight_laws`, reconstructs the outer and inner radii along the tower height, and evaluates the stiffness fields on a dense axial grid of 2001 points.
+
+At each axial location, the circular annulus is reconstructed from the interpolated radii. The bending stiffness is evaluated as
+
+$$EI(z)=E(z)\frac{\pi}{4}\left(R_o(z)^4-R_i(z)^4\right),$$
+
+while the torsional stiffness is evaluated as
+
+$$GJ(z)=G(z)\frac{\pi}{2}\left(R_o(z)^4-R_i(z)^4\right),
+\qquad
+G(z)=\frac{E(z)}{2(1+\nu)}.$$
+
+The reference transverse displacement is then obtained by direct numerical integration of the bending-curvature contribution induced by the transverse tip force, the tip bending moment, and the uniform transverse load. The torsional reference rotation is obtained by integrating $M_z/GJ(z)$ along the tower height. Simpson integration over the dense axial grid is used for both response quantities.
+
+This reference is therefore independent of the OpenSees beam discretization and of the CSF station-wise section export. It uses the same YAML-defined physical model, but evaluates the response through a separate continuous-integration procedure.
+
 #### Loading configuration
 
 Both NREL configurations are analysed under the same loading conditions. The tower is modelled as a cantilever beam, fixed at the base and loaded at the free end. The structural model includes a transverse tip force, a torsional tip moment, and a uniform transverse distributed load. These loads are not intended to reproduce a full aeroelastic operating condition; they define a controlled static test case for comparing the CSF-to-OpenSees response with the independent reference integration.
