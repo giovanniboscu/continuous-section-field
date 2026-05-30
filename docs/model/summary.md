@@ -828,7 +828,7 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
 - **[VABS]** <a id="vabs"></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
 
 - **[NRELOpenFAST]**  <a id="NRELOpenFAST "></a> *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool*. https://github.com/OpenFAST/openfast
-- **[NREL WISDEM]** <a id="wisdem "></a>  *National Renewable Energy Laboratory. *WISDEM: Wind-Plant Integrated System Design and Engineering Model*. https://github.com/WISDEM/WISDEM
+- **[NREL WISDEM]** <a id="wisdem"></a>  *National Renewable Energy Laboratory. *WISDEM: Wind-Plant Integrated System Design and Engineering Model*. https://github.com/WISDEM/WISDEM
 
 - **[SEC_PROP]** <a id="sec_prop"></a>  *python package for the analysis of arbitrary cross-sections using the finite element method.*.
 https://github.com/robbievanleeuwen/section-properties
