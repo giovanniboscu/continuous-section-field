@@ -842,7 +842,7 @@ https://github.com/robbievanleeuwen/section-properties
 - **[BECAS]**  <a id="becas"></a> *Finite-element-based cross-sectional analysis software*. https://becas.dtu.dk/
 
 
-- **[ABAQUS]**  <a id="becas"></a> *Dassault Systèmes Simulia Corp. ABAQUS*. https://www.3ds.com/products/simulia/abaqus/
+- **[ABAQUS]**  <a id="ABAQUS"></a> *Dassault Systèmes Simulia Corp. ABAQUS*. https://www.3ds.com/products/simulia/abaqus/
 
 ---
   
