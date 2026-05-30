@@ -28,7 +28,11 @@ The longitudinal variation of the member - including tapering geometry, spatiall
 
 On the theoretical side, Balduzzi et al. [Balduzzi 2016] showed that non-prismatic beam analysis requires the axial derivatives of cross-sectional quantities, such as $\frac{dA}{dz}$ and $\frac{dI}{dz}$, as explicit terms in the governing equations. The formulation therefore depends on continuous sectional functions, not solely on values evaluated at discrete stations. This highlights the need for programmable descriptions capable of generating consistent geometric and constitutive quantities, and their axial variation, at arbitrary locations along the member axis.
 
-Existing frameworks for the analysis of non-prismatic members can be grouped into three categories. First, sectional analysis tools such as VABS, BECAS, and `sectionproperties` compute the properties of individual cross-sections with high accuracy, while the longitudinal variation of the member is handled externally. Second, structural solvers such as OpenSees, ABAQUS, and ANSYS incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations. Third, aeroelastic codes such as OpenFAST rely on distributed sectional-property tables along the member axis.
+Existing frameworks for the analysis of non-prismatic members can be grouped into three categories. First, sectional analysis tools such as VABS, BECAS, and `sectionproperties` compute the properties of individual cross-sections with high accuracy, while the longitudinal variation of the member is handled externally. Second, structural solvers such as OpenSees, ABAQUS, and ANSYS incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations. 
+
+
+Third, wind-energy simulation and design workflows embed non-prismaticity in application-specific representations. Aeroelastic codes such as OpenFAST [NREL OpenFAST; Wang et al. 2017] rely on distributed sectional-property tables along the member axis, whereas systems-engineering tools such as NREL's WISDEM [NREL WISDEM] represent the tower as a tapered circular tube with closed-form sectional properties, analysed through the external frame finite-element code Frame3DD [Gavin]. In both cases the longitudinal variation is bound to a specific geometry or workflow rather than expressed as an independent, reusable sectional field.
+
 
 To the authors' knowledge, the continuous representation of a member as a solver-agnostic sectional-property field is generally not formalised as an independent modelling layer. Existing approaches typically embed longitudinal variation within section-analysis tools, structural solvers, or application-specific workflows, rather than representing it as an explicit reusable field.
 
@@ -396,3 +400,13 @@ The author thanks the developers of `sectionproperties` for providing an open fi
 ## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
 
 During the preparation of this work, the author used ChatGPT and Claude for drafting assistance, copy-editing, and code-review suggestions. After using these tools, the author reviewed, edited, and validated the content as needed and takes full responsibility for the scientific claims, software implementation, and manuscript.
+
+
+## References
+
+- **Wang et al. 2017** — Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). *BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework.* Wind Energy, 20(8), 1439–1462. https://doi.org/10.1002/we.2101
+- **NREL OpenFAST** — National Renewable Energy Laboratory. *OpenFAST: open-source wind turbine simulation tool.* https://github.com/OpenFAST/openfast
+- **NREL WISDEM** — National Renewable Energy Laboratory. *WISDEM: Wind-Plant Integrated System Design and Engineering Model.* https://github.com/WISDEM/WISDEM
+- **Gavin** — Gavin, H. P. *Frame3DD: Static and dynamic structural analysis of 2D and 3D frames.* http://frame3dd.sourceforge.net/
+
+<
