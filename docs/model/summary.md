@@ -825,7 +825,7 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
 - [Balduzzi 2016] *Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). Non-prismatic beams: A simple and effective Timoshenko-like model. International Journal of Solids and Structures*, 90, 236–250.
   https://doi.org/10.1016/j.ijsolstr.2016.02.017
 
-<a id="VABS"></a>
+<a id="vabs"></a>
 - [VABS] VABS: Variational Asymptotic Beam Sectional Analysis.
  https://analyswift.com/vabs/
 
