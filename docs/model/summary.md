@@ -425,11 +425,12 @@ This behaviour is a consequence of the continuous nature of the sectional repres
 ## 6. T-section with independent participation fields
 
 A second example is introduced to illustrate a different capability of the framework: the independent specification of axial/bending and shear/torsion participation fields on a non-axisymmetric open section.
+  
 
 <p align="center">
   <em>T-section geometry and region subdivision used in the example.</em>
   
-  <img width="690" height="709" alt="tsec" src="https://github.com/user-attachments/assets/c8144c5f-d776-46ad-ae46-e7fab5971ab6" />
+  <img width="345" height="354" alt="tsec" src="https://github.com/user-attachments/assets/c8144c5f-d776-46ad-ae46-e7fab5971ab6" />
 
 </p>
 
