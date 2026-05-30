@@ -390,7 +390,16 @@ This behaviour is a consequence of the continuous nature of the sectional repres
 
 ## 6. T-section with independent participation fields
 
-The NREL tower case demonstrates the ability of CSF to reproduce the continuous stiffness distribution of a real engineering structure and to transfer the resulting sectional properties to a downstream beam solver. A second example is introduced to illustrate a different capability of the framework: the independent specification of axial/bending and shear/torsion participation fields on a non-axisymmetric open section.
+A second example is introduced to illustrate a different capability of the framework: the independent specification of axial/bending and shear/torsion participation fields on a non-axisymmetric open section.
+
+<p align="center">
+  <em>T-section geometry and region subdivision used in the example.</em>
+  
+  <img width="690" height="709" alt="tsec" src="https://github.com/user-attachments/assets/c8144c5f-d776-46ad-ae46-e7fab5971ab6" />
+
+</p>
+
+
 
 The test case consists of a continuous T-section of length $L=10$. The geometry is fixed along the member axis, while the participation fields vary continuously with $z$. The continuous field is evaluated at eleven Gauss-Lobatto stations.
 
@@ -463,21 +472,21 @@ In the sampled anisotropic case, the axial/bending participation of the lower we
 
 
 <p align="center">
-  <em>Figure 1. Axial/bending participation field used in the T-section example.</em>
+  <em>Figure X. Axial/bending participation field used in the T-section example.</em>
 </p>
 
 <img width="1483" height="682" alt="rectangle_weights__fig_002" src="https://github.com/user-attachments/assets/46f56cdf-0642-4645-a891-414bcfdcb824" />
 
 
 <p align="center">
-  <em>Figure 2. Shear/torsion participation field used in the T-section example.</em>
+  <em>Figure X. Shear/torsion participation field used in the T-section example.</em>
 </p>
 
 <img width="1483" height="682" alt="rectangle_shear_weights__fig_002" src="https://github.com/user-attachments/assets/cf20a7ac-0e3c-41a4-b5aa-68d863c70935" />
 
 
 <p align="center">
-  <em>Figure 3. Sectional properties sampled at the Gauss-Lobatto stations.</em>
+  <em>Figure X. Sectional properties sampled at the Gauss-Lobatto stations.</em>
 </p>
 
 
