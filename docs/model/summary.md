@@ -260,9 +260,6 @@ In all cases the continuous geometric field is evaluated on demand; no re-meshin
 
 ### 3.4 Interoperability with `sectionproperties`
 
-Interoperability with  is provided through two companion modules, `csf_sp` and `sp_csf`, available as both Python API and CLI tools. `csf_sp` exports polygonal geometry at requested stations to `sectionproperties` for full warping analysis. `sp_csf` performs the inverse operation, importing individual section geometries from `sectionproperties` into CSF, enabling the definition of members with geometrically distinct `S0` and `S1` cross-sections.
-For torsional analyses, CSF supplies the shear/torsion participation field $\kappa_i(z)$ to the station-level analysis, so that the torsional response is evaluated using the appropriate shear-modulus quantity rather than the axial/bending participation field $w_i(z)$.
-
 Interoperability with sectionproperties is provided through two companion modules, [csf_sp](#CSF_SP) and [sp_csf](#SP_CSF), available as both Python API and CLI tools. `csf_sp` exports polygonal geometry at requested stations to `sectionproperties` for full warping analysis. `sp_csf` performs the inverse operation, importing individual section geometries from `sectionproperties` into CSF, enabling the definition of members with geometrically distinct `S0` and `S1` cross-sections. For torsional analyses, CSF supplies the shear/torsion participation field $\kappa_i(z)$ to the station-level analysis, so that the torsional response is evaluated using the appropriate shear-modulus quantity rather than the axial/bending participation field $w_i(z)$.
 
 
