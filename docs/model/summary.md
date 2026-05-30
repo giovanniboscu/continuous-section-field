@@ -377,12 +377,12 @@ The transverse displacement $U_y$ converges at low discretization levels. The to
 
 
 <p align="center">
-  <em>Figure X. CSF 3D representation of the degraded NREL tower case. The geometry remains tapered and continuous, while the longitudinal stiffness reduction is introduced through the participation field.</em>
+  <em>Figure 1. CSF 3D representation of the degraded NREL tower case. The geometry remains tapered and continuous, while the longitudinal stiffness reduction is introduced through the participation field.</em>
   <img width="631" height="547" alt="image" src="https://github.com/user-attachments/assets/2bf9827f-df1d-44ee-9937-bacb486373d8" />
 </p>
 
 <p align="center">
-  <em>Figure X. Longitudinal stiffness degradation law applied to the NREL tower through the axial/bending participation field. The two localized reductions are centred at 0.33L and 0.67L.</em>
+  <em>Figure 2. Longitudinal stiffness degradation law applied to the NREL tower through the axial/bending participation field. The two localized reductions are centred at 0.33L and 0.67L.</em>
   <img width="985" height="467" alt="image" src="https://github.com/user-attachments/assets/50866952-f5ca-4ca3-969b-caf1a0b69934" />
 
 </p>
@@ -397,12 +397,12 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 
 <p align="center">
-   <em>Figure 1. Continuous variation of selected sectional properties for the degraded NREL tower case. The localized reductions arise from the prescribed axial/bending participation field and are reflected in the sectional area and bending stiffness distributions.</em>
+   <em>Figure 3. Continuous variation of selected sectional properties for the degraded NREL tower case. The localized reductions arise from the prescribed axial/bending participation field and are reflected in the sectional area and bending stiffness distributions.</em>
   <img width="992" height="654" alt="image" src="https://github.com/user-attachments/assets/29232887-e724-46bb-9bb7-ff635c08742f" />
 </p>
 
 <p align="center">
-  <em>Figure 2. Tip-displacement convergence for the undegraded NREL tower case.</em>
+  <em>Figure 4. Tip-displacement convergence for the undegraded NREL tower case.</em>
     <img width="1600" height="1000" alt="Degraded NREL tower tip displacement convergence" src="https://github.com/user-attachments/assets/202ff4b8-5752-4b01-93ac-2c223057124f" />
 
 </p>
@@ -410,7 +410,7 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 
 <p align="center">
-  <em>Figure 3. Tip-displacement convergence for the degraded NREL tower case.</em>
+  <em>Figure 5. Tip-displacement convergence for the degraded NREL tower case.</em>
 
 <img width="1600" height="1000" alt="image" src="https://github.com/user-attachments/assets/220ea5ec-d42e-4b75-b04f-16b9e9303161" />
 
@@ -460,7 +460,7 @@ A second example is introduced to illustrate a different capability of the frame
   
 
 <p align="center">
-  <em>Figure 4. T-section geometry and region subdivision used in the example.</em>
+  <em>Figure 6. T-section geometry and region subdivision used in the example.</em>
 </p>
 <p align="center">
 
@@ -540,21 +540,21 @@ In the sampled anisotropic case, the axial/bending participation of the lower we
 
 
 <p align="center">
-  <em>Figure 5. Axial/bending participation field used in the T-section example.</em>
+  <em>Figure 7. Axial/bending participation field used in the T-section example.</em>
 </p>
 
 <img width="1483" height="682" alt="rectangle_weights__fig_002" src="https://github.com/user-attachments/assets/46f56cdf-0642-4645-a891-414bcfdcb824" />
 
 
 <p align="center">
-  <em>Figure 6. Shear/torsion participation field used in the T-section example.</em>
+  <em>Figure 8. Shear/torsion participation field used in the T-section example.</em>
 </p>
 
 <img width="1483" height="682" alt="rectangle_shear_weights__fig_002" src="https://github.com/user-attachments/assets/cf20a7ac-0e3c-41a4-b5aa-68d863c70935" />
 
 
 <p align="center">
-  <em>Figure 7. Sectional properties sampled at the Gauss-Lobatto stations.</em>
+  <em>Figure 9. Sectional properties sampled at the Gauss-Lobatto stations.</em>
 </p>
 
 
@@ -562,7 +562,7 @@ In the sampled anisotropic case, the axial/bending participation of the lower we
 
 
 <p align="center">
-  <em>Figure 8. Continuous variation of selected sectional properties along the member axis.</em>
+  <em>Figure 10. Continuous variation of selected sectional properties along the member axis.</em>
 </p>
 
 <img width="1484" height="1647" alt="aes_tsection_anisotropic_lobatto_properties" src="https://github.com/user-attachments/assets/996a7e13-a7b5-4ad7-a403-9b8ca61cbf60" />
