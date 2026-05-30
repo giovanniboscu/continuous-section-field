@@ -335,6 +335,12 @@ $$
 \quad [\%]
 $$
 
+#### Loading configuration
+
+Both NREL configurations are analysed under the same loading conditions. The tower is modelled as a cantilever beam, fixed at the base and loaded at the free end. The structural model includes a transverse tip force, a torsional tip moment, and a uniform transverse distributed load. These loads are not intended to reproduce a full aeroelastic operating condition; they define a controlled static test case for comparing the CSF-to-OpenSees response with the independent reference integration.
+
+The same loading definition is used for the undegraded and degraded towers. Therefore, differences in the computed response are caused only by the sectional stiffness field and by the axial discretization used by the beam model, not by changes in loading or geometry.
+
 #### Case A - undegraded tower
 
 For the undegraded configuration, the stiffness field varies smoothly and monotonically. Convergence is rapid: a small number of beam elements is sufficient to reproduce the reference response with negligible error.
