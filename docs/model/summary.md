@@ -650,7 +650,7 @@ CSF_ACTIONS:
   actions:
     - plot_volume_3d:
         params:
-          title: "Not prismatic"         
+          title: "Non prismatic member"         
     - section_selected_analysis:
         stations: [station_edge]
         output:
