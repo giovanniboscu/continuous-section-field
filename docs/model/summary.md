@@ -267,7 +267,8 @@ Interoperability with sectionproperties is provided through two companion module
 
 ## 4. Station-wise evaluation and solver-facing output
 
-A central feature of CSF is that solver-facing data are generated from the continuous field. The user may request properties at arbitrary axial locations, including uniformly spaced stations, manually defined stations, or integration-compatible points.. The user may request properties at arbitrary axial locations, including uniformly spaced stations, manually defined stations, or integration-compatible points.
+
+A central feature of CSF is that solver-facing data are generated from the continuous field. The user may request properties at arbitrary axial locations, including uniformly spaced stations, manually defined stations, or integration-compatible points. The user may request properties at arbitrary axial locations, including uniformly spaced stations, manually defined stations, or integration-compatible points.
 
 For example, a beam formulation may require section properties at Gauss-Lobatto points. CSF evaluates the continuous field directly at those points and exports the corresponding values. The sampling strategy is therefore tied to the downstream numerical method, while the underlying member model remains unchanged.
 
