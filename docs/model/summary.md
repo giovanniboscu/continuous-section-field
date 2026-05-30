@@ -462,12 +462,16 @@ In the sampled anisotropic case, the axial/bending participation of the lower we
 
 
 <img width="1483" height="682" alt="rectangle_weights__fig_002" src="https://github.com/user-attachments/assets/46f56cdf-0642-4645-a891-414bcfdcb824" />
-<img width="1483" height="682" alt="rectangle_shear_weights__fig_002" src="https://github.com/user-attachments/assets/cf20a7ac-0e3c-41a4-b5aa-68d863c70935" />
+*Figure 1. Axial/bending participation field used in the T-section example.*
 
+<img width="1483" height="682" alt="rectangle_shear_weights__fig_002" src="https://github.com/user-attachments/assets/cf20a7ac-0e3c-41a4-b5aa-68d863c70935" />
+*Figure 2. Shear/torsion participation field used in the T-section example.*
+
+<img width="1000" height="800" alt="aes_tsection_anisotropic_lobatto_variation" src="https://github.com/user-attachments/assets/b9f8c0cb-b381-47ee-9458-1a1b7b8d06b1" />
+*Figure 3. Sectional properties sampled at the Gauss-Lobatto stations.*
 
 <img width="1484" height="1647" alt="aes_tsection_anisotropic_lobatto_properties" src="https://github.com/user-attachments/assets/996a7e13-a7b5-4ad7-a403-9b8ca61cbf60" />
-<img width="1000" height="800" alt="aes_tsection_anisotropic_lobatto_variation" src="https://github.com/user-attachments/assets/b9f8c0cb-b381-47ee-9458-1a1b7b8d06b1" />
-
+*Figure 4. Continuous variation of selected sectional properties along the member axis.*
 
 The anisotropic configuration further illustrates the separation between axial/bending and shear/torsion participation fields.
 
