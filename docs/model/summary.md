@@ -822,6 +822,9 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
 
 ## References
 
+- **[BAL]** *Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). Non-prismatic beams: A simple and effective Timoshenko-like model. International Journal of Solids and Structures*, 90, 236–250. https://doi.org/10.1016/j.ijsolstr.2016.02.017
+
+
 - **[SEC_PROP]** *python package for the analysis of arbitrary cross-sections using the finite element method.*.
 Available: https://github.com/robbievanleeuwen/section-properties
 - **[WANG]** Wang et al. 2017 — Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). *BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework.* Wind Energy, 20(8), 1439–1462. https://doi.org/10.1002/we.2101
