@@ -822,32 +822,36 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
 
 ## References
 
-- **[BAL]** *Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). Non-prismatic beams: A simple and effective Timoshenko-like model. International Journal of Solids and Structures*, 90, 236–250. https://doi.org/10.1016/j.ijsolstr.2016.02.017
-
+- **[Balduzzi 2016]** *Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). Non-prismatic beams: A simple and effective Timoshenko-like model. International Journal of Solids and Structures*, 90, 236–250.
+  https://doi.org/10.1016/j.ijsolstr.2016.02.017
+ - **[VABS]** *VABS is a cross-sectional analysis tool based on variational asymptotic beam*. https://analyswift.com/vabs/
 
 - **[SEC_PROP]** *python package for the analysis of arbitrary cross-sections using the finite element method.*.
-Available: https://github.com/robbievanleeuwen/section-properties
-- **[WANG]** Wang et al. 2017 — Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). *BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework.* Wind Energy, 20(8), 1439–1462. https://doi.org/10.1002/we.2101
-- **[NRELOpenFAST]** — National Renewable Energy Laboratory. *OpenFAST: open-source wind turbine simulation tool.* https://github.com/OpenFAST/openfast
-- **[NREL WISDEM]** — National Renewable Energy Laboratory. *WISDEM: Wind-Plant Integrated System Design and Engineering Model.* https://github.com/WISDEM/WISDEM
+ https://github.com/robbievanleeuwen/section-properties
+- **[WANG]** *Wang et al. 2017 — Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework. Wind Energy, 20(8), 1439–1462*. https://doi.org/10.1002/we.2101
+- **[NRELOpenFAST]**  *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool*. https://github.com/OpenFAST/openfast
+- **[NREL WISDEM]** *National Renewable Energy Laboratory. *WISDEM: Wind-Plant Integrated System Design and Engineering Model*. https://github.com/WISDEM/WISDEM
 - **[Gavin]** — Gavin, H. P. *Frame3DD: Static and dynamic structural analysis of 2D and 3D frames.* http://frame3dd.sourceforge.net/
 
 
 - **[SEC_PROP]** *python package for the analysis of arbitrary cross-sections using the finite element method.*.
-Available: https://github.com/robbievanleeuwen/section-properties
-- **[WANG]** Wang et al. 2017 — Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). *BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework.* Wind Energy, 20(8), 1439–1462. https://doi.org/10.1002/we.2101
-- **[NRELOpenFAST]** — National Renewable Energy Laboratory. *OpenFAST: open-source wind turbine simulation tool.* https://github.com/OpenFAST/openfast
-- **[NREL WISDEM]** — National Renewable Energy Laboratory. *WISDEM: Wind-Plant Integrated System Design and Engineering Model.* https://github.com/WISDEM/WISDEM
+https://github.com/robbievanleeuwen/section-properties
+- **[WANG]** *Wang et al. 2017 — Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework. Wind Energy, 20(8), 1439–1462*.  https://doi.org/10.1002/we.2101
+  
+- **[NRELOpenFAST]**  *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool.*.
+  https://github.com/OpenFAST/openfast
+- **[NREL WISDEM]**  National Renewable Energy Laboratory. *WISDEM: Wind-Plant Integrated System Design and Engineering Model.*: https://github.com/WISDEM/WISDEM
 
-  ---
-- **[SUMMB_NREL]** G. Boscu, *Continuous Section Field: NREL validation comparison summary*, repository documentation, 2026.
-Available: https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all_b.md
+---
+  
+- **[SUMMB_NREL]** *G. Boscu, Continuous Section Field: NREL validation comparison summary*, repository documentation, 2026.
+https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all_b.md
 
-- **[CSF_SP]** G. Boscu, *Continuous Section Field: Continuous Section Field csf_sp User Guide*  repository documentation, 2026.
-Available: https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md
+- **[CSF_SP]** *G. Boscu, Continuous Section Field: Continuous Section Field csf_sp User Guide*  repository documentation, 2026.
+ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md
 
-- **[FULL_AN]** G. Boscu, *Continuous Section Field: Section Full Analysis Output*  repository documentation, 2026.
-Available: https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md
+- **[FULL_AN]** *G. Boscu, Continuous Section Field: Section Full Analysis Output*  repository documentation, 2026.
+https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md
 
 - **[SAINT_VEN]** G. Boscu, *Continuous Section Field: Saint-Venant Torsional Constant* repository documentation, 2026.
 Available: https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md
