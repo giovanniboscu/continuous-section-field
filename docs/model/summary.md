@@ -826,7 +826,7 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
   https://doi.org/10.1016/j.ijsolstr.2016.02.017
  - **[VABS]** *VABS is a cross-sectional analysis tool based on variational asymptotic beam*. https://analyswift.com/vabs/
 
-- **[SEC_PROP]** *python package for the analysis of arbitrary cross-sections using the finite element method.*.
+- **[SEC_PROP]** *python package for the analysis of arbitrary cross-sections using the finite element method*.
  https://github.com/robbievanleeuwen/section-properties
 - **[WANG]** *Wang et al. 2017 — Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework. Wind Energy, 20(8), 1439–1462*. https://doi.org/10.1002/we.2101
 - **[NRELOpenFAST]**  *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool*. https://github.com/OpenFAST/openfast
