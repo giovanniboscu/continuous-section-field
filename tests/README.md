@@ -26,7 +26,8 @@ continuous-section-field/
 ```bash
 # from the repo root
 
-pytest test/test_verification.py -v
+
+pytest tests/test_verification.py
 ```
 
 Expected terminal output:
