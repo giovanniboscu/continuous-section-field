@@ -42,7 +42,7 @@ tests/test_verification.py::test_wall_complex_verification        PASSED
 To also see the numeric tables printed in real time:
 
 ```bash
-pytest test_verification.py -v -s
+pytest tests/test_verification.py -v -s
 ```
 
 ## What gets produced
