@@ -69,7 +69,7 @@ This absence of a clearly separated sectional-field layer is both a limitation a
 
 ### 2.1 Scope
 
-Standard beam workflows often describe sectional stiffness through a single material variation applied to a fixed geometric section. This is insufficient for tapered, composite, or locally degraded members, where geometry and material participation may vary independently along the axis. CSF represents this case by assigning independent geometric and participation fields to each zone of the section.
+Standard beam workflows often describe sectional stiffness through prescribed sectional properties or material variations assigned along the member axis. This is restrictive for tapered, composite, or locally degraded members, where geometry and material participation may vary independently along the axis. CSF addresses this case by assigning independent geometric and participation fields to each zone of the section.
 
 ### 2.2 Zone-based continuous formulation
 
