@@ -59,9 +59,9 @@ Existing frameworks for the analysis of non-prismatic members can be grouped int
 Third, wind-energy simulation and design workflows embed non-prismaticity in application-specific representations. Aeroelastic codes such as BeamDyn [wang](#wang)  rely on distributed sectional-property tables along the member axis, whereas systems-engineering tools such as [NREL's WISDEM](#wisdem)  represent the tower as a tapered cylindrical shell with closed-form sectional properties, analysed through the external frame finite-element code Frame3DD [Gavin](#gavin). In both cases the longitudinal variation is bound to a specific geometry or workflow rather than expressed as an independent, reusable sectional field.
 
 
-To the authors' knowledge, the continuous representation of a member as a solver-agnostic sectional-property field is generally not formalised as an independent modelling layer. Existing approaches typically embed longitudinal variation within section-analysis tools, structural solvers, or application-specific workflows, rather than representing it as an explicit reusable field.
+In existing workflows, the longitudinal variation of sectional properties is usually handled inside section-analysis tools, structural solvers, or application-specific pipelines. It is less commonly exposed as an independent, solver-agnostic modelling layer that can define, sample, export, and reuse sectional-property fields along the member axis.
 
-The lack of established continuous sectional-field tools is both a limitation and a motivation: it makes direct tool-to-tool benchmarking difficult, but it also defines the methodological gap addressed by CSF.
+This absence of a clearly separated sectional-field layer is both a limitation and a motivation. It makes direct tool-to-tool benchmarking difficult, since most existing tools do not provide the same modelling object. At the same time, it identifies the methodological gap addressed by CSF.
 
 ---
 
