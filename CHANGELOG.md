@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.1.8
+fix _etol_k evaluation, sp_csf allow cell poligon,optimize J_sv_cell computation, optimize J_sv_cell computation ,move visualization logic to Visualizer class
+
 ## V0.1.7
 NREL validation: updated J_sv_wall thickness computation
 
