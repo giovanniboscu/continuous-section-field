@@ -3923,7 +3923,8 @@ def section_full_analysis(section: Section, compute_vroark=True):
     # -------------------------------------------------------------------------
     # Compute elastic section moduli from the centroidal inertias and the maximum
     # distances from the centroid to the effective polygon vertices.
-    effective_polygons = [poly for poly in section.polygons if abs(poly.weight) > _tol.EPS_K]
+    effective_polygons = section.polygons
+   
 
     if effective_polygons:
         all_x = [v.x for poly in effective_polygons for v in poly.vertices]
@@ -3934,8 +3935,8 @@ def section_full_analysis(section: Section, compute_vroark=True):
         x_dist_max = max(max(all_x) - props['Cx'], props['Cx'] - min(all_x))
 
         # Elastic section moduli: W = I / c.
-        props['Wx'] = props['Ix'] / y_dist_max if y_dist_max > _tol.EPS_K else 0.0
-        props['Wy'] = props['Iy'] / x_dist_max if x_dist_max > _tol.EPS_K else 0.0
+        props['Wx'] = props['Ix'] / y_dist_max if y_dist_max > _tol.EPS_L else 0.0
+        props['Wy'] = props['Iy'] / x_dist_max if x_dist_max > _tol.EPS_L else 0.0
     else:
         props['Wx'] = 0.0
         props['Wy'] = 0.0
@@ -4022,7 +4023,9 @@ def section_statical_moment_partial(section: Section, y_cut: float, reference_ax
 
 
     q_total = 0.0
-    eps = _tol.EPS_L  # Geometric tolerance for comparisons and degenerate cases.
+    # Geometric tolerance for comparisons and degenerate cases.
+    eps_l = _tol.EPS_L
+    eps_a = _tol.EPS_A
 
     for poly in section.polygons:
         verts = poly.vertices
@@ -4036,8 +4039,8 @@ def section_statical_moment_partial(section: Section, y_cut: float, reference_ax
             p2 = verts[(i + 1) % n]
 
             # Classify endpoints with a tolerance to reduce numerical flicker at the cut line.
-            p1_in = (p1.y >= y_cut - eps)
-            p2_in = (p2.y >= y_cut - eps)
+            p1_in = (p1.y >= y_cut - eps_l)
+            p2_in = (p2.y >= y_cut - eps_l)
 
             if p1_in and p2_in:
                 # Edge fully inside: keep the end vertex.
@@ -4046,14 +4049,14 @@ def section_statical_moment_partial(section: Section, y_cut: float, reference_ax
             elif p1_in and not p2_in:
                 # Edge exits the half-plane: add the intersection point (if not horizontal).
                 dy = p2.y - p1.y
-                if abs(dy) > eps:
+                if abs(dy) > eps_l:
                     t = (y_cut - p1.y) / dy
                     clipped.append(Pt(p1.x + t * (p2.x - p1.x), y_cut))
 
             elif (not p1_in) and p2_in:
                 # Edge enters the half-plane: add the intersection point then the end vertex.
                 dy = p2.y - p1.y
-                if abs(dy) > eps:
+                if abs(dy) > eps_l:
                     t = (y_cut - p1.y) / dy
                     clipped.append(Pt(p1.x + t * (p2.x - p1.x), y_cut))
                 clipped.append(p2)
@@ -4065,7 +4068,7 @@ def section_statical_moment_partial(section: Section, y_cut: float, reference_ax
             continue
 
         # Skip regions that are effectively flat on the cut line.
-        if all(abs(v.y - y_cut) < eps for v in clipped):
+        if all(abs(v.y - y_cut) < eps_l for v in clipped):
             continue
 
         # Build a clipped polygon with the same weight as the source polygon.
@@ -4075,7 +4078,7 @@ def section_statical_moment_partial(section: Section, y_cut: float, reference_ax
         area_part, (_, cy_part) = polygon_area_centroid(clipped_poly)
 
         # Ignore negligible contributions.
-        if abs(area_part) <= eps:
+        if abs(area_part) <= eps_a:
             continue
 
         # Statical moment contribution of this clipped part about y = y_ref.
@@ -4106,7 +4109,7 @@ def section_derived_properties(props: Dict[str, float]) -> Dict[str, float]:
     # To prevent numerical noise from producing erratic rotation angles,
     # we detect if the radius R is negligible compared to the magnitude of inertia.
     # If isotropic, the principal angle is set to 0.0 by engineering convention.
-    if R < abs(avg) * _tol.EPS_K: 
+    if R <  abs(avg) * _tol.EPS_K_RTOL:
         theta = 0.0
     else:
         # Standard calculation for the angle of the principal X-axis
