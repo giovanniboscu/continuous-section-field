@@ -166,11 +166,20 @@ $$
 \bigl(\mathbf{v}_{i,k}^{(1)} - \mathbf{v}_{i,k}^{(0)}\bigr)
 $$
 
+
+>*Linear interpolation is adopted here as the baseline geometric field, providing the minimal continuous mapping between corresponding sectional zones.*
+
+
 where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$ respectively, and $k$ indexes the vertices of zone $i$. This produces a continuous, linearly tapered geometry at any intermediate station. Multiple interpolation intervals can be composed in sequence through a CSF module. Each interval is instantiated as an independent CSF object with its own reference stations, zone geometry, and participation fields.
 A single CSF interval describes the continuous evolution of the section between two reference stations. Members requiring multiple intervals are represented by a concatenated sectional field. This representation, implemented as CSFStack, preserves continuity of the section-property field at the junctions, while allowing each interval to retain its own closed-form polygonal evaluation.
+
+
 ### 2.4 Participation fields
 
-The participation fields $w_i(z)$ and $\kappa_i(z)$ are user-defined functions of the longitudinal coordinate (or, for $\kappa_i$, obtained from $w_i$ through the isotropic relation of §2.2). Supported forms include polynomials, exponentials, piecewise-linear laws, and discrete lookup tables. The only requirement is that the function be evaluable at any requested station.
+Once the geometric field has defined the continuous evolution of each polygonal zone, CSF assigns to every zone two longitudinal participation fields: $w_i(z)$ for axial and bending partecipation, and $\kappa_i(z)$ for shear and torsional parecipation. These fields scale the contribution of the corresponding geometric zone at each station, so that geometry and material participation can vary independently along the member axis.
+
+The functions $w_i(z)$ and $\kappa_i(z)$ are user-defined functions of the longitudinal coordinate, or, for $\kappa_i(z)$, may be obtained from $w_i(z)$ through the isotropic relation of §2.2. Supported forms include polynomials, exponentials, piecewise-linear laws, and discrete lookup tables. The only requirement is that each function be evaluable at any requested station.
+
 
 ### 2.5 Assumptions
 
