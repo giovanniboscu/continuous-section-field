@@ -1,5 +1,5 @@
-Draft v2.3
-# A Field-Based Framework for the Continuous Modelling of Non-Prismatic Structural Members
+Draft v2.4
+# Continuous Section Fields: A Computational Modelling Framework for Axially Graded Non-Uniform Structural Members
 
 ## Abstract
 
