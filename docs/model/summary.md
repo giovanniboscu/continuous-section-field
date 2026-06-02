@@ -653,6 +653,7 @@ The implementation details of the Roark-equivalent read-out and the supplementar
 The following table reports the CSF values and the corresponding closed-form reference values at the selected Gauss--Lobatto stations. Since the member is represented as a `CSFStack` composed of two continuous intervals, the Gauss--Lobatto stations are generated separately on the tapered interval $0 \le z \le 5$ and on the participation-degraded interval $5 \le z \le 10$. The common junction at $z=5$ is counted once. This preserves the interval-wise structure of the stacked field while producing a single global station-wise verification table.
 
 The column `err_AIxIy%` is the maximum relative error over $A$, $I_x$, and $I_y$. Since $C_y$ is zero in the tapered interval, its discrepancy is reported as an absolute error in the column `err_Cy`.
+The table includes two different classes of quantities. The quantities $A$, $C_y$, $I_x$, and $I_y$ are compared against closed-form weighted-section references. The columns $J_{\mathrm{roark,eq}}$ and `fid` are instead reported as CSF diagnostic torsional read-outs. They are not used as closed-form benchmark quantities in the independently degraded interval.
 
 ```text
       z     w    sw |    A_csf    A_ref |   Cy_csf   Cy_ref |    Ix_csf    Ix_ref |    Iy_csf    Iy_ref |  J_roark_eq   fid |  err_AIxIy%    err_Cy
