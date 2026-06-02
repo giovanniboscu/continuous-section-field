@@ -418,7 +418,7 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 <p align="center">
   <em>Figure 4. Tip-displacement convergence for the undegraded NREL tower case.</em>
-    <img width="1600" height="1000" alt="Degraded NREL tower tip displacement convergence" src="https://github.com/user-attachments/assets/202ff4b8-5752-4b01-93ac-2c223057124f" />
+    <img width="1600" height="1000" alt="undegraded NREL tower tip displacement convergence" src="https://github.com/user-attachments/assets/202ff4b8-5752-4b01-93ac-2c223057124f" />
 
 </p>
 
@@ -427,12 +427,11 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 <p align="center">
   <em>Figure 5. Tip-displacement convergence for the degraded NREL tower case.</em>
 
-<img width="1600" height="1000" alt="image" src="https://github.com/user-attachments/assets/220ea5ec-d42e-4b75-b04f-16b9e9303161" />
+<img width="1600" height="1000" alt="degraded  NREL tower tip displacement convergence" src="https://github.com/user-attachments/assets/220ea5ec-d42e-4b75-b04f-16b9e9303161" />
 
 </p>
 
-<p align="center">
-  
+ 
 Table 1 reports the relative errors in tip displacement $U_y$ and torsional rotation $R_z$ as a function of the number of beam elements, for both configurations.
 
 | Scenario   | Elements | $\varepsilon_{U_y}$ (%) | $\varepsilon_{R_z}$ (%) |
@@ -452,7 +451,6 @@ Table 1 reports the relative errors in tip displacement $U_y$ and torsional rota
 | Degraded   | 24 | +9.57×10⁻⁴ | −2.75×10⁻³ |
 | Degraded   | 32 | +2.80×10⁻⁴ | −3.48×10⁻³ |
 
-</p>
 
 > **Note:** At high discretization levels the relative error in $U_y$ stabilises 
 > near zero ($\sim 10^{-4}\,\%$), reflecting the numerical precision of the 
