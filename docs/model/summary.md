@@ -487,156 +487,7 @@ This behaviour is a consequence of the continuous nature of the sectional repres
 
 [Complete workflow, convergence plots, and numerical tables for the NREL validation case](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case)
 
-
-
-## 6. T-section with independent participation fields
-
-A second example is introduced to illustrate a different capability of the framework: the independent specification of axial/bending and shear/torsion participation fields on a non-axisymmetric open section.
   
-
-<p align="center">
-  <em>Figure 6. T-section geometry and region subdivision used in the example.</em>
-</p>
-<p align="center">
-
-<p align="center">
-<img width="673" height="468" alt="tsec_s2b" src="https://github.com/user-attachments/assets/01928485-883c-4c0c-aeac-f427a6566eef" />
- 
-</p>
-
-The test case consists of a continuous T-section of length $L=10$. The geometry is fixed along the member axis, while the participation fields vary continuously with $z$. The continuous field is evaluated at eleven Gauss-Lobatto stations.
-
-Two constitutive scenarios are considered.
-
-In the first scenario, the section is treated as isotropic. The axial/bending participation field $w(z)$ is prescribed directly, and the shear/torsion participation field is obtained through the isotropic relation introduced in Section 2.2:
-
-$$
-\kappa(z)=\frac{w(z)}{2(1+\nu)}.
-$$
-
-This configuration is compatible with station-wise Saint-Venant torsional analysis through the `sectionproperties` backend.
-
-In the second scenario, the same geometry is retained, but the participation fields are assigned independently. The quantities $w(z)$ and $\kappa(z)$ are prescribed separately, and no isotropic relation is imposed between them. 
-The resulting sectional field is therefore not described by the isotropic relation of Section 2.2.
-
-
-A representative YAML fragment is reported below. The repeated polygon block defines the fixed T-section geometry at both end stations, while the longitudinal variation is introduced only through `weight_laws` and `shear_weight_laws`.
-
-```yaml
-CSF:
-  sections:
-    S0:
-      z: 0
-      polygons: &t_section_geometry
-        fc:  { weight: 3.0e10, vertices: [...] }
-        wu:  { weight: 3.0e10, vertices: [...] }
-        wl:  { weight: 3.0e10, vertices: [...] }
-        sf1: { weight: 2.1e11, vertices: [...] }
-        sf2: { weight: 2.1e11, vertices: [...] }
-        sf3: { weight: 2.1e11, vertices: [...] }
-        sf4: { weight: 2.1e11, vertices: [...] }
-        sw1: { weight: 2.1e11, vertices: [...] }
-        sw2: { weight: 2.1e11, vertices: [...] }
-
-    S1:
-      z: 10
-      polygons: *t_section_geometry
-
-  weight_laws:
-    - 'wl,wl: 30000000000 * (0.35 + (1.0 - 0.35) * (((z/10 - 0.5)*(z/10 - 0.5)) / 0.25)**1)'
-
-  shear_weight_laws:
-    - 'iso(0.30)'
-    - 'fc,fc: iso(0.20)'
-    - 'wu,wu: iso(0.20)'
-    - 'wl,wl: 12500000000 * (0.2 + (1.0 - 0.2) * (((z/10 - 0.5)*(z/10 - 0.5)) / 0.25)**2)'
-```
-
-The two cases share the same geometry, interpolation rule, sampling stations, and export procedure. The constitutive field is therefore the only difference between the two configurations. This makes the comparison suitable for isolating the effect of independent participation fields while keeping all geometric aspects unchanged.
-
-For both cases, CSF generates a station-wise sectional-property table at the Gauss-Lobatto locations. These stations can be transferred directly to downstream beam formulations or used as input to external sectional solvers. The example therefore illustrates the separation between the continuous sectional representation and the numerical sampling strategy adopted by a specific analysis workflow.
-
-The isotropic configuration provides a reference case in which the torsional response can be evaluated through a conventional sectional-analysis backend. The anisotropic configuration demonstrates that the CSF representation remains valid even when no isotropic relation exists between axial/bending and shear/torsion participation, leaving the corresponding torsional solution to a dedicated finite-element sectional formulation.
-
-This example complements the NREL tower validation by demonstrating that the CSF representation is not restricted to axisymmetric thin-walled structures. The same continuous-field formulation can be applied to non-axisymmetric open sections while preserving the distinction between geometry, participation fields, and numerical sampling.
-
-
-### Results and discussion
-
-The T-section example highlights a different aspect of the CSF formulation than the NREL tower validation. In this case, the geometry remains fixed along the member axis, while the participation fields vary continuously with $z$. The resulting variation of the sectional properties is therefore produced entirely by the participation-field definition rather than by geometric interpolation.
-
-The sectional properties were evaluated at eleven Gauss-Lobatto stations. The sampled distributions are symmetric with respect to the mid-span station, reflecting the symmetry of the prescribed participation laws. The minimum values of area and bending stiffness occur near $z=L/2$, where the participation reduction reaches its maximum, while the end stations recover the original sectional properties.
-
-
-The principal bending stiffness $I_x$ exhibits a pronounced reduction toward the centre of the member, whereas $I_y$ remains comparatively less affected. Consequently, the sectional response evolves continuously despite the absence of any geometric modification. This behaviour demonstrates that CSF can represent longitudinal stiffness variation independently of geometric variation.
-
-
-In the sampled anisotropic case, the axial/bending participation of the lower web reaches its minimum at mid-span, decreasing from its end value to 35% of that value. The corresponding shear/torsion participation law reaches 20% of its end value at the same station.
-
-
-<p align="center">
-  <em>Figure 7. Axial/bending participation field used in the T-section example.</em>
-</p>
-
-<img width="1483" height="682" alt="rectangle_weights__fig_002" src="https://github.com/user-attachments/assets/46f56cdf-0642-4645-a891-414bcfdcb824" />
-
-
-<p align="center">
-  <em>Figure 8. Shear/torsion participation field used in the T-section example.</em>
-</p>
-
-<img width="1483" height="682" alt="rectangle_shear_weights__fig_002" src="https://github.com/user-attachments/assets/cf20a7ac-0e3c-41a4-b5aa-68d863c70935" />
-
-
-<p align="center">
-  <em>Figure 9. Sectional properties sampled at the Gauss-Lobatto stations.</em>
-</p>
-
-
-<img width="1000" height="800" alt="aes_tsection_anisotropic_lobatto_variation" src="https://github.com/user-attachments/assets/b9f8c0cb-b381-47ee-9458-1a1b7b8d06b1" />
-
-
-<p align="center">
-  <em>Figure 10. Continuous variation of selected sectional properties along the member axis.</em>
-</p>
-
-<img width="1484" height="1647" alt="aes_tsection_anisotropic_lobatto_properties" src="https://github.com/user-attachments/assets/996a7e13-a7b5-4ad7-a403-9b8ca61cbf60" />
-
-</br>
-
-
-The station-wise export generated by CSF is reported in Table 2. Each row corresponds to one Gauss-Lobatto station and represents the solver-facing values obtained from the same continuous anisotropic field. The table is intentionally reported as a single block, rather than split into several derived tables, because its purpose is to show the continuous-field sampling process row by row.
-
-**Table 1. Solver-facing station-wise export generated at the Gauss-Lobatto stations.**
-
-| $z$ | $A$ | $I_x$ | $I_y$ | $I_{xy}$ | $I_p$ | $J_{\mathrm{tors}}$ | $C_x$ | $C_y$ | method |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|
-| 0.000000 | 3.64992e+15 | 1.28962443e+20 | 7.36535758e+19 | 0 | 2.02616019e+20 | 0 | 0 | -190.227512 | J_tors skip |
-| 0.329993 | 3.60797527e+15 | 1.24522650e+20 | 7.36187730e+19 | 0 | 1.98141423e+20 | 0 | 0 | -186.511089 | J_tors skip |
-| 1.077583 | 3.52353976e+15 | 1.15272176e+20 | 7.35487142e+19 | 0 | 1.88820891e+20 | 0 | 0 | -178.761528 | J_tors skip |
-| 2.173823 | 3.42629521e+15 | 1.04066189e+20 | 7.34680273e+19 | 0 | 1.77534216e+20 | 0 | 0 | -169.363083 | J_tors skip |
-| 3.521209 | 3.35005081e+15 | 9.48348972e+19 | 7.34047649e+19 | 0 | 1.68239662e+20 | 0 | 0 | -161.612642 | J_tors skip |
-| 5.000000 | 3.32130600e+15 | 9.12468460e+19 | 7.33809144e+19 | 0 | 1.64627760e+20 | 0 | 0 | -158.598291 | J_tors skip |
-| 6.478791 | 3.35005081e+15 | 9.48348972e+19 | 7.34047649e+19 | 0 | 1.68239662e+20 | 0 | 0 | -161.612642 | J_tors skip |
-| 7.826177 | 3.42629521e+15 | 1.04066189e+20 | 7.34680273e+19 | 0 | 1.77534216e+20 | 0 | 0 | -169.363083 | J_tors skip |
-| 8.922417 | 3.52353976e+15 | 1.15272176e+20 | 7.35487142e+19 | 0 | 1.88820891e+20 | 0 | 0 | -178.761528 | J_tors skip |
-| 9.670007 | 3.60797527e+15 | 1.24522650e+20 | 7.36187730e+19 | 0 | 1.98141423e+20 | 0 | 0 | -186.511089 | J_tors skip |
-| 10.000000 | 3.64992e+15 | 1.28962443e+20 | 7.36535758e+19 | 0 | 2.02616019e+20 | 0 | 0 | -190.227512 | J_tors skip |
-
-
-Quantitatively, the weighted area decreases from 3.65e15 at the end stations to 3.32e15 at mid-span, corresponding to a reduction of about 9.0%. The bending stiffness I<sub>x</sub> decreases from 1.29e20 to 9.12e19, a reduction of about 29.2%, while I<sub>y</sub> changes by less than 0.4%. The polar quantity I<sub>p</sub> decreases by about 18.7%. The centroid coordinate C<sub>y</sub> shifts from approximately -190.2 at the end stations to -158.6 at mid-span, reflecting the localized reduction of the lower-web participation.
-
-The anisotropic configuration further illustrates the separation between axial/bending and shear/torsion participation fields. In this case, the axial/bending field w<sub>i</sub>(z) and the shear/torsion field κ<sub>i</sub>(z) are prescribed independently for selected regions. The resulting sectional field therefore departs from the isotropic relation of Section 2.2.
-
-As discussed in Section 2.2, CSF's internal torsion evaluation is limited to thin-walled open and closed sections. General solid sections, multi-cell configurations, and anisotropic torsional problems require a dedicated sectional-analysis backend rather than the internal CSF approximation. The export reports `J_tors skip`; therefore, the anisotropic case is used here to document the sampled continuous fields, rather than to provide a torsional constant from the isotropic backend. The continuous field representation, however, remains fully defined and exportable at all Gauss-Lobatto stations.
-
-
-This example complements the NREL tower case by showing that CSF is able to represent continuous variation arising solely from participation fields, independently of any geometric tapering. The same framework therefore supports both geometry-driven and participation-driven sectional evolution within a unified continuous representation.
-
----
-
- **ALTERNATIVE**
- 
 ## 6. Stacked rectangular member with isotropic and independent participation fields
 
 A second verification case is introduced to isolate a different aspect of the CSF formulation from the NREL tower validation. The NREL case verifies the use of a continuous sectional field in a beam-response workflow. The present case removes the external structural solver and considers a deliberately elementary stacked rectangular member, so that the sectional quantities can be checked directly against closed-form expressions at every sampled station.
@@ -856,16 +707,16 @@ This example complements the NREL tower validation by isolating the sectional-fi
 >complementing the closed-form benchmarks reported in the paper.
 
 
-
-
 ---
 ## 7. Conclusions
 
 The main contribution of CSF is the formulation of an independent, declarative pre-solver layer in which polygonal geometry and material participation fields are defined as continuous entities, evaluable at arbitrary axial stations and separable from the downstream numerical discretization.
 
-The NREL tower validation shows that the same continuous sectional field can be sampled, transferred to a beam model, and compared against an independent reference response. The degraded tower case further demonstrates that localized stiffness reductions can be represented without changing the geometric model, and that the beam discretization can be refined independently of the underlying continuous field. The T-section example complements this validation by showing that CSF is not limited to tapered or axisymmetric members. A fixed non-axisymmetric open section can be combined with independently prescribed axial/bending and shear/torsion participation fields, producing station-wise solver-facing data at Gauss-Lobatto points.
+The NREL tower validation shows that the same continuous sectional field can be sampled, transferred to a beam model, and compared against an independent reference response. The undegraded case verifies the smooth geometry-driven variation of a tapered structural member, while the degraded case demonstrates that localized stiffness reductions can be introduced through participation fields without modifying the geometric model. The convergence study further shows that the beam discretization can be refined independently of the underlying continuous sectional representation.
 
-Together, these examples show that CSF separates the definition of the sectional model from its numerical sampling and from the solver consuming the exported data. This separation makes the same member definition reusable across inspection, validation, and solver-preprocessing workflows.
+The stacked rectangular example complements this validation by isolating the sectional-field construction itself. It verifies, through closed-form station-wise references, that CSF correctly composes multiple continuous intervals through `CSFStack`, combines a tapered isotropic interval with a participation-degraded interval, and supports independent axial/bending and shear/torsion participation fields within the same global member representation. The example also clarifies the role of torsional read-outs: the Roark-equivalent quantity and its fidelity indicator are reported as diagnostic CSF quantities, while the exact verification is restricted to the area-integral properties (A), (C_y), (I_x), and (I_y).
+
+Together, these examples show that CSF separates the definition of the sectional model from its numerical sampling and from the solver consuming the exported data. This separation makes the same member definition reusable across inspection, validation, and solver-preprocessing workflows, while preserving a continuous representation that can be sampled, exported, or externally analysed according to the needs of the downstream procedure.
 
 ### Limitations
 
