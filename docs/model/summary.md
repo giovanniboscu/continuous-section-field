@@ -150,8 +150,13 @@ $$
 >*Linear interpolation is adopted here as the baseline geometric field, providing the minimal continuous mapping between corresponding sectional zones.*
 
 
-where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$ respectively, and $k$ indexes the vertices of zone $i$. This produces a continuous, linearly tapered geometry at any intermediate station. Multiple interpolation intervals can be composed in sequence through a CSF module. Each interval is instantiated as an independent CSF object with its own reference stations, zone geometry, and participation fields.
-A single CSF interval describes the continuous evolution of the section between two reference stations. Members requiring multiple intervals are represented by a concatenated sectional field. This representation, implemented as CSFStack, preserves continuity of the section-property field at the junctions, while allowing each interval to retain its own closed-form polygonal evaluation.
+where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$ respectively, and $k$ indexes the vertices of zone $i$. This produces a continuous, linearly tapered geometry at any intermediate station. A single CSF interval describes the continuous evolution of the section between
+two reference stations, with its own geometry and participation fields. Members
+requiring more than one interpolation interval are represented by a concatenated
+sectional field, implemented as `CSFStack`. This preserves continuity of the
+section-property field at shared stations, while allowing each interval to retain
+its own reference geometry, participation laws, and closed-form polygonal
+evaluation.
 
 
 ### 2.4 Participation fields
