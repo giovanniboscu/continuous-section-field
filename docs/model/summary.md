@@ -642,7 +642,7 @@ Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These 
 
 
 <p align="center">
-  <em>Figure 8. Section-property variation over the two stacked intervals.</em>
+  <em>Figure 9. Section-property variation over the two stacked intervals.</em>
 </p>
 
 
