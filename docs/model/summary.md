@@ -486,7 +486,7 @@ The cross-section is decomposed into two rectangular zones, denoted as lower and
 
 
 <p align="center">
-  <em>Figure 6. shows the resulting stacked configuration, with the tapered interval followed by the constant-geometry interval with independently assigned participation fields.</em>
+  <em>Figure 6. Stacked CSF member with tapered geometry and independent participation fields.</em>
   <img width="795" height="489" alt="image" src="https://github.com/user-attachments/assets/f5b519a9-39eb-4605-9e0d-f759471f675c" />
 </p>
 
@@ -538,7 +538,60 @@ $$
 
 Thus the lower-zone axial/bending participation decreases nonlinearly from $1.0$ to $0.5$, whereas its shear/torsion participation decreases nonlinearly from $1.0$ to $0.2$. The shear/torsion participation decreases more strongly than the axial/bending participation over the same interval. This second interval therefore departs from the isotropic relation and tests the independent assignment of $w_i(z)$ and $\kappa_i(z)$ within the same stacked member.
 
-The executable script and YAML input files corresponding to the verification reported in this section are provided in the accompanying open-source repository [REF-CASE], allowing the results to be inspected, modified, and rerun. A separate FEM torsion check for the same stacked member is also provided as supplementary repository material [REF-FEM]. That FEM check is not used in the closed-form verification reported here.
+### 6.2 YAML representation and stacked configuration
+
+The model definition in Section 6.1 is encoded through the declarative YAML
+input. The YAML file does not contain precomputed sectional properties; instead,
+it assigns participation laws to named polygonal zones. The same lower/upper
+zone names are used at the reference stations of each interpolation interval, so
+that CSF can interpolate the geometry while evaluating the corresponding
+longitudinal fields.
+
+In the first interval, the axial/bending participation is unitary. The
+shear/torsion participation is not written as a separate polynomial law, but is
+generated through the isotropic shortcut:
+
+```yaml
+shear_weight_laws:
+  - 'iso(-0.5)'
+```
+
+With the unit axial/bending carrier used in this interval, this declarative
+statement produces the normalized shear/torsion carrier
+$\kappa_i(z)=w_i(z)=1$ for both zones.
+
+In the second interval, the lower zone is assigned two distinct declarative
+laws. The axial/bending participation is defined under `weight_laws`,
+
+```yaml
+# Axial/bending participation: lower zone drops nonlinearly 1.0 -> 0.5
+weight_laws:
+  - 'lower,lower: 1.0 - 0.5*t*t'
+```
+
+whereas the shear/torsion participation is defined independently under
+`shear_weight_laws`:
+
+```yaml
+# Shear/torsion participation: lower zone drops faster, 1.0 -> 0.2
+shear_weight_laws:
+  - 'lower,lower: 1.0 - 0.8*t*t'
+```
+
+Here the selector `lower,lower` assigns the same law to the lower polygonal zone
+at the two reference stations of the interval, while the expression is evaluated
+along the interval coordinate. The two YAML keys therefore implement the
+distinction used by CSF between axial/bending participation and shear/torsion
+participation: the first interval uses the isotropic shortcut, whereas the
+second interval declares the two carriers separately.
+
+The executable script and YAML input files corresponding to the verification
+reported in this section are provided in the accompanying open-source repository
+[REF-CASE], allowing the results to be inspected, modified, and rerun. A separate
+FEM torsion check for the same stacked member is also provided as supplementary
+repository material [REF-FEM]. That FEM check is not used in the closed-form
+verification reported here.
+
 
 
 
@@ -557,9 +610,15 @@ The executable script and YAML input files corresponding to the verification rep
 <img width="1825" height="810" alt="image" src="https://github.com/user-attachments/assets/81ee73ed-bd18-43d0-a25e-edbf4ce289a5" />
 
 
-### 6.2 Closed-form reference
+### 6.3 Closed-form reference
 
-The verification is conducted station-wise. The stacked field is sampled at Gauss--Lobatto stations applied separately to the two continuous intervals, with the common junction counted once. At each station, the CSF-computed sectional quantities are compared with closed-form expressions derived from the corresponding weighted rectangular section.
+The verification is conducted station-wise. The executable script and YAML input
+files used for this verification are provided in the accompanying open-source
+repository at **[REPO-PATH-TO-BE-UPDATED]**. The stacked field is sampled at
+Gauss--Lobatto stations applied separately to the two continuous intervals, with
+the common junction counted once. At each station, the CSF-computed sectional
+quantities are compared with closed-form expressions derived from the
+corresponding weighted rectangular section.
 
 For the tapered interval, the total height is
 
@@ -627,7 +686,7 @@ Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These 
 
 <img width="968" height="901" alt="image" src="https://github.com/user-attachments/assets/6c6409e8-f88d-4af8-8774-68eb3e914b74" />
 
-### 6.3 Torsional read-out
+### 6.4 Torsional read-out
 
 Torsion is treated consistently with the declared scope of CSF. CSF does not compute the general Saint-Venant torsional constant of an arbitrary section; when required, warping-based torsional properties must be obtained through an external sectional-analysis procedure, including the `csf_sp` bridge to the section-analysis backend. The quantity $J_{\mathrm{roark,eq}}$ reported in the table is a CSF Roark-equivalent torsional read-out, not an exact Saint-Venant benchmark for the shear-non-uniform section.
 
@@ -645,7 +704,7 @@ The associated fidelity indicator is reported to qualify this read-out. In the t
 The implementation details of the Roark-equivalent read-out and the supplementary torsional checks are provided in the repository documentation [ROARK-REF]. In the present verification, $J_{\mathrm{roark,eq}}$ and its fidelity indicator are reported only as diagnostic CSF quantities. They are not used as benchmark values. The closed-form verification remains restricted to $A$, $C_y$, $I_x$, and $I_y$.
 
 
-### 6.4 Station-wise verification results
+### 6.5 Station-wise verification results
 
 The following table reports the CSF values and the corresponding closed-form reference values at the selected Gauss--Lobatto stations. Since the member is represented as a `CSFStack` composed of two continuous intervals, the Gauss--Lobatto stations are generated separately on the tapered interval $0 \le z \le 5$ and on the participation-degraded interval $5 \le z \le 10$. The common junction at $z=5$ is counted once. This preserves the interval-wise structure of the stacked field while producing a single global station-wise verification table.
 
