@@ -719,7 +719,7 @@ The executable script and YAML input files corresponding to the verification rep
 
 
 <p align="center">
-  <em>Figure 12. Shear/torsion participation fields in the variable interval.</em>
+  <em>Figure 13. Shear/torsion participation fields in the variable interval.</em>
 </p>
 <img width="990" height="452" alt="image" src="https://github.com/user-attachments/assets/7545ea78-e06a-4706-b093-bef14d74aae9" />
 
@@ -788,7 +788,7 @@ Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These 
 
 
 <p align="center">
-  <em>Figure 13. Section-property variation over the two stacked intervals.</em>
+  <em>Figure 14. Section-property variation over the two stacked intervals.</em>
 </p>
 
 <img width="1237" height="923" alt="image" src="https://github.com/user-attachments/assets/1171f703-4b66-4964-8204-a29f338529bc" />
