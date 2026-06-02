@@ -712,13 +712,16 @@ The executable script and YAML input files corresponding to the verification rep
 
 
 <p align="center">
-  <em>Figure 12. Axial/bending and shear/torsion participation fields in the variable interval.</em>
+  <em>Figure 12. Axial/bending participation fields in the variable interval.</em>
 </p>
 
-<img width="999" height="414" alt="image" src="https://github.com/user-attachments/assets/7c1f73c6-7a7c-4a92-ac9f-a367a3779f54" />
+<img width="990" height="461" alt="image" src="https://github.com/user-attachments/assets/273787f9-5dca-4834-8063-846ce726b1ae" />
 
-<img width="994" height="425" alt="image" src="https://github.com/user-attachments/assets/8e819c45-9724-454c-ab4e-01865bc23508" />
 
+<p align="center">
+  <em>Figure 12. Shear/torsion participation fields in the variable interval.</em>
+</p>
+<img width="990" height="452" alt="image" src="https://github.com/user-attachments/assets/7545ea78-e06a-4706-b093-bef14d74aae9" />
 
 
 ### 6.2 Closed-form reference
