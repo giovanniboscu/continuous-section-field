@@ -71,7 +71,7 @@ For sectional quantities written as weighted integrals over the polygonal subdom
 
 $$
 P_q(z) = \sum_{i=1}^{n} q_i(z)
-\iint_{\Omega_i(z)} f(x,y),\mathrm{d}A ,
+\iint_{\Omega_i(z)} f(x,y)\mathrm{d}A ,
 $$
 
 where $q_i(z)$ denotes the participation field associated with the quantity being evaluated. For axial and bending properties, $q_i(z)=w_i(z)$; for torsion-related quantities, $q_i(z)=k_i(z)$. The function $f(x,y)$ is the integrand associated with the selected sectional property, such as unity for area or $y^2$ for the second moment of area about the $x$-axis.
