@@ -653,6 +653,7 @@ The cross-section is decomposed into two rectangular zones, denoted as lower and
 <p align="center">
   <em>Figure 11. Two continuous intervals stacked through CSFStack.</em>
 </p>
+<img width="795" height="489" alt="image" src="https://github.com/user-attachments/assets/f5b519a9-39eb-4605-9e0d-f759471f675c" />
 
 
 The first interval, $0 \le z \le 5$, is a tapered rectangular section. The width is constant, $B=0.30$, while the total height decreases linearly from $0.60$ to $0.40$. Both zones have unit axial/bending participation,
