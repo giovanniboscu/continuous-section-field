@@ -1,4 +1,4 @@
-Draft v2.5
+Draft v2.5.1
 # Continuous Section Fields: A Computational Modelling Framework for Axially Graded Non-Uniform Structural Members
 
 ## Abstract
