@@ -584,14 +584,6 @@ distinction used by CSF between axial/bending participation and shear/torsion
 participation: the first interval uses the isotropic shortcut, whereas the
 second interval declares the two carriers separately.
 
-The executable script and YAML input files corresponding to the verification
-reported in this section are provided in the accompanying open-source repository
-[REF-CASE], allowing the results to be inspected, modified, and rerun. A separate
-FEM torsion check for the same stacked member is also provided as supplementary
-repository material [REF-FEM]. That FEM check is not used in the closed-form
-verification reported here.
-
-
 
 
 <p align="center">
@@ -607,6 +599,14 @@ verification reported here.
 </p>
 
 <img width="1825" height="810" alt="image" src="https://github.com/user-attachments/assets/81ee73ed-bd18-43d0-a25e-edbf4ce289a5" />
+
+
+The executable script and YAML input files corresponding to the verification
+reported in this section are provided in the accompanying open-source repository
+[REF-CASE], allowing the results to be inspected, modified, and rerun. A separate
+FEM torsion check for the same stacked member is also provided as supplementary
+repository material [REF-FEM]. That FEM check is not used in the closed-form
+verification reported here.
 
 
 ### 6.3 Closed-form reference
