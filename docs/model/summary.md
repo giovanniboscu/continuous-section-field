@@ -838,7 +838,7 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/section
 - **[SAINT_VEN]** <a id="SAINT_VEN"></a> *G. Boscu, Continuous Section Field: Saint-Venant Torsional Constant*. Repository documentation, 2026.
 https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md
 
-- **[ROARK]** <a id="ROARK"></a> *Roark's Formulas for Stress and Strain*. Reference handbook for engineering stress and torsion approximations.
+- **[ROARK]** <a id="ROARK"></a> *G. Boscu, Roark's Formulas for Stress and Strain*. Reference handbook for engineering stress and torsion approximations.
 https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J_vroark_usage_guide.md
 
 
