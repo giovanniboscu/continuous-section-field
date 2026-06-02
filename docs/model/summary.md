@@ -649,6 +649,12 @@ The member has total length $L=10$ and is composed of two continuous intervals j
 
 The cross-section is decomposed into two rectangular zones, denoted as lower and upper. In the first interval this decomposition is mechanically neutral, since both zones have unit axial/bending participation and the shear/torsion participation is obtained from the isotropic relation. The first interval is therefore modelled as an isotropic fully participating tapered section. The same zone structure is retained in the second interval, where the geometry is constant but the lower zone is assigned independent axial/bending and shear/torsion participation laws. The second interval is therefore no longer isotropic in the sense of Section 2.2, because $w_i(z)$ and $\kappa_i(z)$ are prescribed independently for the degraded zone.
 
+
+<p align="center">
+  <em>Figure 11. Two continuous intervals stacked through CSFStack.</em>
+</p>
+
+
 The first interval, $0 \le z \le 5$, is a tapered rectangular section. The width is constant, $B=0.30$, while the total height decreases linearly from $0.60$ to $0.40$. Both zones have unit axial/bending participation,
 
 $$
@@ -656,6 +662,8 @@ w_{\mathrm{lower}}(z)=w_{\mathrm{upper}}(z)=1 .
 $$
 
 The shear/torsion participation is defined through the isotropic relation introduced in Section 2.2,
+
+
 
 $$
 \kappa_i(z)=\frac{w_i(z)}{2(1+\nu)} .
