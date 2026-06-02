@@ -612,9 +612,7 @@ verification reported here.
 
 ### 6.3 Closed-form reference
 
-The verification is conducted station-wise. The executable script and YAML input
-files used for this verification are provided in the accompanying open-source
-repository at **[REPO-PATH-TO-BE-UPDATED]**. The stacked field is sampled at
+The verification is conducted station-wise. The stacked field is sampled at
 Gauss--Lobatto stations applied separately to the two continuous intervals, with
 the common junction counted once. At each station, the CSF-computed sectional
 quantities are compared with closed-form expressions derived from the
