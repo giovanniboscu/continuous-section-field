@@ -702,8 +702,8 @@ The column `err_AIxIy%` is the maximum relative error over $A$, $I_x$, and $I_y$
 
 
 ```
+The numerical discrepancies remain at machine precision. The largest relative error over $A$, $I_x$, and $I_y$ is $3.98\times10^{-14}%$, while the largest absolute discrepancy in $C_y$ is $8.67\times10^{-18}$. These results confirm that the stacked CSF representation reproduces the closed-form weighted-section quantities over both intervals: the isotropic tapered interval and the lower-zone interval with independently assigned nonlinear axial/bending and shear/torsion participation fields.
 
-The numerical discrepancies are at machine precision. The largest relative error over $A$, $I_x$, and $I_y$ is $3.98\times10^{-14}\%$, while the largest absolute discrepancy in $C_y$ is $8.67\times10^{-18}$. These results confirm that the stacked CSF representation reproduces the closed-form weighted-section quantities over both the isotropic tapered interval and the participation-degraded interval.
 
 The last two reported columns, $J_{\mathrm{roark,eq}}$ and the fidelity indicator, document the CSF torsional read-out over the same stations. Their trend is consistent with the imposed participation fields: the fidelity remains equal to one while the shear/torsion participation is uniform, and then decreases as the lower-zone shear/torsion participation departs from the upper-zone value. They are reported for completeness and diagnostic interpretation, not as exact torsional benchmark values.
 
