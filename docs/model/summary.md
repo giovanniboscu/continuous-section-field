@@ -536,7 +536,7 @@ $$
 
 Thus the lower-zone axial/bending participation decreases nonlinearly from $1.0$ to $0.5$, whereas its shear/torsion participation decreases nonlinearly from $1.0$ to $0.2$. The shear/torsion participation decreases more strongly than the axial/bending participation over the same interval. This second interval therefore departs from the isotropic relation and tests the independent assignment of $w_i(z)$ and $\kappa_i(z)$ within the same stacked member.
 
-### 6.2 YAML representation and stacked configuration
+### 6.2 YAML representation of the participation fields
 
 The model definition in Section 6.1 is encoded through the declarative YAML
 input. The YAML file does not contain precomputed sectional properties; instead,
