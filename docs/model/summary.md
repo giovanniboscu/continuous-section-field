@@ -690,21 +690,15 @@ Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These 
 
 ### 6.4 Torsional read-out
 
-Torsion is treated consistently with the declared scope of CSF. CSF does not compute the general Saint-Venant torsional constant of an arbitrary section; when required, warping-based torsional properties must be obtained through an external sectional-analysis procedure, including the `csf_sp` bridge to the section-analysis backend. The quantity $J_{\mathrm{roark,eq}}$ reported in the table is a CSF Roark-equivalent torsional read-out, not an exact Saint-Venant benchmark for the shear-non-uniform section.
+The quantity $J_{\mathrm{roark,eq}}$ reported in the verification table is not used as a closed-form Saint-Venant torsional benchmark. It is a CSF diagnostic read-out based on a Roark-type rectangular torsional approximation [ROARK].
 
-In the independently degraded interval, this Roark-equivalent read-out is not a closed-form torsional benchmark. Since the shear/torsion participation is not uniform over the section, the Saint-Venant torsional constant is not obtained by additive zone-wise Roark contributions.
+This distinction is relevant in the second interval, where the shear/torsion participation field is not uniform across the section. In that case, the torsional response cannot be obtained by a direct additive combination of zone-wise rectangular contributions. The reported $J_{\mathrm{roark,eq}}$ should therefore be interpreted only as an equivalent diagnostic quantity.
 
-For a solid rectangular section, the geometric carrier is evaluated through the Roark-type approximation.
+The associated fidelity indicator qualifies this read-out. It remains equal to one in the tapered interval, where the shear/torsion participation is uniform, and decreases in the second interval as the lower-zone value of $\kappa_i(z)$ departs from the upper-zone value.
 
-$$
-J_{\mathrm{roark}} \simeq a b^3 \left[ \frac{1}{3} - 0.21\frac{b}{a}\left( 1 - \frac{1}{12}\left(\frac{b}{a}\right)^4 \right) \right], \qquad a \ge b > 0 ,
-$$
+Accordingly, the closed-form verification in this section is restricted to the weighted area-integral quantities $A$, $C_y$, $I_x$, and $I_y$. The torsional columns are retained only to document the CSF diagnostic output over the same stations.
 
-where $a$ and $b$ denote the larger and smaller full side dimensions of the rectangle, respectively. CSF uses this expression as a lightweight equivalent torsional carrier for the sampled rectangular section. When the shear/torsion participation field is uniform, the resulting read-out coincides with the Roark-equivalent value associated with the section geometry. When the shear/torsion participation is not uniform across the sectional zones, the reported value must be interpreted as an equivalent CSF read-out rather than as an exact Saint-Venant torsional constant.
-
-The associated fidelity indicator is reported to qualify this read-out. In the tapered interval, the shear/torsion participation is uniform and the fidelity indicator remains equal to one. In the second interval, the lower-zone value of $\kappa_i(z)$ progressively departs from the upper-zone value; the fidelity indicator correspondingly decreases. This behaviour indicates that the Roark-equivalent torsional read-out is being used outside the uniform-participation condition for which the rectangular approximation is most directly interpretable.
-
-The implementation details of the Roark-equivalent read-out and the supplementary torsional checks are provided in the repository documentation [ROARK-REF]. In the present verification, $J_{\mathrm{roark,eq}}$ and its fidelity indicator are reported only as diagnostic CSF quantities. They are not used as benchmark values. The closed-form verification remains restricted to $A$, $C_y$, $I_x$, and $I_y$.
+Implementation details of the Roark-equivalent read-out and supplementary torsional checks are provided in the repository documentation [ROARK-REF](#ROARK).
 
 
 ### 6.5 Station-wise verification results
@@ -824,6 +818,8 @@ https://github.com/robbievanleeuwen/section-properties
 
 - **[OPENSEES]** <a id="OPENSEES"></a> *McKenna, F. OpenSees: A Framework for Earthquake Engineering Simulation. Computing in Science & Engineering, 13(4), 58–66, 2011*. https://doi.org/10.1109/MCSE.2011.66  
   Project website: https://opensees.berkeley.edu/
+
+  
 ---
   
 - **[SUMMB_NREL]** <a id="SUMMB_NREL"></a>  *G. Boscu, Continuous Section Field: NREL validation comparison summary*. Repository documentation, 2026.
@@ -840,7 +836,10 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nre
 https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md
 
 - **[SAINT_VEN]** <a id="SAINT_VEN"></a> *G. Boscu, Continuous Section Field: Saint-Venant Torsional Constant*. Repository documentation, 2026.
-Available: https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md
+https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md
+
+- **[ROARK]** <a id="ROARK"></a> *Roark's Formulas for Stress and Strain*. Reference handbook for engineering stress and torsion approximations.
+https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J_vroark_usage_guide.md
 
 
 ---
