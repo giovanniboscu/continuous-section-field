@@ -156,7 +156,7 @@ A single CSF interval describes the continuous evolution of the section between 
 
 ### 2.4 Participation fields
 
-Once the geometric field has defined the continuous evolution of each polygonal zone, CSF assigns to every zone two longitudinal participation fields: $w_i(z)$ for axial and bending partecipation, and $\kappa_i(z)$ for shear and torsional parecipation. These fields scale the contribution of the corresponding geometric zone at each station, so that geometry and material participation can vary independently along the member axis.
+Once the geometric field has defined the continuous evolution of each polygonal zone, CSF assigns to every zone two longitudinal participation fields: $w_i(z)$ for axial and bending partecipation, and $\kappa_i(z)$ for shear and torsional partecipation. These fields scale the contribution of the corresponding geometric zone at each station, so that geometry and material participation can vary independently along the member axis.
 
 The functions $w_i(z)$ and $\kappa_i(z)$ are user-defined functions of the longitudinal coordinate, or, for $\kappa_i(z)$, may be obtained from $w_i(z)$ through the isotropic relation of §2.2. Supported forms include polynomials, exponentials, piecewise-linear laws, and discrete lookup tables. The only requirement is that each function be evaluable at any requested station.
 
@@ -262,6 +262,7 @@ CSF_ACTIONS:
         properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip,I1, I2, rx, ry, Wx,            
                      Wy, J_sv_wall,Q_na, J_s_vroark, J_s_vroark_fidelity]
 ```
+Here, $I_1$ and $I_2$ denote the principal second moments of area.
 
 The same geometry file can therefore support visual inspection, property evaluation, solver export, or validation-oriented sampling. In each case the continuous field is evaluated at the stations requested by the action file.
 
