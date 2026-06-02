@@ -19,7 +19,9 @@ In current structural analysis practice, the definition of section properties fo
 
 Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required input for a numerical model is not a single section, but a longitudinal field of section properties such as:
 
+
 $A(z)$ &nbsp;,&nbsp; $I_x(z)$ &nbsp;,&nbsp; $I_y(z)$ &nbsp;&nbsp; $(EI_x)(z)$ &nbsp;,&nbsp; $(GJ)(z)$ &nbsp;,&nbsp; $\rho_l(z)$
+
 
 A member is represented as a continuous sectional field composed of evolving polygonal geometry together with two material participation fields: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. This representation is defined, evaluated, inspected, and validated independently of any downstream solver. The solver receives a station-wise projection of an already defined continuous field - not a table that defines the model itself.
 
@@ -69,7 +71,7 @@ For sectional quantities written as weighted integrals over the polygonal subdom
 
 $$
 P_q(z) = \sum_{i=1}^{n} q_i(z)
-\iint_{\Omega_i(z)} f(x,y)\mathrm{d}A ,
+\iint_{\Omega_i(z)} f(x,y)\mathrm{d}A
 $$
 
 where $q_i(z)$ denotes the participation field associated with the quantity being evaluated. For axial and bending properties, $q_i(z)=w_i(z)$; for torsion-related quantities, $q_i(z)=k_i(z)$. The function $f(x,y)$ is the integrand associated with the selected sectional property, such as unity for area or $y^2$ for the second moment of area about the $x$-axis.
