@@ -512,12 +512,7 @@ $$
 \kappa_i(z)=w_i(z)=1 ,
 $$
 
-so that the first interval isolates the effect of geometric tapering. In the YAML definition this corresponds to the isotropic shortcut
-
-```yaml
-shear_weight_laws:
-  - 'iso(-0.5)'
-```
+so that the first interval isolates the effect of geometric tapering.
 
 The second interval, $5 \le z \le 10$, has constant rectangular geometry with total height $0.40$, again divided into lower and upper zones of equal height. The upper zone remains fully participating,
 
