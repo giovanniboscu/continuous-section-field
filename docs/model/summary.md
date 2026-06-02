@@ -502,7 +502,7 @@ The cross-section is decomposed into two rectangular zones, denoted as lower and
 
 
 <p align="center">
-  <em>Figure 11. Two continuous intervals stacked through CSFStack.</em>
+  <em>Figure 6. Two continuous intervals stacked through CSFStack.</em>
   <img width="795" height="489" alt="image" src="https://github.com/user-attachments/assets/f5b519a9-39eb-4605-9e0d-f759471f675c" />
 </p>
 
@@ -572,7 +572,7 @@ The executable script and YAML input files corresponding to the verification rep
 
 
 <p align="center">
-  <em>Figure 13. Shear/torsion participation fields in the variable interval.</em>
+  <em>Figure 7. Shear/torsion participation fields in the variable interval.</em>
 </p>
 
 <img width="1825" height="810" alt="image" src="https://github.com/user-attachments/assets/81ee73ed-bd18-43d0-a25e-edbf4ce289a5" />
@@ -642,7 +642,7 @@ Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These 
 
 
 <p align="center">
-  <em>Figure 14. Section-property variation over the two stacked intervals.</em>
+  <em>Figure 8. Section-property variation over the two stacked intervals.</em>
 </p>
 
 
