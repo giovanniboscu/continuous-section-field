@@ -645,7 +645,7 @@ Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These 
   <em>Figure 14. Section-property variation over the two stacked intervals.</em>
 </p>
 
-<img width="1237" height="923" alt="image" src="https://github.com/user-attachments/assets/1171f703-4b66-4964-8204-a29f338529bc" />
+<img width="1798" height="913" alt="image" src="https://github.com/user-attachments/assets/68d5fecc-6b11-43e0-ab87-37aedb3b6a48" />
 
 
 ### 6.3 Torsional read-out
