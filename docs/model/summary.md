@@ -19,8 +19,9 @@ In current structural analysis practice, the definition of section properties fo
 
 Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required input for a numerical model is not a single section, but a longitudinal field of section properties such as:
 
-  
-$$A(z)$$  $$I_x(z)$$   $$I_y(z)$$  $$(EI_x)(z)$$  $$(GJ)(z)$$   $$\rho_l(z)$$
+
+
+$A(z)$ &nbsp;&nbsp; $I_x(z)$ &nbsp;&nbsp; $I_y(z)$ &nbsp;&nbsp; $(EI_x)(z)$ &nbsp;&nbsp; $(GJ)(z)$ &nbsp;&nbsp; $\rho_l(z)$
 
 A member is represented as a continuous sectional field composed of evolving polygonal geometry together with two material participation fields: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. This representation is defined, evaluated, inspected, and validated independently of any downstream solver. The solver receives a station-wise projection of an already defined continuous field - not a table that defines the model itself.
 
