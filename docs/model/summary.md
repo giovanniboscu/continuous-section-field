@@ -634,7 +634,8 @@ Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These 
 
 Torsion is treated consistently with the declared scope of CSF. CSF does not compute the general Saint-Venant torsional constant of an arbitrary section; when required, warping-based torsional properties must be obtained through an external sectional-analysis procedure, including the `csf_sp` bridge to the section-analysis backend. The quantity $J_{\mathrm{roark,eq}}$ reported in the table is a CSF Roark-equivalent torsional read-out, not an exact Saint-Venant benchmark for the shear-non-uniform section.
 
-For a solid rectangular section, the geometric carrier is evaluated through the Roark-type approximation
+In the independently degraded interval, this Roark-equivalent read-out is not a closed-form torsional benchmark. Since the shear/torsion participation is not uniform over the section, the Saint-Venant torsional constant is not obtained by additive zone-wise Roark contributions.
+For a solid rectangular section, the geometric carrier is evaluated through the Roark-type approximation.
 
 $$
 J_{\mathrm{roark}} \simeq a b^3 \left[ \frac{1}{3} - 0.21\frac{b}{a}\left( 1 - \frac{1}{12}\left(\frac{b}{a}\right)^4 \right) \right], \qquad a \ge b > 0 ,
