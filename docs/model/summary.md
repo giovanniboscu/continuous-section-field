@@ -19,18 +19,9 @@ In current structural analysis practice, the definition of section properties fo
 
 Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required input for a numerical model is not a single section, but a longitudinal field of section properties such as:
 
-<p align="center">
-$$A(z)$$
-
-$$I_x(z)$$
-
-$$I_y(z)$$
+<p align="center"> 
   
-$$(EI_x)(z)$$
-
-$$(GJ)(z)$$
-
-$$\rho_l(z)$
+$$A(z)$$ ,  $$I_x(z)$$ ,  $$I_y(z)$$ ,  $$(EI_x)(z)$$ , $$(GJ)(z)$$ ,  $$\rho_l(z)$$
 
 </p>
 
