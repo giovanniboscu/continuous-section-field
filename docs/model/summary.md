@@ -633,86 +633,10 @@ As discussed in Section 2.2, CSF's internal torsion evaluation is limited to thi
 
 This example complements the NREL tower case by showing that CSF is able to represent continuous variation arising solely from participation fields, independently of any geometric tapering. The same framework therefore supports both geometry-driven and participation-driven sectional evolution within a unified continuous representation.
 
-
----
-## 6. Conclusions
-
-The main contribution of CSF is the formulation of an independent, declarative pre-solver layer in which polygonal geometry and material participation fields are defined as continuous entities, evaluable at arbitrary axial stations and separable from the downstream numerical discretization.
-
-The NREL tower validation shows that the same continuous sectional field can be sampled, transferred to a beam model, and compared against an independent reference response. The degraded tower case further demonstrates that localized stiffness reductions can be represented without changing the geometric model, and that the beam discretization can be refined independently of the underlying continuous field. The T-section example complements this validation by showing that CSF is not limited to tapered or axisymmetric members. A fixed non-axisymmetric open section can be combined with independently prescribed axial/bending and shear/torsion participation fields, producing station-wise solver-facing data at Gauss-Lobatto points.
-
-Together, these examples show that CSF separates the definition of the sectional model from its numerical sampling and from the solver consuming the exported data. This separation makes the same member definition reusable across inspection, validation, and solver-preprocessing workflows.
-
-### Limitations
-
-The current formulation assumes a straight element axis, linear vertex interpolation between reference stations, and fixed topology per interval. Curved members, disappearing or emerging zones, and higher-order geometric evolution are not supported. For torsion, the built-in thin-walled approximations are suitable for standard open and closed sections but not for general solid sections or multi-cell configurations, for which CSF delegates to `sectionproperties`.
-
-### Future work
-
-Three extensions are planned. First, the implementation of automatic differentiation for sectional-property derivatives, such as $dA/dz$, $dI_x/dz$, $dI_y/dz$, and derivatives of the participation-weighted stiffness fields, would facilitate coupling with non-prismatic beam formulations that explicitly require longitudinal gradients of geometric and constitutive quantities.. Second, support for curved member axes would extend the applicability of the framework beyond straight beam-like structures. Third, tighter integration with nonlinear structural solvers could allow participation fields to evolve during the analysis, enabling applications beyond the current static sectional representation.
-
-
-
 ---
 
-## Acknowledgements
-
-The author thanks the developers of `sectionproperties` for providing an open finite-element section-analysis ecosystem that can be used in validation and interoperability workflows.
-
----
-
-## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
-
-During the preparation of this work, the author used ChatGPT and Claude for drafting assistance, copy-editing, and code-review suggestions. After using these tools, the author reviewed, edited, and validated the content as needed and takes full responsibility for the scientific claims, software implementation, and manuscript.
-
-
-## References
-
-- **[Balduzzi 2016]** <a id="Balduzzi-2016"></a>  *Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). Non-prismatic beams: A simple and effective Timoshenko-like model. International Journal of Solids and Structures*, 90, 236–250.
-  https://doi.org/10.1016/j.ijsolstr.2016.02.017
-
-- **[KENNA]** <a id="KENNA"></a> *A. Kenna and B. Basu, “Damage Detection in Wind Turbine Towers using a Finite Element Model and Discrete Wavelet Transform of Strain Signals,”* Journal of Physics: Conference Series, vol. 628, no. 1, p. 012067, 2015. doi:10.1088/1742-6596/628/1/012067.
-
-- **[VABS]** <a id="vabs"></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
-
-- **[NRELOpenFAST]**  <a id="NRELOpenFAST"></a> *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool*. https://github.com/OpenFAST/openfast
-- **[NREL WISDEM]** <a id="wisdem"></a>  *National Renewable Energy Laboratory. WISDEM: Wind-Plant Integrated System Design and Engineering Model*. https://github.com/WISDEM/WISDEM
-
-- **[SEC_PROP]** <a id="sec_prop"></a>  *python package for the analysis of arbitrary cross-sections using the finite element method.*.
-https://github.com/robbievanleeuwen/section-properties
-
-- **[WANG]**  <a id="wang"></a>   *Wang et al. 2017 - Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework. Wind Energy, 20(8), 1439–1462*.  https://doi.org/10.1002/we.2101
-    
-- **[Gavin]**  <a id="gavin"></a>  *Gavin, H. P. Frame3DD: Static and dynamic structural analysis of 2D and 3D frames*. http://frame3dd.sourceforge.net/
-
-- **[BECAS]**  <a id="becas"></a> *Finite-element-based cross-sectional analysis software*. https://becas.dtu.dk/
-
-- **[ANSYS]**  <a id="ansys"></a> *engineering simulation software*. https://www.ansys.com/
-
-- **[ABAQUS]**  <a id="ABAQUS"></a> *Dassault Systèmes Simulia Corp. ABAQUS*. https://www.3ds.com/products/simulia/abaqus/
-
-- **[OPENSEES]** <a id="OPENSEES"></a> *McKenna, F. OpenSees: A Framework for Earthquake Engineering Simulation. Computing in Science & Engineering, 13(4), 58–66, 2011*. https://doi.org/10.1109/MCSE.2011.66  
-  Project website: https://opensees.berkeley.edu/
----
-  
-- **[SUMMB_NREL]** <a id="SUMMB_NREL"></a>  *G. Boscu, Continuous Section Field: NREL validation comparison summary*. Repository documentation, 2026.
-https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all_b.md
-
-- **[CSF_SP]** <a id="CSF_SP"></a>  *G. Boscu, Continuous Section Field: Continuous Section Field csf_sp User Guide*.  Repository documentation, 2026.
- https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md
-
-
-- **[SP_CSF]** <a id="SP_CSF"></a>  *G. Boscu, Continuous Section Field: Continuous Section Field csf_sp User Guide*.  Repository documentation, 2026.
- https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/sp_csf_guide.md
-
-- **[FULL_AN]** <a id="FULL_AN"></a> *G. Boscu, Continuous Section Field: Section Full Analysis Output*. Repository documentation, 2026.
-https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md
-
-- **[SAINT_VEN]** <a id="SAINT_VEN"></a> *G. Boscu, Continuous Section Field: Saint-Venant Torsional Constant*. Repository documentation, 2026.
-Available: https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md
-
-
----
+ **ALTERNATIVE**
+ 
 ## 6. Stacked rectangular member with isotropic and independent participation fields
 
 A second verification case is introduced to isolate a different aspect of the CSF formulation from the NREL tower validation. The NREL case verifies the use of a continuous sectional field in a beam-response workflow. The present case removes the external structural solver and considers a deliberately elementary stacked rectangular member, so that the sectional quantities can be checked directly against closed-form expressions at every sampled station.
@@ -897,3 +821,86 @@ This example complements the NREL tower validation by isolating the sectional-fi
 
 >Note. Verification on more general, non-rectangular cross-sections, validated against independent finite-element analysis, is provided in the accompanying repository [REF-GEN],
 >complementing the closed-form benchmarks reported in the paper.
+
+
+
+
+---
+## 7. Conclusions
+
+The main contribution of CSF is the formulation of an independent, declarative pre-solver layer in which polygonal geometry and material participation fields are defined as continuous entities, evaluable at arbitrary axial stations and separable from the downstream numerical discretization.
+
+The NREL tower validation shows that the same continuous sectional field can be sampled, transferred to a beam model, and compared against an independent reference response. The degraded tower case further demonstrates that localized stiffness reductions can be represented without changing the geometric model, and that the beam discretization can be refined independently of the underlying continuous field. The T-section example complements this validation by showing that CSF is not limited to tapered or axisymmetric members. A fixed non-axisymmetric open section can be combined with independently prescribed axial/bending and shear/torsion participation fields, producing station-wise solver-facing data at Gauss-Lobatto points.
+
+Together, these examples show that CSF separates the definition of the sectional model from its numerical sampling and from the solver consuming the exported data. This separation makes the same member definition reusable across inspection, validation, and solver-preprocessing workflows.
+
+### Limitations
+
+The current formulation assumes a straight element axis, linear vertex interpolation between reference stations, and fixed topology per interval. Curved members, disappearing or emerging zones, and higher-order geometric evolution are not supported. For torsion, the built-in thin-walled approximations are suitable for standard open and closed sections but not for general solid sections or multi-cell configurations, for which CSF delegates to `sectionproperties`.
+
+### Future work
+
+Three extensions are planned. First, the implementation of automatic differentiation for sectional-property derivatives, such as $dA/dz$, $dI_x/dz$, $dI_y/dz$, and derivatives of the participation-weighted stiffness fields, would facilitate coupling with non-prismatic beam formulations that explicitly require longitudinal gradients of geometric and constitutive quantities.. Second, support for curved member axes would extend the applicability of the framework beyond straight beam-like structures. Third, tighter integration with nonlinear structural solvers could allow participation fields to evolve during the analysis, enabling applications beyond the current static sectional representation.
+
+
+
+---
+
+## Acknowledgements
+
+The author thanks the developers of `sectionproperties` for providing an open finite-element section-analysis ecosystem that can be used in validation and interoperability workflows.
+
+---
+
+## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
+
+During the preparation of this work, the author used ChatGPT and Claude for drafting assistance, copy-editing, and code-review suggestions. After using these tools, the author reviewed, edited, and validated the content as needed and takes full responsibility for the scientific claims, software implementation, and manuscript.
+
+
+## References
+
+- **[Balduzzi 2016]** <a id="Balduzzi-2016"></a>  *Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). Non-prismatic beams: A simple and effective Timoshenko-like model. International Journal of Solids and Structures*, 90, 236–250.
+  https://doi.org/10.1016/j.ijsolstr.2016.02.017
+
+- **[KENNA]** <a id="KENNA"></a> *A. Kenna and B. Basu, “Damage Detection in Wind Turbine Towers using a Finite Element Model and Discrete Wavelet Transform of Strain Signals,”* Journal of Physics: Conference Series, vol. 628, no. 1, p. 012067, 2015. doi:10.1088/1742-6596/628/1/012067.
+
+- **[VABS]** <a id="vabs"></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
+
+- **[NRELOpenFAST]**  <a id="NRELOpenFAST"></a> *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool*. https://github.com/OpenFAST/openfast
+- **[NREL WISDEM]** <a id="wisdem"></a>  *National Renewable Energy Laboratory. WISDEM: Wind-Plant Integrated System Design and Engineering Model*. https://github.com/WISDEM/WISDEM
+
+- **[SEC_PROP]** <a id="sec_prop"></a>  *python package for the analysis of arbitrary cross-sections using the finite element method.*.
+https://github.com/robbievanleeuwen/section-properties
+
+- **[WANG]**  <a id="wang"></a>   *Wang et al. 2017 - Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework. Wind Energy, 20(8), 1439–1462*.  https://doi.org/10.1002/we.2101
+    
+- **[Gavin]**  <a id="gavin"></a>  *Gavin, H. P. Frame3DD: Static and dynamic structural analysis of 2D and 3D frames*. http://frame3dd.sourceforge.net/
+
+- **[BECAS]**  <a id="becas"></a> *Finite-element-based cross-sectional analysis software*. https://becas.dtu.dk/
+
+- **[ANSYS]**  <a id="ansys"></a> *engineering simulation software*. https://www.ansys.com/
+
+- **[ABAQUS]**  <a id="ABAQUS"></a> *Dassault Systèmes Simulia Corp. ABAQUS*. https://www.3ds.com/products/simulia/abaqus/
+
+- **[OPENSEES]** <a id="OPENSEES"></a> *McKenna, F. OpenSees: A Framework for Earthquake Engineering Simulation. Computing in Science & Engineering, 13(4), 58–66, 2011*. https://doi.org/10.1109/MCSE.2011.66  
+  Project website: https://opensees.berkeley.edu/
+---
+  
+- **[SUMMB_NREL]** <a id="SUMMB_NREL"></a>  *G. Boscu, Continuous Section Field: NREL validation comparison summary*. Repository documentation, 2026.
+https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all_b.md
+
+- **[CSF_SP]** <a id="CSF_SP"></a>  *G. Boscu, Continuous Section Field: Continuous Section Field csf_sp User Guide*.  Repository documentation, 2026.
+ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md
+
+
+- **[SP_CSF]** <a id="SP_CSF"></a>  *G. Boscu, Continuous Section Field: Continuous Section Field csf_sp User Guide*.  Repository documentation, 2026.
+ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/sp_csf_guide.md
+
+- **[FULL_AN]** <a id="FULL_AN"></a> *G. Boscu, Continuous Section Field: Section Full Analysis Output*. Repository documentation, 2026.
+https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md
+
+- **[SAINT_VEN]** <a id="SAINT_VEN"></a> *G. Boscu, Continuous Section Field: Saint-Venant Torsional Constant*. Repository documentation, 2026.
+Available: https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md
+
+
+---
