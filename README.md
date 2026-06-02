@@ -1,5 +1,5 @@
 ## Continuous Section Field (CSF)
-### Continuous sectional properties for non-prismatic members via independent geometry and weight fields
+### Continuous Section Fields: continuous sectional properties for axially graded non-uniform members
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19076181.svg)](https://doi.org/10.5281/zenodo.19076181)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
