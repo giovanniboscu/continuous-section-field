@@ -175,7 +175,7 @@ The functions $w_i(z)$ and $\kappa_i(z)$ are user-defined functions of the longi
 | C | Polygonal representation | Curved boundaries must be approximated by polygon discretisation |
 | D | Straight element axis | CSF models a single element along a straight $z$-axis; curved members are not supported |
 
-Multiple straight elements can be composed in sequence - each with its own geometry and participation fields - to represent members of arbitrary length and cross-sectional evolution.
+Multiple straight intervals can be concatenated to represent members of arbitrary length and sectional evolution, provided each interval satisfies the assumptions listed above.
 
 ---
 
@@ -592,7 +592,7 @@ second interval declares the two carriers separately.
 
 
 <p align="center">
-  <em>Figure 7.  Axial/bending participation fields in the second interval.</em>
+  <em>Figure 7. Axial/bending participation fields in the second interval.</em>
 </p>
 
 <img width="1806" height="799" alt="image" src="https://github.com/user-attachments/assets/7388d749-b345-4143-b2c3-a560c36316d7" />
@@ -693,6 +693,7 @@ Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These 
 Torsion is treated consistently with the declared scope of CSF. CSF does not compute the general Saint-Venant torsional constant of an arbitrary section; when required, warping-based torsional properties must be obtained through an external sectional-analysis procedure, including the `csf_sp` bridge to the section-analysis backend. The quantity $J_{\mathrm{roark,eq}}$ reported in the table is a CSF Roark-equivalent torsional read-out, not an exact Saint-Venant benchmark for the shear-non-uniform section.
 
 In the independently degraded interval, this Roark-equivalent read-out is not a closed-form torsional benchmark. Since the shear/torsion participation is not uniform over the section, the Saint-Venant torsional constant is not obtained by additive zone-wise Roark contributions.
+
 For a solid rectangular section, the geometric carrier is evaluated through the Roark-type approximation.
 
 $$
