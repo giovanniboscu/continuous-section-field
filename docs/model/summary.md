@@ -451,6 +451,8 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 </p>
 
+<p align="center">
+  
 Table 1 reports the relative errors in tip displacement $U_y$ and torsional rotation $R_z$ as a function of the number of beam elements, for both configurations.
 
 | Scenario   | Elements | $\varepsilon_{U_y}$ (%) | $\varepsilon_{R_z}$ (%) |
@@ -470,6 +472,7 @@ Table 1 reports the relative errors in tip displacement $U_y$ and torsional rota
 | Degraded   | 24 | +9.57×10⁻⁴ | −2.75×10⁻³ |
 | Degraded   | 32 | +2.80×10⁻⁴ | −3.48×10⁻³ |
 
+</p>
 
 > **Note:** At high discretization levels the relative error in $U_y$ stabilises 
 > near zero ($\sim 10^{-4}\,\%$), reflecting the numerical precision of the 
