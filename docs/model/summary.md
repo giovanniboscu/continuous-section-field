@@ -572,7 +572,7 @@ The executable script and YAML input files corresponding to the verification rep
 
 
 <p align="center">
-  <em>Figure 7. Shear/torsion participation fields in the variable interval.</em>
+  <em>Figure 8. Shear/torsion participation fields in the variable interval.</em>
 </p>
 
 <img width="1825" height="810" alt="image" src="https://github.com/user-attachments/assets/81ee73ed-bd18-43d0-a25e-edbf4ce289a5" />
