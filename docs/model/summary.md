@@ -76,8 +76,7 @@ $$
 
 where $q_i(z)$ denotes the participation field associated with the quantity being evaluated. For axial and bending properties, $q_i(z)=w_i(z)$; for torsion-related quantities, $q_i(z)=k_i(z)$. The function $f(x,y)$ is the integrand associated with the selected sectional property, such as unity for area or $y^2$ for the second moment of area about the $x$-axis.
 
-Geometry $\Omega_i(z)$ and the participation fields are fully decoupled
-. Geometry $\Omega_i$ and the axial/bending field $w_i$ are fully decoupled: one can vary independently of the other.
+Geometry $\Omega_i(z)$ and the participation fields , $w_i(z)$ and $\kappa_i(z)$, are fully decoupled: one can vary independently of the other.
 
 For polygonal domains, the area integrals are evaluated exactly via Green's theorem, reducing each double integral to a closed-form sum over the polygon edges. This applies to all integrals whose spatial integrands $f(x,y)$ are polynomial in $x$ and $y$ - area, first moments ($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and product of inertia ($I_{xy}$). The participation fields $w_i(z)$ and $\kappa_i(z)$ depend on $z$ only, not on $x$ and $y$; they factor out of the area integral as station-wise scalars, so the spatial integration remains polynomial at each fixed $z$ and the spatial integrals remain closed-form polygonal quantities.
 
