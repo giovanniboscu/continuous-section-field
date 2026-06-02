@@ -835,7 +835,6 @@ I_y(z)=(w_l+w_u)\frac{hB^3}{12}.
 $$
 
 Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These quantities are direct weighted area-integral properties and therefore admit the closed-form references above.
-
 ### 6.3 Torsional read-out
 
 Torsion is treated consistently with the declared scope of CSF. The quantity $J_{\mathrm{roark,eq}}$ reported in the table is a CSF Roark-equivalent read-out. It is not used as an exact Saint-Venant benchmark for the shear-non-uniform section.
@@ -843,7 +842,7 @@ Torsion is treated consistently with the declared scope of CSF. The quantity $J_
 For a homogeneous rectangular section, the Roark-type estimate used as geometric carrier is written as
 
 $$
-J_{\mathrm{roark}} = \frac{a b^3}{3} \left[ 1 - 0.63\frac{b}{a} + 0.052\left(\frac{b}{a}\right)^5 \right], \qquad a \ge b ,
+J_{\mathrm{roark}} = \left[\frac{1}{3} - 0.21\frac{b}{a}\left(1 - \frac{1}{12}\left(\frac{b}{a}\right)^4\right)\right] a b^3 , \qquad a \ge b ,
 $$
 
 where $a$ and $b$ are respectively the larger and smaller side dimensions of the rectangular section. In CSF this quantity is used as a lightweight torsional read-out by scaling the rectangular geometric estimate with an effective shear/torsion participation factor. For the two-zone rectangular section considered here, this gives the equivalent quantity
