@@ -781,6 +781,9 @@ Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These 
   <em>Figure 13. Section-property variation over the two stacked intervals.</em>
 </p>
 
+<img width="1237" height="923" alt="image" src="https://github.com/user-attachments/assets/1171f703-4b66-4964-8204-a29f338529bc" />
+
+
 ### 6.3 Torsional read-out
 
 Torsion is treated consistently with the declared scope of CSF. CSF does not compute the general Saint-Venant torsional constant of an arbitrary section; when required, warping-based torsional properties must be obtained through an external sectional-analysis procedure, including the `csf_sp` bridge to the section-analysis backend. The quantity $J_{\mathrm{roark,eq}}$ reported in the table is a CSF Roark-equivalent torsional read-out, not an exact Saint-Venant benchmark for the shear-non-uniform section.
