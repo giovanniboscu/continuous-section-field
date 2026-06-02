@@ -718,9 +718,17 @@ The stacked rectangular example complements this validation by isolating the sec
 
 Together, these examples show that CSF separates the definition of the sectional model from its numerical sampling and from the solver consuming the exported data. This separation makes the same member definition reusable across inspection, validation, and solver-preprocessing workflows, while preserving a continuous representation that can be sampled, exported, or externally analysed according to the needs of the downstream procedure.
 
+
 ### Limitations
 
-The current formulation assumes a straight element axis, linear vertex interpolation between reference stations, and fixed topology per interval. Curved members, disappearing or emerging zones, and higher-order geometric evolution are not supported. For torsion, the built-in thin-walled approximations are suitable for standard open and closed sections but not for general solid sections or multi-cell configurations, for which CSF delegates to `sectionproperties`.
+The current formulation assumes a straight element axis, linear vertex interpolation between reference stations, and fixed topology within each interpolation interval. Curved members, disappearing or emerging zones, and higher-order geometric evolution are not supported.
+
+For torsion, the built-in CSF approximations are limited to selected engineering read-outs. Standard thin-walled open and closed sections can be treated through the corresponding thin-walled estimates, while solid rectangular sections may be assigned a Roark-equivalent torsional read-out. This quantity is an engineering approximation and should not be interpreted as a general Saint-Venant torsional solution for arbitrary cross-sections or for shear-non-uniform participation fields. CSF therefore reports the Roark-equivalent value together with a fidelity indicator, so that its use remains explicit.
+
+General solid sections, multi-cell configurations, and sections requiring warping-based Saint-Venant analysis must be evaluated by an external sectional-analysis backend. For isotropic cases, this role can be fulfilled through the `csf_sp` bridge to `sectionproperties`. However, when CSF is used to model non-isotropic participation fields, where the axial/bending and shear/torsion participation fields are prescribed independently, the torsional problem no longer falls within the isotropic `sectionproperties` workflow. In such cases, more general numerical sectional formulations are required, for example dedicated finite-element torsion models implemented with tools such as `scikit-fem`.
+
+Accordingly, CSF should be interpreted as the continuous sectional-field representation and sampling layer. It defines, evaluates, and exports geometry and participation fields; torsional quantities outside its built-in approximation domain must be computed by an appropriate external sectional solver.
+
 
 ### Future work
 
