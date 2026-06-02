@@ -21,7 +21,7 @@ Many structural and mechanical engineering problems involve members whose cross-
 
 
 
-$A(z)$ &nbsp;&nbsp; $I_x(z)$ &nbsp;&nbsp; $I_y(z)$ &nbsp;&nbsp; $(EI_x)(z)$ &nbsp;&nbsp; $(GJ)(z)$ &nbsp;&nbsp; $\rho_l(z)$
+$A(z)$ &nbsp;,&nbsp; $I_x(z)$ &nbsp;,&nbsp; $I_y(z)$ &nbsp;&nbsp; $(EI_x)(z)$ &nbsp;,&nbsp; $(GJ)(z)$ &nbsp;,&nbsp; $\rho_l(z)$
 
 A member is represented as a continuous sectional field composed of evolving polygonal geometry together with two material participation fields: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. This representation is defined, evaluated, inspected, and validated independently of any downstream solver. The solver receives a station-wise projection of an already defined continuous field - not a table that defines the model itself.
 
