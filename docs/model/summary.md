@@ -17,11 +17,7 @@ This distinction allows CSF to preserve a continuous member representation while
 
 In current structural analysis practice, the definition of section properties for non-prismatic members is typically embedded within the solver itself. Geometry and material participation are not treated as independent fields; instead, they are collapsed into a discrete table of section properties evaluated at a fixed set of stations, tied to the solver mesh and conventions. This coupling makes the sectional model difficult to inspect, reuse, or transfer across different solvers, and it obscures the distinction between the continuous physical model and its numerical discretization.
 
-Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required input for a numerical model is not a single section, but a longitudinal field of section properties such as:
- &nbsp;,&nbsp;
-
-$A(z)$ &nbsp;,&nbsp; $I_x(z)$ &nbsp;,&nbsp; $I_y(z)$ &nbsp;&nbsp; $(EI_x)(z)$ &nbsp;,&nbsp; $(GJ)(z)$ &nbsp;,&nbsp; $\rho_l(z)$
- &nbsp;,&nbsp;
+Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required input for a numerical model is not a single section, but a longitudinal field of section properties such as: $A(z)$ &nbsp;,&nbsp; $I_x(z)$ &nbsp;,&nbsp; $I_y(z)$ &nbsp;&nbsp; $(EI_x)(z)$ &nbsp;,&nbsp; $(GJ)(z)$ &nbsp;,&nbsp; $\rho_l(z)$.
 
 A member is represented as a continuous sectional field composed of evolving polygonal geometry together with two material participation fields: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. This representation is defined, evaluated, inspected, and validated independently of any downstream solver. The solver receives a station-wise projection of an already defined continuous field - not a table that defines the model itself.
 
