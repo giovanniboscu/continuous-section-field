@@ -780,7 +780,9 @@ The implementation details of the Roark-equivalent read-out and the supplementar
 
 ### 6.4 Station-wise verification results
 
-The following table reports the CSF values and the corresponding closed-form reference values at the selected Gauss--Lobatto stations. The column `err_AIxIy%` is the maximum relative error over $A$, $I_x$, and $I_y$. Since $C_y$ is zero in the tapered interval, its discrepancy is reported as an absolute error in the column `err_Cy`.
+The following table reports the CSF values and the corresponding closed-form reference values at the selected Gauss--Lobatto stations. Since the member is represented as a `CSFStack` composed of two continuous intervals, the Gauss--Lobatto stations are generated separately on the tapered interval $0 \le z \le 5$ and on the participation-degraded interval $5 \le z \le 10$. The common junction at $z=5$ is counted once. This preserves the interval-wise structure of the stacked field while producing a single global station-wise verification table.
+
+The column `err_AIxIy%` is the maximum relative error over $A$, $I_x$, and $I_y$. Since $C_y$ is zero in the tapered interval, its discrepancy is reported as an absolute error in the column `err_Cy`.
 
 ```text
       z     w    sw |    A_csf    A_ref |   Cy_csf   Cy_ref |    Ix_csf    Ix_ref |    Iy_csf    Iy_ref |  J_roark_eq   fid |  err_AIxIy%    err_Cy
@@ -814,8 +816,6 @@ max absolute error (Cy): 8.67e-18
 The numerical discrepancies are at machine precision. The largest relative error over $A$, $I_x$, and $I_y$ is $3.98\times10^{-14}\%$, while the largest absolute discrepancy in $C_y$ is $8.67\times10^{-18}$. These results confirm that the stacked CSF representation reproduces the closed-form weighted-section quantities over both the isotropic tapered interval and the participation-degraded interval.
 
 The last two reported columns, $J_{\mathrm{roark,eq}}$ and the fidelity indicator, document the CSF torsional read-out over the same stations. Their trend is consistent with the imposed participation fields: the fidelity remains equal to one while the shear/torsion participation is uniform, and then decreases as the lower-zone shear/torsion participation departs from the upper-zone value. They are reported for completeness and diagnostic interpretation, not as exact torsional benchmark values.
-
-This example complements the NREL tower validation by isolating the sectional-field construction itself. The geometry is simple by design, but the model exercises the key CSF mechanisms required for more general applications: interval composition, non-prismatic geometry, isotropic participation, independent participation fields, and station-wise extraction of solver-facing quantities from a continuous member representation.
 
 This example complements the NREL tower validation by isolating the sectional-field construction itself. The geometry is simple by design, but the model exercises the key CSF mechanisms required for more general applications: interval composition, non-prismatic geometry, isotropic participation, independent participation fields, and station-wise extraction of solver-facing quantities from a continuous member representation.
 
