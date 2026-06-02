@@ -481,7 +481,8 @@ The member has total length $L=10$ and is composed of two continuous intervals j
 
 The cross-section is decomposed into two rectangular zones, denoted as lower and upper. In the first interval this decomposition is mechanically neutral, since both zones have unit axial/bending participation and the shear/torsion participation is obtained from the isotropic relation. The first interval is therefore modelled as a fully participating tapered section using the isotropic carrier relation. The same zone structure is retained in the second interval, where the geometry is constant but the lower zone is assigned independent axial/bending and shear/torsion participation laws. The second interval is therefore no longer isotropic in the sense of Section 2.2, because $w_i(z)$ and $\kappa_i(z)$ are prescribed independently for the degraded zone.
 
-
+The resulting stacked member is shown in Figure 6, which provides the geometric
+configuration used in the station-wise verification below.
 
 <p align="center">
   <em>Figure 6. Stacked CSF member with tapered geometry and independent participation fields.</em>
