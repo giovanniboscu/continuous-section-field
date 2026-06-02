@@ -564,7 +564,7 @@ The executable script and YAML input files corresponding to the verification rep
 
 
 <p align="center">
-  <em>Figure 12. Axial/bending participation fields in the variable interval.</em>
+  <em>Figure 7. Axial/bending participation fields in the variable interval.</em>
 </p>
 
 <img width="1806" height="799" alt="image" src="https://github.com/user-attachments/assets/7388d749-b345-4143-b2c3-a560c36316d7" />
