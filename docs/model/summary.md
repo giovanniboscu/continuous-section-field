@@ -156,7 +156,7 @@ A single CSF interval describes the continuous evolution of the section between 
 
 ### 2.4 Participation fields
 
-Once the geometric field has defined the continuous evolution of each polygonal zone, CSF assigns to every zone two longitudinal participation fields: $w_i(z)$ for axial and bending partecipation, and $\kappa_i(z)$ for shear and torsional partecipation. These fields scale the contribution of the corresponding geometric zone at each station, so that geometry and material participation can vary independently along the member axis.
+Once the geometric field has defined the continuous evolution of each polygonal zone, CSF assigns to every zone two longitudinal participation fields: $w_i(z)$ for axial and bending participation, and $\kappa_i(z)$ for shear and torsional participation. These fields scale the contribution of the corresponding geometric zone at each station, so that geometry and material participation can vary independently along the member axis.
 
 The functions $w_i(z)$ and $\kappa_i(z)$ are user-defined functions of the longitudinal coordinate, or, for $\kappa_i(z)$, may be obtained from $w_i(z)$ through the isotropic relation of §2.2. Supported forms include polynomials, exponentials, piecewise-linear laws, and discrete lookup tables. The only requirement is that each function be evaluable at any requested station.
 
@@ -587,7 +587,7 @@ second interval declares the two carriers separately.
 
 
 <p align="center">
-  <em>Figure 7.  Axial/bending participation fields in the second interval</em>
+  <em>Figure 7.  Axial/bending participation fields in the second interval.</em>
 </p>
 
 <img width="1806" height="799" alt="image" src="https://github.com/user-attachments/assets/7388d749-b345-4143-b2c3-a560c36316d7" />
@@ -774,7 +774,7 @@ Accordingly, CSF should be interpreted as the continuous sectional-field represe
 
 ### Future work
 
-Three extensions are planned. First, the implementation of automatic differentiation for sectional-property derivatives, such as $dA/dz$, $dI_x/dz$, $dI_y/dz$, and derivatives of the participation-weighted stiffness fields, would facilitate coupling with non-prismatic beam formulations that explicitly require longitudinal gradients of geometric and constitutive quantities.. Second, support for curved member axes would extend the applicability of the framework beyond straight beam-like structures. Third, tighter integration with nonlinear structural solvers could allow participation fields to evolve during the analysis, enabling applications beyond the current static sectional representation.
+Three extensions are planned. First, the implementation of automatic differentiation for sectional-property derivatives, such as $dA/dz$, $dI_x/dz$, $dI_y/dz$, and derivatives of the participation-weighted stiffness fields, would facilitate coupling with non-prismatic beam formulations that explicitly require longitudinal gradients of geometric and constitutive quantities. Second, support for curved member axes would extend the applicability of the framework beyond straight beam-like structures. Third, tighter integration with nonlinear structural solvers could allow participation fields to evolve during the analysis, enabling applications beyond the current static sectional representation.
 
 
 
