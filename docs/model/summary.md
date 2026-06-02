@@ -838,9 +838,25 @@ Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These 
 
 ### 6.3 Torsional read-out
 
-Torsion is treated consistently with the declared scope of CSF. The quantity $J_{\mathrm{roark,eq}}$ reported in the table is a CSF Roark-equivalent read-out. It is not used as an exact Saint-Venant benchmark for the shear-non-uniform section. The associated fidelity indicator is reported to document the applicability of this equivalent read-out as the shear/torsion participation becomes increasingly non-uniform.
+Torsion is treated consistently with the declared scope of CSF. The quantity $J_{\mathrm{roark,eq}}$ reported in the table is a CSF Roark-equivalent read-out. It is not used as an exact Saint-Venant benchmark for the shear-non-uniform section.
 
-In the tapered interval, the shear/torsion participation is uniform and the fidelity indicator remains equal to one. In the second interval, the lower-zone value of $\kappa_i(z)$ progressively departs from the upper-zone value; the fidelity indicator correspondingly decreases. These torsional quantities are therefore useful diagnostic read-outs, but they are not part of the closed-form verification.
+For a homogeneous rectangular section, the Roark-type estimate used as geometric carrier is written as
+
+$$
+J_{\mathrm{roark}} = \frac{a b^3}{3} \left[ 1 - 0.63\frac{b}{a} + 0.052\left(\frac{b}{a}\right)^5 \right], \qquad a \ge b ,
+$$
+
+where $a$ and $b$ are respectively the larger and smaller side dimensions of the rectangular section. In CSF this quantity is used as a lightweight torsional read-out by scaling the rectangular geometric estimate with an effective shear/torsion participation factor. For the two-zone rectangular section considered here, this gives the equivalent quantity
+
+$$
+J_{\mathrm{roark,eq}}(z) = \bar{\kappa}(z)\, J_{\mathrm{roark}}(z) ,
+$$
+
+where $\bar{\kappa}(z)$ is the section-level effective shear/torsion participation associated with the sampled section. In the tapered interval, $\kappa_i(z)=1$ for both zones and therefore $J_{\mathrm{roark,eq}}=J_{\mathrm{roark}}$. In the second interval, the lower-zone value of $\kappa_i(z)$ progressively departs from the upper-zone value, so the reported quantity becomes a shear-participation-weighted equivalent read-out rather than an exact Saint-Venant torsional constant.
+
+The associated fidelity indicator is reported to document the applicability of this equivalent read-out as the shear/torsion participation becomes increasingly non-uniform. The fidelity remains equal to one while the shear/torsion participation is uniform, and decreases as the lower-zone shear/torsion participation departs from the upper-zone value. Further details on the Roark-equivalent implementation and the supplementary torsional checks are provided in the repository documentation [ROAL-REF].
+
+These torsional quantities are therefore useful diagnostic read-outs, but they are not part of the closed-form verification. The rigorous verification in this case remains restricted to $A$, $C_y$, $I_x$, and $I_y$, for which independent closed-form references are available.
 
 ### 6.4 Station-wise verification results
 
