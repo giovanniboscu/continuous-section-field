@@ -708,6 +708,11 @@ Thus the lower-zone axial/bending participation decreases from $1.0$ to $0.5$, w
 
 The executable script and YAML input files corresponding to the verification reported in this section are provided in the accompanying open-source repository [REF-CASE], allowing the results to be inspected, modified, and rerun. A separate FEM torsion check for the same stacked member is also provided as supplementary repository material [REF-FEM]. That FEM check is not used in the closed-form verification reported here.
 
+
+<p align="center">
+  <em>Figure 12. Axial/bending and shear/torsion participation fields in the variable interval.</em>
+</p>
+
 ### 6.2 Closed-form reference
 
 The verification is conducted station-wise. The stacked field is sampled at Gauss--Lobatto stations applied separately to the two continuous intervals, with the common junction counted once. At each station, the CSF-computed sectional quantities are compared with closed-form expressions derived from the corresponding weighted rectangular section.
@@ -770,6 +775,10 @@ $$
 
 Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These quantities are direct weighted area-integral properties and therefore admit the closed-form references above.
 
+
+<p align="center">
+  <em>Figure 13. Section-property variation over the two stacked intervals.</em>
+</p>
 
 ### 6.3 Torsional read-out
 
