@@ -15,7 +15,7 @@ This distinction allows CSF to preserve a continuous member representation while
 
 ## 1. Motivation
 
-In current structural analysis practice, the definition of section properties for non-prismatic members is typically embedded within the solver itself. Geometry and material participation are not treated as independent fields; instead, they are collapsed into a discrete table of section properties evaluated at a fixed set of stations, tied to the solver mesh and conventions. This coupling makes the sectional model difficult to inspect, reuse, or transfer across different solvers, and it obscures the distinction between the continuous physical model and its numerical discretisation.
+In current structural analysis practice, the definition of section properties for non-prismatic members is typically embedded within the solver itself. Geometry and material participation are not treated as independent fields; instead, they are collapsed into a discrete table of section properties evaluated at a fixed set of stations, tied to the solver mesh and conventions. This coupling makes the sectional model difficult to inspect, reuse, or transfer across different solvers, and it obscures the distinction between the continuous physical model and its numerical discretization.
 
 Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required input for a numerical model is not a single section, but a longitudinal field of section properties such as:
 
@@ -93,7 +93,7 @@ $$
 \kappa_i(z) = \frac{w_i(z)}{2(1+\nu)} ,
 $$
 
-parametrised by the Poisson ratio $\nu$. This shortcut fixes only the ratio $\kappa_i/w_i = G/E$; it does not constrain the absolute scale of the fields. In the general case $w_i(z)$ and $\kappa_i(z)$ are assigned independently, allowing the model to represent non-isotropic participation, selective stiffness degradation, or hybrid material compositions.
+parametrized by the Poisson ratio $\nu$. This shortcut fixes only the ratio $\kappa_i/w_i = G/E$; it does not constrain the absolute scale of the fields. In the general case $w_i(z)$ and $\kappa_i(z)$ are assigned independently, allowing the model to represent non-isotropic participation, selective stiffness degradation, or hybrid material compositions.
 
 When the participation fields are constant and the vertex coordinates are interpolated linearly between reference stations, the resulting sectional quantities are not arbitrary interpolants. The geometric quantities
 
@@ -619,7 +619,7 @@ verification reported here.
 ### 6.3 Closed-form reference
 
 The verification is conducted station-wise. The stacked field is sampled at
-Gauss--Lobatto stations applied separately to the two continuous intervals, with
+Gauss-Lobatto stations applied separately to the two continuous intervals, with
 the common junction counted once. At each station, the CSF-computed sectional
 quantities are compared with closed-form expressions derived from the
 corresponding weighted rectangular section.
