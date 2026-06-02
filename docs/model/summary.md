@@ -562,21 +562,20 @@ Thus the lower-zone axial/bending participation decreases nonlinearly from $1.0$
 The executable script and YAML input files corresponding to the verification reported in this section are provided in the accompanying open-source repository [REF-CASE], allowing the results to be inspected, modified, and rerun. A separate FEM torsion check for the same stacked member is also provided as supplementary repository material [REF-FEM]. That FEM check is not used in the closed-form verification reported here.
 
 
----
-
-
 
 <p align="center">
   <em>Figure 12. Axial/bending participation fields in the variable interval.</em>
 </p>
 
-<img width="990" height="461" alt="image" src="https://github.com/user-attachments/assets/273787f9-5dca-4834-8063-846ce726b1ae" />
+<img width="1806" height="799" alt="image" src="https://github.com/user-attachments/assets/7388d749-b345-4143-b2c3-a560c36316d7" />
+
 
 
 <p align="center">
   <em>Figure 13. Shear/torsion participation fields in the variable interval.</em>
 </p>
-<img width="990" height="452" alt="image" src="https://github.com/user-attachments/assets/7545ea78-e06a-4706-b093-bef14d74aae9" />
+
+<img width="1825" height="810" alt="image" src="https://github.com/user-attachments/assets/81ee73ed-bd18-43d0-a25e-edbf4ce289a5" />
 
 
 ### 6.2 Closed-form reference
