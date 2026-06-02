@@ -745,9 +745,8 @@ The last two reported columns, $J_{\mathrm{roark,eq}}$ and the fidelity indicato
 
 This example complements the NREL tower validation by isolating the sectional-field construction itself. The geometry is simple by design, but the model exercises the key CSF mechanisms required for more general applications: interval composition, non-prismatic geometry, isotropic participation, independent participation fields, and station-wise extraction of solver-facing quantities from a continuous member representation.
 
->Note. Verification on more general, non-rectangular cross-sections, validated against independent finite-element analysis, is provided in the accompanying repository [REF-GEN],
->complementing the closed-form benchmarks reported in the paper.
 
+> Note. Additional verification cases involving more general, non-rectangular cross-sections and independent finite-element checks are provided in the accompanying repository [REF-GEN]. These cases complement the closed-form rectangular benchmark reported in the paper.
 
 ---
 ## 7. Conclusions
