@@ -711,3 +711,174 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/section
 - **[SAINT_VEN]** <a id="SAINT_VEN"></a> *G. Boscu, Continuous Section Field: Saint-Venant Torsional Constant*. Repository documentation, 2026.
 Available: https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md
 
+
+---
+## 6. Stacked rectangular member with isotropic and independent participation fields
+
+A second verification case is introduced to isolate a different aspect of the CSF formulation from the NREL tower validation. The NREL case verifies the use of a continuous sectional field in a beam-response workflow. The present case removes the external structural solver and considers a deliberately elementary stacked rectangular member, so that the sectional quantities can be checked directly against closed-form expressions at every sampled station.
+
+The purpose of the example is threefold. First, it verifies the composition of multiple continuous intervals through `CSFStack`. Second, it shows that a tapered geometric field and a participation-driven field can coexist in the same global member representation. Third, it distinguishes an isotropic participation setting from a case in which the axial/bending and shear/torsion participation fields are assigned independently.
+
+### 6.1 Model definition
+
+The member has total length $L=10$ and is composed of two continuous intervals joined at $z=5$. Each interval is represented by a `ContinuousSectionField`, and the two fields are concatenated through `CSFStack`. The cross-section is decomposed into two rectangular zones, denoted as lower and upper. In the first interval this decomposition is mechanically neutral, since both zones have unit participation; it is retained so that the same zone structure is available in the second interval, where only the lower zone is degraded.
+
+The first interval, $0 \le z \le 5$, is a tapered rectangular section. The width is constant, $B=0.30$, while the total height decreases linearly from $0.60$ to $0.40$. Both zones have unit axial/bending participation,
+
+$$
+w_{\mathrm{lower}}(z)=w_{\mathrm{upper}}(z)=1 .
+$$
+
+The shear/torsion participation is defined through the isotropic relation introduced in Section 2.2,
+
+$$
+\kappa_i(z)=\frac{w_i(z)}{2(1+\nu)} .
+$$
+
+For this interval the value $\nu=-0.5$ is used as a carrier normalization, not as a physical material parameter. It gives
+
+$$
+\kappa_i(z)=w_i(z)=1 ,
+$$
+
+so that the first interval isolates the effect of geometric tapering. In the YAML definition this corresponds to the isotropic shortcut
+
+```yaml
+shear_weight_laws:
+  - 'iso(-0.5)'
+```
+
+The second interval, $5 \le z \le 10$, has constant rectangular geometry with total height $0.40$, again divided into lower and upper zones of equal height. The upper zone remains fully participating,
+
+$$
+w_{\mathrm{upper}}(z)=1, \qquad \kappa_{\mathrm{upper}}(z)=1 .
+$$
+
+The lower zone is assigned two independent participation laws. With
+
+$$
+t=\frac{z-5}{5}, \qquad 0 \le t \le 1 ,
+$$
+
+the axial/bending and shear/torsion fields are
+
+$$
+w_{\mathrm{lower}}(z)=1-0.5t ,
+$$
+
+$$
+\kappa_{\mathrm{lower}}(z)=1-0.8t .
+$$
+
+Thus the lower-zone axial/bending participation decreases from $1.0$ to $0.5$, whereas its shear/torsion participation decreases from $1.0$ to $0.2$. This second interval therefore departs from the isotropic relation and tests the independent assignment of $w_i(z)$ and $\kappa_i(z)$ within the same stacked member.
+
+The executable script and YAML input files corresponding to the verification reported in this section are provided in the accompanying open-source repository [REF-CASE], allowing the results to be inspected, modified, and rerun. A separate FEM torsion check for the same stacked member is also provided as supplementary repository material [REF-FEM]. That FEM check is not used in the closed-form verification reported here.
+
+### 6.2 Closed-form reference
+
+The verification is conducted station-wise. The stacked field is sampled at Gauss--Lobatto stations applied separately to the two continuous intervals, with the common junction counted once. At each station, the CSF-computed sectional quantities are compared with closed-form expressions derived from the corresponding weighted rectangular section.
+
+For the tapered interval, the total height is
+
+$$
+H(z)=0.60-0.20\frac{z}{5}.
+$$
+
+Since both zones have unit participation and the section is symmetric about the horizontal centroidal axis, the reference quantities reduce to the standard rectangular expressions
+
+$$
+A(z)=BH(z), \qquad C_y(z)=0,
+$$
+
+$$
+I_x(z)=\frac{BH(z)^3}{12}, \qquad I_y(z)=\frac{H(z)B^3}{12}.
+$$
+
+For the second interval, each zone has height $h=0.20$ and area
+
+$$
+A_z=Bh .
+$$
+
+The lower and upper zone centroids are located at
+
+$$
+y_l=-0.10, \qquad y_u=+0.10 .
+$$
+
+With $w_l=w_{\mathrm{lower}}(z)$ and $w_u=1$, the weighted area and centroid are
+
+$$
+A(z)=(w_l+w_u)A_z ,
+$$
+
+$$
+C_y(z)=\frac{w_l A_z y_l+w_u A_z y_u}{A(z)} .
+$$
+
+The centroidal second moment about the $x$-axis is obtained by the parallel-axis theorem:
+
+$$
+I_x(z)= w_l\left(I_{x,z}+A_z y_l^2\right) + w_u\left(I_{x,z}+A_z y_u^2\right) - A(z)C_y(z)^2 ,
+$$
+
+where
+
+$$
+I_{x,z}=\frac{Bh^3}{12}.
+$$
+
+The second moment about the $y$-axis is
+
+$$
+I_y(z)=(w_l+w_u)\frac{hB^3}{12}.
+$$
+
+Only $A$, $C_y$, $I_x$, and $I_y$ are used as exact benchmark quantities. These quantities are direct weighted area-integral properties and therefore admit the closed-form references above.
+
+### 6.3 Torsional read-out
+
+Torsion is treated consistently with the declared scope of CSF. The quantity $J_{\mathrm{roark,eq}}$ reported in the table is a CSF Roark-equivalent read-out. It is not used as an exact Saint-Venant benchmark for the shear-non-uniform section. The associated fidelity indicator is reported to document the applicability of this equivalent read-out as the shear/torsion participation becomes increasingly non-uniform.
+
+In the tapered interval, the shear/torsion participation is uniform and the fidelity indicator remains equal to one. In the second interval, the lower-zone value of $\kappa_i(z)$ progressively departs from the upper-zone value; the fidelity indicator correspondingly decreases. These torsional quantities are therefore useful diagnostic read-outs, but they are not part of the closed-form verification.
+
+### 6.4 Station-wise verification results
+
+The following table reports the CSF values and the corresponding closed-form reference values at the selected Gauss--Lobatto stations. The column `err_AIxIy%` is the maximum relative error over $A$, $I_x$, and $I_y$. Since $C_y$ is zero in the tapered interval, its discrepancy is reported as an absolute error in the column `err_Cy`.
+
+```text
+      z     w    sw |    A_csf    A_ref |   Cy_csf   Cy_ref |    Ix_csf    Ix_ref |    Iy_csf    Iy_ref |  J_roark_eq   fid |  err_AIxIy%    err_Cy
+---------------------------------------------------------------------------------------------------------------------------------------------------
+  0.000  1.00  1.00 |  0.18000  0.18000 |  0.00000  0.00000 |  0.005400  0.005400 |  0.001350  0.001350 |    0.003708  1.00 |     1.6e-14   0.0e+00
+  0.165  1.00  1.00 |  0.17802  0.17802 |  0.00000  0.00000 |  0.005224  0.005224 |  0.001335  0.001335 |    0.003649  1.00 |     1.6e-14   0.0e+00
+  0.539  1.00  1.00 |  0.17353  0.17353 |  0.00000  0.00000 |  0.004839  0.004839 |  0.001302  0.001302 |    0.003515  1.00 |     1.8e-14   0.0e+00
+  1.087  1.00  1.00 |  0.16696  0.16696 |  0.00000  0.00000 |  0.004309  0.004309 |  0.001252  0.001252 |    0.003320  1.00 |     2.0e-14   0.0e+00
+  1.761  1.00  1.00 |  0.15887  0.15887 |  0.00000  0.00000 |  0.003713  0.003713 |  0.001192  0.001192 |    0.003080  1.00 |     2.3e-14   0.0e+00
+  2.500  1.00  1.00 |  0.15000  0.15000 |  0.00000  0.00000 |  0.003125  0.003125 |  0.001125  0.001125 |    0.002817  1.00 |     1.9e-14   0.0e+00
+  3.239  1.00  1.00 |  0.14113  0.14113 |  0.00000  0.00000 |  0.002603  0.002603 |  0.001058  0.001058 |    0.002556  1.00 |     2.0e-14   0.0e+00
+  3.913  1.00  1.00 |  0.13304  0.13304 |  0.00000  0.00000 |  0.002180  0.002180 |  0.000998  0.000998 |    0.002320  1.00 |     4.0e-14   0.0e+00
+  4.461  1.00  1.00 |  0.12647  0.12647 |  0.00000  0.00000 |  0.001873  0.001873 |  0.000948  0.000948 |    0.002129  1.00 |     1.1e-14   0.0e+00
+  4.835  1.00  1.00 |  0.12198  0.12198 |  0.00000  0.00000 |  0.001681  0.001681 |  0.000915  0.000915 |    0.002000  1.00 |     2.6e-14   0.0e+00
+  5.000  1.00  1.00 |  0.12000  0.12000 |  0.00000  0.00000 |  0.001600  0.001600 |  0.000900  0.000900 |    0.001944  1.00 |     2.7e-14   0.0e+00
+  5.165  0.98  0.97 |  0.11901  0.11901 |  0.00083  0.00083 |  0.001587  0.001587 |  0.000893  0.000893 |    0.001918  1.00 |     1.2e-14   0.0e+00
+  5.539  0.95  0.91 |  0.11677  0.11677 |  0.00277  0.00277 |  0.001556  0.001556 |  0.000876  0.000876 |    0.001860  1.00 |     1.2e-14   0.0e+00
+  6.087  0.89  0.83 |  0.11348  0.11348 |  0.00575  0.00575 |  0.001509  0.001509 |  0.000851  0.000851 |    0.001775  0.99 |     1.3e-14   0.0e+00
+  6.761  0.82  0.72 |  0.10944  0.10944 |  0.00965  0.00965 |  0.001449  0.001449 |  0.000821  0.000821 |    0.001670  0.97 |     1.5e-14   1.7e-18
+  7.500  0.75  0.60 |  0.10500  0.10500 |  0.01429  0.01429 |  0.001379  0.001379 |  0.000787  0.000788 |    0.001555  0.94 |     1.6e-14   8.7e-18
+  8.239  0.68  0.48 |  0.10056  0.10056 |  0.01933  0.01933 |  0.001303  0.001303 |  0.000754  0.000754 |    0.001440  0.88 |     1.4e-14   3.5e-18
+  8.913  0.61  0.37 |  0.09652  0.09652 |  0.02432  0.02432 |  0.001230  0.001230 |  0.000724  0.000724 |    0.001335  0.79 |     1.8e-14   3.5e-18
+  9.461  0.55  0.29 |  0.09323  0.09323 |  0.02871  0.02871 |  0.001166  0.001166 |  0.000699  0.000699 |    0.001250  0.69 |     0.0e+00   3.5e-18
+  9.835  0.52  0.23 |  0.09099  0.09099 |  0.03188  0.03188 |  0.001121  0.001121 |  0.000682  0.000682 |    0.001192  0.60 |     1.9e-14   6.9e-18
+ 10.000  0.50  0.20 |  0.09000  0.09000 |  0.03333  0.03333 |  0.001100  0.001100 |  0.000675  0.000675 |    0.001166  0.56 |     0.0e+00   0.0e+00
+---------------------------------------------------------------------------------------------------------------------------------------------------
+max relative error (A, Ix, Iy): 3.98e-14 %
+max absolute error (Cy): 8.67e-18
+```
+
+The numerical discrepancies are at machine precision. The largest relative error over $A$, $I_x$, and $I_y$ is $3.98\times10^{-14}\%$, while the largest absolute discrepancy in $C_y$ is $8.67\times10^{-18}$. These results confirm that the stacked CSF representation reproduces the closed-form weighted-section quantities over both the isotropic tapered interval and the participation-degraded interval.
+
+The last two reported columns, $J_{\mathrm{roark,eq}}$ and the fidelity indicator, document the CSF torsional read-out over the same stations. Their trend is consistent with the imposed participation fields: the fidelity remains equal to one while the shear/torsion participation is uniform, and then decreases as the lower-zone shear/torsion participation departs from the upper-zone value. They are reported for completeness and diagnostic interpretation, not as exact torsional benchmark values.
+
+This example complements the NREL tower validation by isolating the sectional-field construction itself. The geometry is simple by design, but the model exercises the key CSF mechanisms required for more general applications: interval composition, non-prismatic geometry, isotropic participation, independent participation fields, and station-wise extraction of solver-facing quantities from a continuous member representation.
+
+This example complements the NREL tower validation by isolating the sectional-field construction itself. The geometry is simple by design, but the model exercises the key CSF mechanisms required for more general applications: interval composition, non-prismatic geometry, isotropic participation, independent participation fields, and station-wise extraction of solver-facing quantities from a continuous member representation.
