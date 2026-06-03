@@ -479,8 +479,6 @@ A second verification example is introduced to isolate the construction of the c
 The example consists of two continuous CSF intervals joined in a single global member representation. The geometry and participation fields are prescribed so that two distinct mechanisms act simultaneously: the lower component changes its height along the axis, whereas the upper component keeps a constant geometry but receives a variable axial/bending participation factor. The coefficient of the upper participation law is selected so that the loss of weighted area in the upper component is exactly compensated by the geometric variation of the lower component. Consequently, the total weighted area remains constant along the member, while the weighted centroid and bending inertia about the horizontal axis remain non-constant.
 
 This construction verifies three aspects of the formulation under controlled conditions. First, it checks the continuity and composition of multiple CSF intervals through `CSFStacked`. Second, it verifies that geometric variation and participation-field variation can be assigned to different section subdomains within the same global member. Third, it shows that a constant total weighted area does not imply a constant weighted section, because the internal distribution of the participating area changes continuously along the axis. The closed-form solution therefore provides a direct reference for the CSF-computed values of `A`, `Cy`, `Ix`, and `Iy`.
-::: 
-
 
 ### 6.1 Model definition
 
