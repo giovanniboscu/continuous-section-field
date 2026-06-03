@@ -480,68 +480,93 @@ The example consists of two continuous CSF intervals joined in a single global m
 
 This construction verifies three aspects of the formulation under controlled conditions. First, it checks the continuity and composition of multiple CSF intervals through `CSFStacked`. Second, it verifies that geometric variation and participation-field variation can be assigned to different section subdomains within the same global member. Third, it shows that a constant total weighted area does not imply a constant weighted section, because the internal distribution of the participating area changes continuously along the axis. The closed-form solution therefore provides a direct reference for the CSF-computed values of `A`, `Cy`, `Ix`, and `Iy`.
 
-
 ### 6.1 Model definition
 
-The member has total length $L=10$ and is composed of two continuous intervals joined at $z=5$. Each interval is represented by a `ContinuousSectionField`, and the two fields are concatenated through `CSFStack`. 
+The member has total length $L=10$ and is represented by two continuous CSF intervals joined at $z=5$. The first interval is defined in `stacked_0.yaml` over $0 \le z \le 5$, and the second interval is defined in `stacked_1.yaml` over $5 \le z \le 10$. The two fields are concatenated through `CSFStacked`. A local coordinate $t \in [0,1]$ is introduced independently on each interval.
 
-The cross-section is decomposed into two rectangular zones, denoted as lower and upper. In the first interval this decomposition is mechanically neutral, since both zones have unit axial/bending participation and the shear/torsion participation is obtained from the isotropic relation. The first interval is therefore modelled as a fully participating tapered section using the isotropic carrier relation. The same zone structure is retained in the second interval, where the geometry is constant but the lower zone is assigned independent axial/bending and shear/torsion participation laws. The second interval is therefore no longer isotropic in the sense of Section 2.2, because $w_i(z)$ and $\kappa_i(z)$ are prescribed independently for the degraded zone.
-
-The resulting stacked member is shown in Figure 6, which provides the geometric
-configuration used in the station-wise verification below.
-
-<p align="center">
-  <em>Figure 6. Stacked CSF member with tapered geometry and independent participation fields.</em>
-  <img width="795" height="489" alt="image" src="https://github.com/user-attachments/assets/f5b519a9-39eb-4605-9e0d-f759471f675c" />
-</p>
-
-
-
-The first interval, $0 \le z \le 5$, is a tapered rectangular section. The width is constant, $B=0.30$, while the total height decreases linearly from $0.60$ to $0.40$. Both zones have unit axial/bending participation,
+The cross-section is decomposed into three stacked rectangular components: `upper`, `middle`, and `lower`. All components have constant width
 
 $$
-w_{\mathrm{lower}}(z)=w_{\mathrm{upper}}(z)=1 .
+B = 0.30 .
 $$
 
-The shear/torsion participation is defined through the isotropic relation introduced in Section 2.2,
-
-
+The `upper` component is fixed between $y=0$ and $y=0.20$, and the `middle` component is fixed between $y=-0.30$ and $y=0$. Therefore,
 
 $$
-\kappa_i(z)=\frac{w_i(z)}{2(1+\nu)} .
+h_u = 0.20, \qquad h_m = 0.30 .
 $$
 
-For this interval the value $\nu=-0.5$ is used as a carrier normalization, not as a physical material parameter. It gives
+The top edge of the `lower` component is fixed at $y=-0.30$, while its lower edge varies between the two end sections. Hence, only the `lower` component has a geometric variation. Its height is denoted by $h_l(t)$.
+
+In the first interval, $0 \le z \le 5$, the local coordinate is
 
 $$
-\kappa_i(z)=w_i(z)=1 ,
+t = \frac{z}{5}.
 $$
 
-so that the first interval isolates the effect of geometric tapering.
-
-The second interval, $5 \le z \le 10$, has constant rectangular geometry with total height $0.40$, again divided into lower and upper zones of equal height. The upper zone remains fully participating,
+The `lower` component height decreases linearly from $0.30$ to $0.20$:
 
 $$
-w_{\mathrm{upper}}(z)=1, \qquad \kappa_{\mathrm{upper}}(z)=1 .
+h_l(t) = 0.30 - 0.10t .
 $$
 
-The lower zone is assigned two independent participation laws. With
+In the second interval, $5 \le z \le 10$, the local coordinate is
 
 $$
-t=\frac{z-5}{5}, \qquad 0 \le t \le 1 ,
+t = \frac{z-5}{5}.
 $$
 
-the axial/bending and shear/torsion fields are
+The `lower` component height increases linearly from $0.20$ to $0.30$:
 
 $$
-w_{\mathrm{lower}}(z)=1-0.5t^2 ,
+h_l(t) = 0.20 + 0.10t .
 $$
 
+The axial/bending participation law is assigned explicitly only to the `upper` component. No `weight_laws` override is assigned to the `middle` and `lower` components; their axial/bending participation therefore remains equal to the value specified in the section definitions,
+
 $$
-\kappa_{\mathrm{lower}}(z)=1-0.8t^2 .
+w_m(t) = w_l(t) = 1 .
 $$
 
-Thus the lower-zone axial/bending participation decreases nonlinearly from $1.0$ to $0.5$, whereas its shear/torsion participation decreases nonlinearly from $1.0$ to $0.2$. The shear/torsion participation decreases more strongly than the axial/bending participation over the same interval. This second interval therefore departs from the isotropic relation and tests the independent assignment of $w_i(z)$ and $\kappa_i(z)$ within the same stacked member.
+For the first interval, the `upper` axial/bending participation is
+
+$$
+w_u(t) = 1 - 0.5(1-t),
+$$
+
+whereas for the second interval it is
+
+$$
+w_u(t) = 1 - 0.5t .
+$$
+
+Thus, the `upper` component has $w_u=0.5$ at both ends of the global member and $w_u=1$ at the junction $z=5$.
+
+The shear/torsion participation input follows the same explicit assignment for the `upper` component, with
+
+$$
+\kappa_u(t) = 1 - 0.8(1-t)
+$$
+
+on $0 \le z \le 5$, and
+
+$$
+\kappa_u(t) = 1 - 0.8t
+$$
+
+on $5 \le z \le 10$. The YAML input also contains the default rule
+
+```yaml
+shear_weight_laws:
+  - 'upper,upper: ...'
+  - 'iso(0.2)'
+```
+
+so that `iso(0.2)` supplies the shear/torsion carrier relation for the components not explicitly matched by the `upper,upper` law. This shear/torsion field is part of the CSF model definition, but it is not used in the closed-form verification of $A$, $C_y$, $I_x$, and $I_y$.
+
+The coefficient $0.5$ in the `upper` axial/bending participation law is selected so that the weighted-area reduction of the `upper` component compensates the geometric variation of the `lower` component. Since the `upper` area is $0.30 \times 0.20 = 0.06$, the variation induced by the factor $0.5$ is $0.03$. This exactly balances the variation of the `lower` geometric area, which changes by $0.30 \times 0.10 = 0.03$. Consequently, the total weighted area remains constant along the member. The internal distribution of the weighted area, however, is not constant, and therefore the centroid coordinate $C_y$ and the bending inertia $I_x$ vary along $z$.
+
+The closed-form comparison reported below is restricted to the weighted sectional quantities $A$, $C_y$, $I_x$, and $I_y$. The quantities associated with torsion are treated only as additional diagnostics in the repository.
 
 ### 6.2 YAML representation of the participation fields
 
