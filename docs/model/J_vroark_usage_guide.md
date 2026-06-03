@@ -1,4 +1,4 @@
-# Roark-based torsional indicator — engineering note
+# Roark-based torsional indicator - engineering note
 
 ## Purpose
 
