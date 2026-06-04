@@ -538,7 +538,7 @@ Representative values are:
 
 ## CSF versus closed-form comparison
 
-The Python script evaluates the `CSFStacked` model at Gauss-Lobatto stations on each interval and compares the CSF-computed values with the closed-form reference.
+The `CSFStacked` model is evaluated by CSF at Gauss-Lobatto stations on each interval. The resulting CSF-computed sectional quantities are then compared with the closed-form reference.
 
 The station set is built as follows:
 
