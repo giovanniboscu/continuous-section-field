@@ -1,0 +1,59 @@
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        upper0:
+          weight: 1.0
+          vertices:
+            - [-0.15,  0.00]
+            - [ 0.15,  0.00]
+            - [ 0.15,  0.20]
+            - [-0.15,  0.20]
+
+        middle0:
+          weight: 1.0
+          vertices:
+            - [-0.15, -0.30]
+            - [ 0.15, -0.30]
+            - [ 0.15,  0.00]
+            - [-0.15,  0.00]
+
+        lower0:
+          weight: 1.0
+          vertices:
+            - [-0.15, -0.60]
+            - [ 0.15, -0.60]
+            - [ 0.15, -0.30]
+            - [-0.15, -0.30]     
+    S1:
+      z: 5.0
+      polygons:
+        upper0:
+          weight: 1.0
+          vertices:
+            - [-0.15,  0.00]
+            - [ 0.15,  0.00]
+            - [ 0.15,  0.20]
+            - [-0.15,  0.20]
+        middle0:
+          weight: 1.0
+          vertices:
+            - [-0.15, -0.30]
+            - [ 0.15, -0.30]
+            - [ 0.15,  0.00]
+            - [-0.15,  0.00]
+
+        lower0:
+          weight: 1.0
+          vertices:
+            - [-0.15, -0.50]
+            - [ 0.15, -0.50]
+            - [ 0.15, -0.30]
+            - [-0.15, -0.30]                       
+  shear_weight_laws:
+    - 'upper0,upper0: 1.0 - 0.8*(1.0-t)'
+    - 'lower0,lower0: iso(0.2)'    
+    - 'middle0,middle0: iso(0.2)'   
+  weight_laws:
+    - 'upper0,upper0: 1.0 - 0.5*(1.0 - t)'
