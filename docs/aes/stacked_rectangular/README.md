@@ -194,7 +194,7 @@ The `upper` axial/bending participation decreases from $1.0$ at $z = 5$ to $0.5$
 <img width="989" height="475" alt="image" src="https://github.com/user-attachments/assets/43f37ed8-e3ac-4537-a1bc-ed8433b2571a" />
 
 <p align="center">
-  <em>Figure 4. Shear/torsion participation field of the upper component in the first CSF interval. The field follows the same linear variation from 0.20 at z = 5 to 1.00 at z = 10.</em>
+  <em>Figure 4. Shear/torsion participation field of the upper component in the second CSF interval. The field decreases linearly from 1.00 at z = 5 to 0.20 at z = 10.</em>
 </p>
 
 <img width="986" height="453" alt="image" src="https://github.com/user-attachments/assets/c91e77b7-4ea8-4ccb-8a2a-08c4bb5b04e5" />
