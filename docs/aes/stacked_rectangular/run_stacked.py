@@ -67,9 +67,21 @@ def local_coordinate(z):
 
 
 def upper_laws(z):
-    """Return the upper-component weight and shear-weight laws at z."""
-    segment, t = local_coordinate(z)
+    """
+    Evaluate the prescribed analytical laws of the upper component at the
+    global coordinate z.
 
+    The function first maps z to the corresponding CSF interval and to the
+    local interpolation coordinate t in that interval. It then returns the
+    axial/bending participation factor w_upper and the shear/torsion
+    participation factor sw_upper assigned to the upper component in the
+    corresponding YAML file.
+
+    These values are used only for the closed-form comparison and for printing
+    the verification table.
+    
+    segment, t = local_coordinate(z)
+    """
     if segment == 0:
         # stacked_0.yaml, z in [0, 5]
         # weight_laws:
@@ -91,7 +103,20 @@ def upper_laws(z):
 
 
 def lower_geometry(z):
-    """Return the lower-component height and centroid coordinate at z."""
+    """
+    Evaluate the analytical geometry assigned to the lower component.
+
+    The global coordinate z is converted into the active segment and local
+    coordinate t. The lower-component height is then reconstructed from the
+    linear law used in the corresponding YAML interval.
+
+    The function returns:
+    - h_lower: lower-component height at z
+    - y_lower: centroid coordinate of the lower component at z
+
+    These values are used only in the closed-form reference calculation.
+    """
+    
     segment, t = local_coordinate(z)
 
     if segment == 0:
@@ -109,7 +134,21 @@ def lower_geometry(z):
 
 
 def reference(z):
-    """Closed-form weighted A, Cy, Ix, Iy for the stacked section."""
+    """
+    Evaluate the closed-form reference section properties at the global
+    coordinate z.
+
+    The reference is built directly from the analytical rectangular-component
+    geometry and from the prescribed upper-component participation law. It is
+    used to compare the CSF-evaluated section properties against independent
+    expressions for:
+
+    - A  : weighted area
+    - Cy : weighted vertical centroid coordinate
+    - Ix : weighted second moment about the horizontal centroidal axis
+    - Iy : weighted second moment about the vertical centroidal axis
+    """   
+    
     _, _, w_upper, _ = upper_laws(z)
     h_lower, y_lower = lower_geometry(z)
 
@@ -178,7 +217,19 @@ def print_law_summary():
 
 
 def lobatto_stations():
-    """Return the global Gauss-Lobatto stations used for the comparison."""
+    """
+    Build the global list of Gauss-Lobatto stations used in the comparison.
+
+    The stations are generated separately on the two CSF intervals:
+
+    - first interval  : [L0, L1]
+    - second interval : [L1, L]
+
+    The shared junction station z = L1 appears as the last station of the
+    first interval and as the first station of the second interval. The first
+    station of the second interval is therefore skipped to avoid duplicating
+    the junction in the comparison table.
+    """
     stations = list(
         compute_lobatto_integration_points(
             L0,
