@@ -68,20 +68,14 @@ def local_coordinate(z):
 
 def upper_laws(z):
     """
-    Evaluate the prescribed analytical laws of the upper component at the
-    global coordinate z.
+    Evaluate the analytical participation laws assigned to the upper component.
 
-    The function first maps z to the corresponding CSF interval and to the
-    local interpolation coordinate t in that interval. It then returns the
-    axial/bending participation factor w_upper and the shear/torsion
-    participation factor sw_upper assigned to the upper component in the
-    corresponding YAML file.
-
-    These values are used only for the closed-form comparison and for printing
-    the verification table.
-    
-    segment, t = local_coordinate(z)
+    The global coordinate z is converted into the active segment and local
+    coordinate t. The returned values reproduce the upper-component
+    weight_law and shear_weight_law used in the corresponding YAML interval.
     """
+    segment, t = local_coordinate(z)
+
     if segment == 0:
         # stacked_0.yaml, z in [0, 5]
         # weight_laws:
@@ -116,22 +110,21 @@ def lower_geometry(z):
 
     These values are used only in the closed-form reference calculation.
     """
-    
     segment, t = local_coordinate(z)
 
     if segment == 0:
-        # stacked_0.yaml: lower height decreases from 0.30 to 0.20.
+        # stacked_0.yaml: the lower height decreases linearly from 0.30 to 0.20.
         h_lower = 0.30 - 0.10 * t
     else:
-        # stacked_1.yaml: lower height increases from 0.20 to 0.30.
+        # stacked_1.yaml: the lower height increases linearly from 0.20 to 0.30.
         h_lower = 0.20 + 0.10 * t
 
-    # The lower top edge is fixed at y = -0.30.
-    # Therefore the lower centroid is shifted by h_lower / 2 below that edge.
+    # The lower top edge remains fixed at y = -0.30.
+    # Since the lower component is rectangular, its centroid is located
+    # h_lower / 2 below that fixed top edge.
     y_lower = -0.30 - 0.5 * h_lower
 
     return h_lower, y_lower
-
 
 def reference(z):
     """
@@ -147,33 +140,37 @@ def reference(z):
     - Cy : weighted vertical centroid coordinate
     - Ix : weighted second moment about the horizontal centroidal axis
     - Iy : weighted second moment about the vertical centroidal axis
-    """   
-    
+    """
     _, _, w_upper, _ = upper_laws(z)
     h_lower, y_lower = lower_geometry(z)
 
     # Geometric areas of the three rectangular components.
+    # The upper and middle heights are constant, while the lower height depends
+    # on z through lower_geometry().
     A_upper_geom = B * H_UPPER
     A_middle_geom = B * H_MIDDLE
     A_lower_geom = B * h_lower
 
-    # Weighted areas.
-    # Only the upper component receives the axial/bending weight w_upper here.
+    # Areas entering the weighted-area calculation.
+    # In this comparison, the upper contribution is multiplied by the
+    # prescribed axial/bending participation factor w_upper.
     A_upper = w_upper * A_upper_geom
     A_middle = A_middle_geom
     A_lower = A_lower_geom
 
-    # Total weighted area.
+    # Total weighted area of the stacked section.
     A = A_upper + A_middle + A_lower
 
-    # Weighted centroid coordinate.
+    # Weighted vertical centroid coordinate.
+    # Each component contributes through its area term and its own centroid
+    # coordinate.
     Cy = (
         A_upper * Y_UPPER
         + A_middle * Y_MIDDLE
         + A_lower * y_lower
     ) / A
 
-    # Local second moments about each component centroid.
+    # Local second moments of each rectangular component about its own centroid.
     Ix_upper_local = B * H_UPPER**3 / 12.0
     Ix_middle_local = B * H_MIDDLE**3 / 12.0
     Ix_lower_local = B * h_lower**3 / 12.0
@@ -182,16 +179,18 @@ def reference(z):
     Iy_middle_local = H_MIDDLE * B**3 / 12.0
     Iy_lower_local = h_lower * B**3 / 12.0
 
-    # Weighted second moment about the global weighted centroid.
-    # The upper component receives the same weight used for A and Cy.
+    # Weighted second moment about the global weighted centroidal x-axis.
+    # The parallel-axis terms account for the distance between each component
+    # centroid and the global weighted centroid Cy.
     Ix = (
         w_upper * (Ix_upper_local + A_upper_geom * (Y_UPPER - Cy) ** 2)
         + Ix_middle_local + A_middle_geom * (Y_MIDDLE - Cy) ** 2
         + Ix_lower_local + A_lower_geom * (y_lower - Cy) ** 2
     )
 
-    # Iy has no parallel-axis contribution because all rectangles share
-    # the same horizontal centroid coordinate in this example.
+    # Weighted second moment about the global y-axis.
+    # No horizontal parallel-axis term appears in this example because the
+    # rectangular components are aligned on the same vertical axis.
     Iy = (
         w_upper * Iy_upper_local
         + Iy_middle_local
@@ -230,6 +229,7 @@ def lobatto_stations():
     station of the second interval is therefore skipped to avoid duplicating
     the junction in the comparison table.
     """
+
     stations = list(
         compute_lobatto_integration_points(
             L0,
