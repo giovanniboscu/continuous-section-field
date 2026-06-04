@@ -58,7 +58,7 @@ The case is defined by the following files:
 |---|---|
 | `stacked_0.yaml` | First continuous CSF interval, $0 \le z \le 5$ |
 | `stacked_1.yaml` | Second continuous CSF interval, $5 \le z \le 10$ |
-| `run_stacked_closed_form.py` | Builds the `CSFStacked` object, evaluates the closed-form reference, compares CSF values, exports station-wise CSV files, and generates plots |
+| `run_stacked.py` | Builds the `CSFStacked` object, evaluates the closed-form reference, compares CSF values, exports station-wise CSV files, and generates plots |
 | `out/lobatto_station_export_*.csv` | Station-wise CSV exports of the evaluated CSF geometry and participation fields |
 
 The YAML files define the continuous model. The CSV files are station-wise exports generated after evaluating that model at selected stations.
