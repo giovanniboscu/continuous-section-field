@@ -568,9 +568,12 @@ These values are at floating-point roundoff level for this closed-form compariso
 
 ## Station-wise CSV export
 
-The CSV export is a station-wise representation of the evaluated CSF model. It is not the model definition.
+The CSV export is a sampled, station-wise output obtained from the continuous CSF model. It is not the source definition of the model: the continuous geometry interpolation and participation fields are defined in the YAML files and assembled in `CSFStacked`.
+
+The CSV files record what the model returns after evaluation at selected stations. Therefore, each CSV represents a finite set of sampled sections, not the continuous sectional field itself.
 
 The sequence is:
+
 
 ```text
 continuous CSF model
@@ -668,21 +671,6 @@ with filenames of the form:
 ```text
 out/lobatto_station_export_<z>.csv
 ```
-
----
-
-## Suggested figure set for the repository page
-
-The README is intended to remain understandable even before figures are inspected, but the following figures are useful for documenting the case:
-
-| Figure | Suggested filename | Purpose |
-|---|---|---|
-| Global member representation | `figures/stacked_member_3d.png` | Shows the two continuous CSF intervals and the stacked geometry |
-| Sectional-property plot | `figures/stack_properties.png` | Shows constant $A$ and varying $C_y$, $I_x$ |
-| Section at $z = 2.5$ | `figures/section_z2p5_vertex_ids.png` | Shows the polygonal zones and vertex ordering |
-| Station-wise section at $z = 7$ | `figures/section_z7.png` | Connects the evaluated section with the CSV export |
-| `upper` axial/bending participation | `figures/upper_weight.png` | Shows $w_u(z)$ over the member axis |
-| `upper` shear/torsion participation | `figures/upper_shear_weight.png` | Shows $\kappa_u(z)$ over the member axis |
 
 ---
 
