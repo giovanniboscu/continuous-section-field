@@ -32,16 +32,6 @@ This makes the case useful as a controlled verification of the continuous field 
 </p>
 
 
-<p align="center">
-  <em> Figure 2. Section at z = 2.5.</em>
-</p>
-
-
-
-<p align="center">
-  <img width="264" height="522" alt="image" src="https://github.com/user-attachments/assets/b4aff836-bb40-474b-879b-f7a5f3205f0d" />
-
-</p>
 
 
 ---
@@ -76,6 +66,19 @@ This setup separates geometric variation from participation-field variation. CSF
 ## Geometry
 
 All three components have constant width
+
+<p align="center">
+  <em> Figure 2. Section at z = 2.5.</em>
+</p>
+
+
+
+<p align="center">
+  <img width="264" height="522" alt="image" src="https://github.com/user-attachments/assets/b4aff836-bb40-474b-879b-f7a5f3205f0d" />
+
+</p>
+
+
 
 $$
 B = 0.30 .
@@ -182,6 +185,12 @@ The `upper` axial/bending participation decreases from $1.0$ at $z = 5$ to $0.5$
 ---
 
 ## Shear/torsion participation and isotropic shortcut
+
+<img width="982" height="416" alt="image" src="https://github.com/user-attachments/assets/3fcffd33-1fb1-4df0-8f61-e6d9e19e8411" />
+
+
+
+
 
 The shear/torsion participation field $\kappa_i(z)$ is also defined per component.
 
