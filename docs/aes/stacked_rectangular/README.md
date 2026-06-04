@@ -652,7 +652,7 @@ idx_polygon,idx_container,s0_name,s1_name,w,shear_w,poisson,vertex_i,x,y
 From the directory containing the YAML files and the Python script:
 
 ```bash
-python run_stacked_closed_form.py
+python run_stacked.py
 ```
 
 The script performs the following operations:
