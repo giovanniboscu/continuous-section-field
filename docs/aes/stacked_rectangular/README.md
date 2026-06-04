@@ -36,7 +36,6 @@ The axial/bending participation assigned to the `upper` component is selected so
 This makes the case useful as a controlled verification of the continuous field itself. No structural solver is involved. The CSF-computed weighted sectional quantities are compared directly against a closed-form reference for $A$, $C_y$, $I_x$, and $I_y$.
 
  
-
 <p align="center">
   <em> Figure 1. Global CSF member representation</em>
 </p>
@@ -44,9 +43,6 @@ This makes the case useful as a controlled verification of the continuous field 
 <p align="center">
   <img width="816" height="706" alt="image" src="https://github.com/user-attachments/assets/3fefab64-20c4-4a84-914a-6a561c1b3cf5" />
 </p>
-
-
-
 
 ---
 
