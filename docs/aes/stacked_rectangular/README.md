@@ -623,6 +623,7 @@ The corresponding CSV metadata are:
 The empty `poisson` field for `upper` does not indicate missing geometry or invalid data. It indicates that the shear/torsion participation was assigned directly rather than derived through the isotropic shortcut.
 
  **station-wise section at $z = 7$**  
+ [lobatto_station_export_7.csv](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/out/lobatto_station_export_7.csv)
 ```
 ## GEOMETRY EXPORT ##
 # z=7.0
