@@ -186,10 +186,13 @@ The `upper` axial/bending participation decreases from $1.0$ at $z = 5$ to $0.5$
 
 ## Shear/torsion participation and isotropic shortcut
 
-<img width="982" height="416" alt="image" src="https://github.com/user-attachments/assets/3fcffd33-1fb1-4df0-8f61-e6d9e19e8411" />
 
 
 
+<img width="989" height="475" alt="image" src="https://github.com/user-attachments/assets/43f37ed8-e3ac-4537-a1bc-ed8433b2571a" />
+
+
+<img width="986" height="453" alt="image" src="https://github.com/user-attachments/assets/c91e77b7-4ea8-4ccb-8a2a-08c4bb5b04e5" />
 
 
 The shear/torsion participation field $\kappa_i(z)$ is also defined per component.
