@@ -375,10 +375,10 @@ I_x(z) =
 w_i(z)
 \left[
 I_{x,i}^{\mathrm{local}}(z)
-+ B h_i(z) \left(y_i(z) - C_y(z)\right)^2
-\right] .
++
+A_i(z)\left(y_i(z)-C_y(z)\right)^2
+\right].
 $$
-
 The weighted second moment about the vertical axis is
 
 $$
