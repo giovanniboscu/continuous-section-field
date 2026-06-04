@@ -563,7 +563,7 @@ shear_weight_laws:
   - 'iso(0.2)'
 ```
 
-so that `iso(0.2)` supplies the shear/torsion carrier relation for the components not explicitly matched by the `upper,upper` law. This shear/torsion field is part of the CSF model definition, but it is not used in the closed-form verification of $A$, $C_y$, $I_x$, and $I_y$.
+so that `iso(0.2)` supplies the shear/torsion partecipation relation for the components not explicitly matched by the `upper,upper` law. This shear/torsion field is part of the CSF model definition, but it is not used in the closed-form verification of $A$, $C_y$, $I_x$, and $I_y$.
 
 The coefficient $0.5$ in the `upper` axial/bending participation law is selected so that the weighted-area reduction of the `upper` component compensates the geometric variation of the `lower` component. Since the `upper` area is $0.30 \times 0.20 = 0.06$, the variation induced by the factor $0.5$ is $0.03$. This exactly balances the variation of the `lower` geometric area, which changes by $0.30 \times 0.10 = 0.03$. Consequently, the total weighted area remains constant along the member. The internal distribution of the weighted area, however, is not constant, and therefore the centroid coordinate $C_y$ and the bending inertia $I_x$ vary along $z$.
 
