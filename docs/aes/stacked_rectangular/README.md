@@ -24,20 +24,23 @@ This makes the case useful as a controlled verification of the continuous field 
  
 
 <p align="center">
-  <img width="816" height="706" alt="image" src="https://github.com/user-attachments/assets/3fefab64-20c4-4a84-914a-6a561c1b3cf5" />
-</p>
-
-<p align="center">
   <em> Figure 1. Global CSF member representation</em>
 </p>
 
 <p align="center">
-  <img width="264" height="522" alt="image" src="https://github.com/user-attachments/assets/b4aff836-bb40-474b-879b-f7a5f3205f0d" />
-
+  <img width="816" height="706" alt="image" src="https://github.com/user-attachments/assets/3fefab64-20c4-4a84-914a-6a561c1b3cf5" />
 </p>
+
 
 <p align="center">
   <em> Figure 2. Section at z = 2.5.</em>
+</p>
+
+
+
+<p align="center">
+  <img width="264" height="522" alt="image" src="https://github.com/user-attachments/assets/b4aff836-bb40-474b-879b-f7a5f3205f0d" />
+
 </p>
 
 
