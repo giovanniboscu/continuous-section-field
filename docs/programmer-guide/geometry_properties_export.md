@@ -343,11 +343,11 @@ This function targets OpenSees-oriented workflows, but the broader point remains
 ```python
 from csf import write_opensees_geometry
 
-z_stations = field.get_lobatto_integration_points(n_points=5)
+n_points = number of lobatto points
 
 write_opensees_geometry(
     field=field,
-    z_values=z_stations,
+    n_points=10,
     E_ref=210e9,
     nu=0.30,
     filename="out/geometry.tcl",
