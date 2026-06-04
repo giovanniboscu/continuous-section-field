@@ -21,8 +21,25 @@ The axial/bending participation assigned to the `upper` component is selected so
 
 This makes the case useful as a controlled verification of the continuous field itself. No structural solver is involved. The CSF-computed weighted sectional quantities are compared directly against a closed-form reference for $A$, $C_y$, $I_x$, and $I_y$.
 
- **global CSF member representation**  
-<img width="816" height="706" alt="image" src="https://github.com/user-attachments/assets/3fefab64-20c4-4a84-914a-6a561c1b3cf5" />
+ 
+
+<p align="center">
+  <img width="816" height="706" alt="image" src="https://github.com/user-attachments/assets/3fefab64-20c4-4a84-914a-6a561c1b3cf5" />
+</p>
+
+<p align="center">
+  <em> Figure 1. Global CSF member representation</em>
+</p>
+
+<p align="center">
+  <img width="264" height="522" alt="image" src="https://github.com/user-attachments/assets/b4aff836-bb40-474b-879b-f7a5f3205f0d" />
+
+</p>
+
+<p align="center">
+  <em> Figure 2. Section at z = 2.5.</em>
+</p>
+
 
 ---
 
@@ -480,11 +497,24 @@ The corresponding CSV metadata are:
 
 The empty `poisson` field for `upper` does not indicate missing geometry or invalid data. It indicates that the shear/torsion participation was assigned directly rather than derived through the isotropic shortcut.
 
-> **Figure placeholder - station-wise section at $z = 7$**  
-> Add a cross-section plot or annotated CSV-export view showing `upper`, `middle`, and `lower` at $z = 7$.
->
-> `![Station-wise section at z=7](figures/section_z7.png)`
-
+ **station-wise section at $z = 7$**  
+```
+## GEOMETRY EXPORT ##
+# z=7.0
+idx_polygon,idx_container,s0_name,s1_name,w,shear_w,poisson,vertex_i,x,y
+0,,upper,upper,0.8,0.68,,0,-0.15,0
+0,,upper,upper,0.8,0.68,,1,0.15,0
+0,,upper,upper,0.8,0.68,,2,0.15,0.2
+0,,upper,upper,0.8,0.68,,3,-0.15,0.2
+1,,middle,middle,1,0.416666666667,0.2,0,-0.15,-0.3
+1,,middle,middle,1,0.416666666667,0.2,1,0.15,-0.3
+1,,middle,middle,1,0.416666666667,0.2,2,0.15,0
+1,,middle,middle,1,0.416666666667,0.2,3,-0.15,0
+2,,lower,lower,1,0.416666666667,0.2,0,-0.15,-0.54
+2,,lower,lower,1,0.416666666667,0.2,1,0.15,-0.54
+2,,lower,lower,1,0.416666666667,0.2,2,0.15,-0.3
+2,,lower,lower,1,0.416666666667,0.2,3,-0.15,-0.3
+```
 ---
 
 ## Running the case
