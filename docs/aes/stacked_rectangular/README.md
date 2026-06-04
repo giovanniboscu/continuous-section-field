@@ -1,7 +1,7 @@
 # Stacked rectangular member with compensated geometric variation and participation-field variation
 [run_stacked.py](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/run_stacked.py)
 
-## General description
+## Purpose of this document
 
 This verification program evaluates the sectional properties computed by CSF and compares them with closed-form reference solutions. The case is designed to test a stacked member composed of two continuous intervals with hybrid sectional behavior: some components use the isotropic shear-weight shortcut, while the upper component uses independently prescribed axial/bending and shear/torsion participation laws.
 
