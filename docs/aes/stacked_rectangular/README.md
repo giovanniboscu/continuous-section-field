@@ -1,19 +1,30 @@
 # Stacked rectangular member with compensated geometric variation and participation-field variation
+[run_stacked.py](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/run_stacked.py)
 
 ## General description
-
-[run_stacked.py](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/run_stacked.py)
 
 This verification program evaluates the sectional properties computed by CSF and compares them with closed-form reference solutions. The case is designed to test a stacked member composed of two continuous intervals with hybrid sectional behavior: some components use the isotropic shear-weight shortcut, while the upper component uses independently prescribed axial/bending and shear/torsion participation laws.
 
 
 The member has total length $L = 10$ and is represented by two continuous CSF intervals joined at $z = 5$. Each interval defines reference cross-sections, polygonal zones, and longitudinal participation fields. `CSFStacked` concatenates the two intervals into a single global member representation that can be evaluated at any station $z$ along the member axis./
 
+
+
+<p align="center">
+  <em>Figure 0. section composition.</em>
+
+<p align="center">
+ <img width="408" height="790" alt="image" src="https://github.com/user-attachments/assets/b5619f56-ae89-4255-bccc-8f18398e3e12" />
+
+</p>
+
+
 The case is intentionally simple in geometry and non-trivial in sectional behaviour. The cross-section is a stacked rectangular section composed of three components:
 
 - `upper`
 - `middle`
 - `lower`
+
 
 Two independent mechanisms are prescribed:
 
