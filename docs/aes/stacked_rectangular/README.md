@@ -262,101 +262,160 @@ The distinction above concerns the participation-field assignment in the continu
 
 ## Compensation mechanism
 
-The total weighted area is
+The weighted area of the section is
 
-$$
-A(z) = w_u(z) A_u^{\mathrm{geom}} + A_m^{\mathrm{geom}} + A_l^{\mathrm{geom}}(z) .
-$$
+```math
+A(z) =
+w_u(z) A_u^{\mathrm{geom}}
++
+w_m(z) A_m^{\mathrm{geom}}
++
+w_l(z) A_l^{\mathrm{geom}}(z).
+```
+
+In this example,
+
+```math
+w_m(z) = w_l(z) = 1,
+```
+
+therefore
+
+```math
+A(z) =
+w_u(z) A_u^{\mathrm{geom}}
++
+A_m^{\mathrm{geom}}
++
+A_l^{\mathrm{geom}}(z).
+```
 
 The fixed geometric areas of the `upper` and `middle` components are
 
-$$
+```math
 A_u^{\mathrm{geom}} = B h_u = 0.30 \cdot 0.20 = 0.06,
-$$
+```
 
-$$
-A_m^{\mathrm{geom}} = B h_m = 0.30 \cdot 0.30 = 0.09 .
-$$
+```math
+A_m^{\mathrm{geom}} = B h_m = 0.30 \cdot 0.30 = 0.09.
+```
 
 The `lower` geometric area is
 
-$$
-A_l^{\mathrm{geom}}(t) = B h_l(t) .
-$$
+```math
+A_l^{\mathrm{geom}}(t) = B h_l(t).
+```
 
-### First interval
+### First interval: $0 \le z \le 5$
 
-For $0 \le z \le 5$,
+The local coordinate is
 
-$$
+```math
+t = \frac{z}{5}.
+```
+
+In this interval,
+
+```math
 w_u(t) = 0.5 + 0.5t,
 \qquad
-h_l(t) = 0.30 - 0.10t .
-$$
+h_l(t) = 0.30 - 0.10t.
+```
 
-Thus,
+The weighted contribution of the `upper` component is
 
-$$
+```math
 w_u(t) A_u^{\mathrm{geom}}
-= (0.5 + 0.5t) \cdot 0.06
-= 0.03 + 0.03t,
-$$
+=
+(0.5 + 0.5t) \cdot 0.06
+=
+0.03 + 0.03t.
+```
 
-and
+The geometric contribution of the `lower` component is
 
-$$
+```math
 A_l^{\mathrm{geom}}(t)
-= 0.30(0.30 - 0.10t)
-= 0.09 - 0.03t .
-$$
+=
+0.30(0.30 - 0.10t)
+=
+0.09 - 0.03t.
+```
 
-Therefore,
+Therefore, over the first interval,
 
-$$
-A(t) = (0.03 + 0.03t) + 0.09 + (0.09 - 0.03t) = 0.21 .
-$$
+```math
+A(t)
+=
+(0.03 + 0.03t)
++
+0.09
++
+(0.09 - 0.03t)
+=
+0.21.
+```
 
-### Second interval
+### Second interval: $5 \le z \le 10$
 
-For $5 \le z \le 10$,
+The local coordinate is
 
-$$
+```math
+t = \frac{z - 5}{5}.
+```
+
+In this interval,
+
+```math
 w_u(t) = 1 - 0.5t,
 \qquad
-h_l(t) = 0.20 + 0.10t .
-$$
+h_l(t) = 0.20 + 0.10t.
+```
 
-Thus,
+The weighted contribution of the `upper` component is
 
-$$
+```math
 w_u(t) A_u^{\mathrm{geom}}
-= (1 - 0.5t) \cdot 0.06
-= 0.06 - 0.03t,
-$$
+=
+(1 - 0.5t) \cdot 0.06
+=
+0.06 - 0.03t.
+```
 
-and
+The geometric contribution of the `lower` component is
 
-$$
+```math
 A_l^{\mathrm{geom}}(t)
-= 0.30(0.20 + 0.10t)
-= 0.06 + 0.03t .
-$$
+=
+0.30(0.20 + 0.10t)
+=
+0.06 + 0.03t.
+```
 
-Therefore,
+Therefore, over the second interval,
 
-$$
-A(t) = (0.06 - 0.03t) + 0.09 + (0.06 + 0.03t) = 0.21 .
-$$
+```math
+A(t)
+=
+(0.06 - 0.03t)
++
+0.09
++
+(0.06 + 0.03t)
+=
+0.21.
+```
 
-The total weighted area remains constant over the full member:
+Thus, the total weighted area is constant over the full member:
 
-$$
-A(z) = 0.21
+```math
+A(z) = 0.21,
 \qquad
-0 \le z \le 10 .
-$$
+0 \le z \le 10.
+```
 
-The internal distribution of the weighted area is not constant. For this reason, $C_y(z)$ and $I_x(z)$ vary even though $A(z)$ is invariant.
+The compensation affects only the total weighted area. The distribution of the weighted area within the section still changes along the member axis. Consequently, $C_y(z)$ and $I_x(z)$ vary even though $A(z)$ is constant.
+
 
 ---
 
