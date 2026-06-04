@@ -1,35 +1,60 @@
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+
 from csf import compute_lobatto_integration_points
+from csf import export_polygon_vertices_csv_file
 from csf.CSFStacked import CSFStacked
 from csf.io.csf_reader import CSFReader
 from csf.visualizer import Visualizer
-from csf import export_polygon_vertices_csv_file
-import matplotlib.pyplot as plt
 
 
-# Geometry
+# ---------------------------------------------------------------------------
+# Geometry and model constants
+# ---------------------------------------------------------------------------
+
+# Common section width.
 B = 0.30
+
+# Global axial coordinates:
+# - first CSF interval  : z in [0, 5]
+# - second CSF interval : z in [5, 10]
 L0, L1, L = 0.0, 5.0, 10.0
+
+# Constant upper and middle component heights.
 H_UPPER = 0.20
 H_MIDDLE = 0.30
+
+# Fixed centroid coordinates of upper and middle components.
 Y_UPPER = 0.10
 Y_MIDDLE = -0.15
 
+# YAML files defining the two consecutive CSF intervals.
 SEGMENT_FILES = ("stacked_0.yaml", "stacked_1.yaml")
+
+# Number of Gauss-Lobatto stations used in each interval.
 N_LOBATTO_POINTS = 11
+
+# Section properties used in the closed-form comparison.
 BASE_KEYS = ("A", "Cy", "Ix", "Iy")
 
+
 def load(path):
+    """Read a CSF YAML file and return the corresponding field."""
     path = Path(path)
+
+    # Resolve relative paths with respect to the script directory.
     if not path.is_absolute():
         path = Path(__file__).resolve().parent / path
 
     res = CSFReader().read_file(str(path))
+
+    # Stop execution if the YAML reader did not produce a valid field.
     if res.field is None:
         for issue in res.issues:
             print(issue)
         raise SystemExit(f"Failed to read {path}")
+
     return res.field
 
 
@@ -37,11 +62,12 @@ def local_coordinate(z):
     """Return segment index and local coordinate t in [0, 1]."""
     if z <= L1:
         return 0, (z - L0) / (L1 - L0)
+
     return 1, (z - L1) / (L - L1)
 
 
 def upper_laws(z):
-    """Closed-form laws assigned to the upper component only."""
+    """Return the upper-component weight and shear-weight laws at z."""
     segment, t = local_coordinate(z)
 
     if segment == 0:
@@ -65,7 +91,7 @@ def upper_laws(z):
 
 
 def lower_geometry(z):
-    """Closed-form geometry of the lower component."""
+    """Return the lower-component height and centroid coordinate at z."""
     segment, t = local_coordinate(z)
 
     if segment == 0:
@@ -75,8 +101,10 @@ def lower_geometry(z):
         # stacked_1.yaml: lower height increases from 0.20 to 0.30.
         h_lower = 0.20 + 0.10 * t
 
-    # Lower top is fixed at y = -0.30.
+    # The lower top edge is fixed at y = -0.30.
+    # Therefore the lower centroid is shifted by h_lower / 2 below that edge.
     y_lower = -0.30 - 0.5 * h_lower
+
     return h_lower, y_lower
 
 
@@ -85,27 +113,28 @@ def reference(z):
     _, _, w_upper, _ = upper_laws(z)
     h_lower, y_lower = lower_geometry(z)
 
-    # Component areas
+    # Geometric areas of the three rectangular components.
     A_upper_geom = B * H_UPPER
     A_middle_geom = B * H_MIDDLE
     A_lower_geom = B * h_lower
 
-    # Weighted areas
+    # Weighted areas.
+    # Only the upper component receives the axial/bending weight w_upper here.
     A_upper = w_upper * A_upper_geom
     A_middle = A_middle_geom
     A_lower = A_lower_geom
 
-    # Total weighted area
+    # Total weighted area.
     A = A_upper + A_middle + A_lower
 
-    # Weighted centroid
+    # Weighted centroid coordinate.
     Cy = (
         A_upper * Y_UPPER
         + A_middle * Y_MIDDLE
         + A_lower * y_lower
     ) / A
 
-    # Local second moments about each component centroid
+    # Local second moments about each component centroid.
     Ix_upper_local = B * H_UPPER**3 / 12.0
     Ix_middle_local = B * H_MIDDLE**3 / 12.0
     Ix_lower_local = B * h_lower**3 / 12.0
@@ -114,13 +143,16 @@ def reference(z):
     Iy_middle_local = H_MIDDLE * B**3 / 12.0
     Iy_lower_local = h_lower * B**3 / 12.0
 
-    # Weighted second moments about the global weighted centroid
+    # Weighted second moment about the global weighted centroid.
+    # The upper component receives the same weight used for A and Cy.
     Ix = (
         w_upper * (Ix_upper_local + A_upper_geom * (Y_UPPER - Cy) ** 2)
         + Ix_middle_local + A_middle_geom * (Y_MIDDLE - Cy) ** 2
         + Ix_lower_local + A_lower_geom * (y_lower - Cy) ** 2
     )
 
+    # Iy has no parallel-axis contribution because all rectangles share
+    # the same horizontal centroid coordinate in this example.
     Iy = (
         w_upper * Iy_upper_local
         + Iy_middle_local
@@ -131,6 +163,7 @@ def reference(z):
 
 
 def print_law_summary():
+    """Print the analytical laws used for the comparison."""
     print("Closed-form laws used for the comparison")
     print("- stacked_0.yaml, z in [0, 5], t = z/5")
     print("  upper weight       : w_u(t)  = 1.0 - 0.5*(1.0 - t)")
@@ -145,6 +178,7 @@ def print_law_summary():
 
 
 def lobatto_stations():
+    """Return the global Gauss-Lobatto stations used for the comparison."""
     stations = list(
         compute_lobatto_integration_points(
             L0,
@@ -152,6 +186,9 @@ def lobatto_stations():
             n_points=N_LOBATTO_POINTS,
         )
     )
+
+    # Add stations from the second interval.
+    # The first point is skipped to avoid duplicating z = L1.
     stations += list(
         compute_lobatto_integration_points(
             L1,
@@ -159,10 +196,12 @@ def lobatto_stations():
             n_points=N_LOBATTO_POINTS,
         )
     )[1:]
+
     return [float(z) for z in stations]
 
 
 def compare_closed_form_and_csf(stack):
+    """Compare CSF section properties against the closed-form reference."""
     header = (
         f"{'z':>6} {'seg':>3} {'t':>5} {'w_u':>5} {'sw_u':>5} | "
         f"{'A_csf':>6} {'A_ref':>6} | "
@@ -179,19 +218,31 @@ def compare_closed_form_and_csf(stack):
     max_cy_err = 0.0
 
     for z in lobatto_stations():
+        # Evaluate the stacked CSF model at the current global station.
         sa = stack.section_full_analysis(z, junction_side="left")
+
+        # Ensure that all required section properties are available.
         missing = [k for k in BASE_KEYS if k not in sa]
         if missing:
-            raise KeyError(f"section_full_analysis() missing at z={z:.6g}: " + ", ".join(missing))
+            raise KeyError(
+                f"section_full_analysis() missing at z={z:.6g}: "
+                + ", ".join(missing)
+            )
 
+        # Closed-form reference values at the same station.
         A_r, Cy_r, Ix_r, Iy_r = reference(z)
+
+        # Analytical laws printed together with the comparison table.
         segment, t, w_upper, sw_upper = upper_laws(z)
 
+        # Maximum relative error over the scalar section quantities.
         rel_err = max(
             abs(sa["A"] - A_r) / max(abs(A_r), 1e-30),
             abs(sa["Ix"] - Ix_r) / max(abs(Ix_r), 1e-30),
             abs(sa["Iy"] - Iy_r) / max(abs(Iy_r), 1e-30),
         ) * 100.0
+
+        # Absolute centroid-coordinate error.
         cy_err = abs(sa["Cy"] - Cy_r)
 
         max_rel_err = max(max_rel_err, rel_err)
@@ -212,37 +263,55 @@ def compare_closed_form_and_csf(stack):
 
 
 def main():
+    # Build the stacked model from the two CSF interval files.
     stack = CSFStacked(eps_z=1e-9)
+
     for file_name in SEGMENT_FILES:
         stack.append(load(file_name))
 
+    # Print the analytical laws and compare CSF values with closed-form values.
     print_law_summary()
     compare_closed_form_and_csf(stack)
-    fmt=".12g"
-    manual_station=[0,3,5,7,10]
-    for z in manual_station:
-      fieldlocal = stack.field_at(z)
-      csvfile = f"out/lobatto_station_export_{z}.csv"
 
-      export_polygon_vertices_csv_file(
-           field=fieldlocal,
-           z_values=[z],
-           exp_filename=csvfile,
-           
-           fmt=fmt,
-      )
-      print(f"Wrote csf {csvfile}")
-      
-    stack.plot_volume_3d_global(line_width=0.3, box_aspect_scale=(1.0, 1.0, 0.3))
+    # Export selected station-wise polygon vertices.
+    fmt = ".12g"
+    manual_station = [0, 3, 5, 7, 10]
+
+    for z in manual_station:
+        fieldlocal = stack.field_at(z)
+        csvfile = f"out/lobatto_station_export_{z}.csv"
+
+        export_polygon_vertices_csv_file(
+            field=fieldlocal,
+            z_values=[z],
+            exp_filename=csvfile,
+            fmt=fmt,
+        )
+
+        print(f"Wrote csf {csvfile}")
+
+    # Global visualization of the stacked volume.
+    stack.plot_volume_3d_global(
+        line_width=0.3,
+        box_aspect_scale=(1.0, 1.0, 0.3),
+    )
+
+    # Plot selected section properties along the member axis.
     stack.plot_properties(keys_to_plot=["A", "Cy", "Ix", "Iy"])
+
+    # Plot one evaluated 2D section.
     stack.plot_section_2d(z=2.5, show_vertex_ids=False)
 
-    
+    # Plot weight and shear-weight laws for the field evaluated at z = 1.
     vis0 = Visualizer(stack.field_at(1))
     vis0.plot_weight(poly_indices_to_plot=[0])
     vis0.plot_shear_weight(poly_indices_to_plot=[0])
-    #vis1 = Visualizer(stack.field_at(7))
-    #vis1.plot_shear_weight(poly_indices_to_plot=[0])
+
+    # Optional plot for the second interval.
+    # vis1 = Visualizer(stack.field_at(7))
+    # vis1.plot_shear_weight(poly_indices_to_plot=[0])
+
+    # Optional diagnostic plots for each segment field.
     '''
     for idx, segment in enumerate(stack.segments):
         vis = Visualizer(segment.field)
@@ -250,6 +319,7 @@ def main():
         vis.plot_weight()
         vis.plot_shear_weight()
     '''
+    
     plt.show()
 
 
