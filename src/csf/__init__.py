@@ -21,6 +21,7 @@ from .section_field import (
     volume_polygon_list_report,
     export_polygon_vertices_csv,
     export_polygon_vertices_csv_file,
+    compute_lobatto_integration_points,
 )
 
 from .continuous_section_field import (

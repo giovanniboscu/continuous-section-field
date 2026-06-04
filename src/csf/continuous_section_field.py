@@ -21,7 +21,7 @@ from .section_field import (
     section_print_analysis, _signed_area_centroid_xy, _simple_yaml_dump, _csf__section_to_Sz_dict, 
 )
 
-from .section_field import section_full_analysis, evaluate_weight_formula, evaluate_weight_formula_zrelative, evaluate_shear_weight_formula
+from .section_field import compute_lobatto_integration_points,section_full_analysis, evaluate_weight_formula, evaluate_weight_formula_zrelative, evaluate_shear_weight_formula
 
 try:
     import yaml
@@ -1271,64 +1271,18 @@ class ContinuousSectionField:
     - returns intermediate Section at any z via linear interpolation of corresponding vertices
     """
 
+    def get_lobatto_integration_points(
+        self,
+        n_points: int = 5,
+        L: float | None = None,
+    ) -> List[float]:
+        return compute_lobatto_integration_points(
+            z_min=self.s0.z,
+            z_max=self.s1.z,
+            n_points=n_points,
+            L=L,
+        )
 
-    def get_lobatto_integration_points(self, n_points: int = 5, L: float = None) -> List[float]:
-        """
-        Calculates the global Z-coordinates for OpenSees integration points using 
-        the Gauss-Lobatto quadrature rule.
-        
-        RATIONALE:
-        In finite element analysis (specifically for OpenSees forceBeamColumn elements), 
-        the Gauss-Lobatto rule is preferred because it includes the endpoints of the 
-        interval (z=0 and z=L). This is critical for detecting anomalies at the 
-        very base of the shaft (e.g., FHWA Soft Toe) or at the top connection.
-        
-        ALGORITHM:
-        1. Generate the roots of the derivative of the (n-1)-th Legendre Polynomial.
-        2. These roots (plus -1.0 and 1.0) form the abscissae in the natural 
-        coordinate system [-1, 1].
-        3. Map these abscissae from [-1, 1] to the physical domain [z0, z1] or [0, L].
-        
-        Args:
-            n_points (int): Number of integration points. Must be >= 2.
-            L (float, optional): Total length of the element. If None, it uses 
-                                the distance between the two defined sections.
-        
-        Returns:
-            List[float]: A list of global Z-coordinates where OpenSees will 
-                        sample the section properties.
-        """
-        z_start = self.s0.z
-        z_end = self.s1.z
-        
-        if n_points < 2:
-            raise ValueError("Number of integration points must be at least 2 for Gauss-Lobatto.")
-
-        # 1. Physical boundaries
-        
-        # Usiamo section0 e section1 come definito nel costruttore field = ContinuousSectionField(section0=s0, section1=s1)
-        
-        z_start = self.s0.z
-        z_end = self.s1.z
-        actual_L = L if L is not None else (z_end - z_start)
-
-        # 2. Calculation of Gauss-Lobatto Abscissae in range [-1, 1]
-        # For n points, we need roots of P'_{n-1}(x)
-        if n_points == 2:
-            abscissae = [-1.0, 1.0]
-        else:
-            # The internal points are the roots of the derivative of Legendre polynomial P_{n-1}
-            roots = np.polynomial.legendre.Legendre.deriv(
-                np.polynomial.legendre.Legendre([0]*(n_points-1) + [1])
-            ).roots()
-            abscissae = np.concatenate(([-1.0], roots, [1.0]))
-
-        # 3. Mapping from [-1, 1] to [z_start, z_start + actual_L]
-        z_coords = [z_start + (xi + 1.0) * (actual_L / 2.0) for xi in abscissae]
-        
-        # Sort to ensure numerical stability
-        z_coords = sorted(z_coords)
-        return z_coords
 
 
     def __init__(self, section0: Section, section1: Section):

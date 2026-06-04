@@ -399,30 +399,254 @@ class CSFStacked:
 
     def plot_properties(
         self,
-        z: float,
         keys_to_plot=None,
         alpha: float = 1,
         title: str = None,
         num_points: int = 100,
-        junction_side: str = "left",
+        show_junctions: bool = True,
     ):
         """
-        Plot the property evolution for the segment selected by global ``z``.
+        Plot selected section properties over the full CSFStacked domain.
 
-        The target field is selected through the stacked dispatch and the call is
-        delegated unchanged to the corresponding Visualizer instance.
+        One continuous curve is evaluated inside each stacked segment. Internal
+        junctions are kept as segment boundaries, so discontinuities are not
+        hidden by interpolating across adjacent fields.
+
+        Parameters
+        ----------
+        keys_to_plot : list[str] | None
+            Property keys to plot, e.g. ["A", "Ix", "Iy", "Ip"].
+            If None or empty, nothing is plotted.
+        alpha : float
+            Kept for API alignment with Visualizer.plot_properties.
+        title : str | None
+            Figure title. If None, a default stack-wide title is used.
+        num_points : int
+            Number of sample points per stacked segment.
+        show_junctions : bool
+            If True, draw vertical dotted lines at internal segment junctions.
         """
-        field = self.field_at(z=float(z), junction_side=junction_side)
-        vis = Visualizer(field)
-        if title is None:            
-            field = self.field_at(z=float(z), junction_side=junction_side)
-            title = f"Plot Properties | z-range [{field.s0.z:g}, {field.s1.z:g}]"
-        return vis.plot_properties(
-            keys_to_plot=keys_to_plot,
-            title=title,
-            num_points=num_points,
-    )
+        import numpy as np
+        import matplotlib.pyplot as plt
 
+        if not self.segments:
+            raise ValueError("Stack is empty. Add at least one segment.")
+        if num_points < 2:
+            raise ValueError("num_points must be >= 2.")
+
+        if keys_to_plot is None:
+            keys_to_plot = []
+        else:
+            keys_to_plot = list(dict.fromkeys(keys_to_plot))
+            keys_to_plot = [k for k in keys_to_plot if str(k).lower() != "geometry"]
+
+        if len(keys_to_plot) == 0:
+            return None
+
+        eps_value = 1e-12
+        need_vroark = (
+            "J_s_vroark" in keys_to_plot
+            or "J_s_vroark_fidelity" in keys_to_plot
+        )
+
+        z_by_segment: list[np.ndarray] = []
+        data_series = {key: [] for key in keys_to_plot}
+        data_series_right = {key: [] for key in keys_to_plot}
+
+        def _to_float_or_nan(value):
+            if value is None:
+                return np.nan
+            try:
+                value = float(value)
+            except Exception:
+                return np.nan
+            if abs(value) < eps_value:
+                return 0.0
+            return value
+
+        for seg in self.segments:
+            z_values = np.linspace(float(seg.z_start), float(seg.z_end), num_points)
+            z_by_segment.append(z_values)
+
+            for z in z_values:
+                current_section = seg.field.section(float(z))
+                props = section_full_analysis(
+                    current_section,
+                    compute_vroark=need_vroark,
+                )
+
+                for key in keys_to_plot:
+                    raw = props.get(key, None)
+                    is_pair = isinstance(raw, (tuple, list, np.ndarray)) and len(raw) == 2
+
+                    if is_pair:
+                        data_series[key].append(_to_float_or_nan(raw[0]))
+                        data_series_right[key].append(_to_float_or_nan(raw[1]))
+                    else:
+                        data_series[key].append(_to_float_or_nan(raw))
+                        data_series_right[key].append(np.nan)
+
+        z_values_all = np.concatenate(z_by_segment)
+        num_keys = len(keys_to_plot)
+
+        fig, axes = plt.subplots(
+            num_keys,
+            1,
+            figsize=(10, 2.2 * num_keys),
+            sharex=True,
+        )
+        if num_keys == 1:
+            axes = [axes]
+
+        if title is None:
+            z_min, z_max = self.global_bounds()
+            title = f"Stack Properties | z-range [{z_min:g}, {z_max:g}]"
+
+        fig.suptitle(str(title), fontsize=14, fontweight="bold", y=0.995)
+        colors = plt.cm.viridis(np.linspace(0, 0.9, num_keys))
+
+        # Draw per-segment curves. This avoids visual interpolation across
+        # internal stack junctions when a property is discontinuous.
+        segment_slices = []
+        start_idx = 0
+        for z_segment in z_by_segment:
+            end_idx = start_idx + len(z_segment)
+            segment_slices.append(slice(start_idx, end_idx))
+            start_idx = end_idx
+
+        junction_z = [float(seg.z_start) for seg in self.segments[1:]]
+
+        for i, (key, color) in enumerate(zip(keys_to_plot, colors)):
+            ax = axes[i]
+            y_left = np.asarray(data_series[key], dtype=float)
+            y_right = np.asarray(data_series_right[key], dtype=float)
+
+            finite_left = np.isfinite(y_left)
+            finite_right = np.isfinite(y_right)
+            has_right = bool(np.any(finite_right))
+
+            for sl in segment_slices:
+                ax.plot(
+                    z_values_all[sl],
+                    y_left[sl],
+                    color=color,
+                    linewidth=2,
+                )
+
+            if show_junctions:
+                for zj in junction_z:
+                    ax.axvline(zj, linestyle=":", linewidth=0.8, alpha=0.55)
+
+            if has_right:
+                ax_r = ax.twinx()
+                for sl in segment_slices:
+                    ax_r.plot(
+                        z_values_all[sl],
+                        y_right[sl],
+                        linestyle="--",
+                        linewidth=1.5,
+                    )
+                ax_r.set_ylabel("right", fontweight="bold")
+                ax_r.grid(False)
+
+            if y_left.size == 0 or not np.any(finite_left):
+                ax.set_ylabel(key, fontweight="bold")
+                ax.grid(True, linestyle=":", alpha=0.6)
+                ax.text(
+                    0.995,
+                    1.01,
+                    f"{key}: no valid left-axis data",
+                    transform=ax.transAxes,
+                    ha="right",
+                    va="bottom",
+                    fontsize=9,
+                    clip_on=False,
+                )
+                print(f"{key}: no valid left-axis data")
+                continue
+
+            y_lf = y_left[finite_left]
+            z_lf = z_values_all[finite_left]
+
+            i_min_l = int(np.argmin(y_lf))
+            i_max_l = int(np.argmax(y_lf))
+
+            v_min_l = float(y_lf[i_min_l])
+            v_max_l = float(y_lf[i_max_l])
+            z_min_l = float(z_lf[i_min_l])
+            z_max_l = float(z_lf[i_max_l])
+
+            ax.scatter([z_min_l], [v_min_l], marker="v", s=26, zorder=3)
+            ax.scatter([z_max_l], [v_max_l], marker="^", s=26, zorder=3)
+
+            if np.isclose(v_min_l, v_max_l):
+                ax.annotate(
+                    f"{v_min_l:.4g}",
+                    (z_min_l, v_min_l),
+                    textcoords="offset points",
+                    xytext=(4, 6),
+                    fontsize=7,
+                )
+            else:
+                ax.annotate(
+                    f"{v_min_l:.4g}",
+                    (z_min_l, v_min_l),
+                    textcoords="offset points",
+                    xytext=(4, -12),
+                    fontsize=7,
+                )
+                ax.annotate(
+                    f"{v_max_l:.4g}",
+                    (z_max_l, v_max_l),
+                    textcoords="offset points",
+                    xytext=(4, 6),
+                    fontsize=7,
+                )
+
+            if v_max_l != v_min_l:
+                margin_l = (v_max_l - v_min_l) * 0.10
+            else:
+                margin_l = max(abs(v_max_l) * 0.05, 0.1)
+            ax.set_ylim(v_min_l - margin_l, v_max_l + margin_l)
+
+            ax.set_ylabel(key, fontweight="bold")
+            ax.grid(True, linestyle=":", alpha=0.6)
+
+            title_right = (
+                f"{key}: min={v_min_l:.6g}@z={z_min_l:.6g}  "
+                f"max={v_max_l:.6g}@z={z_max_l:.6g}"
+            )
+            ax.text(
+                0.995,
+                1.01,
+                title_right,
+                transform=ax.transAxes,
+                ha="right",
+                va="bottom",
+                fontsize=9,
+                clip_on=False,
+            )
+
+            print(
+                f"{key}: min={v_min_l:.12g} at z={z_min_l:.12g} | "
+                f"max={v_max_l:.12g} at z={z_max_l:.12g}"
+            )
+
+            if has_right:
+                y_rf = y_right[finite_right]
+                z_rf = z_values_all[finite_right]
+                i_min_r = int(np.argmin(y_rf))
+                i_max_r = int(np.argmax(y_rf))
+                print(
+                    f"{key} [right]: min={float(y_rf[i_min_r]):.12g} "
+                    f"at z={float(z_rf[i_min_r]):.12g} | "
+                    f"max={float(y_rf[i_max_r]):.12g} "
+                    f"at z={float(z_rf[i_max_r]):.12g}"
+                )
+
+        axes[-1].set_xlabel("Z coordinate")
+        plt.tight_layout(rect=[0, 0, 1, 0.94])
+        return axes
 
     def plot_section_2d(
         self,
@@ -454,7 +678,9 @@ class CSFStacked:
         field = self.field_at(z=float(z), junction_side=junction_side)
         vis = Visualizer(field)
         field = self.field_at(z=float(z), junction_side=junction_side)
-        title = f"{title} z-range [{field.s0.z:g}, {field.s1.z:g}]"
+        if title is None:
+          title=""
+        title = f"{title} z = {z} : range [{field.s0.z:g}, {field.s1.z:g}]"
         return vis.plot_section_2d(
             z=float(z),
             show_ids=show_ids,
@@ -519,6 +745,7 @@ class CSFStacked:
         box_aspect_scale: tuple[float, float, float] = (1.0, 1.0, 1.0),
         wire: bool = False,
         colors: bool = True,
+        line_width: float = 1.0,
     ):
         """
         Render the full stacked volume in one global 3D plot.
@@ -566,6 +793,8 @@ class CSFStacked:
             raise TypeError("wire must be bool.")
         if not isinstance(colors, bool):
             raise TypeError("colors must be bool.")
+        if line_width <= 0.0:
+            raise ValueError("line_width must be > 0.")
 
         # ------------------------------------------------------------------
         # Deterministic color map  (unchanged)
@@ -704,7 +933,7 @@ class CSFStacked:
                 cap0 = list(zip(x0.tolist(), y0.tolist(), zz0.tolist()))
                 cap1 = list(zip(x1.tolist(), y1.tolist(), zz1.tolist()))
 
-                cross_lw = 2.2
+                cross_lw = 2.2 * line_width
 
                 # ------------------------------------------------------
                 # Caps: faces + boundary edges
@@ -744,7 +973,7 @@ class CSFStacked:
                             _add_edge(
                                 a0[0], a0[1], a0[2],
                                 a1[0], a1[1], a1[2],
-                                0.8, wire_line_color,
+                                0.8 * line_width, wire_line_color,
                             )
                     else:
                         # Side quad as two triangles
@@ -755,12 +984,12 @@ class CSFStacked:
                         _add_edge(
                             a0[0], a0[1], a0[2],
                             a1[0], a1[1], a1[2],
-                            0.5, default_edge_color,
+                            0.5 * line_width, default_edge_color,
                         )
                         _add_edge(
                             b0[0], b0[1], b0[2],
                             b1[0], b1[1], b1[2],
-                            0.5, default_edge_color,
+                            0.5 * line_width, default_edge_color,
                         )
 
                 # Bounds accumulation
@@ -825,635 +1054,6 @@ class CSFStacked:
         ax.set_title(title3d)
 
         return ax
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def plot_volume_3d_global2remove2(
-        self,
-        line_percent: float = 100.0,
-        seed: int = 1,
-        margin_ratio: float = 0.10,
-        display_scale: tuple[float, float, float] = (1.0, 1.0, 1.0),
-        box_aspect_scale: tuple[float, float, float] = (1.0, 1.0, 1.0),
-        wire: bool = False,
-        colors: bool = True,
-    ):
-        """
-        Render the full stacked volume in one global 3D plot.
-
-        Supported combinations:
-        - wire=False, colors=True  : filled colored solids + edges
-        - wire=False, colors=False : filled grayscale solids + edges
-        - wire=True,  colors=True  : wireframe with per-polygon colors
-        - wire=True,  colors=False : wireframe in grayscale/black
-
-        Notes
-        -----
-        - This implementation avoids Poly3DCollection and works with standard
-          Matplotlib 3D plotting primitives.
-        - In wire mode, `line_percent` controls how many longitudinal connectors
-          are drawn.
-        - In solid mode, the code draws filled caps and filled side quads, then
-          overlays only the true geometric edges.
-        """
-
-        # ---------------------------------------------------------------------
-        # Input validation
-        # ---------------------------------------------------------------------
-        if not (0.0 <= line_percent <= 100.0):
-            raise ValueError("line_percent must be within [0, 100].")
-        if margin_ratio < 0.0:
-            raise ValueError("margin_ratio must be >= 0.")
-
-        sx, sy, sz = display_scale
-        if sx <= 0.0 or sy <= 0.0 or sz <= 0.0:
-            raise ValueError("display_scale values must be > 0.")
-
-        bx, by, bz = box_aspect_scale
-        if bx <= 0.0 or by <= 0.0 or bz <= 0.0:
-            raise ValueError("box_aspect_scale values must be > 0.")
-
-        if not isinstance(wire, bool):
-            raise TypeError("wire must be bool.")
-        if not isinstance(colors, bool):
-            raise TypeError("colors must be bool.")
-
-        # ---------------------------------------------------------------------
-        # Deterministic color map by polygon name
-        # ---------------------------------------------------------------------
-        rng = random.Random(seed)
-        palette = [
-            (0.121, 0.466, 0.705),  # blue
-            (1.000, 0.498, 0.054),  # orange
-            (0.172, 0.627, 0.172),  # green
-            (0.839, 0.153, 0.157),  # red
-            (0.580, 0.404, 0.741),  # purple
-            (0.549, 0.337, 0.294),  # brown
-            (0.890, 0.467, 0.761),  # pink
-            (0.498, 0.498, 0.498),  # gray
-            (0.737, 0.741, 0.133),  # olive
-            (0.090, 0.745, 0.811),  # cyan
-        ]
-        rng.shuffle(palette)
-
-        color_map: dict[str, tuple[float, float, float]] = {}
-        color_idx = 0
-
-        def _get_poly_color(poly_name: str) -> tuple[float, float, float]:
-            """
-            Return a deterministic color for a polygon name.
-            """
-            nonlocal color_idx
-            if not colors:
-                return (0.70, 0.70, 0.70)
-            if poly_name not in color_map:
-                color_map[poly_name] = palette[color_idx % len(palette)]
-                color_idx += 1
-            return color_map[poly_name]
-
-        # Default edge color used in grayscale mode and for solid-mode edges
-        default_edge_color = (0.10, 0.10, 0.10)
-
-        # ---------------------------------------------------------------------
-        # Plot initialization
-        # ---------------------------------------------------------------------
-        fig = plt.figure(figsize=(10, 8))
-        ax = fig.add_subplot(111, projection="3d")
-        ax.view_init(elev=18, azim=120)
-        ax.set_proj_type("persp")
-
-        # Global bounds are accumulated while plotting
-        all_x: list[float] = []
-        all_y: list[float] = []
-        all_z: list[float] = []
-
-        # ---------------------------------------------------------------------
-        # Helpers
-        # ---------------------------------------------------------------------
-        def _plot_polygon_boundary(vertices_xyz, lw=0.6, line_color=(0.1, 0.1, 0.1)):
-            """
-            Draw only the true polygon boundary edges.
-            """
-            n = len(vertices_xyz)
-            if n < 2:
-                return
-
-            xs = [p[0] for p in vertices_xyz]
-            ys = [p[1] for p in vertices_xyz]
-            zs = [p[2] for p in vertices_xyz]
-
-            for i in range(n):
-                j = (i + 1) % n
-                ax.plot(
-                    [xs[i], xs[j]],
-                    [ys[i], ys[j]],
-                    [zs[i], zs[j]],
-                    "-",
-                    lw=lw,
-                    color=line_color,
-                )
-
-        def _plot_cap_filled(vertices_xyz, face_color, alpha=0.25, edge_lw=0.5):
-            """
-            Draw one filled cap with hidden triangulation lines,
-            then draw the true polygon boundary.
-            """
-            n = len(vertices_xyz)
-            if n < 3:
-                _plot_polygon_boundary(
-                    vertices_xyz,
-                    lw=edge_lw,
-                    line_color=default_edge_color,
-                )
-                return
-
-            xs = np.array([p[0] for p in vertices_xyz], dtype=float)
-            ys = np.array([p[1] for p in vertices_xyz], dtype=float)
-            zs = np.array([p[2] for p in vertices_xyz], dtype=float)
-
-            # Fan triangulation: (0, i, i+1)
-            triangles = np.array([[0, i, i + 1] for i in range(1, n - 1)], dtype=int)
-
-            ax.plot_trisurf(
-                xs,
-                ys,
-                zs,
-                triangles=triangles,
-                color=face_color,
-                alpha=alpha,
-                edgecolor="none",
-                linewidth=0.0,
-                shade=False,
-            )
-
-            _plot_polygon_boundary(
-                vertices_xyz,
-                lw=edge_lw,
-                line_color=default_edge_color,
-            )
-
-        # ---------------------------------------------------------------------
-        # Main rendering loop
-        # ---------------------------------------------------------------------
-        for seg in self.segments:
-            s0 = seg.field.section(seg.z_start)
-            s1 = seg.field.section(seg.z_end)
-
-            p0_map = {p.name: p for p in s0.polygons}
-            p1_map = {p.name: p for p in s1.polygons}
-            common_names = sorted(set(p0_map.keys()) & set(p1_map.keys()))
-
-            if not common_names:
-                continue
-
-            z0_plot = seg.z_start * sz
-            z1_plot = seg.z_end * sz
-
-            for name in common_names:
-                p0 = p0_map[name]
-                p1 = p1_map[name]
-                v0 = p0.vertices
-                v1 = p1.vertices
-
-                if len(v0) != len(v1):
-                    raise ValueError(
-                        f"Polygon '{name}' has mismatched vertex count "
-                        f"between z-start and z-end in segment '{seg.tag}'."
-                    )
-
-                #poly_color = _get_poly_color(name)
-                poly_color = _get_poly_color(str(seg.tag))
-                # In wire mode with colors=True, lines use the polygon color.
-                # Otherwise use a grayscale/black line.
-                wire_line_color = poly_color if (wire and colors) else default_edge_color
-
-                # -------------------------------------------------------------
-                # Precompute scaled coordinates once per polygon
-                # -------------------------------------------------------------
-                x0 = np.array([pt.x * sx for pt in v0], dtype=float)
-                y0 = np.array([pt.y * sy for pt in v0], dtype=float)
-                x1 = np.array([pt.x * sx for pt in v1], dtype=float)
-                y1 = np.array([pt.y * sy for pt in v1], dtype=float)
-
-                cap0 = list(zip(x0, y0, np.full(len(v0), z0_plot, dtype=float)))
-                cap1 = list(zip(x1, y1, np.full(len(v1), z1_plot, dtype=float)))
-
-                cross_lw = 2.2  # thickness used for transverse polygon outlines
-
-                if wire:
-                    _plot_polygon_boundary(cap0, lw=cross_lw, line_color=wire_line_color)
-                    _plot_polygon_boundary(cap1, lw=cross_lw, line_color=wire_line_color)
-                else:
-                    _plot_cap_filled(cap0, face_color=poly_color, alpha=0.25, edge_lw=cross_lw)
-                    _plot_cap_filled(cap1, face_color=poly_color, alpha=0.25, edge_lw=cross_lw)
-
-                # -------------------------------------------------------------
-                # Longitudinal connectors / side faces
-                # -------------------------------------------------------------
-                n = len(v0)
-
-                if line_percent <= 0.0:
-                    selected_indices = set()
-                elif line_percent >= 100.0:
-                    selected_indices = set(range(n))
-                else:
-                    n_keep = max(1, int(np.ceil(n * line_percent / 100.0)))
-                    selected_indices = set(
-                        np.linspace(0, n - 1, num=n_keep, dtype=int).tolist()
-                    )
-
-                for i in range(n):
-                    j = (i + 1) % n
-
-                    a0 = (x0[i], y0[i], z0_plot)
-                    b0 = (x0[j], y0[j], z0_plot)
-                    b1 = (x1[j], y1[j], z1_plot)
-                    a1 = (x1[i], y1[i], z1_plot)
-
-                    if wire:
-                        # In wire mode, draw only a subset of longitudinal lines
-                        # according to `line_percent`.
-                        if i in selected_indices:
-                            ax.plot(
-                                [a0[0], a1[0]],
-                                [a0[1], a1[1]],
-                                [a0[2], a1[2]],
-                                "-",
-                                lw=0.8,
-                                color=wire_line_color,
-                            )
-                    else:
-                        # Filled side quad with internal split hidden
-                        X = np.array([[a0[0], b0[0]], [a1[0], b1[0]]], dtype=float)
-                        Y = np.array([[a0[1], b0[1]], [a1[1], b1[1]]], dtype=float)
-                        Z = np.array([[a0[2], b0[2]], [a1[2], b1[2]]], dtype=float)
-
-                        ax.plot_surface(
-                            X,
-                            Y,
-                            Z,
-                            color=poly_color,
-                            alpha=0.25,
-                            edgecolor="none",
-                            linewidth=0.0,
-                            shade=False,
-                        )
-
-                        # Draw only the two longitudinal edges to reduce plotting cost.
-                        ax.plot(
-                            [a0[0], a1[0]],
-                            [a0[1], a1[1]],
-                            [a0[2], a1[2]],
-                            "-",
-                            lw=0.5,
-                            color=default_edge_color,
-                        )
-                        ax.plot(
-                            [b0[0], b1[0]],
-                            [b0[1], b1[1]],
-                            [b0[2], b1[2]],
-                            "-",
-                            lw=0.5,
-                            color=default_edge_color,
-                        )
-
-                # -------------------------------------------------------------
-                # Bounds accumulation
-                # -------------------------------------------------------------
-                all_x.extend(x0.tolist())
-                all_x.extend(x1.tolist())
-                all_y.extend(y0.tolist())
-                all_y.extend(y1.tolist())
-                all_z.extend([z0_plot] * n)
-                all_z.extend([z1_plot] * n)
-
-        # ---------------------------------------------------------------------
-        # Global limits and aspect ratio
-        # ---------------------------------------------------------------------
-        if all_x and all_y and all_z:
-            xmin, xmax = min(all_x), max(all_x)
-            ymin, ymax = min(all_y), max(all_y)
-            zmin, zmax = min(all_z), max(all_z)
-
-            dx = max(xmax - xmin, 1e-12)
-            dy = max(ymax - ymin, 1e-12)
-            dz = max(zmax - zmin, 1e-12)
-
-            ax.set_xlim(xmin - dx * margin_ratio, xmax + dx * margin_ratio)
-            ax.set_ylim(ymin - dy * margin_ratio, ymax + dy * margin_ratio)
-            ax.set_zlim(zmin - dz * margin_ratio, zmax + dz * margin_ratio)
-            ax.set_box_aspect((dx * bx, dy * by, dz * bz))
-
-        # ---------------------------------------------------------------------
-        # Labels and title
-        # ---------------------------------------------------------------------
-        ax.set_xlabel(f"X (display x{sx:.4g})" if abs(sx - 1.0) > 1e-15 else "X")
-        ax.set_ylabel(f"Y (display x{sy:.4g})" if abs(sy - 1.0) > 1e-15 else "Y")
-        ax.set_zlabel(f"Z (display x{sz:.4g})" if abs(sz - 1.0) > 1e-15 else "Z")
-
-        mode = "wireframe" if wire else "solid"
-        scheme = "color" if colors else "grayscale"
-        ax.set_title(f"Global 3D ({mode}, {scheme})")
-
-        return ax
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def plot_volume_3d_global2remove(
-        self,
-        line_percent: float = 100.0,
-        seed: int = 1,
-        margin_ratio: float = 0.10,
-        display_scale: tuple[float, float, float] = (1.0, 1.0, 1.0),
-        box_aspect_scale: tuple[float, float, float] = (1.0, 1.0, 1.0),
-        wire: bool = False,
-        colors: bool = True,
-    ):
-        """
-        Render the full stacked volume in one global 3D plot without Poly3DCollection.
-
-        Supported combinations:
-        - wire=False, colors=True  : filled colored solids + edges
-        - wire=False, colors=False : filled grayscale solids + edges
-        - wire=True,  colors=True  : wireframe with per-polygon colors
-        - wire=True,  colors=False : wireframe in grayscale/black
-        """
-        import numpy as np
-        import matplotlib.pyplot as plt
-        import random
-
-        # -------------------------------------------------------------------------
-        # Input validation
-        # -------------------------------------------------------------------------
-        if not (0.0 <= line_percent <= 100.0):
-            raise ValueError("line_percent must be within [0, 100].")
-        if margin_ratio < 0.0:
-            raise ValueError("margin_ratio must be >= 0.")
-
-        sx, sy, sz = display_scale
-        if sx <= 0.0 or sy <= 0.0 or sz <= 0.0:
-            raise ValueError("display_scale values must be > 0.")
-
-        bx, by, bz = box_aspect_scale
-        if bx <= 0.0 or by <= 0.0 or bz <= 0.0:
-            raise ValueError("box_aspect_scale values must be > 0.")
-
-        if not isinstance(wire, bool):
-            raise TypeError("wire must be bool.")
-        if not isinstance(colors, bool):
-            raise TypeError("colors must be bool.")
-
-        # -------------------------------------------------------------------------
-        # Deterministic color map by polygon name (seeded)
-        # -------------------------------------------------------------------------
-        rng = random.Random(seed)
-        palette = [
-            (0.121, 0.466, 0.705),  # blue
-            (1.000, 0.498, 0.054),  # orange
-            (0.172, 0.627, 0.172),  # green
-            (0.839, 0.153, 0.157),  # red
-            (0.580, 0.404, 0.741),  # purple
-            (0.549, 0.337, 0.294),  # brown
-            (0.890, 0.467, 0.761),  # pink
-            (0.498, 0.498, 0.498),  # gray
-            (0.737, 0.741, 0.133),  # olive
-            (0.090, 0.745, 0.811),  # cyan
-        ]
-        rng.shuffle(palette)
-        color_map: dict[str, tuple[float, float, float]] = {}
-        color_idx = 0
-
-        def _get_poly_color(poly_name: str) -> tuple[float, float, float]:
-            nonlocal color_idx
-            if not colors:
-                return (0.70, 0.70, 0.70)  # grayscale fill
-            if poly_name not in color_map:
-                color_map[poly_name] = palette[color_idx % len(palette)]
-                color_idx += 1
-            return color_map[poly_name]
-
-        # Edge color used for non-wire solid mode and grayscale wire mode
-        default_edge_color = (0.10, 0.10, 0.10)
-
-        # -------------------------------------------------------------------------
-        # Plot init
-        # -------------------------------------------------------------------------
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection="3d")
-        ax.view_init(elev=18, azim=120)
-        ax.set_proj_type("persp")
-
-        all_x, all_y, all_z = [], [], []
-
-        # -------------------------------------------------------------------------
-        # Helpers
-        # -------------------------------------------------------------------------
-        def _plot_polygon_boundary(vertices_xyz, lw=0.6, line_color=(0.1, 0.1, 0.1)):
-            """
-            Draw only the true polygon boundary edges.
-            """
-            n = len(vertices_xyz)
-            if n < 2:
-                return
-            xs = [p[0] for p in vertices_xyz]
-            ys = [p[1] for p in vertices_xyz]
-            zs = [p[2] for p in vertices_xyz]
-            for i in range(n):
-                j = (i + 1) % n
-                ax.plot(
-                    [xs[i], xs[j]],
-                    [ys[i], ys[j]],
-                    [zs[i], zs[j]],
-                    "-",
-                    lw=lw,
-                    color=line_color,
-                )
-
-        def _plot_cap_filled(vertices_xyz, face_color, alpha=0.25, edge_lw=0.5):
-            """
-            Draw one filled cap with hidden triangulation lines, then draw true boundary.
-            """
-            n = len(vertices_xyz)
-            if n < 3:
-                _plot_polygon_boundary(vertices_xyz, lw=edge_lw, line_color=default_edge_color)
-                return
-
-            xs = np.array([p[0] for p in vertices_xyz], dtype=float)
-            ys = np.array([p[1] for p in vertices_xyz], dtype=float)
-            zs = np.array([p[2] for p in vertices_xyz], dtype=float)
-
-            # Fan triangulation: (0, i, i+1)
-            triangles = np.array([[0, i, i + 1] for i in range(1, n - 1)], dtype=int)
-
-            ax.plot_trisurf(
-                xs,
-                ys,
-                zs,
-                triangles=triangles,
-                color=face_color,
-                alpha=alpha,
-                edgecolor="none",  # hide internal diagonals
-                linewidth=0.0,
-                shade=False,
-            )
-
-            _plot_polygon_boundary(vertices_xyz, lw=edge_lw, line_color=default_edge_color)
-
-        # -------------------------------------------------------------------------
-        # Main rendering loop
-        # -------------------------------------------------------------------------
-        for seg in self.segments:
-            s0 = seg.field.section(seg.z_start)
-            s1 = seg.field.section(seg.z_end)
-
-            p0_map = {p.name: p for p in s0.polygons}
-            p1_map = {p.name: p for p in s1.polygons}
-            common_names = sorted(set(p0_map.keys()) & set(p1_map.keys()))
-
-            if not common_names:
-                continue
-
-            z0_plot = seg.z_start * sz
-            z1_plot = seg.z_end * sz
-
-            for name in common_names:
-                p0 = p0_map[name]
-                p1 = p1_map[name]
-                v0 = p0.vertices
-                v1 = p1.vertices
-
-                if len(v0) != len(v1):
-                    raise ValueError(
-                        f"Polygon '{name}' has mismatched vertex count "
-                        f"between z-start and z-end in segment '{seg.tag}'."
-                    )
-
-                #poly_color = _get_poly_color(name)
-                poly_color = _get_poly_color(str(seg.tag))
-                # In wire mode with colors=True, lines use poly color.
-                # Otherwise use grayscale edge color.
-                wire_line_color = poly_color if (wire and colors) else default_edge_color
-
-                cap0 = [(pt.x * sx, pt.y * sy, z0_plot) for pt in v0]
-                cap1 = [(pt.x * sx, pt.y * sy, z1_plot) for pt in v1]
-                cross_lw = 2.2  # thickness for transverse polygons only
-                if wire:
-                    _plot_polygon_boundary(cap0, lw=cross_lw, line_color=wire_line_color)
-                    _plot_polygon_boundary(cap1, lw=cross_lw, line_color=wire_line_color)
-                else:
-                    _plot_cap_filled(cap0, face_color=poly_color, alpha=0.25, edge_lw=cross_lw)
-                    _plot_cap_filled(cap1, face_color=poly_color, alpha=0.25, edge_lw=cross_lw)
-
-
-                # Side faces / longitudinal connectors
-                n = len(v0)
-
-                if line_percent <= 0.0:
-                    selected_indices = []
-                elif line_percent >= 100.0:
-                    selected_indices = list(range(n))
-                else:
-                    n_keep = max(1, int(np.ceil(n * line_percent / 100.0)))
-                    selected_indices = np.linspace(0, n - 1, num=n_keep, dtype=int).tolist()
-                    selected_indices = sorted(set(selected_indices))
-
-                for i in range(n):
-                    j = (i + 1) % n
-
-                    a0 = (v0[i].x * sx, v0[i].y * sy, z0_plot)
-                    b0 = (v0[j].x * sx, v0[j].y * sy, z0_plot)
-                    b1 = (v1[j].x * sx, v1[j].y * sy, z1_plot)
-                    a1 = (v1[i].x * sx, v1[i].y * sy, z1_plot)
-
-                    if wire:
-                        # Draw only a subset of longitudinal lines controlled by line_percent
-                        if i in selected_indices:
-                            ax.plot(
-                                [a0[0], a1[0]],
-                                [a0[1], a1[1]],
-                                [a0[2], a1[2]],
-                                "-",
-                                lw=0.8,
-                                color=wire_line_color,
-                            )
-                    else:
-                        # Filled quad (internal split hidden)
-                        X = np.array([[a0[0], b0[0]], [a1[0], b1[0]]], dtype=float)
-                        Y = np.array([[a0[1], b0[1]], [a1[1], b1[1]]], dtype=float)
-                        Z = np.array([[a0[2], b0[2]], [a1[2], b1[2]]], dtype=float)
-
-                        ax.plot_surface(
-                            X, Y, Z,
-                            color=poly_color,
-                            alpha=0.25,
-                            edgecolor="none",
-                            linewidth=0.0,
-                            shade=False,
-                        )
-
-                        # Draw only true quad edges
-                        ax.plot([a0[0], b0[0]], [a0[1], b0[1]], [a0[2], b0[2]], "-", lw=0.5, color=default_edge_color)
-                        ax.plot([b0[0], b1[0]], [b0[1], b1[1]], [b0[2], b1[2]], "-", lw=0.5, color=default_edge_color)
-                        ax.plot([b1[0], a1[0]], [b1[1], a1[1]], [b1[2], a1[2]], "-", lw=0.5, color=default_edge_color)
-                        ax.plot([a1[0], a0[0]], [a1[1], a0[1]], [a1[2], a0[2]], "-", lw=0.5, color=default_edge_color)
-
-                # Bounds accumulation
-                for pt in v0:
-                    all_x.append(pt.x * sx)
-                    all_y.append(pt.y * sy)
-                    all_z.append(z0_plot)
-                for pt in v1:
-                    all_x.append(pt.x * sx)
-                    all_y.append(pt.y * sy)
-                    all_z.append(z1_plot)
-
-        # -------------------------------------------------------------------------
-        # Global limits and aspect
-        # -------------------------------------------------------------------------
-        if all_x and all_y and all_z:
-            xmin, xmax = min(all_x), max(all_x)
-            ymin, ymax = min(all_y), max(all_y)
-            zmin, zmax = min(all_z), max(all_z)
-
-            dx = max(xmax - xmin, 1e-12)
-            dy = max(ymax - ymin, 1e-12)
-            dz = max(zmax - zmin, 1e-12)
-
-            ax.set_xlim(xmin - dx * margin_ratio, xmax + dx * margin_ratio)
-            ax.set_ylim(ymin - dy * margin_ratio, ymax + dy * margin_ratio)
-            ax.set_zlim(zmin - dz * margin_ratio, zmax + dz * margin_ratio)
-            ax.set_box_aspect((dx * bx, dy * by, dz * bz))
-
-        ax.set_xlabel(f"X (display x{sx:.4g})" if abs(sx - 1.0) > 1e-15 else "X")
-        ax.set_ylabel(f"Y (display x{sy:.4g})" if abs(sy - 1.0) > 1e-15 else "Y")
-        ax.set_zlabel(f"Z (display x{sz:.4g})" if abs(sz - 1.0) > 1e-15 else "Z")
-
-        mode = "wireframe" if wire else "solid"
-        scheme = "color" if colors else "grayscale"
-        ax.set_title(f"Global 3D ({mode}, {scheme})")
-
-        return ax
-
     
     def global_bounds(self):
         """

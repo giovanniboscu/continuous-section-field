@@ -574,9 +574,9 @@ def build_mesh(
         pslg["holes"] = np.asarray(holes, dtype=float)
 
     switches = f"pq{min_angle:g}a{mesh_max_area:g}A"
-    print("before triangle")
+
     tri = triangle_lib.triangulate(pslg, switches)
-    print("after triangle")
+
 
     if "vertices" not in tri or "triangles" not in tri:
         raise SystemExit("Triangle meshing failed: no vertices/triangles returned.")
@@ -593,7 +593,11 @@ def build_mesh(
         bad = sorted(set(int(r) for r in elem_region[~np.isfinite(elem_G)]))
         raise SystemExit(f"Mesh contains elements with unknown region attributes: {bad}")
 
-    mesh = MeshTri(out_points.T, out_tris.T)
+    mesh = MeshTri(
+     np.ascontiguousarray(out_points.T),
+     np.ascontiguousarray(out_tris.T),
+    )
+    
     return MeshPayload(
         mesh=mesh,
         points=out_points,

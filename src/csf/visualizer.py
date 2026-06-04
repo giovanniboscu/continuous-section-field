@@ -25,70 +25,69 @@ from .continuous_section_field import _set_axes_equal_3d
 from .section_field import section_full_analysis
 
 def plot_section_variation(
-    
     stations_data: Sequence[Dict[str, Any]],
+    plot_stations_data: Optional[Sequence[Dict[str, Any]]] = None,
     filename: str = "section_variation.png",
     show: bool = False,
 ) -> str:
     """
     Plot a quick visual preview of how a few properties vary along z.
 
-    Notes
-    -----
-    - This function is optional. It only runs if matplotlib is available.
-    - Units are intentionally NOT printed; they depend on the user's consistent unit system.
-    - The function expects each station dict to have at least:
-        'z', 'A', 'Ix', 'Iy', 'Ip'
-
-    Parameters
-    ----------
     stations_data:
-        List of station dictionaries produced by _compute_station_data(...)
-    filename:
-        Path to save the plot image.
-    show:
-        If True, calls plt.show(). Otherwise it only saves.
+        Station dictionaries used as markers, typically Lobatto or user stations.
 
-    Returns
-    -------
-    str:
-        The image path written to disk.
-
-    Raises
-    ------
-    RuntimeError:
-        If matplotlib is not available.
+    plot_stations_data:
+        Optional denser station dictionaries used for continuous plot curves.
+        If None, stations_data is used for both curves and markers.
     """
-    
-    z = [st['z'] for st in stations_data]
-    area = [st['A'] for st in stations_data]
-    i33 = [st['Ix'] for st in stations_data]
-    i22 = [st['Iy'] for st in stations_data]
-    j = [st['Ip'] for st in stations_data]
+
+    if plot_stations_data is None:
+        plot_stations_data = stations_data
+
+    z = [st["z"] for st in stations_data]
+    area = [st["A"] for st in stations_data]
+    i33 = [st["Ix"] for st in stations_data]
+    i22 = [st["Iy"] for st in stations_data]
+    j = [st["Ip"] for st in stations_data]
+
+    zp = [st["z"] for st in plot_stations_data]
+    area_p = [st["A"] for st in plot_stations_data]
+    i33_p = [st["Ix"] for st in plot_stations_data]
+    i22_p = [st["Iy"] for st in plot_stations_data]
+    j_p = [st["Ip"] for st in plot_stations_data]
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
 
-    # Plot Area
-    ax1.plot(z, area, 'o-', color='blue', label='Area')
-    ax1.set_ylabel('Cross Section Area')
-    ax1.grid(True, linestyle='--')
-    ax1.legend()
-    ax1.set_title('Variation of Geometric Properties along Z (Absolute)')
+    ax1.plot(zp, area_p, "-", color="blue", label="Area")
+    ax1.plot(z, area, "o", color="blue", label="Area stations")
+    ax1.set_ylabel("Cross Section Area")
+    ax1.grid(True, linestyle="--")
+    ax1.legend(loc="upper left", bbox_to_anchor=(1.02, 1.0), borderaxespad=0.0)
+    ax1.set_title("Variation of Geometric Properties along Z (Absolute)")
 
-    # Plot Inertia and Polar Moment
-    ax2.plot(z, i33, 's-', color='red', label='I33 (Ix)')
-    ax2.plot(z, i22, 'd-', color='green', label='I22 (Iy)')
-    ax2.plot(z, j, 'x--', color='purple', label='Ip')
-    ax2.set_xlabel('Z coordinate')
-    ax2.set_ylabel('Inertia / Polar Moment')
-    ax2.grid(True, linestyle='--')
-    ax2.legend()
-    
+    ax2.plot(zp, i33_p, "-", color="red", label="I33 (Ix)")
+    ax2.plot(zp, i22_p, "-", color="green", label="I22 (Iy)")
+    ax2.plot(zp, j_p, "-", color="purple", label="Ip")
+
+    ax2.plot(z, i33, "s", color="red", label="I33 (Ix) stations")
+    ax2.plot(z, i22, "d", color="green", label="I22 (Iy) stations")
+    ax2.plot(z, j, "x", color="purple", label="Ip stations")
+
+    ax2.set_xlabel("Z coordinate")
+    ax2.set_ylabel("Inertia / Polar Moment")
+    ax2.grid(True, linestyle="--")
+    ax2.legend(loc="upper left", bbox_to_anchor=(1.02, 1.0), borderaxespad=0.0)
+
     plt.tight_layout()
     plt.savefig(filename)
-    #print(f"[PLOT] Preview saved as '{filename}'")
+
     if show:
         plt.show()
+    else:
+        plt.close(fig)
+
+    return filename
+
 
 
 

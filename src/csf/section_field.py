@@ -112,80 +112,83 @@ else:
 # -----------------------------------------------------------------------------
 # Station generation
 # -----------------------------------------------------------------------------
-def get_lobatto_intervals(z_min: float, z_max: float, n_intervals: int) -> "np.ndarray":
-    """
-    Compute Gauss-Lobatto stations for a given number of intervals.
-
-    Why "intervals" and not "points"?
-    --------------------------------
-    For a beam discretization, users often think in terms of N segments (intervals).
-    Gauss-Lobatto rules include both endpoints, so the number of stations is:
-
-        n_stations = n_intervals + 1
-
-    The previous naming (get_lobatto_points(..., n_points)) easily leads to confusion
-    because the implementation returns n_points+1 stations for n_points >= 3.
-
-    Parameters
-    ----------
-    z_min, z_max:
-        Endpoints of the interval in physical coordinates.
-    n_intervals:
-        Number of intervals. Must be >= 1.
-
-    Returns
-    -------
-    np.ndarray:
-        Sorted station coordinates of length n_intervals + 1.
-
-    Implementation detail
-    ---------------------
-    We use a Jacobi matrix eigenvalue method to compute the internal Lobatto nodes for
-    the (n_stations)-point rule, then map from [-1,1] to [z_min,z_max].
-
-    Raises
-    ------
-    ValueError:
-        If n_intervals < 1
-    RuntimeError:
-        If numpy is not available.
-    """
-    
-
-
-    if np is None:
-        raise RuntimeError("numpy is required for get_lobatto_intervals().")
+def get_lobatto_intervals(
+    z_min: float,
+    z_max: float,
+    n_intervals: int,
+) -> "np.ndarray":
     if n_intervals < 1:
         raise ValueError("n_intervals must be >= 1.")
 
-    n_stations = n_intervals + 1
+    return np.asarray(
+        compute_lobatto_integration_points(
+            z_min=z_min,
+            z_max=z_max,
+            n_points=n_intervals + 1,
+        ),
+        dtype=float,
+    )
 
-    # Trivial cases:
-    if n_stations == 2:
-        nodes = np.array([-1.0, 1.0], dtype=float)
-    elif n_stations == 1:
-        nodes = np.array([0.0], dtype=float)
-    else:
-        # For an n_stations-point Lobatto rule, there are m = n_stations-2 internal nodes.
-        n = n_stations
-        m = n - 2  # number of internal nodes => H must be m x m
 
-        # Off-diagonal coefficients have length (m-1)
-        i = np.arange(1, m, dtype=float)  # 1..m-1
-        a = np.sqrt(i * (i + 2.0) / ((2.0 * i + 1.0) * (2.0 * i + 3.0)))
+def compute_lobatto_integration_points(z_min: float, z_max: float, n_points: int = 5, L: float = None) -> List[float]:
+        """
+        Calculates the global Z-coordinates for OpenSees integration points using 
+        the Gauss-Lobatto quadrature rule.
+        
+        RATIONALE:
+        In finite element analysis (specifically for OpenSees forceBeamColumn elements), 
+        the Gauss-Lobatto rule is preferred because it includes the endpoints of the 
+        interval (z=0 and z=L). This is critical for detecting anomalies at the 
+        very base of the shaft (e.g., FHWA Soft Toe) or at the top connection.
+        
+        ALGORITHM:
+        1. Generate the roots of the derivative of the (n-1)-th Legendre Polynomial.
+        2. These roots (plus -1.0 and 1.0) form the abscissae in the natural 
+        coordinate system [-1, 1].
+        3. Map these abscissae from [-1, 1] to the physical domain [z0, z1] or [0, L].
+        
+        Args:
+            n_points (int): Number of integration points. Must be >= 2.
+            L (float, optional): Total length of the element. If None, it uses 
+                                the distance between the two defined sections.
+        
+        Returns:
+            List[float]: A list of global Z-coordinates where OpenSees will 
+                        sample the section properties.
+        """
 
-        # Jacobi matrix (symmetric tridiagonal) of size m x m
-        H = np.zeros((m, m), dtype=float)
-        H[np.arange(m - 1), np.arange(1, m)] = a
-        H[np.arange(1, m), np.arange(m - 1)] = a
+        if n_points < 2:
+            raise ValueError("Number of integration points must be at least 2 for Gauss-Lobatto.")
 
-        internal_nodes = np.sort(np.linalg.eigvalsh(H))
-        nodes = np.concatenate((np.array([-1.0]), internal_nodes, np.array([1.0])))
+        # 1. Physical boundaries
+        
+        # Usiamo section0 e section1 come definito nel costruttore field = ContinuousSectionField(section0=s0, section1=s1)
+        
+        z_start = float(z_min)
+        z_end = float(z_max)
+        actual_L = L if L is not None else (z_end - z_start)
+        if actual_L <= 0:
+            raise ValueError("L or (z_max - z_min) must be positive.")        
 
-    # Map [-1, 1] -> [z_min, z_max]
-    z_min_f = float(z_min)
-    z_max_f = float(z_max)
-    return 0.5 * (nodes + 1.0) * (z_max_f - z_min_f) + z_min_f
+        # 2. Calculation of Gauss-Lobatto Abscissae in range [-1, 1]
+        # For n points, we need roots of P'_{n-1}(x)
+        if n_points == 2:
+            abscissae = [-1.0, 1.0]
+        else:
+            # The internal points are the roots of the derivative of Legendre polynomial P_{n-1}
+            roots = np.polynomial.legendre.Legendre.deriv(
+                np.polynomial.legendre.Legendre([0]*(n_points-1) + [1])
+            ).roots()
+            abscissae = np.concatenate(([-1.0], roots, [1.0]))
+
+        # 3. Mapping from [-1, 1] to [z_start, z_start + actual_L]
+        z_coords = [z_start + (xi + 1.0) * (actual_L / 2.0) for xi in abscissae]
+        
+        # Sort to ensure numerical stability
+        z_coords = sorted(z_coords)
+        return z_coords
+
+
 
 
 # -----------------------------------------------------------------------------
@@ -265,8 +268,10 @@ def _compute_station_data(
 
     return out
 
-#------------------------------------------------------------------------------
 
+    
+
+#------------------------------------------------------------------------------
 def write_sap2000_template_pack(
     field: Any,
     n_intervals: int = 20,
@@ -281,6 +286,7 @@ def write_sap2000_template_pack(
     plot_filename: str = "section_variation.png",
     show_plot: bool = True,
     z_values: Optional[List[float]] = None,
+    plot_n: int = 100,
     float_fmt: str = ".9g",
 ) -> str:
 
@@ -313,6 +319,8 @@ def write_sap2000_template_pack(
     show_plot        : If True, display the plot interactively.
     z_values         : Explicit station list (strictly increasing, within field bounds).
                        No sorting or deduplication - invalid input raises ValueError.
+    plot_n           : Number of uniformly sampled stations used only for the plot curve.
+                       The export tables still use Lobatto stations or z_values.
     float_fmt        : Format spec for all numeric output fields.
 
     Returns
@@ -340,7 +348,7 @@ def write_sap2000_template_pack(
     # - keep the original Lobatto path untouched when z_values is not provided;
     # - add a small explicit branch for user-provided stations.
     if z_values is None:
-        # Original behavior (fully preserved).
+
         station_z = get_lobatto_intervals(z_start, z_end, int(n_intervals)).tolist()
     else:
         # Explicit-stations behavior (new, opt-in).
@@ -376,25 +384,29 @@ def write_sap2000_template_pack(
                 )
 
     # Compute section data at selected stations (unchanged downstream flow).
+    # The project helper is expected to be available in this module.
     stations_data = _compute_station_data(field, station_z)
 
     # Optional plot (best-effort).
     plot_path_written: Optional[str] = None
     if include_plot and plt is not None:
-            
+
         from .visualizer import plot_section_variation as visualizer_plot_section_variation
         try:
 
-            #viz = Visualizer(section_field)
-    
-    
-            
+            if int(plot_n) < 2:
+                raise ValueError("plot_n must be >= 2.")
+
+            plot_z = np.linspace(z_start, z_end, int(plot_n)).tolist()
+            plot_stations_data = _compute_station_data(field, plot_z)
+
             plot_path_written = visualizer_plot_section_variation(
                 stations_data,
+                plot_stations_data=plot_stations_data,
                 filename=plot_filename,
                 show=show_plot,
             )
-                        
+
         except Exception as e:
             print("DEBUG plot exception:", repr(e))
             raise
@@ -614,6 +626,7 @@ def write_sap2000_template_pack(
         f.write("\n".join(lines).rstrip() + "\n")
 
     return str(out_path)
+
 
 #--------------------------------------------------------------------------------
 def write_sap2000_geometry(*args: Any, **kwargs: Any) -> str:
@@ -1795,14 +1808,26 @@ def _principal_inertias(ix: float, iy: float, ixy: float) -> Tuple[float, float]
 
 def _roark_torsion_rect(a: float, b: float) -> float:
     """
-    Roark-style torsion approximation for a solid rectangle; requires a >= b > 0:
+    Roark-style torsion approximation for a solid rectangular section.
 
-        J ≈ (1/3 - 0.21*(b/a)*(1 - (b/a)^4/12)) * a * b^3
+    Here a and b are the full side dimensions, with a >= b > 0:
+
+        J ≈ a*b^3 * [
+              1/3
+            - 0.21*(b/a)*(1 - (b/a)^4/12)
+        ]
+
+    This is the full-side form of the common half-side expression:
+
+        J ≈ a_h*b_h^3 * [
+              16/3
+            - 3.36*(b_h/a_h)*(1 - (b_h/a_h)^4/12)
+        ]
+    
     """
     if b > a:
         a, b = b, a
     ratio = b / a    
-    ratio = b / a
     factor = (1.0 / 3.0) - 0.21 * ratio * (1.0 - (ratio ** 4) / 12.0)
     return factor * a * (b ** 3)
 
@@ -1832,7 +1857,7 @@ def _equiv_rectangle_dims(A: float, i_min: float, eps_k: float) -> Tuple[float, 
         b_dim = b_equiv
     return a_dim, b_dim
 
-def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[float, float]:
+def compute_saint_venant_Jv2(poly_input: Any) -> Tuple[float, float]:
     """
     Estimate the Saint-Venant torsional constant J and a fidelity indicator.
 
@@ -1851,7 +1876,7 @@ def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[fl
     # ------------------------------------------------------------------
     # Helper: normalised weight-dispersion (coefficient of variation)
     # ------------------------------------------------------------------
-
+    verbose=False
     
     def compute_shear_areas(
         section: Any,
@@ -1926,21 +1951,37 @@ def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[fl
 
 
 
-    def _weightabs_deviation(polys: Any) -> float:
+    def _shear_weightabs_deviation(polys: Any) -> float:
+        """
+        Coefficient of variation of shear_weightabs among polygons.
+
+        Returns 0.0 when:
+        - there are no positive shear_weightabs values;
+        - there is only one positive shear_weightabs value;
+        - all positive shear_weightabs values are equal.
+        """
         values = []
+
         for p in polys:
             if not hasattr(p, "shear_weightabs"):
                 raise ValueError("Polygon has no shear_weightabs.")
-            w = float(p.weightabs)
-            if w > 0.0:
-                values.append(w)
-        if not values:
+
+            sw = float(p.shear_weightabs)
+
+            if sw > 0.0:
+                values.append(sw)
+
+        if len(values) <= 1:
             return 0.0
+
         mean = sum(values) / len(values)
+
         if mean == 0.0:
             return 0.0
-        var = sum((w - mean) ** 2 for w in values) / len(values)
-        return (var ** 0.5) / mean
+
+        var = sum((sw - mean) ** 2 for sw in values) / len(values)
+
+        return (var ** 0.5) / abs(mean)
 
     # ------------------------------------------------------------------
     # Helper: geometric bounding-box dimensions (no weighting)
@@ -2144,14 +2185,17 @@ def compute_saint_venant_Jv2(poly_input: Any, verbose: bool = False) -> Tuple[fl
     # Weight-dispersion penalty on fidelity
     # ------------------------------------------------------------------
     
-    dev_weightabs = _weightabs_deviation(polys)
-    fid_final = fid * (1.0 - dev_weightabs ** 2)
+    dev_shear_weightabs = _shear_weightabs_deviation(polys)
+    
+    fid_final = fid * (1.0 - dev_shear_weightabs ** 1.5)
     fid_final = max(0.0, min(1.0, fid_final))
+    
     if verbose:
         print(
             f"roark: J_total={J_total:.6e}  fid={fid:.4f}"
             f"  fid_final={fid_final:.4f}  w_total={w_total:.4f}"
-            f"  q_iso={q_iso:.4f}  dev_w={dev_weightabs:.4f}"
+            f"  q_iso={q_iso:.4f}  dev_w={dev_shear_weightabs:.4f}"
+
         )
     if verbose and math.isfinite(fid_final) and fid_final < 0.5:
         print(
@@ -2469,7 +2513,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
         if not _same_point(xy[inner_end], xy[inner_start]):
             raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' INNER closure is not valid."
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' : INNER closure is not valid."
             )
 
         return split_indices
@@ -3011,10 +3055,12 @@ def compute_saint_venant_J_wall(section: "Section") -> float:
 
         # Keep torsional stiffness non-negative
         J +=  shear_weight * J_i
-        
+    
+
     if len(wall_polys) == 1:
         return float(J),t
     else:
+        
         return float(J)
 
 
@@ -4076,6 +4122,7 @@ def section_statical_moment_partial(section: Section, y_cut: float, reference_ax
 
         # Compute area and centroid of the clipped part.
         area_part, (_, cy_part) = polygon_area_centroid(clipped_poly)
+        
 
         # Ignore negligible contributions.
         if abs(area_part) <= eps_a:
