@@ -21,7 +21,7 @@ The axial/bending participation assigned to the `upper` component is selected so
 
 This makes the case useful as a controlled verification of the continuous field itself. No structural solver is involved. The CSF-computed weighted sectional quantities are compared directly against a closed-form reference for $A$, $C_y$, $I_x$, and $I_y$.
 
-> **Figure placeholder — global CSF member representation**  
+> **Figure placeholder - global CSF member representation**  
 > Add a 3D plot of the stacked member showing the two continuous CSF intervals joined at $z = 5$.
 >
 > `![Stacked rectangular member](figures/stacked_member_3d.png)`
@@ -410,7 +410,7 @@ Representative values are:
 | $z = 5$ | $0.21$ | $-0.150000$ | $0.0085750$ | $0.0015750$ |
 | $z = 10$ | $0.21$ | $-0.242857$ | $0.0096143$ | $0.0015750$ |
 
-> **Figure placeholder — continuous weighted sectional quantities**  
+> **Figure placeholder - continuous weighted sectional quantities**  
 > Add the plot of $A(z)$, $C_y(z)$, $I_x(z)$, and $I_y(z)$ over $0 \le z \le 10$.
 >
 > `![Stack properties](figures/stack_properties.png)`
@@ -500,7 +500,7 @@ The corresponding CSV metadata are:
 
 The empty `poisson` field for `upper` does not indicate missing geometry or invalid data. It indicates that the shear/torsion participation was assigned directly rather than derived through the isotropic shortcut.
 
-> **Figure placeholder — station-wise section at $z = 7$**  
+> **Figure placeholder - station-wise section at $z = 7$**  
 > Add a cross-section plot or annotated CSV-export view showing `upper`, `middle`, and `lower` at $z = 7$.
 >
 > `![Station-wise section at z=7](figures/section_z7.png)`
