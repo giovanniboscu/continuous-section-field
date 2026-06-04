@@ -21,10 +21,8 @@ The axial/bending participation assigned to the `upper` component is selected so
 
 This makes the case useful as a controlled verification of the continuous field itself. No structural solver is involved. The CSF-computed weighted sectional quantities are compared directly against a closed-form reference for $A$, $C_y$, $I_x$, and $I_y$.
 
-> **Figure placeholder - global CSF member representation**  
-> Add a 3D plot of the stacked member showing the two continuous CSF intervals joined at $z = 5$.
->
-> `![Stacked rectangular member](figures/stacked_member_3d.png)`
+ **global CSF member representation**  
+<img width="816" height="706" alt="image" src="https://github.com/user-attachments/assets/3fefab64-20c4-4a84-914a-6a561c1b3cf5" />
 
 ---
 
