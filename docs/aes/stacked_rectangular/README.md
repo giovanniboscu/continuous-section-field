@@ -9,16 +9,6 @@ This verification program evaluates the sectional properties computed by CSF and
 The member has total length $L = 10$ and is represented by two continuous CSF intervals joined at $z = 5$. Each interval defines reference cross-sections, polygonal zones, and longitudinal participation fields. `CSFStacked` concatenates the two intervals into a single global member representation that can be evaluated at any station $z$ along the member axis./
 
 
-
-<p align="center">
-  <em>Figure 0. section composition.</em>
-
-<p align="center">
- <img width="408" height="790" alt="image" src="https://github.com/user-attachments/assets/b5619f56-ae89-4255-bccc-8f18398e3e12" />
-
-</p>
-
-
 The case is intentionally simple in geometry and non-trivial in sectional behaviour. The cross-section is a stacked rectangular section composed of three components:
 
 - `upper`
