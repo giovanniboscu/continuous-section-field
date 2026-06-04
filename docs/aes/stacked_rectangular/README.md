@@ -184,14 +184,45 @@ The `upper` axial/bending participation decreases from $1.0$ at $z = 5$ to $0.5$
 
 ---
 
-## Shear/torsion participation and isotropic shortcut
+## Non-isotropic participation assignment for the `upper` component
 
+The shear/torsion participation field is defined per component and is denoted by $\kappa_i(z)$.
+
+In this example, the `upper` component has an independently prescribed shear/torsion participation field. Its axial/bending participation field $w_u(z)$ and its shear/torsion participation field $\kappa_u(z)$ are defined by two different laws. Consequently, $\kappa_u(z)$ is not obtained from $w_u(z)$ through the isotropic shortcut.
+
+For the first interval, $0 \le z \le 5$, the local coordinate is
+
+$$
+t = \frac{z}{5}
+$$
+
+and the `upper` shear/torsion participation is
+
+$$
+\kappa_u(t) = 1 - 0.8(1 - t) = 0.2 + 0.8t
+$$
+
+Thus, $\kappa_u$ increases linearly from $0.2$ at $z = 0$ to $1.0$ at $z = 5$.
 
 <p align="center">
-  <em>Figure 3. Axial/bending participation field of the upper component in the first CSF interval. The participation varies linearly from 0.20 at z = 0 to 1.00 at z = 5.</em>
+  <em>Figure 3. Shear/torsion participation field of the upper component in the first CSF interval. The field increases linearly from 0.20 at z = 0 to 1.00 at z = 5.</em>
 </p>
 
 <img width="989" height="475" alt="image" src="https://github.com/user-attachments/assets/43f37ed8-e3ac-4537-a1bc-ed8433b2571a" />
+
+For the second interval, $5 \le z \le 10$, the local coordinate is
+
+$$
+t = \frac{z - 5}{5}
+$$
+
+and the `upper` shear/torsion participation is
+
+$$
+\kappa_u(t) = 1 - 0.8t
+$$
+
+Thus, $\kappa_u$ decreases linearly from $1.0$ at $z = 5$ to $0.2$ at $z = 10$.
 
 <p align="center">
   <em>Figure 4. Shear/torsion participation field of the upper component in the second CSF interval. The field decreases linearly from 1.00 at z = 5 to 0.20 at z = 10.</em>
@@ -199,30 +230,7 @@ The `upper` axial/bending participation decreases from $1.0$ at $z = 5$ to $0.5$
 
 <img width="986" height="453" alt="image" src="https://github.com/user-attachments/assets/c91e77b7-4ea8-4ccb-8a2a-08c4bb5b04e5" />
 
-
-The shear/torsion participation field $\kappa_i(z)$ is also defined per component.
-
-For the `upper` component, $\kappa_u(t)$ is assigned independently from $w_u(t)$.
-
-### First interval: $0 \le z \le 5$
-
-$$
-\kappa_u(t) = 1 - 0.8(1 - t) .
-$$
-
-Equivalently,
-
-$$
-\kappa_u(t) = 0.2 + 0.8t .
-$$
-
-### Second interval: $5 \le z \le 10$
-
-$$
-\kappa_u(t) = 1 - 0.8t .
-$$
-
-The `middle` and `lower` components use the isotropic shortcut
+The `middle` and `lower` components do not receive an independently prescribed shear/torsion participation law. Their shear/torsion participation is derived through the isotropic shortcut
 
 $$
 \kappa_i(z) = \frac{w_i(z)}{2(1 + \nu)}
@@ -231,24 +239,24 @@ $$
 with
 
 $$
-\nu = 0.2 .
+\nu = 0.2
 $$
 
-Since $w_m = w_l = 1$, their shear/torsion participation is
+Since $w_m = w_l = 1$, this gives
 
 $$
-\kappa_m = \kappa_l = \frac{1}{2(1 + 0.2)} = 0.4166666667 .
+\kappa_m = \kappa_l = \frac{1}{2(1 + 0.2)} = 0.4166666667
 $$
 
-Therefore:
+The resulting participation assignments are:
 
-| Component | Axial/bending participation | Shear/torsion participation | Interpretation |
-|---|---:|---:|---|
-| `upper` | $w_u(t)$ | independently assigned $\kappa_u(t)$ | non-isotropic participation |
-| `middle` | $1$ | `iso(0.2)` | isotropic shortcut |
-| `lower` | $1$ | `iso(0.2)` | isotropic shortcut |
+| Component | Axial/bending participation | Shear/torsion participation | Assignment                              |
+| --------- | --------------------------: | --------------------------: | --------------------------------------- |
+| `upper`   |                    $w_u(t)$ |    prescribed $\kappa_u(t)$ | independent shear/torsion participation |
+| `middle`  |                         $1$ |      $\frac{1}{2(1 + 0.2)}$ | derived from `iso(0.2)`                 |
+| `lower`   |                         $1$ |      $\frac{1}{2(1 + 0.2)}$ | derived from `iso(0.2)`                 |
 
-This isotropic or non-isotropic classification belongs to the component in the continuous CSF model. In the station-wise CSV export, it appears as sampled metadata attached to the exported polygon vertices.
+The distinction above concerns the participation-field assignment in the continuous CSF model. In the station-wise CSV export, this information appears as sampled metadata attached to the exported polygon vertices. In particular, the `poisson` column is populated for components whose $\kappa_i(z)$ value is derived through `iso(0.2)`, while it remains empty for the `upper` component because $\kappa_u(z)$ is prescribed directly.
 
 ---
 
