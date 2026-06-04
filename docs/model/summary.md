@@ -114,10 +114,10 @@ $$
 Once the participation fields are introduced, the sectional laws are the composition of geometric variation and participation variation. A generic sectional quantity can be written as
 
 $$
-P(z) = \sum_i w_i(z)\,P_i^{\mathrm{geom}}(z),
+P(z) = \sum_i q_i(z)\,P_i^{\mathrm{geom}}(z),
 $$
 
-where $P_i^{\mathrm{geom}}(z)$ denotes the geometric contribution associated with zone $i$.
+where $P_i^{\mathrm{geom}}(z)$ denotes the geometric contribution associated with zone $i$ and  $q_i(z)$ denotes the participation field associated with the quantity being evaluated.
 
 The longitudinal variation therefore arises from two independent mechanisms:
 
