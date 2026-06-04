@@ -74,6 +74,9 @@ This setup separates geometric variation from participation-field variation. CSF
 ---
 
 ## Geometry
+[stacked_0.yaml](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/stacked_0.yaml)
+[stacked_1.yaml](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/stacked_1.yaml)
+
 
 All three components have constant width
 
