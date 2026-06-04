@@ -2,6 +2,8 @@
 
 ## General description
 
+[run_stacked.py](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/run_stacked.py)
+
 This verification case demonstrates how a Continuous Section Field (CSF) defines an evaluable sectional function along a member axis, rather than a fixed table of section properties.
 
 The member has total length $L = 10$ and is represented by two continuous CSF intervals joined at $z = 5$. Each interval defines reference cross-sections, polygonal zones, and longitudinal participation fields. `CSFStacked` concatenates the two intervals into a single global member representation that can be evaluated at any station $z$ along the member axis./
