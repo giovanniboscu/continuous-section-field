@@ -483,7 +483,9 @@ This construction verifies three aspects of the formulation under controlled con
 
 ### 6.1 Model definition
 
-The member has total length $L=10$ and is represented by two continuous CSF intervals joined at $z=5$. The first interval is defined in `stacked_0.yaml` over $0 \le z \le 5$, and the second interval is defined in `stacked_1.yaml` over $5 \le z \le 10$. The two fields are concatenated through `CSFStacked`. A local coordinate $t \in [0,1]$ is introduced independently on each interval.
+The member has total length $L=10$ and is represented by two continuous CSF intervals joined at $z=5$. The first interval is defined in `stacked_0.yaml` over $0 \le z \le 5$, and the second interval is defined in `stacked_1.yaml` over $5 \le z \le 10$. The two fields are concatenated through `CSFStacked`, producing a single global member representation. A local coordinate $t \in [0,1]$ is introduced independently on each interval.
+
+The two continuous CSF intervals are intentionally prescribed as mirror-symmetric about the junction at $z=5$. In the first interval, the `lower` component decreases in height while the axial/bending and shear/torsion participation fields of the `upper` component increase. In the second interval, the same mechanisms are reversed: the `lower` component increases in height while the participation fields of the `upper` component decrease. The global member therefore reaches its maximum `upper` participation and minimum `lower` height at the common station $z=5$, while the two end stations $z=0$ and $z=10$ have matching compensated configurations.
 
 The cross-section is decomposed into three stacked rectangular components: `upper`, `middle`, and `lower`. All components have constant width
 
