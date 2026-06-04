@@ -270,7 +270,8 @@ The participation law of the `upper` component is selected so that the loss or g
   <em>Figure 5. Continuous sectional-property variation over the stacked member.</em>
 </p>
 
-<img width="1040" height="921" alt="image" src="https://github.com/user-attachments/assets/153b073d-3ba2-4cc2-a2a4-1f126dc7cc56" />
+
+<img width="989" height="869" alt="image" src="https://github.com/user-attachments/assets/812b2a89-dfaa-48f4-b609-52eaf7233397" />
 
 
 The weighted area of the section is
