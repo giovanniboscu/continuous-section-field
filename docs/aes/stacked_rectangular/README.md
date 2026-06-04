@@ -4,7 +4,7 @@
 
 This verification case demonstrates how a Continuous Section Field (CSF) defines an evaluable sectional function along a member axis, rather than a fixed table of section properties.
 
-The member has total length $L = 10$ and is represented by two continuous CSF intervals joined at $z = 5$. Each interval defines reference cross-sections, polygonal zones, and longitudinal participation fields. `CSFStacked` concatenates the two intervals into a single global member representation that can be evaluated at any station $z$ along the member axis.
+The member has total length $L = 10$ and is represented by two continuous CSF intervals joined at $z = 5$. Each interval defines reference cross-sections, polygonal zones, and longitudinal participation fields. `CSFStacked` concatenates the two intervals into a single global member representation that can be evaluated at any station $z$ along the member axis./
 
 The case is intentionally simple in geometry and non-trivial in sectional behaviour. The cross-section is a stacked rectangular section composed of three components:
 
@@ -45,31 +45,13 @@ The YAML files define the continuous model. The CSV files are station-wise expor
 
 ## Continuous CSF model
 
-At each station $z$, the sectional model is represented as
+The example is built from three stacked components: `upper`, `middle`, and `lower`.
 
-$$
-S(z) = \{\,\Omega_i(z),\; w_i(z),\; \kappa_i(z)\,\}_{i=1}^{n}
-$$
+The section is symmetric with respect to the vertical axis. All components have the same width and are centered on the same axis, so the horizontal centroid remains fixed at $C_x=0$. The relevant centroid variation in this example is therefore the vertical coordinate $C_y(z)$.
 
-where:
+The `lower` component changes its geometry along the member axis. The `upper` component keeps a constant geometry, but its axial/bending participation varies continuously. The `middle` component remains fixed in both geometry and axial/bending participation.
 
-- $\Omega_i(z)$ is the polygonal zone of component $i$ at station $z$;
-- $w_i(z)$ is the axial/bending participation of component $i$;
-- $\kappa_i(z)$ is the shear/torsion participation of component $i$.
-
-For this case,
-
-$$
-i \in \{\texttt{upper},\;\texttt{middle},\;\texttt{lower}\} .
-$$
-
-The geometric field and the participation fields are independent. The polygonal zones define the geometry of the section subdomains along the member axis. The participation fields define how much each component contributes to the corresponding weighted sectional quantities.
-
-This distinction is central to the example:
-
-- the `lower` component varies geometrically;
-- the `upper` component varies through its axial/bending participation field;
-- the `middle` component is fixed in both geometry and axial/bending participation.
+This setup separates geometric variation from participation-field variation. CSF keeps both descriptions continuous along $z$, so the sectional properties are evaluated from the continuous model at the requested stations rather than prescribed as a fixed station-wise table.
 
 ---
 
