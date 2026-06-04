@@ -262,6 +262,17 @@ The distinction above concerns the participation-field assignment in the continu
 
 ## Compensation mechanism
 
+The purpose of this case is to prescribe two different variations that compensate each other in terms of total weighted area. The `upper` component does not change its geometry, but its axial/bending participation $w_u(z)$ varies along the member axis. The `lower` component follows the opposite behaviour: its participation remains constant, but its geometric height changes along $z$.
+
+The participation law of the `upper` component is selected so that the loss or gain of weighted area in `upper` is exactly balanced by the geometric-area variation of `lower`. This produces a section whose total weighted area remains constant, while the internal distribution of the weighted area changes. The compensation is therefore useful because it isolates an important point: a constant total weighted area does not imply a constant weighted centroid or a constant bending inertia.
+
+<p align="center">
+  <em>Figure 5. Continuous sectional-property variation over the stacked member.</em>
+</p>
+
+<img width="1040" height="921" alt="image" src="https://github.com/user-attachments/assets/153b073d-3ba2-4cc2-a2a4-1f126dc7cc56" />
+
+
 The weighted area of the section is
 
 ```math
