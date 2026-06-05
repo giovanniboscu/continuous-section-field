@@ -66,7 +66,6 @@ CSF_ACTIONS:
     station_edges:
       - 0.00
       - 5  
-
     station_precise:
       - 0  
       - 1
@@ -74,42 +73,40 @@ CSF_ACTIONS:
       - 3
       - 4
       - 5
-
   actions:
     - plot_volume_3d:
         params:
           seed: w
           title: "Element with weight"
           line_percent: 100.0
-
     - plot_volume_3d:
         params:
           seed: s 
           title: "Element with shear weight"
-          line_percent: 100.0
-
     - section_selected_analysis:
         stations: station_precise
         output:
-          - [out/sec_var.txt]
+          - [out/section_prop_geometry.txt]
         properties:
-          [geometry, A, Cy, Ix, Iy]
-
+          [geometry,A, Cy, Ix, Iy]
     - plot_section_2d:
         stations:
           - station_middle
         show_ids: false
         show_vertex_ids: false
         output:
-          - [stdout, out/section_a.jpg]
-
+          - [stdout, out/section_ex.jpg]
     - plot_properties:
         output:
           - stdout
           - out/section_properties.jpg
-        params:
-          num_points: 100
-        properties: [A, Cy, Ix, Iy]
+        properties: [A,Cy, Ix, Iy]
+    - plot_weight:
+        output:
+          - out/plot_weight_weight.jpg 
+    - plot_shear_weight:
+        output:
+          - out/plot_shear_weight_weight.jpg 
 ```
 
 The file performs five operations:
@@ -119,6 +116,7 @@ The file performs five operations:
 3. it evaluates selected sectional quantities at prescribed stations;
 4. it plots the sampled two-dimensional section at the middle station;
 5. it plots the variation of selected section properties along the interval.
+6. t plots weight and shear weight
 
 ---
 
