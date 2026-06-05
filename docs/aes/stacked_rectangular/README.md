@@ -36,7 +36,299 @@ This makes the case useful as a controlled verification of the continuous field 
 
 ---
 
-## Files
+Before assembling the two intervals into the global stacked member, the first YAML interval can be inspected directly with `csf-actions`. This step is not the closed-form verification. Its purpose is to show that a single CSF YAML file already defines an evaluable continuous section field: geometry, axial/bending participation, shear/torsion participation, section properties, and sampled sections can be obtained from the same source model.
+
+For the first interval, the model file is:
+
+```text
+stacked_0.yaml
+```
+
+and the action file is:
+
+```text
+stacked_actions.yaml
+```
+
+The same type of inspection can be applied to `stacked_1.yaml`. In this description, only `stacked_0.yaml` is shown because the second interval is the symmetric continuation used later in the global stacked-member verification.
+
+---
+
+### Action file
+
+The action file defines the stations to be sampled and the operations to be performed on the CSF interval:
+
+```yaml
+CSF_ACTIONS:
+  stations:
+    station_middle:
+      - 2.5 
+    station_edges:
+      - 0.00
+      - 5  
+
+    station_precise:
+      - 0  
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+
+  actions:
+    - plot_volume_3d:
+        params:
+          seed: w
+          title: "Element with weight"
+          line_percent: 100.0
+
+    - plot_volume_3d:
+        params:
+          seed: s 
+          title: "Element with shear weight"
+          line_percent: 100.0
+
+    - section_selected_analysis:
+        stations: station_precise
+        output:
+          - [out/sec_var.txt]
+        properties:
+          [geometry, A, Cy, Ix, Iy]
+
+    - plot_section_2d:
+        stations:
+          - station_middle
+        show_ids: false
+        show_vertex_ids: false
+        output:
+          - [stdout, out/section_a.jpg]
+
+    - plot_properties:
+        output:
+          - stdout
+          - out/section_properties.jpg
+        params:
+          num_points: 100
+        properties: [A, Cy, Ix, Iy]
+```
+
+The file performs five operations:
+
+1. it plots the three-dimensional interval using the axial/bending participation field `w`;
+2. it plots the same interval using the shear/torsion participation field `s`;
+3. it evaluates selected sectional quantities at prescribed stations;
+4. it plots the sampled two-dimensional section at the middle station;
+5. it plots the variation of selected section properties along the interval.
+
+---
+
+### Execution
+
+From the directory containing `stacked_0.yaml` and `stacked_actions.yaml`, the first interval is inspected with:
+
+```bash
+csf-actions stacked_0.yaml stacked_actions.yaml
+```
+
+The same action file can be applied to the second interval with:
+
+```bash
+csf-actions stacked_1.yaml stacked_actions.yaml
+```
+
+Only the first command is detailed here.
+
+---
+
+### Three-dimensional view with axial/bending participation
+
+The first `plot_volume_3d` action uses:
+
+```yaml
+seed: w
+title: "Element with weight"
+```
+
+This plot shows the geometry of the interval and colors the element according to the axial/bending participation field `w`.
+
+For `stacked_0.yaml`, the `upper0` component has a varying participation field. Along the interval $0 \le z \le 5$, its value increases from $w = 0.5$ at $z = 0$ to $w = 1.0$ at $z = 5$. The `middle0` and `lower0` components remain at $w = 1$ in this interval.
+
+<p align="center">
+  <em>Figure X. Three-dimensional view of the first CSF interval colored by the axial/bending participation field <code>w</code>.</em>
+</p>
+
+<p align="center">
+  <img width="700" alt="Element with weight" src="FIGURE_PLACEHOLDER_ELEMENT_WITH_WEIGHT" />
+</p>
+
+---
+
+### Three-dimensional view with shear/torsion participation
+
+The second `plot_volume_3d` action uses:
+
+```yaml
+seed: s
+title: "Element with shear weight"
+```
+
+This plot uses the same interval geometry, but colors the element according to the shear/torsion participation field `s`.
+
+For `stacked_0.yaml`, the `upper0` component has an independently prescribed shear/torsion participation field. Its value increases from `s = 0.2` at $z = 0$ to `s = 1.0` at $z = 5$. This differs from the axial/bending participation field, which starts from `w = 0.5`.
+
+The `middle0` and `lower0` components use the isotropic shortcut with $\nu = 0.2$, which gives:
+
+$$
+s = \frac{1}{2(1 + 0.2)} = 0.41666667 .
+$$
+
+<p align="center">
+  <em>Figure X. Three-dimensional view of the first CSF interval colored by the shear/torsion participation field <code>s</code>.</em>
+</p>
+
+<p align="center">
+  <img width="700" alt="Element with shear weight" src="FIGURE_PLACEHOLDER_ELEMENT_WITH_SHEAR_WEIGHT" />
+</p>
+
+---
+
+### Sampled two-dimensional section
+
+The `plot_section_2d` action samples the section at:
+
+```yaml
+station_middle:
+  - 2.5
+```
+
+At $z = 2.5$, the local coordinate of the first interval is:
+
+$$
+t = \frac{2.5}{5} = 0.5 .
+$$
+
+At this station, the upper component has:
+
+$$
+w = 0.75,
+\qquad
+s = 0.60 .
+$$
+
+The two-dimensional section plot shows the three stacked components:
+
+- `upper0`;
+- `middle0`;
+- `lower0`.
+
+The legend reports the sampled component IDs and the sampled `w` values at the station.
+
+<p align="center">
+  <em>Figure X. Sampled two-dimensional section of <code>stacked_0.yaml</code> at $z = 2.5$.</em>
+</p>
+
+<p align="center">
+  <img width="450" alt="Section at z = 2.5" src="FIGURE_PLACEHOLDER_SECTION_AT_2_5" />
+</p>
+
+---
+
+### Section-property plot over the interval
+
+The `plot_properties` action evaluates and plots:
+
+```yaml
+properties: [A, Cy, Ix, Iy]
+```
+
+over the interval $0 \le z \le 5$.
+
+The resulting plot shows the behavior of the sectional quantities over the first CSF interval:
+
+| Quantity | Behaviour over `stacked_0.yaml` |
+|---|---|
+| $A$ | constant, equal to $0.21$ |
+| $C_y$ | increases from $-0.24285714$ to $-0.15000000$ |
+| $I_x$ | decreases from $0.00961429$ to $0.00857500$ |
+| $I_y$ | constant, equal to $0.00157500$ |
+
+This is the expected local behavior of the first interval: the weighted area remains constant, while the weighted centroid and the bending inertia about the horizontal centroidal axis vary along $z$.
+
+<p align="center">
+  <em>Figure X. Section-property variation over the first CSF interval.</em>
+</p>
+
+<p align="center">
+  <img width="900" alt="Section properties over stacked_0.yaml" src="FIGURE_PLACEHOLDER_SECTION_PROPERTIES" />
+</p>
+
+---
+
+### Numerical section output
+
+The `section_selected_analysis` action evaluates the same interval at the prescribed stations:
+
+```yaml
+station_precise:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+```
+
+The output is written to:
+
+```text
+out/sec_var.txt
+```
+
+The selected properties are:
+
+```yaml
+[geometry, A, Cy, Ix, Iy]
+```
+
+Representative values from the output are:
+
+| $z$ | $A$ | $C_y$ | $I_x$ | $I_y$ |
+|---:|---:|---:|---:|---:|
+| 0 | 0.21000000 | -0.24285714 | 0.00961429 | 0.00157500 |
+| 1 | 0.21000000 | -0.22314286 | 0.00953473 | 0.00157500 |
+| 2 | 0.21000000 | -0.20400000 | 0.00938224 | 0.00157500 |
+| 3 | 0.21000000 | -0.18542857 | 0.00916581 | 0.00157500 |
+| 4 | 0.21000000 | -0.16742857 | 0.00889401 | 0.00157500 |
+| 5 | 0.21000000 | -0.15000000 | 0.00857500 | 0.00157500 |
+
+The same output also includes the sampled polygon vertices and the sampled component metadata at each station. For example, at $z = 0$:
+
+```text
+idx_polygon,idx_container,s0_name,s1_name,w,shear_w,poisson,vertex_i,x,y
+0,,upper0,upper0,0.50000000,0.20000000,,0,-0.15000000,0.00000000
+1,,middle0,middle0,1.00000000,0.41666667,0.20000000,0,-0.15000000,-0.30000000
+2,,lower0,lower0,1.00000000,0.41666667,0.20000000,0,-0.15000000,-0.60000000
+```
+
+This station-wise output shows that the sampled rows are not the model definition. They are the result of evaluating the continuous CSF interval at selected coordinates.
+
+---
+
+### Role of this local inspection
+
+The `csf-actions` run demonstrates that `stacked_0.yaml` is already a complete evaluable CSF interval. From the same YAML file, the action workflow obtains:
+
+- three-dimensional geometry views;
+- visualization of the axial/bending participation field;
+- visualization of the shear/torsion participation field;
+- a sampled two-dimensional section;
+- numerical sectional quantities at selected stations;
+- sampled polygon vertices with component-level metadata.
+
+This local inspection prepares the following verification step. After the two intervals are inspected individually, `run_stacked.py` assembles `stacked_0.yaml` and `stacked_1.yaml` into a global stacked member and compares the CSF-computed sectional quantities against a closed-form reference.
+
+---
+# Files
 
 The case is defined by the following files:
 
