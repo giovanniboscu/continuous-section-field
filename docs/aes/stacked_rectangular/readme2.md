@@ -623,6 +623,8 @@ $$
 A, \qquad C_y, \qquad I_x, \qquad I_y .
 $$
 
+All quantities below use the global coordinate $z$; for each interval, $w_i(z)$ and $h_i(z)$ are obtained from the participation laws and the geometry through the local map $t(z)$ defined in Sections 1 and 2.
+
 For each component $i$, define the geometric area:
 
 $$
@@ -694,6 +696,8 @@ and compares it with:
 ```python
 reference(z)
 ```
+
+At the junction $z=5$ the section field is continuous, so the choice `junction_side="left"` is immaterial: evaluating from the left or from the right interval returns the same section.
 
 The comparison reports:
 
