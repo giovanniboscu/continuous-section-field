@@ -252,6 +252,24 @@ def lobatto_stations():
 
 
 def compare_closed_form_and_csf(stack):
+
+    """
+    Core verification routine.
+
+    For each Gauss-Lobatto station z, the function evaluates the same section
+    in two different ways:
+
+    1. CSF result:
+       stack.section_full_analysis(z)
+
+    2. Closed-form reference:
+       reference(z)
+
+    The two sets of values are then compared for A, Cy, Ix, and Iy.
+    This is the main purpose of run_stacked.py.
+    """
+
+    
     """Compare CSF section properties against the closed-form reference."""
     header = (
         f"{'z':>6} {'seg':>3} {'t':>5} {'w_u':>5} {'sw_u':>5} | "
@@ -269,8 +287,21 @@ def compare_closed_form_and_csf(stack):
     max_cy_err = 0.0
 
     for z in lobatto_stations():
+
+        # --- CSF evaluation -------------------------------------------------
+        # Section properties computed by the CSF model at the current station.
+        sa = stack.section_full_analysis(z, junction_side="left")
+    
+        # --- Closed-form reference -----------------------------------------
+        # Same section properties computed independently from analytical formulas.
+        A_r, Cy_r, Ix_r, Iy_r = reference(z)
+    
+        # --- Verification error --------------------------------------------
+        # Compare CSF-computed values against the closed-form reference.
+        #####################################################################
         # Evaluate the stacked CSF model at the current global station.
         sa = stack.section_full_analysis(z, junction_side="left")
+        #####################################################################
 
         # Ensure that all required section properties are available.
         missing = [k for k in BASE_KEYS if k not in sa]
