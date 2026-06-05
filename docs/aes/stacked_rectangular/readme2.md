@@ -1,39 +1,119 @@
-# Stacked rectangular member: single-interval inspection and stacked-member verification
+# Stacked rectangular member with compensated geometric variation and participation-field variation
 
-This verification case is introduced from the CSF input file itself. The purpose is to make the reader first see what a single CSF YAML interval contains, how it is inspected with `csf-actions`, and only afterwards how two continuous intervals are assembled into a global `CSFStacked` member.
+This verification case is organized from the CSF input outward.
 
-The case uses a simple stacked rectangular section with three polygonal components:
+The first step is the inspection of a single CSF interval, `stacked_0.yaml`, with `csf-actions`. This is useful for a reader seeing the YAML syntax for the first time: the file defines reference sections, polygonal zones, geometric interpolation, axial/bending participation, and shear/torsion participation. The generated figures and tables are outputs obtained by evaluating that continuous interval.
 
-* `upper0`, `middle0`, `lower0` in the first interval;
-* `upper1`, `middle1`, `lower1` in the second interval.
+The second step assembles `stacked_0.yaml` and `stacked_1.yaml` into one global member with `CSFStacked`. The stacked member is then evaluated at Gauss-Lobatto stations and compared with a closed-form reference for $A$, $C_y$, $I_x$, and $I_y$.
 
-The geometry is intentionally elementary, but the sectional behaviour is not trivial. The `lower` component changes its geometry along the member axis, while the `upper` component keeps a fixed geometry and receives prescribed participation laws. The two variations are selected so that the total weighted area remains constant, even though the weighted centroid and bending inertia vary along the axis.
-
-The first part of the example therefore uses `csf-actions` on a single YAML interval. This makes the content of the CSF file explicit before the global stacked-member verification is introduced.
+No structural solver is involved in this example. The purpose is to verify the continuous section field itself.
 
 ---
 
-## Inspection of the first CSF interval with `csf-actions`
+## Files
 
-The first interval is defined by:
+| File | Role |
+|---|---|
+| [`stacked_0.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/stacked_0.yaml) | First continuous CSF interval, $0 \le z \le 5$ |
+| [`stacked_1.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/stacked_1.yaml) | Second continuous CSF interval, $5 \le z \le 10$ |
+| [`stacked_actions.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/stacked_actions.yaml) | Action file used to inspect one CSF interval |
+| [`run_stacked.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/run_stacked.py) | Builds the `CSFStacked` object, evaluates the closed-form reference, compares CSF values, exports station-wise CSV files, and generates plots |
+| [`out/lobatto_station_export_7.csv`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/out/lobatto_station_export_7.csv) | Example of a station-wise CSV export |
+
+---
+
+# 1. Inspection of a single CSF interval with `csf-actions`
+
+The first interval is defined in:
 
 ```text
 stacked_0.yaml
 ```
 
-and is inspected with:
+It is inspected with:
 
 ```text
 stacked_actions.yaml
 ```
 
-The command is:
+From the directory containing both files, the command is:
 
 ```bash
 csf-actions stacked_0.yaml stacked_actions.yaml
 ```
 
-The first interval extends from $z = 0$ to $z = 5$. In the YAML file, this is expressed by two reference sections:
+This command does not assemble the global stacked member. It only evaluates and visualizes the first continuous CSF interval. The goal is to make the YAML-defined section field explicit before the two intervals are combined with `CSFStacked`.
+
+---
+
+## 1.1 Action file
+
+The action file defines the stations to be sampled and the operations to be executed on the CSF interval:
+
+```yaml
+CSF_ACTIONS:
+  stations:
+    station_middle:
+      - 2.5
+    station_edges:
+      - 0.00
+      - 5
+
+    station_precise:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+
+  actions:
+    - plot_volume_3d:
+        params:
+          seed: w
+          title: "Element with weight"
+          line_percent: 100.0
+    - plot_volume_3d:
+        params:
+          seed: s
+          title: "Element with shear weight"
+          line_percent: 100.0
+    - section_selected_analysis:
+        stations: station_precise
+        output:
+          - [out/sec_var.txt]
+        properties:
+          [geometry,A, Cy, Iy, Iy]
+    - plot_section_2d:
+        stations:
+          - station_middle
+        show_ids: false
+        show_vertex_ids: false
+        output:
+          - [stdout, out/section_a.jpg]
+    - plot_properties:
+        output:
+          - stdout
+          - out/section_properties.jpg
+        params:
+          num_points: 100
+        properties: [A,Cy, Ix, Iy]
+```
+
+The actions perform four checks on the same YAML interval:
+
+1. `plot_volume_3d` with `seed: w` visualizes the interval using the axial/bending participation field.
+2. `plot_volume_3d` with `seed: s` visualizes the interval using the shear/torsion participation field.
+3. `section_selected_analysis` samples selected sectional quantities and polygon data at prescribed stations.
+4. `plot_section_2d` and `plot_properties` show the sampled section and the variation of section properties along the interval.
+
+The figures and tabular outputs are not separate model definitions. They are evaluations of the continuous CSF interval stored in `stacked_0.yaml`.
+
+---
+
+## 1.2 Reference sections in `stacked_0.yaml`
+
+The first interval is defined by two reference sections:
 
 ```yaml
 CSF:
@@ -48,13 +128,27 @@ CSF:
         ...
 ```
 
-Each polygonal component is defined at both reference sections. CSF interpolates the component vertices along the interval. The result is not a table of precomputed sections, but a continuous section field that can be evaluated at any station $z$ inside the interval.
+The interval therefore occupies:
 
----
+$$
+0 \le z \le 5 .
+$$
 
-## Geometry encoded in `stacked_0.yaml`
+The local coordinate used by the participation laws is:
 
-At $z = 0$, the first interval contains three stacked rectangular components:
+$$
+t = \frac{z}{5}, \qquad 0 \le t \le 1 .
+$$
+
+The section is composed of three stacked rectangular polygonal zones:
+
+```text
+upper0
+middle0
+lower0
+```
+
+At $z=0$, the polygon vertices are:
 
 ```yaml
 upper0:
@@ -78,6 +172,18 @@ lower0:
   vertices:
     - [-0.15, -0.60]
     - [ 0.15, -0.60]
+    - [ 0.15, -0.30]
+    - [-0.15, -0.30]
+```
+
+At $z=5$, the `upper0` and `middle0` components keep the same vertices, while the lower edge of `lower0` moves upward from $y=-0.60$ to $y=-0.50$:
+
+```yaml
+lower0:
+  weight: 1.0
+  vertices:
+    - [-0.15, -0.50]
+    - [ 0.15, -0.50]
     - [ 0.15, -0.30]
     - [-0.15, -0.30]
 ```
@@ -118,72 +224,62 @@ $$
 y = -0.30 .
 $$
 
-Its bottom edge moves from $y=-0.60$ at $z=0$ to $y=-0.50$ at $z=5$. Therefore, its height decreases linearly from $0.30$ to $0.20$.
-
-Using the local coordinate
-
-$$
-t = \frac{z}{5}, \qquad 0 \le t \le 1,
-$$
-
-the lower-component height in the first interval is:
+Its height decreases from $0.30$ to $0.20$ over the interval. Therefore:
 
 $$
 h_l(t) = 0.30 - 0.10t .
 $$
 
-Its centroid coordinate is therefore:
+The centroid coordinate of the lower component is:
 
 $$
-y_l(t) = -0.30 - \frac{h_l(t)}{2}.
+y_l(t) = -0.30 - \frac{h_l(t)}{2} .
 $$
 
 <p align="center">
-  <em>Figure 1. Three-component stacked rectangular section sampled in the first CSF interval.</em>
+  <em>Figure 1. Sampled three-component stacked rectangular section.</em>
 </p>
 
 <p align="center">
-  <img width="264" height="522" alt="image" src="https://github.com/user-attachments/assets/b4aff836-bb40-474b-879b-f7a5f3205f0d" />
+  <img width="264" height="522" alt="Stacked rectangular section" src="https://github.com/user-attachments/assets/b4aff836-bb40-474b-879b-f7a5f3205f0d" />
 </p>
 
 ---
 
-## Axial/bending participation field
+## 1.3 Axial/bending participation field in the first interval
 
-The geometric variation of `lower0` is paired with an axial/bending participation law assigned to `upper0`.
-
-In `stacked_0.yaml`, the law is:
+The axial/bending participation law is assigned to the upper component:
 
 ```yaml
 weight_laws:
   - 'upper0,upper0: 1.0 - 0.5*(1.0 - t)'
 ```
 
-That is:
+This gives:
 
 $$
 w_u(t) = 1.0 - 0.5(1.0 - t)
 $$
 
-or, equivalently,
+or equivalently:
 
 $$
 w_u(t) = 0.5 + 0.5t .
 $$
 
-Thus, in the first interval, the axial/bending participation of `upper0` increases linearly:
+Thus:
 
 $$
 w_u(0) = 0.5, \qquad w_u(1) = 1.0 .
 $$
 
-The `middle0` and `lower0` components keep the axial/bending participation specified in the polygon definitions:
+The `middle0` and `lower0` components keep the axial/bending participation specified in their polygon definitions:
 
 $$
 w_m = 1, \qquad w_l = 1 .
 $$
 
-The first `plot_volume_3d` action visualizes the same interval using the axial/bending participation field:
+The corresponding action is:
 
 ```yaml
 - plot_volume_3d:
@@ -193,48 +289,38 @@ The first `plot_volume_3d` action visualizes the same interval using the axial/b
       line_percent: 100.0
 ```
 
-This plot shows the geometry of the first interval and colors the volume according to the local value of `w`.
-
-<p align="center">
-  <em>Figure 2. First CSF interval colored by axial/bending participation <code>w</code>.</em>
-</p>
-
-<p align="center">
-  <img width="700" alt="Element with weight" src="FIGURE_PLACEHOLDER_ELEMENT_WITH_WEIGHT" />
-</p>
+This action plots the first interval and colors it according to the axial/bending participation field `w`.
 
 ---
 
-## Shear/torsion participation field
+## 1.4 Shear/torsion participation field in the first interval
 
-The example also assigns a shear/torsion participation field. In CSF this field is independent from the axial/bending participation field.
+The shear/torsion participation field is assigned separately from the axial/bending participation field.
 
-For `upper0`, the shear/torsion participation is prescribed directly:
+For `upper0`, the law is prescribed directly:
 
 ```yaml
 shear_weight_laws:
   - 'upper0,upper0: 1.0 - 0.8*(1.0-t)'
 ```
 
-That is:
+This gives:
 
 $$
 \kappa_u(t) = 1.0 - 0.8(1.0 - t)
 $$
 
-or:
+or equivalently:
 
 $$
 \kappa_u(t) = 0.2 + 0.8t .
 $$
 
-Thus, over the first interval:
+Thus:
 
 $$
 \kappa_u(0) = 0.2, \qquad \kappa_u(1) = 1.0 .
 $$
-
-This law is not obtained from $w_u(t)$ through an isotropic relation. It is prescribed independently.
 
 For `middle0` and `lower0`, the shear/torsion participation is assigned through the isotropic shortcut:
 
@@ -250,7 +336,7 @@ $$
 \kappa_m = \kappa_l = \frac{1}{2(1+0.2)} = 0.41666667 .
 $$
 
-The second `plot_volume_3d` action visualizes the same interval using the shear/torsion participation field:
+The corresponding action is:
 
 ```yaml
 - plot_volume_3d:
@@ -260,95 +346,104 @@ The second `plot_volume_3d` action visualizes the same interval using the shear/
       line_percent: 100.0
 ```
 
-This second plot uses the same geometry, but the color field is now `s`, i.e. the sampled shear/torsion participation.
+This action plots the same interval and colors it according to the shear/torsion participation field `s`.
 
 <p align="center">
-  <em>Figure 3. First CSF interval colored by shear/torsion participation <code>s</code>.</em>
+  <em>Figure 2. Shear/torsion participation field of the upper component in the first CSF interval.</em>
 </p>
 
 <p align="center">
-  <img width="700" alt="Element with shear weight" src="FIGURE_PLACEHOLDER_ELEMENT_WITH_SHEAR_WEIGHT" />
+  <img width="989" height="475" alt="Upper shear/torsion participation in first interval" src="https://github.com/user-attachments/assets/43f37ed8-e3ac-4537-a1bc-ed8433b2571a" />
 </p>
 
 ---
 
-## Compensation mechanism in the first interval
+## 1.5 Compensation mechanism in the first interval
 
 The first interval is constructed so that two different variations compensate each other in terms of total weighted area.
 
-The `upper0` component keeps a fixed geometry, but its axial/bending participation increases from $0.5$ to $1.0$. The `lower0` component keeps unit axial/bending participation, but its height decreases from $0.30$ to $0.20$.
+The `upper0` component keeps fixed geometry, but its axial/bending participation increases from $0.5$ to $1.0$. The `lower0` component keeps unit axial/bending participation, but its height decreases from $0.30$ to $0.20$.
 
-The weighted area of the section is:
+The weighted area is:
 
 $$
-A(t) = w_u(t) A_u^{\mathrm{geom}} + A_m^{\mathrm{geom}} + A_l^{\mathrm{geom}}(t).
+A(t) = w_u(t) A_u^{\mathrm{geom}} + A_m^{\mathrm{geom}} + A_l^{\mathrm{geom}}(t) .
 $$
 
-The fixed geometric areas of `upper0` and `middle0` are:
+The fixed geometric areas are:
 
 $$
 A_u^{\mathrm{geom}} = B h_u = 0.30 \cdot 0.20 = 0.06,
 $$
 
 $$
-A_m^{\mathrm{geom}} = B h_m = 0.30 \cdot 0.30 = 0.09.
+A_m^{\mathrm{geom}} = B h_m = 0.30 \cdot 0.30 = 0.09 .
 $$
 
-The geometric area of `lower0` is:
+The lower geometric area is:
 
 $$
-A_l^{\mathrm{geom}}(t) = B h_l(t).
+A_l^{\mathrm{geom}}(t) = B h_l(t) .
 $$
 
 For the first interval:
 
 $$
-w_u(t) = 0.5 + 0.5t, \qquad h_l(t) = 0.30 - 0.10t.
+w_u(t) = 0.5 + 0.5t, \qquad h_l(t) = 0.30 - 0.10t .
 $$
 
 The weighted contribution of `upper0` is:
 
 $$
-w_u(t) A_u^{\mathrm{geom}} = (0.5 + 0.5t) \cdot 0.06 = 0.03 + 0.03t.
+w_u(t) A_u^{\mathrm{geom}} = (0.5 + 0.5t) \cdot 0.06 = 0.03 + 0.03t .
 $$
 
 The geometric contribution of `lower0` is:
 
 $$
-A_l^{\mathrm{geom}}(t) = 0.30(0.30 - 0.10t) = 0.09 - 0.03t.
+A_l^{\mathrm{geom}}(t) = 0.30(0.30 - 0.10t) = 0.09 - 0.03t .
 $$
 
 Therefore:
 
 $$
-A(t) = (0.03 + 0.03t) + 0.09 + (0.09 - 0.03t) = 0.21.
+A(t) = (0.03 + 0.03t) + 0.09 + (0.09 - 0.03t) = 0.21 .
 $$
 
-The total weighted area remains constant, but the internal distribution of weighted area changes. Consequently, the vertical weighted centroid $C_y(t)$ and the bending inertia $I_x(t)$ are not constant.
+The total weighted area remains constant. The distribution of weighted area within the section still changes, so $C_y(t)$ and $I_x(t)$ vary along the interval.
 
-This is the purpose of the compensation mechanism: it isolates the difference between a constant total weighted area and a constant weighted section.
+This is the point of the compensation mechanism: a constant total weighted area does not imply a constant weighted section.
 
 ---
 
-## Section sampling and local outputs
+## 1.6 Section sampling at $z=2.5$
 
-The action file samples the first interval at selected stations:
+The action file samples the middle station of the first interval:
 
 ```yaml
-stations:
-  station_middle:
-    - 2.5
-
-  station_precise:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
+station_middle:
+  - 2.5
 ```
 
-The two-dimensional section plot is generated at the middle station:
+At this station:
+
+$$
+t = \frac{2.5}{5} = 0.5 .
+$$
+
+The upper-component participation values are:
+
+$$
+w_u(0.5) = 0.75, \qquad \kappa_u(0.5) = 0.60 .
+$$
+
+The lower height is:
+
+$$
+h_l(0.5) = 0.30 - 0.10(0.5) = 0.25 .
+$$
+
+The `plot_section_2d` action produces the corresponding sampled section:
 
 ```yaml
 - plot_section_2d:
@@ -360,35 +455,13 @@ The two-dimensional section plot is generated at the middle station:
       - [stdout, out/section_a.jpg]
 ```
 
-At $z = 2.5$:
+The sampled section is an evaluation of the continuous CSF interval at $z=2.5$.
 
-$$
-t = \frac{2.5}{5} = 0.5 .
-$$
+---
 
-The sampled upper-component participation values are:
+## 1.7 Section-property plot over the first interval
 
-$$
-w_u(0.5) = 0.75, \qquad \kappa_u(0.5) = 0.60 .
-$$
-
-The lower-component height is:
-
-$$
-h_l(0.5) = 0.30 - 0.10(0.5) = 0.25 .
-$$
-
-The sampled section therefore shows the three rectangular components at the middle of the first interval, after interpolation of the `lower0` geometry and evaluation of the participation fields.
-
-<p align="center">
-  <em>Figure 4. Sampled two-dimensional section of <code>stacked_0.yaml</code> at $z=2.5$.</em>
-</p>
-
-<p align="center">
-  <img width="450" alt="Section at z = 2.5" src="FIGURE_PLACEHOLDER_SECTION_AT_2_5" />
-</p>
-
-The same action file also plots selected section properties along the interval:
+The section-property plot is generated by:
 
 ```yaml
 - plot_properties:
@@ -400,52 +473,48 @@ The same action file also plots selected section properties along the interval:
     properties: [A,Cy, Ix, Iy]
 ```
 
-The expected behaviour over the first interval is:
+The expected behaviour over `stacked_0.yaml` is:
 
-| Quantity | Behaviour over `stacked_0.yaml`                            |
-| -------- | ---------------------------------------------------------- |
-| $A$      | constant, equal to $0.21$                                  |
-| $C_y$    | varies because the weighted-area distribution changes      |
-| $I_x$    | varies because the vertical distribution changes           |
-| $I_y$    | remains constant for this rectangular stacked construction |
+| Quantity | Behaviour over $0 \le z \le 5$ |
+|---|---|
+| $A$ | constant, equal to $0.21$ |
+| $C_y$ | varies because the weighted-area distribution changes |
+| $I_x$ | varies because the vertical distribution changes |
+| $I_y$ | remains constant for this rectangular stacked construction |
 
-<p align="center">
-  <em>Figure 5. Section-property variation over the first CSF interval.</em>
-</p>
-
-<p align="center">
-  <img width="900" alt="Section properties over stacked_0.yaml" src="FIGURE_PLACEHOLDER_SECTION_PROPERTIES" />
-</p>
-
-The important point is that these plots and tables are produced by evaluating the YAML-defined continuous interval. They are not the model definition itself. The model is the CSF interval encoded in `stacked_0.yaml`; the figures and station-wise outputs are sampled consequences of that model.
+The local inspection demonstrates that `stacked_0.yaml` is already a complete evaluable CSF interval. Geometry, participation fields, sampled sections, and sectional properties are all obtained from the same YAML model.
 
 ---
 
-## From one interval to two continuous intervals
+# 2. Continuation with the second interval
 
-After the first interval has been inspected, the second interval is introduced as the continuation of the same construction.
-
-The second YAML file is:
+The second interval is defined in:
 
 ```text
 stacked_1.yaml
 ```
 
-It spans:
+It occupies:
 
 $$
 5 \le z \le 10 .
 $$
 
-Its local coordinate is:
+The local coordinate is:
 
 $$
-t = \frac{z-5}{5}.
+t = \frac{z-5}{5}, \qquad 0 \le t \le 1 .
 $$
 
-The second interval uses the same three-component stacked section, but with component names `upper1`, `middle1`, and `lower1`.
+The second interval uses the component names:
 
-At $z=5$, the lower component has bottom edge $y=-0.50$; at $z=10$, it returns to $y=-0.60$. Therefore, its height increases linearly:
+```text
+upper1
+middle1
+lower1
+```
+
+At $z=5$, the lower edge of `lower1` is at $y=-0.50$. At $z=10$, it returns to $y=-0.60$. Therefore, the lower height increases from $0.20$ to $0.30$:
 
 $$
 h_l(t) = 0.20 + 0.10t .
@@ -477,15 +546,11 @@ $$
 \kappa_u(t) = 1.0 - 0.8t .
 $$
 
-Thus, the second interval mirrors the first one in the global member: the lower geometry grows back, while the upper participation decreases.
-
-For the second interval, the same area compensation holds:
+For the second interval, the area compensation is:
 
 $$
 w_u(t) A_u^{\mathrm{geom}} = (1.0 - 0.5t) \cdot 0.06 = 0.06 - 0.03t,
 $$
-
-and:
 
 $$
 A_l^{\mathrm{geom}}(t) = 0.30(0.20 + 0.10t) = 0.06 + 0.03t.
@@ -494,30 +559,36 @@ $$
 Therefore:
 
 $$
-A(t) = (0.06 - 0.03t) + 0.09 + (0.06 + 0.03t) = 0.21.
+A(t) = (0.06 - 0.03t) + 0.09 + (0.06 + 0.03t) = 0.21 .
 $$
 
-The two intervals meet at $z=5$, where the lower-component height is $0.20$ and the upper participation reaches:
+The two intervals meet at $z=5$, where the lower height is $0.20$ and the upper participation values are:
 
 $$
 w_u = 1.0, \qquad \kappa_u = 1.0 .
 $$
 
-This shared station is the junction between the two continuous CSF intervals.
+<p align="center">
+  <em>Figure 3. Shear/torsion participation field of the upper component in the second CSF interval.</em>
+</p>
+
+<p align="center">
+  <img width="986" height="453" alt="Upper shear/torsion participation in second interval" src="https://github.com/user-attachments/assets/c91e77b7-4ea8-4ccb-8a2a-08c4bb5b04e5" />
+</p>
 
 ---
 
-## Assembly with `CSFStacked`
+# 3. Assembly with `CSFStacked`
 
 The global verification is performed by `run_stacked.py`.
 
-The script reads the two YAML files:
+The two interval files are listed as:
 
 ```python
 SEGMENT_FILES = ("stacked_0.yaml", "stacked_1.yaml")
 ```
 
-and appends them into a single stacked object:
+They are appended into a single `CSFStacked` object:
 
 ```python
 stack = CSFStacked(eps_z=1e-9)
@@ -526,120 +597,201 @@ for file_name in SEGMENT_FILES:
     stack.append(load(file_name))
 ```
 
-The resulting object is a global member representation over:
+The resulting object represents the full member:
 
 $$
 0 \le z \le 10 .
 $$
 
-The first interval defines the field on $0 \le z \le 5$, and the second interval defines the field on $5 \le z \le 10$. The junction station $z=5$ is shared by the two intervals.
+The first interval defines the field on $0 \le z \le 5$, and the second interval defines the field on $5 \le z \le 10$. The station $z=5$ is the common junction.
 
 <p align="center">
-  <em>Figure 6. Global CSF member representation obtained by stacking the two continuous intervals.</em>
+  <em>Figure 4. Global CSF member representation obtained by stacking the two continuous intervals.</em>
 </p>
 
 <p align="center">
-  <img width="816" height="706" alt="image" src="https://github.com/user-attachments/assets/3fefab64-20c4-4a84-914a-6a561c1b3cf5" />
+  <img width="816" height="706" alt="Global CSF member representation" src="https://github.com/user-attachments/assets/3fefab64-20c4-4a84-914a-6a561c1b3cf5" />
 </p>
 
 ---
 
-## Closed-form verification of the stacked member
+# 4. Closed-form reference for the stacked member
 
-Once the two intervals are assembled, `run_stacked.py` evaluates the global CSF model at Gauss-Lobatto stations on each interval.
-
-The station set is built by computing 11 Gauss-Lobatto stations on the first interval and 11 on the second interval. The duplicated junction station at $z=5$ is removed from the second list.
-
-At each station, the script compares:
-
-```python
-stack.section_full_analysis(z, junction_side="left")
-```
-
-against the closed-form reference:
-
-```python
-reference(z)
-```
-
-The comparison uses:
+The stacked member is compared against a closed-form reference for:
 
 $$
 A, \qquad C_y, \qquad I_x, \qquad I_y .
 $$
 
-The reference model is constructed directly from the rectangular geometry and from the prescribed upper-component axial/bending participation law.
-
-For each component $i$:
+For each component $i$, define the geometric area:
 
 $$
-A_i(z) = w_i(z) B h_i(z).
+A_i^{\mathrm{geom}}(z) = B h_i(z) .
+$$
+
+The weighted area contribution is:
+
+$$
+A_i^{w}(z) = w_i(z) A_i^{\mathrm{geom}}(z) .
 $$
 
 The total weighted area is:
 
 $$
-A(z) = \sum_i A_i(z).
+A(z) = \sum_i A_i^{w}(z) .
 $$
 
-The weighted vertical centroid is:
+The weighted centroid coordinate is:
 
 $$
-C_y(z) = \frac{\sum_i A_i(z)y_i(z)}{A(z)}.
+C_y(z) = \frac{\sum_i A_i^{w}(z)y_i(z)}{A(z)} .
 $$
 
-The local second moments of each rectangular component are:
+The local second moments of each rectangular component about its own centroid are:
 
 $$
 I_{x,i}^{\mathrm{local}}(z) = \frac{B h_i(z)^3}{12},
 $$
 
 $$
-I_{y,i}^{\mathrm{local}}(z) = \frac{h_i(z) B^3}{12}.
+I_{y,i}^{\mathrm{local}}(z) = \frac{h_i(z) B^3}{12} .
 $$
 
 The weighted second moment about the horizontal centroidal axis is:
 
 $$
-I_x(z) = \sum_i w_i(z) \left[ I_{x,i}^{\mathrm{local}}(z) + A_i^{\mathrm{geom}}(z) \left(y_i(z)-C_y(z)\right)^2 \right].
+I_x(z) = \sum_i \left[ w_i(z) I_{x,i}^{\mathrm{local}}(z) + A_i^{w}(z)\left(y_i(z)-C_y(z)\right)^2 \right] .
 $$
 
 The weighted second moment about the vertical axis is:
 
 $$
-I_y(z) = \sum_i w_i(z) I_{y,i}^{\mathrm{local}}(z).
+I_y(z) = \sum_i w_i(z) I_{y,i}^{\mathrm{local}}(z) .
 $$
 
-The shear/torsion participation field is part of the CSF model, and it is inspected in the single-interval action workflow. It is not used in this closed-form comparison because the compared quantities are axial/bending weighted quantities.
+The shear/torsion participation field $\kappa_i(z)$ is part of the CSF model and is inspected through `csf-actions`, but it is not used in this closed-form comparison because $A$, $C_y$, $I_x$, and $I_y$ are axial/bending weighted quantities.
 
 ---
 
-## Expected global behaviour
+# 5. Gauss-Lobatto station evaluation
 
-The full stacked member has the following expected behaviour:
+`run_stacked.py` evaluates the stacked CSF member at Gauss-Lobatto stations on each interval.
 
-| Quantity | Expected behaviour                                    |
-| -------- | ----------------------------------------------------- |
-| $A(z)$   | constant over the full member, equal to $0.21$        |
+The station set is built by:
+
+1. computing 11 Gauss-Lobatto stations on $0 \le z \le 5$;
+2. computing 11 Gauss-Lobatto stations on $5 \le z \le 10$;
+3. removing the duplicated junction station from the second list.
+
+At each station, the script evaluates the CSF model by:
+
+```python
+stack.section_full_analysis(z, junction_side="left")
+```
+
+and compares it with:
+
+```python
+reference(z)
+```
+
+The comparison reports:
+
+- the global coordinate $z$;
+- the active segment index `seg`;
+- the local coordinate $t$;
+- the analytical values of $w_u$ and $\kappa_u$, printed as `w_u` and `sw_u`;
+- the CSF-computed values of $A$, $C_y$, $I_x$, and $I_y$;
+- the corresponding closed-form values;
+- the maximum relative error over $A$, $I_x$, and $I_y$;
+- the absolute error in $C_y$.
+
+```text
+     z seg     t   w_u  sw_u |  A_csf  A_ref |    Cy_csf    Cy_ref |     Ix_csf     Ix_ref |     Iy_csf     Iy_ref |     err_%     err_Cy
+-----------------------------------------------------------------------------------------------------------------------------------------
+  0.00   0  0.00  0.50  0.20 |   0.21   0.21 | -0.242857 -0.242857 |  0.0096143  0.0096143 |  0.0015750  0.0015750 |  1.38e-14   2.78e-17
+  0.16   0  0.03  0.52  0.23 |   0.21   0.21 | -0.239565 -0.239565 |  0.0096066  0.0096066 |  0.0015750  0.0015750 |  7.22e-14   0.00e+00
+  0.54   0  0.11  0.55  0.29 |   0.21   0.21 | -0.232164 -0.232164 |  0.0095810  0.0095810 |  0.0015750  0.0015750 |  3.62e-14   0.00e+00
+  1.09   0  0.22  0.61  0.37 |   0.21   0.21 | -0.221456 -0.221456 |  0.0095242  0.0095242 |  0.0015750  0.0015750 |  1.09e-13   2.78e-17
+  1.76   0  0.35  0.68  0.48 |   0.21   0.21 | -0.208531 -0.208531 |  0.0094249  0.0094249 |  0.0015750  0.0015750 |  2.75e-14   2.78e-17
+  2.50   0  0.50  0.75  0.60 |   0.21   0.21 | -0.194643 -0.194643 |  0.0092815  0.0092815 |  0.0015750  0.0015750 |  3.74e-14   2.78e-17
+  3.24   0  0.65  0.82  0.72 |   0.21   0.21 | -0.181067 -0.181067 |  0.0091055  0.0091055 |  0.0015750  0.0015750 |  1.91e-14   0.00e+00
+  3.91   0  0.78  0.89  0.83 |   0.21   0.21 | -0.168970 -0.168970 |  0.0089196  0.0089196 |  0.0015750  0.0015750 |  7.78e-14   2.78e-17
+  4.46   0  0.89  0.95  0.91 |   0.21   0.21 | -0.159319 -0.159319 |  0.0087523  0.0087523 |  0.0015750  0.0015750 |  3.96e-14   5.55e-17
+  4.84   0  0.97  0.98  0.97 |   0.21   0.21 | -0.152836 -0.152836 |  0.0086306  0.0086306 |  0.0015750  0.0015750 |  4.02e-14   0.00e+00
+  5.00   0  1.00  1.00  1.00 |   0.21   0.21 | -0.150000 -0.150000 |  0.0085750  0.0085750 |  0.0015750  0.0015750 |  2.75e-14   2.78e-17
+  5.16   1  0.03  0.98  0.97 |   0.21   0.21 | -0.152836 -0.152836 |  0.0086306  0.0086306 |  0.0015750  0.0015750 |  2.75e-14   2.78e-17
+  5.54   1  0.11  0.95  0.91 |   0.21   0.21 | -0.159319 -0.159319 |  0.0087523  0.0087523 |  0.0015750  0.0015750 |  5.95e-14   0.00e+00
+  6.09   1  0.22  0.89  0.83 |   0.21   0.21 | -0.168970 -0.168970 |  0.0089196  0.0089196 |  0.0015750  0.0015750 |  7.78e-14   0.00e+00
+  6.76   1  0.35  0.82  0.72 |   0.21   0.21 | -0.181067 -0.181067 |  0.0091055  0.0091055 |  0.0015750  0.0015750 |  1.91e-14   2.78e-17
+  7.50   1  0.50  0.75  0.60 |   0.21   0.21 | -0.194643 -0.194643 |  0.0092815  0.0092815 |  0.0015750  0.0015750 |  3.74e-14   2.78e-17
+  8.24   1  0.65  0.68  0.48 |   0.21   0.21 | -0.208531 -0.208531 |  0.0094249  0.0094249 |  0.0015750  0.0015750 |  1.38e-14   5.55e-17
+  8.91   1  0.78  0.61  0.37 |   0.21   0.21 | -0.221456 -0.221456 |  0.0095242  0.0095242 |  0.0015750  0.0015750 |  1.09e-13   2.78e-17
+  9.46   1  0.89  0.55  0.29 |   0.21   0.21 | -0.232164 -0.232164 |  0.0095810  0.0095810 |  0.0015750  0.0015750 |  3.62e-14   0.00e+00
+  9.84   1  0.97  0.52  0.23 |   0.21   0.21 | -0.239565 -0.239565 |  0.0096066  0.0096066 |  0.0015750  0.0015750 |  2.75e-14   0.00e+00
+ 10.00   1  1.00  0.50  0.20 |   0.21   0.21 | -0.242857 -0.242857 |  0.0096143  0.0096143 |  0.0015750  0.0015750 |  1.38e-14   0.00e+00
+-----------------------------------------------------------------------------------------------------------------------------------------
+```
+
+The maximum errors reported by the run are:
+
+```text
+max relative error (A, Ix, Iy): 1.09e-13 %
+max absolute error (Cy): 5.55e-17
+```
+
+These values are at floating-point roundoff level for this closed-form comparison.
+
+---
+
+# 6. Interpretation of the stacked-member comparison
+
+The table shows that the CSF-computed values and the closed-form reference coincide along the full stacked member.
+
+The first part of the table corresponds to `stacked_0.yaml`. In this interval, the lower component contracts and the upper axial/bending participation increases.
+
+The second part of the table corresponds to `stacked_1.yaml`. In this interval, the lower component expands and the upper axial/bending participation decreases.
+
+At the junction $z=5$, the stacked member has:
+
+$$
+w_u = 1.0, \qquad \kappa_u = 1.0, \qquad h_l = 0.20 .
+$$
+
+The same station is evaluated once in the comparison table. The property values are continuous through the junction.
+
+The expected global behaviour is:
+
+| Quantity | Behaviour over $0 \le z \le 10$ |
+|---|---|
+| $A(z)$ | constant over the full member, equal to $0.21$ |
 | $C_y(z)$ | continuous and symmetric, with maximum value at $z=5$ |
 | $I_x(z)$ | continuous and symmetric, with minimum value at $z=5$ |
-| $I_y(z)$ | constant over the full member                         |
+| $I_y(z)$ | constant over the full member |
 
 Representative values are:
 
-|  Station |    $A$ |       $C_y$ |       $I_x$ |       $I_y$ |
-| -------: | -----: | ----------: | ----------: | ----------: |
-|  $z = 0$ | $0.21$ | $-0.242857$ | $0.0096143$ | $0.0015750$ |
-|  $z = 5$ | $0.21$ | $-0.150000$ | $0.0085750$ | $0.0015750$ |
-| $z = 10$ | $0.21$ | $-0.242857$ | $0.0096143$ | $0.0015750$ |
+| Station | $A$ | $C_y$ | $I_x$ | $I_y$ |
+|---:|---:|---:|---:|---:|
+| $z=0$ | $0.21$ | $-0.242857$ | $0.0096143$ | $0.0015750$ |
+| $z=5$ | $0.21$ | $-0.150000$ | $0.0085750$ | $0.0015750$ |
+| $z=10$ | $0.21$ | $-0.242857$ | $0.0096143$ | $0.0015750$ |
 
-The verification checks that the section properties computed by CSF coincide with the closed-form reference at the sampled Gauss-Lobatto stations. The reported errors are at floating-point roundoff level for this case.
+<p align="center">
+  <em>Figure 5. Continuous sectional-property variation over the stacked member.</em>
+</p>
+
+<p align="center">
+  <img width="989" height="869" alt="Continuous sectional-property variation" src="https://github.com/user-attachments/assets/812b2a89-dfaa-48f4-b609-52eaf7233397" />
+</p>
+
+The constant total weighted area confirms the compensation between the `upper` participation-field variation and the `lower` geometric variation. The variation of $C_y(z)$ and $I_x(z)$ confirms that a constant weighted area does not imply a constant weighted section.
 
 ---
 
-## Station-wise CSV export
+# 7. Station-wise CSV export
 
-The script also exports selected station-wise CSV files:
+After the stacked-member comparison, `run_stacked.py` exports selected station-wise CSV files:
 
 ```python
 manual_station = [0, 3, 5, 7, 10]
@@ -651,7 +803,7 @@ with filenames of the form:
 out/lobatto_station_export_<z>.csv
 ```
 
-Each CSV file is a sampled output of the continuous CSF model at one station. It is not the model definition.
+Each CSV file is a sampled output of the continuous CSF model at one station. It is not the source definition of the model.
 
 The sequence is:
 
@@ -662,7 +814,7 @@ continuous CSF model
 → CSV vertex rows with sampled metadata
 ```
 
-Each exported row corresponds to one vertex of one sampled polygonal component. Component-level quantities such as `w`, `shear_w`, and `poisson` are repeated over the vertices of the same component because the CSV is a vertex-wise export format.
+Each exported row corresponds to one vertex of a sampled polygonal component. The columns `w`, `shear_w`, and `poisson` are repeated over the vertices of the same component because those values are component-level data at that station.
 
 For example, at $z=7$, the station lies in the second interval. The local coordinate is:
 
@@ -692,6 +844,26 @@ $$
 y = -0.30 - 0.24 = -0.54 .
 $$
 
-The empty `poisson` field for the upper component does not indicate missing data. It indicates that the shear/torsion participation was prescribed directly. By contrast, `middle` and `lower` carry `poisson = 0.2` because their shear/torsion participation was derived through `iso(0.2)`.
+The corresponding CSV export is:
 
-This confirms the separation between the model object and its sampled exports. The YAML files define the continuous CSF intervals; `CSFStacked` assembles them into a global member; the CSV files record finite station-wise evaluations of that continuous model.
+```text
+## GEOMETRY EXPORT ##
+# z=7.0
+idx_polygon,idx_container,s0_name,s1_name,w,shear_w,poisson,vertex_i,x,y
+0,,upper,upper,0.8,0.68,,0,-0.15,0
+0,,upper,upper,0.8,0.68,,1,0.15,0
+0,,upper,upper,0.8,0.68,,2,0.15,0.2
+0,,upper,upper,0.8,0.68,,3,-0.15,0.2
+1,,middle,middle,1,0.416666666667,0.2,0,-0.15,-0.3
+1,,middle,middle,1,0.416666666667,0.2,1,0.15,-0.3
+1,,middle,middle,1,0.416666666667,0.2,2,0.15,0
+1,,middle,middle,1,0.416666666667,0.2,3,-0.15,0
+2,,lower,lower,1,0.416666666667,0.2,0,-0.15,-0.54
+2,,lower,lower,1,0.416666666667,0.2,1,0.15,-0.54
+2,,lower,lower,1,0.416666666667,0.2,2,0.15,-0.3
+2,,lower,lower,1,0.416666666667,0.2,3,-0.15,-0.3
+```
+
+The empty `poisson` field for the upper component does not indicate missing data. It indicates that the shear/torsion participation was prescribed directly. The `middle` and `lower` components carry `poisson = 0.2` because their shear/torsion participation was derived through `iso(0.2)`.
+
+This final export demonstrates the separation between the model object and the sampled rows. The YAML files define continuous CSF intervals; `CSFStacked` assembles them into a global member; the CSV files record finite station-wise evaluations of that continuous model.
