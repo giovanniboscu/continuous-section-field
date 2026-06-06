@@ -475,7 +475,7 @@ $$
 5.55 \times 10^{-17}.
 $$
 
-This controlled example therefore verifies the internal consistency of the continuous section-field representation before it is used in the NREL tower case. It shows that CSF evaluates geometry, axial/bending participation, and shear/torsion participation as continuous fields, and that the resulting sectional properties follow from their combined distribution within the section.
+This controlled example therefore verifies the internal consistency of the continuous section-field representation at section level, before any external structural solver is involved. It shows that CSF evaluates geometry, axial/bending participation, and shear/torsion participation as continuous fields, and that the resulting sectional properties follow from their combined distribution within the section.
 
 The complete reproducibility material for this example, including the CSF input files, action file, figures, station-wise exports, and the full comparison table, is provided in the repository:
 
