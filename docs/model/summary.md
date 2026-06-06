@@ -686,12 +686,23 @@ https://doi.org/10.5281/zenodo.19076181
 
 The author thanks the developers of `sectionproperties` for providing an open finite-element section-analysis ecosystem that can be used in validation and interoperability workflows.
 
+## Declaration of competing interest
+
+The author declares that there are no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
+
+## Funding
+
+This research received no external funding.
+
 ---
 
 ## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
 
 During the preparation of this work, the author used ChatGPT and Claude for drafting assistance, copy-editing, and code-review suggestions. After using these tools, the author reviewed, edited, and validated the content as needed and takes full responsibility for the scientific claims, software implementation, and manuscript.
 
+## CRediT author statement
+
+Giovanni Boscu: Conceptualization, Methodology, Software, Validation, Formal analysis, Writing – original draft, Writing – review and editing, Visualization.
 
 ## References
 
