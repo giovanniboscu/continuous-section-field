@@ -673,9 +673,7 @@ For every station, the script reports:
 
 The complete comparison table is shown below.
 
-```text
-[comparison table]
-```
+[verification.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/verification.md)
 
 The maximum discrepancies reported by the run are
 
