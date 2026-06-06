@@ -15,11 +15,9 @@ This distinction allows CSF to preserve a continuous member representation while
 
 
 v2 220 words
-
-v2 220 words
 Continuous Section Field (CSF) is a pre-solver layer for representing sectional geometry, material participation, and derived section properties as continuous functions along a member axis. CSF is neither a structural solver nor a geometry kernel; it transforms member-level geometric and material descriptions into continuous section-property fields and station-wise data suitable for downstream beam, tower, bridge, and finite-element workflows.
 
-The central idea is to treat the cross-section as a field defined along the longitudinal coordinate, rather than as an isolated section or a fixed table of sectional properties. Geometry is specified at reference stations and obtained by interpolating corresponding polygon vertices, producing continuous intermediate cross-sections. Material participation is prescribed independently as continuous longitudinal fields. The independence of geometry and participation is foundational: each can vary arbitrarily along the axis. At any requested station, CSF combines the interpolated geometry with the participation fields to evaluate area, centroid, second moments of area, principal inertias, and section moduli.
+The central idea is to treat the cross-section as a field defined along the longitudinal coordinate, rather than as an isolated section or a fixed table of sectional properties. Geometry is specified at reference stations and obtained by interpolating corresponding polygon vertices, producing continuous intermediate cross-sections. Material participation is prescribed independently as continuous longitudinal fields. The independence of geometry and participation is foundational: each can vary along the axis without requiring the other to follow the same law. At any requested station, CSF combines the interpolated geometry with the participation fields to evaluate area, centroid, second moments of area, principal inertias, and section moduli.
 
 CSF makes an explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two longitudinal participation fields define how much each region contributes: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. Their independence allows geometry, axial/bending contribution, and shear/torsion contribution to vary separately along the member axis, while optional isotropic coupling can be used when appropriate.
 
