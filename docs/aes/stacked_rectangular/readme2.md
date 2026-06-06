@@ -724,7 +724,7 @@ The complete report table is shown in the dedicated [comparison](https://github.
 The [comparison](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/verification.md) shows that the sectional properties computed by the assembled CSF model coincide with the corresponding closed-form reference along the entire member. The maximum reported discrepancies are at floating-point roundoff level:
 
 $$
-\max \varepsilon_{A,I_x,I_y} = 1.09 \times 10^{-13}%
+\max \varepsilon_{A,I_x,I_y} = 1.09 \times 10^{-13}\%
 $$
 
 and
