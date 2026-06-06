@@ -700,7 +700,7 @@ and compared with the independent analytical solution
 reference(z)
 ```
 
-The argument `junction_side="left"` is only relevant when a station lies exactly on an interval boundary. In this example the section field is continuous at (z=5), therefore evaluating the junction from the left or from the right interval produces identical results.
+The argument `junction_side="left"` is only relevant when a station lies exactly on an interval boundary. In this example the section field is continuous at $z=5$, therefore evaluating the junction from the left or from the right interval produces identical results.
 
 
 For every station, the script reports:
