@@ -304,7 +304,7 @@ Figure 2 shows the resulting shear/torsion participation field for the first CSF
 
 
 
-## 1.5 Section sampling at $z=2.5$
+## 1.5 Section sampling at z=2.5
 
 The action file samples the midpoint of the first interval:
 
