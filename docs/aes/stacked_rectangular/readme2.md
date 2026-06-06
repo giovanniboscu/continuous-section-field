@@ -620,9 +620,9 @@ I_x,
 I_y.
 $$
 
-All quantities are expressed in terms of the global coordinate \(z\). For each interval, the geometric dimensions and participation values are obtained from the corresponding local coordinate \(t(z)\) defined in Sections 1 and 2.
+All quantities are expressed in terms of the global coordinate $z$. For each interval, the geometric dimensions and participation values are obtained from the corresponding local coordinate $t(z)$ defined in Sections 1 and 2.
 
-For each component \(i\), the geometric area is
+For each component $i$, the geometric area is
 
 $$
 A_i^{\mathrm{geom}}(z) = B h_i(z).
@@ -670,7 +670,8 @@ $$
 
 These expressions provide the analytical reference used in the subsequent comparison with the CSF results.
 
-The shear/torsion participation field \(\kappa_i(z)\) remains part of the CSF definition and was previously inspected through `csf-actions`. It does not enter the present comparison because the quantities $A$, $C_y$, $I_x$, and $I_y$ are derived from the axial/bending participation field \(w_i(z)\).
+The shear/torsion participation field $\kappa_i(z)$ remains part of the CSF definition and was previously inspected through `csf-actions`. It does not enter the present comparison because the quantities $A$, $C_y$, $I_x$, and $I_y$ are derived from the axial/bending participation field $w_i(z)$.
+
 
 ---
 
@@ -680,9 +681,10 @@ After assembling the global member and defining the analytical reference, the ve
 
 `run_stacked.py` generates a Gauss-Lobatto sampling grid on each interval:
 
-1. 11 Gauss-Lobatto stations on (0 \le z \le 5);
-2. 11 Gauss-Lobatto stations on (5 \le z \le 10);
-3. removal of the duplicated junction station at (z=5).
+1. 11 Gauss-Lobatto stations on $0 \le z \le 5$;
+2. 11 Gauss-Lobatto stations on $5 \le z \le 10$;
+3. removal of the duplicated junction station at $z=5$.
+
 
 The resulting station set spans the entire stacked member while preserving the interval junction only once.
 
@@ -700,16 +702,17 @@ reference(z)
 
 The argument `junction_side="left"` is only relevant when a station lies exactly on an interval boundary. In this example the section field is continuous at (z=5), therefore evaluating the junction from the left or from the right interval produces identical results.
 
+
 For every station, the script reports:
 
-* the global coordinate (z);
-* the active segment index (`seg`);
-* the local interval coordinate (t);
-* the analytical participation values (w_u) and (\kappa_u) (`sw_u`);
-* the CSF-computed values of (A), (C_y), (I_x), and (I_y);
+* the global coordinate $z$;
+* the active segment index `seg`;
+* the local interval coordinate $t$;
+* the analytical participation values $w_u$ and $\kappa_u$ (`sw_u`);
+* the CSF-computed values of $A$, $C_y$, $I_x$, and $I_y$;
 * the corresponding analytical values;
-* the relative error for (A), (I_x), and (I_y);
-* the absolute error for (C_y).
+* the relative error for $A$, $I_x$, and $I_y$;
+* the absolute error for $C_y$.
 
 The complete report table is shown in the dedicated [comparison](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/verification.md).
 
