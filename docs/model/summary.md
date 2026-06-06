@@ -329,7 +329,7 @@ The example consists of two CSF intervals assembled into a single member. Each s
 
 
 <p align="center">
-  <em>Figure 1. Cross-section evaluated at $z = 0$. <code>w</code>.</em>
+  <em>Figure 1. Cross-section evaluated at $z = 0$. </em>
   <img width="276" height="488" alt=" Cross-section evaluated " src="https://github.com/user-attachments/assets/491eddd3-9c57-4660-98b4-84e21c625e90" />
 </p>
 
