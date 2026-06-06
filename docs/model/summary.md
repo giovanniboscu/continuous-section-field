@@ -319,7 +319,7 @@ Where the properties computed directly by CSF are sufficient, the sampled field 
 ---
 ## 5. Controlled stacked-section example
 
-A controlled stacked-section example is introduced before the NREL tower case to isolate the interaction between geometric interpolation and participation fields in the CSF formulation. The objective is not to represent a complex structure, but to show how the fields introduced in the model combine at section level before any structural solver is involved.
+A controlled stacked-section example is introduced to verify, under closed-form conditions, how geometric interpolation and participation fields combine within the CSF formulation. The objective is not to represent a complex structure, but to show how the fields introduced in the model combine at section level before any structural solver is involved.
 
 The example consists of two CSF intervals assembled into a single member. Each section is composed of three rectangular components: an upper component, a middle component, and a lower component. The upper and middle components keep constant geometry, while the lower component changes its height along the member axis. At the same time, the participation fields of the upper component vary continuously. This construction separates two effects that are usually coupled in a discrete section description: the geometric variation of one part of the section and the material/participation variation of another part.
 
