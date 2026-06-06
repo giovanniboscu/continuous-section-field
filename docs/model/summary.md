@@ -335,12 +335,12 @@ $$
 $$
 
 <p align="center">
-  <em>Figure 5. First CSF interval colored by the axial/bending participation field <code>w</code>.</em>
+  <em>Figure 1. First CSF interval colored by the axial/bending participation field <code>w</code>.</em>
   <img width="759" height="673" alt="First CSF interval colored by axial/bending participation field" src="https://github.com/user-attachments/assets/60d1bd76-0ad0-45bd-bd29-0e8ae8d8a93a" />
 </p>
 
 <p align="center">
-  <em>Figure 6. Same CSF interval colored by the shear/torsion participation field <code>shear_weight</code>.</em>
+  <em>Figure 2 Same CSF interval colored by the shear/torsion participation field <code>shear_weight</code>.</em>
   <img width="643" height="600" alt="First CSF interval colored by shear torsion participation field" src="https://github.com/user-attachments/assets/54017e2d-d8e4-4884-99fb-5299024aee6c" />
 </p>
 
@@ -374,7 +374,7 @@ $$ A(t) = (0.5+0.5t)(0.06) + 0.09 + 0.30(0.30-0.10t) = 0.21. $$
 Thus, the total weighted area remains constant even though both geometry and participation fields vary continuously. The point of the example is that this compensation affects only the scalar total area. It does not preserve the internal distribution of weighted area inside the section. Consequently, the weighted centroid $C_y$ and the bending inertia $I_x$ vary continuously along the interval, while $I_y$ remains constant for this rectangular configuration.
 
 <p align="center">
-  <em>Figure 7. Sectional properties evaluated along the first interval. The total weighted area <code>A</code> remains constant, while <code>Cy</code> and <code>Ix</code> vary continuously.</em>
+  <em>Figure 3. Sectional properties evaluated along the first interval. The total weighted area <code>A</code> remains constant, while <code>Cy</code> and <code>Ix</code> vary continuously.</em>
   <img width="984" height="877" alt="Sectional properties evaluated along the first CSF interval" src="https://github.com/user-attachments/assets/0e06b2b3-ed00-4aed-b4b7-212de9d42cd8" />
 </p>
 
@@ -416,7 +416,7 @@ $$
 $$
 
 <p align="center">
-  <em>Figure 8. Global member obtained after assembling the two CSF intervals.</em>
+  <em>Figure 4. Global member obtained after assembling the two CSF intervals.</em>
   <img width="773" height="647" alt="Global member obtained after assembling the two CSF intervals" src="https://github.com/user-attachments/assets/2e6c2a34-5a96-40aa-af84-aacd4f753f39" />
 </p>
 
@@ -542,12 +542,12 @@ The transverse displacement $U_y$ converges at low discretization levels. The to
 
 
 <p align="center">
-  <em>Figure 1. CSF 3D representation of the degraded NREL tower case. The geometry remains tapered and continuous, while the longitudinal stiffness reduction is introduced through the participation field.</em>
+  <em>Figure 5. CSF 3D representation of the degraded NREL tower case. The geometry remains tapered and continuous, while the longitudinal stiffness reduction is introduced through the participation field.</em>
   <img width="631" height="547" alt="image" src="https://github.com/user-attachments/assets/2bf9827f-df1d-44ee-9937-bacb486373d8" />
 </p>
 
 <p align="center">
-  <em>Figure 2. Longitudinal stiffness degradation law applied to the NREL tower through the axial/bending participation field. The two localized reductions are centred at 0.33L and 0.67L.</em>
+  <em>Figure 6. Longitudinal stiffness degradation law applied to the NREL tower through the axial/bending participation field. The two localized reductions are centred at 0.33L and 0.67L.</em>
   <img width="985" height="467" alt="image" src="https://github.com/user-attachments/assets/50866952-f5ca-4ca3-969b-caf1a0b69934" />
 
 </p>
@@ -562,12 +562,12 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 
 <p align="center">
-   <em>Figure 3. Continuous variation of selected sectional properties for the degraded NREL tower case. The localized reductions arise from the prescribed axial/bending participation field and are reflected in the sectional area and bending stiffness distributions.</em>
+   <em>Figure 7. Continuous variation of selected sectional properties for the degraded NREL tower case. The localized reductions arise from the prescribed axial/bending participation field and are reflected in the sectional area and bending stiffness distributions.</em>
   <img width="992" height="654" alt="image" src="https://github.com/user-attachments/assets/29232887-e724-46bb-9bb7-ff635c08742f" />
 </p>
 
 <p align="center">
-  <em>Figure 4. Tip-displacement convergence for the undegraded NREL tower case.</em>
+  <em>Figure 8. Tip-displacement convergence for the undegraded NREL tower case.</em>
     <img width="1600" height="1000" alt="undegraded NREL tower tip displacement convergence" src="https://github.com/user-attachments/assets/202ff4b8-5752-4b01-93ac-2c223057124f" />
 
 </p>
@@ -575,7 +575,7 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 
 <p align="center">
-  <em>Figure 5. Tip-displacement convergence for the degraded NREL tower case.</em>
+  <em>Figure 9. Tip-displacement convergence for the degraded NREL tower case.</em>
 
 <img width="1600" height="1000" alt="degraded  NREL tower tip displacement convergence" src="https://github.com/user-attachments/assets/220ea5ec-d42e-4b75-b04f-16b9e9303161" />
 
