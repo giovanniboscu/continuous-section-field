@@ -351,6 +351,7 @@ Figure 1 shows the corresponding sampled section.
 
 ## 1.6 Section-property plot over the first interval
 
+
 The variation of the sectional properties along the interval is generated with:
 
 ```yaml
@@ -362,6 +363,15 @@ The variation of the sectional properties along the interval is generated with:
       num_points: 100
     properties: [A,Cy, Ix, Iy]
 ```
+
+<p align="center">
+  <em>Figure 5. Sectional properties evaluated along the first interval defined in <code>stacked_0.yaml</code>. The total weighted area <code>A</code> remains constant, while <code>Cy</code> and <code>Ix</code> vary continuously; <code>Iy</code> remains constant for this stacked rectangular configuration.</em>
+  <img width="984" height="877" alt="image" src="https://github.com/user-attachments/assets/0e06b2b3-ed00-4aed-b4b7-212de9d42cd8" />
+</p>
+
+
+
+
 
 Based on the geometry and participation laws defined in `stacked_0.yaml`, the expected behaviour over the interval is:
 
