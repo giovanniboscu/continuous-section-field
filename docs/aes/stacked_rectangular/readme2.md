@@ -92,9 +92,9 @@ middle0
 lower0
 ```
 
-The `upper0` and `middle0` regions remain geometrically unchanged throughout the interval, while the `lower0` region shortens linearly as (z) increases.
+The `upper0` and `middle0` regions remain geometrically unchanged throughout the interval, while the `lower0` region shortens linearly as $z$ increases.
 
-At (z=0), the polygon vertices are:
+At $z=0$, the polygon vertices are:
 
 ```yaml
 upper0:
@@ -122,7 +122,7 @@ lower0:
     - [-0.15, -0.30]
 ```
 
-At (z=5), the `upper0` and `middle0` regions retain the same geometry, while the lower edge of `lower0` moves upward from (y=-0.60) to (y=-0.50):
+At $z=5$, the `upper0` and `middle0` regions retain the same geometry, while the lower edge of `lower0` moves upward from $y=-0.60$ to $y=-0.50$:
 
 ```yaml
 lower0:
@@ -170,7 +170,7 @@ $$
 y = -0.30,
 $$
 
-while its height decreases linearly from (0.30) to (0.20) over the interval:
+while its height decreases linearly from $0.30$ to $0.20$ over the interval:
 
 $$
 h_l(t) = 0.30 - 0.10t.
