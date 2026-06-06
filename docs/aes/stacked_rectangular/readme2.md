@@ -671,73 +671,56 @@ For every station, the script reports:
 * the relative error for (A), (I_x), and (I_y);
 * the absolute error for (C_y).
 
-The complete comparison table is shown below.
-
-[verification.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/verification.md)
-
-The maximum discrepancies reported by the run are
-
-```text
-max relative error (A, Ix, Iy): 1.09e-13 %
-max absolute error (Cy): 5.55e-17
-```
-
-These errors are at floating-point roundoff level, indicating that the sectional properties computed by the CSF model coincide with the closed-form reference throughout the entire stacked member.
-
-The comparison verifies both intervals simultaneously, including the junction at (z=5). The agreement confirms that the geometric interpolation, participation-field interpolation, interval stacking, and sectional-property evaluation are all consistent with the analytical formulation.
+The complete report table is shown con comparison table [comparison](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/verification.md)
 
 ---
 
 
 # 6. Interpretation of the stacked-member comparison
 
-The station-by-station comparison shows that the sectional properties computed by the CSF model coincide with the corresponding closed-form reference throughout the entire member. The reported discrepancies are at floating-point roundoff level and therefore indicate numerical equivalence between the two descriptions.
+The [comparison](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/verification.md) shows that the sectional properties computed by the assembled CSF model coincide with the corresponding closed-form reference along the entire member. The maximum reported discrepancies are at floating-point roundoff level:
 
-The behaviour of the member can be understood by considering the two intervals separately.
+$$
+\max \varepsilon_{A,I_x,I_y} = 1.09 \times 10^{-13}%
+$$
 
-In `stacked_0.yaml`, the lower component progressively contracts while the axial/bending participation of the upper component increases. In `stacked_1.yaml`, the process is reversed: the lower component expands while the upper participation decreases. The second interval therefore mirrors the first one, producing a symmetric global configuration.
+and
 
-The two intervals meet at
+$$
+\max | \Delta C_y | = 5.55 \times 10^{-17}.
+$$
 
-$$ z = 5, $$
+This confirms that the continuous sectional field provided by `CSFStacked` is evaluated consistently across both intervals and across the junction at
 
-where
+$$
+z = 5.
+$$
 
-$$ w_u = 1.0, \qquad \kappa_u = 1.0, \qquad h_l = 0.20. $$
+The key result is that the total weighted area remains constant along the member, while the centroid coordinate and the bending inertia about the horizontal axis vary continuously. Therefore, the example verifies that preserving
 
-This station represents the transition between the two intervals and is evaluated only once in the comparison table. The continuity of the reported sectional properties confirms that the stacked member behaves as a single continuous field across the junction.
+$$
+A(z)
+$$
 
-The resulting global behaviour is summarized below.
+does not imply preserving the internal distribution of the weighted area inside the section.
 
-| Quantity | Behaviour over (0 \le z \le 10)                               |
-| -------- | ------------------------------------------------------------- |
-| (A(z))   | constant over the entire member                               |
-| (C_y(z)) | continuous and symmetric, reaching its maximum value at (z=5) |
-| (I_x(z)) | continuous and symmetric, reaching its minimum value at (z=5) |
-| (I_y(z)) | constant over the entire member                               |
+The assembled member behaves as a single continuous field:
 
-Representative values are:
+$$
+z \longmapsto S(z),
+$$
 
-| Station |  (A) |     (C_y) |     (I_x) |     (I_y) |
-| ------: | ---: | --------: | --------: | --------: |
-|   (z=0) | 0.21 | -0.242857 | 0.0096143 | 0.0015750 |
-|   (z=5) | 0.21 | -0.150000 | 0.0085750 | 0.0015750 |
-|  (z=10) | 0.21 | -0.242857 | 0.0096143 | 0.0015750 |
+rather than as a collection of independent section evaluations.
 
-Figure 5 illustrates the continuous variation of the sectional properties along the assembled member.
-
-The most important observation is that the total weighted area remains constant despite the continuous variation of both geometry and participation fields. The increase in weighted contribution provided by the upper component is exactly compensated by the reduction of geometric area in the lower component, and vice versa in the second interval.
-
-At the same time, the centroid position and the second moment about the horizontal axis continue to vary. This demonstrates a key property of continuous section fields: preserving the total weighted area does not imply preserving the internal distribution of that area. Consequently, sectional quantities such as (C_y) and (I_x) remain sensitive to how geometry and participation are distributed within the section.
 
 --
 
 
 # 7. Station-wise CSV export
 
-As a final verification step, `run_stacked.py` exports a set of station-wise CSV files extracted from the assembled member.
+The station-wise CSV export is included to show what CSF evaluates before the reduction to sectional properties. At a prescribed global coordinate $z$, the assembled member is sampled and the resulting polygonal zones are written together with the participation and material data associated with each component.
 
-The selected export stations are
+In `run_stacked.py`, the selected export stations are
 
 ```python
 manual_station = [0, 3, 5, 7, 10]
@@ -749,44 +732,57 @@ and each station produces a file of the form
 out/lobatto_station_export_<z>.csv
 ```
 
-These files are not part of the model definition. They are sampled outputs obtained by evaluating the continuous CSF member at specific locations.
+These files are not part of the model definition. They are discrete outputs obtained from the continuous CSF member at selected stations.
 
-The export process can be summarized as
+The export sequence is
 
 ```text
-continuous CSF model
-→ section evaluation at z
+CSFStacked member
+→ evaluation at global coordinate z
 → sampled polygonal zones
-→ CSV vertex rows with sampled metadata
+→ sampled component data
+→ CSV vertex rows
 ```
 
-Each CSV row corresponds to a single vertex of a sampled polygonal component. Geometric coordinates are therefore stored explicitly, together with the component-level properties evaluated at that station.
+Each CSV row corresponds to one vertex of one sampled polygonal component. The coordinates `x` and `y` describe the sampled geometry at that station, while `w`, `shear_w`, and `poisson` report the component-level data evaluated at the same position.
 
-The fields `w`, `shear_w`, and `poisson` are repeated for all vertices belonging to the same component because these quantities are associated with the component itself rather than with individual vertices.
+The values `w`, `shear_w`, and `poisson` are repeated over the vertices of the same component because they belong to the component, not to the individual vertex.
 
 As an example, consider the export at
 
-$$ z = 7. $$
+$$
+z = 7.
+$$
 
-This station belongs to the second interval, where
+This station belongs to the second interval, with
 
-$$ t = \frac{7-5}{5} = 0.4. $$
+$$
+t = \frac{7 - 5}{5} = 0.4.
+$$
 
-The corresponding upper-component participation values are
+For the upper component, the sampled participation values are
 
-$$ w_u = 1.0 - 0.5(0.4) = 0.8, $$
+$$
+w_u = 1.0 - 0.5(0.4) = 0.8,
+$$
 
-$$ \kappa_u = 1.0 - 0.8(0.4) = 0.68. $$
+$$
+\kappa_u = 1.0 - 0.8(0.4) = 0.68.
+$$
 
-The lower component has height
+For the lower component, the sampled height is
 
-$$ h_l = 0.20 + 0.10(0.4) = 0.24, $$
+$$
+h_l = 0.20 + 0.10(0.4) = 0.24,
+$$
 
-which places its lower edge at
+so the lower edge is located at
 
-$$ y = -0.30 - 0.24 = -0.54. $$
+$$
+y = -0.30 - 0.24 = -0.54.
+$$
 
-The resulting CSV export is
+The corresponding CSV export is
 
 ```text
 ## GEOMETRY EXPORT ##
@@ -801,11 +797,14 @@ idx_polygon,idx_container,s0_name,s1_name,w,shear_w,poisson,vertex_i,x,y
 1,,middle,middle,1,0.416666666667,0.2,2,0.15,0
 1,,middle,middle,1,0.416666666667,0.2,3,-0.15,0
 2,,lower,lower,1,0.416666666667,0.2,0,-0.15,-0.54
-2,,lower,lower,1,0.416666666667,0.2,1,0.15,-0.54
+2,,lower,lower,1,0.15,-0.54
 2,,lower,lower,1,0.416666666667,0.2,2,0.15,-0.3
 2,,lower,lower,1,0.416666666667,0.2,3,-0.15,-0.3
 ```
 
-The empty `poisson` field for the upper component does not indicate missing information. It indicates that the shear/torsion participation was prescribed directly through an explicit law. By contrast, the `middle` and `lower` components contain `poisson = 0.2` because their shear/torsion participation was generated through the isotropic shortcut `iso(0.2)`.
+The empty `poisson` field for the upper component follows from the fact that its shear/torsion participation is prescribed directly. The `middle` and `lower` components instead report `poisson = 0.2`, consistently with the use of `iso(0.2)` for their shear/torsion participation.
 
-This export illustrates the distinction between the continuous model and its sampled representations. The YAML files define continuous CSF intervals, `CSFStacked` assembles those intervals into a continuous member, and the CSV files record discrete evaluations of that member at selected stations. The exported rows are therefore observations of the model, not the model itself.
+This export separates the model from its sampled representation. The YAML files define the continuous CSF intervals; `CSFStacked` assembles them into a member defined over the global coordinate $z$; the CSV files record only selected evaluations of that member.
+
+The exported rows are therefore sampled observations of the CSF model, not the model itself.
+
