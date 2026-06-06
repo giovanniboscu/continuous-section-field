@@ -329,7 +329,7 @@ The example consists of two CSF intervals assembled into a single member. Each s
   <img
     alt="Cross-section evaluated"
     src="https://github.com/user-attachments/assets/491eddd3-9c57-4660-98b4-84e21c625e90"
-    width="20%"
+    width="643" height="600" 
   />
 </p>
 
