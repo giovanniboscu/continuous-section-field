@@ -704,7 +704,7 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
 
 Giovanni Boscu: Conceptualization, Methodology, Software, Validation, Formal analysis, Writing – original draft, Writing – review and editing, Visualization.
 
-## References
+## Internal link
 
 - **[Balduzzi 2016]** <a id="Balduzzi-2016"></a>  *Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). Non-prismatic beams: A simple and effective Timoshenko-like model. International Journal of Solids and Structures*, 90, 236–250.
   https://doi.org/10.1016/j.ijsolstr.2016.02.017
@@ -754,5 +754,33 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/section
 - **[ROARK]** <a id="ROARK"></a> *G. Boscu, Roark's Formulas for Stress and Strain*. Reference handbook for engineering stress and torsion approximations.
 https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J_vroark_usage_guide.md
 
+
+# References
+
+[1] G. Balduzzi, M. Aminbaghai, J. Füssl, F. Auricchio, Non-prismatic beams: a simple and effective Timoshenko-like model, Int. J. Solids Struct. 90 (2016) 236–250. https://doi.org/10.1016/j.ijsolstr.2016.03.022
+
+[2] D.H. Hodges, W. Yu, VABS: a new concept for composite rotor blade cross-sectional modeling, J. Am. Helicopter Soc. 42 (1) (1997) 27–38. https://doi.org/10.4050/JAHS.42.27
+
+[3] R. Feijoo, G. Padula, S. Proença, BECAS: a beam cross-section analysis tool, in: 54th AIAA/ASME/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference, Boston, MA, 2013. https://doi.org/10.2514/6.2013-1476
+
+[4] R. Greiner, sectionproperties: a Python package for the analysis of arbitrary cross-sections, SoftwareX 13 (2021) 100650. https://doi.org/10.1016/j.softx.2020.100650
+
+[5] F. McKenna, OpenSees: a framework for earthquake engineering simulation, Comput. Sci. Eng. 13 (4) (2011) 58–66. https://doi.org/10.1109/MCSE.2011.66
+
+[6] Q. Wang, M.A. Sprague, BeamDyn: a high-fidelity wind turbine blade solver in the FAST modular framework, Wind Energy 20 (8) (2017) 1439–1463. https://doi.org/10.1002/we.2101
+
+[7] J. Jonkman, S. Butterfield, W. Musial, G. Scott, Definition of a 5-MW reference wind turbine for offshore system development, NREL/TP-500-38060, National Renewable Energy Laboratory, Golden, CO, 2009. https://doi.org/10.2172/947422
+
+[8] H.P. Gavin, Frame3DD, Department of Civil and Environmental Engineering, Duke University, Durham, NC, 2024. https://frame3dd.sourceforge.net/
+
+[9] Dassault Systèmes, Abaqus/Standard User's Manual, Version 2023, Dassault Systèmes, Providence, RI, 2023. https://www.3ds.com/products-services/simulia/products/abaqus/
+
+[10] Ansys Inc., Ansys Mechanical User's Guide, Release 2023 R1, Ansys Inc., Canonsburg, PA, 2023. https://www.ansys.com/
+
+[11] NREL, Wind Energy Systems Engineering and Optimization (WISDEM), National Renewable Energy Laboratory, Golden, CO, 2024. https://github.com/WISDEM/WISDEM
+
+[12] W.C. Young, R.G. Budynas, Roark's Formulas for Stress and Strain, seventh ed., McGraw-Hill, New York, 2002.
+
+[13] G. Boscu, Continuous Section Field (CSF), Zenodo, 2026. https://doi.org/10.5281/zenodo.XXXXXX
 
 ---
