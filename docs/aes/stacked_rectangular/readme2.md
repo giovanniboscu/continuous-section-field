@@ -469,17 +469,17 @@ Figure 3 shows the corresponding shear/torsion participation field for the secon
 
 ---
 
-# 3. Assembly with `CSFStacked`
+# 3. Assembly and evaluation with `CSFStacked`
 
-The previous sections examined the two CSF intervals independently. The global verification is performed by assembling them into a single continuous member.
+The previous sections examined the two CSF intervals independently. The global verification is performed by assembling them into a single continuous member and evaluating that member over the full length of the structure.
 
-This operation is carried out in `run_stacked.py`, where the interval files are listed as
+In `run_stacked.py`, the interval definitions are listed as
 
 ```python
 SEGMENT_FILES = ("stacked_0.yaml", "stacked_1.yaml")
 ```
 
-and appended to a `CSFStacked` object:
+and assembled into a `CSFStacked` object:
 
 ```python
 stack = CSFStacked(eps_z=1e-9)
@@ -506,14 +506,54 @@ $$
 5 \le z \le 10.
 $$
 
-The station \(z=5\) acts as the common junction between the two intervals. At this location, geometry and participation fields are continuous, allowing the stacked object to behave as a single member rather than as two disconnected segments.
+The station
 
-The purpose of the stacking operation is not to create a new model, but to combine the two previously defined continuous intervals into a single evaluable CSF member. All subsequent comparisons with the analytical reference are performed on this assembled object.
+$$
+z = 5
+$$
 
-Figure 4 shows the global member obtained after stacking the two intervals.
+acts as the common junction between the two intervals. At this location, geometry and participation fields are continuous, allowing the assembled object to behave as a single member rather than as two disconnected segments.
 
+The purpose of `CSFStacked` is not merely to store multiple intervals. Its primary role is to provide a unified continuous interface over the entire member. From the user's perspective, the assembled object behaves as a single continuous function that maps a global coordinate (z) to a section evaluation.
 
----
+For example, sectional quantities are obtained through
+
+```python
+stack.section_full_analysis(z, junction_side="left")
+```
+
+Conceptually, the evaluation process can be viewed as
+
+```text
+global coordinate z
+→ locate active CSF interval
+→ compute local coordinate t
+→ evaluate geometry interpolation
+→ evaluate participation fields
+→ construct sampled section
+→ compute sectional properties
+```
+
+The user therefore interacts only with the global coordinate (z). The interval selection and local-coordinate mapping are handled internally by `CSFStacked`.
+
+This interpretation is important because it reflects the fundamental idea of the Continuous Section Field formulation. The model is not a collection of discrete sections stored at selected stations. Instead, it defines a continuous field
+
+$$
+z ;\mapsto; \text{section}(z),
+$$
+
+from which geometry, participation values, sectional properties, plots, and exported data can be evaluated at any location along the member.
+
+The stacking operation extends this continuous description beyond a single interval. Each YAML file defines a continuous CSF interval, while `CSFStacked` assembles those intervals into a single continuous field spanning the entire domain
+
+$$
+0 \le z \le 10.
+$$
+
+All subsequent comparisons with the analytical reference are performed on this assembled continuous member.
+
+Figure 4 shows the global member obtained after assembling the two CSF intervals.
+
 
 # 4. Closed-form reference for the stacked member
 
