@@ -326,8 +326,8 @@ The example consists of two CSF intervals assembled into a single member. Each s
 
 
 <p align="center">
-<img width="243" height="471" alt="image" src="https://github.com/user-attachments/assets/bc9a0052-e9f7-459c-bb12-3a23d0c40901" />
   
+<img width="645" height="471" alt="image" src="https://github.com/user-attachments/assets/615f3b3e-abcb-446d-919e-66a3e6207293" />
 
 </p>
 
