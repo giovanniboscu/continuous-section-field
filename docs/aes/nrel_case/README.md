@@ -45,6 +45,8 @@ This step is executed by:
 
 - `create_yaml_nrel.py`
 
+The script is parameterized to generate the circular tower sections as polygonal approximations of the circumference. In this validation case, the circular contour is discretized with 2048 sides, providing a high-resolution polygonal representation of the annular section used by CSF.
+
 The script uses the CSF geometry-generation tool documented in:
 
 [writegeometry_rio_v2 - User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/writegeometry_rio_v2_guide.md)
