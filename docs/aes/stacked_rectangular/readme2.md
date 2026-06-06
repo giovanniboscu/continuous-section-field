@@ -295,7 +295,7 @@ The corresponding visualization is generated with:
 
 ```
 
-This action colors the interval according to the shear/torsion participation field (s). In contrast to the axial/bending field, the upper component varies from (0.2) to (1.0), while the middle and lower components retain constant values derived from `iso(0.2)`.
+This action colors the interval according to the shear/torsion participation field (s). In contrast to the axial/bending field, the upper component varies from $0.2$ to $1.0$, while the middle and lower components retain constant values derived from `iso(0.2)`.
 Figure 2 shows the resulting shear/torsion participation field for the first CSF interval.
 
 ---
@@ -343,7 +343,7 @@ The corresponding section is generated with:
       - [stdout, out/section_a.jpg]
 ```
 
-The resulting plot represents the section obtained by evaluating the continuous CSF interval at \(z=2.5\). It is not a separate geometric definition, but a sampled realization of the continuously varying geometry and participation fields described by `stacked_0.yaml`.
+The resulting plot represents the section obtained by evaluating the continuous CSF interval at $z=2.5$. It is not a separate geometric definition, but a sampled realization of the continuously varying geometry and participation fields described by `stacked_0.yaml`.
 
 <p align="center">
   <em>Figure 3. Sampled section at <code>z = 2.5</code> for the first interval defined in <code>stacked_0.yaml</code>. The plot shows the polygonal section obtained by evaluating the continuous CSF interval at the midpoint; the upper component has axial/bending participation <code>w = 0.75</code>.</em>
