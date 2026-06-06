@@ -46,3 +46,9 @@ CSF_ACTIONS:
           num_points: 100
         properties: [A,Cy, Ix, Iy]
   
+    - plot_weight:
+        output:
+          - out/weight.jpg
+    - plot_shear_weight:
+        output:
+          - out/shear_weight.jpg
