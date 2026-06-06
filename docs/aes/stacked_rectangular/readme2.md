@@ -182,7 +182,7 @@ $$
 y_l(t) = -0.30 - \frac{h_l(t)}{2}.
 $$
 
-Figure 1 shows a sampled cross-section of the interval, highlighting the three stacked rectangular regions and the geometric configuration used throughout the verification.
+A sampled cross-section of the interval is shown in Figure 3, where the three rectangular regions are obtained by evaluating the continuous CSF definition at $z = 2.5$.
 
 ---
 ## 1.3 Axial/bending participation field in the first interval
@@ -500,8 +500,6 @@ $$
 
 As in the first interval, the total weighted area remains constant even though the distribution of weighted area continues to evolve.
 
-Figure 3 shows the corresponding shear/torsion participation field for the second interval.
-
 ---
 
 # 3. Assembly and evaluation with `CSFStacked`
@@ -523,11 +521,20 @@ for file_name in SEGMENT_FILES:
     stack.append(load(file_name))
 ```
 
+
 The resulting object represents a continuous sectional field over
 
 $$
 0 \le z \le 10.
 $$
+
+
+<p align="center">
+  <em>Figure 5. Global member obtained after assembling the two CSF intervals. The figure shows the continuous member representation defined over the global coordinate <code>z</code>.</em>
+<img width="773" height="647" alt="image" src="https://github.com/user-attachments/assets/2e6c2a34-5a96-40aa-af84-aacd4f753f39" />
+
+</p>
+
 
 The first interval defines the field on
 
@@ -587,8 +594,6 @@ stack.section_full_analysis(z, junction_side="left")
 
 is therefore not a lookup operation on a predefined list of sections. It is the evaluation of the continuous CSF representation at the requested global coordinate.
 
-
-Figure 4 shows the global member obtained after assembling the two CSF intervals.
 
 
 # 4. Closed-form reference for the stacked member
