@@ -323,6 +323,9 @@ A controlled stacked-section example is introduced to verify, under closed-form 
 
 The example consists of two CSF intervals assembled into a single member. Each section is composed of three rectangular components: an upper component, a middle component, and a lower component. The upper and middle components keep constant geometry, while the lower component changes its height along the member axis. At the same time, the participation fields of the upper component vary continuously. This construction separates two effects that are usually coupled in a discrete section description: the geometric variation of one part of the section and the material/participation variation of another part.
 
+<img width="276" height="488" alt="Screenshot 2026-06-06 at 14 50 59" src="https://github.com/user-attachments/assets/491eddd3-9c57-4660-98b4-84e21c625e90" />
+
+
 For the first interval, using the local coordinate $t \in [0,1]$, the axial/bending participation field of the upper component is
 
 $$
