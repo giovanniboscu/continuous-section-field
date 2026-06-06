@@ -430,7 +430,7 @@ lower1
 
 and starts from the geometric and participation state reached at the end of the first interval.
 
-At the common station \(z=5\), the lower component has height
+At the common station $z=5$, the lower component has height
 
 $$
 h_l = 0.20,
@@ -444,7 +444,7 @@ w_u = 1.0,
 \kappa_u = 1.0.
 $$
 
-From this configuration, the lower component gradually expands. Its lower edge moves from \(y=-0.50\) back to \(y=-0.60\), producing a linear height variation
+From this configuration, the lower component gradually expands. Its lower edge moves from $y=-0.50$ back to $y=-0.60$, producing a linear height variation
 
 $$
 h_l(t) = 0.20 + 0.10t.
@@ -670,7 +670,7 @@ $$
 
 These expressions provide the analytical reference used in the subsequent comparison with the CSF results.
 
-The shear/torsion participation field \(\kappa_i(z)\) remains part of the CSF definition and was previously inspected through `csf-actions`. It does not enter the present comparison because the quantities \(A\), \(C_y\), \(I_x\), and \(I_y\) are derived from the axial/bending participation field \(w_i(z)\).
+The shear/torsion participation field \(\kappa_i(z)\) remains part of the CSF definition and was previously inspected through `csf-actions`. It does not enter the present comparison because the quantities $A$, $C_y$, $I_x$, and $I_y$ are derived from the axial/bending participation field \(w_i(z)\).
 
 ---
 
