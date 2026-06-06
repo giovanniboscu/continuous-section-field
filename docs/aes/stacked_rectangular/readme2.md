@@ -162,7 +162,7 @@ $$
 while its height decreases linearly from (0.30) to (0.20) over the interval:
 
 $$
-h_l(t) = 0.30 - 0.10,t.
+h_l(t) = 0.30 - 0.10t.
 $$
 
 The corresponding centroid coordinate is
@@ -713,7 +713,7 @@ $$
 rather than as a collection of independent section evaluations.
 
 
---
+---
 
 
 # 7. Station-wise CSV export
