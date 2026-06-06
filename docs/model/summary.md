@@ -3,19 +3,6 @@ Draft v2.6
 
 ## Abstract
 
-Continuous Section Field (CSF) is a dedicated pre-solver layer for representing sectional geometry, material participation, and derived section properties as continuous functions along a member axis. CSF is neither a structural solver nor a geometry kernel; instead, it transforms member-level geometric and material descriptions into continuous section-property fields and station-wise data suitable for beam, tower, bridge, and finite-element workflows.
-
-The central idea of CSF is to treat the cross-section as a field defined along the member axis, rather than as a single isolated object. The geometry is specified at reference stations and obtained by interpolating corresponding polygon vertices between them, producing continuous intermediate cross-sections. Material participation, by contrast, is not interpolated between stations but prescribed as a continuous longitudinal field along the member axis. At any requested station, CSF combines the interpolated geometry with the participation fields to evaluate properties such as area, centroid, second moments of area, principal inertias and section moduli.
-
-CSF makes an explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two longitudinal material participation fields define how much each region contributes: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. Their independence is foundational to CSF: the model imposes no relation between the two, so each field can be specified on its own. These fields can represent stiffness ratios, degraded regions, reinforcement, voids, density-like quantities, or other user-defined sectional contributions. When both derive from elastic behaviour, they may optionally be coupled through an isotropic relation while still varying along the longitudinal coordinate.
-
-The continuous model can be defined through a Python API or through a declarative YAML workflow. In the YAML workflow, one file defines the continuous member and another file defines the requested computations, plots, inspections, station sampling, and exports. The YAML file does not define a discrete table of section properties; it defines the geometry and the participation fields from which CSF constructs the continuous section-property fields.
-
-This distinction allows CSF to preserve a continuous member representation while generating solver-facing station-wise data when required.
-
-
-v2 220 words
-
 Continuous Section Field (CSF) is a pre-solver layer for representing sectional geometry, material participation, and derived section properties as continuous functions along a member axis. CSF is neither a structural solver nor a geometry kernel; it transforms member-level geometric and material descriptions into continuous section-property fields and station-wise data suitable for downstream beam, tower, bridge, and finite-element workflows.
 
 The central idea is to treat the cross-section as a field defined along the longitudinal coordinate, rather than as an isolated section or a fixed table of sectional properties. Geometry is specified at reference stations and obtained by interpolating corresponding polygon vertices, producing continuous intermediate cross-sections. Material participation is prescribed independently as continuous longitudinal fields. The independence of geometry and participation is foundational: each can vary along the axis without requiring the other to follow the same law. At any requested station, CSF combines the interpolated geometry with the participation fields to evaluate area, centroid, second moments of area, principal inertias, and section moduli.
