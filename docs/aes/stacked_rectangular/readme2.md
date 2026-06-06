@@ -345,7 +345,14 @@ The corresponding section is generated with:
 
 The resulting plot represents the section obtained by evaluating the continuous CSF interval at \(z=2.5\). It is not a separate geometric definition, but a sampled realization of the continuously varying geometry and participation fields described by `stacked_0.yaml`.
 
-Figure 1 shows the corresponding sampled section.
+<p align="center">
+  <em>Figure 3. Sampled section at <code>z = 2.5</code> for the first interval defined in <code>stacked_0.yaml</code>. The plot shows the polygonal section obtained by evaluating the continuous CSF interval at the midpoint; the upper component has axial/bending participation <code>w = 0.75</code>.</em>
+
+<img width="256" height="553" alt="image" src="https://github.com/user-attachments/assets/692b1303-f77c-4870-81d6-41e3dba81183" />
+
+
+</p>
+
 
 ---
 
@@ -365,7 +372,7 @@ The variation of the sectional properties along the interval is generated with:
 ```
 
 <p align="center">
-  <em>Figure 5. Sectional properties evaluated along the first interval defined in <code>stacked_0.yaml</code>. The total weighted area <code>A</code> remains constant, while <code>Cy</code> and <code>Ix</code> vary continuously; <code>Iy</code> remains constant for this stacked rectangular configuration.</em>
+  <em>Figure 4. Sectional properties evaluated along the first interval defined in <code>stacked_0.yaml</code>. The total weighted area <code>A</code> remains constant, while <code>Cy</code> and <code>Ix</code> vary continuously; <code>Iy</code> remains constant for this stacked rectangular configuration.</em>
   <img width="984" height="877" alt="image" src="https://github.com/user-attachments/assets/0e06b2b3-ed00-4aed-b4b7-212de9d42cd8" />
 </p>
 
