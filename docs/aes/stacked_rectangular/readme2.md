@@ -240,6 +240,13 @@ This action colors the interval according to the axial/bending participation fie
 
 ## 1.4 Shear/torsion participation field in the first interval
 
+<p align="center">
+  <em>Figure 2. CSF 3D representation of the first interval defined in <code>stacked_0.yaml</code> using the shear/torsion participation field. The geometry is the same continuous interval shown previously, while the color map now represents <code>shear_weight</code>.</em>
+<img width="643" height="600" alt="image" src="https://github.com/user-attachments/assets/54017e2d-d8e4-4884-99fb-5299024aee6c" />
+
+  
+</p>
+
 The shear/torsion participation field is defined independently of the axial/bending participation field.
 For the `upper0` component, the participation law is prescribed directly:
 
