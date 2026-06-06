@@ -239,48 +239,34 @@ This action colors the interval according to the axial/bending participation fie
 
 ## 1.4 Shear/torsion participation field in the first interval
 
-The shear/torsion participation field is assigned separately from the axial/bending participation field.
-
-For `upper0`, the law is prescribed directly:
+The shear/torsion participation field is defined independently of the axial/bending participation field.
+For the `upper0` component, the participation law is prescribed directly:
 
 ```yaml
 shear_weight_laws:
   - 'upper0,upper0: 1.0 - 0.8*(1.0-t)'
+
 ```
 
-This gives:
-
-$$
-\kappa_u(t) = 1.0 - 0.8(1.0 - t)
-$$
-
-or equivalently:
-
-$$
-\kappa_u(t) = 0.2 + 0.8t .
-$$
-
-Thus:
-
-$$
-\kappa_u(0) = 0.2, \qquad \kappa_u(1) = 1.0 .
-$$
-
-For `middle0` and `lower0`, the shear/torsion participation is assigned through the isotropic shortcut:
+This defines a linear variation,
+$$ \kappa_u(t) = 1.0 - 0.8(1.0 - t) = 0.2 + 0.8t, $$
+ranging from
+$$ \kappa_u(0) = 0.2 $$
+at the beginning of the interval to
+$$ \kappa_u(1) = 1.0 $$
+at its end.
+For the `middle0` and `lower0` components, the shear/torsion participation is assigned through the isotropic shortcut:
 
 ```yaml
 shear_weight_laws:
   - 'lower0,lower0: iso(0.2)'
   - 'middle0,middle0: iso(0.2)'
+
 ```
 
-Therefore:
-
-$$
-\kappa_m = \kappa_l = \frac{1}{2(1+0.2)} = 0.41666667 .
-$$
-
-The corresponding action is:
+which gives
+$$ \kappa_m = \kappa_l = \frac{1}{2(1+0.2)} = 0.41666667. $$
+The corresponding visualization is generated with:
 
 ```yaml
 - plot_volume_3d:
@@ -288,17 +274,11 @@ The corresponding action is:
       seed: s
       title: "Element with shear weight"
       line_percent: 100.0
+
 ```
 
-This action plots the same interval and colors it according to the shear/torsion participation field `s`.
-
-<p align="center">
-  <em>Figure 2. Shear/torsion participation field of the upper component in the first CSF interval.</em>
-</p>
-
-<p align="center">
-  <img width="989" height="475" alt="Upper shear/torsion participation in first interval" src="https://github.com/user-attachments/assets/43f37ed8-e3ac-4537-a1bc-ed8433b2571a" />
-</p>
+This action colors the interval according to the shear/torsion participation field (s). In contrast to the axial/bending field, the upper component varies from (0.2) to (1.0), while the middle and lower components retain constant values derived from `iso(0.2)`.
+Figure 2 shows the resulting shear/torsion participation field for the first CSF interval.
 
 ---
 
