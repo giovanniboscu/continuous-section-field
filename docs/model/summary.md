@@ -434,7 +434,7 @@ stack.section_full_analysis(z, junction_side="left")
 ```
 
 <p align="center">
-  <em>Figure 5. Global member obtained after assembling the two CSF intervals.</em>
+  <em>Figure 5. Evaluation of the assembled CSF member at selected global stations. The model is queried through the global coordinate <code>z</code>, while <code>CSFStacked</code> handles the interval mapping internally.</em>
   <img width="993" height="865" alt="image" src="https://github.com/user-attachments/assets/0eec518e-1da9-4f72-a406-cbe74da111ca" />
 
 </p>
