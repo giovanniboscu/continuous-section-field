@@ -797,6 +797,8 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J
 
 [12] W.C. Young, R.G. Budynas, Roark's Formulas for Stress and Strain, seventh ed., McGraw-Hill, New York, 2002.
 
-[13] G. Boscu, Continuous Section Field (CSF), Zenodo, 2026. https://doi.org/10.5281/zenodo.XXXXXX
+[13] C. Steger, On the Calculation of Arbitrary Moments of Polygons, Technical Report FGBV-96-05, Technische Universität München, 1996.
+
+[14] G. Boscu, Continuous Section Field (CSF), Zenodo, 2026. https://doi.org/10.5281/zenodo.XXXXXX
 
 ---
