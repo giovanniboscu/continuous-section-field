@@ -69,19 +69,21 @@ CSF:
         ...
 ```
 
-The interval therefore occupies:
+The interval occupies
 
 $$
-0 \le z \le 5 .
+0 \le z \le 5.
 $$
 
-The local coordinate used by the participation laws is:
+The participation laws are expressed in terms of the local coordinate
 
 $$
-t = \frac{z}{5}, \qquad 0 \le t \le 1 .
+t = \frac{z}{5},
+\qquad
+0 \le t \le 1.
 $$
 
-The section is composed of three stacked rectangular polygonal zones:
+The section consists of three vertically stacked rectangular polygonal regions:
 
 ```text
 upper0
@@ -89,7 +91,9 @@ middle0
 lower0
 ```
 
-At $z=0$, the polygon vertices are:
+The `upper0` and `middle0` regions remain geometrically unchanged throughout the interval, while the `lower0` region shortens linearly as (z) increases.
+
+At (z=0), the polygon vertices are:
 
 ```yaml
 upper0:
@@ -117,7 +121,7 @@ lower0:
     - [-0.15, -0.30]
 ```
 
-At $z=5$, the `upper0` and `middle0` components keep the same vertices, while the lower edge of `lower0` moves upward from $y=-0.60$ to $y=-0.50$:
+At (z=5), the `upper0` and `middle0` regions retain the same geometry, while the lower edge of `lower0` moves upward from (y=-0.60) to (y=-0.50):
 
 ```yaml
 lower0:
@@ -129,61 +133,55 @@ lower0:
     - [-0.15, -0.30]
 ```
 
-All components have the same width:
+All three regions have the same width,
 
 $$
-B = 0.30 .
+B = 0.30.
 $$
 
-The `upper0` component has constant height:
+The `upper0` region has constant height
 
 $$
 h_u = 0.20
 $$
 
-and centroid coordinate:
+and centroid coordinate
 
 $$
-y_u = 0.10 .
+y_u = 0.10.
 $$
 
-The `middle0` component has constant height:
+The `middle0` region has constant height
 
 $$
 h_m = 0.30
 $$
 
-and centroid coordinate:
+and centroid coordinate
 
 $$
-y_m = -0.15 .
+y_m = -0.15.
 $$
 
-The `lower0` component has its top edge fixed at:
+The top edge of `lower0` remains fixed at
 
 $$
-y = -0.30 .
+y = -0.30,
 $$
 
-Its height decreases from $0.30$ to $0.20$ over the interval. Therefore:
+while its height decreases linearly from (0.30) to (0.20) over the interval:
 
 $$
-h_l(t) = 0.30 - 0.10t .
+h_l(t) = 0.30 - 0.10,t.
 $$
 
-The centroid coordinate of the lower component is:
+The corresponding centroid coordinate is
 
 $$
-y_l(t) = -0.30 - \frac{h_l(t)}{2} .
+y_l(t) = -0.30 - \frac{h_l(t)}{2}.
 $$
 
-<p align="center">
-  <em>Figure 1. Sampled three-component stacked rectangular section.</em>
-</p>
-
-<p align="center">
-  <img width="264" height="522" alt="Stacked rectangular section" src="https://github.com/user-attachments/assets/b4aff836-bb40-474b-879b-f7a5f3205f0d" />
-</p>
+Figure 1 shows a sampled cross-section of the interval, highlighting the three stacked rectangular regions and the geometric configuration used throughout the verification.
 
 ---
 
