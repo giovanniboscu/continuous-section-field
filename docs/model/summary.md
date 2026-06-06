@@ -406,19 +406,8 @@ $$
 
 The weighted-area compensation is preserved:
 
-$$
-A(t)
-====
+$$ A(t) = (1.0-0.5t)(0.06) + 0.09 + 0.30(0.20+0.10t) = 0.21. $$
 
-(1.0-0.5t)(0.06)
-+
-0.09
-+
-0.30(0.20+0.10t)
-================
-
-0.21.
-$$
 
 The two intervals are then assembled into a single member using `CSFStacked`. The assembled object defines a continuous sectional field over the global coordinate
 
