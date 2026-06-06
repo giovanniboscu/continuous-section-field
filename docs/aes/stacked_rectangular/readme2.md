@@ -804,7 +804,7 @@ idx_polygon,idx_container,s0_name,s1_name,w,shear_w,poisson,vertex_i,x,y
 
 The empty `poisson` field for the upper component follows from the fact that its shear/torsion participation is prescribed directly. The `middle` and `lower` components instead report `poisson = 0.2`, consistently with the use of `iso(0.2)` for their shear/torsion participation.
 
-This export separates the model from its sampled representation. The YAML files define the continuous CSF intervals; `CSFStacked` assembles them into a member defined over the global coordinate $z$; the CSV files record only selected evaluations of that member.
+This export separates the model from its sampled representation. The YAML files define the continuous CSF intervals; `CSFStacked` assembles them into a member defined over the global coordinate $z$; the CSV files record selected evaluations of that member.
 
-The exported rows are therefore sampled observations of the CSF model, not the model itself.
+The CSV files therefore contain station-wise samples of the continuous geometry and participation fields defined by the CSF model.
 
