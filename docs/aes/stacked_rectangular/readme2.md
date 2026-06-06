@@ -788,18 +788,19 @@ The corresponding CSV export is
 ## GEOMETRY EXPORT ##
 # z=7.0
 idx_polygon,idx_container,s0_name,s1_name,w,shear_w,poisson,vertex_i,x,y
-0,,upper,upper,0.8,0.68,,0,-0.15,0
-0,,upper,upper,0.8,0.68,,1,0.15,0
-0,,upper,upper,0.8,0.68,,2,0.15,0.2
-0,,upper,upper,0.8,0.68,,3,-0.15,0.2
-1,,middle,middle,1,0.416666666667,0.2,0,-0.15,-0.3
-1,,middle,middle,1,0.416666666667,0.2,1,0.15,-0.3
-1,,middle,middle,1,0.416666666667,0.2,2,0.15,0
-1,,middle,middle,1,0.416666666667,0.2,3,-0.15,0
-2,,lower,lower,1,0.416666666667,0.2,0,-0.15,-0.54
-2,,lower,lower,1,0.15,-0.54
-2,,lower,lower,1,0.416666666667,0.2,2,0.15,-0.3
-2,,lower,lower,1,0.416666666667,0.2,3,-0.15,-0.3
+0,,upper1,upper1,0.8,0.68,,0,-0.15,0
+0,,upper1,upper1,0.8,0.68,,1,0.15,0
+0,,upper1,upper1,0.8,0.68,,2,0.15,0.2
+0,,upper1,upper1,0.8,0.68,,3,-0.15,0.2
+1,,middle1,middle1,1,0.416666666667,0.2,0,-0.15,-0.3
+1,,middle1,middle1,1,0.416666666667,0.2,1,0.15,-0.3
+1,,middle1,middle1,1,0.416666666667,0.2,2,0.15,0
+1,,middle1,middle1,1,0.416666666667,0.2,3,-0.15,0
+2,,lower1,lower1,1,0.416666666667,0.2,0,-0.15,-0.54
+2,,lower1,lower1,1,0.416666666667,0.2,1,0.15,-0.54
+2,,lower1,lower1,1,0.416666666667,0.2,2,0.15,-0.3
+2,,lower1,lower1,1,0.416666666667,0.2,3,-0.15,-0.3
+
 ```
 
 The empty `poisson` field for the upper component follows from the fact that its shear/torsion participation is prescribed directly. The `middle` and `lower` components instead report `poisson = 0.2`, consistently with the use of `iso(0.2)` for their shear/torsion participation.
