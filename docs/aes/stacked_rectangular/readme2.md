@@ -671,7 +671,7 @@ For every station, the script reports:
 * the relative error for (A), (I_x), and (I_y);
 * the absolute error for (C_y).
 
-The complete report table is shown con comparison table [comparison](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/verification.md)
+The complete report table is shown in the dedicated [comparison](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/verification.md).
 
 ---
 
@@ -803,7 +803,7 @@ idx_polygon,idx_container,s0_name,s1_name,w,shear_w,poisson,vertex_i,x,y
 
 ```
 
-The empty `poisson` field for the upper component follows from the fact that its shear/torsion participation is prescribed directly. The `middle` and `lower` components instead report `poisson = 0.2`, consistently with the use of `iso(0.2)` for their shear/torsion participation.
+The empty `poisson` field for the upper component follows from the fact that its shear/torsion participation is prescribed directly. The `middle1` and `lower1` components instead report `poisson = 0.2`, consistently with the use of `iso(0.2)` for their shear/torsion participation.
 
 This export separates the model from its sampled representation. The YAML files define the continuous CSF intervals; `CSFStacked` assembles them into a member defined over the global coordinate $z$; the CSV files record selected evaluations of that member.
 
