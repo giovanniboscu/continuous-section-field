@@ -239,11 +239,19 @@ shear_weight_laws:
 ```
 
 This defines a linear variation,
-$$ \kappa_u(t) = 1.0 - 0.8(1.0 - t) = 0.2 + 0.8t, $$
+
+$\kappa_u(t) = 1.0 - 0.8\left(1.0 - t\right) = 0.2 + 0.8t$
+
+
 ranging from
+
 $$ \kappa_u(0) = 0.2 $$
+
 at the beginning of the interval to
+
 $$ \kappa_u(1) = 1.0 $$
+
+
 at its end.
 For the `middle0` and `lower0` components, the shear/torsion participation is assigned through the isotropic shortcut:
 
@@ -255,7 +263,9 @@ shear_weight_laws:
 ```
 
 which gives
+
 $$ \kappa_m = \kappa_l = \frac{1}{2(1+0.2)} = 0.41666667. $$
+
 The corresponding visualization is generated with:
 
 ```yaml
@@ -504,13 +514,15 @@ $$
 
 acts as the common junction between the two intervals. At this location, geometry and participation fields are continuous, allowing the assembled object to behave as a single member rather than as two disconnected segments.
 
-The purpose of `CSFStacked` is not merely to store multiple intervals. Its primary role is to provide a unified continuous interface over the entire member. From the user's perspective, the assembled object behaves as a single continuous function that maps a global coordinate (z) to a section evaluation.
+The purpose of `CSFStacked` is not merely to store multiple intervals. Its primary role is to expose the assembled CSF model as a continuous sectional function over the full member length. From the user's perspective, the stacked model behaves as a single mapping from the global coordinate $z$ to the corresponding section evaluation.
 
-For example, sectional quantities are obtained through
+The sectional quantities are obtained through
 
 ```python
 stack.section_full_analysis(z, junction_side="left")
 ```
+
+This call is the central point of the verification. It is the operational expression of the continuous field provided by CSF: for any admissible global coordinate $z$, the assembled model returns the section associated with that position, without requiring the user to manually select the interval or construct a discrete section table.
 
 Conceptually, the evaluation process can be viewed as
 
@@ -524,9 +536,22 @@ global coordinate z
 → compute sectional properties
 ```
 
-The user therefore interacts only with the global coordinate (z). The interval selection and local-coordinate mapping are handled internally by `CSFStacked`.
+The user therefore interacts only with the global coordinate $z$. The interval selection and local-coordinate mapping are handled internally by `CSFStacked`.
 
-This interpretation is important because it reflects the fundamental idea of the Continuous Section Field formulation. The model is not a collection of discrete sections stored at selected stations. Instead, it defines a continuous field
+This interpretation is important because it reflects the fundamental idea of the Continuous Section Field formulation. The model is not a collection of discrete sections stored at selected stations. Instead, it defines a continuous field that can be sampled at any required position along the member:
+
+$$
+z \longmapsto S(z).
+$$
+
+The call
+
+```python
+stack.section_full_analysis(z, junction_side="left")
+```
+
+is therefore not a lookup operation on a predefined list of sections. It is the evaluation of the continuous CSF representation at the requested global coordinate.
+
 
 $$
 z ;\mapsto; \text{section}(z),
