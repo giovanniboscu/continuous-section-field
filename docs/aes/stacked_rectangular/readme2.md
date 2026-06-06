@@ -41,66 +41,14 @@ This command evaluates and visualizes the continuous section field defined by `s
 
 ## 1.1 Action file
 
-The action file defines the stations to be sampled and the operations to be executed on the CSF interval:
-
-```yaml
-CSF_ACTIONS:
-  stations:
-    station_middle:
-      - 2.5
-    station_edges:
-      - 0.00
-      - 5
-
-    station_precise:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-
-  actions:
-    - plot_volume_3d:
-        params:
-          seed: w
-          title: "Element with weight"
-          line_percent: 100.0
-    - plot_volume_3d:
-        params:
-          seed: s
-          title: "Element with shear weight"
-          line_percent: 100.0
-    - section_selected_analysis:
-        stations: station_precise
-        output:
-          - [out/sec_var.txt]
-        properties:
-          [geometry,A, Cy, Iy, Iy]
-    - plot_section_2d:
-        stations:
-          - station_middle
-        show_ids: false
-        show_vertex_ids: false
-        output:
-          - [stdout, out/section_a.jpg]
-    - plot_properties:
-        output:
-          - stdout
-          - out/section_properties.jpg
-        params:
-          num_points: 100
-        properties: [A,Cy, Ix, Iy]
-```
-
-The actions perform four checks on the same YAML interval:
+The action file performs five complementary inspections of the same CSF interval:
 
 1. `plot_volume_3d` with `seed: w` visualizes the interval using the axial/bending participation field.
 2. `plot_volume_3d` with `seed: s` visualizes the interval using the shear/torsion participation field.
-3. `section_selected_analysis` samples selected sectional quantities and polygon data at prescribed stations.
-4. `plot_section_2d` and `plot_properties` show the sampled section and the variation of section properties along the interval.
+3. `section_selected_analysis` samples sectional quantities and polygon data at selected stations.
+4. `plot_section_2d` generates a sampled cross-section at the interval midpoint.
+5. `plot_properties` evaluates the variation of sectional properties along the interval.
 
-The figures and tabular outputs are not separate model definitions. They are evaluations of the continuous CSF interval stored in `stacked_0.yaml`.
 
 ---
 
