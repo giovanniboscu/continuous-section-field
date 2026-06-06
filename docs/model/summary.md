@@ -433,6 +433,13 @@ In the implementation, this evaluation is performed through
 stack.section_full_analysis(z, junction_side="left")
 ```
 
+<p align="center">
+  <em>Figure 5. Global member obtained after assembling the two CSF intervals.</em>
+  <img width="993" height="865" alt="image" src="https://github.com/user-attachments/assets/0eec518e-1da9-4f72-a406-cbe74da111ca" />
+
+</p>
+
+
 so that the user supplies only the global coordinate $z$. The active interval, the local coordinate mapping, the geometry interpolation, and the participation-field evaluation are handled internally by the stacked CSF object.
 
 The section properties computed from the assembled CSF member are compared with an independent closed-form reference for $A$, $C_y$, $I_x$, and $I_y$ at Gauss-Lobatto stations over both intervals. The comparison gives roundoff-level discrepancies, with maximum relative error for $A$, $I_x$, and $I_y$ equal to
@@ -543,12 +550,12 @@ The transverse displacement $U_y$ converges at low discretization levels. The to
 
 
 <p align="center">
-  <em>Figure 5. CSF 3D representation of the degraded NREL tower case. The geometry remains tapered and continuous, while the longitudinal stiffness reduction is introduced through the participation field.</em>
+  <em>Figure 6. CSF 3D representation of the degraded NREL tower case. The geometry remains tapered and continuous, while the longitudinal stiffness reduction is introduced through the participation field.</em>
   <img width="631" height="547" alt="image" src="https://github.com/user-attachments/assets/2bf9827f-df1d-44ee-9937-bacb486373d8" />
 </p>
 
 <p align="center">
-  <em>Figure 6. Longitudinal stiffness degradation law applied to the NREL tower through the axial/bending participation field. The two localized reductions are centred at 0.33L and 0.67L.</em>
+  <em>Figure 7. Longitudinal stiffness degradation law applied to the NREL tower through the axial/bending participation field. The two localized reductions are centred at 0.33L and 0.67L.</em>
   <img width="985" height="467" alt="image" src="https://github.com/user-attachments/assets/50866952-f5ca-4ca3-969b-caf1a0b69934" />
 
 </p>
@@ -563,12 +570,12 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 
 <p align="center">
-   <em>Figure 7. Continuous variation of selected sectional properties for the degraded NREL tower case. The localized reductions arise from the prescribed axial/bending participation field and are reflected in the sectional area and bending stiffness distributions.</em>
+   <em>Figure 8. Continuous variation of selected sectional properties for the degraded NREL tower case. The localized reductions arise from the prescribed axial/bending participation field and are reflected in the sectional area and bending stiffness distributions.</em>
   <img width="992" height="654" alt="image" src="https://github.com/user-attachments/assets/29232887-e724-46bb-9bb7-ff635c08742f" />
 </p>
 
 <p align="center">
-  <em>Figure 8. Tip-displacement convergence for the undegraded NREL tower case.</em>
+  <em>Figure 9. Tip-displacement convergence for the undegraded NREL tower case.</em>
     <img width="1600" height="1000" alt="undegraded NREL tower tip displacement convergence" src="https://github.com/user-attachments/assets/202ff4b8-5752-4b01-93ac-2c223057124f" />
 
 </p>
@@ -576,7 +583,7 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 
 <p align="center">
-  <em>Figure 9. Tip-displacement convergence for the degraded NREL tower case.</em>
+  <em>Figure 10. Tip-displacement convergence for the degraded NREL tower case.</em>
 
 <img width="1600" height="1000" alt="degraded  NREL tower tip displacement convergence" src="https://github.com/user-attachments/assets/220ea5ec-d42e-4b75-b04f-16b9e9303161" />
 
