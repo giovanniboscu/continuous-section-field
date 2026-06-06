@@ -799,10 +799,10 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J
 
 [13] C. Steger, On the Calculation of Arbitrary Moments of Polygons, Technical Report FGBV-96-05, Technische Universität München, 1996.
 
-[15] S.P. Timoshenko, J.N. Goodier, *Theory of Elasticity*, 3rd ed., McGraw-Hill, 1970.
+[14] S.P. Timoshenko, J.N. Goodier, *Theory of Elasticity*, 3rd ed., McGraw-Hill, 1970.
 
-[16] T.H.G. Megson, *Aircraft Structures for Engineering Students*, 7th ed., Butterworth-Heinemann, 2021.
+[15] T.H.G. Megson, *Aircraft Structures for Engineering Students*, 7th ed., Butterworth-Heinemann, 2021.
 
-[17] G. Boscu, Continuous Section Field (CSF), Zenodo, 2026. https://doi.org/10.5281/zenodo.XXXXXX
+[16] G. Boscu, Continuous Section Field (CSF), Zenodo, 2026. https://doi.org/10.5281/zenodo.XXXXXX
 
 ---
