@@ -12,16 +12,19 @@ No structural solver is involved in this example. The objective is to verify the
 
 ---
 
-## Files
+## 1.1 Action file
 
-| File                               | Role                                                                                                                                             |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `stacked_0.yaml`                   | First CSF interval, covering $0 \le z \le 5$                                                                                                     |
-| `stacked_1.yaml`                   | Second CSF interval, covering $5 \le z \le 10$                                                                                                   |
-| `stacked_actions.yaml`             | Action file used to inspect a single CSF interval with `csf-actions`                                                                             |
-| `run_stacked.py`                   | Builds the stacked member, evaluates the closed-form reference, performs the CSF comparison, generates plots, and exports station-wise CSV files |
-| `out/lobatto_station_export_7.csv` | Example CSV export for a sampled station                                                                                                         |
+The action file performs seven complementary inspections of the same CSF interval:
 
+1. `plot_volume_3d` with `seed: w` visualizes the interval using the axial/bending participation field.
+2. `plot_volume_3d` with `seed: s` visualizes the interval using the shear/torsion participation field.
+3. `section_selected_analysis` samples sectional quantities and polygon data at selected stations.
+4. `plot_section_2d` generates a sampled cross-section at the interval midpoint.
+5. `plot_properties` evaluates the variation of sectional properties along the interval.
+6. `plot_weight` plots the axial/bending participation field along the interval.
+7. `plot_shear_weight` plots the shear/torsion participation field along the interval.
+
+The corresponding action file is:
 
 ---
 
