@@ -20,8 +20,8 @@ This document describes a fully reproducible validation workflow for the transve
 The objective is to compare two modelling paths:
 
 1. a CSF-to-OpenSees numerical model;
-2. an independent analytical reference that reads the same YAML input but does not rely on CSF section-analysis APIs or OpenSees.
-
+2. an independent analytical reference based on the same geometric and material definitions, but implemented directly in the reference code without using CSF section-analysis APIs or OpenSees.
+3. 
 The workflow is applied to two scenarios:
 
 - the baseline tower, without degradation;
@@ -100,8 +100,8 @@ YAML input → sectional properties → beam model → tip response
 ### Independent analytical reference
 
 - `run_analytical_reference.py`
-
-This script reads the same geometry from the YAML file directly and computes the tip displacement and torsional rotation through direct analytical integration, without using the same tools as the numerical model.
+- 
+This script computes the tip displacement and torsional rotation through direct analytical integration. The reference procedure does not call CSF. Instead, it defines the same tower geometry and longitudinal stiffness laws directly in the reference code and uses them to construct independent continuous section-property functions.
 
 The tower is loaded with the same transverse tip force, torsional tip moment, and uniform distributed transverse load used in the beam model.
 
