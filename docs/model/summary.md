@@ -536,7 +536,8 @@ $$
 $$
 
 
-The independent reference is computed directly from the YAML definition without using the CSF section-sampling APIs. The reference procedure reads the end-section geometry and the longitudinal `weight_laws`, reconstructs the outer and inner radii along the tower height, and evaluates the stiffness fields on a dense axial grid of 2001 points.
+The independent reference is computed without using the CSF section-sampling APIs. The reference procedure does not call CSF. Instead, it uses the same geometric and material definitions encoded in the YAML model, but defines them explicitly in the reference code to construct independent continuous section-property functions. It then reconstructs the outer and inner radii along the tower height and evaluates the stiffness fields on a dense axial grid of 2001 points.
+
 
 At each axial location, the circular annulus is reconstructed from the interpolated radii. The bending stiffness is evaluated as
 
