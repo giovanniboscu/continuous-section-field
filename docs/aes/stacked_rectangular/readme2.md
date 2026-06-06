@@ -1,12 +1,14 @@
 # Stacked rectangular member with compensated geometric variation and participation-field variation
 
-This verification case is organized from the CSF input outward.
+This verification case demonstrates how a geometric variation and a participation-field variation can compensate exactly in weighted area while still producing continuous variations in weighted centroid and inertia.
 
-The first step is the inspection of a single CSF interval, `stacked_0.yaml`, with `csf-actions`. The file defines reference sections, polygonal zones, geometric interpolation, axial/bending participation, and shear/torsion participation. The generated figures and tables are outputs obtained by evaluating that continuous interval.
+The verification is organized from the CSF definition outward.
 
-The second step assembles `stacked_0.yaml` and `stacked_1.yaml` into one global member with `CSFStacked`. The stacked member is then evaluated at Gauss-Lobatto stations and compared with a closed-form reference for $A$, $C_y$, $I_x$, and $I_y$.
+First, a single CSF interval (`stacked_0.yaml`) is inspected with `csf-actions`. The interval defines the section geometry, interpolation rules, axial/bending participation field, and shear/torsion participation field. Figures, tables, and sampled sections are obtained directly from evaluations of this continuous CSF interval.
 
-No structural solver is involved in this example. The purpose is to verify the continuous section field itself.
+Next, `stacked_0.yaml` and `stacked_1.yaml` are assembled into a global member using `CSFStacked`. The resulting stacked member is evaluated at Gauss-Lobatto stations and compared against a closed-form reference solution for $A$, $C_y$, $I_x$, and $I_y$.
+
+No structural solver is involved in this example. The objective is to verify the continuous section field representation and its assembly into a stacked member.
 
 ---
 
