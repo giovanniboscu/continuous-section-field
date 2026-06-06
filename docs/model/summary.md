@@ -448,6 +448,10 @@ $$
 
 This controlled example therefore verifies the internal consistency of the continuous section-field representation before it is used in the NREL tower case. It shows that CSF evaluates geometry, axial/bending participation, and shear/torsion participation as continuous fields, and that the resulting sectional properties follow from their combined distribution within the section.
 
+The complete reproducibility material for this example, including the CSF input files, action file, figures, station-wise exports, and the full comparison table, is provided in the repository:
+
+[Stacked rectangular example](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/stacked_rectangular)
+
 ---
 
 ### 6 Application example: NREL 5-MW reference tower
@@ -618,15 +622,17 @@ This behaviour is a consequence of the continuous nature of the sectional repres
 ---
 
 
+
 ## 7. Conclusions
 
-The main contribution of CSF is the formulation of an independent, declarative pre-solver layer in which polygonal geometry and material participation fields are defined as continuous entities, evaluable at arbitrary axial stations and separable from the downstream numerical discretization.
+The main contribution of CSF is the formulation of an independent, declarative pre-solver layer in which polygonal geometry and material participation fields are defined as continuous entities. These fields can be evaluated at arbitrary axial stations and remain separated from the downstream numerical discretization.
 
-The NREL tower validation shows that the same continuous sectional field can be sampled, transferred to a beam model, and compared against an independent reference response. The undegraded case verifies the smooth geometry-driven variation of a tapered structural member, while the degraded case demonstrates that localized stiffness reductions can be introduced through participation fields without modifying the geometric model. The convergence study further shows that the beam discretization can be refined independently of the underlying continuous sectional representation.
+The controlled stacked-section example isolates the construction of the continuous section field before any structural solver is introduced. It shows how geometric interpolation and participation fields combine within the evaluated section: the geometric variation of one component compensates the participation variation of another component in total weighted area, while the weighted centroid and bending inertia remain continuously variable. The closed-form comparison confirms that the assembled CSF member is evaluated consistently across multiple intervals and across their common junction.
 
-The stacked rectangular example complements this validation by isolating the sectional-field construction itself. It verifies, through closed-form station-wise references, that CSF correctly composes multiple continuous intervals through `CSFStack`, combines a tapered isotropic interval with a participation-degraded interval, and supports independent axial/bending and shear/torsion participation fields within the same global member representation. The example also clarifies the role of torsional read-outs: the Roark-equivalent quantity and its fidelity indicator are reported as diagnostic CSF quantities, while the exact verification is restricted to the area-integral properties (A), (C_y), (I_x), and (I_y).
+The NREL tower validation then applies the same formulation to a realistic tapered structural member. The undegraded case verifies the smooth geometry-driven variation of the tower properties, while the degraded case demonstrates that localized stiffness reductions can be introduced through participation fields without modifying the geometric model. The convergence study further shows that the beam discretization can be refined independently of the underlying continuous sectional representation.
 
-Together, these examples show that CSF separates the definition of the sectional model from its numerical sampling and from the solver consuming the exported data. This separation makes the same member definition reusable across inspection, validation, and solver-preprocessing workflows, while preserving a continuous representation that can be sampled, exported, or externally analysed according to the needs of the downstream procedure.
+Together, these examples show that CSF separates the definition of the sectional model from its numerical sampling and from the solver consuming the exported data. This separation makes the same member definition reusable across inspection, validation, and solver-preprocessing workflows, while preserving a continuous representation that can be sampled, exported, or externally analysed according to the requirements of the downstream procedure.
+
 
 
 ### Limitations
