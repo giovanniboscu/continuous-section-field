@@ -561,7 +561,11 @@ Both NREL configurations are analysed under the same loading conditions. The tow
 
 The same loading definition is used for the undegraded and degraded towers. Therefore, differences in the computed response are caused only by the sectional stiffness field and by the axial discretization used by the beam model, not by changes in loading or geometry.
 
-The NREL validation uses both CSF interaction modes, but for different purposes. The declarative YAML workflow is used to define the tower model, inspect the sectional-property distributions, and generate plots and station-wise reports. The Python API is used in the response calculations, where the continuous sectional field is evaluated programmatically to compute the tip displacement and torsional rotation. The two modes therefore serve complementary roles within the same validation workflow: YAML supports reproducible model definition and inspection, while the API supports direct numerical evaluation.
+The NREL case involves two validation levels. First, the sectional properties generated from the CSF model are compared with the tabulated NREL tower data, to verify that the YAML model reproduces the reference distributed properties of the tower. Second, the structural response obtained from the CSF/OpenSees model is compared with an independent analytical reference, constructed from the same geometric and material definitions without using CSF section-sampling APIs or OpenSees.
+
+Within this validation workflow, the two CSF interaction modes serve different purposes. The declarative YAML workflow is used to define the tower model, inspect the sectional-property distributions, and generate plots and station-wise reports. The Python API is used in the CSF/OpenSees response calculation, where the CSF sectional field is evaluated programmatically at the stations required by the beam model. The independent analytical reference remains separate from this API-based CSF evaluation.
+
+
 
 #### Case A - undegraded tower
 
