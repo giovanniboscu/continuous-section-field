@@ -305,9 +305,8 @@ Where the properties computed directly by CSF are sufficient, the sampled field 
 
 ---
 
-## 5. Application examples
 
-### 5.1 NREL 5-MW reference tower
+### 6 Application example: NREL 5-MW reference tower
 
 #### Overview
 
