@@ -637,7 +637,7 @@ Together, these examples show that CSF separates the definition of the sectional
 
 ### Limitations
 
-The current formulation assumes a straight element axis, linear vertex interpolation between reference stations, and fixed topology within each interpolation interval. Curved members, disappearing or emerging zones, and higher-order geometric evolution are not supported.
+The current formulation assumes a straight element axis, linear vertex interpolation between reference stations, and fixed topology within each interpolation interval. Curved member axes, disappearing or emerging zones, and higher-order geometric evolution are not supported.
 
 For torsion, the built-in CSF approximations are limited to selected engineering read-outs. Standard thin-walled open and closed sections can be treated through the corresponding thin-walled estimates, while solid rectangular sections may be assigned a Roark-equivalent torsional read-out. This quantity is an engineering approximation and should not be interpreted as a general Saint-Venant torsional solution for arbitrary cross-sections or for shear-non-uniform participation fields. CSF therefore reports the Roark-equivalent value together with a fidelity indicator, so that its use remains explicit.
 
@@ -645,10 +645,7 @@ General solid sections, multi-cell configurations, and sections requiring warpin
 
 Accordingly, CSF should be interpreted as the continuous sectional-field representation and sampling layer. It defines, evaluates, and exports geometry and participation fields; torsional quantities outside its built-in approximation domain must be computed by an appropriate external sectional solver.
 
-
-### Future work
-
-Three extensions are planned. First, the implementation of automatic differentiation for sectional-property derivatives, such as $dA/dz$, $dI_x/dz$, $dI_y/dz$, and derivatives of the participation-weighted stiffness fields, would facilitate coupling with non-prismatic beam formulations that explicitly require longitudinal gradients of geometric and constitutive quantities. Second, support for curved member axes would extend the applicability of the framework beyond straight beam-like structures. Third, tighter integration with nonlinear structural solvers could allow participation fields to evolve during the analysis, enabling applications beyond the current static sectional representation.
+These limitations suggest three natural extensions of the present framework. First, the implementation of automatic differentiation for sectional-property derivatives, such as $dA/dz$, $dI_x/dz$, $dI_y/dz$, and derivatives of the participation-weighted stiffness fields, would facilitate coupling with non-prismatic beam formulations that explicitly require longitudinal gradients of geometric and constitutive quantities. Second, support for curved member axes would extend the applicability of the framework beyond straight beam-like structures. Third, tighter integration with nonlinear structural solvers could allow participation fields to evolve during the analysis, enabling applications beyond the current static sectional representation.
 
 
 
