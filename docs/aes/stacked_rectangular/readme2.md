@@ -41,14 +41,17 @@ This command evaluates and visualizes the continuous section field defined by `s
 
 ## 1.1 Action file
 
-The action file performs five complementary inspections of the same CSF interval:
+The action file performs seven complementary inspections of the same CSF interval:
 
 1. `plot_volume_3d` with `seed: w` visualizes the interval using the axial/bending participation field.
 2. `plot_volume_3d` with `seed: s` visualizes the interval using the shear/torsion participation field.
 3. `section_selected_analysis` samples sectional quantities and polygon data at selected stations.
 4. `plot_section_2d` generates a sampled cross-section at the interval midpoint.
 5. `plot_properties` evaluates the variation of sectional properties along the interval.
+6. `plot_weight` plots the axial/bending participation field along the interval.
+7. `plot_shear_weight` plots the shear/torsion participation field along the interval.
 
+The corresponding action file is:
 
 ---
 
