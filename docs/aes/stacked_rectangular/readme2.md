@@ -184,41 +184,45 @@ $$
 Figure 1 shows a sampled cross-section of the interval, highlighting the three stacked rectangular regions and the geometric configuration used throughout the verification.
 
 ---
-
 ## 1.3 Axial/bending participation field in the first interval
 
-The axial/bending participation law is assigned to the upper component:
+The axial/bending participation field is assigned only to the `upper0` component:
 
 ```yaml
 weight_laws:
   - 'upper0,upper0: 1.0 - 0.5*(1.0 - t)'
 ```
 
-This gives:
+This defines a linear variation,
 
 $$
 w_u(t) = 1.0 - 0.5(1.0 - t)
+= 0.5 + 0.5t,
 $$
 
-or equivalently:
+ranging from
 
 $$
-w_u(t) = 0.5 + 0.5t .
+w_u(0) = 0.5
 $$
 
-Thus:
+at the beginning of the interval to
 
 $$
-w_u(0) = 0.5, \qquad w_u(1) = 1.0 .
+w_u(1) = 1.0
 $$
 
-The `middle0` and `lower0` components keep the axial/bending participation specified in their polygon definitions:
+at its end.
+
+The `middle0` and `lower0` components retain the participation value specified in their polygon definitions:
 
 $$
-w_m = 1, \qquad w_l = 1 .
+w_m = 1,
+\qquad
+w_l = 1.
 $$
 
-The corresponding action is:
+The participation field can be visualized with:
 
 ```yaml
 - plot_volume_3d:
@@ -228,7 +232,8 @@ The corresponding action is:
       line_percent: 100.0
 ```
 
-This action plots the first interval and colors it according to the axial/bending participation field `w`.
+This action colors the interval according to the axial/bending participation field (w), making the gradual increase of the `upper0` contribution visible along the interval.
+
 
 ---
 
