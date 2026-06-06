@@ -473,7 +473,7 @@ The complete reproducibility material for this example, including the CSF input 
 
 ---
 
-### 6 Application example: NREL 5-MW reference tower
+## 6 Application example: NREL 5-MW reference tower
 
 #### Overview
 
