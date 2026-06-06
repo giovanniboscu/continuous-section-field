@@ -14,37 +14,28 @@ No structural solver is involved in this example. The objective is to verify the
 
 ## Files
 
-| File | Role |
-|---|---|
-| [`stacked_0.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/stacked_0.yaml) | First continuous CSF interval, $0 \le z \le 5$ |
-| [`stacked_1.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/stacked_1.yaml) | Second continuous CSF interval, $5 \le z \le 10$ |
-| [`stacked_actions.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/stacked_actions.yaml) | Action file used to inspect one CSF interval |
-| [`run_stacked.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/run_stacked.py) | Builds the `CSFStacked` object, evaluates the closed-form reference, compares CSF values, exports station-wise CSV files, and generates plots |
-| [`out/lobatto_station_export_7.csv`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/out/lobatto_station_export_7.csv) | Example of a station-wise CSV export |
+| File                               | Role                                                                                                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `stacked_0.yaml`                   | First CSF interval, covering $0 \le z \le 5$                                                                                                     |
+| `stacked_1.yaml`                   | Second CSF interval, covering $5 \le z \le 10$                                                                                                   |
+| `stacked_actions.yaml`             | Action file used to inspect a single CSF interval with `csf-actions`                                                                             |
+| `run_stacked.py`                   | Builds the stacked member, evaluates the closed-form reference, performs the CSF comparison, generates plots, and exports station-wise CSV files |
+| `out/lobatto_station_export_7.csv` | Example CSV export for a sampled station                                                                                                         |
+
 
 ---
 
 # 1. Inspection of a single CSF interval with `csf-actions`
 
-The first interval is defined in:
+The verification begins with the inspection of the first CSF interval, defined in `stacked_0.yaml`, using the action file `stacked_actions.yaml`.
 
-```text
-stacked_0.yaml
-```
-
-It is inspected with:
-
-```text
-stacked_actions.yaml
-```
-
-From the directory containing both files, the command is:
+From the directory containing both files:
 
 ```bash
 csf-actions stacked_0.yaml stacked_actions.yaml
 ```
 
-This command does not assemble the global stacked member. It only evaluates and visualizes the first continuous CSF interval. The goal is to make the YAML-defined section field explicit before the two intervals are combined with `CSFStacked`.
+This command evaluates and visualizes the continuous section field defined by `stacked_0.yaml`. No stacked-member assembly is performed at this stage; the objective is to inspect the interval geometry, participation fields, sampled sections, and sectional properties before the two intervals are combined with `CSFStacked`.
 
 ---
 
