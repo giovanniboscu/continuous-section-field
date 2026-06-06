@@ -2,7 +2,7 @@
 
 This verification case is organized from the CSF input outward.
 
-The first step is the inspection of a single CSF interval, `stacked_0.yaml`, with `csf-actions`. This is useful for a reader seeing the YAML syntax for the first time: the file defines reference sections, polygonal zones, geometric interpolation, axial/bending participation, and shear/torsion participation. The generated figures and tables are outputs obtained by evaluating that continuous interval.
+The first step is the inspection of a single CSF interval, `stacked_0.yaml`, with `csf-actions`. The file defines reference sections, polygonal zones, geometric interpolation, axial/bending participation, and shear/torsion participation. The generated figures and tables are outputs obtained by evaluating that continuous interval.
 
 The second step assembles `stacked_0.yaml` and `stacked_1.yaml` into one global member with `CSFStacked`. The stacked member is then evaluated at Gauss-Lobatto stations and compared with a closed-form reference for $A$, $C_y$, $I_x$, and $I_y$.
 
