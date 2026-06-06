@@ -304,7 +304,162 @@ This provides a clean distinction between:
 Where the properties computed directly by CSF are sufficient, the sampled field can be exported directly to downstream beam-level models. Where additional section analysis is required, the polygonal geometry evaluated at any station can be passed to an external section solver. CSF and section solvers are therefore complementary layers in the same pre-processing pipeline.
 
 ---
+## 5. Controlled stacked-section example
 
+A controlled stacked-section example is introduced before the NREL tower case to isolate the interaction between geometric interpolation and participation fields in the CSF formulation. The objective is not to represent a complex structure, but to show how the fields introduced in the model combine at section level before any structural solver is involved.
+
+The example consists of two CSF intervals assembled into a single member. Each section is composed of three rectangular components: an upper component, a middle component, and a lower component. The upper and middle components keep constant geometry, while the lower component changes its height along the member axis. At the same time, the participation fields of the upper component vary continuously. This construction separates two effects that are usually coupled in a discrete section description: the geometric variation of one part of the section and the material/participation variation of another part.
+
+For the first interval, using the local coordinate $t \in [0,1]$, the axial/bending participation field of the upper component is
+
+$$
+w_u(t) = 0.5 + 0.5t,
+$$
+
+while its shear/torsion participation field is
+
+$$
+\kappa_u(t) = 0.2 + 0.8t.
+$$
+
+The lower component has constant width $B = 0.30$ and linearly decreasing height
+
+$$
+h_l(t) = 0.30 - 0.10t.
+$$
+
+The middle and lower components retain unit axial/bending participation. For shear/torsion, their participation is generated from the isotropic shortcut `iso(0.2)`, giving
+
+$$
+\kappa_m = \kappa_l = \frac{1}{2(1+0.2)} = 0.41666667.
+$$
+
+<p align="center">
+  <em>Figure 5. First CSF interval colored by the axial/bending participation field <code>w</code>.</em>
+  <img width="759" height="673" alt="First CSF interval colored by axial/bending participation field" src="https://github.com/user-attachments/assets/60d1bd76-0ad0-45bd-bd29-0e8ae8d8a93a" />
+</p>
+
+<p align="center">
+  <em>Figure 6. Same CSF interval colored by the shear/torsion participation field <code>shear_weight</code>.</em>
+  <img width="643" height="600" alt="First CSF interval colored by shear torsion participation field" src="https://github.com/user-attachments/assets/54017e2d-d8e4-4884-99fb-5299024aee6c" />
+</p>
+
+The example is arranged so that the geometric variation of the lower component exactly compensates the axial/bending participation variation of the upper component in total weighted area. In the first interval,
+
+$$
+A_u^{\mathrm{geom}} = 0.30 \cdot 0.20 = 0.06,
+$$
+
+$$
+A_m^{\mathrm{geom}} = 0.30 \cdot 0.30 = 0.09,
+$$
+
+and
+
+$$
+A_l^{\mathrm{geom}}(t) = 0.30(0.30 - 0.10t).
+$$
+
+
+The total weighted area is therefore
+
+$$ A(t) = w_u(t)A_u^{\mathrm{geom}} + A_m^{\mathrm{geom}} + A_l^{\mathrm{geom}}(t) $$
+
+that is,
+
+$$ A(t) = (0.5+0.5t)(0.06) + 0.09 + 0.30(0.30-0.10t) = 0.21. $$
+
+
+
+Thus, the total weighted area remains constant even though both geometry and participation fields vary continuously. The point of the example is that this compensation affects only the scalar total area. It does not preserve the internal distribution of weighted area inside the section. Consequently, the weighted centroid $C_y$ and the bending inertia $I_x$ vary continuously along the interval, while $I_y$ remains constant for this rectangular configuration.
+
+<p align="center">
+  <em>Figure 7. Sectional properties evaluated along the first interval. The total weighted area <code>A</code> remains constant, while <code>Cy</code> and <code>Ix</code> vary continuously.</em>
+  <img width="984" height="877" alt="Sectional properties evaluated along the first CSF interval" src="https://github.com/user-attachments/assets/0e06b2b3-ed00-4aed-b4b7-212de9d42cd8" />
+</p>
+
+The second interval reverses the same construction. Its local coordinate is
+
+$$
+t = \frac{z-5}{5},
+\qquad
+0 \le t \le 1,
+$$
+
+and the lower component expands according to
+
+$$
+h_l(t) = 0.20 + 0.10t,
+$$
+
+while the upper participation fields decrease as
+
+$$
+w_u(t) = 1.0 - 0.5t,
+$$
+
+and
+
+$$
+\kappa_u(t) = 1.0 - 0.8t.
+$$
+
+The weighted-area compensation is preserved:
+
+$$
+A(t)
+====
+
+(1.0-0.5t)(0.06)
++
+0.09
++
+0.30(0.20+0.10t)
+================
+
+0.21.
+$$
+
+The two intervals are then assembled into a single member using `CSFStacked`. The assembled object defines a continuous sectional field over the global coordinate
+
+$$
+0 \le z \le 10.
+$$
+
+<p align="center">
+  <em>Figure 8. Global member obtained after assembling the two CSF intervals.</em>
+  <img width="773" height="647" alt="Global member obtained after assembling the two CSF intervals" src="https://github.com/user-attachments/assets/2e6c2a34-5a96-40aa-af84-aacd4f753f39" />
+</p>
+
+The relevant point is that the assembled model is not treated as a list of predefined sections. Instead, it is evaluated as a continuous map from the global coordinate to the corresponding section,
+
+$$
+z \longmapsto S(z).
+$$
+
+In the implementation, this evaluation is performed through
+
+```python
+stack.section_full_analysis(z, junction_side="left")
+```
+
+so that the user supplies only the global coordinate $z$. The active interval, the local coordinate mapping, the geometry interpolation, and the participation-field evaluation are handled internally by the stacked CSF object.
+
+The section properties computed from the assembled CSF member are compared with an independent closed-form reference for $A$, $C_y$, $I_x$, and $I_y$ at Gauss-Lobatto stations over both intervals. The comparison gives roundoff-level discrepancies, with maximum relative error for $A$, $I_x$, and $I_y$ equal to
+
+$$
+1.09 \times 10^{-13}%,
+$$
+
+and maximum absolute error in $C_y$ equal to
+
+$$
+5.55 \times 10^{-17}.
+$$
+
+This controlled example therefore verifies the internal consistency of the continuous section-field representation before it is used in the NREL tower case. It shows that CSF evaluates geometry, axial/bending participation, and shear/torsion participation as continuous fields, and that the resulting sectional properties follow from their combined distribution within the section.
+
+---
 
 ### 6 Application example: NREL 5-MW reference tower
 
