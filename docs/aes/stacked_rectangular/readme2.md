@@ -24,7 +24,9 @@ The action file performs seven complementary inspections of the same CSF interva
 6. `plot_weight` plots the axial/bending participation field along the interval.
 7. `plot_shear_weight` plots the shear/torsion participation field along the interval.
 
-The corresponding action file is:
+The corresponding action file is available here:
+
+[`stacked_actions.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/stacked_actions.yaml)
 
 ---
 
