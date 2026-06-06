@@ -1,7 +1,6 @@
 # Stacked rectangular member with compensated geometric variation and participation-field variation
 
-This verification case illustrates how a material participation field affects the effective sectional properties. The example is constructed so that the geometric variation of one component exactly compensates the participation variation of another component in terms of total weighted area, while the weighted centroid and sectional inertia remain continuously variable.
-
+This verification case illustrates how geometry and participation fields combine in a continuous section field. The example is intentionally simple: one component changes its geometry while another changes its material participation, with the two variations arranged to compensate exactly in total weighted area. This makes the role of the internal weighted-area distribution visible, since the centroid and bending inertia remain continuously variable even though the total weighted area is constant.
 
 The verification is organized from the CSF definition outward.
 
