@@ -302,18 +302,19 @@ Interoperability with `sectionproperties` is provided through two companion modu
 
 ## 4. Station-wise evaluation and solver-facing output
 
+A central feature of CSF is that solver-facing data are generated from the continuous field. The user may request properties at arbitrary axial locations, including uniformly spaced stations, manually defined stations, or integration points required by a downstream numerical formulation.
 
-A central feature of CSF is that solver-facing data are generated from the continuous field. The user may request properties at arbitrary axial locations, including uniformly spaced stations, manually defined stations, or integration-compatible points.
+For example, a beam formulation may require section properties at specific sampling points along the member. CSF evaluates the continuous field directly at those locations and exports the corresponding values. The sampling strategy is therefore tied to the downstream numerical method, while the underlying member model remains unchanged.
 
-For example, a beam formulation may require section properties at Gauss-Lobatto points. CSF evaluates the continuous field directly at those points and exports the corresponding values. The sampling strategy is therefore tied to the downstream numerical method, while the underlying member model remains unchanged.
+This distinction is also relevant on the theoretical side. In beam formulations for non-prismatic members, cross-sectional quantities may enter the governing equations not only through their local values, but also through their axial variation, for example through terms such as $\frac{dA}{dz}$ and $\frac{dI}{dz}$. Since CSF defines these quantities from an underlying continuous sectional field, the exported station-wise data are samples of a continuous representation rather than independent discrete section definitions.
 
 This provides a clean distinction between:
 
-- the continuous sectional model;
-- the station set used for numerical evaluation;
-- the exported table consumed by an external solver.
+* the continuous sectional model;
+* the station set used for numerical evaluation;
+* the exported table consumed by an external solver.
 
-Where the properties computed directly by CSF are sufficient, the sampled field can be exported directly to downstream beam-level models. Where additional section analysis is required, the polygonal geometry evaluated at any station can be passed to an external section solver. CSF and section solvers are therefore complementary layers in the same pre-processing pipeline.
+Where the properties computed directly by CSF are sufficient, the sampled field can be exported directly to downstream beam-level models. Where additional section analysis is required, the polygonal zones and their associated material participation fields, evaluated at any station, can be passed to an external section solver. CSF and section solvers are therefore complementary layers in the same pre-processing pipeline.
 
 ---
 ## 5. Controlled stacked-section example
