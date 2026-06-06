@@ -326,10 +326,16 @@ The example consists of two CSF intervals assembled into a single member. Each s
 
 
 <p align="center">
-  <em>Figure 1. Cross-section evaluated at z = 0. </em>
-  <img alt=" Cross-section evaluated " src="https://github.com/user-attachments/assets/491eddd3-9c57-4660-98b4-84e21c625e90" />
+  <img
+    alt="Cross-section evaluated"
+    src="https://github.com/user-attachments/assets/491eddd3-9c57-4660-98b4-84e21c625e90"
+    width="60%"
+  />
 </p>
 
+<p align="center">
+  <em>Figure 1. Cross-section evaluated at z = 0.</em>
+</p>
 
 
 For the first interval, using the local coordinate $t \in [0,1]$, the axial/bending participation field of the upper component is
