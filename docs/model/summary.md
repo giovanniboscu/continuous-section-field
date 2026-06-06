@@ -775,34 +775,36 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J
 
 [1] G. Balduzzi, M. Aminbaghai, J. Füssl, F. Auricchio, Non-prismatic beams: a simple and effective Timoshenko-like model, Int. J. Solids Struct. 90 (2016) 236–250. https://doi.org/10.1016/j.ijsolstr.2016.03.022
 
-[2] D.H. Hodges, W. Yu, VABS: a new concept for composite rotor blade cross-sectional modeling, J. Am. Helicopter Soc. 42 (1) (1997) 27–38. https://doi.org/10.4050/JAHS.42.27
+[2] G. Balduzzi, M. Aminbaghai, F. Auricchio, J. Füssl, Planar Timoshenko-like model for multilayer non-prismatic beams, Int. J. Mech. Mater. Des. 14 (2018) 51–70. https://doi.org/10.1007/s10999-016-9360-3
 
-[3] R. Feijoo, G. Padula, S. Proença, BECAS: a beam cross-section analysis tool, in: 54th AIAA/ASME/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference, Boston, MA, 2013. https://doi.org/10.2514/6.2013-1476
+[3] D.H. Hodges, W. Yu, VABS: a new concept for composite rotor blade cross-sectional modeling, J. Am. Helicopter Soc. 42 (1) (1997) 27–38. https://doi.org/10.4050/JAHS.42.27
 
-[4] R. Greiner, sectionproperties: a Python package for the analysis of arbitrary cross-sections, SoftwareX 13 (2021) 100650. https://doi.org/10.1016/j.softx.2020.100650
+[4] R. Feijoo, G. Padula, S. Proença, BECAS: a beam cross-section analysis tool, in: 54th AIAA/ASME/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference, Boston, MA, 2013. https://doi.org/10.2514/6.2013-1476
 
-[5] F. McKenna, OpenSees: a framework for earthquake engineering simulation, Comput. Sci. Eng. 13 (4) (2011) 58–66. https://doi.org/10.1109/MCSE.2011.66
+[5] R. Greiner, sectionproperties: a Python package for the analysis of arbitrary cross-sections, SoftwareX 13 (2021) 100650. https://doi.org/10.1016/j.softx.2020.100650
 
-[6] Q. Wang, M.A. Sprague, BeamDyn: a high-fidelity wind turbine blade solver in the FAST modular framework, Wind Energy 20 (8) (2017) 1439–1463. https://doi.org/10.1002/we.2101
+[6] F. McKenna, OpenSees: a framework for earthquake engineering simulation, Comput. Sci. Eng. 13 (4) (2011) 58–66. https://doi.org/10.1109/MCSE.2011.66
 
-[7] J. Jonkman, S. Butterfield, W. Musial, G. Scott, Definition of a 5-MW reference wind turbine for offshore system development, NREL/TP-500-38060, National Renewable Energy Laboratory, Golden, CO, 2009. https://doi.org/10.2172/947422
+[7] Q. Wang, M.A. Sprague, BeamDyn: a high-fidelity wind turbine blade solver in the FAST modular framework, Wind Energy 20 (8) (2017) 1439–1463. https://doi.org/10.1002/we.2101
 
-[8] H.P. Gavin, Frame3DD, Department of Civil and Environmental Engineering, Duke University, Durham, NC, 2024. https://frame3dd.sourceforge.net/
+[8] J. Jonkman, S. Butterfield, W. Musial, G. Scott, Definition of a 5-MW reference wind turbine for offshore system development, NREL/TP-500-38060, National Renewable Energy Laboratory, Golden, CO, 2009. https://doi.org/10.2172/947422
 
-[9] Dassault Systèmes, Abaqus/Standard User's Manual, Version 2023, Dassault Systèmes, Providence, RI, 2023. https://www.3ds.com/products-services/simulia/products/abaqus/
+[9] H.P. Gavin, Frame3DD, Department of Civil and Environmental Engineering, Duke University, Durham, NC, 2024. https://frame3dd.sourceforge.net/
 
-[10] Ansys Inc., Ansys Mechanical User's Guide, Release 2023 R1, Ansys Inc., Canonsburg, PA, 2023. https://www.ansys.com/
+[10] Dassault Systèmes, Abaqus/Standard User's Manual, Version 2023, Dassault Systèmes, Providence, RI, 2023. https://www.3ds.com/products-services/simulia/products/abaqus/
 
-[11] NREL, Wind Energy Systems Engineering and Optimization (WISDEM), National Renewable Energy Laboratory, Golden, CO, 2024. https://github.com/WISDEM/WISDEM
+[11] Ansys Inc., Ansys Mechanical User's Guide, Release 2023 R1, Ansys Inc., Canonsburg, PA, 2023. https://www.ansys.com/
 
-[12] W.C. Young, R.G. Budynas, Roark's Formulas for Stress and Strain, seventh ed., McGraw-Hill, New York, 2002.
+[12] NREL, Wind Energy Systems Engineering and Optimization (WISDEM), National Renewable Energy Laboratory, Golden, CO, 2024. https://github.com/WISDEM/WISDEM
 
-[13] C. Steger, On the Calculation of Arbitrary Moments of Polygons, Technical Report FGBV-96-05, Technische Universität München, 1996.
+[13] W.C. Young, R.G. Budynas, Roark's Formulas for Stress and Strain, seventh ed., McGraw-Hill, New York, 2002.
 
-[14] S.P. Timoshenko, J.N. Goodier, *Theory of Elasticity*, 3rd ed., McGraw-Hill, 1970.
+[14] C. Steger, On the Calculation of Arbitrary Moments of Polygons, Technical Report FGBV-96-05, Technische Universität München, 1996.
 
-[15] T.H.G. Megson, *Aircraft Structures for Engineering Students*, 7th ed., Butterworth-Heinemann, 2021.
+[15] S.P. Timoshenko, J.N. Goodier, *Theory of Elasticity*, 3rd ed., McGraw-Hill, 1970.
 
-[16] G. Boscu, Continuous Section Field (CSF), Zenodo, 2026. https://doi.org/10.5281/zenodo.XXXXXX
+[16] T.H.G. Megson, *Aircraft Structures for Engineering Students*, 7th ed., Butterworth-Heinemann, 2021.
+
+[17] G. Boscu, Continuous Section Field (CSF), Zenodo, 2026. https://doi.org/10.5281/zenodo.XXXXXX
 
 ---
