@@ -516,9 +516,10 @@ weight law differs between the two cases.
 The validation compares two independent computational paths that share the same YAML input:
 
 ```text
-Path 1:  YAML → CSF sectional properties → OpenSees beam model → tip response
-Path 2:  YAML → CSF continuous field → dense numerical integration → reference response
+Path 1:  YAML → CSF section evaluations → OpenSees beam model → tip response
+Path 2:  YAML → independent continuous section-property functions → dense numerical integration → reference response
 ```
+
 
 Path 1 samples the continuous stiffness field at a finite number of stations, transfers the resulting sectional properties to an OpenSees beam model, and computes the structural response. Path 2 evaluates the same continuous field through high-resolution numerical integration over 2001 axial points, independently of any beam implementation.
 
