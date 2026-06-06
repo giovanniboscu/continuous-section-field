@@ -25,7 +25,7 @@ csf-actions stacked_0.yaml stacked_actions.yaml
 
 
 <p align="center">
-  <em>Figure 1. CSF 3D representation of the first interval defined in <code>stacked_0.yaml</code>. The geometry is continuously interpolated along the interval, and the color map represents the axial/bending participation field <code>w</code>.</em>
+  <em>Figure 1. First CSF interval from <code>stacked_0.yaml</code>, colored by the axial/bending participation field <code>w</code>.</em>
 <img width="759" height="673" alt="image" src="https://github.com/user-attachments/assets/60d1bd76-0ad0-45bd-bd29-0e8ae8d8a93a" />
 
 </p>
