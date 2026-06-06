@@ -24,6 +24,8 @@ CSF makes an explicit separation between the geometric description of the member
 
 This separation preserves a continuous member representation while generating solver-facing station-wise data only when required.
 
+**Keywords:** Continuous section field; non-prismatic members; section properties; material participation fields; solver-independent preprocessing; beam modelling; structural software
+
 
 ## 1. Motivation
 
