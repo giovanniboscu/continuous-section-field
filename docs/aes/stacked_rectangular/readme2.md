@@ -553,20 +553,6 @@ stack.section_full_analysis(z, junction_side="left")
 is therefore not a lookup operation on a predefined list of sections. It is the evaluation of the continuous CSF representation at the requested global coordinate.
 
 
-$$
-z ;\mapsto; \text{section}(z),
-$$
-
-from which geometry, participation values, sectional properties, plots, and exported data can be evaluated at any location along the member.
-
-The stacking operation extends this continuous description beyond a single interval. Each YAML file defines a continuous CSF interval, while `CSFStacked` assembles those intervals into a single continuous field spanning the entire domain
-
-$$
-0 \le z \le 10.
-$$
-
-All subsequent comparisons with the analytical reference are performed on this assembled continuous member.
-
 Figure 4 shows the global member obtained after assembling the two CSF intervals.
 
 
