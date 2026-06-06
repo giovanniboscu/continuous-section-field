@@ -12,6 +12,20 @@ No structural solver is involved in this example. The objective is to verify the
 
 ---
 
+
+# 1. Inspection of a single CSF interval with `csf-actions`
+
+The verification begins with the inspection of the first CSF interval, defined in `stacked_0.yaml`, using the action file `stacked_actions.yaml`.
+
+From the directory containing both files:
+
+```bash
+csf-actions stacked_0.yaml stacked_actions.yaml
+```
+
+This command evaluates and visualizes the continuous section field defined by `stacked_0.yaml`. No stacked-member assembly is performed at this stage; the objective is to inspect the interval geometry, participation fields, sampled sections, and sectional properties before the two intervals are combined with `CSFStacked`.
+
+---
 ## 1.1 Action file
 
 The action file performs seven complementary inspections of the same CSF interval:
@@ -27,38 +41,6 @@ The action file performs seven complementary inspections of the same CSF interva
 The corresponding action file is available here:
 
 [`stacked_actions.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/stacked_actions.yaml)
-
----
-
-# 1. Inspection of a single CSF interval with `csf-actions`
-
-The verification begins with the inspection of the first CSF interval, defined in `stacked_0.yaml`, using the action file `stacked_actions.yaml`.
-
-From the directory containing both files:
-
-```bash
-csf-actions stacked_0.yaml stacked_actions.yaml
-```
-
-This command evaluates and visualizes the continuous section field defined by `stacked_0.yaml`. No stacked-member assembly is performed at this stage; the objective is to inspect the interval geometry, participation fields, sampled sections, and sectional properties before the two intervals are combined with `CSFStacked`.
-
----
-
-## 1.1 Action file
-
-The action file performs seven complementary inspections of the same CSF interval:
-
-1. `plot_volume_3d` with `seed: w` visualizes the interval using the axial/bending participation field.
-2. `plot_volume_3d` with `seed: s` visualizes the interval using the shear/torsion participation field.
-3. `section_selected_analysis` samples sectional quantities and polygon data at selected stations.
-4. `plot_section_2d` generates a sampled cross-section at the interval midpoint.
-5. `plot_properties` evaluates the variation of sectional properties along the interval.
-6. `plot_weight` plots the axial/bending participation field along the interval.
-7. `plot_shear_weight` plots the shear/torsion participation field along the interval.
-
-The corresponding action file is:
-
----
 
 ## 1.2 Reference sections in `stacked_0.yaml`
 
