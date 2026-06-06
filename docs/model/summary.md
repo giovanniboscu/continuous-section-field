@@ -38,6 +38,7 @@ Third, wind-energy simulation and design workflows embed non-prismaticity in app
 In existing workflows, the longitudinal variation of sectional properties is usually handled inside section-analysis tools, structural solvers, or application-specific pipelines. It is less commonly exposed as an independent, solver-agnostic modelling layer that can define, sample, export, and reuse sectional-property fields along the member axis.
 
 This absence of a clearly separated sectional-field layer is both a limitation and a motivation. It makes direct tool-to-tool benchmarking difficult, since most existing tools do not provide the same modelling object. At the same time, it identifies the methodological gap addressed by CSF.
+The contribution of this work is the definition and implementation of a solver-independent continuous sectional-field layer. Unlike station-wise section tables, CSF defines geometry and material participation as evaluable fields along the member axis, so that the same member description can be inspected, sampled, exported, and reused independently of the downstream solver discretization.
 
 ---
 
