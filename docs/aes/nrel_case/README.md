@@ -73,7 +73,7 @@ The geometric parameters used to generate the two boundary sections are:
 
 The circular contours are generated as high-resolution polygonal approximations. In this validation case, each circular contour is discretized with 2048 sides, providing a polygonal annular representation of the closed-cell section used by CSF.
 
-Each cross-section is an annular closed cell encoded as a single `@cell` polygonal path composed of the outer and inner contours with opposite orientation (a duplicated vertex closes the first contour, while the contour connection is handled internally by CSF and has no physical wall meaning).
+Each cross-section is an annular closed cell encoded as a single `@cell` polygonal path composed of the outer and inner contours with opposite orientation.
 
 The script generates two YAML models:
 
