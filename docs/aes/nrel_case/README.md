@@ -56,8 +56,22 @@ This tool generates a YAML geometry file for a single segment with two boundary 
 - `S0` at the initial axial coordinate `z0`;
 - `S1` at the final axial coordinate `z1`.
 
-In this validation case, the generated geometry represents the tapered NREL 5-MW reference tower as a CSF segment. The tower is therefore defined by two boundary sections and by the continuous interpolation of the cross-sectional geometry along the member axis.
 
+In this validation case, the generated geometry represents the tapered NREL 5-MW reference tower as a single CSF segment. The tower is defined by two boundary sections and by the continuous interpolation of the cross-sectional geometry along the member axis.
+
+The geometric parameters used to generate the two boundary sections are:
+
+| Quantity            | Base section `S0` | Top section `S1` |
+| ------------------- | ----------------: | ---------------: |
+| Axial coordinate    |        `z0 = 0.0` |      `z1 = 87.6` |
+| Outer diameter in x |        `dx = 6.0` |      `dx = 3.87` |
+| Outer diameter in y |        `dy = 6.0` |      `dy = 3.87` |
+| Outer radius        |         `R = 3.0` |      `R = 1.935` |
+| Wall thickness      |      `t = 0.0351` |     `t = 0.0247` |
+| Inner radius        |    `R_i = 2.9649` |   `R_i = 1.9103` |
+| Inner diameter      |    `D_i = 5.9298` |   `D_i = 3.8206` |
+
+The circular contours are generated as high-resolution polygonal approximations. In this validation case, each circular contour is discretized with 2048 sides, providing a polygonal annular representation of the closed-cell section used by CSF.
 
 Each cross-section is an annular closed cell encoded as a single `@cell` polygonal path composed of the outer and inner contours with opposite orientation (a duplicated vertex closes the first contour, while the contour connection is handled internally by CSF and has no physical wall meaning).
 
