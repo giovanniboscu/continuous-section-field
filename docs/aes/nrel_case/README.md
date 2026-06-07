@@ -328,10 +328,10 @@ The tower is modelled as a cantilever beam:
 
 The OpenSees model applies:
 
-* transverse tip force `FY_TIP = 3.4 × 10^6 N`;
+* transverse tip force `FY_TIP = 1.2 × 10^6 N`;
 * axial tip force `FZ_TIP = -5.0 × 10^6 N`;
-* tip bending moment `MX_TIP = 10.0 × 10^6 N·m`;
-* tip torsional moment `MZ_TIP = 5.0 × 10^6 N·m`;
+* tip bending moment `MX_TIP = 8.0 × 10^6 N·m`;
+* tip torsional moment `MZ_TIP = 3.0 × 10^6 N·m`;
 * uniform transverse distributed load `WY_DIST = 8.0 × 10^3 N/m`.
 
 The independent continuous baseline uses the load components that contribute directly to the reported checks: `FY_TIP`, `MX_TIP`, and `WY_DIST` for the transverse tip displacement `Uy`, and `MZ_TIP` for the torsional tip rotation `Rz`.
