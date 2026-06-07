@@ -2,7 +2,7 @@ Draft v2.6
 # Continuous Section Fields: A Computational Modelling Framework for Axially Graded Non-Uniform Structural Members
 
 ## Abstract
-Continuous Section Field (CSF) is a computational modelling framework for representing sectional geometry and material participation. CSF transforms geometric descriptions and material participation fields into continuous section-property fields that can be inspected, sampled, and exported as station-wise data for downstream workflows.
+Continuous Section Field (CSF) is a computational modelling framework for representing sectional geometry and material participation along a member axis. CSF transforms geometric descriptions and material participation fields into continuous section-property fields that can be inspected, sampled, and exported as station-wise data for downstream workflows.
 
 The central idea is to treat the cross-section as a field defined along the longitudinal coordinate, rather than as an isolated section or a fixed table of sectional properties. Geometry is specified at reference stations and obtained by interpolating corresponding polygon vertices, producing continuous intermediate cross-sections. Material participation is prescribed independently as continuous longitudinal fields. The independence of geometry and participation is foundational: each can vary along the axis without requiring the other to follow the same law. At any requested station, CSF combines the interpolated geometry with the participation fields to evaluate area, centroid, second moments of area, principal inertias, and section moduli.
 
