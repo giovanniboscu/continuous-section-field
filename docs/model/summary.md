@@ -604,12 +604,7 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 
 <p align="center">
-   <em>Figure 9. Continuous variation of selected sectional properties for the degraded NREL tower case. The localized reductions arise from the prescribed axial/bending participation field and are reflected in the sectional area and bending stiffness distributions.</em>
-  <img width="992" height="654" alt="image" src="https://github.com/user-attachments/assets/29232887-e724-46bb-9bb7-ff635c08742f" />
-</p>
-
-<p align="center">
-  <em>Figure 10. Tip-displacement convergence for the undegraded NREL tower case.</em>
+  <em>Figure 9. Tip-displacement convergence for the undegraded NREL tower case.</em>
     <img width="1600" height="1000" alt="undegraded NREL tower tip displacement convergence" src="https://github.com/user-attachments/assets/202ff4b8-5752-4b01-93ac-2c223057124f" />
 
 </p>
@@ -617,10 +612,16 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 
 <p align="center">
-  <em>Figure 11. Tip-displacement convergence for the degraded NREL tower case.</em>
+  <em>Figure 10. Tip-displacement convergence for the degraded NREL tower case.</em>
 
 <img width="1600" height="1000" alt="degraded  NREL tower tip displacement convergence" src="https://github.com/user-attachments/assets/220ea5ec-d42e-4b75-b04f-16b9e9303161" />
 
+</p>
+
+
+<p align="center">
+   <em>Figure 11. Continuous variation of selected sectional properties for the degraded NREL tower case. The localized reductions arise from the prescribed axial/bending participation field and are reflected in the sectional area and bending stiffness distributions.</em>
+  <img width="992" height="654" alt="image" src="https://github.com/user-attachments/assets/29232887-e724-46bb-9bb7-ff635c08742f" />
 </p>
 
  
