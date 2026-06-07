@@ -460,29 +460,37 @@ The degraded continuous baseline is used to assess both:
 
 ## Expected output organization
 
-The OpenSees results are written into separate directories for each scenario.
+The validation workflow writes the OpenSees results and the independent continuous baselines into separate directories.
 
-Baseline case:
+Baseline tower case:
 
 ```text
 openseeslab_output_NREL-5-MW
+baseline_output_NREL-5-MW
 ```
 
-Degraded case:
+Degraded tower case:
 
 ```text
 openseeslab_output_NREL-5-MW-degr
+baseline_output_NREL-5-MW-degr
 ```
 
-This avoids overwriting results and keeps the two validation cases clearly separated.
+The `openseeslab_output_*` directories contain the results produced by the CSF-OpenSees projection:
 
-Each OpenSees output directory contains:
+* raw nodal-resultant CSV files;
+* tip-response CSV files;
+* a markdown report;
+* convergence plots for tip displacement and torsional rotation;
+* nodal-resultant plots.
 
-- raw nodal-resultant CSV files;
-- tip-response CSV files;
-- a markdown report;
-- convergence plots for tip displacement and torsional rotation;
-- nodal-resultant plots.
+The `baseline_output_*` directories contain the independent continuous-reference results:
+
+* `analytical_reference.txt`;
+* `analytical_reference_convergence.csv`;
+* `analytical_reference_grid_selection.csv`.
+
+This organization keeps the two validation cases separated and also keeps the two computational paths distinct: the sampled CSF-OpenSees projection and the independent continuous baseline.
 
 ## Interpretation of the validation
 
