@@ -317,29 +317,29 @@ The expression `np.maximum(0.84, ...)` sets a lower bound on the stiffness reduc
 The degradation field is intentionally continuous and smooth. No geometric discontinuities are introduced. This allows the validation to isolate the influence of localized stiffness variation without mixing it with geometric changes.
 
 The objective of this law is to create a more demanding convergence scenario for the beam discretization. In the undegraded tower, the stiffness varies smoothly because of the tower taper alone. In the degraded case, the additional local reductions create sharper axial gradients that are more difficult to reproduce with coarse beam discretizations. This makes the degraded configuration suitable for evaluating how the beam model converges toward the continuous stiffness function that CSF provides as the reference model.
-
 ## Structural loading configuration
 
 The validation uses the same structural loading configuration for both the undegraded and degraded tower models.
 
 The tower is modelled as a cantilever beam:
 
-- fixed base at `z = 0`;
-- free tip at `z = L`.
+* fixed base at `z = 0`;
+* free tip at `z = L`.
 
 The OpenSees model applies:
 
-- transverse tip force `FY_TIP = 1.2 × 10^6 N`;
-- axial tip force `FZ_TIP = -5.0 × 10^6 N`;
-- tip bending moment `MX_TIP = 8.0 × 10^6 N·m`;
-- tip torsional moment `MZ_TIP = 3.0 × 10^6 N·m`;
-- uniform transverse distributed load `WY_DIST = 8.0 × 10^3 N/m`.
+* transverse tip force `FY_TIP = 3.4 × 10^6 N`;
+* axial tip force `FZ_TIP = -5.0 × 10^6 N`;
+* tip bending moment `MX_TIP = 10.0 × 10^6 N·m`;
+* tip torsional moment `MZ_TIP = 5.0 × 10^6 N·m`;
+* uniform transverse distributed load `WY_DIST = 8.0 × 10^3 N/m`.
 
-The independent analytical reference uses the load components that contribute directly to the reported checks: `FY_TIP`, `MX_TIP`, and `WY_DIST` for the transverse tip displacement `Uy`, and `MZ_TIP` for the torsional tip rotation `Rz`.
+The independent continuous baseline uses the load components that contribute directly to the reported checks: `FY_TIP`, `MX_TIP`, and `WY_DIST` for the transverse tip displacement `Uy`, and `MZ_TIP` for the torsional tip rotation `Rz`.
 
-The axial tip force `FZ_TIP` is applied in the OpenSees model, but it is not included in the analytical reference because the reported checks do not evaluate axial shortening or second-order geometric effects.
+The axial tip force `FZ_TIP` is applied in the OpenSees model, but it is not included in the independent continuous baseline because the reported checks do not evaluate axial shortening or second-order geometric effects.
 
-The distributed load `WY_DIST` is applied through the OpenSees `-beamUniform` element load, which acts in the element local transverse coordinate system rather than directly in the global frame. For the present vertical tower configuration, the resulting contribution to the global transverse response has opposite sign with respect to the concentrated tip force `FY_TIP`. This sign convention is reproduced consistently in both the OpenSees model and the independent analytical reference.
+The distributed load `WY_DIST` is applied through the OpenSees `-beamUniform` element load. For the present vertical tower configuration, its contribution to the reported transverse tip displacement is taken with the sign convention used consistently in both the OpenSees model and the independent continuous baseline.
+eference.
 
 ### 4. Run the CSF-OpenSees model for the baseline case
 
