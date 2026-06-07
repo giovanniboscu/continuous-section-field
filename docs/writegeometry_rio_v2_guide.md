@@ -31,13 +31,38 @@ The **same rules apply to both S0 and S1 independently.**
    │                            │
    │   ┌────────────────────┐   │
    │   │                    │   │
-   dy  │    inner void      dy  |
+   dy  │    inner void      |   |
    │   │                    │   │
    │   └────────────────────┘   │
    │<->                         │
     tg
 
 ```
+
+For `singlepolygon = true`, the outer and inner contours are not written as two separate polygons. They are stored as a single polygonal path in the same vertex list, so that CSF can interpret the section as one closed `@cell`.
+
+The inner contour must have the opposite orientation of the outer contour. This gives the inner loop the opposite signed area, so that it is subtracted from the outer area and represents the void.
+
+
+```text
+   ┌──────────── outer contour ────────────┐
+   │                                       │
+   │   ┌──────── inner contour ────────┐   │
+   │   │                               │   │
+   │   │          inner loop           │   │
+   │   │                               │   │
+   │   └───────────────────────────────┘   │
+   │                                       │
+   └───────────────────────────────────────┘
+
+   vertex list:
+   [ outer contour vertices,
+     inner contour vertices ]
+```
+
+In this representation, the inner contour is still geometrically the boundary of the void, but it is encoded inside the same polygonal path used for the `@cell` representation.
+
+
 
 ### Case 1 - Circle
 
