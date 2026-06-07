@@ -20,7 +20,7 @@ python3 -m csf.utils.writegeometry_rio_v2  [OPTIONS]  --out path/to/output.yaml
 
 ---
 
-## Cross-section shape — the three cases
+## Cross-section shape - the three cases
 
 The shape is controlled entirely by `dx`, `dy`, and `R`.
 The **same rules apply to both S0 and S1 independently.**
@@ -36,7 +36,7 @@ The **same rules apply to both S0 and S1 independently.**
          └── tg ──┘
 ```
 
-### Case 1 — Circle
+### Case 1 - Circle
 
 Set `R = dx/2 = dy/2`.  The four corners become full arcs and the rectangle
 degenerates to a circle of diameter `dx`.  The condition `dx == dy` is not
@@ -47,7 +47,7 @@ enforced by the code, but only `dx == dy == 2*R` produces a true circle.
 --s0-dx 1.0  --s0-dy 1.0  --s0-R 0.5  --s0-tg 0.10
 ```
 
-### Case 2 — Rounded rectangle
+### Case 2 - Rounded rectangle
 
 `0 < R < min(dx, dy) / 2`.  Standard hollow section with four rounded corners.
 This is the most common case (as in the UrbanViaduct example).
@@ -57,7 +57,7 @@ This is the most common case (as in the UrbanViaduct example).
 --s0-dx 2.0  --s0-dy 1.0  --s0-R 0.20  --s0-tg 0.20
 ```
 
-### Case 3 — Sharp rectangle
+### Case 3 - Sharp rectangle
 
 `R = 0`.  Perfectly square corners.
 
@@ -88,7 +88,7 @@ To obtain a **solid section** set `tg >= min(dx, dy) / 2`.
 The inner contour collapses and the polygon encodes the full solid cross-section.
 
 ```bash
-# Solid 1.0 × 1.0 m square — tg = 0.5 = dx/2
+# Solid 1.0 × 1.0 m square - tg = 0.5 = dx/2
 --s0-dx 1.0  --s0-dy 1.0  --s0-R 0.1  --s0-tg 0.5
 ```
 
@@ -101,7 +101,7 @@ The inner contour collapses and the polygon encodes the full solid cross-section
 | Argument | Required | Description |
 |----------|----------|-------------|
 | `--z0`   | ✓ | Bottom elevation of the segment [m] |
-| `--z1`   | ✓ | Top elevation — must be > z0 [m] |
+| `--z1`   | ✓ | Top elevation - must be > z0 [m] |
 
 ### Section geometry (S0 and S1 independently)
 
@@ -109,9 +109,9 @@ The inner contour collapses and the polygon encodes the full solid cross-section
 |----------|----------|-------------|
 | `--s0-x`, `--s0-y` | ✓ | Centroid coordinates of S0 [m] |
 | `--s0-dx`, `--s0-dy` | ✓ | Outer bounding rectangle dimensions [m] |
-| `--s0-R` | ✓ | Corner radius — `0` → sharp, `dx/2=dy/2` → circle |
+| `--s0-R` | ✓ | Corner radius - `0` → sharp, `dx/2=dy/2` → circle |
 | `--s0-tg` | ✓ | Wall thickness [m] |
-| `--s0-t-cell` | ✓ | Cell-thickness tag — use `0` if not needed (see below) |
+| `--s0-t-cell` | ✓ | Cell-thickness tag - use `0` if not needed (see below) |
 | `--s1-*` | ✓ | Same parameters for the top section S1 |
 
 ### Discretisation
@@ -120,7 +120,7 @@ The inner contour collapses and the polygon encodes the full solid cross-section
 |----------|----------|-------------|
 | `--N` | ✓ | Number of points along the perimeter of each loop |
 | `--singlepolygon` | ✓ | `true` → single-polygon encoding (recommended); `false` → two separate polygons |
-| `--twist-deg` | — | Rotation of S1 relative to S0 [degrees], default 0 |
+| `--twist-deg` | - | Rotation of S1 relative to S0 [degrees], default 0 |
 
 ### Reinforcement
 
@@ -137,7 +137,7 @@ Row 2 follows the **inner contour** outward by `dist_row2_inner`.
 | `--dist-row2-inner` | ✓ | Cover + bar radius from inner void face [m] |
 | `--rebar-weight` | ✓ | Homogenisation weight for all bars (`1.0` = steel, `0.0` = ignore) |
 
-> **Constraint — minimum R for rebar:**
+> **Constraint - minimum R for rebar:**
 > `R` must be ≥ `dist_row1_outer` when `n_bars_row1 > 0`.
 > If `R = 0` and bars are requested the script raises a `ValueError`.
 
@@ -152,7 +152,7 @@ along the segment according to a named law.  They are appended as a
 | `--bars-row1-law` | `""` | Law name for each bar in row 1 |
 | `--bars-row2-law` | `""` | Law name for each bar in row 2 |
 | `--s0-law` | `""` | Law name for the shell polygon |
-| `--s1-law` | `""` | Must equal `--s0-law` — the shell is one paired entry |
+| `--s1-law` | `""` | Must equal `--s0-law` - the shell is one paired entry |
 
 The law string is written verbatim into the YAML.  Common values: `"linear"`,
 `"quadratic"`, or any law identifier understood by the CSF reader.
@@ -184,7 +184,7 @@ applied to the shell.
 
 ## Worked examples
 
-### 1 — Circular hollow section, single rebar row
+### 1 - Circular hollow section, single rebar row
 
 ```bash
 python3 -m csf.utils.writegeometry_rio_v2 \
@@ -199,7 +199,7 @@ python3 -m csf.utils.writegeometry_rio_v2 \
   --out circle.yaml
 ```
 
-### 2 — Sharp rectangle, no rebar
+### 2 - Sharp rectangle, no rebar
 
 `R = 0` is only valid when both rebar rows are disabled.
 
@@ -216,7 +216,7 @@ python3 -m csf.utils.writegeometry_rio_v2 \
   --out rect_sharp.yaml
 ```
 
-### 3 — Rounded rectangle, two rebar rows
+### 3 - Rounded rectangle, two rebar rows
 
 ```bash
 python3 -m csf.utils.writegeometry_rio_v2 \
@@ -231,7 +231,7 @@ python3 -m csf.utils.writegeometry_rio_v2 \
   --out rounded_rect.yaml
 ```
 
-### 4 — Rounded rectangle with degradation laws on bars and shell
+### 4 - Rounded rectangle with degradation laws on bars and shell
 
 `--s0-law` and `--s1-law` must be **identical**.
 
@@ -251,7 +251,7 @@ python3 -m csf.utils.writegeometry_rio_v2 \
   --out degradation.yaml
 ```
 
-### 5 — Twisted top section (morphing tower)
+### 5 - Twisted top section (morphing tower)
 
 `--twist-deg` rotates only S1.  S0 is always at 0°.
 
