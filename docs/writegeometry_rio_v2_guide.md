@@ -1,9 +1,14 @@
 # writegeometry_rio_v2 - User Guide
 
-Generates a CSF-compatible YAML geometry file for a **single segment** with
-two boundary cross-sections (S0 at `z0`, S1 at `z1`). The section shape is a
-hollow rounded rectangle with optional reinforcement on two concentric rows and
-optional degradation weight laws.
+Generates a CSF-compatible YAML geometry file for a **single segment** with two boundary cross-sections, `S0` at `z0` and `S1` at `z1`.
+
+The tool defines geometric cross-sections at the two segment ends. The generated shape can range from circular annular sections to rounded quadrangular sections, with optional internal reinforcement bars arranged on one or two rows.
+
+The main section geometry can be exported in two forms:
+
+1. As two nested polygonal contours: an outer contour and an inner contour representing the void.
+2. As a single polygonal path, where the outer and inner contours are stored in the same vertex list. This form is used to support the CSF `@cell` representation.
+
 
 ---
 
