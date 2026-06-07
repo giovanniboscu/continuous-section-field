@@ -120,7 +120,7 @@ The number of Gauss points is exposed by the script as a parameter of the CSF-to
 This is the numerical path:
 
 ```text
-YAML input → continuous CSF sectional field → N Gauss section sampling → OpenSees beam model → tip response
+YAML input → continuous CSF sectional field → N Gauss points section sampling → OpenSees beam model → tip response
 ```
 
 
