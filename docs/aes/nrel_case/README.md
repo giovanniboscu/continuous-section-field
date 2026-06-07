@@ -99,19 +99,30 @@ Each file configures the section-property inspection for one scenario. When exec
 
 The baseline action file is applied to `NREL-5-MW.yaml`, while the degraded action file is applied to `NREL-5-MW-degr.yaml`.
 
+
 ### CSF-OpenSees model
 
-- `run_csf_opensees.py`
+* `run_csf_opensees_gaussN.py`
 
-This script reads the tower YAML file, extracts the sectional properties along the tower axis, and builds a beam finite-element model. The tower is loaded with a transverse tip force, a torsional tip moment, and a uniform distributed transverse load. The tip displacement and torsional rotation are computed for several uniform discretizations, from 4 to 32 elements.
+This script reads the tower YAML file, samples the continuous CSF sectional field along the tower axis, and builds a beam finite-element model in OpenSees. The tower is loaded with a transverse tip force, an axial force, a tip bending moment, a torsional tip moment, and a uniform distributed transverse load.
 
-The beam model uses force-based beam-column elements with two-point Gauss integration per element.
+The tip displacement and torsional rotation are computed for several uniform beam discretizations, from 4 to 32 elements.
+
+In the validation case reported here, the OpenSees model uses force-based beam-column elements with **two Gauss section-integration points per element**. The corresponding command is:
+
+```bash
+python3 run_csf_opensees_gaussN.py NREL-5-MW-degr.yaml --gauss-points 2
+```
+
+The number of Gauss points is exposed by the script as a parameter of the CSF-to-OpenSees projection. It controls how the continuous CSF field is sampled by the solver, but it does not change the YAML model definition.
 
 This is the numerical path:
 
 ```text
-YAML input → sectional properties → beam model → tip response
+YAML input → continuous CSF sectional field → two-point Gauss section sampling → OpenSees beam model → tip response
 ```
+
+
 
 ### Independent analytical reference
 
