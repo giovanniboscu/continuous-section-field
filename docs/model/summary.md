@@ -438,7 +438,7 @@ The weighted-area compensation is preserved:
 $$ A(t) = (1.0-0.5t)(0.06) + 0.09 + 0.30(0.20+0.10t) = 0.21. $$
 
 
-The two intervals are then assembled into a single member using `CSFStacked`. The assembled object defines a continuous sectional field over the global coordinate
+The two intervals are then assembled into a single member using `CSFStack`. The assembled object defines a continuous sectional field over the global coordinate
 
 $$
 0 \le z \le 10.
@@ -462,7 +462,7 @@ stack.section_full_analysis(z, junction_side="left")
 ```
 
 <p align="center">
-  <em>Figure 6. Evaluation of the assembled CSF member at selected global stations. The model is queried through the global coordinate <code>z</code>, while <code>CSFStacked</code> handles the interval mapping internally.</em>
+  <em>Figure 6. Evaluation of the assembled CSF member at selected global stations. The model is queried through the global coordinate <code>z</code>, while <code>CSFStack</code> handles the interval mapping internally.</em>
   <img width="993" height="865" alt="image" src="https://github.com/user-attachments/assets/0eec518e-1da9-4f72-a406-cbe74da111ca" />
 
 </p>
