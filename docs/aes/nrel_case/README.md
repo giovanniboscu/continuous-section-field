@@ -21,7 +21,7 @@ The objective is to compare two modelling paths:
 
 1. a CSF-to-OpenSees numerical model;
 2. an independent analytical reference based on the same geometric and material definitions, but implemented directly in the reference code without using CSF section-analysis APIs or OpenSees.
-3. 
+
 The workflow is applied to two scenarios:
 
 - the baseline tower, without degradation;
