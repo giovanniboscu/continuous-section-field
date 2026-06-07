@@ -494,49 +494,39 @@ This organization keeps the two validation cases separated and also keeps the tw
 
 ## Interpretation of the validation
 
-The baseline and degraded cases are intended to verify different aspects of the workflow.
+The validation compares two computational paths applied to the same YAML-defined tower models.
 
-The baseline case checks that the beam model reproduces the response of a smooth tapered tower with no longitudinal stiffness degradation.
+The first path is the CSF-OpenSees projection. The YAML file defines the continuous sectional field, and OpenSees receives a sampled beam-model representation of that field.
 
-The degraded case checks that the same workflow remains consistent when the stiffness field varies locally along the tower height.
+The second path is the independent continuous baseline. It reads the same YAML input, reconstructs the required geometry and stiffness distributions, and computes the response by direct integration without using OpenSees and without calling CSF section-sampling APIs.
 
-The analytical reference provides an independent check because it does not use OpenSees and does not use the same computational tools. It only reads the same YAML input and performs the analytical integration directly.
+The purpose of the comparison is therefore not only to observe convergence with mesh refinement. The main point is to verify that the YAML-defined continuous sectional model can be transferred to a structural solver and compared against an independently reconstructed continuous reference.
 
-Agreement between the beam model results and the analytical reference supports the consistency of:
+Two tower configurations are considered:
 
-- the YAML definition;
-- the sectional property distribution;
-- the beam discretization;
-- the stiffness degradation law;
-- the independent analytical formulation.
+* the undegraded NREL tower, where the stiffness variation follows the smooth geometric taper;
+* the degraded NREL tower, where the same geometry is combined with a localized longitudinal stiffness reduction law.
 
-## Convergence behaviour
+The undegraded case checks the response of the smooth baseline tower model. Since the stiffness field varies regularly along the height, the CSF-OpenSees projection is expected to be less sensitive to the axial discretization.
 
-The final convergence comparison is reported in:
+The degraded case is more demanding. The local stiffness reductions introduce sharper variations in the continuous field. Coarser beam discretizations may under-sample these variations, while denser or richer section sampling improves the agreement with the continuous baseline.
+
+The comparison supports the consistency of:
+
+* the YAML model definition;
+* the continuous sectional-property field;
+* the stiffness degradation law;
+* the CSF-OpenSees projection;
+* the independent continuous baseline.
+
+The final comparison is reported in:
 
 [Validation comparison - all scenarios](validation_comparison_summary_all_b.md)
 
-That document collects the beam model results and compares them against the independent analytical reference for both tower configurations:
+That document collects the OpenSees tip responses and compares them against the independent continuous baseline for both tower configurations. The reported quantities are the transverse tip displacement `Uy`, the torsional tip rotation `Rz`, the number of OpenSees elements, the number of CSF section evaluations, and the relative errors with respect to the continuous baseline.
 
-- the undegraded NREL tower;
-- the degraded NREL tower.
+The comparison therefore supports the intended validation message: CSF defines a continuous sectional model, while the beam solver receives a sampled projection of that model. The discretization controls how the field is interrogated; it does not define the field itself.
 
-The non-degraded case is expected to converge rapidly. Since the stiffness varies smoothly and monotonically with the tower taper, even a coarse beam discretization can capture the global response reasonably well.
-
-The degraded case is more demanding. The local stiffness reductions introduce sharper variations along the member axis. As a result, coarse discretizations can be less reliable and may show a less regular convergence trend.
-
-This behaviour highlights one of the main motivations for using a continuous stiffness representation. A simple piecewise model with too few stations may miss or underrepresent local stiffness variations, while a denser discretization converges toward the continuous analytical reference.
-
-The comparison report provides the final validation evidence through:
-
-- numerical tables of tip displacement and torsional rotation;
-- relative errors against the independent analytical reference;
-- convergence plots for both undegraded and degraded scenarios.
-
-The comparison therefore supports two conclusions:
-
-1. for smooth non-degraded variation, the model converges quickly;
-2. for localized degradation, the response is more sensitive to axial discretization, and convergence requires a finer representation.
 
 ## Summary
 
