@@ -527,14 +527,16 @@ That document collects the OpenSees tip responses and compares them against the 
 
 The comparison therefore supports the intended validation message: CSF defines a continuous sectional model, while the beam solver receives a sampled projection of that model. The discretization controls how the field is interrogated; it does not define the field itself.
 
-
 ## Summary
 
 This validation case provides a compact and reproducible workflow for checking the NREL 5-MW tower in two scenarios:
 
-- baseline, non-degraded tower;
-- tower with longitudinal stiffness degradation.
+* baseline, non-degraded tower;
+* tower with longitudinal stiffness degradation.
 
-The CSF-OpenSees model and the independent analytical reference use the same YAML inputs but follow different computational paths.
+Both scenarios are defined by YAML inputs that describe the tower as a continuous sectional field. The CSF-OpenSees model and the independent continuous baseline read the same YAML data but follow different computational paths.
 
-The agreement between the two paths confirms that the workflow is internally consistent, while the degraded case highlights the importance of adequate discretization when local stiffness variations are present.
+The agreement between the two paths confirms the consistency of the YAML-defined sectional model, its sampled projection into OpenSees, and the independent continuous-reference calculation.
+
+The degraded case further shows why the continuous-field representation is useful: local stiffness variations are part of the same model definition, while the solver discretization only controls how that field is sampled.
+
