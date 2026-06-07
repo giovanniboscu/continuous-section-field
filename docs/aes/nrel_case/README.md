@@ -71,7 +71,7 @@ The geometric parameters used to generate the two boundary sections are:
 | Inner radius        |    `R_i = 2.9649` |   `R_i = 1.9103` |
 | Inner diameter      |    `D_i = 5.9298` |   `D_i = 3.8206` |
 
-The circular contours are generated as high-resolution polygonal approximations. In this validation case, each circular contour is discretized with 2048 sides, providing a polygonal annular representation of the closed-cell section used by CSF.
+
 
 Each cross-section is an annular closed cell encoded as a single `@cell` polygonal path composed of the outer and inner contours with opposite orientation.
 
