@@ -120,8 +120,9 @@ The number of Gauss points is exposed by the script as a parameter of the CSF-to
 This is the numerical path:
 
 ```text
-YAML input → continuous CSF sectional field → two-point Gauss section sampling → OpenSees beam model → tip response
+YAML input → continuous CSF sectional field → N Gauss section sampling → OpenSees beam model → tip response
 ```
+
 
 > The YAML files define the tower geometry with the steel material already incorporated. The sectional quantities - such as `EA`, `EI`, and `GJ` -  therefore already include the material stiffness. When transferring these to a structural solver such as OpenSees, the material must not be applied a second time. For this reason, the validation model uses neutral carriers (`E = G = 1.0`) and passes the weighted quantities directly as `A = EA`, `I = EI`, and `J = GJ`.
 
