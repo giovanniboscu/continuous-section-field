@@ -311,9 +311,6 @@ def compare_closed_form_and_csf(stack):
                 + ", ".join(missing)
             )
 
-        # Closed-form reference values at the same station. 2 remove
-        A_r, Cy_r, Ix_r, Iy_r = reference(z)
-
         # Analytical laws printed together with the comparison table.
         segment, t, w_upper, sw_upper = upper_laws(z)
 
