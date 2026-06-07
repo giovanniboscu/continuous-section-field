@@ -26,14 +26,17 @@ The shape is controlled entirely by `dx`, `dy`, and `R`.
 The **same rules apply to both S0 and S1 independently.**
 
 ```
-   ┌──────── dx ────────┐
-   │    ╭──────────╮    │  ─┐
-   │    │          │    │   │
-   dy   │  inner   │   dy   │
-   │    │   void   │    │   │
-   │    ╰──────────╯    │   │
-   └────────────────────┘  ─┘
-         └── tg ──┘
+
+   ┌──────────── dx ────────────┐
+   │                            │
+   │   ┌────────────────────┐   │
+   │   │                    │   │
+   dy  │    inner void      dy  |
+   │   │                    │   │
+   │   └────────────────────┘   │
+   │<->                         │
+    tg
+
 ```
 
 ### Case 1 - Circle
