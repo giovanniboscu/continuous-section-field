@@ -195,7 +195,7 @@ The generated report is then checked against the official NREL 5-MW tower data r
 
 #  Case A - undegraded tower
 
-The validation uses the NREL 5-MW tower data from NREL/TP-500-38060, Section 6, Table 6-1. The CSF geometry uses the reported base and top diameters, with the 30% wall-thickness increase stated in Section 6: 6.0 m / 0.0351 m at the base and 3.87 m / 0.0247 m at the top. The radius and thickness are linearly tapered along the 87.6 m tower height.
+The validation uses the NREL 5-MW tower data from NREL/TP-500-38060, Section 6, Table 6-1 ([Jonkman et al., 2009](https://doi.org/10.2172/947422)). The CSF geometry uses the reported base and top diameters, with the 30% wall-thickness increase stated in Section 6: 6.0 m / 0.0351 m at the base and 3.87 m / 0.0247 m at the top. The radius and thickness are linearly tapered along the 87.6 m tower height.
 
 Agreement with the NREL reference values is better than 0.04% over the full tower height, confirming that the adopted geometry accurately reproduces the original NREL sectional stiffness distribution prior to the application of any degradation law.
 
