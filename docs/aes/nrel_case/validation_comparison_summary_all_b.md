@@ -30,7 +30,7 @@ The degraded configuration represents a more demanding case. The geometry remain
 
 The two cases therefore test different aspects of the same workflow:
 
-* the undegraded case checks the CSF-to-OpenSees sampling for a smoothly varying continuous sectional field;
+* The undegraded and degraded configurations show different sensitivities to the OpenSees sampling of the continuous CSF field.
 * the degraded case checks the same sampling when the continuous sectional field contains localized stiffness reductions.
 
 The comparison is not intended to make convergence the main result. Rather, it shows that the YAML-defined continuous sectional field remains the model object, while the beam discretization and the Gauss section sampling control how that field is projected into OpenSees.
@@ -82,7 +82,7 @@ The relative-error columns are reported in percent and are computed as:
 
 The reference values are obtained from the independent continuous baseline. The reference integration grid is not prescribed as a fixed number of sections; it is selected from the admissible tolerance `REF_TOL_PCT` over the tested sequence of integration grids.
 
-In the undegraded case, the response stabilizes rapidly because the sectional stiffness field varies smoothly along the tower height. In the degraded case, the localized stiffness reductions make the OpenSees sampling of the continuous CSF field more sensitive to the axial discretization and to the section-sampling density.
+In the undegraded case, the response stabilizes rapidly because the sectional stiffness field varies smoothly along the tower height. In the degraded case, the localized stiffness reductions make the OpenSees sampling of the continuous CSF field more sensitive to the axial beam discretization.
 
 After stabilization, the residual error in `Uy` is of order `10^-4 %` for both configurations. The residual error in `Rz` remains of order `10^-3 %`, approximately `3.44 × 10^-3 %` for the undegraded case and `3.48 × 10^-3 %` for the degraded case.
 
@@ -148,7 +148,7 @@ In this configuration, the tower geometry is tapered and the stiffness field var
 
 The expected behaviour is a stable response with a limited number of beam elements, because the sectional stiffness field is regular and does not contain localized reductions.
 
-The plots show the tip displacement and torsional rotation obtained from the CSF-to-OpenSees sampling for the tested uniform beam discretizations.
+The plots show the tip displacement and torsional rotation obtained from the OpenSees sampling of the continuous CSF field for the tested uniform beam discretizations.
 
 ![Undegraded NREL tower - tip displacement convergence](openseeslab_output_NREL-5-MW/plot_tip_displacement_convergence.png)
 
@@ -162,7 +162,7 @@ The numerical results confirm the expected behaviour. The transverse displacemen
 
 The remaining `Rz` offset is small and nearly constant after stabilization. It is therefore not interpreted as an axial discretization effect, but as the residual difference between the torsional constant used in the independent continuous baseline and the `J_sv_cell` value transferred by the CSF/OpenSees workflow.
 
-This case verifies that, for a smoothly varying sectional stiffness field, the sampled CSF-to-OpenSees sampling reproduces the independent continuous baseline with few beam elements.
+This case verifies that, for a smoothly varying sectional stiffness field, the OpenSees sampling of the continuous CSF field reproduces the independent continuous baseline with few beam elements.
 
 
 ## Case B - degraded NREL tower
@@ -171,9 +171,9 @@ The degraded NREL tower is the more demanding validation case.
 
 In this configuration, the tower geometry is unchanged, but the longitudinal stiffness field is locally reduced. The degradation law introduces localized variations along the member axis, making the response more sensitive to how the continuous sectional field is sampled before being transferred to OpenSees.
 
-This case shows that the quality of the CSF-to-OpenSees sampling cannot be inferred only from the smooth undegraded configuration. A beam discretization that is sufficient for the baseline tower may under-sample the degraded portions of the stiffness field.
+This case shows that the quality of the OpenSees sampling of the continuous CSF field cannot be inferred only from the smooth undegraded configuration. A beam discretization that is sufficient for the baseline tower may under-sample the degraded portions of the stiffness field.
 
-The plots show the tip displacement and torsional rotation obtained from the CSF-to-OpenSees sampling for the tested uniform beam discretizations.
+The plots show the tip displacement and torsional rotation obtained from the OpenSees sampling of the continuous CSF field for the tested uniform beam discretizations.
 
 ![Degraded NREL tower - tip displacement convergence](openseeslab_output_NREL-5-MW-degr/plot_tip_displacement_convergence.png)
 
@@ -187,7 +187,7 @@ The degraded case shows a less regular response at low discretization levels. Th
 
 The response becomes stable when the CSF field is sampled with sufficient axial resolution. Further refinement keeps the OpenSees response close to the independent continuous baseline, as reported in the generated comparison table.
 
-This case demonstrates the role of the continuous CSF representation: the degradation law remains part of the same YAML-defined sectional field, while the beam discretization and the Gauss section sampling control how that field is projected into the structural solver.
+This case demonstrates the role of the continuous CSF representation: the degradation law remains part of the same YAML-defined sectional field, while the beam discretization and the Gauss section sampling control how that field is sampled by the structural solver..
 
 ## Observations and conclusions
 
@@ -195,14 +195,14 @@ The undegraded and degraded configurations show different sensitivities to the C
 
 In the undegraded case, the sectional stiffness field varies smoothly along the tower height because of the geometric taper. The OpenSees response stabilizes rapidly, indicating that a limited number of beam elements and section evaluations is sufficient to sample the continuous field for the reported global response quantities.
 
-In the degraded case, the geometry is unchanged but the stiffness field contains localized longitudinal reductions. The response is therefore more sensitive to how the continuous field is sampled before being transferred to the beam model. Coarse discretizations may under-sample the degraded regions, while finer axial discretization and richer section sampling recover a stable response close to the independent continuous baseline.
+In the degraded case, the geometry is unchanged but the stiffness field contains localized longitudinal reductions. The response is therefore more sensitive to how the continuous field is sampled before being transferred to the beam model. Coarse discretizations may under-sample the degraded regions, while finer axial discretization recovers a stable response close to the independent continuous baseline.
 
-This behaviour supports the main validation message. The YAML file defines the sectional model as a continuous field. The OpenSees beam model receives a sampled sampling of that field, and the independent continuous baseline provides a separate reference path reconstructed from the same YAML input.
+This behaviour supports the main validation message. The YAML file defines the sectional model as a continuous field. The OpenSees beam model receives a sampled representation of that field, and the independent continuous baseline provides a separate reference path reconstructed from the same YAML input.
 
 The comparison therefore supports the consistency of:
 
 * the YAML-defined continuous sectional field;
-* the CSF-to-OpenSees sampled sampling;
+* the OpenSees sampling of the continuous CSF field;
 * the degraded stiffness law;
 * the independent continuous-baseline calculation.
 
