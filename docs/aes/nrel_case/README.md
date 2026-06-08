@@ -80,7 +80,7 @@ The script generates two YAML models:
 * `NREL-5-MW.yaml` — baseline tower model, with the original stiffness distribution;
 * `NREL-5-MW-degr.yaml` — degraded tower model, with the same geometry and a longitudinal stiffness-reduction law.
 
-The two files define the same tower geometry. Their difference is limited to the stiffness weighting law assigned through `weight_laws`.
+The two files define the same tower geometry. Their difference is limited to the stiffness weighting law assigned through `weight_laws` (participation fields).
 
 The script also creates the output directories used by the CSF action reports, so that the following analysis steps can write their results to a reproducible folder structure.
 
