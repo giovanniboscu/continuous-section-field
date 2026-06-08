@@ -86,7 +86,7 @@ The script also creates the output directories used by the CSF action reports, s
 
 ### CSF action reports
 
-Before running the structural model, the tower section properties are inspected for both the baseline and degraded scenarios using `csf-actions`, to verify that the geometry and participation fields produce the expected stiffness distribution along the axis.
+Before running the structural model, the tower section properties are inspected for both the baseline and degraded scenarios using `csf-actions` to verify that the geometry and participation fields produce the expected stiffness distribution along the axis.
 
 The geometry files define the tower geometry and participation fields:
 
