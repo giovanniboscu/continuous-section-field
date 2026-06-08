@@ -297,7 +297,7 @@ The expression `np.maximum(0.84, ...)` sets a lower bound on the stiffness facto
 
 The degradation field is intentionally continuous and smooth. No geometric discontinuities are introduced. This allows the validation to isolate the influence of localized stiffness variation without mixing it with geometric changes.
 
-The objective of this law is to create a more demanding convergence scenario for the beam discretization. In the undegraded tower, the stiffness varies smoothly because of the tower taper alone. In the degraded case, the additional local reductions create sharper axial gradients that are more difficult to reproduce with coarse beam discretizations. This makes the degraded configuration suitable for evaluating how the beam model converges toward the continuous stiffness function that CSF provides as the reference model.
+The objective of this law is to create a more demanding convergence scenario for the beam discretization. In the undegraded tower, the stiffness varies smoothly because of the tower taper alone. In the degraded case, the additional local reductions create sharper axial gradients that are more difficult to reproduce with coarse beam discretizations. This makes the degraded configuration suitable for evaluating how the beam model converges toward the continuous stiffness function defined by the YAML model.
 
 ## Structural loading configuration
 
@@ -457,7 +457,7 @@ openseeslab_output_NREL-5-MW-degr
 baseline_output_NREL-5-MW-degr
 ```
 
-The `openseeslab_output_*` directories contain the results produced by  OpenSees sampling of the continuous CSF field
+The `openseeslab_output_*` directories contain the results produced by the OpenSees sampling of the continuous CSF field:
 
 * raw nodal-resultant CSV files;
 * tip-response CSV files;
@@ -471,7 +471,7 @@ The `baseline_output_*` directories contain the independent continuous-reference
 * `analytical_reference_convergence.csv`;
 * `analytical_reference_grid_selection.csv`.
 
-This organization keeps the two validation cases separated and also keeps the two computational paths distinct: the sampled CSF-OpenSees projection and the independent continuous baseline.
+This organization keeps the two validation cases separated and also keeps the two computational paths distinct: the OpenSees sampling of the continuous CSF field and the independent continuous baseline.
 
 ## Interpretation of the validation
 
@@ -488,7 +488,7 @@ Two tower configurations are considered:
 * the undegraded NREL tower, where the stiffness variation follows the smooth geometric taper;
 * the degraded NREL tower, where the same geometry is combined with a localized longitudinal stiffness reduction law.
 
-The undegraded case checks the response of the smooth baseline tower model. Since the stiffness field varies regularly along the height, the CSF-OpenSees projection is expected to be less sensitive to the axial discretization.
+The undegraded case checks the response of the baseline tower model. Since the stiffness field varies smoothly along the height, the OpenSees sampling of the continuous CSF field is expected to be less sensitive to the axial discretization.
 
 The degraded case is more demanding. The local stiffness reductions introduce sharper variations in the continuous field. Coarser beam discretizations may under-sample these variations, while denser section sampling improves the agreement with the continuous baseline.
 
@@ -498,7 +498,7 @@ The comparison supports the consistency of:
 * the continuous sectional-property field;
 * the stiffness degradation law;
 * the CSF-OpenSees projection;
-* the independent continuous baseline.
+* The comparison supports the consistency between the sampled OpenSees model and the continuous baseline.
 
 The final comparison is reported in:
 
@@ -517,7 +517,7 @@ This validation case provides a compact and reproducible workflow for checking t
 
 Both scenarios are defined by YAML inputs that describe the tower as a continuous sectional field. The CSF-OpenSees model and the independent continuous baseline read the same YAML data but follow different computational paths.
 
-The agreement between the two paths confirms the consistency of the YAML-defined sectional model, its sampled projection into OpenSees, and the independent continuous-reference calculation.
+The agreement between the two paths confirms the consistency of the YAML-defined sectional model, its sampled representation in OpenSees, and the independent continuous-reference calculation.
 
 The degraded case further shows why the continuous-field representation is useful: local stiffness variations are part of the same model definition, while the solver discretization only controls how that field is sampled.
 
