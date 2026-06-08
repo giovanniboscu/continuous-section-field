@@ -35,7 +35,7 @@ Both scenarios use the same geometry. The degraded case modifies only the longit
 
 The workflow consists of four steps: generating the input files, verifying the section properties, computing the structural response with a numerical model, and checking it against an independent analytical reference.
 
-### Step 1. Geometry and participation-field definition
+### Geometry and participation-field definition
 
 CSF (Continuous Section Field) is the tool used to compute and represent the sectional properties of the tower continuously along its axis.
 
