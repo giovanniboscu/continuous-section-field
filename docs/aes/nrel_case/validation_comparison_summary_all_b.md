@@ -187,7 +187,7 @@ The degraded case shows a less regular response at low discretization levels. Th
 
 The response becomes stable when the CSF field is sampled with sufficient axial resolution. Further refinement keeps the OpenSees response close to the independent continuous baseline, as reported in the generated comparison table.
 
-This case demonstrates the role of the continuous CSF representation: the degradation law remains part of the same YAML-defined sectional field, while the beam discretization and the Gauss section sampling control how that field is sampled by the structural solver..
+This case demonstrates the role of the continuous CSF representation: the degradation law remains part of the same YAML-defined sectional field, while the beam discretization and the Gauss section sampling control how that field is sampled by the structural solver.
 
 ## Observations and conclusions
 
