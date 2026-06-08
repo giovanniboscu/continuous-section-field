@@ -113,7 +113,8 @@ The OpenSees model uses force-based beam-column elements with two Gauss section-
 This is the numerical path:
 
 ```text
-YAML input → continuous CSF sectional field → section sampling → OpenSees beam model → tip response```
+YAML input → continuous CSF sectional field → section sampling → OpenSees beam model → tip response
+```
 
 
 > In this workflow, the elastic moduli `E` and `G` are already included in the sectional stiffnesses computed by CSF. Therefore, they must not be applied again in OpenSees. The OpenSees model uses neutral material parameters and receives the CSF-computed stiffness quantities directly.
@@ -181,8 +182,6 @@ In CSF, the reported sectional quantities are weighted by the assigned participa
 
 The validation uses the NREL 5-MW tower data from NREL/TP-500-38060, Section 6, Table 6-1 ([Jonkman et al., 2009](https://doi.org/10.2172/947422)). The CSF geometry uses the reported base and top diameters, with the 30% wall-thickness increase stated in Section 6: 6.0 m / 0.0351 m at the base and 3.87 m / 0.0247 m at the top. The radius and thickness are linearly tapered along the 87.6 m tower height.
 
-
-### NREL 5-MW tower validation tables
 
 | Elev. [m] | HtFract | TwFAStif [N m²] | TwSSStif [N m²] | TwGJStif [N m²] | TwEAStif [N] |
 |---:|---:|---:|---:|---:|---:|
@@ -322,7 +321,7 @@ The independent continuous baseline uses only the load components that contribut
 The axial tip force `FZ_TIP` is applied in the OpenSees model, but it is not included in the independent continuous baseline because the reported checks do not evaluate axial shortening or second-order geometric effects.
 
 > **Sign convention note.**  
->The distributed load `WY_DIST` is applied through the OpenSees `-beamUniform` element load. For the present vertical tower configuration, its contribution to the reported transverse tip displacement is taken with the sign convention used consistently in both the OpenSees model and the independent continuous baseline.
+> The distributed load `WY_DIST` is applied through the OpenSees `-beamUniform` element load. For the present vertical tower configuration, its contribution to the reported transverse tip displacement is taken with the sign convention used consistently in both the OpenSees model and the independent continuous baseline.
 
 
 ### 4. Run the CSF-OpenSees model for the baseline case
@@ -395,7 +394,7 @@ python3 run_csf_opensees_gaussN.py NREL-5-MW-degr.yaml --gauss-points 2
 
 The script reads the degraded YAML file, samples the corresponding continuous CSF sectional field along the tower axis, and builds the OpenSees beam model. The analysis computes the transverse tip displacement, the torsional tip rotation, and the nodal resultants along the tower height.
 
-In this validation case, the CSF field is sampled with two Gauss section-integration points per beam element. The number of Gauss points is a parameter of the CSF-to-OpenSees projection and does not modify the YAML model definition.
+In this validation case, the CSF field is sampled with two Gauss section-integration points per beam element. The number of Gauss points is a parameter of the OpenSees sampling of the continuous CSF field and does not modify the YAML model definition.
 
 The outputs are written to:
 
