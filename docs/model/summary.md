@@ -567,7 +567,8 @@ The NREL tower provides a convenient application case because its circular annul
 
 Both NREL configurations are analysed under the same loading conditions. The tower is modelled as a cantilever beam, fixed at the base and loaded at the free end. The structural model includes a transverse tip force, an axial tip force, a tip bending moment, a torsional tip moment, and a uniform transverse distributed load. These loads are not intended to reproduce a full aeroelastic operating condition; they define a controlled static test case for comparing the CSF-to-OpenSees response with the independent continuous baseline.
 
-The same loading definition is used for the undegraded and degraded towers. Therefore, differences between the two configurations are caused by the sectional stiffness field, not by changes in loading or geometry. The beam discretization and the Gauss section sampling control how that field is projected into OpenSees.
+The same loading definition is used for the undegraded and degraded towers. Therefore, differences between the two configurations are caused by the sectional stiffness field, not by changes in loading or geometry. The beam discretization and the Gauss section sampling control how that field is sampled by the OpenSees model.
+
 
 ## Validation
 
@@ -583,7 +584,6 @@ Within this validation workflow, the two CSF interaction modes serve different p
 For the undegraded configuration, the stiffness field varies smoothly and monotonically. This case is used as a baseline check of the undegraded tower model against the reference response.
 
 The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated across the tested discretization levels. The torsional rotation $R_z$ exhibits a small residual offset of approximately $3.44 \times 10^{-3},%$ across all tested discretization levels. This offset is attributed to the thin-walled torsional approximation adopted internally by the CSF workflow, whereas the analytical reference uses the exact circular torsional constant $J = \tfrac{\pi}{2}(R_o^4 - R_i^4)$.
-
 
 
 #### Case B - degraded tower
