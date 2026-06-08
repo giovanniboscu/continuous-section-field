@@ -437,7 +437,7 @@ This directory contains the independent continuous-reference report, the referen
 The degraded continuous baseline is used to assess both:
 
 * the interpretation of the degraded stiffness law from the YAML input;
-* the sensitivity of the CSF-OpenSees projection to localized stiffness variation.
+* the sensitivity of the OpenSees sampling of the continuous CSF field to localized stiffness variation.
 
 
 ## Expected output organization
