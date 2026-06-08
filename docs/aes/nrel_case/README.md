@@ -125,14 +125,6 @@ The baseline is computed by `run_analytical_reference.py`. The script evaluates 
 
 The tower is loaded with the same transverse tip force, tip bending moment, torsional tip moment, and uniform distributed transverse load used in the OpenSees model. The axial force applied in OpenSees is not used in this independent reference, because this check does not evaluate axial shortening or second-order geometric effects.
 
-The reference grid is not prescribed as a fixed number of sections. Instead, the script starts from a prescribed admissible tolerance,
-
-```python
-REF_TOL_PCT = 1.0e-10
-```
-
-and selects the first reference grid that satisfies this tolerance over the tested sequence of integration grids.
-
 This is the independent baseline path:
 
 ```text
@@ -152,7 +144,7 @@ The CSF-OpenSees model and the independent continuous baseline are evaluated as 
 
 Run the complete validation workflow in this order.
 
-### 1. Generate the YAML input files
+## 1. Generate the YAML input files
 
 ```bash
 python3 create_yaml_nrel.py
@@ -171,7 +163,7 @@ Generated:
 
 The script also creates the output directories for the CSF action reports.
 
-### 2. Run the CSF action report for the baseline case
+## 2. Run the CSF action report for the baseline case
 
 ```bash
 csf-actions NREL-5-MW.yaml action_nrel.yaml
@@ -187,13 +179,13 @@ The generated report is then checked against the official NREL 5-MW tower data r
 - `A` (axial stiffness) corresponds to `TwEAStif`.
 
 
-#  NREL 5-MW tower validation tables
+###  NREL 5-MW tower validation tables
 
 The validation uses the NREL 5-MW tower data from NREL/TP-500-38060, Section 6, Table 6-1 ([Jonkman et al., 2009](https://doi.org/10.2172/947422)). The CSF geometry uses the reported base and top diameters, with the 30% wall-thickness increase stated in Section 6: 6.0 m / 0.0351 m at the base and 3.87 m / 0.0247 m at the top. The radius and thickness are linearly tapered along the 87.6 m tower height.
 
 Agreement with the NREL reference values is better than 0.04% over the full tower height, confirming that the adopted geometry accurately reproduces the original NREL sectional stiffness distribution prior to the application of any degradation law.
 
-## 1. NREL reference values
+### NREL reference values
 
 | Elev. [m] | HtFract | TwFAStif [N m²] | TwSSStif [N m²] | TwGJStif [N m²] | TwEAStif [N] |
 |---:|---:|---:|---:|---:|---:|
@@ -209,7 +201,7 @@ Agreement with the NREL reference values is better than 0.04% over the full towe
 | 78.84 | 0.9 | 141.780E9 | 141.780E9 | 109.100E9 | 68.900E9 |
 | 87.60 | 1.0 | 115.820E9 | 115.820E9 | 89.100E9 | 62.660E9 |
 
-## 2. CSF values
+### CSF values
 
 | Elev. [m] | HtFract | TwFAStif [N m²] | TwSSStif [N m²] | TwGJStif [N m²] | TwEAStif [N] |
 |---:|---:|---:|---:|---:|---:|
@@ -225,7 +217,7 @@ Agreement with the NREL reference values is better than 0.04% over the full towe
 | 78.84 | 0.9 | 141.776E9 | 141.776E9 | 109.063E9 | 68.899E9 |
 | 87.60 | 1.0 | 115.820E9 | 115.820E9 | 89.096E9 | 62.661E9 |
 
-## 3. Difference [%], CSF vs NREL
+### Difference [%], CSF vs NREL
 
 | Elev. [m] | HtFract | TwFAStif [%] | TwSSStif [%] | TwGJStif [%] | TwEAStif [%] |
 |---:|---:|---:|---:|---:|---:|
@@ -240,9 +232,6 @@ Agreement with the NREL reference values is better than 0.04% over the full towe
 | 70.08 | 0.8 | +0.0004 | +0.0004 | -0.0319 | -0.0038 |
 | 78.84 | 0.9 | -0.0029 | -0.0029 | -0.0342 | -0.0022 |
 | 87.60 | 1.0 | -0.0000 | -0.0000 | -0.0046 | +0.0012 |
-
-
-
 
 
 Agreement with the NREL reference values is better than 0.04% over the full tower height, confirming that the adopted geometry accurately reproduces the original NREL sectional stiffness distribution prior to the application of any degradation law.
@@ -274,7 +263,7 @@ Agreement with the NREL reference values is better than 0.04% over the full towe
 >
 > which is consistent with the CSF integrated volume report.
 
-### 3. Run the CSF action report for the degraded case
+## 3. Run the CSF action report for the degraded case
 
 ```bash
 csf-actions NREL-5-MW-degr.yaml action_nrel-degr.yaml
@@ -314,9 +303,10 @@ The expression `np.maximum(0.84, ...)` sets a lower bound on the stiffness reduc
 The degradation field is intentionally continuous and smooth. No geometric discontinuities are introduced. This allows the validation to isolate the influence of localized stiffness variation without mixing it with geometric changes.
 
 The objective of this law is to create a more demanding convergence scenario for the beam discretization. In the undegraded tower, the stiffness varies smoothly because of the tower taper alone. In the degraded case, the additional local reductions create sharper axial gradients that are more difficult to reproduce with coarse beam discretizations. This makes the degraded configuration suitable for evaluating how the beam model converges toward the continuous stiffness function that CSF provides as the reference model.
+
 ## Structural loading configuration
 
-The validation uses the same structural loading configuration for both the undegraded and degraded tower models.
+Before the scenario-specific runs are executed, the structural loading configuration is defined once and used for both the baseline and degraded tower models.
 
 The tower is modelled as a cantilever beam:
 
@@ -331,18 +321,18 @@ The OpenSees model applies:
 * tip torsional moment `MZ_TIP = 3.0 × 10^6 N·m`;
 * uniform transverse distributed load `WY_DIST = 8.0 × 10^3 N/m`.
 
-The independent continuous baseline uses the load components that contribute directly to the reported checks: `FY_TIP`, `MX_TIP`, and `WY_DIST` for the transverse tip displacement `Uy`, and `MZ_TIP` for the torsional tip rotation `Rz`.
+The independent continuous baseline uses only the load components that contribute directly to the reported checks: `FY_TIP`, `MX_TIP`, and `WY_DIST` for the transverse tip displacement `Uy`, and `MZ_TIP` for the torsional tip rotation `Rz`.
 
 The axial tip force `FZ_TIP` is applied in the OpenSees model, but it is not included in the independent continuous baseline because the reported checks do not evaluate axial shortening or second-order geometric effects.
 
 The distributed load `WY_DIST` is applied through the OpenSees `-beamUniform` element load. For the present vertical tower configuration, its contribution to the reported transverse tip displacement is taken with the sign convention used consistently in both the OpenSees model and the independent continuous baseline.
-eference.
+
 
 ### 4. Run the CSF-OpenSees model for the baseline case
 
 Once the sectional properties have been verified against the official NREL reference data and the structural loads have been defined, the next step is to evaluate the structural response of the tower by transferring the CSF stiffness distribution to a beam finite-element model.
 
-The purpose of this step is to verify that the continuous sectional field defined by CSF produces the expected structural response when sampled and projected into OpenSees.
+The purpose of this step is to evaluate the structural response obtained when the continuous sectional field defined by CSF is sampled and used in the OpenSees beam model.
 
 The baseline tower model is executed with:
 
