@@ -522,7 +522,7 @@ The validation compares two computational paths that start from the same YAML-de
 
 ```text
 Path 1:  YAML → continuous CSF sectional field → Gauss section sampling → OpenSees beam model → tip response
-Path 2:  YAML → independent continuous section-property functions → tolerance-based integration grid → analytical integration → reference response
+Path 2:  YAML → independent continuous section-property functions → tolerance-based integration grid → analytical integration → tip reference response
 ```
 
 Path 1 uses the CSF model as a continuous sectional field. The field is sampled at Gauss section-integration points inside the OpenSees beam elements, and the resulting weighted sectional properties are transferred to the structural solver. In the reported validation tables, two Gauss section-sampling points per element are used.
