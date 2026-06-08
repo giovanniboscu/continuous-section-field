@@ -294,7 +294,7 @@ The resulting distribution is shown below.
 
 The law defines a baseline stiffness of `2.10 × 10^11` and introduces two localized Gaussian-shaped reductions along the tower height. The first reduction is centered at `z = 0.33 L` with amplitude `0.10`. The second is centered at `z = 0.67 L` with amplitude `0.14`. Both zones use the same characteristic width of `0.03 L`.
 
-The expression `np.maximum(0.84, ...)` sets a lower bound on the stiffness reduction. With the current parameters the two Gaussian zones do not overlap significantly, so the bound is not active. It acts as a safeguard if the parameters are changed.
+The expression `np.maximum(0.84, ...)` sets a lower bound on the stiffness factor. With the current parameters the two Gaussian zones do not overlap significantly, so the bound is not active. It acts as a safeguard if the parameters are changed.
 
 The degradation field is intentionally continuous and smooth. No geometric discontinuities are introduced. This allows the validation to isolate the influence of localized stiffness variation without mixing it with geometric changes.
 
