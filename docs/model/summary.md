@@ -515,8 +515,6 @@ Two configurations are analysed:
 
 The two configurations are defined by separate YAML inputs with identical geometry. The difference between them is limited to the longitudinal stiffness weighting law.
 
-As a preliminary check, the undegraded CSF model is first verified at the sectional-property level against the NREL 5-MW reference data reported in Table 6-1 of NREL/TP-500-38060. The CSF quantities are compared with the corresponding distributed stiffness entries: $EI_x$ with `TwFAStif`, $EI_y$ with `TwSSStif`, $GJ$ with `TwGJStif`, and $EA$ with `TwEAStif`. The maximum relative difference is below $0.04\%$ over the full tower height, confirming that the YAML-defined geometry and stiffness fields reproduce the original NREL sectional stiffness distribution before the structural-response comparison is performed.
-
 #### Validation design
 
 The validation compares two computational paths that start from the same YAML-defined tower model but use different response-evaluation procedures:
@@ -571,10 +569,13 @@ Both NREL configurations are analysed under the same loading conditions. The tow
 
 The same loading definition is used for the undegraded and degraded towers. Therefore, differences between the two configurations are caused by the sectional stiffness field, not by changes in loading or geometry. The beam discretization and the Gauss section sampling control how that field is projected into OpenSees.
 
-The NREL case involves two validation levels. First, the sectional properties generated from the CSF model are compared with the tabulated NREL tower data, to verify that the YAML model reproduces the reference distributed properties of the tower. Second, the structural response obtained from the CSF/OpenSees model is compared with an independent analytical reference, constructed from the same geometric and material definitions without using CSF section-sampling APIs or OpenSees.
+## Validation
+
+The NREL case involves two validation levels. First, the sectional properties generated from the CSF model are compared with the tabulated NREL tower data reported in Table 6-1 of NREL/TP-500-38060, to verify that the CSF model reproduces the reference distributed properties of the tower. The maximum relative difference is below $0.04%$ over the full tower height, confirming that the model reproduces the original NREL sectional stiffness distribution before the structural-response comparison is performed.
+
+Second, the structural response obtained from the CSF/OpenSees model is compared with an independent analytical reference, constructed from the same geometric and material definitions without using CSF section-sampling APIs or OpenSees.
 
 Within this validation workflow, the two CSF interaction modes serve different purposes. The declarative YAML workflow is used to define the tower model, inspect the sectional-property distributions, and generate plots and station-wise reports. The Python API is used in the CSF/OpenSees response calculation, where the CSF sectional field is evaluated programmatically at the stations required by the beam model. The independent analytical reference remains separate from this API-based CSF evaluation.
-
 
 
 #### Case A - undegraded tower
