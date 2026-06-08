@@ -274,7 +274,7 @@ Agreement with the NREL reference values is better than 0.04% over the full towe
 >
 > which is consistent with the CSF integrated volume report.
 
-# 3. Run the CSF action report for the degraded case
+### 3. Run the CSF action report for the degraded case
 
 ```bash
 csf-actions NREL-5-MW-degr.yaml action_nrel-degr.yaml
