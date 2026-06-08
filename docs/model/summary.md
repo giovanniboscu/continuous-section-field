@@ -56,7 +56,8 @@ The contribution of this work is the definition and implementation of a solver-i
 
 ### 2.1 Scope
 
-Standard beam workflows often describe sectional stiffness through prescribed sectional properties or material variations assigned along the member axis. This is restrictive for tapered, composite, or locally degraded members, where geometry and material participation may vary independently along the axis. CSF addresses this case by assigning independent geometric and participation fields to each zone of the section.
+The formulation targets members whose sectional variation is defined at the level of geometry and material contribution, with independent axial variation of shape, stiffness, degradation, or effective sectional involvement, before reducing the model to prescribed sectional-property distributions.
+
 
 ### 2.2 Zone-based continuous formulation
 
