@@ -578,9 +578,11 @@ Within this validation workflow, the two CSF interaction modes serve different p
 
 #### Case A - undegraded tower
 
-For the undegraded configuration, the stiffness field varies smoothly and monotonically. Convergence is rapid: a small number of beam elements is sufficient to reproduce the reference response with negligible error.
+For the undegraded configuration, the stiffness field varies smoothly and monotonically. This case is used as a baseline check of the undegraded tower model against the reference response.
 
-The transverse displacement $U_y$ converges at low discretization levels. The torsional rotation $R_z$ stabilises quickly and exhibits a small residual offset of approximately $3.44 \times 10^{-3}\,\%$ across all tested discretization levels. This offset is attributed to the thin-walled torsional approximation adopted internally by the CSF workflow, whereas the analytical reference uses the exact circular torsional constant $J = \tfrac{\pi}{2}(R_o^4 - R_i^4)$.
+The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated across the tested discretization levels. The torsional rotation $R_z$ exhibits a small residual offset of approximately $3.44 \times 10^{-3},%$ across all tested discretization levels. This offset is attributed to the thin-walled torsional approximation adopted internally by the CSF workflow, whereas the analytical reference uses the exact circular torsional constant $J = \tfrac{\pi}{2}(R_o^4 - R_i^4)$.
+
+
 
 #### Case B - degraded tower
 
