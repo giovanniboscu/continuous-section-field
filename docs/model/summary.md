@@ -688,7 +688,7 @@ Accordingly, CSF should be interpreted as the continuous sectional-field represe
 
 ### Future extensions
 
-These limitations suggest three natural extensions of the present framework.First, automatic evaluation of derivatives of sectional properties and participation-weighted stiffness fields would facilitate coupling with non-prismatic beam formulations that explicitly require longitudinal gradients of geometric and constitutive quantities. Second, support for curved member axes would extend the applicability of the framework beyond straight beam-like structures. Third, tighter integration with nonlinear structural solvers could allow participation fields to evolve during the analysis, enabling applications beyond the current static sectional representation.
+These limitations suggest three natural extensions of the present framework. First, automatic evaluation of derivatives of sectional properties and participation-weighted stiffness fields would facilitate coupling with non-prismatic beam formulations that explicitly require longitudinal gradients of geometric and constitutive quantities. Second, support for curved member axes would extend the applicability of the framework beyond straight beam-like structures. Third, tighter integration with nonlinear structural solvers could allow participation fields to evolve during the analysis, enabling applications beyond the current static sectional representation.
 
 
 ## Data Availability
