@@ -458,7 +458,7 @@ openseeslab_output_NREL-5-MW-degr
 baseline_output_NREL-5-MW-degr
 ```
 
-The `openseeslab_output_*` directories contain the results produced by the CSF-OpenSees projection:
+The `openseeslab_output_*` directories contain the results produced by  OpenSees sampling of the continuous CSF field
 
 * raw nodal-resultant CSV files;
 * tip-response CSV files;
@@ -478,7 +478,7 @@ This organization keeps the two validation cases separated and also keeps the tw
 
 The validation compares two computational paths applied to the same YAML-defined tower models.
 
-The first path is the CSF-OpenSees projection. The YAML file defines the continuous sectional field, and OpenSees receives a sampled beam-model representation of that field.
+The first path is the OpenSees sampling of the continuous CSF field. The YAML file defines the continuous sectional field, and OpenSees receives a sampled beam-model representation of that field.
 
 The second path is the independent continuous baseline. It reads the same YAML input, reconstructs the required geometry and stiffness distributions, and computes the response by direct integration without using OpenSees and without calling CSF section-sampling APIs.
 
@@ -491,7 +491,7 @@ Two tower configurations are considered:
 
 The undegraded case checks the response of the smooth baseline tower model. Since the stiffness field varies regularly along the height, the CSF-OpenSees projection is expected to be less sensitive to the axial discretization.
 
-The degraded case is more demanding. The local stiffness reductions introduce sharper variations in the continuous field. Coarser beam discretizations may under-sample these variations, while denser or richer section sampling improves the agreement with the continuous baseline.
+The degraded case is more demanding. The local stiffness reductions introduce sharper variations in the continuous field. Coarser beam discretizations may under-sample these variations, while denser section sampling improves the agreement with the continuous baseline.
 
 The comparison supports the consistency of:
 
@@ -507,7 +507,7 @@ The final comparison is reported in:
 
 That document collects the OpenSees tip responses and compares them against the independent continuous baseline for both tower configurations. The reported quantities are the transverse tip displacement `Uy`, the torsional tip rotation `Rz`, the number of OpenSees elements, the number of CSF section evaluations, and the relative errors with respect to the continuous baseline.
 
-The comparison therefore supports the intended validation message: CSF defines a continuous sectional model, while the beam solver receives a sampled projection of that model. The discretization controls how the field is interrogated; it does not define the field itself.
+The comparison therefore supports the intended validation message: CSF defines a continuous sectional model, while the beam solver receives a sampled representation of that model. The discretization controls how the field is interrogated; it does not define the field itself.
 
 ## Summary
 
