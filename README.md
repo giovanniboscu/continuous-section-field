@@ -340,7 +340,7 @@ The following table reports the full output of the validation script, comparing 
   Jonkman, J., Butterfield, S., Musial, W., and Scott, G.  
   "Definition of a 5-MW Reference Wind Turbine for Offshore System Development,"  
   NREL/TP-500-38060, February 2009.
-  - [Download PDF (NREL)](https://www.nrel.gov/docs/fy09osti/38060.pdf)
+  - [Download PDF (NREL)](https://doi.org/10.2172/947422)
   - [OpenFAST documentation](https://openfast.readthedocs.io/en/main/)
   - [NREL wind research portal](https://www.nrel.gov/wind/)
     
