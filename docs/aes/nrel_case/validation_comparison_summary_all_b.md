@@ -82,7 +82,7 @@ The relative-error columns are reported in percent and are computed as:
 
 The reference values are obtained from the independent continuous baseline. The reference integration grid is not prescribed as a fixed number of sections; it is selected from the admissible tolerance `REF_TOL_PCT` over the tested sequence of integration grids.
 
-In the undegraded case, the response stabilizes rapidly because the sectional stiffness field varies smoothly along the tower height. In the degraded case, the localized stiffness reductions make the sampled CSF-to-OpenSees sampling more sensitive to the axial discretization and to the section-sampling density.
+In the undegraded case, the response stabilizes rapidly because the sectional stiffness field varies smoothly along the tower height. In the degraded case, the localized stiffness reductions make the OpenSees sampling of the continuous CSF field more sensitive to the axial discretization and to the section-sampling density.
 
 After stabilization, the residual error in `Uy` is of order `10^-4 %` for both configurations. The residual error in `Rz` remains of order `10^-3 %`, approximately `3.44 × 10^-3 %` for the undegraded case and `3.48 × 10^-3 %` for the degraded case.
 
