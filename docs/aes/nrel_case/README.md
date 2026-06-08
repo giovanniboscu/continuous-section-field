@@ -329,8 +329,6 @@ The axial tip force `FZ_TIP` is applied in the OpenSees model, but it is not inc
 
 Once the sectional properties have been verified against the official NREL reference data and the structural loads have been defined, the next step is to evaluate the structural response of the tower by transferring the CSF stiffness distribution to a beam finite-element model.
 
-The purpose of this step is to evaluate the structural response obtained when the continuous sectional field defined by CSF is sampled and used in the OpenSees beam model.
-
 The baseline tower model is executed with:
 
 ```bash
@@ -339,7 +337,7 @@ python3 run_csf_opensees_gaussN.py NREL-5-MW.yaml --gauss-points 2
 
 The script reads the tower geometry and stiffness distribution from the YAML file, samples the continuous CSF sectional field along the tower axis, and builds the corresponding OpenSees beam model. The analysis computes the transverse tip displacement, the torsional tip rotation, and the nodal resultants along the tower height.
 
-In this validation case, the CSF field is sampled with two Gauss section-integration points per beam element. The number of Gauss points is a parameter of the CSF-to-OpenSees projection and does not modify the YAML model definition.
+In this validation case, the CSF field is sampled with two Gauss section-integration points per beam element. The number of Gauss points is a parameter of the OpenSees sampling of the continuous CSF field and does not modify the YAML model definition.
 
 The outputs are written to:
 
@@ -353,9 +351,9 @@ This directory contains the structural response reports, numerical outputs, and 
 
 ### 5. Run the independent continuous baseline for the baseline case
 
-After the CSF-OpenSees model has been executed, the same baseline YAML input is evaluated with an independent continuous-reference procedure.
+After the CSF-OpenSees model has been executed, the same baseline YAML input is processed with an independent continuous-reference procedure.
 
-The purpose of this step is to provide a second response calculation that is independent from the OpenSees beam model. This reference calculation does not use OpenSees and does not call CSF section-sampling APIs. It reads the same YAML input data, reconstructs the geometry and stiffness distributions required for the calculation, and computes the structural response by direct integration.
+The purpose of this step is to provide a second response calculation that is independent of the OpenSees beam model. This reference calculation does not use OpenSees and does not call CSF section-sampling APIs. It reads the same YAML input data, reconstructs the geometry and stiffness distributions required for the calculation, and computes the structural response by direct integration.
 
 The independent continuous baseline is executed with:
 
