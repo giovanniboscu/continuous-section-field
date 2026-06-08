@@ -272,9 +272,8 @@ This produces the section-property report for the degraded tower.
 
 The purpose of this step is to verify that the degradation law has been correctly introduced into the stiffness distribution before running the structural analysis. The degraded model uses the same tower geometry as the baseline model; only the longitudinal stiffness distribution is modified through `weight_laws`.
 
-The action report provides a direct check of the degraded stiffness field, allowing the sectional quantities and plots to be inspected along the tower height and confirming that the reduction is applied correctly to the tower wall stiffness.
+The action report provides a direct check of the degraded stiffness field along the tower height, confirming at the section level that the reduction introduced through `weight_laws` is applied before the structural beam model is run.
 
-This step is important because the degraded structural response is meaningful only if the degradation law has first been verified at the section level. The degradation is inspected as a continuous field along the tower height before being transferred to the structural beam model.
 
 ## Longitudinal stiffness degradation law
 
