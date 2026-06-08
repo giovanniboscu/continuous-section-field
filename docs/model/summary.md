@@ -515,6 +515,7 @@ Two configurations are analysed:
 
 The two configurations are defined by separate YAML inputs with identical geometry. The difference between them is limited to the longitudinal stiffness weighting law.
 
+As a preliminary check, the undegraded CSF model is first verified at the sectional-property level against the NREL 5-MW reference data reported in Table 6-1 of NREL/TP-500-38060. The CSF quantities are compared with the corresponding distributed stiffness entries: $EI_x$ with `TwFAStif`, $EI_y$ with `TwSSStif`, $GJ$ with `TwGJStif`, and $EA$ with `TwEAStif`. The maximum relative difference is below $0.04\%$ over the full tower height, confirming that the YAML-defined geometry and stiffness fields reproduce the original NREL sectional stiffness distribution before the structural-response comparison is performed.
 
 #### Validation design
 
