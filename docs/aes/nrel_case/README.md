@@ -231,7 +231,7 @@ The validation uses the NREL 5-MW tower data from NREL/TP-500-38060, Section 6, 
 | 87.60 | 1.0 | -0.0000 | -0.0000 | -0.0046 | +0.0012 |
 
 
-Agreement with the NREL reference values is better than 0.04% over the full tower height, confirming that the adopted geometry accurately reproduces the original NREL sectional stiffness distribution prior to the application of any degradation law.
+Agreement with the NREL reference values is better than 0.04% over the full tower height, confirming that the CSF model reproduces the original NREL sectional stiffness distribution prior to the application of any degradation law.
 
 > **Volume consistency note.**  
 > This volume check is not intended as the main validation metric. Its role is to document that the generated CSF geometry is also integrated consistently by the same workflow used to produce the sectional reports and the downstream OpenSees model. The corresponding CSF volume report is:
