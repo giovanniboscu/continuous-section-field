@@ -84,7 +84,7 @@ The two files define the same tower geometry. Their difference is limited to the
 
 The script also creates the output directories used by the CSF action reports, so that the following analysis steps can write their results to a reproducible folder structure.
 
-### Step 2. CSF action reports
+### CSF action reports
 
 Before running the structural model, the tower section properties are inspected for both the baseline and degraded scenarios using `csf-actions`, to verify that the geometry and participation fields produce the expected stiffness distribution along the axis.
 
@@ -121,9 +121,7 @@ YAML input → continuous CSF sectional field → N Gauss points section samplin
 
 ### Independent continuous baseline
 
-* `run_analytical_reference.py`
-
-This script computes the tip displacement and torsional rotation through an independent continuous-reference procedure. The reference path does not call CSF section-sampling APIs. Instead, it reads the same YAML input file, extracts the boundary geometry and the longitudinal stiffness law, and reconstructs the continuous functions used for the analytical integration.
+The baseline is computed by `run_analytical_reference.py`. The script evaluates the tip displacement and torsional rotation through a procedure that does not call CSF section-sampling APIs. Instead, it reads the same YAML input file, extracts the boundary geometry and the longitudinal stiffness law, and reconstructs the continuous functions used for the analytical integration.
 
 The tower is loaded with the same transverse tip force, tip bending moment, torsional tip moment, and uniform distributed transverse load used in the OpenSees model. The axial force applied in OpenSees is not used in this independent reference, because this check does not evaluate axial shortening or second-order geometric effects.
 
