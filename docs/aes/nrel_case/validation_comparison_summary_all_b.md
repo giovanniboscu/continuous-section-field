@@ -18,7 +18,7 @@ The comparison is performed for two tower configurations:
 1. the undegraded NREL 5-MW reference tower;
 2. the same tower with a localized longitudinal stiffness degradation law.
 
-The objective is not only to verify numerical agreement, but also to check how the same YAML-defined continuous sectional field is projected into the beam model when the stiffness distribution is smooth or locally degraded.
+The objective is not only to verify numerical agreement, but also to check how the same YAML-defined continuous sectional field is sampled by the beam model when the stiffness distribution is smooth or locally degraded.
 
 ## Conceptual structure
 
