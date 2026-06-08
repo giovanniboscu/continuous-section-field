@@ -85,19 +85,22 @@ The two files define the same tower geometry. The difference between them is lim
 The script also creates the output directories used by the CSF action reports, so that the following analysis steps can write their results in a reproducible folder structure.
 
 
-
 ### CSF action reports
 
-Before running the structural model, the section properties are inspected along the tower axis to verify that the geometry and stiffness distribution have been correctly defined.
+Before running the structural model, the tower section properties are inspected using `csf-actions` to verify that the geometry and participation fields produce the expected stiffness distribution along the axis.
 
-The action files are:
+The geometry files define the tower geometry and participation fields:
 
-- `action_nrel.yaml`
-- `action_nrel-degr.yaml`
+* `NREL-5-MW.yaml`
+* `NREL-5-MW-degr.yaml`
 
-Each file configures the section-property inspection for one scenario. When executed, they produce plots and numerical tables of the sectional quantities along the tower height - area, bending stiffness, torsional stiffness - allowing the geometry and stiffness distribution to be checked before the structural model is run.
+The corresponding action files define the inspections to be performed:
 
-The baseline action file is applied to `NREL-5-MW.yaml`, while the degraded action file is applied to `NREL-5-MW-degr.yaml`.
+* `action_nrel.yaml`
+* `action_nrel-degr.yaml`
+
+Each action file produces plots and numerical tables of the sectional quantities along the tower height, including area, bending stiffness, and torsional stiffness.
+
 
 
 ### CSF-OpenSees model
