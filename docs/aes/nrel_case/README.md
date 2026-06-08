@@ -110,14 +110,13 @@ The tip displacement and torsional rotation are computed for several uniform bea
 
 The OpenSees model uses force-based beam-column elements with two Gauss section-integration points per element. The number of Gauss points is exposed by the script as a parameter of the OpenSees sampling of the continuous CSF field.
 
-his is the numerical path:
+This is the numerical path:
 
 ```text
-YAML input → continuous CSF sectional field → N Gauss points section sampling → OpenSees beam model → tip response
-```
+YAML input → continuous CSF sectional field → section sampling → OpenSees beam model → tip response```
 
 
-> The YAML files define the tower geometry with the steel material already incorporated. The sectional quantities - such as `EA`, `EI`, and `GJ` -  therefore already include the material stiffness. When transferring these to a structural solver such as OpenSees, the material must not be applied a second time. For this reason, the validation model uses neutral carriers (`E = G = 1.0`) and passes the weighted quantities directly as `A = EA`, `I = EI`, and `J = GJ`.
+> In this workflow, the elastic moduli `E` and `G` are already included in the sectional stiffnesses computed by CSF. Therefore, they must not be applied again in OpenSees. The OpenSees model uses neutral material parameters and receives the CSF-computed stiffness quantities directly.
 
 ### Independent continuous baseline
 
