@@ -30,8 +30,8 @@ The degraded configuration represents a more demanding case. The geometry remain
 
 The two cases therefore test different aspects of the same workflow:
 
-* the undegraded case checks the CSF-to-OpenSees projection for a smoothly varying continuous sectional field;
-* the degraded case checks the same projection when the continuous sectional field contains localized stiffness reductions.
+* the undegraded case checks the CSF-to-OpenSees sampling for a smoothly varying continuous sectional field;
+* the degraded case checks the same sampling when the continuous sectional field contains localized stiffness reductions.
 
 The comparison is not intended to make convergence the main result. Rather, it shows that the YAML-defined continuous sectional field remains the model object, while the beam discretization and the Gauss section sampling control how that field is projected into OpenSees.
 
@@ -60,10 +60,10 @@ The comparison focuses on the following response quantities:
 * `Uy`: transverse tip displacement;
 * `Rz`: torsional tip rotation;
 * `Gauss points`: internal section-sampling points per OpenSees beam element;
-* `Section evaluations`: number of CSF section evaluations used by the CSF-to-OpenSees projection;
+* `Section evaluations`: number of CSF section evaluations used by the CSF-to-OpenSees sampling;
 * relative error: `100 * (OpenSees - reference) / reference`, reported as a percentage.
 
-The number of section evaluations is reported because it measures how many times the continuous CSF sectional field is sampled to build the OpenSees beam model. It is therefore a property of the solver projection, not of the YAML model definition.
+The number of section evaluations is reported because it measures how many times the continuous CSF sectional field is sampled to build the OpenSees beam model. It is therefore a property of the solver sampling, not of the YAML model definition.
 
 
 ## Numerical tables
@@ -82,7 +82,7 @@ The relative-error columns are reported in percent and are computed as:
 
 The reference values are obtained from the independent continuous baseline. The reference integration grid is not prescribed as a fixed number of sections; it is selected from the admissible tolerance `REF_TOL_PCT` over the tested sequence of integration grids.
 
-In the undegraded case, the response stabilizes rapidly because the sectional stiffness field varies smoothly along the tower height. In the degraded case, the localized stiffness reductions make the sampled CSF-to-OpenSees projection more sensitive to the axial discretization and to the section-sampling density.
+In the undegraded case, the response stabilizes rapidly because the sectional stiffness field varies smoothly along the tower height. In the degraded case, the localized stiffness reductions make the sampled CSF-to-OpenSees sampling more sensitive to the axial discretization and to the section-sampling density.
 
 After stabilization, the residual error in `Uy` is of order `10^-4 %` for both configurations. The residual error in `Rz` remains of order `10^-3 %`, approximately `3.44 × 10^-3 %` for the undegraded case and `3.48 × 10^-3 %` for the degraded case.
 
@@ -118,10 +118,10 @@ For each scenario, the script compares the tested beam discretizations against t
 * torsional tip rotation `Rz`;
 * number of OpenSees elements;
 * number of Gauss section-sampling points per element;
-* number of CSF section evaluations used by the solver projection;
+* number of CSF section evaluations used by the solver sampling;
 * relative errors with respect to the independent continuous baseline.
 
-The command above uses two Gauss section-sampling points per element, which is the configuration reported in the main validation tables. The Gauss-point count is a parameter of the CSF-to-OpenSees projection and can be changed without modifying the YAML model definition.
+The command above uses two Gauss section-sampling points per element, which is the configuration reported in the main validation tables. The Gauss-point count is a parameter of the CSF-to-OpenSees sampling and can be changed without modifying the YAML model definition.
 
 The script reads:
 
@@ -148,7 +148,7 @@ In this configuration, the tower geometry is tapered and the stiffness field var
 
 The expected behaviour is a stable response with a limited number of beam elements, because the sectional stiffness field is regular and does not contain localized reductions.
 
-The plots show the tip displacement and torsional rotation obtained from the CSF-to-OpenSees projection for the tested uniform beam discretizations.
+The plots show the tip displacement and torsional rotation obtained from the CSF-to-OpenSees sampling for the tested uniform beam discretizations.
 
 ![Undegraded NREL tower - tip displacement convergence](openseeslab_output_NREL-5-MW/plot_tip_displacement_convergence.png)
 
@@ -162,7 +162,7 @@ The numerical results confirm the expected behaviour. The transverse displacemen
 
 The remaining `Rz` offset is small and nearly constant after stabilization. It is therefore not interpreted as an axial discretization effect, but as the residual difference between the torsional constant used in the independent continuous baseline and the `J_sv_cell` value transferred by the CSF/OpenSees workflow.
 
-This case verifies that, for a smoothly varying sectional stiffness field, the sampled CSF-to-OpenSees projection reproduces the independent continuous baseline with few beam elements.
+This case verifies that, for a smoothly varying sectional stiffness field, the sampled CSF-to-OpenSees sampling reproduces the independent continuous baseline with few beam elements.
 
 
 ## Case B - degraded NREL tower
@@ -171,9 +171,9 @@ The degraded NREL tower is the more demanding validation case.
 
 In this configuration, the tower geometry is unchanged, but the longitudinal stiffness field is locally reduced. The degradation law introduces localized variations along the member axis, making the response more sensitive to how the continuous sectional field is sampled before being transferred to OpenSees.
 
-This case shows that the quality of the CSF-to-OpenSees projection cannot be inferred only from the smooth undegraded configuration. A beam discretization that is sufficient for the baseline tower may under-sample the degraded portions of the stiffness field.
+This case shows that the quality of the CSF-to-OpenSees sampling cannot be inferred only from the smooth undegraded configuration. A beam discretization that is sufficient for the baseline tower may under-sample the degraded portions of the stiffness field.
 
-The plots show the tip displacement and torsional rotation obtained from the CSF-to-OpenSees projection for the tested uniform beam discretizations.
+The plots show the tip displacement and torsional rotation obtained from the CSF-to-OpenSees sampling for the tested uniform beam discretizations.
 
 ![Degraded NREL tower - tip displacement convergence](openseeslab_output_NREL-5-MW-degr/plot_tip_displacement_convergence.png)
 
@@ -191,18 +191,18 @@ This case demonstrates the role of the continuous CSF representation: the degrad
 
 ## Observations and conclusions
 
-The undegraded and degraded configurations show different sensitivities to the CSF-to-OpenSees projection.
+The undegraded and degraded configurations show different sensitivities to the CSF-to-OpenSees sampling.
 
 In the undegraded case, the sectional stiffness field varies smoothly along the tower height because of the geometric taper. The OpenSees response stabilizes rapidly, indicating that a limited number of beam elements and section evaluations is sufficient to sample the continuous field for the reported global response quantities.
 
 In the degraded case, the geometry is unchanged but the stiffness field contains localized longitudinal reductions. The response is therefore more sensitive to how the continuous field is sampled before being transferred to the beam model. Coarse discretizations may under-sample the degraded regions, while finer axial discretization and richer section sampling recover a stable response close to the independent continuous baseline.
 
-This behaviour supports the main validation message. The YAML file defines the sectional model as a continuous field. The OpenSees beam model receives a sampled projection of that field, and the independent continuous baseline provides a separate reference path reconstructed from the same YAML input.
+This behaviour supports the main validation message. The YAML file defines the sectional model as a continuous field. The OpenSees beam model receives a sampled sampling of that field, and the independent continuous baseline provides a separate reference path reconstructed from the same YAML input.
 
 The comparison therefore supports the consistency of:
 
 * the YAML-defined continuous sectional field;
-* the CSF-to-OpenSees sampled projection;
+* the CSF-to-OpenSees sampled sampling;
 * the degraded stiffness law;
 * the independent continuous-baseline calculation.
 
