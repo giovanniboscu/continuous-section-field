@@ -95,13 +95,14 @@ w_i(z) = w(z)
 \qquad \forall i .
 $$
 
-For isotropic materials, when the axial/bending field $w_i(z)$ represents a Young's-modulus quantity, the shear/torsion field follows from the isotropic shortcut
+For isotropic materials, when the axial/bending field $w_i(z)$ represents a Young's-modulus quantity, the shortcut `iso(ν)` assigns the shear/torsion field as
 
 $$
 \kappa_i(z) = \frac{w_i(z)}{2(1+\nu)} ,
 $$
 
-parametrized by the Poisson ratio $\nu$. This shortcut fixes only the ratio $\kappa_i/w_i = G/E$; it does not constrain the absolute scale of the fields. In the general case $w_i(z)$ and $\kappa_i(z)$ are assigned independently, allowing the model to represent non-isotropic participation, selective stiffness degradation, or hybrid material compositions.
+where $\nu$ is the Poisson ratio. This shortcut derives $\kappa_i(z)$ directly from $w_i(z)$ through the isotropic shear-modulus relation; $\kappa_i(z)$ is therefore not an additional independent field. Its magnitude is fixed by the prescribed $w_i(z)$ and by $\nu$, while its axial variation follows that of $w_i(z)$. In the general case, $w_i(z)$ and $\kappa_i(z)$ are assigned independently, allowing the model to represent non-isotropic effective participation, selective stiffness degradation, or hybrid material compositions.
+
 
 When the participation fields are constant and the vertex coordinates are interpolated linearly between reference stations, the resulting sectional quantities are not arbitrary interpolants. The geometric quantities
 
