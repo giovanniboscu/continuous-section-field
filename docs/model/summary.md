@@ -652,8 +652,7 @@ Table 1 reports the relative errors in tip displacement $U_y$ and torsional rota
 
 
 > **Note:** At high discretization levels the relative error in $U_y$ stabilises 
-> near zero ($\sim 10^{-4}\,\%$), reflecting the numerical precision of the 
-> 2001-point reference integration rather than a modelling inconsistency.
+> near zero ($\sim 10^{-4}\,\%$). This residual level reflects the numerical precision of the independently selected reference integration grid, which in this case corresponds to 2001 points, rather than a modelling inconsistency..
 
 The continuous stiffness representation enables this convergence study. With a fixed discrete table - as in the original NREL reference definition, which provides properties at 11 stations - the structural description is tied to the prescribed stations and its axial resolution cannot be refined independently. The continuous representation decouples the member definition from its numerical discretization: the same YAML input can be sampled at any resolution, allowing convergence toward the reference solution to be progressively assessed.
 
