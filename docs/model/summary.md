@@ -567,8 +567,7 @@ The NREL tower provides a convenient application case because its circular annul
 
 Both NREL configurations are analysed under the same loading conditions. The tower is modelled as a cantilever beam, fixed at the base and loaded at the free end. The structural model includes a transverse tip force, an axial tip force, a tip bending moment, a torsional tip moment, and a uniform transverse distributed load. These loads are not intended to reproduce a full aeroelastic operating condition; they define a controlled static test case for comparing the CSF-to-OpenSees response with the independent continuous baseline.
 
-The same loading definition is used for the undegraded and degraded towers. Therefore, differences between the two configurations are caused by the sectional stiffness field, not by changes in loading or geometry. The beam discretization and the Gauss section sampling control how that field is sampled by the OpenSees model.
-
+The same loading definition is used for the undegraded and degraded towers. Therefore, differences between the two configurations are caused by the sectional stiffness field, not by changes in loading or geometry. 
 
 ## Validation
 
