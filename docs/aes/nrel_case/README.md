@@ -137,7 +137,7 @@ The CSF-OpenSees model and the independent continuous baseline are evaluated as 
 
 ---
 
-##  Workflow execution sequence
+## Workflow execution sequence
 
 Run the complete validation workflow in this order.
 
@@ -175,6 +175,7 @@ The generated report is then checked against the official NREL 5-MW tower data r
 - `J_sv_cell` (Saint-Venant torsional stiffness) corresponds to `TwGJStif`;
 - `A` (axial stiffness) corresponds to `TwEAStif`.
 
+In CSF, the reported sectional quantities are weighted by the assigned participation fields; in this validation, they therefore correspond directly to stiffness quantities rather than to purely geometric section properties.
 
 ###  NREL 5-MW tower validation tables
 
