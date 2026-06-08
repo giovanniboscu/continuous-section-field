@@ -35,7 +35,7 @@ Both scenarios use the same geometry. The degraded case modifies only the longit
 
 The workflow consists of four steps: generating the input files, verifying the section properties, computing the structural response with a numerical model, and checking it against an independent analytical reference.
 
-### Geometry and action generation
+### Step 1. Geometry and participation-field definition
 
 CSF (Continuous Section Field) is the tool used to compute and represent the sectional properties of the tower continuously along its axis.
 
@@ -73,21 +73,20 @@ The geometric parameters used to generate the two boundary sections are:
 
 
 
-Each cross-section is an annular closed cell encoded as a single `@cell` polygonal path composed of the outer and inner contours with opposite orientation.
+Each cross-section is an annular closed cell encoded as a single `@cell` polygonal path, composed of outer and inner contours with opposite orientation.
 
 The script generates two YAML models:
 
-- `NREL-5-MW.yaml` - baseline tower model, with the original stiffness distribution;
-- `NREL-5-MW-degr.yaml` - degraded tower model, with the same geometry and a longitudinal stiffness reduction law.
+* `NREL-5-MW.yaml` — baseline tower model, with the original stiffness distribution;
+* `NREL-5-MW-degr.yaml` — degraded tower model, with the same geometry and a longitudinal stiffness-reduction law.
 
-The two files define the same tower geometry. The difference between them is limited to the stiffness weighting law assigned through `weight_laws`.
+The two files define the same tower geometry. Their difference is limited to the stiffness weighting law assigned through `weight_laws`.
 
-The script also creates the output directories used by the CSF action reports, so that the following analysis steps can write their results in a reproducible folder structure.
+The script also creates the output directories used by the CSF action reports, so that the following analysis steps can write their results to a reproducible folder structure.
 
+### Step 2. CSF action reports
 
-### CSF action reports
-
-Before running the structural model, the tower section properties are inspected using `csf-actions` to verify that the geometry and participation fields produce the expected stiffness distribution along the axis.
+Before running the structural model, the tower section properties are inspected for both the baseline and degraded scenarios using `csf-actions`, to verify that the geometry and participation fields produce the expected stiffness distribution along the axis.
 
 The geometry files define the tower geometry and participation fields:
 
