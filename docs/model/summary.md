@@ -332,7 +332,7 @@ The example consists of two CSF intervals assembled into a single member. Each s
 </p>
 
 <p align="center">
-  <em>Figure 1. Stacked rectangular member used in the closed-form verification</em>
+  <em>Figure 1. Longitudinal view of the stacked rectangular member used for the closed-form verification</em>
 </p>
 
 
