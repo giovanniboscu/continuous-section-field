@@ -324,6 +324,19 @@ A controlled stacked-section example is introduced to verify, under closed-form 
 
 The example consists of two CSF intervals assembled into a single member. Each section is composed of three rectangular components: an upper component, a middle component, and a lower component. The upper and middle components keep constant geometry, while the lower component changes its height along the member axis. At the same time, the participation fields of the upper component vary continuously.
 
+
+<p align="center">
+  
+<img width="741" height="277" alt="image" src="https://github.com/user-attachments/assets/bba4130c-9ea7-4d46-9ad0-6a437a97ce05" />
+
+</p>
+
+<p align="center">
+  <em>Figure 1. Cross-section evaluated at z = 0.</em>
+</p>
+
+
+
 The model is therefore hybrid in the participation-field sense. The middle and lower components retain an isotropic coupling between axial/bending and shear/torsion participation through `iso(0.2)` (`iso(ν)`), whereas the upper component is assigned independent axial/bending and shear/torsion participation fields. This construction separates three effects that are usually coupled in a discrete section description: the geometric variation of one part of the section, the axial/bending participation variation of another part, and the independent shear/torsion participation assigned to that same part.
 
 
