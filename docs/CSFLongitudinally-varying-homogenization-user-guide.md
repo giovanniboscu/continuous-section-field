@@ -473,6 +473,10 @@ This means that the shear/torsion participation is computed as a function of the
 
 By defining `w_i(z)` and `shear_w_i(z)` separately, CSF can represent an equivalent 1D non-isotropic sectional participation model, where axial/bending and shear/torsion behavior may follow different longitudinal laws.
 
+### Shear Void
+When `shear_w_i(z)` is defined independently from `w_i(z)`, the void condition must be interpreted separately for the two participation fields. A region with `weight = 0.0` is void with respect to the axial/bending participation field, but it may still contribute to shear/torsion if its `shear_weight` is non-zero. Conversely, a region with zero `shear_weight` is inactive for shear/torsion while it may still contribute to axial/bending through a non-zero `weight`. The same region behaves as a void in both participation fields only when both `weight` and `shear_weight` are zero.
+
+
 ### Unit convention
 
 CSF is unit-system agnostic.
