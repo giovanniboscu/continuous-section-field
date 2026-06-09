@@ -14,6 +14,8 @@ No structural solver is involved in this example. The objective is to verify the
 
 ---
 
+<img width="741" height="277" alt="image" src="https://github.com/user-attachments/assets/6f1d5bf7-8eca-4427-9cb3-90aa33c70d4b" />
+
 
 # 1. Inspection of a single CSF interval with `csf-actions`
 
