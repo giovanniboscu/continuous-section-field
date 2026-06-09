@@ -663,7 +663,7 @@ The degraded case makes this distinction explicit. At 8 elements the error in $U
 
 The two cases exhibit qualitatively different convergence regimes under the same beam formulation. The undegraded case converges rapidly and uniformly, whereas the degraded case is more sensitive to axial discretization before stabilising.
 
-This behaviour is a consequence of the continuous nature of the sectional representation, rather than a limitation of the beam formulation itself. The continuous field defines the reference; the discretization quality is assessed by its convergence toward that reference. This design choice makes the validation independent of any particular downstream solver.
+This interpretation is enabled by the continuous nature of the sectional representation, rather than by treating the station discretization as the model itself.
 
 
 [Complete workflow, convergence plots, and numerical tables for the NREL validation case](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case)
