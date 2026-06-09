@@ -133,7 +133,7 @@ YAML input → continuous section-property functions → tolerance-based integra
 
 The purpose of this independent path is to avoid validating the CSF-OpenSees model only against another output produced by the same computational machinery. The baseline uses the same physical input file, but follows an autonomous integration procedure. Therefore, agreement with the beam model verifies the sampled OpenSees model against an independently reconstructed continuous reference.
 
-The CSF-OpenSees model and the independent continuous baseline are evaluated as paired procedures for each scenario: first for the baseline tower model, and then for the degraded tower model.
+#### The CSF-OpenSees model and the independent continuous baseline are evaluated as paired procedures for each scenario: first for the baseline tower model, and then for the degraded tower model.
 
 
 ---
