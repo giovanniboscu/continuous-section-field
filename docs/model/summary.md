@@ -535,7 +535,7 @@ The use of two separate computational procedures provides a more robust validati
 The reference integration grid is not fixed a priori. It is selected from a prescribed admissible tolerance, denoted here as `REF_TOL_PCT`, over a tested sequence of integration grids. The selected grid is then used to compute the reference tower-head transverse displacement and torsional rotation.
 
 
-The key response quantities are the transverse tip displacement $U_y$ and the torsional tip rotation $R_z$. The relative error is reported as
+The comparison is based on the tip-response quantities produced by the two paths: the transverse tip displacement $U_y$ and the torsional tip rotation $R_z$. For each quantity, the signed relative error is reported as
 
 $$
 \varepsilon =
