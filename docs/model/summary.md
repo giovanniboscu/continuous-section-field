@@ -718,6 +718,10 @@ The source code, input files, validation workflows, figures, and numerical data 
 
 https://github.com/giovanniboscu/continuous-section-field
 
+The reproduction material for the examples discussed in this paper is collected in:
+
+docs/aes/
+
 The archived software release is available on Zenodo with DOI:
 
 https://doi.org/10.5281/zenodo.19076181
