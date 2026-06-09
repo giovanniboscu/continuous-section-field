@@ -167,6 +167,8 @@ The script also creates the output directories for the CSF action reports.
 csf-actions NREL-5-MW.yaml action_nrel.yaml
 ```
 
+<img width="994" height="648" alt="image" src="https://github.com/user-attachments/assets/f78a6e3e-a499-4050-83b5-674aa3a6c60c" />
+
 This produces the section-property report for the baseline tower.
 
 The generated report is then checked against the official NREL 5-MW tower data reported in Table 6-1. The CSF section-property output uses the following notation, which maps directly to the NREL reference quantities:
