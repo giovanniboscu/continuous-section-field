@@ -534,17 +534,6 @@ The use of two separate computational procedures provides a more robust validati
 
 The reference integration grid is not fixed a priori. It is selected from a prescribed admissible tolerance, denoted here as `REF_TOL_PCT`, over a tested sequence of integration grids. The selected grid is then used to compute the reference tower-head transverse displacement and torsional rotation.
 
-
-The comparison is based on the tip-response quantities produced by the two paths: the transverse tip displacement $U_y$ and the torsional tip rotation $R_z$. For each quantity, the signed relative error is reported as
-
-$$
-\varepsilon =
-100 \cdot
-\frac{\text{OpenSees} - \text{reference}}
-{\text{reference}}
-\quad [%].
-$$
-
 For the independent baseline, the circular annulus is reconstructed at each axial coordinate from the interpolated outer and inner radii. The bending stiffness is evaluated as
 
 $$
@@ -561,7 +550,17 @@ $$
 
 The reference transverse displacement is obtained by direct integration of the bending-curvature contribution induced by the transverse tip force, the tip bending moment, and the uniform transverse load. The torsional reference rotation is obtained by integrating $M_z/GJ(z)$ along the tower height. Simpson integration is used on the selected reference grid for both response quantities.
 
-This reference is independent of the OpenSees beam discretization and of the CSF station-wise section sampling. It uses the same YAML-defined physical model, but evaluates the response through a separate continuous-integration procedure.
+
+The comparison is based on the tip-response quantities produced by the two paths: the transverse tip displacement $U_y$ and the torsional tip rotation $R_z$. For each quantity, the signed relative error is reported as
+
+$$
+\varepsilon =
+100 \cdot
+\frac{\text{OpenSees} - \text{reference}}
+{\text{reference}}
+$$
+
+
 
 The NREL tower provides a convenient application case because its circular annular sections admit closed-form sectional expressions. The CSF representation is more general: the same continuous-field workflow can be applied to arbitrary polygonal geometries and participation fields, even when closed-form sectional laws are not available.
 
