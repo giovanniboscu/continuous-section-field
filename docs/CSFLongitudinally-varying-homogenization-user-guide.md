@@ -255,7 +255,7 @@ If your section includes materials with different stiffness (or other properties
 - **Timber (softer):** `weight = 0.5` | **Void within Timber:** `weight = 0.0`
 
 
-A void is always declared as **zero**. CSF performs the internal bookkeeping needed to remove the underlying material contribution in the overlap.
+For the axial/bending participation field discussed here, a void is declared with `weight = 0.0`.
 
 ---
 
