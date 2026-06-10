@@ -343,8 +343,6 @@ $$
 A section-derived reference coordinate can be obtained from the same evaluated section. For example, using the CSF section analysis,
 
 ```python
-
-sec = stack.section(z, junction_side="left")
 props = stack.section_full_analysis(z, junction_side="left")
 c = props["Cy"]
 
