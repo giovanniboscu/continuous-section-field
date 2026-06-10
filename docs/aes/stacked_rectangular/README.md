@@ -1,16 +1,21 @@
 # Stacked rectangular member with compensated geometric variation and participation-field variation
 
-
-
 This verification case illustrates how geometry and participation fields combine in a continuous section field. The example is intentionally simple: one component changes its geometry while another changes its material participation, with the two variations arranged to compensate exactly in total weighted area. This makes the role of the internal weighted-area distribution visible, since the centroid and bending inertia remain continuously variable even though the total weighted area is constant.
 
 The verification is organized from the CSF definition outward.
 
 First, a single CSF interval (`stacked_0.yaml`) is inspected with `csf-actions`. The interval defines the section geometry, interpolation rules, axial/bending participation field, and shear/torsion participation field. Figures, tables, and sampled sections are obtained directly from evaluations of this continuous CSF interval.
 
-Next, `stacked_0.yaml` and `stacked_1.yaml` are assembled into a global member using `CSFStacked`. The resulting stacked member is evaluated at Gauss-Lobatto stations and compared against a closed-form reference solution for $A$, $C_y$, $I_x$, and $I_y$.
+Next, `stacked_0.yaml` and `stacked_1.yaml` are assembled into a global member using `CSFStacked`. The resulting stacked member is evaluated at Gauss-Lobatto stations and compared against a closed-form reference solution for `A`, `Cy`, `Ix`, and `Iy`.
 
-No structural solver is involved in this example. The objective is to verify the continuous section field representation and its assembly into a stacked member.
+The script also shows that a CSF evaluation provides more than scalar section properties. At each selected station, the stacked field is queried through `stack.section(z)`, which returns the evaluated `Section`: polygonal geometry, polygon vertices, axial/bending participation, shear/torsion participation, and resolved material-participation data at that station.
+
+From this evaluated geometry, the four interface coordinates `h1`, `h2`, `h3`, and `h4` are extracted from the polygon vertices. Their axial derivatives, reported as `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz`, are then computed by evaluating the same CSF field at neighbouring axial stations. The centroid coordinate `Cy` is treated in the same way and reported together with `dCy_dz`.
+
+This makes the continuous-field role explicit: CSF supplies the station-wise section object, including geometry and material participation; section properties and interface derivatives are obtained from that evaluated object along the member axis.
+
+No structural solver is involved in this example. The objective is to verify the continuous section field representation, its assembly into a stacked member, and the extraction of section-derived axial quantities from the same continuous CSF model.
+
 
 ---
 
