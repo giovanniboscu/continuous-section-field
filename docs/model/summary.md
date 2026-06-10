@@ -357,20 +357,34 @@ $$
 If axial derivatives of section-derived quantities are required by a downstream formulation, they can be computed as a post-processing operation by evaluating the same continuous CSF field at neighbouring stations. For instance,
 
 ```python
-def section_height(field, z):
-    sec = field.section(z)
+
+def section_height_from_csf(stack, z, junction_side="left"):
+    sec = stack.section(float(z), junction_side=junction_side)
     ys = [v.y for poly in sec.polygons for v in poly.vertices]
-    return max(ys) - min(ys)
 
-def centroid_y(field, z):
-    sec = field.section(z)
-    return section_full_analysis(sec)["Cy"]
+    h_lower = min(ys)
+    h_upper = max(ys)
+    h = h_upper - h_lower
 
-def dz_derivative(f, field, z, dz):
-    return (f(field, z + dz) - f(field, z - dz)) / (2.0 * dz)
+    return h
 
-h_prime = dz_derivative(section_height, field, z, dz)
-c_prime = dz_derivative(centroid_y, field, z, dz)
+
+def centroid_y_from_csf(stack, z, junction_side="left"):
+    props = stack.section_full_analysis(float(z), junction_side=junction_side)
+    return props["Cy"]
+
+
+def centered_derivative(f, stack, z, dz, junction_side="left"):
+    return (
+        f(stack, z + dz, junction_side=junction_side)
+        - f(stack, z - dz, junction_side=junction_side)
+    ) / (2.0 * dz)
+
+
+h_prime = centered_derivative(section_height_from_csf, stack, z, dz)
+c_prime = centered_derivative(centroid_y_from_csf, stack, z, dz)
+
+
 ```
 
 which corresponds to
