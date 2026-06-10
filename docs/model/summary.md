@@ -343,8 +343,11 @@ $$
 A section-derived reference coordinate can be obtained from the same evaluated section. For example, using the CSF section analysis,
 
 ```python
-props = section_full_analysis(sec)
+
+sec = stack.section(z, junction_side="left")
+props = stack.section_full_analysis(z, junction_side="left")
 c = props["Cy"]
+
 ```
 
 gives the station-wise centroid coordinate
@@ -576,7 +579,7 @@ $$
 
 This controlled example therefore verifies the internal consistency of the continuous section-field representation at section level, before any external structural solver is involved. It shows that CSF evaluates geometry, axial/bending participation, and shear/torsion participation as continuous fields, and that the resulting sectional properties follow from their combined distribution within the section.
 
-As an additional station-wise post-processing check, the same rectangular case is also used to report section-derived axial quantities such as $h(z)$, $h'(z)$, $c(z)=C_y(z)$, and $c'(z)$ in a separate output table. This output is not a beam-formulation step; it only documents that these quantities are obtained by sampling the same continuous map $z \mapsto S(z)$
+As an additional station-wise post-processing check, the same rectangular case is also used to report section-derived axial quantities such as $h(z)$, $h'(z)$, $c(z)=C_y(z)$, and $c'(z)$ in a separate output table. This output is not a beam-formulation step; it only documents that these quantities are obtained by sampling the same continuous map $z \mapsto. S(z)$
 
 The complete reproducibility material for this example, including the CSF input files, action file, figures, station-wise exports, and the full comparison table, is provided in the repository:
 
