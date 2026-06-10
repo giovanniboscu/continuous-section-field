@@ -866,7 +866,7 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J
 
 [1] <a id="[1]"><G. Balduzzi, M. Aminbaghai, J. Füssl, F. Auricchio, Non-prismatic beams: a simple and effective Timoshenko-like model, Int. J. Solids Struct. 90 (2016) 236–250. https://doi.org/10.1016/j.ijsolstr.2016.03.022
 
-[2] <a id="[Balduzzi2]"></a>  G. Balduzzi, M. Aminbaghai, F. Auricchio, J. Füssl, Planar Timoshenko-like model for multilayer non-prismatic beams, Int. J. Mech. Mater. Des. 14 (2018) 51–70. https://doi.org/10.1007/s10999-016-9360-3
+[2] <a id="Balduzzi2"></a>  G. Balduzzi, M. Aminbaghai, F. Auricchio, J. Füssl, Planar Timoshenko-like model for multilayer non-prismatic beams, Int. J. Mech. Mater. Des. 14 (2018) 51–70. https://doi.org/10.1007/s10999-016-9360-3
 
 [3] D.H. Hodges, W. Yu, VABS: a new concept for composite rotor blade cross-sectional modeling, J. Am. Helicopter Soc. 42 (1) (1997) 27–38. https://doi.org/10.4050/JAHS.42.27
 
