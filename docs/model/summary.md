@@ -546,8 +546,6 @@ dh3_dz = (h_plus["h3"] - h_minus["h3"]) / (2.0 * dz)
 dh4_dz = (h_plus["h4"] - h_minus["h4"]) / (2.0 * dz)
 ```
 
-The denominator is `2.0 * dz` because the derivative is evaluated between the two stations `z - dz` and `z + dz`. The increment `dz` is therefore the local perturbation around the target station, while the distance between the two CSF evaluations is `2 dz`.
-
 The same procedure can be applied to any quantity extracted from the evaluated section. For example, the centroid coordinate is evaluated at neighbouring stations and differentiated in the same way:
 
 ```python
