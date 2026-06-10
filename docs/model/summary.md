@@ -317,7 +317,7 @@ This distinction is relevant for non-prismatic beam formulations. In the multila
 A minimal post-processing example is the extraction of lower and upper geometric envelopes in a planar section for which the relevant boundaries coincide with the minimum and maximum $y$-coordinates of the evaluated vertices. Given the evaluated section,
 
 ```python
-sec = field.section(z)
+sec = stack.section(float(z), junction_side=junction_side)
 ```
 
 the corresponding station-wise limits can be obtained from the polygon vertices:
