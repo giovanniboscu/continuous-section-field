@@ -301,111 +301,54 @@ Interoperability with `sectionproperties` is provided through two companion modu
 
 ---
 
-## 4. Station-wise evaluation and solver-facing output
+## 4. Derivatives from the continuous sectional field
 
-A central feature of CSF is that solver-facing data are generated from the continuous sectional field. The model is not defined as a fixed table of cross-section properties. Instead, the primary operation is the evaluation of the section at an arbitrary axial coordinate,
+A central feature of CSF is that the section can be evaluated as a function of the axial coordinate,
 
 $$
 z \mapsto S(z).
 $$
 
-At each requested station $z$, CSF returns an evaluated `Section` object. This object contains the polygonal geometry at that station, including the interpolated vertices and the participation values carried by the sampled polygons. The scalar quantities used by downstream beam models are then computed from this evaluated section.
+At each requested station $z$, CSF returns an evaluated `Section` object. This object contains the polygonal geometry at that station, the interpolated vertices, and the participation values carried by the sampled polygons. This makes the evaluated section the source from which station-wise geometric quantities can be extracted.
 
-This distinction is relevant for non-prismatic beam formulations. In the multilayer non-prismatic formulation of Balduzzi et al. [2], the beam model is not expressed only through isolated section values such as $A$ and $I$. It also involves quantities defined as functions along the member axis, including section-boundary functions, their slopes, a reference-line function, and position-dependent stiffness quantities. CSF does not implement that beam formulation. Its role here is narrower: it defines an evaluable sectional field from which station-dependent geometric and sectional quantities can be derived when required by a downstream formulation.
+This point is relevant for non-prismatic beam formulations. In the multilayer non-prismatic formulation of Balduzzi et al. [2], layer-interface functions and their slopes appear as quantities defined along the member axis. In the present example, CSF is used to show how such interface functions can be obtained from the evaluated section geometry and differentiated along the axis.
 
-
-A minimal post-processing example is the extraction of lower and upper geometric envelopes in a planar section for which the relevant boundaries coincide with the minimum and maximum $y$-coordinates of the evaluated vertices. Given the evaluated section,
-
-```python
-sec = stack.section(float(z), junction_side=junction_side)
-```
-
-the corresponding station-wise limits can be obtained from the polygon vertices:
+In the stacked rectangular example, the three rectangular components define four interface coordinates, denoted as `h1`, `h2`, `h3`, and `h4`. At a given station, these coordinates are obtained from the polygon vertices of the evaluated CSF `Section`:
 
 ```python
-ys = [v.y for poly in sec.polygons for v in poly.vertices]
+section = stack.section(z)
 
-h_lower = min(ys)
-h_upper = max(ys)
-h = h_upper - h_lower
+h1, h2, h3, h4 = extract_interfaces_from_section(section)
 ```
 
-This gives the station-wise functions
-
-$$
-h_1(z) = h_{\mathrm{lower}}(z),
-\qquad
-h_{n+1}(z) = h_{\mathrm{upper}}(z),
-\qquad
-h(z) = h_{n+1}(z) - h_1(z).
-$$
-
-A section-derived reference coordinate can be obtained from the same evaluated section. For example, using the CSF section analysis,
+The axial derivatives are then computed by evaluating the same continuous CSF field at neighbouring stations:
 
 ```python
-props = stack.section_full_analysis(z, junction_side="left")
-c = props["Cy"]
+section_minus = stack.section(z - dz)
+section_plus = stack.section(z + dz)
 
+h_minus = extract_interfaces_from_section(section_minus)
+h_plus = extract_interfaces_from_section(section_plus)
+
+dh1_dz = (h_plus["h1"] - h_minus["h1"]) / (2.0 * dz)
+dh2_dz = (h_plus["h2"] - h_minus["h2"]) / (2.0 * dz)
+dh3_dz = (h_plus["h3"] - h_minus["h3"]) / (2.0 * dz)
+dh4_dz = (h_plus["h4"] - h_minus["h4"]) / (2.0 * dz)
 ```
 
-gives the station-wise centroid coordinate
+The denominator is `2.0 * dz` because the derivative is evaluated between the two stations `z - dz` and `z + dz`. The increment `dz` is therefore the local perturbation around the target station, while the distance between the two CSF evaluations is `2 dz`.
 
-$$
-c(z) = C_y(z).
-$$
-
-If axial derivatives of section-derived quantities are required by a downstream formulation, they can be computed as a post-processing operation by evaluating the same continuous CSF field at neighbouring stations. For instance,
+The same procedure can be applied to any quantity extracted from the evaluated section. For example, the centroid coordinate is evaluated at neighbouring stations and differentiated in the same way:
 
 ```python
+c_minus = section_full_analysis(stack.section(z - dz))["Cy"]
+c_plus = section_full_analysis(stack.section(z + dz))["Cy"]
 
-def section_height_from_csf(stack, z, junction_side="left"):
-    sec = stack.section(float(z), junction_side=junction_side)
-    ys = [v.y for poly in sec.polygons for v in poly.vertices]
-
-    h_lower = min(ys)
-    h_upper = max(ys)
-    h = h_upper - h_lower
-
-    return h
-
-
-def centroid_y_from_csf(stack, z, junction_side="left"):
-    props = stack.section_full_analysis(float(z), junction_side=junction_side)
-    return props["Cy"]
-
-
-def centered_derivative(f, stack, z, dz, junction_side="left"):
-    return (
-        f(stack, z + dz, junction_side=junction_side)
-        - f(stack, z - dz, junction_side=junction_side)
-    ) / (2.0 * dz)
-
-
-h_prime = centered_derivative(section_height_from_csf, stack, z, dz)
-c_prime = centered_derivative(centroid_y_from_csf, stack, z, dz)
-
-
+dCy_dz = (c_plus - c_minus) / (2.0 * dz)
 ```
 
-which corresponds to
+The relevant point is that the interface coordinates, the centroid coordinate, and their axial derivatives are obtained from CSF evaluations of the same continuous sectional field. The derivative calculation therefore acts on quantities sampled from `Section` objects along the member axis.
 
-$$
-h'(z) \simeq \frac{h(z+\Delta z)-h(z-\Delta z)}{2\Delta z},
-\qquad
-c'(z) \simeq \frac{c(z+\Delta z)-c(z-\Delta z)}{2\Delta z}.
-$$
-
-The relevant point is that the values and their axial variation are obtained from the same continuous CSF model, rather than from an independently assembled table of disconnected cross-sections.
-
-For conventional beam workflows, CSF may export only the scalar quantities required by the target solver. Typical section-analysis quantities include
-
-$$
-A,\ C_x,\ C_y,\ I_x,\ I_y,\ I_{xy},\ I_p,\ I_1,\ I_2,\ r_x,\ r_y,\ W_x,\ W_y,\ Q_{na}.
-$$
-
-For workflows that require torsional input, the exported quantity must reflect the corresponding section assumption. Thin-walled cell or wall contributions may be exported when those assumptions are part of the model. When a more general torsional or sectional analysis is required, the evaluated `Section` can instead be passed to an external section solver at the requested stations.
-
-The exported table is therefore only one possible projection of the continuous CSF model. The underlying object remains the evaluable map $S(z)$. This separates the continuous sectional model, the station set selected by the numerical formulation, the evaluated station-wise section, the quantities derived from that section, and the solver-facing export format.
 
 ---
 ## 5. Controlled stacked-section example
@@ -592,6 +535,67 @@ $$
 This controlled example therefore verifies the internal consistency of the continuous section-field representation at section level, before any external structural solver is involved. It shows that CSF evaluates geometry, axial/bending participation, and shear/torsion participation as continuous fields, and that the resulting sectional properties follow from their combined distribution within the section.
 
 As an additional station-wise post-processing check, the same rectangular case is also used to report section-derived axial quantities such as $h(z)$, $h'(z)$, $c(z)=C_y(z)$, and $c'(z)$ in a separate output table. This output is not a beam-formulation step; it only documents that these quantities are obtained by sampling the same continuous map $z \mapsto. S(z)$
+
+
+
+
+
+
+
+
+
+
+
+
+In the stacked rectangular example, the three rectangular components define four interface coordinates, denoted as `h1`, `h2`, `h3`, and `h4`. At a given station, these coordinates are obtained from the polygon vertices of the evaluated CSF `Section`:
+
+```python
+section = stack.section(z)
+
+h1, h2, h3, h4 = extract_interfaces_from_section(section)
+```
+
+The axial derivatives are then computed by evaluating the same continuous CSF field at neighbouring stations:
+
+```python
+section_minus = stack.section(z - dz)
+section_plus = stack.section(z + dz)
+
+h_minus = extract_interfaces_from_section(section_minus)
+h_plus = extract_interfaces_from_section(section_plus)
+
+dh1_dz = (h_plus["h1"] - h_minus["h1"]) / (2.0 * dz)
+dh2_dz = (h_plus["h2"] - h_minus["h2"]) / (2.0 * dz)
+dh3_dz = (h_plus["h3"] - h_minus["h3"]) / (2.0 * dz)
+dh4_dz = (h_plus["h4"] - h_minus["h4"]) / (2.0 * dz)
+```
+
+The denominator is `2.0 * dz` because the derivative is evaluated between the two stations `z - dz` and `z + dz`. The increment `dz` is therefore the local perturbation around the target station, while the distance between the two CSF evaluations is `2 dz`.
+
+The same procedure can be applied to any quantity extracted from the evaluated section. For example, the centroid coordinate is evaluated at neighbouring stations and differentiated in the same way:
+
+```python
+c_minus = section_full_analysis(stack.section(z - dz))["Cy"]
+c_plus = section_full_analysis(stack.section(z + dz))["Cy"]
+
+dCy_dz = (c_plus - c_minus) / (2.0 * dz)
+```
+
+The relevant point is that the interface coordinates, the centroid coordinate, and their axial derivatives are obtained from CSF evaluations of the same continuous sectional field. The derivative calculation therefore acts on quantities sampled from `Section` objects along the member axis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 The complete reproducibility material for this example, including the CSF input files, action file, figures, station-wise exports, and the full comparison table, is provided in the repository:
 
