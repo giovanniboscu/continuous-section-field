@@ -549,10 +549,11 @@ dh4_dz = (h_plus["h4"] - h_minus["h4"]) / (2.0 * dz)
 The same procedure can be applied to any quantity extracted from the evaluated section. For example, the centroid coordinate is evaluated at neighbouring stations and differentiated in the same way:
 
 ```python
-c_minus = section_full_analysis(stack.section(z - dz))["Cy"]
-c_plus = section_full_analysis(stack.section(z + dz))["Cy"]
+c_minus = stack.section_full_analysis(z - dz, junction_side="left")["Cy"]
+c_plus = stack.section_full_analysis(z + dz, junction_side="left")["Cy"]
 
 dCy_dz = (c_plus - c_minus) / (2.0 * dz)
+
 ```
 
 The relevant point is that the interface coordinates, the centroid coordinate, and their axial derivatives are obtained from CSF evaluations of the same continuous sectional field. The derivative calculation therefore acts on quantities sampled from `Section` objects along the member axis.
