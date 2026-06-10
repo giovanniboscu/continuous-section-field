@@ -309,17 +309,17 @@ $$
 z \mapsto S(z).
 $$
 
-At each requested station $z$, CSF returns a complete `Section` object. This evaluated section contains the polygonal geometry at that station, the interpolated vertices, the axial/bending participation values, the shear/torsion participation values, and the resolved participation values after the nesting structure has been evaluated. The scalar properties used by downstream beam models are then computed from this evaluated section.
+At each requested station $z$, CSF returns an evaluated `Section` object. This object contains the polygonal geometry at that station, including the interpolated vertices and the participation values carried by the sampled polygons. The scalar quantities used by downstream beam models are then computed from this evaluated section.
 
-This distinction is important for non-prismatic beam formulations. In a Balduzzi-type reduced model, the beam input is not only a sequence of independent values such as $A$ and $I$. The formulation is expressed in terms of functions along the beam axis, including section-boundary functions, their slopes, a reference-line function, and position-dependent stiffness quantities. A CSF model can provide these inputs because the section can be queried as a function of $z$.
+This distinction is relevant for non-prismatic beam formulations. Balduzzi et al. show that non-prismatic beam models cannot be reduced to isolated values of area and inertia only: the formulation uses quantities defined as functions along the member axis, including section-boundary functions, their slopes, a reference-line function, and position-dependent stiffness quantities. CSF does not implement that beam formulation. Its role here is narrower: it defines an evaluable sectional field from which station-dependent geometric and sectional quantities can be derived when required by a downstream formulation.
 
-A minimal example is the extraction of the geometric boundary functions required by a planar non-prismatic formulation. Given the evaluated section,
+A minimal post-processing example is the extraction of lower and upper geometric envelopes in a planar section for which the relevant boundaries coincide with the minimum and maximum $y$-coordinates of the evaluated vertices. Given the evaluated section,
 
 ```python
 sec = field.section(z)
 ```
 
-the lower and upper section boundaries can be obtained directly from the station-wise polygon vertices:
+the corresponding station-wise limits can be obtained from the polygon vertices:
 
 ```python
 ys = [v.y for poly in sec.polygons for v in poly.vertices]
@@ -339,7 +339,7 @@ h_{n+1}(z) = h_{\mathrm{upper}}(z),
 h(z) = h_{n+1}(z) - h_1(z).
 $$
 
-A section-derived reference line can be obtained from the same evaluated section. For example, using the CSF section analysis,
+A section-derived reference coordinate can be obtained from the same evaluated section. For example, using the CSF section analysis,
 
 ```python
 props = section_full_analysis(sec)
@@ -352,7 +352,7 @@ $$
 c(z) = C_y(z).
 $$
 
-If a downstream formulation requires the axial variation of these functions, the derivative is obtained from the same continuous CSF field by evaluating neighbouring sections with the selected differentiation rule. For instance,
+If axial derivatives of section-derived quantities are required by a downstream formulation, they can be computed as a post-processing operation by evaluating the same continuous CSF field at neighbouring stations. For instance,
 
 ```python
 def section_height(field, z):
@@ -379,15 +379,15 @@ h'(z) \simeq \frac{h(z+\Delta z)-h(z-\Delta z)}{2\Delta z},
 c'(z) \simeq \frac{c(z+\Delta z)-c(z-\Delta z)}{2\Delta z}.
 $$
 
-The same logic applies to any section-derived quantity computed from the evaluated `Section`. The relevant point is that the values and their axial variation are obtained from the same continuous CSF model, rather than from an independently assembled table of disconnected cross-sections.
+The relevant point is that the values and their axial variation are obtained from the same continuous CSF model, rather than from an independently assembled table of disconnected cross-sections.
 
-For conventional beam workflows, CSF may export only the scalar quantities required by the target solver. In the current section analysis, these include
+For conventional beam workflows, CSF may export only the scalar quantities required by the target solver. Typical section-analysis quantities include
 
 $$
 A,\ C_x,\ C_y,\ I_x,\ I_y,\ I_{xy},\ I_p,\ I_1,\ I_2,\ r_x,\ r_y,\ W_x,\ W_y,\ Q_{na}.
 $$
 
-For workflows that require torsional input, explicitly selected torsional quantities may also be exported when the corresponding section assumptions are part of the model, for example thin-walled cell or wall contributions. When a more general section analysis is required, the evaluated `Section` itself can be passed to an external section solver at the requested stations.
+For workflows that require torsional input, the exported quantity must reflect the corresponding section assumption. Thin-walled cell or wall contributions may be exported when those assumptions are part of the model. When a more general torsional or sectional analysis is required, the evaluated `Section` can instead be passed to an external section solver at the requested stations.
 
 The exported table is therefore only one possible projection of the continuous CSF model. The underlying object remains the evaluable map $S(z)$. This separates the continuous sectional model, the station set selected by the numerical formulation, the evaluated station-wise section, the quantities derived from that section, and the solver-facing export format.
 
