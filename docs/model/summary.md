@@ -575,6 +575,8 @@ $$
 
 This controlled example therefore verifies the internal consistency of the continuous section-field representation at section level, before any external structural solver is involved. It shows that CSF evaluates geometry, axial/bending participation, and shear/torsion participation as continuous fields, and that the resulting sectional properties follow from their combined distribution within the section.
 
+As an additional station-wise post-processing check, the same rectangular case is also used to report section-derived axial quantities such as $h(z)$, $h'(z)$, $c(z)=C_y(z)$, and $c'(z)$ in a separate output table. This output is not a beam-formulation step; it only documents that these quantities are obtained by sampling the same continuous map $z \mapsto S(z)$
+
 The complete reproducibility material for this example, including the CSF input files, action file, figures, station-wise exports, and the full comparison table, is provided in the repository:
 
 [Stacked rectangular example](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/stacked_rectangular)
