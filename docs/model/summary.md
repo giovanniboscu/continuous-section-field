@@ -519,10 +519,8 @@ $$
 
 This controlled example therefore verifies the internal consistency of the continuous section-field representation at section level, before any external structural solver is involved. It shows that CSF evaluates geometry, axial/bending participation, and shear/torsion participation as continuous fields, and that the resulting sectional properties follow from their combined distribution within the section.
 
-As an additional station-wise post-processing check, the same rectangular case is also used to report the four interface coordinates `h1`, `h2`, `h3`, and `h4`, together with their axial derivatives `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz`. The centroid coordinate `Cy` is also sampled from the CSF section analysis and differentiated along the member axis as `dCy_dz`.
 
-
-
+As an additional station-wise post-processing check, the same rectangular case is also used to report the four interface coordinates `h1`, `h2`, `h3`, and `h4`, together with their axial derivatives `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz`. The centroid coordinate `Cy` is sampled from the CSF section analysis and differentiated along the member axis as `dCy_dz`. These quantities are obtained by sampling the same continuous map $z \mapsto S(z)$.
 
 
 
