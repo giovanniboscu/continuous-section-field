@@ -303,19 +303,93 @@ Interoperability with `sectionproperties` is provided through two companion modu
 
 ## 4. Station-wise evaluation and solver-facing output
 
-A central feature of CSF is that solver-facing data are generated from the continuous field. The user may request properties at arbitrary axial locations, including uniformly spaced stations, manually defined stations, or integration points required by a downstream numerical formulation.
+A central feature of CSF is that solver-facing data are generated from the continuous sectional field. The model is not defined as a fixed table of cross-section properties. Instead, the primary operation is the evaluation of the section at an arbitrary axial coordinate,
 
-For example, a beam formulation may require section properties at specific sampling points along the member. CSF evaluates the continuous field directly at those locations and exports the corresponding values. The sampling strategy is therefore tied to the downstream numerical method, while the underlying member model remains unchanged.
+$$
+z \mapsto S(z).
+$$
 
-This distinction is also relevant on the theoretical side. In beam formulations for non-prismatic members, cross-sectional quantities may enter the governing equations not only through their local values, but also through their axial variation, for example through terms such as $\frac{dA}{dz}$ and $\frac{dI}{dz}$. Since CSF defines these quantities from an underlying continuous sectional field, the exported station-wise data are samples of a continuous representation rather than independent discrete section definitions.
+At each requested station $z$, CSF returns a complete `Section` object. This evaluated section contains the polygonal geometry at that station, the interpolated vertices, the axial/bending participation values, the shear/torsion participation values, and the resolved participation values after the nesting structure has been evaluated. The scalar properties used by downstream beam models are then computed from this evaluated section.
 
-This provides a clean distinction between:
+This distinction is important for non-prismatic beam formulations. In a Balduzzi-type reduced model, the beam input is not only a sequence of independent values such as $A$ and $I$. The formulation is expressed in terms of functions along the beam axis, including section-boundary functions, their slopes, a reference-line function, and position-dependent stiffness quantities. A CSF model can provide these inputs because the section can be queried as a function of $z$.
 
-* the continuous sectional model;
-* the station set used for numerical evaluation;
-* the exported table consumed by an external solver.
+A minimal example is the extraction of the geometric boundary functions required by a planar non-prismatic formulation. Given the evaluated section,
 
-Where the properties computed directly by CSF are sufficient, the sampled field can be exported directly to downstream beam-level models. Where additional section analysis is required, the polygonal zones and their associated material participation fields, evaluated at any station, can be passed to an external section solver. CSF and section solvers are therefore complementary layers in the same pre-processing pipeline.
+```python
+sec = field.section(z)
+```
+
+the lower and upper section boundaries can be obtained directly from the station-wise polygon vertices:
+
+```python
+ys = [v.y for poly in sec.polygons for v in poly.vertices]
+
+h_lower = min(ys)
+h_upper = max(ys)
+h = h_upper - h_lower
+```
+
+This gives the station-wise functions
+
+$$
+h_1(z) = h_{\mathrm{lower}}(z),
+\qquad
+h_{n+1}(z) = h_{\mathrm{upper}}(z),
+\qquad
+h(z) = h_{n+1}(z) - h_1(z).
+$$
+
+A section-derived reference line can be obtained from the same evaluated section. For example, using the CSF section analysis,
+
+```python
+props = section_full_analysis(sec)
+c = props["Cy"]
+```
+
+gives the station-wise centroid coordinate
+
+$$
+c(z) = C_y(z).
+$$
+
+If a downstream formulation requires the axial variation of these functions, the derivative is obtained from the same continuous CSF field by evaluating neighbouring sections with the selected differentiation rule. For instance,
+
+```python
+def section_height(field, z):
+    sec = field.section(z)
+    ys = [v.y for poly in sec.polygons for v in poly.vertices]
+    return max(ys) - min(ys)
+
+def centroid_y(field, z):
+    sec = field.section(z)
+    return section_full_analysis(sec)["Cy"]
+
+def dz_derivative(f, field, z, dz):
+    return (f(field, z + dz) - f(field, z - dz)) / (2.0 * dz)
+
+h_prime = dz_derivative(section_height, field, z, dz)
+c_prime = dz_derivative(centroid_y, field, z, dz)
+```
+
+which corresponds to
+
+$$
+h'(z) \simeq \frac{h(z+\Delta z)-h(z-\Delta z)}{2\Delta z},
+\qquad
+c'(z) \simeq \frac{c(z+\Delta z)-c(z-\Delta z)}{2\Delta z}.
+$$
+
+The same logic applies to any section-derived quantity computed from the evaluated `Section`. The relevant point is that the values and their axial variation are obtained from the same continuous CSF model, rather than from an independently assembled table of disconnected cross-sections.
+
+For conventional beam workflows, CSF may export only the scalar quantities required by the target solver. In the current section analysis, these include
+
+$$
+A,\ C_x,\ C_y,\ I_x,\ I_y,\ I_{xy},\ I_p,\ I_1,\ I_2,\ r_x,\ r_y,\ W_x,\ W_y,\ Q_{na}.
+$$
+
+For workflows that require torsional input, explicitly selected torsional quantities may also be exported when the corresponding section assumptions are part of the model, for example thin-walled cell or wall contributions. When a more general section analysis is required, the evaluated `Section` itself can be passed to an external section solver at the requested stations.
+
+The exported table is therefore only one possible projection of the continuous CSF model. The underlying object remains the evaluable map $S(z)$. This separates the continuous sectional model, the station set selected by the numerical formulation, the evaluated station-wise section, the quantities derived from that section, and the solver-facing export format.
 
 ---
 ## 5. Controlled stacked-section example
