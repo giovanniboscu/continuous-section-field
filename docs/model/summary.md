@@ -525,12 +525,6 @@ As an additional station-wise post-processing check, the same rectangular case i
 
 
 
-The resulting table shows that only the lower interface `h1` varies in this example, because only the lower boundary of the lower component changes along the member. The other interfaces remain fixed, and their derivatives are therefore zero. The centroid derivative `dCy_dz` remains non-zero because the centroid follows the combined effect of the changing lower geometry and the varying upper participation field.
-
-
-
-
-
 ```python
 section = stack.section(z)
 
@@ -565,18 +559,7 @@ dCy_dz = (c_plus - c_minus) / (2.0 * dz)
 
 The relevant point is that the interface coordinates, the centroid coordinate, and their axial derivatives are obtained from CSF evaluations of the same continuous sectional field. The derivative calculation therefore acts on quantities sampled from `Section` objects along the member axis.
 
-
-
-
-
-
-
-
-
-
-
-
-
+The resulting table shows that only the lower interface `h1` varies in this example, because only the lower boundary of the lower component changes along the member. The other interfaces remain fixed, and their derivatives are therefore zero. The centroid derivative `dCy_dz` remains non-zero because the centroid follows the combined effect of the changing lower geometry and the varying upper participation field.
 
 
 The complete reproducibility material for this example, including the CSF input files, action file, figures, station-wise exports, and the full comparison table, is provided in the repository:
