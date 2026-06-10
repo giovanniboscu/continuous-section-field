@@ -192,7 +192,7 @@ Multiple straight intervals can be concatenated to represent members of arbitrar
 
 ## 3. Declarative numerical workflow
 
-CSF can be used as a Python library or through a file-based YAML workflow. The YAML workflow separates the continuous member definition from the requested numerical actions.
+CSF can be used either as a Python library or through a declarative file-based YAML workflow. In the YAML workflow, the member definition and the requested numerical actions are written as input files rather than encoded directly in procedural Python code.
 
 The geometry file defines:
 
