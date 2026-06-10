@@ -314,7 +314,6 @@ At each requested station $z$, CSF returns an evaluated `Section` object. This o
 This distinction is relevant for non-prismatic beam formulations. In the multilayer non-prismatic formulation of Balduzzi et al. [2], the beam model is not expressed only through isolated section values such as $A$ and $I$. It also involves quantities defined as functions along the member axis, including section-boundary functions, their slopes, a reference-line function, and position-dependent stiffness quantities. CSF does not implement that beam formulation. Its role here is narrower: it defines an evaluable sectional field from which station-dependent geometric and sectional quantities can be derived when required by a downstream formulation.
 
 
-
 A minimal post-processing example is the extraction of lower and upper geometric envelopes in a planar section for which the relevant boundaries coincide with the minimum and maximum $y$-coordinates of the evaluated vertices. Given the evaluated section,
 
 ```python
