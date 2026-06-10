@@ -10,7 +10,10 @@ Next, `stacked_0.yaml` and `stacked_1.yaml` are assembled into a global member u
 
 The script also shows that a CSF evaluation provides more than scalar section properties. At each selected station, the stacked field is queried through `stack.section(z)`, which returns the evaluated `Section`: polygonal geometry, polygon vertices, axial/bending participation, shear/torsion participation, and resolved material-participation data at that station.
 
+Following the role of layer interfaces in non-prismatic beam formulations, as discussed by Balduzzi et al. [2], this example uses the stacked rectangular member to show how interface-related quantities can be obtained from CSF evaluations. The calculation is limited to a small operational subset: the extraction of interface coordinates and their axial derivatives from the evaluated CSF geometry. It is intended as an example of how CSF can provide such station-wise inputs, while the complete Balduzzi formulation also involves additional equilibrium, stress-recovery, and constitutive terms.
+
 From this evaluated geometry, the four interface coordinates `h1`, `h2`, `h3`, and `h4` are extracted from the polygon vertices. Their axial derivatives, reported as `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz`, are then computed by evaluating the same CSF field at neighbouring axial stations. The centroid coordinate `Cy` is treated in the same way and reported together with `dCy_dz`.
+
 
 This makes the continuous-field role explicit: CSF supplies the station-wise section object, including geometry and material participation; section properties and interface derivatives are obtained from that evaluated object along the member axis.
 
