@@ -301,54 +301,38 @@ Interoperability with `sectionproperties` is provided through two companion modu
 
 ---
 
-## 4. Derivatives from the continuous sectional field
+## 4. Derivatives from continuous CSF evaluations
 
-A central feature of CSF is that the section can be evaluated as a function of the axial coordinate,
+The continuous nature of CSF makes it possible to treat section-derived quantities as functions of the member coordinate. The primary object is the evaluated section
 
 $$
-z \mapsto S(z).
+S(z),
 $$
 
-At each requested station $z$, CSF returns an evaluated `Section` object. This object contains the polygonal geometry at that station, the interpolated vertices, and the participation values carried by the sampled polygons. This makes the evaluated section the source from which station-wise geometric quantities can be extracted.
+obtained by querying the CSF field at an arbitrary axial station. This evaluated `Section` contains the station-wise polygonal geometry, the interpolated vertices, and the material-participation data associated with the sampled polygons. Therefore, geometric quantities, participation-weighted sectional properties, and reference coordinates can be interpreted as quantities derived from the same continuous source.
 
-This point is relevant for non-prismatic beam formulations. In the multilayer non-prismatic formulation of Balduzzi et al. [2], layer-interface functions and their slopes appear as quantities defined along the member axis. In the present example, CSF is used to show how such interface functions can be obtained from the evaluated section geometry and differentiated along the axis.
+This point is relevant to non-prismatic beam formulations such as the multilayer model discussed by Balduzzi et al. [2], where layer interfaces, interface slopes, reference-line quantities, and position-dependent coefficients are functions along the beam axis. In CSF, these quantities are not introduced as independent tabulated inputs. They are obtained by evaluating the section field at the required stations and extracting the relevant geometric or sectional quantity from the resulting `Section`.
 
-In the stacked rectangular example, the three rectangular components define four interface coordinates, denoted as `h1`, `h2`, `h3`, and `h4`. At a given station, these coordinates are obtained from the polygon vertices of the evaluated CSF `Section`:
+For the stacked rectangular example, the evaluated section provides the four layer-interface coordinates `h1`, `h2`, `h3`, and `h4` directly from the polygon vertices. Since these coordinates are extracted from `S(z)`, they define station-wise interface functions along the member. Their axial derivatives are then computed by re-evaluating the same CSF field at neighbouring stations and applying the chosen differentiation rule.
 
-```python
-section = stack.section(z)
+For a generic section-derived quantity `q`, the procedure is:
 
-h1, h2, h3, h4 = extract_interfaces_from_section(section)
-```
+$$
+q_i = q(S(z_i)).
+$$
 
-The axial derivatives are then computed by evaluating the same continuous CSF field at neighbouring stations:
+The derivative at an interior station can then be obtained from neighbouring CSF evaluations, for example by a centred difference,
 
-```python
-section_minus = stack.section(z - dz)
-section_plus = stack.section(z + dz)
+$$
+\frac{dq}{dz}(z_i)
+\simeq
+\frac{q(S(z_i+\Delta z)) - q(S(z_i-\Delta z))}
+{2\Delta z}.
+$$
 
-h_minus = extract_interfaces_from_section(section_minus)
-h_plus = extract_interfaces_from_section(section_plus)
+The increment $\Delta z$ is a differentiation parameter around the target station, while all values of `q` are obtained from evaluated CSF sections. The same procedure applies to interface coordinates, centroid coordinates, or any other quantity derived from the evaluated section.
 
-dh1_dz = (h_plus["h1"] - h_minus["h1"]) / (2.0 * dz)
-dh2_dz = (h_plus["h2"] - h_minus["h2"]) / (2.0 * dz)
-dh3_dz = (h_plus["h3"] - h_minus["h3"]) / (2.0 * dz)
-dh4_dz = (h_plus["h4"] - h_minus["h4"]) / (2.0 * dz)
-```
-
-The denominator is `2.0 * dz` because the derivative is evaluated between the two stations `z - dz` and `z + dz`. The increment `dz` is therefore the local perturbation around the target station, while the distance between the two CSF evaluations is `2 dz`.
-
-The same procedure can be applied to any quantity extracted from the evaluated section. For example, the centroid coordinate is evaluated at neighbouring stations and differentiated in the same way:
-
-```python
-c_minus = section_full_analysis(stack.section(z - dz))["Cy"]
-c_plus = section_full_analysis(stack.section(z + dz))["Cy"]
-
-dCy_dz = (c_plus - c_minus) / (2.0 * dz)
-```
-
-The relevant point is that the interface coordinates, the centroid coordinate, and their axial derivatives are obtained from CSF evaluations of the same continuous sectional field. The derivative calculation therefore acts on quantities sampled from `Section` objects along the member axis.
-
+This separation is important: CSF supplies the continuous station-wise section object, while the downstream formulation decides which derived quantities and which differentiation rule are required. In this way, interface derivatives such as `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz` are computed from the same continuous CSF model that also supplies the geometry and material participation fields.
 
 ---
 ## 5. Controlled stacked-section example
