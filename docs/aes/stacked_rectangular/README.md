@@ -728,6 +728,65 @@ For every station, the script reports:
 
 The complete report table is shown in the dedicated [comparison](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/stacked_rectangular/verification.md).
 
+
+
+### Numerical results
+
+The first table compares the section properties evaluated by CSF with the closed-form reference at Gauss-Lobatto stations over the two stacked intervals. The total weighted area remains constant at `A = 0.21`, confirming the compensation between the lower geometric variation and the upper participation-field variation. At the same time, `Cy` and `Ix` vary continuously along the member, showing that the internal weighted-area distribution changes even when the total weighted area is preserved. `Iy` remains constant in this example because the rectangular components keep the same width and remain aligned on the same vertical axis.
+
+The agreement between CSF and the closed-form reference is at numerical precision level. The maximum relative error for `A`, `Ix`, and `Iy` is `1.09e-13 %`, while the maximum absolute error for `Cy` is `5.55e-17`.
+
+The second table reports quantities derived directly from CSF `Section` evaluations. For each selected station, the interface coordinates `h1`, `h2`, `h3`, and `h4` are extracted from the evaluated polygonal geometry. Their axial derivatives, reported as `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz`, are computed by evaluating the same CSF field at neighbouring axial stations.
+
+Only `h1` varies in this example, because the lower boundary of the lower component moves along the member axis. The other interfaces remain fixed, and their derivatives are therefore zero. The centroid coordinate `Cy` is also differentiated along the axis, giving `dc_dz`. Its non-zero values show that the section centroid changes continuously as a consequence of the combined geometric and participation-field variation.
+
+
+
+```Closed-form verification table
+     z seg     t   w_u  sw_u |  A_csf  A_ref |    Cy_csf    Cy_ref |     Ix_csf     Ix_ref |     Iy_csf     Iy_ref |     err_%     err_Cy
+-----------------------------------------------------------------------------------------------------------------------------------------
+  0.00   0  0.00  0.50  0.20 |   0.21   0.21 | -0.242857 -0.242857 |  0.0096143  0.0096143 |  0.0015750  0.0015750 |  1.38e-14   2.78e-17
+  0.16   0  0.03  0.52  0.23 |   0.21   0.21 | -0.239565 -0.239565 |  0.0096066  0.0096066 |  0.0015750  0.0015750 |  7.22e-14   0.00e+00
+  0.54   0  0.11  0.55  0.29 |   0.21   0.21 | -0.232164 -0.232164 |  0.0095810  0.0095810 |  0.0015750  0.0015750 |  3.62e-14   0.00e+00
+  1.09   0  0.22  0.61  0.37 |   0.21   0.21 | -0.221456 -0.221456 |  0.0095242  0.0095242 |  0.0015750  0.0015750 |  1.09e-13   2.78e-17
+  1.76   0  0.35  0.68  0.48 |   0.21   0.21 | -0.208531 -0.208531 |  0.0094249  0.0094249 |  0.0015750  0.0015750 |  2.75e-14   2.78e-17
+  2.50   0  0.50  0.75  0.60 |   0.21   0.21 | -0.194643 -0.194643 |  0.0092815  0.0092815 |  0.0015750  0.0015750 |  3.74e-14   2.78e-17
+  3.24   0  0.65  0.82  0.72 |   0.21   0.21 | -0.181067 -0.181067 |  0.0091055  0.0091055 |  0.0015750  0.0015750 |  1.91e-14   0.00e+00
+  3.91   0  0.78  0.89  0.83 |   0.21   0.21 | -0.168970 -0.168970 |  0.0089196  0.0089196 |  0.0015750  0.0015750 |  7.78e-14   2.78e-17
+  4.46   0  0.89  0.95  0.91 |   0.21   0.21 | -0.159319 -0.159319 |  0.0087523  0.0087523 |  0.0015750  0.0015750 |  3.96e-14   5.55e-17
+  4.84   0  0.97  0.98  0.97 |   0.21   0.21 | -0.152836 -0.152836 |  0.0086306  0.0086306 |  0.0015750  0.0015750 |  4.02e-14   0.00e+00
+  5.00   0  1.00  1.00  1.00 |   0.21   0.21 | -0.150000 -0.150000 |  0.0085750  0.0085750 |  0.0015750  0.0015750 |  2.75e-14   2.78e-17
+  5.16   1  0.03  0.98  0.97 |   0.21   0.21 | -0.152836 -0.152836 |  0.0086306  0.0086306 |  0.0015750  0.0015750 |  2.75e-14   2.78e-17
+  5.54   1  0.11  0.95  0.91 |   0.21   0.21 | -0.159319 -0.159319 |  0.0087523  0.0087523 |  0.0015750  0.0015750 |  5.95e-14   0.00e+00
+  6.09   1  0.22  0.89  0.83 |   0.21   0.21 | -0.168970 -0.168970 |  0.0089196  0.0089196 |  0.0015750  0.0015750 |  7.78e-14   0.00e+00
+  6.76   1  0.35  0.82  0.72 |   0.21   0.21 | -0.181067 -0.181067 |  0.0091055  0.0091055 |  0.0015750  0.0015750 |  1.91e-14   2.78e-17
+  7.50   1  0.50  0.75  0.60 |   0.21   0.21 | -0.194643 -0.194643 |  0.0092815  0.0092815 |  0.0015750  0.0015750 |  3.74e-14   2.78e-17
+  8.24   1  0.65  0.68  0.48 |   0.21   0.21 | -0.208531 -0.208531 |  0.0094249  0.0094249 |  0.0015750  0.0015750 |  1.38e-14   5.55e-17
+  8.91   1  0.78  0.61  0.37 |   0.21   0.21 | -0.221456 -0.221456 |  0.0095242  0.0095242 |  0.0015750  0.0015750 |  1.09e-13   2.78e-17
+  9.46   1  0.89  0.55  0.29 |   0.21   0.21 | -0.232164 -0.232164 |  0.0095810  0.0095810 |  0.0015750  0.0015750 |  3.62e-14   0.00e+00
+  9.84   1  0.97  0.52  0.23 |   0.21   0.21 | -0.239565 -0.239565 |  0.0096066  0.0096066 |  0.0015750  0.0015750 |  2.75e-14   0.00e+00
+ 10.00   1  1.00  0.50  0.20 |   0.21   0.21 | -0.242857 -0.242857 |  0.0096143  0.0096143 |  0.0015750  0.0015750 |  1.38e-14   0.00e+00
+-----------------------------------------------------------------------------------------------------------------------------------------
+max relative error (A, Ix, Iy): 1.09e-13 %
+max absolute error (Cy): 5.55e-17
+
+Section-derived interface quantities
+     z |         h1         h2         h3         h4 |       dh1_dz       dh2_dz       dh3_dz       dh4_dz |     c=Cy_csf        dc_dz
+--------------------------------------------------------------------------------------------------------------------------------------
+  1.00 |  -0.580000  -0.300000   0.000000   0.200000 | 2.000000e-02 0.000000e+00 0.000000e+00 0.000000e+00 |    -0.223143 1.942857e-02
+  2.50 |  -0.550000  -0.300000   0.000000   0.200000 | 2.000000e-02 0.000000e+00 0.000000e+00 0.000000e+00 |    -0.194643 1.857143e-02
+  4.00 |  -0.520000  -0.300000   0.000000   0.200000 | 2.000000e-02 0.000000e+00 0.000000e+00 0.000000e+00 |    -0.167429 1.771429e-02
+  6.00 |  -0.520000  -0.300000   0.000000   0.200000 | -2.000000e-02 0.000000e+00 0.000000e+00 0.000000e+00 |    -0.167429 -1.771429e-02
+  7.50 |  -0.550000  -0.300000   0.000000   0.200000 | -2.000000e-02 0.000000e+00 0.000000e+00 0.000000e+00 |    -0.194643 -1.857143e-02
+  9.00 |  -0.580000  -0.300000   0.000000   0.200000 | -2.000000e-02 0.000000e+00 0.000000e+00 0.000000e+00 |    -0.223143 -1.942857e-02
+--------------------------------------------------------------------------------------------------------------------------------------
+finite-difference step dz = 1.0e-04
+h1..h4 and h1_prime..h4_prime are extracted from CSF Section evaluations
+junction z = 5.0 is excluded from this derivative table
+
+
+```
+
 ---
 
 
@@ -768,7 +827,6 @@ $$
 rather than as a collection of independent section evaluations.
 
 
----
 
 
 # 7. Station-wise CSV export
