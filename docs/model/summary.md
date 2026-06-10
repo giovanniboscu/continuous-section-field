@@ -311,7 +311,8 @@ $$
 
 obtained by querying the CSF field at an arbitrary axial station. This evaluated `Section` contains the station-wise polygonal geometry, the interpolated vertices, and the material-participation data associated with the sampled polygons. Therefore, geometric quantities, participation-weighted sectional properties, and reference coordinates can be interpreted as quantities derived from the same continuous source.
 
-This point is relevant to non-prismatic beam formulations such as the multilayer model discussed by Balduzzi et al. [2], where layer interfaces, interface slopes, reference-line quantities, and position-dependent coefficients are functions along the beam axis. In CSF, these quantities are not introduced as independent tabulated inputs. They are obtained by evaluating the section field at the required stations and extracting the relevant geometric or sectional quantity from the resulting `Section`.
+This point is relevant to non-prismatic beam formulations such as the multilayer model discussed by Balduzzi et al. [2], where layer interfaces, interface slopes, reference-line quantities, and position-dependent coefficients are functions along the beam axis. 
+In CSF, these quantities are obtained by evaluating the continuous section field at the required stations and by extracting the relevant geometric or sectional quantity from the resulting `Section`.
 
 For the stacked rectangular example, the evaluated section provides the four layer-interface coordinates `h1`, `h2`, `h3`, and `h4` directly from the polygon vertices. Since these coordinates are extracted from `S(z)`, they define station-wise interface functions along the member. Their axial derivatives are then computed by re-evaluating the same CSF field at neighbouring stations and applying the chosen differentiation rule.
 
@@ -518,7 +519,7 @@ $$
 
 This controlled example therefore verifies the internal consistency of the continuous section-field representation at section level, before any external structural solver is involved. It shows that CSF evaluates geometry, axial/bending participation, and shear/torsion participation as continuous fields, and that the resulting sectional properties follow from their combined distribution within the section.
 
-As an additional station-wise post-processing check, the same rectangular case is also used to report section-derived axial quantities such as $h(z)$, $h'(z)$, $c(z)=C_y(z)$, and $c'(z)$ in a separate output table. This output is not a beam-formulation step; it only documents that these quantities are obtained by sampling the same continuous map $z \mapsto. S(z)$
+As an additional station-wise post-processing check, the same rectangular case is also used to report the four interface coordinates `h1`, `h2`, `h3`, and `h4`, together with their axial derivatives `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz`. The centroid coordinate `Cy` is also sampled from the CSF section analysis and differentiated along the member axis as `dCy_dz`.
 
 
 
@@ -526,12 +527,11 @@ As an additional station-wise post-processing check, the same rectangular case i
 
 
 
+The resulting table shows that only the lower interface `h1` varies in this example, because only the lower boundary of the lower component changes along the member. The other interfaces remain fixed, and their derivatives are therefore zero. The centroid derivative `dCy_dz` remains non-zero because the centroid follows the combined effect of the changing lower geometry and the varying upper participation field.
 
 
 
 
-
-In the stacked rectangular example, the three rectangular components define four interface coordinates, denoted as `h1`, `h2`, `h3`, and `h4`. At a given station, these coordinates are obtained from the polygon vertices of the evaluated CSF `Section`:
 
 ```python
 section = stack.section(z)
