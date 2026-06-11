@@ -158,7 +158,7 @@ $$
 $$
 
 
->*Linear interpolation is adopted here as the baseline geometric field, providing the minimal continuous mapping between corresponding sectional zones.*
+>*Linear interpolation is adopted here as the baseline geometric realization of the CSF interval. It defines the lowest-order admissible continuous mapping between corresponding sectional zones within the framework, while higher-order or alternative interpolation schemes are not excluded by the CSF formulation.*
 
 
 where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$ respectively, and $k$ indexes the vertices of zone $i$. This produces a continuous, linearly tapered geometry at any intermediate station. A single CSF interval describes the continuous evolution of the section between
