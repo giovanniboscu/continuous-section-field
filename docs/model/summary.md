@@ -6,7 +6,7 @@ Continuous Section Field (CSF) is a computational modelling framework that repre
 
 The central idea is to treat the cross-section as a field defined along the longitudinal coordinate, rather than as an isolated section or a fixed table of sectional properties. Geometry is specified at reference stations and obtained by interpolating corresponding polygon vertices, producing continuous intermediate cross-sections. Material participation fields prescribe the longitudinal variation of material contribution independently of geometry. The independence of geometry and participation is foundational: each can vary along the axis without requiring the other to follow the same law. At any requested station, CSF combines the interpolated geometry with the participation fields to evaluate area, centroid, second moments of area, principal inertias, and section moduli.
 
-CSF makes an explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two longitudinal participation fields define how much each region contributes: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. Their independence allows geometry, axial/bending contribution, and shear/torsion contribution to vary separately along the member axis, while optional isotropic coupling can be used when appropriate.
+CSF makes an explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two longitudinal participation fields define how much each region contributes: the axial/bending field $w_i(z)$ and the shear/torsion field $k_i(z)$. Their independence allows geometry, axial/bending contribution, and shear/torsion contribution to vary separately along the member axis, while optional isotropic coupling can be used when appropriate.
 
 This separation preserves a continuous member representation while generating solver-facing station-wise data only when required.
 
@@ -29,7 +29,7 @@ In current structural analysis practice, the definition of section properties fo
 
 Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required input for a numerical model is not a single section, but a longitudinal field of section properties such as: $A(z)$ &nbsp;,&nbsp; $I_x(z)$ &nbsp;,&nbsp; $I_y(z)$ &nbsp;&nbsp; $(EI_x)(z)$ &nbsp;,&nbsp; $(GJ)(z)$ &nbsp;,&nbsp; $\rho_l(z)$.
 
-A member is represented as a continuous sectional field composed of evolving polygonal geometry together with two material participation fields: the axial/bending field $w_i(z)$ and the shear/torsion field $\kappa_i(z)$. This representation is defined, evaluated, inspected, and validated independently of any downstream solver. The solver receives a station-wise projection of an already defined continuous field - not a table that defines the model itself.
+A member is represented as a continuous sectional field composed of evolving polygonal geometry together with two material participation fields: the axial/bending field $w_i(z)$ and the shear/torsion field $k_i(z)$. This representation is defined, evaluated, inspected, and validated independently of any downstream solver. The solver receives a station-wise projection of an already defined continuous field - not a table that defines the model itself.
 
 The result is a clean separation between three concerns that are normally conflated: the continuous physical model of the member, the numerical sampling strategy required by the solver, and the exported data format consumed by a specific tool.
 
@@ -64,16 +64,16 @@ The formulation targets members whose sectional variation is defined at the leve
 The cross-section at station $z$ is represented as an ordered set of $n$ polygonal zones:
 
 $$
-S(z) = \{\,\Omega_i(z),\; w_i(z),\; \kappa_i(z)\,\}_{i=1}^{n}
+S(z) = \{\,\Omega_i(z),\; w_i(z),\; k_i(z)\,\}_{i=1}^{n}
 $$
 
 where:
 
 - $\Omega_i(z)$ is the polygonal domain of zone $i$ at station $z$;
 - $w_i(z)$ is the axial/bending field of zone $i$ (its participation in axial and bending stiffness);
-- $\kappa_i(z)$ is the shear/torsion field of zone $i$ (its participation in shear and torsion).
+- $k_i(z)$ is the shear/torsion field of zone $i$ (its participation in shear and torsion).
 
-Collectively, $w_i(z)$ and $\kappa_i(z)$ are the participation fields.
+Collectively, $w_i(z)$ and $k_i(z)$ are the participation fields.
 
 For sectional quantities written as weighted integrals over the polygonal subdomains, CSF uses the generic form
 
@@ -82,11 +82,11 @@ P_q(z) = \sum_{i=1}^{n} q_i(z)
 \iint_{\Omega_i(z)} f(x,y)\mathrm{d}A
 $$
 
-where $q_i(z)$ denotes the participation field associated with the quantity being evaluated. For axial and bending properties, $q_i(z)=w_i(z)$; for torsion-related quantities, $q_i(z)=k_i(z)$. The function $f(x,y)$ is the integrand associated with the selected sectional property, such as unity for area or $y^2$ for the second moment of area about the $x$-axis.
+where $q_i(z)$ denotes the participation field associated with the quantity being evaluated. For axial and bending properties, $q_i(z)=w_i(z)$; for torsion-related quantities, $q_i(z)=k_i(z)$ . The function $f(x,y)$ is the integrand associated with the selected sectional property, such as unity for area or $y^2$ for the second moment of area about the $x$-axis.
 
-Geometry $\Omega_i(z)$ and the participation fields , $w_i(z)$ and $\kappa_i(z)$, are fully decoupled: one can vary independently of the other.
+Geometry $\Omega_i(z)$ and the participation fields , $w_i(z)$ and $k_i(z)$, are fully decoupled: one can vary independently of the other.
 
-For polygonal domains, the area integrals are evaluated exactly via Green's theorem, reducing each double integral to a closed-form sum over the polygon edges. This applies to all integrals whose spatial integrands $f(x,y)$ are polynomial in $x$ and $y$ - area, first moments ($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and product of inertia ($I_{xy}$). The participation fields $w_i(z)$ and $\kappa_i(z)$ depend on $z$ only, not on $x$ and $y$; they factor out of the area integral as station-wise scalars, so the spatial integration remains polynomial at each fixed $z$ and the spatial integrals remain closed-form polygonal quantities.
+For polygonal domains, the area integrals are evaluated exactly via Green's theorem, reducing each double integral to a closed-form sum over the polygon edges. This applies to all integrals whose spatial integrands $f(x,y)$ are polynomial in $x$ and $y$ - area, first moments ($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and product of inertia ($I_{xy}$). The participation fields $w_i(z)$ and $k_i(z)$ depend on $z$ only, not on $x$ and $y$; they factor out of the area integral as station-wise scalars, so the spatial integration remains polynomial at each fixed $z$ and the spatial integrals remain closed-form polygonal quantities.
 
 The standard separable formulation is recovered as the special case in which the axial/bending field is uniform across zones:
 
@@ -98,10 +98,10 @@ $$
 For isotropic materials, when the axial/bending field $w_i(z)$ represents a Young's-modulus quantity, the shortcut `iso(ν)` assigns the shear/torsion field as
 
 $$
-\kappa_i(z) = \frac{w_i(z)}{2(1+\nu)} ,
+k_i(z) = \frac{w_i(z)}{2(1+\nu)} ,
 $$
 
-where $\nu$ is the Poisson ratio. This shortcut derives $\kappa_i(z)$ directly from $w_i(z)$ through the isotropic shear-modulus relation; $\kappa_i(z)$ is therefore not an additional independent field. Its magnitude is fixed by the prescribed $w_i(z)$ and by $\nu$, while its axial variation follows that of $w_i(z)$. In the general case, $w_i(z)$ and $\kappa_i(z)$ are assigned independently, allowing the model to represent non-isotropic effective participation, selective stiffness degradation, or hybrid material compositions.
+where $\nu$ is the Poisson ratio. This shortcut derives $k_i(z)$ directly from $w_i(z)$ through the isotropic shear-modulus relation; $k_i(z)$ is therefore not an additional independent field. Its magnitude is fixed by the prescribed $w_i(z)$ and by $\nu$, while its axial variation follows that of $w_i(z)$. In the general case, $w_i(z)$ and $k_i(z)$ are assigned independently, allowing the model to represent non-isotropic effective participation, selective stiffness degradation, or hybrid material compositions.
 
 
 When the participation fields are constant and the vertex coordinates are interpolated linearly between reference stations, the resulting sectional quantities are not arbitrary interpolants. The geometric quantities
@@ -135,7 +135,7 @@ where $P_i^{\mathrm{geom}}(z)$ denotes the geometric contribution associated wit
 The longitudinal variation therefore arises from two independent mechanisms:
 
 1. the geometric evolution of the polygonal domains $\Omega_i(z)$, which generates polynomial or rational sectional quantities under linear vertex interpolation;
-2. the participation fields $w_i(z)$ and $\kappa_i(z)$, which may follow arbitrary user-defined functions of the axial coordinate.
+2. the participation fields $w_i(z)$ and $k_i(z)$, which may follow arbitrary user-defined functions of the axial coordinate.
 
 The resulting sectional field is obtained through the composition of these two contributions.
 
@@ -172,9 +172,9 @@ evaluation.
 
 ### 2.4 Participation fields
 
-Once the geometric field has defined the continuous evolution of each polygonal zone, CSF assigns to every zone two longitudinal participation fields: $w_i(z)$ for axial and bending participation, and $\kappa_i(z)$ for shear and torsional participation. These fields scale the contribution of the corresponding geometric zone at each station, so that geometry and material participation can vary independently along the member axis.
+Once the geometric field has defined the continuous evolution of each polygonal zone, CSF assigns to every zone two longitudinal participation fields: $w_i(z)$ for axial and bending participation, and $k_i(z)$ for shear and torsional participation. These fields scale the contribution of the corresponding geometric zone at each station, so that geometry and material participation can vary independently along the member axis.
 
-The functions $w_i(z)$ and $\kappa_i(z)$ are user-defined functions of the longitudinal coordinate, or, for $\kappa_i(z)$, may be obtained from $w_i(z)$ through the isotropic relation of §2.2. Supported forms include polynomials, exponentials, piecewise-linear laws, and discrete lookup tables. The only requirement is that each function be evaluable at any requested station.
+The functions $w_i(z)$ and $k_i(z)$ are user-defined functions of the longitudinal coordinate, or, for $k_i(z)$, may be obtained from $w_i(z)$ through the isotropic relation of §2.2. Supported forms include polynomials, exponentials, piecewise-linear laws, and discrete lookup tables. The only requirement is that each function be evaluable at any requested station.
 
 
 ### 2.5 Assumptions
@@ -200,7 +200,7 @@ The geometry file defines:
 - polygonal regions;
 - vertex coordinates;
 - endpoint values of the participation fields;
-- longitudinal laws for $w_i(z)$ and $\kappa_i(z)$.
+- longitudinal laws for $w_i(z)$ and $k_i(z)$.
 
 The action file defines:
 
@@ -296,7 +296,7 @@ In all cases the continuous geometric field is evaluated on demand; no re-meshin
 
 ### 3.5  Interoperability with  `sectionproperties`
 
-Interoperability with `sectionproperties` is provided through two companion modules, [csf_sp](#CSF_SP) and [sp_csf](#SP_CSF), available as both Python API and CLI tools. `csf_sp` exports polygonal geometry at requested stations to `sectionproperties` for full warping analysis. `sp_csf` performs the inverse operation, importing individual section geometries from `sectionproperties` into CSF, enabling the definition of members with geometrically distinct `S0` and `S1` cross-sections. For torsional analyses, CSF supplies the shear/torsion participation field $\kappa_i(z)$ to the station-level analysis, so that the torsional response is evaluated using the appropriate shear-modulus quantity rather than the axial/bending participation field $w_i(z)$.
+Interoperability with `sectionproperties` is provided through two companion modules, [csf_sp](#CSF_SP) and [sp_csf](#SP_CSF), available as both Python API and CLI tools. `csf_sp` exports polygonal geometry at requested stations to `sectionproperties` for full warping analysis. `sp_csf` performs the inverse operation, importing individual section geometries from `sectionproperties` into CSF, enabling the definition of members with geometrically distinct `S0` and `S1` cross-sections. For torsional analyses, CSF supplies the shear/torsion participation field $k_i(z)$ to the station-level analysis, so that the torsional response is evaluated using the appropriate shear-modulus quantity rather than the axial/bending participation field $w_i(z)$.
 
 
 ---
