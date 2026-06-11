@@ -309,6 +309,8 @@ $$
 S : z \in [0,L] \mapsto S(z),
 $$
 
+where \(S(z)\) denotes the evaluated cross-section at the longitudinal coordinate \(z\).
+
 obtained by querying the CSF field at an arbitrary axial station. This evaluated `Section` contains the station-wise polygonal geometry, the interpolated vertices, and the material-participation data associated with the sampled polygons. Therefore, geometric quantities, participation-weighted sectional properties, and reference coordinates can be interpreted as quantities derived from the same continuous source.
 
 This point is relevant to non-prismatic beam formulations such as the multilayer model discussed by Balduzzi et al. [ [2] ](#Balduzzi2) , where layer interfaces, interface slopes, reference-line quantities, and position-dependent coefficients are functions along the beam axis. 
