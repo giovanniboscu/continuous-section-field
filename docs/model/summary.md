@@ -306,7 +306,7 @@ Interoperability with `sectionproperties` is provided through two companion modu
 The continuous nature of CSF makes it possible to treat section-derived quantities as functions of the member coordinate. The primary object is the evaluated section
 
 $$
-S(z),
+S : z \in [0,L] \mapsto S(z),
 $$
 
 obtained by querying the CSF field at an arbitrary axial station. This evaluated `Section` contains the station-wise polygonal geometry, the interpolated vertices, and the material-participation data associated with the sampled polygons. Therefore, geometric quantities, participation-weighted sectional properties, and reference coordinates can be interpreted as quantities derived from the same continuous source.
