@@ -749,15 +749,15 @@ This interpretation is enabled by the continuous nature of the sectional represe
 
 ## 7. Conclusions
 
-The main contribution of CSF is the formulation of an independent, declarative pre-solver layer in which polygonal geometry and material participation fields are defined as continuous entities. These fields can be evaluated at arbitrary axial stations and remain separated from the downstream numerical discretization.
+The main contribution of CSF is the definition of a solver-agnostic continuous representation for non-prismatic structural members, in which polygonal geometry and material participation fields are expressed as evaluable functions of the axial coordinate. These fields are independent of the downstream discretization and can be sampled at arbitrary stations to generate solver-specific input data.
 
-The controlled stacked-section example isolates the construction of the continuous section field before any structural solver is introduced. It shows how geometric interpolation and participation fields combine within the evaluated section: the geometric variation of one component compensates the participation variation of another component in total weighted area, while the weighted centroid and bending inertia remain continuously variable. The closed-form comparison confirms that the assembled CSF member is evaluated consistently across multiple intervals and across their common junction.
+The controlled stacked-section example isolates the construction of this representation at section level, before any structural solver is introduced. It demonstrates how geometric interpolation and participation fields combine within the evaluated section, and how their interaction affects derived sectional quantities such as centroid location and bending inertia, while remaining consistent across intervals.
 
-The NREL tower validation then applies the same formulation to a realistic tapered structural member. The undegraded case verifies the smooth geometry-driven variation of the tower properties, while the degraded case demonstrates that localized stiffness reductions can be introduced through participation fields without modifying the geometric model. The convergence study further shows that the beam discretization can be refined independently of the underlying continuous sectional representation.
+The NREL tower case extends this formulation to a realistic tapered structural member. The undegraded configuration verifies geometry-driven variation of sectional properties, while the degraded configuration shows how localized stiffness changes can be introduced through participation fields without modifying the geometric definition. The convergence study further confirms that numerical discretization can be refined independently of the continuous representation.
 
-Together, these examples show that CSF separates the definition of the sectional model from its numerical sampling and from the solver consuming the exported data. This separation makes the same member definition reusable across inspection, validation, and solver-preprocessing workflows, while preserving a continuous representation that can be sampled, exported, or externally analysed according to the requirements of the downstream procedure.
+Together, these examples show a clear separation between the definition of the sectional model, its numerical sampling, and the solver-specific data structures. This separation enables consistent reuse of the same member definition across inspection, validation, and structural analysis workflows.
 
-
+CSF provides a continuous representation of the sectional model that can be sampled and exported into solver-compatible formats without altering the underlying model definition.
 
 ### Limitations
 
