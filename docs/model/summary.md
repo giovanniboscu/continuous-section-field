@@ -328,8 +328,6 @@ In CSF, these quantities are obtained by evaluating the continuous section field
 For the stacked rectangular example, the evaluated section provides the four layer-interface coordinates `h1`, `h2`, `h3`, and `h4` directly from the polygon vertices. Since these coordinates are extracted from `S(z)`, they define station-wise interface functions along the member. 
 Their axial derivatives are not evaluated by a dedicated CSF derivative operator; they are obtained by re-evaluating the same CSF field at neighbouring stations and applying the differentiation rule selected by the downstream formulation.
 
-
-
 For a generic section-derived quantity `q`, the procedure is:
 
 $$
