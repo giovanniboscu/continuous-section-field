@@ -18,7 +18,25 @@ The main section geometry can be exported in two forms:
 python3 -m csf.utils.writegeometry_rio_v2  [OPTIONS]  --out path/to/output.yaml
 ```
 
----
+
+### `singlepolygon`
+
+The `singlepolygon` parameter is the main option controlling how the cross-section geometry is represented in the output YAML file.
+
+A hollow section is always defined by two geometric boundaries:
+
+* an **outer contour**, representing the external boundary of the section;
+* an **inner contour**, representing the boundary of the internal void.
+
+The value of `singlepolygon` determines how these two contours are exported.
+
+* When `singlepolygon = false`, the outer and inner contours are exported as two separate polygons.
+* When `singlepolygon = true`, the outer and inner contours are stored in a single polygonal path, allowing CSF to interpret the geometry as one closed `@cell`.
+
+For `singlepolygon = false`, the outer and inner contours are written as two independent polygonal entities. The outer contour defines the external boundary of the section, while the inner contour defines the void.
+
+For `singlepolygon = true`, the outer and inner contours are not written as separate polygons. Instead, they are stored in the same vertex list as a single polygonal path. In this representation, the inner contour must have the opposite orientation of the outer contour so that the void is correctly subtracted from the section area.
+
 
 ## Cross-section shape - the three cases
 
@@ -37,28 +55,8 @@ dy │   │                    │   │
     tg
 ```
 
-For singlepolygon = false, the outer and inner contours are exported as two distinct polygonal entities. The outer polygon defines the external boundary of the section, and the inner polygon defines the internal void. Since the two contours are stored separately, no special orientation convention is required.
-
-For singlepolygon = true, the outer and inner contours are not written as two separate polygons. They are stored as a single polygonal path in the same vertex list, so that CSF can interpret the section as one closed @cell.
 
 
-```text
-   ┌──────────── outer contour ────────────┐
-   │                                       │
-   │   ┌──────── inner contour ────────┐   │
-   │   │                               │   │
-   │   │                               │   │
-   │   │                               │   │
-   │   └───────────────────────────────┘   │
-   │                                       │
-   └───────────────────────────────────────┘
-
-   vertex list:
-   [ outer contour vertices,
-     inner contour vertices ]
-```
-
-In this representation, the inner contour is still geometrically the boundary of the void, but it is encoded inside the same polygonal path used for the `@cell` representation.
 
 
 
