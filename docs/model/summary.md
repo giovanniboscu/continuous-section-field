@@ -310,9 +310,9 @@ Interoperability with `sectionproperties` is provided through two companion modu
 
 ---
 
-## 4. Derivatives from continuous CSF evaluations
+## 4. Derivative estimation from repeated CSF evaluations
 
-The continuous nature of CSF makes it possible to treat section-derived quantities as functions of the member coordinate. The primary object is the evaluated section
+The continuous nature of CSF makes it possible to evaluate section-derived quantities at arbitrary member coordinates and to treat the resulting values as samples of coordinate-dependent quantities. The primary object is the evaluated section
 
 $$
 S : z \in [0,L] \mapsto S(z),
@@ -325,7 +325,10 @@ obtained by querying the CSF field at an arbitrary axial station. This evaluated
 This point is relevant to non-prismatic beam formulations such as the multilayer model discussed by Balduzzi et al. [ [2] ](#Balduzzi2) , where layer interfaces, interface slopes, reference-line quantities, and position-dependent coefficients are functions along the beam axis. 
 In CSF, these quantities are obtained by evaluating the continuous section field at the required stations and by extracting the relevant geometric or sectional quantity from the resulting `Section`.
 
-For the stacked rectangular example, the evaluated section provides the four layer-interface coordinates `h1`, `h2`, `h3`, and `h4` directly from the polygon vertices. Since these coordinates are extracted from `S(z)`, they define station-wise interface functions along the member. Their axial derivatives are then computed by re-evaluating the same CSF field at neighbouring stations and applying the chosen differentiation rule.
+For the stacked rectangular example, the evaluated section provides the four layer-interface coordinates `h1`, `h2`, `h3`, and `h4` directly from the polygon vertices. Since these coordinates are extracted from `S(z)`, they define station-wise interface functions along the member. 
+Their axial derivatives are not evaluated by a dedicated CSF derivative operator; they are obtained by re-evaluating the same CSF field at neighbouring stations and applying the differentiation rule selected by the downstream formulation.
+
+
 
 For a generic section-derived quantity `q`, the procedure is:
 
@@ -344,7 +347,7 @@ $$
 
 The increment $\Delta z$ is a differentiation parameter around the target station, while all values of `q` are obtained from evaluated CSF sections. The same procedure applies to interface coordinates, centroid coordinates, or any other quantity derived from the evaluated section.
 
-This separation is important: CSF supplies the continuous station-wise section object, while the downstream formulation decides which derived quantities and which differentiation rule are required. In this way, interface derivatives such as `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz` are computed from the same continuous CSF model that also supplies the geometry and material participation fields.
+This separation is important: CSF supplies the continuous station-wise section object, while the downstream formulation decides which derived quantities and which differentiation rule are required. In this way, interface derivatives such as `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz` can be obtained from repeated evaluations of the same continuous CSF model that also supplies the geometry and material participation fields.
 
 ---
 ## 5. Controlled stacked-section example
