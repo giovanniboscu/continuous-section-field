@@ -264,14 +264,14 @@ python3 -m csf.utils.writegeometry_rio_v2 \
   --z0 0.0   --z1 10.0 \
   --s0-x 0   --s0-y 0   --s0-dx 2.0  --s0-dy 1.0  --s0-R 0.20  --s0-tg 0.20  --s0-t-cell 0.20 \
   --s1-x 0   --s1-y 0   --s1-dx 1.6  --s1-dy 0.8  --s1-R 0.15  --s1-tg 0.15  --s1-t-cell 0.15 \
-  --N 64  --singlepolygon true \
+  --N 64  --singlepolygon false \
   --n-bars-row1 16  --n-bars-row2 12 \
   --area-bar-row1 0.000491  --area-bar-row2 0.000314 \
   --dist-row1-outer 0.05    --dist-row2-inner 0.04 \
   --rebar-weight 1.0 \
-  --bars-row1-law "linear" \
-  --bars-row2-law "linear" \
-  --s0-law "linear"  --s1-law "linear" \
+  --bars-row1-law "1+t/3" \
+  --bars-row2-law "1+t/3" \
+  --s0-law "1+t/4"  --s1-law "1+t/4" \
   --out degradation.yaml
 ```
 
