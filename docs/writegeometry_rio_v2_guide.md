@@ -30,23 +30,24 @@ The **same rules apply to both S0 and S1 independently.**
    │                            │
    │   ┌────────────────────┐   │
    │   │                    │   │
-dy │   │    inner void      │   │
+dy │   │                    │   │
    │   │                    │   │
    │   └────────────────────┘   │
    │<->                         │
     tg
 ```
 
-For `singlepolygon = true`, the outer and inner contours are not written as two separate polygons. They are stored as a single polygonal path in the same vertex list, so that CSF can interpret the section as one closed `@cell`.
+For singlepolygon = false, the outer and inner contours are exported as two distinct polygonal entities. The outer polygon defines the external boundary of the section, and the inner polygon defines the internal void. Since the two contours are stored separately, no special orientation convention is required.
 
-The inner contour must have the opposite orientation of the outer contour. This gives the inner loop the opposite signed area, so that it is subtracted from the outer area and represents the void.
+For singlepolygon = true, the outer and inner contours are not written as two separate polygons. They are stored as a single polygonal path in the same vertex list, so that CSF can interpret the section as one closed @cell.
+
 
 ```text
    ┌──────────── outer contour ────────────┐
    │                                       │
    │   ┌──────── inner contour ────────┐   │
    │   │                               │   │
-   │   │          inner loop           │   │
+   │   │                               │   │
    │   │                               │   │
    │   └───────────────────────────────┘   │
    │                                       │
