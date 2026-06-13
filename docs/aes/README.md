@@ -339,7 +339,7 @@ $$
 S : z \in [0,L] \mapsto S(z),
 $$
 
-where \(S(z)\) denotes the evaluated cross-section at the longitudinal coordinate \(z\).
+where $S(z)$ denotes the evaluated cross-section at the longitudinal coordinate $z$, obtained by querying the CSF field at an arbitrary axial station.
 
 obtained by querying the CSF field at an arbitrary axial station. This evaluated `Section` contains the station-wise polygonal geometry, the interpolated vertices, and the material-participation data associated with the sampled polygons. Therefore, geometric quantities, participation-weighted sectional properties, and reference coordinates can be interpreted as quantities derived from the same continuous source.
 
