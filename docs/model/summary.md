@@ -813,17 +813,16 @@ These limitations suggest three natural extensions of the present framework. Fir
 
 ## Data Availability
 
-The source code, input files, validation workflows, figures, and numerical data used in this study are available in the Continuous Section Field repository:
+The source code, including the `csf_sp` and `sp_csf` interoperability modules, input files, validation workflows, figures, and numerical data used in this study are available in the Continuous Section Field repository:
 
 https://github.com/giovanniboscu/continuous-section-field
 
-The reproduction material for the examples discussed in this paper is collected in:
-
-docs/aes/
+The reproduction material for the examples discussed in this paper is collected in the `docs/aes/` directory of the same repository.
 
 The archived software release is available on Zenodo with DOI:
 
 https://doi.org/10.5281/zenodo.19076181
+
 
 
 ---
