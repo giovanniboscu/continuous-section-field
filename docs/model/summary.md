@@ -1,4 +1,4 @@
-Draft v3.0
+Draft v4.0
 # Continuous Section Fields for Non-Uniform and Axially Graded Structural Members
 
 ## Abstract
