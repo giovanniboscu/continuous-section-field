@@ -598,7 +598,8 @@ The resulting table shows that only the lower interface `h1` varies in this exam
 
 The complete reproducibility material for this example, including the CSF input files, action file, figures, station-wise exports, and the full comparison table, is provided in the repository:
 
-[Stacked rectangular example](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/stacked_rectangular)
+Complete workflow Stacked rectangular example:
+[https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/stacked_rectangular](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/stacked_rectangular)
 
 ---
 
@@ -783,7 +784,8 @@ The two cases exhibit qualitatively different convergence regimes under the same
 This interpretation is enabled by the continuous nature of the sectional representation, rather than by treating the station discretization as the model itself.
 
 
-[Complete workflow, convergence plots, and numerical tables for the NREL validation case](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case)
+Complete workflow, convergence plots, and numerical tables for the NREL validation case:
+[https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case ](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case)
  
 ---
 
