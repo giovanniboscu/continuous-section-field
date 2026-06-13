@@ -186,9 +186,18 @@ evaluation.
 
 ### 2.4 Participation fields
 
-Once the geometric field has defined the continuous evolution of each polygonal zone, CSF assigns to every zone two longitudinal participation fields: $w_i(z)$ for axial and bending participation, and $k_i(z)$ for shear and torsional participation. These fields scale the contribution of the corresponding geometric zone at each station, so that geometry and material participation can vary independently along the member axis.
 
-The functions $w_i(z)$ and $k_i(z)$ are user-defined functions of the longitudinal coordinate, or, for $k_i(z)$, may be obtained from $w_i(z)$ through the isotropic relation of §2.2. Supported forms include polynomials, exponentials, piecewise-linear laws, and discrete lookup tables. The only requirement is that each function be evaluable at any requested station.
+
+A participation field can also be interpreted as a simple longitudinal homogenization factor. For example, if the material assigned to zone $i$ has longitudinally varying Young's modulus $E_i(z)$ and shear modulus $G_i(z)$, the participation fields may be written as
+
+$$
+w_i(z) = \frac{E_i(z)}{E_{\mathrm{ref}}},\phi_i(z),
+\qquad
+k_i(z) = \frac{G_i(z)}{G_{\mathrm{ref}}},\psi_i(z),
+$$
+
+where $E_{\mathrm{ref}}$ and $G_{\mathrm{ref}}$ are reference moduli, while $\phi_i(z)$ and $\psi_i(z)$ are dimensionless fields controlling the effective axial/bending and shear/torsional participation of the zone. In this form, longitudinal material grading and participation effects are represented within the same field description.
+
 
 
 ### 2.5 Assumptions
