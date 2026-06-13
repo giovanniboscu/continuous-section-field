@@ -375,7 +375,7 @@ The example consists of two CSF intervals assembled into a single member. Each s
 
 <p align="center">
   
-<img width="741" height="277" alt="image" src="https://github.com/user-attachments/assets/bba4130c-9ea7-4d46-9ad0-6a437a97ce05" />
+<img width="741" height="277" alt="image" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/figures/fig1.png" />
 
 </p>
 
@@ -392,11 +392,9 @@ The model is therefore hybrid in the participation-field sense. The middle and l
 
 <p align="center">
   
-<img width="645" height="471" alt="image" src="https://github.com/user-attachments/assets/615f3b3e-abcb-446d-919e-66a3e6207293" />
+<img width="645" height="471" alt="image" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/figures/fig2.png" />
 
 </p>
-
-
 
 
 <p align="center">
@@ -430,12 +428,12 @@ $$
 
 <p align="center">
   <em>Figure 3. First CSF interval colored by the axial/bending participation field <code>w</code>.</em>
-  <img width="759" height="673" alt="First CSF interval colored by axial/bending participation field" src="https://github.com/user-attachments/assets/60d1bd76-0ad0-45bd-bd29-0e8ae8d8a93a" />
+  <img width="759" height="673" alt="First CSF interval colored by axial/bending participation field" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/figures/fig3.png" />
 </p>
 
 <p align="center">
   <em>Figure 4. Same CSF interval colored by the shear/torsion participation field <code>shear_weight</code>.</em>
-  <img width="643" height="600" alt="First CSF interval colored by shear torsion participation field" src="https://github.com/user-attachments/assets/54017e2d-d8e4-4884-99fb-5299024aee6c" />
+  <img width="643" height="600" alt="First CSF interval colored by shear torsion participation field" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/figures/fig4.png" />
 </p>
 
 The example is arranged so that the geometric variation of the lower component exactly compensates the axial/bending participation variation of the upper component in total weighted area. In the first interval,
