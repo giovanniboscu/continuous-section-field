@@ -199,9 +199,7 @@ where $E_{\mathrm{ref}}$ and $G_{\mathrm{ref}}$ are reference moduli. Through th
 - **A - Fixed topology.** Vertex count per zone is constant along $z$; zones whose boundaries appear or disappear are not supported within a single interval.
 - **B - Linear vertex interpolation.** Zone geometry varies linearly between the two reference stations.
 - **C - Polygonal representation.** Curved boundaries must be approximated by polygon discretisation.
-- **D - Straight element axis.** CSF models a single element along a straight $z$-axis; curved members are not supported.
-
-Multiple straight intervals can be concatenated to represent members of arbitrary length and sectional evolution, provided each interval satisfies the assumptions listed above.
+- **D - Straight element axis.** Each CSF interval is defined along a straight local member coordinate. Multiple intervals can be concatenated through CSFStack, but curved member axes with continuously varying centerline geometry are not currently represented.
 
 ---
 
