@@ -849,55 +849,6 @@ During the preparation of this work, the author used ChatGPT and Claude for draf
 
 Giovanni Boscu: Conceptualization, Methodology, Software, Validation, Formal analysis, Writing – original draft, Writing – review and editing, Visualization.
 
-## Internal link
-
-- **[Balduzzi 2016]** <a id="Balduzzi-2016"></a>  *Balduzzi, G., Aminbaghai, M., Sacco, E., Füssl, J., Eberhardsteiner, J., & Auricchio, F. (2016). Non-prismatic beams: A simple and effective Timoshenko-like model. International Journal of Solids and Structures*, 90, 236–250.
-  https://doi.org/10.1016/j.ijsolstr.2016.02.017
-
-- **[KENNA]** <a id="KENNA"></a> *A. Kenna and B. Basu, “Damage Detection in Wind Turbine Towers using a Finite Element Model and Discrete Wavelet Transform of Strain Signals,”* Journal of Physics: Conference Series, vol. 628, no. 1, p. 012067, 2015. doi:10.1088/1742-6596/628/1/012067.
-
-- **[VABS]** <a id="vabs"></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
-
-- **[NRELOpenFAST]**  <a id="NRELOpenFAST"></a> *National Renewable Energy Laboratory. OpenFAST: open-source wind turbine simulation tool*. https://github.com/OpenFAST/openfast
-- **[NREL WISDEM]** <a id="wisdem"></a>  *National Renewable Energy Laboratory. WISDEM: Wind-Plant Integrated System Design and Engineering Model*. https://github.com/WISDEM/WISDEM
-
-- **[SEC_PROP]** <a id="sec_prop"></a>  *python package for the analysis of arbitrary cross-sections using the finite element method.*.
-https://github.com/robbievanleeuwen/section-properties
-
-- **[WANG]**  <a id="wang"></a>   *Wang et al. 2017 - Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., & Jonkman, B. (2017). BeamDyn: A High-Fidelity Wind Turbine Blade Solver in the FAST Modular Framework. Wind Energy, 20(8), 1439–1462*.  https://doi.org/10.1002/we.2101
-    
-- **[Gavin]**  <a id="gavin"></a>  *Gavin, H. P. Frame3DD: Static and dynamic structural analysis of 2D and 3D frames*. http://frame3dd.sourceforge.net/
-
-- **[BECAS]**  <a id="becas"></a> *Finite-element-based cross-sectional analysis software*. https://becas.dtu.dk/
-
-- **[ANSYS]**  <a id="ansys"></a> *engineering simulation software*. https://www.ansys.com/
-
-- **[ABAQUS]**  <a id="ABAQUS"></a> *Dassault Systèmes Simulia Corp. ABAQUS*. https://www.3ds.com/products/simulia/abaqus/
-
-- **[OPENSEES]** <a id="OPENSEES"></a> *McKenna, F. OpenSees: A Framework for Earthquake Engineering Simulation. Computing in Science & Engineering, 13(4), 58–66, 2011*. https://doi.org/10.1109/MCSE.2011.66  
-  Project website: https://opensees.berkeley.edu/
-
-  
----
-  
-- **[SUMMB_NREL]** <a id="SUMMB_NREL"></a>  *G. Boscu, Continuous Section Field: NREL validation comparison summary*. Repository documentation, 2026.
-https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/validation_comparison_summary_all_b.md
-
-- **[CSF_SP]** <a id="CSF_SP"></a>  *G. Boscu, Continuous Section Field: Continuous Section Field csf_sp User Guide*.  Repository documentation, 2026.
- https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md
-
-
-- **[SP_CSF]** <a id="SP_CSF"></a>  *G. Boscu, Continuous Section Field: Continuous Section Field csf_sp User Guide*.  Repository documentation, 2026.
- https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/sp_csf_guide.md
-
-- **[FULL_AN]** <a id="FULL_AN"></a> *G. Boscu, Continuous Section Field: Section Full Analysis Output*. Repository documentation, 2026.
-https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md
-
-- **[SAINT_VEN]** <a id="SAINT_VEN"></a> *G. Boscu, Continuous Section Field: Saint-Venant Torsional Constant*. Repository documentation, 2026.
-https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md
-
-- **[ROARK]** <a id="ROARK"></a> *G. Boscu, Roark's Formulas for Stress and Strain*. Reference handbook for engineering stress and torsion approximations.
-https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J_vroark_usage_guide.md
 
 
 # References
