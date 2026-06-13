@@ -57,7 +57,7 @@ On the theoretical side,  Balduzzi et al. [[4,5]](#balduzzi)   showed that non-p
 Existing frameworks for the analysis of non-prismatic members can be grouped into three categories. First, sectional analysis tools such as VABS, BECAS, and `sectionproperties` [[3]](#secprop) compute the properties of individual cross-sections with high accuracy, while the longitudinal variation of the member is handled externally. Second, structural solvers such as Opensees [[6]](#opensees), ABAQUS [[7]](#abaqus) , and ANSYS [[8]](#ansys) incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations. 
 
 
-Third, wind-energy simulation and design workflows embed non-prismaticity in application-specific representations. Aeroelastic codes such as BeamDyn [[9]](#beamdyn)  rely on distributed sectional-property tables along the member axis, whereas systems-engineering tools such as NREL's WISDEM [[10]](#wisdem)  represent the tower as a tapered cylindrical shell with closed-form sectional properties, analysed through the external frame finite-element code Frame3DD [Gavin](#gavin). In both cases the longitudinal variation is bound to a specific geometry or workflow rather than expressed as an independent, reusable sectional field.
+Third, wind-energy simulation and design workflows embed non-prismaticity in application-specific representations. Aeroelastic codes such as BeamDyn [[9]](#beamdyn)  rely on distributed sectional-property tables along the member axis, whereas systems-engineering tools such as NREL's WISDEM [[10]](#wisdem)  represent the tower as a tapered cylindrical shell with closed-form sectional properties, analysed through the external frame finite-element code Frame3DD [[11]](#frame3dd). In both cases the longitudinal variation is bound to a specific geometry or workflow rather than expressed as an independent, reusable sectional field.
 
 
 In existing workflows, the longitudinal variation of sectional properties is usually handled inside section-analysis tools, structural solvers, or application-specific pipelines. It is less commonly exposed as an independent, solver-agnostic modelling layer that can define, sample, export, and reuse sectional-property fields along the member axis.
@@ -875,6 +875,8 @@ https://github.com/robbievanleeuwen/section-properties
 [9] <a id="beamdyn"></a> Wang, Q., Sprague, M. A., Jonkman, J., Johnson, N., and Jonkman, B. *BeamDyn: a high-fidelity wind turbine blade solver in the FAST modular framework*. Wind Energy, 20(8), 1439–1462, 2017. https://doi.org/10.1002/we.2101
 
 [10] <a id="wisdem"></a> Dykes, K., Ning, S. A., Scott, G., Graf, P., Barter, G., Bortolotti, P., Key, A., Abbas, N., Gaetner, E., Quick, J., Frontin, C., Zalkind, D., Parsons, T., King, R., and Quon, E. *WISDEM® v3.15.2 2024 (Wind-Plant Integrated System Design and Engineering Model)*. National Renewable Energy Laboratory, 2024. https://doi.org/10.11578/dc.20240502.1
+
+[11] <a id="frame3dd"></a> Gavin, H. P. *Frame3DD: Static and Dynamic Structural Analysis of 2D and 3D Frames*. https://frame3dd.sourceforge.net/
 
 ---
 
