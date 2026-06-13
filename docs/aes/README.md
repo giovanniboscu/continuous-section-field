@@ -702,7 +702,6 @@ The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated
 
 <p align="center">
   <em>Figure 8. CSF 3D representation of the degraded NREL tower case. The geometry remains tapered and continuous, while the longitudinal stiffness reduction is introduced through the participation field.</em>
-  <img width="631" height="547" alt="image" src="figures/fig8.png" />
 </p>
 
 
