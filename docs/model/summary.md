@@ -890,19 +890,4 @@ https://github.com/robbievanleeuwen/section-properties
 
 ---
 
-
-[] Q. Wang, M.A. Sprague, BeamDyn: a high-fidelity wind turbine blade solver in the FAST modular framework, Wind Energy 20 (8) (2017) 1439–1463. https://doi.org/10.1002/we.2101
-
-[] J. Jonkman, S. Butterfield, W. Musial, G. Scott, Definition of a 5-MW reference wind turbine for offshore system development, NREL/TP-500-38060, National Renewable Energy Laboratory, Golden, CO, 2009. https://doi.org/10.2172/947422
-
-[] W.C. Young, R.G. Budynas, Roark's Formulas for Stress and Strain, seventh ed., McGraw-Hill, New York, 2002.
-
-[] C. Steger, On the Calculation of Arbitrary Moments of Polygons, Technical Report FGBV-96-05, Technische Universität München, 1996.
-
-[] S.P. Timoshenko, J.N. Goodier, *Theory of Elasticity*, 3rd ed., McGraw-Hill, 1970.
-
-[] T.H.G. Megson, *Aircraft Structures for Engineering Students*, 7th ed., Butterworth-Heinemann, 2021.
-
-[] G. Boscu, Continuous Section Field (CSF), Zenodo, 2026. https://doi.org/10.5281/zenodo.XXXXXX
-
----
+[16] <a id="polygon_moments"></a> Steger, C. *On the Calculation of Arbitrary Moments of Polygons*. Technical Report FGBV-96-05, Forschungsgruppe Bildverstehen, Informatik IX, Technische Universität München, October 1996. https://mv.in.tum.de/_media/members/steger/publications/1996/fgbv-96-05-steger.pdf
