@@ -696,6 +696,7 @@ The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated
 
 
 <!-- LATEX_PAGEBREAK -->
+
 #### Case B - degraded tower
 
 <p align="center">
