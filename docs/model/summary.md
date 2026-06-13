@@ -350,7 +350,7 @@ where \(S(z)\) denotes the evaluated cross-section at the longitudinal coordinat
 
 obtained by querying the CSF field at an arbitrary axial station. This evaluated `Section` contains the station-wise polygonal geometry, the interpolated vertices, and the material-participation data associated with the sampled polygons. Therefore, geometric quantities, participation-weighted sectional properties, and reference coordinates can be interpreted as quantities derived from the same continuous source.
 
-This point is relevant to non-prismatic beam formulations such as the multilayer model discussed by Balduzzi et al. [ [2] ](#Balduzzi2) , where layer interfaces, interface slopes, reference-line quantities, and position-dependent coefficients are functions along the beam axis. 
+This point is relevant to non-prismatic beam formulations such as the multilayer model discussed by  Balduzzi et al. [[4,5]](#balduzzi) , where layer interfaces, interface slopes, reference-line quantities, and position-dependent coefficients are functions along the beam axis. 
 In CSF, these quantities are obtained by evaluating the continuous section field at the required stations and by extracting the relevant geometric or sectional quantity from the resulting `Section`.
 
 For the stacked rectangular example, the evaluated section provides the four layer-interface coordinates `h1`, `h2`, `h3`, and `h4` directly from the polygon vertices. Since these coordinates are extracted from `S(z)`, they define station-wise interface functions along the member. 
