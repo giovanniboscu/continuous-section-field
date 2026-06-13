@@ -312,7 +312,7 @@ CSF_ACTIONS:
         params:
           fmt_display: ".10g"
         properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip,I1, I2, rx, ry, Wx,            
-                     Wy, J_sv_wall,Q_na, J_s_vroark, J_s_vroark_fidelity]
+                     Wy,Q_na, J_sv_wall, J_s_cell]
 ```
 Here, $I_1$ and $I_2$ denote the principal second moments of area.
 
