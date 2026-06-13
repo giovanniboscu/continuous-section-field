@@ -693,16 +693,13 @@ The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated
   <img width="631" height="547" alt="image" src="figures/fig8.png" />
 </p>
 
-</p>
-
 <p align="center">
   <em>Figure 9. Longitudinal stiffness degradation law applied to the NREL tower through the axial/bending participation field. The two localized reductions are centred at 0.33L and 0.67L.</em>
 </p>
 
-
 <p align="center">
 
-  <img width="753" height="357" alt="image" src="https://github.com/user-attachments/assets/50866952-f5ca-4ca3-969b-caf1a0b69934" />
+  <img width="678" height="321" alt="image" src="https://github.com/user-attachments/assets/50866952-f5ca-4ca3-969b-caf1a0b69934" />
 </p>
 
 In the degraded configuration, the geometry is unchanged but the participation field $w_i(z)$ introduces localized stiffness reductions along a portion of the tower height. This produces sharper axial variation in the sectional stiffness distribution.
