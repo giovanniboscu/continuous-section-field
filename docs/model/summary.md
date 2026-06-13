@@ -47,7 +47,7 @@ A member is represented as a continuous sectional field composed of evolving pol
 
 The result is a clean separation between three concerns that are normally conflated: the continuous physical model of the member, the numerical sampling strategy required by the solver, and the exported data format consumed by a specific tool.
 
-Cross-section analysis tools such as VABS [1](#>1_vabs) and BECAS [2](#2_becas) provide accurate computation of beam sectional properties for arbitrary geometries and composite materials, and are widely adopted in wind-turbine and aerospace applications. Open-source alternatives such as  [sectionproperties](#SEC_PROP) offer similar capabilities within a Python ecosystem. These tools are primarily designed to analyse individual cross-sections: given a sectional geometry and material definition, they return the corresponding sectional properties at that station.
+Cross-section analysis tools such as VABS [[1]](#1_vabs) and BECAS [[2]](#2_becas) provide accurate computation of beam sectional properties for arbitrary geometries and composite materials, and are widely adopted in wind-turbine and aerospace applications. Open-source alternatives such as  [sectionproperties](#SEC_PROP) offer similar capabilities within a Python ecosystem. These tools are primarily designed to analyse individual cross-sections: given a sectional geometry and material definition, they return the corresponding sectional properties at that station.
 Longitudinal variation of the member, including tapering geometry, variation of material properties, or local stiffness degradation, is therefore usually represented outside the section-analysis tool
 , either through user-defined station tables or through the discretization adopted by the downstream structural solver. As a consequence, the sectional description is often tied to a specific mesh or analysis workflow, rather than being defined as an independent continuous model.
 
@@ -902,7 +902,7 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J
 
 # References
 
-[1] <a id="1_vabs"></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
+[1] <a id=""></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
 
 [2] <a id="2_becas"></a> *Finite-element-based cross-sectional analysis software*. https://becas.dtu.dk/
 
