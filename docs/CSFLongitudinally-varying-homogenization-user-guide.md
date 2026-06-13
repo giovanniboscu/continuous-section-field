@@ -444,7 +444,7 @@ where `i` identifies a corresponding polygon pair between `S0` and `S1`.
 
 ### Operational meaning in CSF
 
-The shear/torsion weight `shear_w_i(z)` scales the effective contribution of the interpolated polygon to shear- and torsion-related quantities.
+The shear/torsion weight `shear_w_i(z)` scales the effective contribution of the interpolated polygon to torsion-related quantities.
 
 It can represent, for example:
 
