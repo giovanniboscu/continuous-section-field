@@ -470,6 +470,8 @@ $$ A(t) = (0.5+0.5t)(0.06) + 0.09 + 0.30(0.30-0.10t) = 0.21. $$
 
 Thus, the total weighted area remains constant even though both geometry and participation fields vary continuously. The point of the example is that this compensation affects only the scalar total area. It does not preserve the internal distribution of weighted area inside the section. Consequently, the weighted centroid $C_y$ and the bending inertia $I_x$ vary continuously along the interval, while $I_y$ remains constant for this rectangular configuration.
 
+<!-- LATEX_PAGEBREAK -->
+
 <p align="center">
   <em>Figure 5. Sectional properties evaluated along the first interval. The total weighted area <code>A</code> remains constant, while <code>Cy</code> and <code>Ix</code> vary continuously.</em>
   <img width="787" height="701" alt="Sectional properties evaluated along the first CSF interval" src="figures/fig5.png" />
