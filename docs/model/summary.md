@@ -619,7 +619,7 @@ The assessment has two objectives: first, to compare the sectional properties ge
 
 The declarative YAML format allows the undegraded and degraded configurations to be defined from the same geometric model. The degraded case is obtained by changing the longitudinal stiffness weighting law, without rebuilding the tower model from scratch.
 
-The tower is modelled as a linearly tapered circular steel tube of height $L = 87.6$ m. The outer diameter tapers from $6.0$ m at the base to $3.87$ m at the top, while the wall thickness varies from $0.0351$ m to $0.0247$ m. The corresponding inner radii are $2.9649$ m at the base and $1.9103$ m at the top. The material stiffness is uniform, with $E = 210$ GPa and $G = 80.8$ GPa.
+The tower is modelled as a linearly tapered circular steel tube of height $L = 87.6$ m. The outer diameter tapers from $6.0$ m at the base to $3.87$ m at the top, while the wall thickness varies from $0.0351$ m to $0.0247$ m. The corresponding inner radii are $2.9649$ m at the base and $1.9103$ m at the top. The material stiffness is uniform, with $E = 210$ GPa and $G = 80.8$ GPa [[15]](#NREL_5MW).
 
 Two configurations are analysed:
 
@@ -883,6 +883,8 @@ https://github.com/robbievanleeuwen/section-properties
 [13] <a id="bredt"></a> Schmidrathner, C. *Validation of Bredt’s formulas for beams with hollow cross sections by the method of asymptotic splitting for pure torsion and their extension to shear force bending*. Acta Mechanica, 230, 4035–4047, 2019. https://doi.org/10.1007/s00707-019-02441-8
 
 [14] <a id="walltors"></a> Hughes, A. *Design of Steel Beams in Torsion*. SCI Publication P385, The Steel Construction Institute, 2011. https://www.steelconstruction.info/images/6/6f/Sci_p385.pdf
+
+[15] <a id="NREL_5MW"></a> Jonkman, J., Butterfield, S., Musial, W., and Scott, G. *Definition of a 5-MW Reference Wind Turbine for Offshore System Development*. NREL/TP-500-38060, National Renewable Energy Laboratory, 2009. https://doi.org/10.2172/947422
 
 ---
 
