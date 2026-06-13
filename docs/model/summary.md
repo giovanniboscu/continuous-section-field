@@ -686,7 +686,7 @@ The same loading definition is used for the undegraded and degraded towers. Ther
 
 ## Validation
 
-The NREL case involves two validation levels. First, the sectional properties generated from the CSF model are compared with the tabulated NREL tower data reported in Table 6-1 of NREL/TP-500-38060, to verify that the CSF model reproduces the reference distributed properties of the tower. The maximum relative difference is below $0.04%$ over the full tower height, confirming that the model reproduces the original NREL sectional stiffness distribution before the structural-response comparison is performed.
+The NREL case involves two validation levels. First, the sectional properties generated from the CSF model are compared with the tabulated NREL tower data reported in Table 6-1 [[15]](#NREL_5MW) , to verify that the CSF model reproduces the reference distributed properties of the tower. The maximum relative difference is below $0.04%$ over the full tower height, confirming that the model reproduces the original NREL sectional stiffness distribution before the structural-response comparison is performed.
 
 Second, the structural response obtained from the CSF/OpenSees model is compared with an independent analytical reference, constructed from the same geometric and material definitions without using CSF section-sampling APIs or OpenSees.
 
@@ -768,7 +768,7 @@ Table 1 reports the relative errors in tip displacement $U_y$ and torsional rota
 > **Note:** At high discretization levels the relative error in $U_y$ stabilises 
 > near zero ($\sim 10^{-4}\,\%$). This residual level reflects the numerical precision of the independently selected reference integration grid, which in this case corresponds to 2001 points, rather than a modelling inconsistency..
 
-The continuous stiffness representation enables this convergence study. With a fixed discrete table - as in the original NREL reference definition, which provides properties at 11 stations - the structural description is tied to the prescribed stations and its axial resolution cannot be refined independently. The continuous representation decouples the member definition from its numerical discretization: the same YAML input can be sampled at any resolution, allowing convergence toward the reference solution to be progressively assessed.
+The continuous stiffness representation enables this convergence study. With a fixed discrete table - as in the original NREL reference definition, which provides properties at 11 stations [[15]](#NREL_5MW) - the structural description is tied to the prescribed stations and its axial resolution cannot be refined independently. The continuous representation decouples the member definition from its numerical discretization: the same YAML input can be sampled at any resolution, allowing convergence toward the reference solution to be progressively assessed.
 
 The degraded case makes this distinction explicit. At 8 elements the error in $U_y$ is larger than at 6, and the sign reverses - a non-monotone behaviour indicating insufficient axial resolution near the degraded region. This diagnostic is only possible because the reference stiffness field is defined continuously. Without a continuous reference representation, convergence behaviour cannot be assessed independently of the adopted station discretization.
 
