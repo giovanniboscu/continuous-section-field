@@ -199,7 +199,8 @@ w_i(z) = \frac{E_i(z)}{E_{\mathrm{ref}}},
 k_i(z) = \frac{G_i(z)}{G_{\mathrm{ref}}},
 $$
 
-where $E_{\mathrm{ref}}$ and $G_{\mathrm{ref}}$ are reference moduli. This is only one admissible definition of the participation fields: in the general case, $w_i(z)$ and $k_i(z)$ remain arbitrary user-defined station-wise fields, as long as they can be evaluated at the requested coordinate $z$.
+where $E_{\mathrm{ref}}$ and $G_{\mathrm{ref}}$ are reference moduli. Through the CSF formulation, this homogenization process is cast as a continuous operation along the member axis. This is only one admissible definition of the participation fields: in the general case, $w_i(z)$ and $k_i(z)$ remain arbitrary user-defined station-wise fields, as long as they can be evaluated at the requested coordinate $z$.
+
 
 
 
