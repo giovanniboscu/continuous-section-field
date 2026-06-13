@@ -11,9 +11,22 @@ from csf.io.csf_reader import CSFReader
 from csf.visualizer import Visualizer
 
 
-# ---------------------------------------------------------------------------
-# Geometry and model constants
-# ---------------------------------------------------------------------------
+# =============================================================================
+# 1. Problem definition shared by both paths
+# =============================================================================
+#
+# This script contains two intentionally separate paths:
+#
+#   CSF path:
+#       YAML -> CSFStack -> section_full_analysis(z)
+#
+#   Closed-form reference path:
+#       analytical rectangular geometry and participation laws -> A, Cy, Ix, Iy
+#
+# The closed-form path is specific to this controlled stacked-rectangle example.
+# It is not a generic replacement for CSF and it does not call CSF section
+# property routines.
+# =============================================================================
 
 # Common section width.
 B = 0.30
@@ -41,7 +54,7 @@ N_LOBATTO_POINTS = 11
 BASE_KEYS = ("A", "Cy", "Ix", "Iy")
 
 # Polygon order in stacked_0.yaml and stacked_1.yaml.
-# This derivative demo is intentionally specific to this example:
+# This derivative demonstration is intentionally specific to this example:
 #   section.polygons[0] -> upper rectangle
 #   section.polygons[1] -> middle rectangle
 #   section.polygons[2] -> lower rectangle
@@ -57,11 +70,17 @@ DERIVATIVE_DZ = 1.0e-4
 DERIVATIVE_STATIONS = (1.0, 2.5, 4.0, 6.0, 7.5, 9.0)
 
 
-# ---------------------------------------------------------------------------
-# Model loading and coordinate utilities
-# ---------------------------------------------------------------------------
+# =============================================================================
+# 2. CSF evaluation path
+# =============================================================================
+#
+# This block reads the YAML files, builds CSFStack, and evaluates section
+# properties from the CSF model.
+#
+# No closed-form section-property formula is used in this block.
+# =============================================================================
 
-def load(path):
+def load_csf_field(path):
     """Read a CSF YAML file and return the corresponding field."""
     path = Path(path)
 
@@ -80,17 +99,48 @@ def load(path):
     return res.field
 
 
-def build_stack():
+def build_csf_stack():
     """Build the stacked CSF model from the two YAML interval files."""
     stack = CSFStacked(eps_z=1e-9)
 
     for file_name in SEGMENT_FILES:
-        stack.append(load(file_name))
+        stack.append(load_csf_field(file_name))
 
     return stack
 
 
-def local_coordinate(z):
+def evaluate_csf_properties(stack, z, junction_side="left"):
+    """
+    Evaluate the stacked CSF model at the global coordinate z.
+
+    This is the CSF path used in the verification table.
+    """
+    props = stack.section_full_analysis(float(z), junction_side=junction_side)
+
+    missing = [key for key in BASE_KEYS if key not in props]
+    if missing:
+        raise KeyError(
+            f"section_full_analysis() missing at z={z:.6g}: "
+            + ", ".join(missing)
+        )
+
+    return props
+
+
+# =============================================================================
+# 3. Independent closed-form reference path
+# =============================================================================
+#
+# IMPORTANT:
+# The following functions define the independent closed-form reference path.
+# They do not call CSFStack, section(), section_full_analysis(), or any CSF
+# section-property routine.
+#
+# They compute the analytical rectangular-section reference values A, Cy, Ix,
+# and Iy for this controlled stacked-rectangle example only.
+# =============================================================================
+
+def closed_form_local_coordinate(z):
     """Return segment index and local coordinate t in [0, 1]."""
     z = float(z)
 
@@ -100,19 +150,15 @@ def local_coordinate(z):
     return 1, (z - L1) / (L - L1)
 
 
-# ---------------------------------------------------------------------------
-# Closed-form laws used for the independent comparison
-# ---------------------------------------------------------------------------
-
-def upper_laws(z):
+def closed_form_upper_participation_laws(z):
     """
     Evaluate the analytical participation laws assigned to the upper component.
 
-    The global coordinate z is converted into the active segment and local
-    coordinate t. The returned values reproduce the upper-component
-    weight_law and shear_weight_law used in the corresponding YAML interval.
+    These values reproduce the upper-component weight_law and shear_weight_law
+    used in the corresponding YAML interval. They belong to the closed-form
+    reference path and are not obtained from CSF evaluations.
     """
-    segment, t = local_coordinate(z)
+    segment, t = closed_form_local_coordinate(z)
 
     if segment == 0:
         # stacked_0.yaml, z in [0, 5]
@@ -126,14 +172,14 @@ def upper_laws(z):
     return segment, t, w_upper, sw_upper
 
 
-def lower_geometry(z):
+def closed_form_lower_geometry(z):
     """
     Evaluate the analytical geometry assigned to the lower component.
 
     The lower-component height is reconstructed from the linear law used in
     the active YAML interval. The lower top edge is fixed at y = -0.30.
     """
-    segment, t = local_coordinate(z)
+    segment, t = closed_form_local_coordinate(z)
 
     if segment == 0:
         # stacked_0.yaml: the lower height decreases from 0.30 to 0.20.
@@ -149,15 +195,15 @@ def lower_geometry(z):
     return h_lower, y_lower
 
 
-def reference(z):
+def closed_form_reference_properties(z):
     """
-    Evaluate the closed-form reference section properties at z.
+    Compute A, Cy, Ix, and Iy from closed-form rectangular-section formulas.
 
-    The reference is built directly from the analytical rectangular-component
-    geometry and from the prescribed upper-component participation law.
+    This function is the analytical reference path. It does not use any CSF
+    section-property API.
     """
-    _, _, w_upper, _ = upper_laws(z)
-    h_lower, y_lower = lower_geometry(z)
+    _, _, w_upper, _ = closed_form_upper_participation_laws(z)
+    h_lower, y_lower = closed_form_lower_geometry(z)
 
     # Geometric areas of the three rectangular components.
     A_upper_geom = B * H_UPPER
@@ -207,9 +253,135 @@ def reference(z):
     return A, Cy, Ix, Iy
 
 
-# ---------------------------------------------------------------------------
-# CSF station-wise evaluation
-# ---------------------------------------------------------------------------
+# =============================================================================
+# 4. Station set shared by the verification table
+# =============================================================================
+
+def lobatto_stations():
+    """
+    Build the global list of Gauss-Lobatto stations used in the comparison.
+
+    The stations are generated separately on the two CSF intervals. The shared
+    junction station z = L1 is kept only once.
+    """
+    stations = list(
+        compute_lobatto_integration_points(
+            L0,
+            L1,
+            n_points=N_LOBATTO_POINTS,
+        )
+    )
+
+    stations += list(
+        compute_lobatto_integration_points(
+            L1,
+            L,
+            n_points=N_LOBATTO_POINTS,
+        )
+    )[1:]
+
+    return [float(z) for z in stations]
+
+
+# =============================================================================
+# 5. Verification: CSF path vs closed-form reference path
+# =============================================================================
+
+def print_law_summary():
+    """Print the analytical laws used for the closed-form reference path."""
+    print("Closed-form laws used for the reference path")
+    print("- stacked_0.yaml, z in [0, 5], t = z/5")
+    print("  upper weight       : w_u(t)  = 1.0 - 0.5*(1.0 - t)")
+    print("  upper shear weight : sw_u(t) = 1.0 - 0.8*(1.0 - t)")
+    print("  lower height       : h_l(t)  = 0.30 - 0.10*t")
+    print("- stacked_1.yaml, z in [5, 10], t = (z - 5)/5")
+    print("  upper weight       : w_u(t)  = 1.0 - 0.5*t")
+    print("  upper shear weight : sw_u(t) = 1.0 - 0.8*t")
+    print("  lower height       : h_l(t)  = 0.20 + 0.10*t")
+    print("- lower shear_weight: iso(0.2)")
+    print("- middle shear_weight: iso(0.2)")
+    print()
+
+
+def compare_csf_against_closed_form_reference(stack):
+    """
+    Compare CSF section properties against the closed-form reference.
+
+    The verification table compares two separate paths:
+
+        CSF path:
+            YAML -> CSFStack -> section_full_analysis(z)
+
+        Closed-form reference path:
+            analytical rectangular geometry and participation laws
+            -> A, Cy, Ix, Iy
+
+    The closed-form reference is specific to this controlled example.
+    """
+    header = (
+        f"{'z':>6} {'seg':>3} {'t':>5} {'w_u':>5} {'sw_u':>5} | "
+        f"{'A_csf':>6} {'A_ref':>6} | "
+        f"{'Cy_csf':>9} {'Cy_ref':>9} | "
+        f"{'Ix_csf':>10} {'Ix_ref':>10} | "
+        f"{'Iy_csf':>10} {'Iy_ref':>10} | "
+        f"{'err_%':>9} {'err_Cy':>10}"
+    )
+
+    print("Closed-form verification table")
+    print(header)
+    print("-" * len(header))
+
+    max_rel_err = 0.0
+    max_cy_err = 0.0
+
+    for z in lobatto_stations():
+        # CSF path: evaluate the stacked CSF model at the global station.
+        props = evaluate_csf_properties(stack, z, junction_side="left")
+
+        # Closed-form reference path: compute independent rectangular values.
+        A_r, Cy_r, Ix_r, Iy_r = closed_form_reference_properties(z)
+
+        # Analytical laws printed together with the comparison table.
+        segment, t, w_upper, sw_upper = closed_form_upper_participation_laws(z)
+
+        # Maximum relative error over the scalar section quantities.
+        rel_err = max(
+            abs(props["A"] - A_r) / max(abs(A_r), 1e-30),
+            abs(props["Ix"] - Ix_r) / max(abs(Ix_r), 1e-30),
+            abs(props["Iy"] - Iy_r) / max(abs(Iy_r), 1e-30),
+        ) * 100.0
+
+        # Absolute centroid-coordinate error.
+        cy_err = abs(props["Cy"] - Cy_r)
+
+        max_rel_err = max(max_rel_err, rel_err)
+        max_cy_err = max(max_cy_err, cy_err)
+
+        print(
+            f"{z:6.2f} {segment:3d} {t:5.2f} {w_upper:5.2f} {sw_upper:5.2f} | "
+            f"{props['A']:6.2f} {A_r:6.2f} | "
+            f"{props['Cy']:9.6f} {Cy_r:9.6f} | "
+            f"{props['Ix']:10.7f} {Ix_r:10.7f} | "
+            f"{props['Iy']:10.7f} {Iy_r:10.7f} | "
+            f"{rel_err:9.2e} {cy_err:10.2e}"
+        )
+
+    print("-" * len(header))
+    print(f"max relative error (A, Ix, Iy): {max_rel_err:.2e} %")
+    print(f"max absolute error (Cy): {max_cy_err:.2e}")
+    print()
+
+
+# =============================================================================
+# 6. CSF-only derivative extraction demonstration
+# =============================================================================
+#
+# This block is not a closed-form validation.
+#
+# It demonstrates that interface coordinates and derived quantities can be
+# sampled from evaluated CSF Section objects and differentiated by repeated CSF
+# evaluations.
+# =============================================================================
 
 def polygon_y_limits(section, polygon_index):
     """Return the minimum and maximum y-coordinate of one polygon.
@@ -280,11 +452,7 @@ def interface_heights_from_csf(stack, z, junction_side="left"):
 
 def centroid_y_from_csf(stack, z, junction_side="left"):
     """Return Cy from the CSF section analysis at the requested station."""
-    props = stack.section_full_analysis(float(z), junction_side=junction_side)
-
-    if "Cy" not in props:
-        raise KeyError(f"section_full_analysis() did not return 'Cy' at z={z}")
-
+    props = evaluate_csf_properties(stack, z, junction_side=junction_side)
     return props["Cy"]
 
 
@@ -331,116 +499,6 @@ def centered_interface_derivatives_from_csf(stack, z, dz, junction_side="left"):
         derivatives.append((h_plus_i - h_minus_i) / (2.0 * dz))
 
     return tuple(derivatives)
-
-
-def lobatto_stations():
-    """
-    Build the global list of Gauss-Lobatto stations used in the comparison.
-
-    The stations are generated separately on the two CSF intervals. The shared
-    junction station z = L1 is kept only once.
-    """
-    stations = list(
-        compute_lobatto_integration_points(
-            L0,
-            L1,
-            n_points=N_LOBATTO_POINTS,
-        )
-    )
-
-    stations += list(
-        compute_lobatto_integration_points(
-            L1,
-            L,
-            n_points=N_LOBATTO_POINTS,
-        )
-    )[1:]
-
-    return [float(z) for z in stations]
-
-
-# ---------------------------------------------------------------------------
-# Output tables
-# ---------------------------------------------------------------------------
-
-def print_law_summary():
-    """Print the analytical laws used for the comparison."""
-    print("Closed-form laws used for the comparison")
-    print("- stacked_0.yaml, z in [0, 5], t = z/5")
-    print("  upper weight       : w_u(t)  = 1.0 - 0.5*(1.0 - t)")
-    print("  upper shear weight : sw_u(t) = 1.0 - 0.8*(1.0 - t)")
-    print("  lower height       : h_l(t)  = 0.30 - 0.10*t")
-    print("- stacked_1.yaml, z in [5, 10], t = (z - 5)/5")
-    print("  upper weight       : w_u(t)  = 1.0 - 0.5*t")
-    print("  upper shear weight : sw_u(t) = 1.0 - 0.8*t")
-    print("  lower height       : h_l(t)  = 0.20 + 0.10*t")
-    print("- lower shear_weight: iso(0.2)")
-    print("- middle shear_weight: iso(0.2)")
-    print()
-
-
-def compare_closed_form_and_csf(stack):
-    """Compare CSF section properties against the closed-form reference."""
-    header = (
-        f"{'z':>6} {'seg':>3} {'t':>5} {'w_u':>5} {'sw_u':>5} | "
-        f"{'A_csf':>6} {'A_ref':>6} | "
-        f"{'Cy_csf':>9} {'Cy_ref':>9} | "
-        f"{'Ix_csf':>10} {'Ix_ref':>10} | "
-        f"{'Iy_csf':>10} {'Iy_ref':>10} | "
-        f"{'err_%':>9} {'err_Cy':>10}"
-    )
-
-    print("Closed-form verification table")
-    print(header)
-    print("-" * len(header))
-
-    max_rel_err = 0.0
-    max_cy_err = 0.0
-
-    for z in lobatto_stations():
-        # Evaluate the stacked CSF model at the current global station.
-        props = stack.section_full_analysis(z, junction_side="left")
-
-        # Ensure that all required section properties are available.
-        missing = [k for k in BASE_KEYS if k not in props]
-        if missing:
-            raise KeyError(
-                f"section_full_analysis() missing at z={z:.6g}: "
-                + ", ".join(missing)
-            )
-
-        # Closed-form reference values at the same station.
-        A_r, Cy_r, Ix_r, Iy_r = reference(z)
-
-        # Analytical laws printed together with the comparison table.
-        segment, t, w_upper, sw_upper = upper_laws(z)
-
-        # Maximum relative error over the scalar section quantities.
-        rel_err = max(
-            abs(props["A"] - A_r) / max(abs(A_r), 1e-30),
-            abs(props["Ix"] - Ix_r) / max(abs(Ix_r), 1e-30),
-            abs(props["Iy"] - Iy_r) / max(abs(Iy_r), 1e-30),
-        ) * 100.0
-
-        # Absolute centroid-coordinate error.
-        cy_err = abs(props["Cy"] - Cy_r)
-
-        max_rel_err = max(max_rel_err, rel_err)
-        max_cy_err = max(max_cy_err, cy_err)
-
-        print(
-            f"{z:6.2f} {segment:3d} {t:5.2f} {w_upper:5.2f} {sw_upper:5.2f} | "
-            f"{props['A']:6.2f} {A_r:6.2f} | "
-            f"{props['Cy']:9.6f} {Cy_r:9.6f} | "
-            f"{props['Ix']:10.7f} {Ix_r:10.7f} | "
-            f"{props['Iy']:10.7f} {Iy_r:10.7f} | "
-            f"{rel_err:9.2e} {cy_err:10.2e}"
-        )
-
-    print("-" * len(header))
-    print(f"max relative error (A, Ix, Iy): {max_rel_err:.2e} %")
-    print(f"max absolute error (Cy): {max_cy_err:.2e}")
-    print()
 
 
 def print_section_derivative_table(stack):
@@ -496,9 +554,9 @@ def print_section_derivative_table(stack):
     print()
 
 
-# ---------------------------------------------------------------------------
-# Optional exports and visual checks
-# ---------------------------------------------------------------------------
+# =============================================================================
+# 7. Optional exports and visual checks
+# =============================================================================
 
 def export_selected_polygon_vertices(stack):
     """Export selected station-wise polygon vertices to CSV files."""
@@ -540,15 +598,15 @@ def show_visual_checks(stack):
     plt.show()
 
 
-# ---------------------------------------------------------------------------
-# Main script
-# ---------------------------------------------------------------------------
+# =============================================================================
+# 8. Main script
+# =============================================================================
 
 def main():
-    stack = build_stack()
+    stack = build_csf_stack()
 
     print_law_summary()
-    compare_closed_form_and_csf(stack)
+    compare_csf_against_closed_form_reference(stack)
     print_section_derivative_table(stack)
 
     export_selected_polygon_vertices(stack)
