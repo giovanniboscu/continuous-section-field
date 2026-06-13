@@ -47,7 +47,7 @@ A member is represented as a continuous sectional field composed of evolving pol
 
 The result is a clean separation between three concerns that are normally conflated: the continuous physical model of the member, the numerical sampling strategy required by the solver, and the exported data format consumed by a specific tool.
 
-Cross-section analysis tools such as VABS [[1]](#1_vabs) and BECAS [[2]](#2_becas) provide accurate computation of beam sectional properties for arbitrary geometries and composite materials, and are widely adopted in wind-turbine and aerospace applications. Open-source alternatives such as  [sectionproperties](#SEC_PROP) offer similar capabilities within a Python ecosystem. These tools are primarily designed to analyse individual cross-sections: given a sectional geometry and material definition, they return the corresponding sectional properties at that station.
+Cross-section analysis tools such as VABS [[1]](#vabs) and BECAS [[2]](#becas) provide accurate computation of beam sectional properties for arbitrary geometries and composite materials, and are widely adopted in wind-turbine and aerospace applications. Open-source alternatives such as `sectionproperties`  [[3]](#secprop) offer similar capabilities within a Python ecosystem. These tools are primarily designed to analyse individual cross-sections: given a sectional geometry and material definition, they return the corresponding sectional properties at that station.
 Longitudinal variation of the member, including tapering geometry, variation of material properties, or local stiffness degradation, is therefore usually represented outside the section-analysis tool
 , either through user-defined station tables or through the discretization adopted by the downstream structural solver. As a consequence, the sectional description is often tied to a specific mesh or analysis workflow, rather than being defined as an independent continuous model.
 
@@ -902,14 +902,17 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J
 
 # References
 
-[1] <a id="1_vabs"></a> VABS, *Variational Asymptotic Beam Sectional Analysis*. https://analyswift.com/vabs-cross-sectional-analysis-tool-for-composite-beams/
+[1] <a id="vabs"></a> VABS, *Variational Asymptotic Beam Sectional Analysis*. https://analyswift.com/vabs-cross-sectional-analysis-tool-for-composite-beams/
 
-[2] <a id="2_becas"></a> BECAS, *BEam Cross section Analysis Software*. https://becas.dtu.dk/
+[2] <a id="becas"></a> BECAS, *BEam Cross section Analysis Software*. https://becas.dtu.dk/
 
+[3] <a id="secprop"></a>  *python package for the analysis of arbitrary cross-sections using the finite element method.*.
+https://github.com/robbievanleeuwen/section-properties
 
-[11] <a id="[1]"> G. Balduzzi, M. Aminbaghai, J. Füssl, F. Auricchio, Non-prismatic beams: a simple and effective Timoshenko-like model, Int. J. Solids Struct. 90 (2016) 236–250. https://doi.org/10.1016/j.ijsolstr.2016.03.022
+[4] <a id="balduzzi"> G. Balduzzi, M. Aminbaghai, J. Füssl, F. Auricchio, Non-prismatic beams: a simple and effective Timoshenko-like model, Int. J. Solids Struct. 90 (2016) 236–250. https://doi.org/10.1016/j.ijsolstr.2016.03.022
 
-[21] <a id="Balduzzi2"></a>  G. Balduzzi, M. Aminbaghai, F. Auricchio, J. Füssl, Planar Timoshenko-like model for multilayer non-prismatic beams, Int. J. Mech. Mater. Des. 14 (2018) 51–70. https://doi.org/10.1007/s10999-016-9360-3
+[5] <a id="balduzzi2"></a>  G. Balduzzi, M. Aminbaghai, F. Auricchio, J. Füssl, Planar Timoshenko-like model for multilayer non-prismatic beams, Int. J. Mech. Mater. Des. 14 (2018) 51–70. https://doi.org/10.1007/s10999-016-9360-3
+
 
 [3] D.H. Hodges, W. Yu, VABS: a new concept for composite rotor blade cross-sectional modeling, J. Am. Helicopter Soc. 42 (1) (1997) 27–38. https://doi.org/10.4050/JAHS.42.27
 
