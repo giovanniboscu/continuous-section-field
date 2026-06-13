@@ -603,7 +603,7 @@ Complete workflow Stacked rectangular example:
 
 ---
 
-## 6 Application example: NREL 5-MW reference tower
+## 6. Application example: NREL 5-MW reference tower
 
 #### Overview
 
@@ -878,7 +878,7 @@ https://github.com/robbievanleeuwen/section-properties
 
 [5] <a id="balduzzi2"></a>  G. Balduzzi, M. Aminbaghai, F. Auricchio, J. Füssl, Planar Timoshenko-like model for multilayer non-prismatic beams, Int. J. Mech. Mater. Des. 14 (2018) 51–70. https://doi.org/10.1007/s10999-016-9360-3
 
-[6] <a id="opensees"></a> McKenna, F. OpenSees: A Framework for Earthquake Engineering Simulation. Computing in Science & Engineering, 13(4), 58–66, 2011*. https://doi.org/10.1109/MCSE.2011.66  
+[6] <a id="opensees"></a> McKenna, F. OpenSees: A Framework for Earthquake Engineering Simulation. Computing in Science & Engineering, 13(4), 58–66, 2011. https://doi.org/10.1109/MCSE.2011.66  
   Project website: https://opensees.berkeley.edu/
 
 [7] <a id="abaqus"></a> Dassault Systèmes, *Abaqus finite element analysis software*. https://www.3ds.com/products/simulia/abaqus/
