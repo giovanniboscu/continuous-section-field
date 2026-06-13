@@ -858,7 +858,7 @@ Giovanni Boscu: Conceptualization, Methodology, Software, Validation, Formal ana
 
 [2] <a id="becas"></a> BECAS, *BEam Cross section Analysis Software*. https://becas.dtu.dk/
 
-[3] <a id="secprop"></a> sectionproperties *python package for the analysis of arbitrary cross-sections using the finite element method.*.
+[3] <a id="secprop"></a> sectionproperties *python package for the analysis of arbitrary cross-sections using the finite element method*.
 https://github.com/robbievanleeuwen/section-properties
 
 [4] <a id="balduzzi"> G. Balduzzi, M. Aminbaghai, J. Füssl, F. Auricchio, Non-prismatic beams: a simple and effective Timoshenko-like model, Int. J. Solids Struct. 90 (2016) 236–250. https://doi.org/10.1016/j.ijsolstr.2016.03.022
