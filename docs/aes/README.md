@@ -714,7 +714,8 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 
 <p align="center">
-    <img width="1024" height="640" alt="undegraded NREL tower tip displacement convergence" src="figures/fig10.png" />
+    <img width="512" height="320" alt="undegraded NREL tower tip displacement convergence" src="figures/fig10.png" />
+  
 </p>
 
 
@@ -724,9 +725,7 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 </p>
 
 <p align="center">
-
-<img width="1024" height="640" alt="degraded  NREL tower tip displacement convergence" src="figures/fig11.png" />
-
+<img width="512" height="320" alt="degraded  NREL tower tip displacement convergence" src="figures/fig11.png" />
 </p>
 
 
