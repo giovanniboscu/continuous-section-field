@@ -705,6 +705,11 @@ The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated
   <img width="631" height="547" alt="image" src="figures/fig8.png" />
 </p>
 
+
+<p align="center">
+  <img width="631" height="547" alt="image" src="figures/fig8.png" />
+</p>
+
 <p align="center">
   <em>Figure 9. Longitudinal stiffness degradation law applied to the NREL tower through the axial/bending participation field. The two localized reductions are centred at 0.33L and 0.67L.</em>
 </p>
