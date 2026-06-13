@@ -516,7 +516,7 @@ $$
 
 <p align="center">
   <em>Figure 6. Global member obtained after assembling the two CSF intervals.</em>
-  <img width="773" height="647" alt="Global member obtained after assembling the two CSF intervals" src="figures/fig6.png" />
+  <img width="618" height="517" alt="Global member obtained after assembling the two CSF intervals" src="figures/fig6.png" />
 </p>
 
 The relevant point is that the assembled model is not treated as a list of predefined sections. Instead, it is evaluated as a continuous map from the global coordinate to the corresponding section,
@@ -530,8 +530,6 @@ In the implementation, this evaluation is performed through
 ```python
 stack.section_full_analysis(z, junction_side="left")
 ```
-
-<!-- LATEX_PAGEBREAK -->
 
 <p align="center">
   <em>Figure 7. Evaluation of the assembled CSF member at selected global stations. The model is queried through the global coordinate <code>z</code>, while <code>CSFStack</code> handles the interval mapping internally.</em>
