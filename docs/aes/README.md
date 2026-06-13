@@ -247,6 +247,8 @@ This separation makes the same continuous model reusable across different numeri
 The geometry file defines the continuous sectional model. The example below describes a tapered polygonal section between two reference stations. The cross-section tapers from `S0` to `S1`, while the axial/bending field follows a parabolic law along the member axis.
 
 ```yaml
+
+
 CSF:
   weight_laws:
     # parabolic increase: 72% at base (z=0), full section at top (z=5)
@@ -277,6 +279,8 @@ CSF:
             - [ 0.000,  1.935]
             - [-1.935,  0.000]
             - [ 0.000, -1.935]
+
+
 ```
 
 The example separates three ingredients that are often collapsed into a single tabulated section-property description: the reference geometry, the longitudinal geometric interpolation, and the material participation law. Changing the station set or the requested output does not require modifying this member definition.
