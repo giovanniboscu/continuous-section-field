@@ -221,7 +221,24 @@ Multiple straight intervals can be concatenated to represent members of arbitrar
 
 CSF can be used either as a Python library or through a declarative file-based YAML workflow. In the YAML workflow, the member definition and the requested numerical actions are written as input files rather than encoded directly in procedural Python code.
 
-### 3.2 Declarative model specification (YAML Geometry)
+
+
+### 3.1 Implementation structure
+
+CSF is implemented as a Python package in which the continuous model, sectional evaluation, visualization tools, stacked-member composition, and declarative execution layer are separated.
+
+The central component is the continuous section-field model. It stores two reference sections, verifies the correspondence of polygons and vertices, and evaluates the section at any admissible axial coordinate. During this evaluation, the polygon geometry is interpolated between the reference stations, while the axial/bending and shear/torsion participation fields are resolved at the same coordinate. The same layer also handles polygon containment, so that nested regions, voids, and local participation effects are converted into the effective section evaluated at $z$.
+
+Sectional quantities are computed by a dedicated analysis layer operating on the evaluated section. This layer converts the interpolated geometric and participation state into section properties such as area, centroid coordinates, second moments of area, principal quantities, section moduli, and torsion-related indicators. In this way, the continuous model remains distinct from the numerical properties extracted from each sampled section.
+
+For members requiring more than one interpolation interval, CSF uses a stacked representation. Each interval remains an independent continuous section field, while the stack maps the global axial coordinate to the corresponding interval and evaluates the appropriate section. This provides a piecewise-continuous member representation without replacing the continuous model by a predefined station table.
+
+A separate visualization layer generates two-dimensional section views, three-dimensional ruled-volume previews, and property-variation plots along the member axis. The declarative workflow is handled by a command-line actions interface: a YAML geometry file defines the continuous CSF model, while a separate YAML actions file specifies inspections, plots, property evaluations, and exports. The same model can therefore be inspected, sampled, visualized, or exported without modifying the model definition itself. Interoperability with external section-analysis workflows is supported through the `csf_sp` and `sp_csf` bridges, which provide exchange paths between CSF models and sectionproperties-based representations.
+
+
+
+### 3.2 Declarative Model–Action Workflow
+
 The geometry file defines:
 
 - pairs of reference stations defining one or more longitudinal interpolation intervals;
@@ -240,22 +257,6 @@ The action file defines:
 - validation-oriented outputs.
 
 This separation makes the same continuous model reusable across different numerical studies. A single member definition can be sampled at dense stations for inspection, at Gauss-Lobatto stations for quadrature-compatible beam input, or at user-defined stations for comparison with external data.
-
-### 3.1 Implementation structure
-
-CSF is implemented as a Python package in which the continuous model, sectional evaluation, visualization tools, stacked-member composition, and declarative execution layer are separated.
-
-The central component is the continuous section-field model. It stores two reference sections, verifies the correspondence of polygons and vertices, and evaluates the section at any admissible axial coordinate. During this evaluation, the polygon geometry is interpolated between the reference stations, while the axial/bending and shear/torsion participation fields are resolved at the same coordinate. The same layer also handles polygon containment, so that nested regions, voids, and local participation effects are converted into the effective section evaluated at $z$.
-
-Sectional quantities are computed by a dedicated analysis layer operating on the evaluated section. This layer converts the interpolated geometric and participation state into section properties such as area, centroid coordinates, second moments of area, principal quantities, section moduli, and torsion-related indicators. In this way, the continuous model remains distinct from the numerical properties extracted from each sampled section.
-
-For members requiring more than one interpolation interval, CSF uses a stacked representation. Each interval remains an independent continuous section field, while the stack maps the global axial coordinate to the corresponding interval and evaluates the appropriate section. This provides a piecewise-continuous member representation without replacing the continuous model by a predefined station table.
-
-A separate visualization layer generates two-dimensional section views, three-dimensional ruled-volume previews, and property-variation plots along the member axis. The declarative workflow is handled by a command-line actions interface: a YAML geometry file defines the continuous CSF model, while a separate YAML actions file specifies inspections, plots, property evaluations, and exports. The same model can therefore be inspected, sampled, visualized, or exported without modifying the model definition itself. Interoperability with external section-analysis workflows is supported through the `csf_sp` and `sp_csf` bridges, which provide exchange paths between CSF models and sectionproperties-based representations.
-
-
-
-### 3.2 Declarative Model Specification (YAML Geometry)
 
 The geometry file defines the continuous sectional model. The example below describes a tapered polygonal section between two reference stations. The cross-section tapers from `S0` to `S1`, while the axial/bending field follows a parabolic law along the member axis.
 
@@ -294,8 +295,6 @@ CSF:
 
 The example separates three ingredients that are often collapsed into a single tabulated section-property description: the reference geometry, the longitudinal geometric interpolation, and the material participation law. Changing the station set or the requested output does not require modifying this member definition.
 
-### 3.3 Simulation Actions Interface
-
 The action file specifies how the continuous model is sampled and which quantities are extracted. It does not redefine the member geometry.
 
 ```yaml
@@ -319,7 +318,7 @@ Here, $I_1$ and $I_2$ denote the principal second moments of area.
 
 The same geometry file can therefore support visual inspection, property evaluation, solver export, or validation-oriented sampling. In each case the continuous field is evaluated at the stations requested by the action file.
 
-### 3.4 Reusability across studies
+### 3.3 Reusability across studies
 
 The decoupling between the member definition and the numerical operations applied to it is the principal design choice of the YAML workflow. The following table illustrates three typical uses of the same geometry file.
 
@@ -331,7 +330,7 @@ The decoupling between the member definition and the numerical operations applie
 
 In all cases the continuous geometric field is evaluated on demand; no re-meshing or re-definition of the member is required.
 
-### 3.5  Interoperability with  `sectionproperties`
+### 3.4  Interoperability with  `sectionproperties`
 
 Interoperability with `sectionproperties` is provided through two companion modules, [csf_sp](#CSF_SP) and [sp_csf](#SP_CSF), available as both Python API and CLI tools. `csf_sp` exports polygonal geometry at requested stations to `sectionproperties` for full warping analysis. `sp_csf` performs the inverse operation, importing individual section geometries from `sectionproperties` into CSF, enabling the definition of members with geometrically distinct `S0` and `S1` cross-sections. For torsional analyses, CSF supplies the shear/torsion participation field $k_i(z)$ to the station-level analysis, so that the torsional response is evaluated using the appropriate shear-modulus quantity rather than the axial/bending participation field $w_i(z)$.
 
