@@ -392,7 +392,7 @@ The model is therefore hybrid in the participation-field sense. The middle and l
 
 <p align="center">
   
-<img width="645" height="471" alt="image" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/figures/fig2.png" />
+<img width="645" height="471" alt="image" src="figures/fig2.png" />
 
 </p>
 
@@ -428,12 +428,12 @@ $$
 
 <p align="center">
   <em>Figure 3. First CSF interval colored by the axial/bending participation field <code>w</code>.</em>
-  <img width="759" height="673" alt="First CSF interval colored by axial/bending participation field" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/figures/fig3.png" />
+  <img width="759" height="673" alt="First CSF interval colored by axial/bending participation field" src="figures/fig3.png" />
 </p>
 
 <p align="center">
   <em>Figure 4. Same CSF interval colored by the shear/torsion participation field <code>shear_weight</code>.</em>
-  <img width="643" height="600" alt="First CSF interval colored by shear torsion participation field" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/figures/fig4.png" />
+  <img width="643" height="600" alt="First CSF interval colored by shear torsion participation field" src="figures/fig4.png" />
 </p>
 
 The example is arranged so that the geometric variation of the lower component exactly compensates the axial/bending participation variation of the upper component in total weighted area. In the first interval,
@@ -467,7 +467,7 @@ Thus, the total weighted area remains constant even though both geometry and par
 
 <p align="center">
   <em>Figure 5. Sectional properties evaluated along the first interval. The total weighted area <code>A</code> remains constant, while <code>Cy</code> and <code>Ix</code> vary continuously.</em>
-  <img width="984" height="877" alt="Sectional properties evaluated along the first CSF interval" src="https://github.com/user-attachments/assets/0e06b2b3-ed00-4aed-b4b7-212de9d42cd8" />
+  <img width="984" height="877" alt="Sectional properties evaluated along the first CSF interval" src="figures/fig5.png" />
 </p>
 
 The second interval reverses the same construction. Its local coordinate is
@@ -509,7 +509,7 @@ $$
 
 <p align="center">
   <em>Figure 6. Global member obtained after assembling the two CSF intervals.</em>
-  <img width="773" height="647" alt="Global member obtained after assembling the two CSF intervals" src="https://github.com/user-attachments/assets/2e6c2a34-5a96-40aa-af84-aacd4f753f39" />
+  <img width="773" height="647" alt="Global member obtained after assembling the two CSF intervals" src="figures/fig6.png" />
 </p>
 
 The relevant point is that the assembled model is not treated as a list of predefined sections. Instead, it is evaluated as a continuous map from the global coordinate to the corresponding section,
@@ -526,7 +526,7 @@ stack.section_full_analysis(z, junction_side="left")
 
 <p align="center">
   <em>Figure 7. Evaluation of the assembled CSF member at selected global stations. The model is queried through the global coordinate <code>z</code>, while <code>CSFStack</code> handles the interval mapping internally.</em>
-  <img width="993" height="865" alt="image" src="https://github.com/user-attachments/assets/0eec518e-1da9-4f72-a406-cbe74da111ca" />
+  <img width="993" height="865" alt="image" src="figures/fig7.png" />
 
 </p>
 
@@ -693,7 +693,7 @@ The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated
 
 <p align="center">
   <em>Figure 8. CSF 3D representation of the degraded NREL tower case. The geometry remains tapered and continuous, while the longitudinal stiffness reduction is introduced through the participation field.</em>
-  <img width="631" height="547" alt="image" src="https://github.com/user-attachments/assets/2bf9827f-df1d-44ee-9937-bacb486373d8" />
+  <img width="631" height="547" alt="image" src="figures/fig8.png" />
 </p>
 
 <p align="center">
@@ -713,7 +713,7 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 <p align="center">
   <em>Figure 10. Tip-displacement convergence for the undegraded NREL tower case.</em>
-    <img width="1600" height="1000" alt="undegraded NREL tower tip displacement convergence" src="https://github.com/user-attachments/assets/202ff4b8-5752-4b01-93ac-2c223057124f" />
+    <img width="1600" height="1000" alt="undegraded NREL tower tip displacement convergence" src="figures/fig9.png" />
 
 </p>
 
@@ -722,7 +722,7 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 <p align="center">
   <em>Figure 11. Tip-displacement convergence for the degraded NREL tower case.</em>
 
-<img width="1600" height="1000" alt="degraded  NREL tower tip displacement convergence" src="https://github.com/user-attachments/assets/220ea5ec-d42e-4b75-b04f-16b9e9303161" />
+<img width="1600" height="1000" alt="degraded  NREL tower tip displacement convergence" src="figures/fig10.png" />
 
 </p>
 
