@@ -464,7 +464,7 @@ Thus, the total weighted area remains constant even though both geometry and par
 
 <p align="center">
   <em>Figure 5. Sectional properties evaluated along the first interval. The total weighted area <code>A</code> remains constant, while <code>Cy</code> and <code>Ix</code> vary continuously.</em>
-  <img width="984" height="877" alt="Sectional properties evaluated along the first CSF interval" src="figures/fig5.png" />
+  <img width="787" height="701" alt="Sectional properties evaluated along the first CSF interval" src="figures/fig5.png" />
 </p>
 
 The second interval reverses the same construction. Its local coordinate is
@@ -523,7 +523,7 @@ stack.section_full_analysis(z, junction_side="left")
 
 <p align="center">
   <em>Figure 7. Evaluation of the assembled CSF member at selected global stations. The model is queried through the global coordinate <code>z</code>, while <code>CSFStack</code> handles the interval mapping internally.</em>
-  <img width="993" height="865" alt="image" src="figures/fig7.png" />
+  <img width="794" height="692" alt="image" src="figures/fig7.png" />
 
 </p>
 
@@ -705,7 +705,7 @@ The convergence behaviour changes markedly relative to Case A. At low discretiza
 
 This behaviour illustrates the main motivation for a continuous sectional representation. A coarse piecewise model with too few stations may miss or underrepresent local stiffness reductions, whereas the continuous field retains the full spatial description and the beam discretization can be refined independently until convergence is achieved.
 
-#### Convergence results
+#### Convergence results 
 
 
 <p align="center">
