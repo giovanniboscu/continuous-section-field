@@ -902,9 +902,9 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J
 
 # References
 
-[1] <a id="1_vabs"></a> VABS *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
+[1] <a id="1_vabs"></a> VABS, *Variational Asymptotic Beam Sectional Analysis*. https://analyswift.com/vabs-cross-sectional-analysis-tool-for-composite-beams/
 
-[2] <a id="2_becas"></a> BECAS *Finite-element-based cross-sectional analysis software*. https://becas.dtu.dk/
+[2] <a id="2_becas"></a> BECAS, *BEam Cross section Analysis Software*. https://becas.dtu.dk/
 
 
 [11] <a id="[1]"> G. Balduzzi, M. Aminbaghai, J. Füssl, F. Auricchio, Non-prismatic beams: a simple and effective Timoshenko-like model, Int. J. Solids Struct. 90 (2016) 236–250. https://doi.org/10.1016/j.ijsolstr.2016.03.022
