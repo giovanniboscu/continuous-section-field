@@ -53,7 +53,7 @@ Longitudinal variation of the member, including tapering geometry, variation of 
 
 On the theoretical side,  Balduzzi et al. [[4,5]](#balduzzi)   showed that non-prismatic beam analysis requires longitudinally varying geometric quantities as explicit terms in the governing equations. The formulation therefore depends on continuous sectional functions, not solely on values evaluated at discrete stations. This highlights the need for programmable descriptions capable of generating consistent geometric and constitutive quantities, and their axial variation, at arbitrary locations along the member axis.
 
-Existing frameworks for the analysis of non-prismatic members can be grouped into three categories. First, sectional analysis tools such as VABS, BECAS, and `sectionproperties` compute the properties of individual cross-sections with high accuracy, while the longitudinal variation of the member is handled externally. Second, structural solvers such as [OpenSees](#OPENSEES), [ABAQUS](#ABAQUS), and [ANSYS](#ANSYS) incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations. 
+Existing frameworks for the analysis of non-prismatic members can be grouped into three categories. First, sectional analysis tools such as VABS, BECAS, and `sectionproperties` [[3]](#opensees) compute the properties of individual cross-sections with high accuracy, while the longitudinal variation of the member is handled externally. Second, structural solvers such as Opensees [[6]](#opensees), ABAQUS [[7]](#abacus) , and ANSYS [[8]](#ansys) incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations. 
 
 
 Third, wind-energy simulation and design workflows embed non-prismaticity in application-specific representations. Aeroelastic codes such as BeamDyn [wang](#wang)  rely on distributed sectional-property tables along the member axis, whereas systems-engineering tools such as [NREL's WISDEM](#wisdem)  represent the tower as a tapered cylindrical shell with closed-form sectional properties, analysed through the external frame finite-element code Frame3DD [Gavin](#gavin). In both cases the longitudinal variation is bound to a specific geometry or workflow rather than expressed as an independent, reusable sectional field.
@@ -864,6 +864,17 @@ https://github.com/robbievanleeuwen/section-properties
 
 [5] <a id="balduzzi2"></a>  G. Balduzzi, M. Aminbaghai, F. Auricchio, J. Füssl, Planar Timoshenko-like model for multilayer non-prismatic beams, Int. J. Mech. Mater. Des. 14 (2018) 51–70. https://doi.org/10.1007/s10999-016-9360-3
 
+[6] <a id="opensees"></a> McKenna, F. OpenSees: A Framework for Earthquake Engineering Simulation. Computing in Science & Engineering, 13(4), 58–66, 2011*. https://doi.org/10.1109/MCSE.2011.66  
+  Project website: https://opensees.berkeley.edu/
+
+[7] <a id="abaqus"></a> Dassault Systèmes Simulia Corp. ABAQUS*. https://www.3ds.com/products/simulia/abaqus/
+
+[8] <a id="ansys"></a> Ansys Inc., Ansys Mechanical User's Guide, Release 2023 R1, Ansys Inc., Canonsburg, PA, 2023. https://www.ansys.com/
+
+
+
+
+---
 
 [3] D.H. Hodges, W. Yu, VABS: a new concept for composite rotor blade cross-sectional modeling, J. Am. Helicopter Soc. 42 (1) (1997) 27–38. https://doi.org/10.4050/JAHS.42.27
 
@@ -881,7 +892,6 @@ https://github.com/robbievanleeuwen/section-properties
 
 [10] Dassault Systèmes, Abaqus/Standard User's Manual, Version 2023, Dassault Systèmes, Providence, RI, 2023. https://www.3ds.com/products-services/simulia/products/abaqus/
 
-[11] Ansys Inc., Ansys Mechanical User's Guide, Release 2023 R1, Ansys Inc., Canonsburg, PA, 2023. https://www.ansys.com/
 
 [12] NREL, Wind Energy Systems Engineering and Optimization (WISDEM), National Renewable Energy Laboratory, Golden, CO, 2024. https://github.com/WISDEM/WISDEM
 
