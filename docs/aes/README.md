@@ -516,7 +516,7 @@ $$
 
 <p align="center">
   <em>Figure 6. Global member obtained after assembling the two CSF intervals.</em>
-  <img width="618" height="517" alt="Global member obtained after assembling the two CSF intervals" src="figures/fig6.png" />
+  <img width="494" height="413" alt="Global member obtained after assembling the two CSF intervals" src="figures/fig6.png" />
 </p>
 
 The relevant point is that the assembled model is not treated as a list of predefined sections. Instead, it is evaluated as a continuous map from the global coordinate to the corresponding section,
