@@ -695,8 +695,8 @@ For the undegraded configuration, the stiffness field varies smoothly and monoto
 The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated across the tested discretization levels. The torsional rotation $R_z$ exhibits a small residual offset of approximately $3.44 \times 10^{-3},%$ across all tested discretization levels. This offset is attributed to the thin-walled torsional approximation adopted internally by the CSF workflow, whereas the analytical reference uses the exact circular torsional constant $J = \tfrac{\pi}{2}(R_o^4 - R_i^4)$.
 
 
+<!-- LATEX_PAGEBREAK -->
 #### Case B - degraded tower
-
 
 <p align="center">
   <em>Figure 8. CSF 3D representation of the degraded NREL tower case. The geometry remains tapered and continuous, while the longitudinal stiffness reduction is introduced through the participation field.</em>
