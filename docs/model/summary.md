@@ -12,6 +12,14 @@ This separation preserves a continuous member representation while generating so
 
 
 **Highlights**
+* Section properties are defined as continuous fields over structural members.
+* The approach bypasses traditional stepped geometric approximations.
+* Structural geometry description is decoupled from the material model.
+* The Python framework is interoperable with open-source FEM solvers.
+
+
+
+**Highlights**
 
 * CSF defines section properties as continuous fields along a member axis.
 * Geometry and material participation are modelled as independent fields.
@@ -25,7 +33,8 @@ This separation preserves a continuous member representation while generating so
 
 ## 1. Motivation
 
-In current structural analysis practice, the definition of section properties for non-prismatic members is typically embedded within the solver itself. Geometry and material participation are not treated as independent fields; instead, they are collapsed into a discrete table of section properties evaluated at a fixed set of stations, tied to the solver mesh and conventions. This coupling makes the sectional model difficult to inspect, reuse, or transfer across different solvers, and it obscures the distinction between the continuous physical model and its numerical discretization.
+In current structural analysis practice, the definition of section properties for non-prismatic members is typically embedded within the solver itself. Geometry and material participation are not treated as independent fields; instead, they are collapsed into a discre
+te table of section properties evaluated at a fixed set of stations, tied to the solver mesh and conventions. This coupling makes the sectional model difficult to inspect, reuse, or transfer across different solvers, and it obscures the distinction between the continuous physical model and its numerical discretization.
 
 Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required input for a numerical model is not a single section, but a longitudinal field of section properties such as: $A(z)$ &nbsp;,&nbsp; $I_x(z)$ &nbsp;,&nbsp; $I_y(z)$ &nbsp;&nbsp; $(EI_x)(z)$ &nbsp;,&nbsp; $(GJ)(z)$ &nbsp;,&nbsp; $\rho_l(z)$.
 
