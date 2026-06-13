@@ -881,14 +881,9 @@ https://github.com/robbievanleeuwen/section-properties
 ---
 
 
-[] R. Feijoo, G. Padula, S. Proença, BECAS: a beam cross-section analysis tool, in: 54th AIAA/ASME/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference, Boston, MA, 2013. https://doi.org/10.2514/6.2013-1476
-
-[] F. McKenna, OpenSees: a framework for earthquake engineering simulation, Comput. Sci. Eng. 13 (4) (2011) 58–66. https://doi.org/10.1109/MCSE.2011.66
-
 [] Q. Wang, M.A. Sprague, BeamDyn: a high-fidelity wind turbine blade solver in the FAST modular framework, Wind Energy 20 (8) (2017) 1439–1463. https://doi.org/10.1002/we.2101
 
 [] J. Jonkman, S. Butterfield, W. Musial, G. Scott, Definition of a 5-MW reference wind turbine for offshore system development, NREL/TP-500-38060, National Renewable Energy Laboratory, Golden, CO, 2009. https://doi.org/10.2172/947422
-
 
 [] W.C. Young, R.G. Budynas, Roark's Formulas for Stress and Strain, seventh ed., McGraw-Hill, New York, 2002.
 
