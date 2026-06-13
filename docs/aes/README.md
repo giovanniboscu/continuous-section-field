@@ -197,7 +197,8 @@ where $E_{\mathrm{ref}}$ and $G_{\mathrm{ref}}$ are reference moduli. Through th
 
 | | Assumption | Implication |
 |---|---|---|
-| A | Fixed topology | Vertex count per zone is constant along $z$; zones whose boundaries appear or disappear are not supported within a single interval |
+| A | Fixed topology | Vertex count per zone is constant along $z$  |
+|   |   | zones whose boundaries appear or disappear are not supported within a single interval |
 | B | Linear vertex interpolation | Zone geometry varies linearly between the two reference stations |
 | C | Polygonal representation | Curved boundaries must be approximated by polygon discretisation |
 | D | Straight element axis | CSF models a single element along a straight $z$-axis; curved members are not supported |
