@@ -51,7 +51,7 @@ Cross-section analysis tools such as VABS [[1]](#vabs) and BECAS [[2]](#becas) p
 Longitudinal variation of the member, including tapering geometry, variation of material properties, or local stiffness degradation, is therefore usually represented outside the section-analysis tool
 , either through user-defined station tables or through the discretization adopted by the downstream structural solver. As a consequence, the sectional description is often tied to a specific mesh or analysis workflow, rather than being defined as an independent continuous model.
 
-On the theoretical side,  [Balduzzi](#Balduzzi-2016) et al.  showed that non-prismatic beam analysis requires longitudinally varying geometric quantities as explicit terms in the governing equations. The formulation therefore depends on continuous sectional functions, not solely on values evaluated at discrete stations. This highlights the need for programmable descriptions capable of generating consistent geometric and constitutive quantities, and their axial variation, at arbitrary locations along the member axis.
+On the theoretical side,  Balduzzi et al. [[4,5]](#balduzzi)   showed that non-prismatic beam analysis requires longitudinally varying geometric quantities as explicit terms in the governing equations. The formulation therefore depends on continuous sectional functions, not solely on values evaluated at discrete stations. This highlights the need for programmable descriptions capable of generating consistent geometric and constitutive quantities, and their axial variation, at arbitrary locations along the member axis.
 
 Existing frameworks for the analysis of non-prismatic members can be grouped into three categories. First, sectional analysis tools such as VABS, BECAS, and `sectionproperties` compute the properties of individual cross-sections with high accuracy, while the longitudinal variation of the member is handled externally. Second, structural solvers such as [OpenSees](#OPENSEES), [ABAQUS](#ABAQUS), and [ANSYS](#ANSYS) incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations. 
 
@@ -857,7 +857,7 @@ Giovanni Boscu: Conceptualization, Methodology, Software, Validation, Formal ana
 
 [2] <a id="becas"></a> BECAS, *BEam Cross section Analysis Software*. https://becas.dtu.dk/
 
-[3] <a id="secprop"></a>  *python package for the analysis of arbitrary cross-sections using the finite element method.*.
+[3] <a id="secprop"></a> sectionproperties *python package for the analysis of arbitrary cross-sections using the finite element method.*.
 https://github.com/robbievanleeuwen/section-properties
 
 [4] <a id="balduzzi"> G. Balduzzi, M. Aminbaghai, J. Füssl, F. Auricchio, Non-prismatic beams: a simple and effective Timoshenko-like model, Int. J. Solids Struct. 90 (2016) 236–250. https://doi.org/10.1016/j.ijsolstr.2016.03.022
