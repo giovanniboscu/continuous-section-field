@@ -21,7 +21,7 @@
 CSF complements standard FEM workflows by providing a continuous geometric representation of non-prismatic members. It enables direct evaluation of section-property fields along z, avoiding manual multi-segment discretization and supplying consistent sectional data for downstream analysis.
 
 
-It represents section geometry and material as continuous functions along z, computing the resulting continuously varying section properties - $A(z)$, $Ix(z)$, $Iy(z)$...  - for tapered and non-homogeneous members, exported as **CSV** and **YAML** for direct integration with any beam solver (OpenSees, SAP2000, and others) or section analysis tools (e.g. [sectionproperties](https://github.com/robbievanleeuwen/section-properties)).
+It represents section geometry and material as continuous functions along z, computing the resulting continuously varying section properties - $A(z)$, $Ix(z)$, $Iy(z)$...  - for tapered and non-homogeneous members, exported as **CSV** and **YAML** for direct integration with any beam solver (OpenSees, SAP2000, and others) or section analysis tools ( [csf_sp](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md) and [sp_csf](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/sp_csf_guide.m) ).
 
 
 ---
