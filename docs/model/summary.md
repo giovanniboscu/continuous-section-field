@@ -902,7 +902,7 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/J
 
 # References
 
-[1] <a id=""></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
+[1] <a id="1_vabs"></a> *Variational Asymptotic Beam Sectional Analysis*.  https://analyswift.com/vabs/
 
 [2] <a id="2_becas"></a> *Finite-element-based cross-sectional analysis software*. https://becas.dtu.dk/
 
