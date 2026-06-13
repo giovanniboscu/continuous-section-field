@@ -883,7 +883,7 @@ https://github.com/robbievanleeuwen/section-properties
 
 [12] <a id="polygon_moments"></a> Steger, C. *On the Calculation of Arbitrary Moments of Polygons*. Technical Report FGBV-96-05, Forschungsgruppe Bildverstehen, Informatik IX, Technische Universität München, October 1996. https://mv.in.tum.de/_media/members/steger/publications/1996/fgbv-96-05-steger.pdf
 
-[13] <a id="saintven"></a> Hughes, A. *Design of Steel Beams in Torsion*. SCI Publication P385, The Steel Construction Institute, 2011. https://www.steelconstruction.info/images/6/6f/Sci_p385.pdf
+[13] <a id="saintven"></a> <a id="walltors"></a> Hughes, A. *Design of Steel Beams in Torsion*. SCI Publication P385, The Steel Construction Institute, 2011. https://www.steelconstruction.info/images/6/6f/Sci_p385.pdf
 
 [14] <a id="bredt"></a> Schmidrathner, C. *Validation of Bredt’s formulas for beams with hollow cross sections by the method of asymptotic splitting for pure torsion and their extension to shear force bending*. Acta Mechanica, 230, 4035–4047, 2019. https://doi.org/10.1007/s00707-019-02441-8
 
