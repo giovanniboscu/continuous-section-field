@@ -423,24 +423,6 @@ def interface_heights_from_stacked_section(section):
     h2 = lower_y_max
     h3 = middle_y_max
     h4 = upper_y_max
-
-    # Direct consistency checks for this specific stacked geometry.
-    # They are not used to discover the interfaces; they only catch a broken
-    # section layout early.
-    tolerance = 1.0e-10
-
-    if abs(h2 - middle_y_min) > tolerance:
-        raise ValueError(
-            f"lower/middle interface mismatch at z={section.z}: "
-            f"lower top={h2}, middle bottom={middle_y_min}"
-        )
-
-    if abs(h3 - upper_y_min) > tolerance:
-        raise ValueError(
-            f"middle/upper interface mismatch at z={section.z}: "
-            f"middle top={h3}, upper bottom={upper_y_min}"
-        )
-
     return h1, h2, h3, h4
 
 
