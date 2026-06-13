@@ -531,6 +531,8 @@ In the implementation, this evaluation is performed through
 stack.section_full_analysis(z, junction_side="left")
 ```
 
+<!-- LATEX_PAGEBREAK -->
+
 <p align="center">
   <em>Figure 7. Evaluation of the assembled CSF member at selected global stations. The model is queried through the global coordinate <code>z</code>, while <code>CSFStack</code> handles the interval mapping internally.</em>
   <img width="794" height="692" alt="image" src="figures/fig7.png" />
