@@ -312,11 +312,11 @@ CSF_ACTIONS:
         params:
           fmt_display: ".10g"
         properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip,I1, I2, rx, ry, Wx,            
-                     Wy,Q_na, J_sv_wall, J_s_cell]
+                     Wy,Q_na, J_sv_wall, J_sv_cell]
 ```
 Here, $I_1$ and $I_2$ denote the principal second moments of area.
 
-The same geometry file can therefore support visual inspection, property evaluation, solver export, or validation-oriented sampling. In each case the continuous field is evaluated at the stations requested by the action file.
+The same geometry file can therefore support visual inspection, property evaluation, solver export, or validation-oriented sampling. In each case the continuous field, is evaluated at the stations requested by the action file.
 
 ### 3.3 Reusability across studies
 
@@ -328,7 +328,7 @@ The decoupling between the member definition and the numerical operations applie
 | Beam model input | 11 Gauss-Lobatto stations | OpenSees / BeamDyn tables |
 | Reference comparison | Stations from external dataset | Validation against tabulated data |
 
-In all cases the continuous geometric field is evaluated on demand; no re-meshing or re-definition of the member is required.
+In all cases. the continuous geometric field is evaluated on demand; no re-meshing or re-definition of the member is required.
 
 ### 3.4  Interoperability with  `sectionproperties`
 
