@@ -868,7 +868,7 @@ https://github.com/robbievanleeuwen/section-properties
 [6] <a id="opensees"></a> McKenna, F. OpenSees: A Framework for Earthquake Engineering Simulation. Computing in Science & Engineering, 13(4), 58–66, 2011*. https://doi.org/10.1109/MCSE.2011.66  
   Project website: https://opensees.berkeley.edu/
 
-[7] <a id="abaqus"></a> Dassault Systèmes Simulia Corp. ABAQUS*. https://www.3ds.com/products/simulia/abaqus/
+[7] <a id="abaqus"></a> Dassault Systèmes, *Abaqus finite element analysis software*. https://www.3ds.com/products/simulia/abaqus/
 
 [8] <a id="ansys"></a> Ansys Inc., Ansys Mechanical User's Guide, Release 2023 R1, Ansys Inc., Canonsburg, PA, 2023. https://www.ansys.com/
 
