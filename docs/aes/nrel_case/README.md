@@ -280,7 +280,7 @@ The action report provides a direct check of the degraded stiffness field along 
 
 The degraded tower configuration uses the same geometry as the undegraded NREL tower. Only the longitudinal stiffness distribution is modified.
 
-The degradation is introduced through a continuous weight law applied to the longitudinal stiffness of the tower wall. The weight field is defined as a smooth function of the axial coordinate `z`.
+The degradation is introduced through a prescribed continuous weight law applied to the tower-wall stiffness. The weight field is defined as a smooth function of the axial coordinate $z$ and is used here to represent a localized stiffness-reduction field, not a measured damage scenario.
 
 The exact degradation law used in the model is:
 
