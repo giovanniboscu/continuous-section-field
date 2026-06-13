@@ -884,7 +884,7 @@ https://github.com/robbievanleeuwen/section-properties
 
 [13] <a id="bredt"></a> Schmidrathner, C. *Validation of Bredt’s formulas for beams with hollow cross sections by the method of asymptotic splitting for pure torsion and their extension to shear force bending*. Acta Mechanica, 230, 4035–4047, 2019. https://doi.org/10.1007/s00707-019-02441-8
 
-[14] <a id="damage_stiffness"></a> Doebling, S. W., Farrar, C. R., and Prime, M. B. *A Summary Review of Vibration-Based Damage Identification Methods*. Los Alamos National Laboratory Report LA-UR-98-0375, Los Alamos National Laboratory, 1998.
+[14] <a id="damage_stiffness"></a> Doebling, S. W., Farrar, C. R., Prime, M. B., and Shevitz, D. W. *Damage Identification and Health Monitoring of Structural and Mechanical Systems from Changes in Their Vibration Characteristics: A Literature Review*. Los Alamos National Laboratory Report LA-13070-MS, Los Alamos National Laboratory, 1996. https://doi.org/10.2172/249299
 
 [15] <a id="NREL_5MW"></a> Jonkman, J., Butterfield, S., Musial, W., and Scott, G. *Definition of a 5-MW Reference Wind Turbine for Offshore System Development*. NREL/TP-500-38060, National Renewable Energy Laboratory, 2009. https://doi.org/10.2172/947422
 
