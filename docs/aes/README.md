@@ -127,6 +127,8 @@ I_x^c(z) = I_x(z) - A(z)\,\bar{y}(z)^2 ,
 \bar{y}(z) = \frac{Q_x(z)}{A(z)} .
 $$
 
+where $Q_x(z)=\int_{\Omega(z)} y\,dA$ denotes the first moment of area with respect to the $x$-axis.
+
 Once the participation fields are introduced, the sectional laws are the composition of geometric variation and participation variation. A generic sectional quantity can be written as
 
 $$
