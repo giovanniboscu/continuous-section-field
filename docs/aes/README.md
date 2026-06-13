@@ -389,7 +389,7 @@ The model is therefore hybrid in the participation-field sense. The middle and l
 
 <p align="center">
   
-<img width="645" height="471" alt="image" src="figures/fig2.png" />
+<img width="516" height="376" alt="image" src="figures/fig2.png" />
 
 </p>
 
