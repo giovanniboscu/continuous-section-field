@@ -599,7 +599,7 @@ The resulting table shows that only the lower interface `h1` varies in this exam
 The complete reproducibility material for this example, including the CSF input files, action file, figures, station-wise exports, and the full comparison table, is provided in the repository:
 
 Complete workflow Stacked rectangular example:
-[https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/stacked_rectangular](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/stacked_rectangular)
+[https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/stacked_rectangular ](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/stacked_rectangular)
 
 ---
 
