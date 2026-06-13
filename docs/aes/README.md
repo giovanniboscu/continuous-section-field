@@ -720,6 +720,9 @@ The convergence behaviour changes markedly relative to Case A. At low discretiza
 
 This behaviour illustrates the main motivation for a continuous sectional representation. A coarse piecewise model with too few stations may miss or underrepresent local stiffness reductions, whereas the continuous field retains the full spatial description and the beam discretization can be refined independently until convergence is achieved.
 
+<!-- LATEX_PAGEBREAK -->
+
+
 #### Convergence results 
 
 
