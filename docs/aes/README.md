@@ -375,7 +375,7 @@ The example consists of two CSF intervals assembled into a single member. Each s
 
 <p align="center">
   
-<img width="741" height="277" alt="image" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/figures/fig1.png" />
+<img width="741" height="277" alt="image" src="figures/fig1.png" />
 
 </p>
 
