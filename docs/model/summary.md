@@ -619,7 +619,7 @@ The assessment has two objectives: first, to compare the sectional properties ge
 
 The declarative YAML format allows the undegraded and degraded configurations to be defined from the same geometric model. The degraded case is obtained by changing the longitudinal stiffness weighting law, without rebuilding the tower model from scratch.
 
-The tower is modelled as a linearly tapered circular steel tube of height $L = 87.6$ m. The outer diameter tapers from $6.0$ m at the base to $3.87$ m at the top, while the wall thickness varies from $0.0351$ m to $0.0247$ m. The corresponding inner radii are $2.9649$ m at the base and $1.9103$ m at the top. The material stiffness is uniform, with $E = 210$ GPa and $G = 80.8$ GPa [[15]](#NREL_5MW).
+The tower is modelled as a linearly tapered circular steel tube of height $L = 87.6$ m. The outer diameter tapers from $6.0$ m at the base to $3.87$ m at the top, while the wall thickness varies from $0.0351$ m to $0.0247$ m. The corresponding inner radii are $2.9649$ m at the base and $1.9103$ m at the top. The material stiffness is uniform, with $E = 210$ GPa and $G = 80.8$ GPa [[14]](#NREL_5MW).
 
 Two configurations are analysed:
 
@@ -686,7 +686,7 @@ The same loading definition is used for the undegraded and degraded towers. Ther
 
 ## Validation
 
-The NREL case involves two validation levels. First, the sectional properties generated from the CSF model are compared with the tabulated NREL tower data reported in Table 6-1 [[15]](#NREL_5MW) , to verify that the CSF model reproduces the reference distributed properties of the tower. The maximum relative difference is below $0.04%$ over the full tower height, confirming that the model reproduces the original NREL sectional stiffness distribution before the structural-response comparison is performed.
+The NREL case involves two validation levels. First, the sectional properties generated from the CSF model are compared with the tabulated NREL tower data reported in Table 6-1 [[14]](#NREL_5MW) , to verify that the CSF model reproduces the reference distributed properties of the tower. The maximum relative difference is below $0.04%$ over the full tower height, confirming that the model reproduces the original NREL sectional stiffness distribution before the structural-response comparison is performed.
 
 Second, the structural response obtained from the CSF/OpenSees model is compared with an independent analytical reference, constructed from the same geometric and material definitions without using CSF section-sampling APIs or OpenSees.
 
@@ -768,7 +768,7 @@ Table 1 reports the relative errors in tip displacement $U_y$ and torsional rota
 > **Note:** At high discretization levels the relative error in $U_y$ stabilises 
 > near zero ($\sim 10^{-4}\,\%$). This residual level reflects the numerical precision of the independently selected reference integration grid, which in this case corresponds to 2001 points, rather than a modelling inconsistency..
 
-The continuous stiffness representation enables this convergence study. With a fixed discrete table - as in the original NREL reference definition, which provides properties at 11 stations [[15]](#NREL_5MW) - the structural description is tied to the prescribed stations and its axial resolution cannot be refined independently. The continuous representation decouples the member definition from its numerical discretization: the same YAML input can be sampled at any resolution, allowing convergence toward the reference solution to be progressively assessed.
+The continuous stiffness representation enables this convergence study. With a fixed discrete table - as in the original NREL reference definition, which provides properties at 11 stations [[14]](#NREL_5MW) - the structural description is tied to the prescribed stations and its axial resolution cannot be refined independently. The continuous representation decouples the member definition from its numerical discretization: the same YAML input can be sampled at any resolution, allowing convergence toward the reference solution to be progressively assessed.
 
 The degraded case makes this distinction explicit. At 8 elements the error in $U_y$ is larger than at 6, and the sign reverses - a non-monotone behaviour indicating insufficient axial resolution near the degraded region. This diagnostic is only possible because the reference stiffness field is defined continuously. Without a continuous reference representation, convergence behaviour cannot be assessed independently of the adopted station discretization.
 
@@ -882,9 +882,7 @@ https://github.com/robbievanleeuwen/section-properties
 
 [13] <a id="bredt"></a> Schmidrathner, C. *Validation of Bredt’s formulas for beams with hollow cross sections by the method of asymptotic splitting for pure torsion and their extension to shear force bending*. Acta Mechanica, 230, 4035–4047, 2019. https://doi.org/10.1007/s00707-019-02441-8
 
-[14] <a id="walltors"></a> Hughes, A. *Design of Steel Beams in Torsion*. SCI Publication P385, The Steel Construction Institute, 2011. https://www.steelconstruction.info/images/6/6f/Sci_p385.pdf
-
-[15] <a id="NREL_5MW"></a> Jonkman, J., Butterfield, S., Musial, W., and Scott, G. *Definition of a 5-MW Reference Wind Turbine for Offshore System Development*. NREL/TP-500-38060, National Renewable Energy Laboratory, 2009. https://doi.org/10.2172/947422
+[14] <a id="NREL_5MW"></a> Jonkman, J., Butterfield, S., Musial, W., and Scott, G. *Definition of a 5-MW Reference Wind Turbine for Offshore System Development*. NREL/TP-500-38060, National Renewable Energy Laboratory, 2009. https://doi.org/10.2172/947422
 
 ---
 
