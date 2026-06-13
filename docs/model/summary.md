@@ -101,7 +101,7 @@ where $q_i(z)$ denotes the participation field associated with the quantity bein
 
 Geometry $\Omega_i(z)$ and the participation fields , $w_i(z)$ and $k_i(z)$, are fully decoupled: one can vary independently of the other.
 
-For polygonal domains, the area integrals are evaluated exactly via Green's theorem, reducing each double integral to a closed-form sum over the polygon edges. This applies to all integrals whose spatial integrands $f(x,y)$ are polynomial in $x$ and $y$ - area, first moments ($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and product of inertia ($I_{xy}$). The participation fields $w_i(z)$ and $k_i(z)$ depend on $z$ only, not on $x$ and $y$; they factor out of the area integral as station-wise scalars, so the spatial integration remains polynomial at each fixed $z$ and the spatial integrals remain closed-form polygonal quantities.
+For polygonal domains, the area integrals are evaluated exactly via Green's theorem [[12]](#polygon_moments) , reducing each double integral to a closed-form sum over the polygon edges. This applies to all integrals whose spatial integrands $f(x,y)$ are polynomial in $x$ and $y$ - area, first moments ($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and product of inertia ($I_{xy}$). The participation fields $w_i(z)$ and $k_i(z)$ depend on $z$ only, not on $x$ and $y$; they factor out of the area integral as station-wise scalars, so the spatial integration remains polynomial at each fixed $z$ and the spatial integrals remain closed-form polygonal quantities.
 
 The standard separable formulation is recovered as the special case in which the axial/bending field is uniform across zones:
 
@@ -880,6 +880,9 @@ https://github.com/robbievanleeuwen/section-properties
 
 [11] <a id="frame3dd"></a> Gavin, H. P. *Frame3DD: Static and Dynamic Structural Analysis of 2D and 3D Frames*. https://frame3dd.sourceforge.net/
 
+
+[12] <a id="polygon_moments"></a> Steger, C. *On the Calculation of Arbitrary Moments of Polygons*. Technical Report FGBV-96-05, Forschungsgruppe Bildverstehen, Informatik IX, Technische Universität München, October 1996. https://mv.in.tum.de/_media/members/steger/publications/1996/fgbv-96-05-steger.pdf
+
 [12] <a id="saintven"></a> Hughes, A. *Design of Steel Beams in Torsion*. SCI Publication P385, The Steel Construction Institute, 2011. https://www.steelconstruction.info/images/6/6f/Sci_p385.pdf
 
 [13] <a id="bredt"></a> Schmidrathner, C. *Validation of Bredt’s formulas for beams with hollow cross sections by the method of asymptotic splitting for pure torsion and their extension to shear force bending*. Acta Mechanica, 230, 4035–4047, 2019. https://doi.org/10.1007/s00707-019-02441-8
@@ -890,4 +893,3 @@ https://github.com/robbievanleeuwen/section-properties
 
 ---
 
-[16] <a id="polygon_moments"></a> Steger, C. *On the Calculation of Arbitrary Moments of Polygons*. Technical Report FGBV-96-05, Forschungsgruppe Bildverstehen, Informatik IX, Technische Universität München, October 1996. https://mv.in.tum.de/_media/members/steger/publications/1996/fgbv-96-05-steger.pdf
