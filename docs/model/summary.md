@@ -224,7 +224,7 @@ CSF can be used either as a Python library or through a declarative file-based Y
 
 
 
-###  <a id="CSF_SP"></a> S 3.1 Implementation structure
+### 3.1 Implementation structure
 
 CSF is implemented as a Python package in which the continuous model, sectional evaluation, visualization tools, stacked-member composition, and declarative execution layer are separated.
 
@@ -234,7 +234,7 @@ Sectional quantities are computed by a dedicated analysis layer operating on the
 
 For members requiring more than one interpolation interval, CSF uses a stacked representation. Each interval remains an independent continuous section field, while the stack maps the global axial coordinate to the corresponding interval and evaluates the appropriate section. This provides a piecewise-continuous member representation without replacing the continuous model by a predefined station table.
 
-A separate visualization layer generates two-dimensional section views, three-dimensional ruled-volume previews, and property-variation plots along the member axis. The declarative workflow is handled by a command-line actions interface: a YAML geometry file defines the continuous CSF model, while a separate YAML actions file specifies inspections, plots, property evaluations, and exports. The same model can therefore be inspected, sampled, visualized, or exported without modifying the model definition itself. Interoperability with external section-analysis workflows is supported through the `csf_sp` and `sp_csf` bridges, which provide exchange paths between CSF models and sectionproperties-based representations.
+A separate visualization layer generates two-dimensional section views, three-dimensional ruled-volume previews, and property-variation plots along the member axis. The declarative workflow is handled by a command-line actions interface: a YAML geometry file defines the continuous CSF model, while a separate YAML actions file specifies inspections, plots, property evaluations, and exports. The same model can therefore be inspected, sampled, visualized, or exported without modifying the model definition itself. Interoperability with external section-analysis workflows is supported through the  <a id="CSF_SP"></a>  `csf_sp` and `sp_csf` bridges, which provide exchange paths between CSF models and sectionproperties-based representations.
 
 
 
