@@ -629,8 +629,8 @@ The validation compares two computational paths that start from the same YAML-de
 
 ```text
 
-Path 1:  YAML → CSF continuous section-property field → Gauss section sampling → OpenSees beam model → tip response
-Path 2:  YAML → reconstructed continuous section-property field → tolerance-selected integration grid → direct integration → reference tip response
+Path 1: YAML → CSF continuous section-property field → Gauss section sampling → OpenSees beam model → tip response
+Path 2: YAML → reconstructed continuous field → direct integration → reference tip response
 
 ```
 
