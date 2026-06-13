@@ -199,10 +199,10 @@ Multiple straight intervals can be concatenated to represent members of arbitrar
 
 ---
 
-## 3. Declarative numerical workflow
+## 3. Computational Architecture and Declarative Workflow
 
 CSF can be used either as a Python library or through a declarative file-based YAML workflow. In the YAML workflow, the member definition and the requested numerical actions are written as input files rather than encoded directly in procedural Python code.
-
+### 3.2 Declarative Model Specification (YAML Geometry)
 The geometry file defines:
 
 - pairs of reference stations defining one or more longitudinal interpolation intervals;
@@ -236,7 +236,7 @@ A separate visualization layer generates two-dimensional section views, three-di
 
 
 
-### 3.2 Geometry file
+### 3.2 Declarative Model Specification (YAML Geometry)
 
 The geometry file defines the continuous sectional model. The example below describes a tapered polygonal section between two reference stations. The cross-section tapers from `S0` to `S1`, while the axial/bending field follows a parabolic law along the member axis.
 
@@ -275,7 +275,7 @@ CSF:
 
 The example separates three ingredients that are often collapsed into a single tabulated section-property description: the reference geometry, the longitudinal geometric interpolation, and the material participation law. Changing the station set or the requested output does not require modifying this member definition.
 
-### 3.3 Action file
+### 3.3 Simulation Actions Interface
 
 The action file specifies how the continuous model is sampled and which quantities are extracted. It does not redefine the member geometry.
 
