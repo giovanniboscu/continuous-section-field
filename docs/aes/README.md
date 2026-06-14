@@ -817,7 +817,7 @@ Accordingly, CSF should be interpreted as the continuous sectional-field represe
 These limitations suggest three natural extensions of the present framework. First, automatic evaluation of derivatives of sectional properties and participation-weighted stiffness fields would facilitate coupling with non-prismatic beam formulations that explicitly require longitudinal gradients of geometric and constitutive quantities. Second, support for curved member axes would extend the applicability of the framework beyond straight beam-like structures. Third, tighter integration with nonlinear structural solvers could allow participation fields to evolve during the analysis, enabling applications beyond the current static sectional representation.
 
 
-## Data Availability
+## Data and software availability
 
 The source code, including the `csf_sp` and `sp_csf` interoperability modules, input files, validation workflows, figures, and numerical data used in this study are available in the Continuous Section Field repository:
 
@@ -825,9 +825,16 @@ https://github.com/giovanniboscu/continuous-section-field
 
 The reproduction material for the examples discussed in this paper is collected in the `docs/aes/` directory of the same repository.
 
+The software package is `csfpy`, implemented in Python >= 3.8 and distributed under the GPL-3.0 license. The main command-line entry point used by the reproducible workflows is:
+
+```bash
+csf-actions geometry.yaml actions.yaml
+```
+
 The archived software release is available on Zenodo with DOI:
 
 https://doi.org/10.5281/zenodo.19076181
+
 
 
 
