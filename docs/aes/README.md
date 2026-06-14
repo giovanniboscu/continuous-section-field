@@ -416,7 +416,7 @@ $$
 </p>
 
 <p align="center">
-  <img width="607" height="538" alt="First CSF interval colored by axial/bending participation field" src="figures/fig3.png" />
+  <img width="1471" height="766" alt="Axial shear participation" src="img/fig3.png" />
 </p>
 
 
