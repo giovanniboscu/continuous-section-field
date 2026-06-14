@@ -30,7 +30,7 @@ For that reason, csf_sp provides a dedicated torsion-carrier API,
 carrier values required by the CSF model.
 
 A complete example showing how to use the csf_sp API, including
-`analyse_torsion_carrier`, is provided at the end of this file.
+`analyse_torsion_carrier`, is provided at the end of this file [[click here]](#spissue)
 
 ### Quick start
 
@@ -1326,7 +1326,7 @@ z=1.0  area=3750  e.a=5625  Ixx=2636719
 z=2.0  area=2500  e.a=5000  Ixx=1041667
 ```
 ---
-
+ <a id="spissue"></a> 
 # CSF and sectionproperties torsion carrier bridge
 
 ## Purpose
@@ -1337,7 +1337,7 @@ This distinction is immaterial when the same material modulus is intended to gov
 
 The example is intentionally simple: the geometry is basic, the topology is explicit, and the numerical output is easy to inspect. Its purpose is not to create a complex benchmark, but to show clearly why the torsional run must be rebuilt using the CSF shear/torsion carrier.
 
-
++
 ## Background
 
 CSF represents a section as a geometric and material participation model.
