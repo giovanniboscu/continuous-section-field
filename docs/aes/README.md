@@ -819,7 +819,7 @@ These limitations suggest three natural extensions of the present framework. Fir
 
 ## Data and software availability
 
-The source code, including the `csf_sp` and `sp_csf` interoperability modules, input files, validation workflows, figures, and numerical data used in this study are available in the Continuous Section Field repository:
+The software implementation, input files, validation workflows, figures, and numerical data supporting this study are openly available in the Continuous Section Field repository:
 
 https://github.com/giovanniboscu/continuous-section-field
 
