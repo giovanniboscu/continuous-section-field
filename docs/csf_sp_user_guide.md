@@ -1337,7 +1337,9 @@ This distinction is immaterial when the same material modulus is intended to gov
 
 The example is intentionally simple: the geometry is basic, the topology is explicit, and the numerical output is easy to inspect. Its purpose is not to create a complex benchmark, but to show clearly why the torsional run must be rebuilt using the CSF shear/torsion carrier.
 
-+
+
+A related sectionproperties discussion is available in [sectionproperties issue #590](https://github.com/robbievanleeuwen/section-properties/issues/590), where the use of `G_eff / E_eff * get_ej()` for composite torsion is compared with a torsion-only run obtained by assigning `elastic_modulus_i = G_i`.
+
 ## Background
 
 CSF represents a section as a geometric and material participation model.
@@ -1401,7 +1403,6 @@ It avoids changing the CSF model.
 It avoids overloading the normal sectionproperties result.  
 It makes the carrier substitution explicit.  
 It keeps the torsion-specific workaround isolated and inspectable.
-
 
 
 ## Interpretation of the outputs
