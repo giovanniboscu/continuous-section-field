@@ -697,7 +697,7 @@ The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated
 
 <p align="center">
 
-  <img width="678" height="321" alt="image" src="https://github.com/user-attachments/assets/50866952-f5ca-4ca3-969b-caf1a0b69934" />
+  <img width="678" height="321" alt="image" src="figures/fig9.png" />
 </p>
 
 In the degraded configuration, the geometry is unchanged but the participation field $w_i(z)$ introduces localized stiffness reductions along a portion of the tower height. This produces sharper axial variation in the sectional stiffness distribution.
@@ -735,7 +735,7 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 <p align="center">
    <em>Figure 12. Continuous variation of selected sectional properties for the degraded NREL tower case. The localized reductions arise from the prescribed axial/bending participation field and are reflected in the sectional area and bending stiffness distributions.</em>
-  <img width="992" height="654" alt="image" src="https://github.com/user-attachments/assets/29232887-e724-46bb-9bb7-ff635c08742f" />
+  <img width="992" height="654" alt="image" src="figures/fig12.png" />
 </p>
 
  
