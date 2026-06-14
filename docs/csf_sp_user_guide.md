@@ -1353,16 +1353,6 @@ sectionproperties, on the other hand, reports composite torsion through its nati
 
 For many simple homogeneous cases this distinction is harmless. For composite, graded, or independently weighted CSF models, it becomes important.
 
-## The problem
-
-The native sectionproperties torsion result is tied to the carrier stored as the elastic modulus.
-
-This means that the native torsion output is naturally aligned with the axial/bending carrier.
-
-When CSF defines a different shear/torsion participation field, the native sectionproperties torsion result does not directly represent the CSF torsion carrier.
-
-The geometry can still be correct. The mesh can still be correct. The axial and bending properties can still be correct. The issue is only the carrier used in the torsional run.
-
 ## Numeric Example
 
 The example shows that the same geometry can produce two different torsional readings depending on which carrier is used in the sectionproperties run.
