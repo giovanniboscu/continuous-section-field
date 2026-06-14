@@ -576,6 +576,25 @@ def show_visual_checks(stack):
     vis0 = Visualizer(stack.field_at(1))
     vis0.plot_weight(poly_indices_to_plot=[0])
     vis0.plot_shear_weight(poly_indices_to_plot=[0])
+    vis0.plot_volume_3d(
+      show_end_sections=True,
+      line_percent=100.0,
+      seed='w',
+      title="",
+      ax=None
+    )
+    vis0.plot_volume_3d(
+      show_end_sections=True,
+      line_percent=100.0,
+      seed='s',
+      title="",
+      ax=None
+    )   
+    
+    # Plot weight and shear-weight laws for the field selected at z = 6.
+    vis1 = Visualizer(stack.field_at(6))
+    vis1.plot_weight(poly_indices_to_plot=[0])
+    vis1.plot_shear_weight(poly_indices_to_plot=[0])
 
     plt.show()
 
