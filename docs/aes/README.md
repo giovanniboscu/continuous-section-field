@@ -420,24 +420,14 @@ $$
 </p>
 
 
-
-
 <p align="center">
-  <em>Figure 3. First CSF interval colored by the axial/bending participation field <code>w</code>.</em>
-</p>
-
-<p align="center">
-  <img width="607" height="538" alt="First CSF interval colored by axial/bending participation field" src="figures/fig3.png" />
+  <em>  </em>
+  <em>Figure 4. Shear/torsion  and Axial/bending participation fields over the first CSF interval.</em>
 </p>
 
 <p align="center">
   <em>  </em>
-  <em>Figure 4. Same CSF interval colored by the shear/torsion participation field <code>shear_weight</code>.</em>
-</p>
-
-<p align="center">
-  <em>  </em>
-  <img width="514" height="480" alt="First CSF interval colored by shear torsion participation field" src="figures/fig4.png" />
+  <img width="1169" height="553" alt="participation fields over the first CSF interval" src="img/fig4.png" />
 </p>
 
 
