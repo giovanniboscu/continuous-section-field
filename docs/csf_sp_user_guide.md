@@ -1330,10 +1330,13 @@ z=2.0  area=2500  e.a=5000  Ixx=1041667
 # CSF and sectionproperties torsion carrier bridge
 
 ## Purpose
+This example illustrates a specific interoperability issue between CSF and sectionproperties: the native torsion result in sectionproperties is governed by the elastic modulus $E$ used in the sectionproperties material definition, whereas CSF may require torsion to be governed by the shear modulus $G$.
 
-This example illustrates a specific interoperability issue between CSF and sectionproperties when torsional stiffness must be evaluated with a shear/torsion carrier that is distinct from the axial and bending carrier.
+This distinction is immaterial when the same material modulus is intended to govern axial, bending, shear, and torsional stiffness. It becomes critical when CSF assigns axial and bending stiffness through the elastic modulus $E$, while shear and torsional stiffness must be governed by the shear modulus $G$. In that case, the native sectionproperties torsion output does not represent the intended CSF torsional stiffness unless torsion is evaluated through a dedicated run based on $G$.
 
-The example is intentionally simple: the geometry is basic, the topology is explicit, and the numerical output is easy to inspect. Its purpose is not to create a complex benchmark, but to show clearly why a dedicated torsion-carrier run is needed.
+
+The example is intentionally simple: the geometry is basic, the topology is explicit, and the numerical output is easy to inspect. Its purpose is not to create a complex benchmark, but to show clearly why the torsional run must be rebuilt using the CSF shear/torsion carrier.
+
 
 ## Background
 
