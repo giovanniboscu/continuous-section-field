@@ -514,7 +514,7 @@ stack.section_full_analysis(z, junction_side="left")
 ```
 
 <p align="center">
-  <em>Figure 7. Evaluation of the assembled CSF member at selected global stations. The model is queried through the global coordinate <code>z</code>, while <code>CSFStack</code> handles the interval mapping internally.</em>
+  <em>Figure 7. Section-property profiles of the assembled CSFStack member evaluated along the global coordinate $z$.</em>
   <img width="794" height="692" alt="image" src="figures/fig7.png" />
 
 </p>
