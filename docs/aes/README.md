@@ -424,9 +424,6 @@ $$
   <img width="607" height="538" alt="First CSF interval colored by axial/bending participation field" src="figures/fig3.png" />
 </p>
 
-
-<!-- LATEX_PAGEBREAK -->
-
 <p align="center">
   <em>  </em>
   <em>Figure 4. Same CSF interval colored by the shear/torsion participation field <code>shear_weight</code>.</em>
