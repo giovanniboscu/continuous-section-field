@@ -452,11 +452,7 @@ $$
 
 The total weighted area is therefore
 
-$$ A(t) = w_u(t)A_u^{\mathrm{geom}} + A_m^{\mathrm{geom}} + A_l^{\mathrm{geom}}(t) $$
-
-that is,
-
-$$ A(t) = (0.5+0.5t)(0.06) + 0.09 + 0.30(0.30-0.10t) = 0.21. $$
+$$ A(t) = w_u(t)A_u^{\mathrm{geom}} + A_m^{\mathrm{geom}} + A_l^{\mathrm{geom}}(t) = 0.21. $$
 
 
 
