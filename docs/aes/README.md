@@ -409,7 +409,9 @@ $$
 \kappa_m = \kappa_l = \frac{1}{2(1+0.2)} = 0.41666667.
 $$
 
+
 <!-- LATEX_PAGEBREAK -->
+
 
 <p align="center">
   <em>Figure 3. Axial/bending participation and shear/torsion participation assigned to the upper component over the two CSFStack intervals. <code>w</code>.</em>
