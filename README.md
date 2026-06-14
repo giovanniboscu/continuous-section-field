@@ -2,7 +2,9 @@
 
 ### A Python framework for axially graded non-uniform structural members
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19076181.svg)](https://doi.org/10.5281/zenodo.19076181)
+
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20687216.svg)](https://doi.org/10.5281/zenodo.20687216)
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![Math](https://img.shields.io/badge/Engine-Analytical_Mechanics-red.svg)
 ![License](https://img.shields.io/github/license/giovanniboscu/continuous-section-field)
@@ -610,14 +612,14 @@ plt.show()
 <summary>Click for BibTeX citation</summary>
 
 ```bibtex
-@software{boscu_continuous_2026,
-  author = {Boscu, Giovanni},
-  title = {Continuous Section Field (CSF): A geometric and mechanical engine for non-prismatic structural members},
-  year = {2026},
+@software{boscu_continuous_section_field_2026,
+  author    = {Boscu, Giovanni},
+  title     = {{continuous-section-field}},
+  year      = {2026},
   publisher = {Zenodo},
-  version = {v2.0.0},
-  doi = {10.5281/zenodo.19076181},
-  url = {https://doi.org/10.5281/zenodo.19076181}
+  version   = {V2.1.0},
+  doi       = {10.5281/zenodo.20687216},
+  url       = {https://doi.org/10.5281/zenodo.20687216}
 }
 ```
 </details>
