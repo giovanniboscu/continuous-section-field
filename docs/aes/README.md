@@ -861,7 +861,7 @@ Giovanni Boscu: Conceptualization, Methodology, Software, Validation, Formal ana
 [3] <a id="secprop"></a> sectionproperties *python package for the analysis of arbitrary cross-sections using the finite element method*.
 https://github.com/robbievanleeuwen/section-properties
 
-[4] <a id="balduzzi"> G. Balduzzi, M. Aminbaghai, J. Füssl, F. Auricchio, Non-prismatic beams: a simple and effective Timoshenko-like model, Int. J. Solids Struct. 90 (2016) 236–250. https://doi.org/10.1016/j.ijsolstr.2016.03.022
+[4] <a id="balduzzi">  G. Balduzzi, M. Aminbaghai, J. Füssl, F. Auricchio, Non-prismatic beams: a simple and effective Timoshenko-like model, Int. J. Solids Struct. 90 (2016) 236–250. https://doi.org/10.1016/j.ijsolstr.2016.03.022
 
 [5] <a id="balduzzi2"></a>  G. Balduzzi, M. Aminbaghai, F. Auricchio, J. Füssl, Planar Timoshenko-like model for multilayer non-prismatic beams, Int. J. Mech. Mater. Des. 14 (2018) 51–70. https://doi.org/10.1007/s10999-016-9360-3
 
