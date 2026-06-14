@@ -30,7 +30,7 @@ For that reason, csf_sp provides a dedicated torsion-carrier API,
 carrier values required by the CSF model.
 
 A complete example showing how to use the csf_sp API, including
-`analyse_torsion_carrier`, is provided at the end of this file [[click here]](#spissue)
+`analyse_torsion_carrier`, is provided at the end of this file [[CSF and sectionproperties torsion carrier bridge](#spissue)
 
 ### Quick start
 
