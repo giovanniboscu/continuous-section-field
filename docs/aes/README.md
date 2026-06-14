@@ -833,8 +833,7 @@ csf-actions geometry.yaml actions.yaml
 
 An archived software release is available on Zenodo:
 
-https://doi.org/10.5281/zenodo.19076181
-
+https://doi.org/10.5281/zenodo.20687216
 
 
 ---
