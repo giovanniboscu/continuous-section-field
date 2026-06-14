@@ -819,22 +819,21 @@ These limitations suggest three natural extensions of the present framework. Fir
 
 ## Data and software availability
 
-The software implementation, input files, validation workflows, figures, and numerical data supporting this study are openly available in the Continuous Section Field repository:
+The CSF software implementation, input files, validation workflows, figures, and numerical data supporting this study are available in the project repository:
 
 https://github.com/giovanniboscu/continuous-section-field
 
-The reproduction material for the examples discussed in this paper is collected in the `docs/aes/` directory of the same repository.
+The repository contains a dedicated `docs/aes/` directory with the reproduction material for the examples discussed in this paper, including the model definitions, generated outputs, convergence data, and figures.
 
-The software package is `csfpy`, implemented in Python >= 3.8 and distributed under the GPL-3.0 license. The main command-line entry point used by the reproducible workflows is:
+The software package is distributed as `csfpy`. It is implemented in Python 3.8 or later and released under the GPL-3.0 license. The command-line workflow used for the reproducible examples is based on the `csf-actions` entry point:
 
 ```bash
 csf-actions geometry.yaml actions.yaml
 ```
 
-The archived software release is available on Zenodo with DOI:
+An archived software release is available on Zenodo:
 
 https://doi.org/10.5281/zenodo.19076181
-
 
 
 
