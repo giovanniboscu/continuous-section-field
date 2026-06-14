@@ -416,7 +416,7 @@ $$
 </p>
 
 <p align="center">
-  <img width="1471" height="766" alt="Axial shear participation" src="img/fig3.png" />
+  <img width="1471" height="766" alt="Axial shear participation" src="figures/fig3.png" />
 </p>
 
 
@@ -427,7 +427,7 @@ $$
 
 <p align="center">
   <em>  </em>
-  <img width="1169" height="553" alt="participation fields over the first CSF interval" src="img/fig4.png" />
+  <img width="1169" height="553" alt="participation fields over the first CSF interval" src="figures/fig4.png" />
 </p>
 
 
