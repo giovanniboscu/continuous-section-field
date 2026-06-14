@@ -406,7 +406,7 @@ $$
 The middle and lower components retain unit axial/bending participation. For shear/torsion, their participation is generated from the isotropic shortcut `iso(0.2)`, giving
 
 $$
-\kappa_m = \kappa_l = \frac{1}{2(1+0.2)} = 0.41666667.
+\kappa_m =  0.41666667.
 $$
 
 
