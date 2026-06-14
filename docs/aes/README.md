@@ -514,7 +514,7 @@ stack.section_full_analysis(z, junction_side="left")
 ```
 
 <p align="center">
-  <em>Figure 7. Section-property profiles of the assembled CSFStack member evaluated along the global coordinate $z$.</em>
+  <em>Figure 7. Section-property profiles of the assembled CSFStack member evaluated along the global coordinate z</em>
   <img width="794" height="692" alt="image" src="figures/fig7.png" />
 
 </p>
