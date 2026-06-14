@@ -411,17 +411,35 @@ $$
 
 <!-- LATEX_PAGEBREAK -->
 
+<p align="center">
+  <em>Figure 3. Axial/bending participation $w$ and shear/torsion participation $s_w$ assigned to the upper component over the two CSFStack intervals. <code>w</code>.</em>
+</p>
+
+<p align="center">
+  <img width="607" height="538" alt="First CSF interval colored by axial/bending participation field" src="figures/fig3.png" />
+</p>
+
+
+
 
 <p align="center">
   <em>Figure 3. First CSF interval colored by the axial/bending participation field <code>w</code>.</em>
+</p>
+
+<p align="center">
   <img width="607" height="538" alt="First CSF interval colored by axial/bending participation field" src="figures/fig3.png" />
 </p>
 
 <p align="center">
   <em>  </em>
   <em>Figure 4. Same CSF interval colored by the shear/torsion participation field <code>shear_weight</code>.</em>
+</p>
+
+<p align="center">
+  <em>  </em>
   <img width="514" height="480" alt="First CSF interval colored by shear torsion participation field" src="figures/fig4.png" />
 </p>
+
 
 The example is arranged so that the geometric variation of the lower component exactly compensates the axial/bending participation variation of the upper component in total weighted area. In the first interval,
 
