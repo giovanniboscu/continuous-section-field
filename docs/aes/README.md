@@ -412,7 +412,7 @@ $$
 <!-- LATEX_PAGEBREAK -->
 
 <p align="center">
-  <em>Figure 3. Axial/bending participation $w$ and shear/torsion participation $s_w$ assigned to the upper component over the two CSFStack intervals. <code>w</code>.</em>
+  <em>Figure 3. Axial/bending participation and shear/torsion participation assigned to the upper component over the two CSFStack intervals. <code>w</code>.</em>
 </p>
 
 <p align="center">
