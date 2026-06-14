@@ -419,6 +419,9 @@ $$
 \kappa_m = \kappa_l = \frac{1}{2(1+0.2)} = 0.41666667.
 $$
 
+<!-- LATEX_PAGEBREAK -->
+
+
 <p align="center">
   <em>Figure 3. First CSF interval colored by the axial/bending participation field <code>w</code>.</em>
   <img width="607" height="538" alt="First CSF interval colored by axial/bending participation field" src="figures/fig3.png" />
