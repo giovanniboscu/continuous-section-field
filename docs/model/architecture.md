@@ -95,7 +95,7 @@ one continuous SectionField
 │ polygons        │     │ weight(z)          │     │ nesting          │
 │ interpolation   │     │ shear_weight(z)    │     │ containment      │
 │ geometry laws   │     │ material fields    │     │ hierarchy        │
-│ sampling        │     │ carrier evaluation     │     │ boolean meaning  │
+│ sampling        │     │ carrier evaluation │     │ boolean meaning  │
 └─────────┬───────┘     └──────────┬─────────┘     └────────┬─────────┘
           │                        │                        │
           └──────────────┬─────────┴────────────────────────┘
