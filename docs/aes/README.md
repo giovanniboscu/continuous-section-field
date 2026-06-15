@@ -186,7 +186,7 @@ where $E_{\mathrm{ref}}$ and $G_{\mathrm{ref}}$ are reference moduli. Through th
 
 ### 2.5 Nested zones and effective participation
 
-When polygonal zones overlap — as in nested regions, voids, or embedded inclusions — CSF does not superpose their participation contributions over the same area. Instead, each contained zone replaces the participation contribution of its immediate container over the overlapping region. This represents a local material-replacement assumption: two material contributions are not allowed to occupy the same portion of the section simultaneously. The effective participation of a nested zone is therefore evaluated relative to its direct parent, while non-adjacent ancestors remain unaffected by this replacement.
+When polygonal zones overlap - as in nested regions, voids, or embedded inclusions - CSF does not superpose their participation contributions over the same area. Instead, each contained zone replaces the participation contribution of its immediate container over the overlapping region. This represents a local material-replacement assumption: two material contributions are not allowed to occupy the same portion of the section simultaneously. The effective participation of a nested zone is therefore evaluated relative to its direct parent, while non-adjacent ancestors remain unaffected by this replacement.
 
 For a contained zone $i$ with immediate parent $p(i)$, the effective participation fields are
 
