@@ -110,7 +110,7 @@ $$
 k_i(z) = \frac{w_i(z)}{2(1+\nu)} ,
 $$
 
-where $\nu$ is the Poisson ratio. This shortcut derives $k_i(z)$ directly from $w_i(z)$ through the isotropic shear-modulus relation; $k_i(z)$ is therefore not an additional independent field. Its magnitude is fixed by the prescribed $w_i(z)$ and by $\nu$, while its axial variation follows that of $w_i(z)$. In the general case, $w_i(z)$ and $k_i(z)$ are assigned independently, allowing the model to represent non-isotropic effective participation, selective stiffness degradation, or hybrid material compositions.
+where $\nu$ is the Poisson ratio. This shortcut derives $k_i(z)$ directly from $w_i(z)$ through the isotropic shear-modulus relation; $k_i(z)$ is therefore not an additional independent field. Its magnitude is fixed by the prescribed $w_i(z)$ and by $\nu$, while its axial variation follows that of $w_i(z)$. In the general case, $w_i(z)$ and $k_i(z)$ are assigned independently, allowing the model to represent non-isotropic effective participation, selective stiffness variation or degradation, or hybrid material compositions.
 
 A simple homogenization-oriented use of these fields is obtained when the participation is defined from longitudinally varying elastic moduli. For example, if zone $i$ is associated with a Young's modulus $E_i(z)$ and a shear modulus $G_i(z)$, one possible choice is
 
@@ -120,7 +120,7 @@ w_i(z) = \frac{E_i(z)}{E_{\mathrm{ref}}},
 k_i(z) = \frac{G_i(z)}{G_{\mathrm{ref}}},
 $$
 
-where $E_{\mathrm{ref}}$ and $G_{\mathrm{ref}}$ are reference moduli. Through the CSF formulation, this homogenization process is cast as a continuous operation along the member axis. This is only one admissible definition of the participation fields: in the general case, $w_i(z)$ and $k_i(z)$ remain arbitrary user-defined station-wise fields, as long as they can be evaluated at the requested coordinate $z$.
+where $E_{\mathrm{ref}}$ and $G_{\mathrm{ref}}$ are reference moduli. Through the CSF formulation, this homogenization process is cast as a continuous operation along the member axis. This is only one admissible definition of the participation fields: in the general case, $w_i(z)$ and $k_i(z)$ remain arbitrary user-defined longitudinal field, as long as they can be evaluated at the requested coordinate $z$.
 
 
 ### 2.5 Nested zones and effective participation
