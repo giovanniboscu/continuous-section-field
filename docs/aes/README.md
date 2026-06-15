@@ -205,8 +205,13 @@ As a result, CSF defines $w_i(z)$ and $k_i(z)$ as absolute, physically meaningfu
 
 This distinction is part of the model: the assigned fields $w_i(z)$ and $k_i(z)$ remain the absolute zone-level quantities, whereas $w_i^{\mathrm{eff}}(z)$ and $k_i^{\mathrm{eff}}(z)$ are the derived quantities entering the section-property integrals.
 
+### 2.6 Evaluated section data
 
-### 2.6 Assumptions
+At a requested coordinate $z$, CSF evaluates a `Section` object. This object contains the interpolated polygon coordinates, the containment relations, and the assigned and effective participation fields for axial/bending and shear/torsion. The evaluated fields also reflect whether the shear/torsion participation is prescribed independently or obtained from an isotropic coupling. Section-property calculators operate on this station data to compute quantities such as area, centroid coordinates, second moments of area, section moduli, and torsion-related outputs. The tabulated properties are therefore outputs computed from the evaluated `Section`, not the stored definition of the member.
+
+
+
+### 2.7 Assumptions
 
 
 - **A - Fixed topology.** Vertex count per zone is constant along $z$; zones whose boundaries appear or disappear are not supported within a single interval.
