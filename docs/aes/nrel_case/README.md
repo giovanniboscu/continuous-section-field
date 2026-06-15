@@ -72,8 +72,8 @@ The geometric parameters used to generate the two boundary sections are:
 | Inner diameter      |    `D_i = 5.9298` |   `D_i = 3.8206` |
 
 
+Each cross-section is not represented as two independent polygons, but as a single @cell polygonal path: one ordered point list describes the outer contour together with the inner void contour, using opposite orientations to define the annular closed cell.
 
-Each cross-section is an annular closed cell encoded as a single `@cell` polygonal path, composed of outer and inner contours with opposite orientation.
 
 The script generates two YAML models:
 
