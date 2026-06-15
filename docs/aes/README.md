@@ -245,6 +245,9 @@ The geometry file defines:
 - endpoint values of the participation fields;
 - longitudinal laws for $w_i(z)$ and $k_i(z)$.
 
+The YAML geometry file stores the containment hierarchy together with the assigned zone-level participation fields $w_i(z)$ and $k_i(z)$. The effective fields $w_i^{\mathrm{eff}}(z)$ and $k_i^{\mathrm{eff}}(z)$ are not stored model inputs; they are derived from the assigned fields during section-property evaluation.
+
+
 The action file defines:
 
 - station sets;
