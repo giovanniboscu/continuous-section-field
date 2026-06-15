@@ -12,7 +12,7 @@ CSF makes an explicit separation between the geometric description of the member
 This separation preserves a continuous member representation while generating solver-facing station-wise data only when required.
 
 
-**Keywords:** Continuous section field; non-prismatic members; section properties; material participation fields; solver-independent preprocessing; beam modelling; 
+**Keywords:** Continuous section field; non-prismatic members; section properties; material participation fields; solver-independent preprocessing; beam modelling; axially graded members
 
 
 ## 1. Motivation
@@ -45,8 +45,7 @@ This absence of a clearly separated sectional-field layer is both a limitation a
 
 ### 2.1 Scope
 
-The formulation targets members whose sectional variation is defined at the level of the evaluated section $S(z)$, rather than directly as prescribed sectional-property distributions. At each longitudinal coordinate, the model defines polygonal geometry, material participation, stiffness degradation, and effective zone contribution as part of the same section object. Sectional properties are then treated as derived quantities extracted from $S(z)$ when inspection, export, validation, or downstream numerical models require them.
-
+The formulation targets members whose sectional variation is defined at the level of the evaluated section $S(z)$, rather than directly as prescribed sectional-property distributions. At each longitudinal coordinate, the model defines polygonal geometry, material participation, stiffness variation or degradation, and effective zone contribution as part of the same section object. Sectional properties are then treated as derived quantities extracted from $S(z)$ when inspection, export, validation, or downstream numerical models require them.
 
 ### 2.2 Zone-based definition of S(z)
 
