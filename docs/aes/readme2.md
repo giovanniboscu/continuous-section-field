@@ -139,7 +139,8 @@ where $p(i)$ denotes the direct parent zone of $i$. For zones that are not conta
 
 The replacement rule is applied independently to axial/bending participation and shear/torsion participation. Because $w_i(z)$ and $k_i(z)$ are decoupled, a zone may have null participation in one field while remaining active in the other. For example, a region may contribute to axial/bending behavior while contributing no shear/torsional participation, or vice versa. A geometric void corresponds to null participation in both fields.
 
-As a result, CSF defines $w_i(z)$ and $k_i(z)$ as absolute, physically meaningful zone-level participation fields, rather than as parent-corrected increments. The effective, non-overlapping contribution used in the section-property integrals is obtained from the containment hierarchy, without requiring the user to pre-build a non-overlapping geometry.
+As a result, CSF defines $w_i(z)$ and $k_i(z)$ as absolute zone-level participation fields, rather than as parent-corrected increments. The effective, non-overlapping contribution used in the section-property integrals is obtained from the containment hierarchy, without requiring the user to pre-build a non-overlapping geometry.
+
 
 This distinction is part of the model: the assigned fields $w_i(z)$ and $k_i(z)$ remain the absolute zone-level quantities, whereas $w_i^{\mathrm{eff}}(z)$ and $k_i^{\mathrm{eff}}(z)$ are the derived quantities entering the section-property integrals.
 
