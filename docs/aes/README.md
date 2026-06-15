@@ -207,7 +207,8 @@ This distinction is part of the model: the assigned fields $w_i(z)$ and $k_i(z)$
 
 ### 2.6 Evaluated section data
 
-At a requested coordinate $z$, CSF evaluates a `Section` object. This object contains the interpolated polygon coordinates, the containment relations, and the assigned and effective participation fields for axial/bending and shear/torsion. The evaluated fields also reflect whether the shear/torsion participation is prescribed independently or obtained from an isotropic coupling. Section-property calculators operate on this station data to compute quantities such as area, centroid coordinates, second moments of area, section moduli, and torsion-related outputs. The tabulated properties are therefore outputs computed from the evaluated `Section`, not the stored definition of the member.
+At a requested coordinate $z$, CSF evaluates a `Section` object. This object contains the interpolated polygon coordinates, the containment relations, and the assigned and effective participation fields for axial/bending and shear/torsion. The evaluated fields also reflect whether the shear/torsion participation is prescribed independently or obtained from an isotropic coupling. Section-property calculators operate on this station data to compute quantities such as area, centroid coordinates, second moments of area, section moduli, and torsion-related outputs. The reported or exported properties are therefore outputs computed from the evaluated `Section`, not the stored definition of the member.
+
 
 
 
