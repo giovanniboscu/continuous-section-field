@@ -145,7 +145,7 @@ CSF reports the two contributions **separately** before combining them:
 |---|---|---|
 | $J_{\mathrm{sv,cell}}$ | $\sum_k \dfrac{4 A_{m,k}^2 \, t_k}{b_{m,k}}$ | Sum over all closed cells using global mean quantities, with $A_{m,k} = (A_{\mathrm{outer},k}+A_{\mathrm{inner},k})/2$ and $b_{m,k} = (P_{\mathrm{outer},k}+P_{\mathrm{inner},k})/2$ |
 | $J_{\mathrm{sv,wall}}$ | $\sum_i \dfrac{b_i t_i^3}{3}$ | Sum over all open walls |
-| j_tors$ |  Valid as model when cells and walls do not share closed contours (H1)."  | **Total - used for export** |
+| $j_tors$ |  Valid as model when cells and walls do not share closed contours (H1)."  | **Total - used for export** |
 
 This breakdown allows the user to verify that each component is physically meaningful and to assess the relative importance of cells vs. walls in the torsional response.
 
