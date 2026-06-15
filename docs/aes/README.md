@@ -184,8 +184,28 @@ where $E_{\mathrm{ref}}$ and $G_{\mathrm{ref}}$ are reference moduli. Through th
 
 
 
+### 2.5 Nested zones and effective participation
 
-### 2.5 Assumptions
+When polygonal zones overlap — as in nested regions, voids, or embedded inclusions — CSF does not superpose their participation contributions over the same area. Instead, each contained zone replaces the participation contribution of its immediate container over the overlapping region. This represents a local material-replacement assumption: two material contributions are not allowed to occupy the same portion of the section simultaneously. The effective participation of a nested zone is therefore evaluated relative to its direct parent, while non-adjacent ancestors remain unaffected by this replacement.
+
+For a contained zone $i$ with immediate parent $p(i)$, the effective participation fields are
+
+$$
+w_i^{\mathrm{eff}}(z) = w_i(z) - w_{p(i)}(z),
+\qquad
+k_i^{\mathrm{eff}}(z) = k_i(z) - k_{p(i)}(z),
+$$
+
+where $p(i)$ denotes the direct parent zone of $i$. For zones that are not contained in another zone, the effective fields coincide with the assigned fields.
+
+The replacement rule is applied independently to the axial/bending and shear/torsion participation channels. Because $w_i(z)$ and $k_i(z)$ are decoupled, a zone may have null participation in one field while remaining active in the other. For example, a region may contribute to axial/bending behavior while contributing no shear/torsional participation, or vice versa. A geometric void corresponds to null participation in both fields.
+
+As a result, CSF defines $w_i(z)$ and $k_i(z)$ as absolute, physically meaningful zone-level participation fields, rather than as parent-corrected increments. The effective, non-overlapping contribution used in the section-property integrals is obtained from the containment hierarchy, without requiring the user to pre-build a non-overlapping geometry.
+
+
+
+
+### 2.6 Assumptions
 
 
 - **A - Fixed topology.** Vertex count per zone is constant along $z$; zones whose boundaries appear or disappear are not supported within a single interval.
