@@ -54,7 +54,7 @@ The contribution of this work is the definition and implementation of a solver-i
 The formulation targets members whose sectional variation is defined at the level of the evaluated section $S(z)$, rather than directly as prescribed sectional-property distributions. At each longitudinal coordinate, the model defines polygonal geometry, material participation, stiffness degradation, and effective zone contribution as part of the same section object. Sectional properties are then treated as derived quantities extracted from $S(z)$ when inspection, export, validation, or downstream numerical models require them.
 
 
-### 2.2 Zone-based definition of $S(z)$
+### 2.2 Zone-based definition of S(z)
 
 The cross-section at station $z$ is represented as an ordered set of $n$ polygonal zones:
 
