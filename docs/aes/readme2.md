@@ -12,16 +12,15 @@ CSF makes an explicit separation between the geometric description of the member
 This separation preserves a continuous member representation while generating solver-facing station-wise data only when required.
 
 
-**Keywords:** Continuous section field; non-prismatic members; section properties; material participation fields; solver-independent preprocessing; beam modelling; solver-independent modelling
+**Keywords:** Continuous section field; non-prismatic members; section properties; material participation fields; solver-independent preprocessing; beam modelling; 
 
 
 ## 1. Motivation
 
+In current structural analysis practice, the sectional description of non-prismatic members is typically embedded within the solver itself. Such embedded descriptions may account for non-prismaticity within a specific analysis procedure, but they do not generally expose the longitudinal evolution of the member's sectional representation as an independent modelling object. Geometry and material participation are often not represented as independent fields; instead, the continuous sectional model is reduced to station-wise section-property data evaluated at a fixed set of stations and tied to the solver mesh and conventions. This coupling makes the sectional model difficult to inspect, reuse, or transfer across different solvers, and it obscures the distinction between the continuous physical model and its numerical discretization.
 
-In current structural analysis practice, the definition of section properties for non-prismatic members is typically embedded within the solver itself. Geometry and material participation are not treated as independent fields; instead, they are collapsed into a discre
-te table of section properties evaluated at a fixed set of stations, tied to the solver mesh and conventions. This coupling makes the sectional model difficult to inspect, reuse, or transfer across different solvers, and it obscures the distinction between the continuous physical model and its numerical discretization.
+Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the relevant modelling object is not a single section or a predefined table of sectional properties, but a longitudinal section field $S(z)$ that describes how the section evolves along the member. Geometric, material, and stiffness-related quantities can then be evaluated consistently from this field and supplied to numerical models when required; these include derived quantities such as $A(z)$, $I_x(z)$, $I_y(z)$, $(EI_x)(z)$, $(GJ)(z)$, and $\rho_l(z)$.
 
-Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required representation for a numerical model is not a single section, but a longitudinal section field $S(z)$, from which geometric, material, and stiffness-related quantities can be evaluated consistently along the member. Derived quantities such as $A(z)$, $I_x(z)$, $I_y(z)$, $(EI_x)(z)$, $(GJ)(z)$, and $\rho_l(z)$ can then be supplied to numerical models when required.
 
 
 A member is represented as a continuous sectional field composed of evolving polygonal geometry together with two material participation fields: the axial/bending field $w_i(z)$ and the shear/torsion field $k_i(z)$. This representation is defined, evaluated, inspected, and validated independently of any downstream solver. The solver receives a station-wise projection of an already defined continuous field - not a table that defines the model itself.
