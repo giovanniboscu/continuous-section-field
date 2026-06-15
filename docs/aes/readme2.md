@@ -47,23 +47,24 @@ This absence of a clearly separated sectional-field layer is both a limitation a
 
 The formulation targets members whose sectional variation is defined at the level of the evaluated section $S(z)$, rather than directly as prescribed sectional-property distributions. At each longitudinal coordinate, the model defines polygonal geometry, material participation, stiffness variation or degradation, and effective zone contribution as part of the same section object. Sectional properties are then treated as derived quantities extracted from $S(z)$ when inspection, export, validation, or downstream numerical models require them.
 
-### 2.2 Zone-based definition of S(z)
+### 2.2 Zone-based definition of $S(z)$
 
 The cross-section at station $z$ is represented as an ordered set of $n$ polygonal zones:
 
 $$
-S(z) = \{\,\Omega_i(z),\; w_i(z),\; k_i(z)\,\}_{i=1}^{n}
+S(z) = {,\Omega_i(z),; w_i(z),; k_i(z),}_{i=1}^{n}
 $$
 
 where:
 
-- $\Omega_i(z)$ is the polygonal domain of zone $i$ at station $z$;
-- $w_i(z)$ is the axial/bending field of zone $i$ (its participation in axial and bending stiffness);
-- $k_i(z)$ is the shear/torsion field of zone $i$ (its participation in shear and torsion).
+* $\Omega_i(z)$ is the polygonal domain of zone $i$ at station $z$;
+* $w_i(z)$ is the axial/bending field of zone $i$ (its participation in axial and bending stiffness);
+* $k_i(z)$ is the shear/torsion field of zone $i$ (its participation in shear and torsion).
 
 Collectively, $w_i(z)$ and $k_i(z)$ are the participation fields.
 
-Geometry $\Omega_i(z)$ and the participation fields , $w_i(z)$ and $k_i(z)$, are fully decoupled: one can vary independently of the other.
+Geometry $\Omega_i(z)$ and the participation fields, $w_i(z)$ and $k_i(z)$, are fully decoupled: each can vary independently of the other.
+
 
 
 ### 2.3 Geometric field
