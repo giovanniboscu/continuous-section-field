@@ -3,7 +3,7 @@
 
 [CSF positioning and workflow overview](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/architecture.md)
 
-Compact overview of where CSF sits in the workflow.
+Conceptual overview of CSF as a continuous section-field layer: model responsibilities, workflow position, section sampling, and relation with analysis backends.
  
 ## Overview
 
