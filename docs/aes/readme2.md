@@ -337,7 +337,7 @@ The decoupling between the member definition and the numerical operations applie
 | Beam model input | Gauss-Lobatto stations |Station-wise input tables for beam solvers |
 | Reference comparison | Stations from external dataset | Validation against tabulated data |
 
-In all cases. the continuous geometric field is evaluated on demand; no re-meshing or re-definition of the member is required.
+In all cases, the continuous CSF model is evaluated on demand at the requested stations; no redefinition of the member geometry, participation fields, or model topology is required.
 
 
 
