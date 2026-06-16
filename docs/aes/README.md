@@ -1,86 +1,101 @@
-# preprint Draft v4.0
+# preprint Draft v4.1
 # Continuous section fields along non-uniform and axially graded structural members
 
 ## Abstract
-Continuous Section Field (CSF) is a computational modelling framework that represents geometric description and material distribution along a member axis as continuous section-property fields, which can be inspected, sampled, and exported as station-wise data for downstream workflows.
 
-The central idea is to treat the cross-section as a field defined along the longitudinal coordinate, rather than as an isolated section or a fixed table of sectional properties. Geometry is specified at reference stations and obtained by interpolating corresponding polygon vertices, producing continuous intermediate cross-sections. Material participation fields prescribe the longitudinal variation of material contribution independently of geometry. The independence of geometry and participation is foundational: each can vary along the axis without requiring the other to follow the same law. At any requested station, CSF combines the interpolated geometry with the participation fields to evaluate area, centroid, second moments of area, principal inertias, and section moduli.
+Continuous Section Field (CSF) is a computational modelling framework that represents geometric description and material distribution along a member axis as an evaluable continuous sectional field, which can be inspected, sampled, and exported as station-wise data for downstream workflows.
+
+The central idea is to treat the cross-section as a field defined along the longitudinal coordinate, rather than as an isolated section or a fixed table of sectional properties. Geometry is specified at reference stations and obtained by interpolating corresponding polygon vertices, producing continuous intermediate cross-sections. Material participation fields prescribe the longitudinal variation of material contribution independently of geometry. The independence of geometry and participation is foundational: each can vary along the axis without requiring the other to follow the same law. At any requested station, CSF evaluates the corresponding section by combining the interpolated geometry with the participation fields; sectional quantities such as area, centroid, second moments of area, principal inertias, and section moduli are then obtained as derived outputs.
 
 CSF makes an explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two longitudinal participation fields define how much each region contributes: the axial/bending field $w_i(z)$ and the shear/torsion field $k_i(z)$. Their independence allows geometry, axial/bending contribution, and shear/torsion contribution to vary separately along the member axis, while optional isotropic coupling can be used when appropriate.
 
 This separation preserves a continuous member representation while generating solver-facing station-wise data only when required.
 
 
-**Keywords:** Continuous section field; non-prismatic members; section properties; material participation fields; solver-independent preprocessing; beam modelling; solver-independent modelling
+**Keywords:** Continuous section field; non-prismatic members; section properties; material participation fields; solver-independent preprocessing; beam modelling; axially graded members
 
 
 ## 1. Motivation
 
+In current structural analysis practice, the sectional description of non-prismatic members is typically embedded within the solver itself. Such embedded descriptions may account for non-prismaticity within a specific analysis procedure, but they do not generally expose the longitudinal evolution of the member's sectional representation as an independent modelling object. Geometry and material participation are often not represented as independent fields; instead, the continuous sectional model is reduced to station-wise section-property data evaluated at a fixed set of stations and tied to the solver mesh and conventions. This coupling makes the sectional model difficult to inspect, reuse, or transfer across different solvers, and it obscures the distinction between the continuous physical model and its numerical discretization.
 
-In current structural analysis practice, the definition of section properties for non-prismatic members is typically embedded within the solver itself. Geometry and material participation are not treated as independent fields; instead, they are collapsed into a discre
-te table of section properties evaluated at a fixed set of stations, tied to the solver mesh and conventions. This coupling makes the sectional model difficult to inspect, reuse, or transfer across different solvers, and it obscures the distinction between the continuous physical model and its numerical discretization.
+Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the relevant modelling object is not a single section or a predefined table of sectional properties, but a continuous sectional field $S(z)$ describing how the section evolves along the member. In CSF, this field is composed of evolving polygonal geometry together with two material participation fields: the axial/bending field $w_i(z)$ and the shear/torsion field $k_i(z)$. The resulting representation can be defined, evaluated, inspected, and validated independently of any downstream solver. When solver input is required, the solver receives a station-wise projection of an already defined continuous field, not a table that defines the model itself.
 
-Many structural and mechanical engineering problems involve members whose cross-section changes along their length: tapered towers, variable-depth beams, haunched bridge girders, repaired or degraded members, hybrid material sections, and staged or homogenized structural models. In these cases, the required representation for a numerical model is not a single section, but a longitudinal section field $S(z)$, from which geometric, material, and stiffness-related quantities can be evaluated consistently along the member. Derived quantities such as $A(z)$, $I_x(z)$, $I_y(z)$, $(EI_x)(z)$, $(GJ)(z)$, and $\rho_l(z)$ can then be supplied to numerical models when required.
+The result is a clean separation between three concerns that are normally conflated: the continuous sectional model of the member, the numerical sampling strategy required by the solver, and the exported data format consumed by a specific tool.
 
+Comparable modelling objects are difficult to identify in existing workflows. The difficulty is not the absence of tools for computing sectional properties, nor the absence of structural solvers capable of using non-prismatic beam data. Rather, the missing layer is an explicit, solver-agnostic representation of the longitudinal sectional field itself: a model object that can define, evaluate, inspect, sample, and export the evolving sectional description independently of the downstream discretization.
 
-A member is represented as a continuous sectional field composed of evolving polygonal geometry together with two material participation fields: the axial/bending field $w_i(z)$ and the shear/torsion field $k_i(z)$. This representation is defined, evaluated, inspected, and validated independently of any downstream solver. The solver receives a station-wise projection of an already defined continuous field - not a table that defines the model itself.
+On the theoretical side, Balduzzi et al. [[4,5]](#balduzzi) showed that non-prismatic beam analysis requires longitudinally varying geometric quantities as explicit terms in the governing equations. The formulation therefore depends on continuous sectional functions, not solely on values evaluated at discrete stations. This highlights the need for programmable descriptions capable of generating consistent geometric and constitutive quantities, and their axial variation, at arbitrary locations along the member axis.
 
-The result is a clean separation between three concerns that are normally conflated: the continuous physical model of the member, the numerical sampling strategy required by the solver, and the exported data format consumed by a specific tool.
+Existing frameworks for the analysis of non-prismatic members can then be grouped into three categories. First, cross-section analysis tools such as VABS [[1]](#vabs) and BECAS [[2]](#becas) provide accurate computation of beam sectional properties for arbitrary geometries and composite materials, and are widely adopted in wind-turbine and aerospace applications. Open-source alternatives such as `sectionproperties` [[3]](#secprop) offer similar capabilities within a Python ecosystem. These tools are primarily designed to analyse individual cross-sections: given a sectional geometry and material definition, they return the corresponding sectional properties at that station. Longitudinal variation of the member, including tapering geometry, variation of material properties, or local stiffness degradation, is therefore usually represented outside the section-analysis tool, either through user-defined station tables or through the discretization adopted by the downstream structural solver.
 
-Cross-section analysis tools such as VABS [[1]](#vabs) and BECAS [[2]](#becas) provide accurate computation of beam sectional properties for arbitrary geometries and composite materials, and are widely adopted in wind-turbine and aerospace applications. Open-source alternatives such as `sectionproperties`  [[3]](#secprop) offer similar capabilities within a Python ecosystem. These tools are primarily designed to analyse individual cross-sections: given a sectional geometry and material definition, they return the corresponding sectional properties at that station.
-Longitudinal variation of the member, including tapering geometry, variation of material properties, or local stiffness degradation, is therefore usually represented outside the section-analysis tool
-, either through user-defined station tables or through the discretization adopted by the downstream structural solver. As a consequence, the sectional description is often tied to a specific mesh or analysis workflow, rather than being defined as an independent continuous model.
+Second, structural solvers such as OpenSees [[6]](#opensees), ABAQUS [[7]](#abaqus), and ANSYS [[8]](#ansys) incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations.
 
-On the theoretical side,  Balduzzi et al. [[4,5]](#balduzzi)   showed that non-prismatic beam analysis requires longitudinally varying geometric quantities as explicit terms in the governing equations. The formulation therefore depends on continuous sectional functions, not solely on values evaluated at discrete stations. This highlights the need for programmable descriptions capable of generating consistent geometric and constitutive quantities, and their axial variation, at arbitrary locations along the member axis.
+Third, wind-energy simulation and design workflows embed non-prismaticity in application-specific representations. Aeroelastic codes such as BeamDyn [[9]](#beamdyn) rely on distributed sectional-property tables along the member axis, whereas systems-engineering tools such as NREL's WISDEM [[10]](#wisdem) represent the tower as a tapered cylindrical shell with closed-form sectional properties, analysed through the external frame finite-element code Frame3DD [[11]](#frame3dd). In these cases, the longitudinal variation is bound to a specific geometry, solver, or workflow rather than expressed as an independent, reusable sectional field.
 
-Existing frameworks for the analysis of non-prismatic members can be grouped into three categories. First, sectional analysis tools such as VABS, BECAS, and `sectionproperties` [[3]](#secprop) compute the properties of individual cross-sections with high accuracy, while the longitudinal variation of the member is handled externally. Second, structural solvers such as Opensees [[6]](#opensees), ABAQUS [[7]](#abaqus) , and ANSYS [[8]](#ansys) incorporate non-prismaticity through the adopted finite-element formulation, typically by evaluating sectional properties at nodes, integration points, or user-defined stations. 
-
-
-Third, wind-energy simulation and design workflows embed non-prismaticity in application-specific representations. Aeroelastic codes such as BeamDyn [[9]](#beamdyn)  rely on distributed sectional-property tables along the member axis, whereas systems-engineering tools such as NREL's WISDEM [[10]](#wisdem)  represent the tower as a tapered cylindrical shell with closed-form sectional properties, analysed through the external frame finite-element code Frame3DD [[11]](#frame3dd). In both cases the longitudinal variation is bound to a specific geometry or workflow rather than expressed as an independent, reusable sectional field.
+This absence of a clearly separated sectional-field layer is both a limitation and a motivation. It makes direct tool-to-tool benchmarking difficult, since most existing tools do not provide the same modelling object. At the same time, it identifies the methodological gap addressed by CSF. The contribution of this work is the definition and implementation of a solver-independent continuous sectional-field layer. Unlike station-wise section tables, CSF defines geometry and material participation as evaluable fields along the member axis, so that the same member description can be inspected, sampled, exported, and reused independently of the downstream solver discretization.
 
 
-In existing workflows, the longitudinal variation of sectional properties is usually handled inside section-analysis tools, structural solvers, or application-specific pipelines. It is less commonly exposed as an independent, solver-agnostic modelling layer that can define, sample, export, and reuse sectional-property fields along the member axis.
 
-This absence of a clearly separated sectional-field layer is both a limitation and a motivation. It makes direct tool-to-tool benchmarking difficult, since most existing tools do not provide the same modelling object. At the same time, it identifies the methodological gap addressed by CSF.
-The contribution of this work is the definition and implementation of a solver-independent continuous sectional-field layer. Unlike station-wise section tables, CSF defines geometry and material participation as evaluable fields along the member axis, so that the same member description can be inspected, sampled, exported, and reused independently of the downstream solver discretization.
 
 ---
 
 ## 2. The CSF Section Model
 
+
 ### 2.1 Scope
 
-The formulation targets members whose sectional variation is defined at the level of the evaluated section $S(z)$, rather than directly as prescribed sectional-property distributions. At each longitudinal coordinate, the model defines polygonal geometry, material participation, stiffness degradation, and effective zone contribution as part of the same section object. Sectional properties are then treated as derived quantities extracted from $S(z)$ when inspection, export, validation, or downstream numerical models require them.
+The formulation targets members whose sectional variation is defined at the level of the evaluated section $S(z)$, rather than directly as prescribed sectional-property distributions. At each longitudinal coordinate, the model defines polygonal geometry, material participation, stiffness variation or degradation, and effective zone contribution as part of the same section object. Sectional properties are then treated as derived quantities extracted from $S(z)$ when inspection, export, validation, or downstream numerical models require them.
 
-
-### 2.2 Zone-based continuous formulation
+### 2.2 Zone-based definition of $S(z)$
 
 The cross-section at station $z$ is represented as an ordered set of $n$ polygonal zones:
 
 $$
-S(z) = \{\,\Omega_i(z),\; w_i(z),\; k_i(z)\,\}_{i=1}^{n}
+S(z) = {,\Omega_i(z),; w_i(z),; k_i(z),}_{i=1}^{n}
 $$
 
 where:
 
-- $\Omega_i(z)$ is the polygonal domain of zone $i$ at station $z$;
-- $w_i(z)$ is the axial/bending field of zone $i$ (its participation in axial and bending stiffness);
-- $k_i(z)$ is the shear/torsion field of zone $i$ (its participation in shear and torsion).
+* $\Omega_i(z)$ is the polygonal domain of zone $i$ at station $z$;
+* $w_i(z)$ is the axial/bending field of zone $i$ (its participation in axial and bending stiffness);
+* $k_i(z)$ is the shear/torsion field of zone $i$ (its participation in shear and torsion).
 
 Collectively, $w_i(z)$ and $k_i(z)$ are the participation fields.
 
-For sectional quantities written as weighted integrals over the polygonal subdomains, CSF uses the generic form
+Geometry $\Omega_i(z)$ and the participation fields, $w_i(z)$ and $k_i(z)$, are fully decoupled: each can vary independently of the other.
+
+
+
+### 2.3 Geometric field
+
+In a single CSF interval, the member geometry is represented by two reference sections located at $z_0$ and $z_1$. Each section is decomposed into an arbitrary number of polygonal zones, and each zone is defined by corresponding vertex coordinates at the two stations. The geometric field is then generated by linear interpolation of the corresponding vertices:
+
 
 $$
-P_q(z) = \sum_{i=1}^{n} q_i(z)
-\iint_{\Omega_i(z)} f(x,y)\mathrm{d}A
+\mathbf{v}_{i,k}(z) = \mathbf{v}_{i,k}^{(0)} + \frac{z - z_0}{z_1 - z_0}
+\bigl(\mathbf{v}_{i,k}^{(1)} - \mathbf{v}_{i,k}^{(0)}\bigr)
 $$
 
-where $q_i(z)$ denotes the participation field associated with the quantity being evaluated. For axial and bending properties, $q_i(z)=w_i(z)$; for torsion-related quantities, $q_i(z)=k_i(z)$ . The function $f(x,y)$ is the integrand associated with the selected sectional property, such as unity for area or $y^2$ for the second moment of area about the $x$-axis.
 
-Geometry $\Omega_i(z)$ and the participation fields , $w_i(z)$ and $k_i(z)$, are fully decoupled: one can vary independently of the other.
+>*Linear interpolation is adopted here as the baseline geometric realization of the CSF interval. It defines the lowest-order admissible continuous mapping between corresponding sectional zones within the framework, while higher-order or alternative interpolation schemes are not excluded by the CSF formulation.*
 
-For polygonal domains, the area integrals are evaluated exactly via Green's theorem [[12]](#polygon_moments) , reducing each double integral to a closed-form sum over the polygon edges. This applies to all integrals whose spatial integrands $f(x,y)$ are polynomial in $x$ and $y$ - area, first moments ($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and product of inertia ($I_{xy}$). The participation fields $w_i(z)$ and $k_i(z)$ depend on $z$ only, not on $x$ and $y$; they factor out of the area integral as station-wise scalars, so the spatial integration remains polynomial at each fixed $z$ and the spatial integrals remain closed-form polygonal quantities.
+
+where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$ respectively, and $k$ indexes the vertices of zone $i$. This produces a continuous, linearly tapered geometry at any intermediate station. A single CSF interval describes the continuous evolution of the section between
+two reference stations, with its own geometry and participation fields. Members
+requiring more than one interpolation interval are represented by a concatenated
+sectional field, implemented as `CSFStack`. This preserves continuity of the
+section-property field at shared stations, while allowing each interval to retain
+its own reference geometry, participation laws, and closed-form polygonal
+evaluation.
+
+
+### 2.4 Participation fields
+
+
+Once the geometric field has defined the continuous evolution of each polygonal zone, CSF assigns to every zone two longitudinal participation fields: $w_i(z)$ for axial and bending participation, and $k_i(z)$ for shear and torsional participation. These fields scale the contribution of the corresponding geometric zone at each station, so that geometry and material participation can vary independently along the member axis.
+
+The functions $w_i(z)$ and $k_i(z)$ are user-defined functions of the longitudinal coordinate, or, for $k_i(z)$, may be obtained from $w_i(z)$ through the isotropic relation described below. Supported forms include polynomials, exponentials, piecewise-linear laws, and discrete lookup tables. The only requirement is that each function be evaluable at any requested station.
 
 The standard separable formulation is recovered as the special case in which the axial/bending field is uniform across zones:
 
@@ -95,8 +110,58 @@ $$
 k_i(z) = \frac{w_i(z)}{2(1+\nu)} ,
 $$
 
-where $\nu$ is the Poisson ratio. This shortcut derives $k_i(z)$ directly from $w_i(z)$ through the isotropic shear-modulus relation; $k_i(z)$ is therefore not an additional independent field. Its magnitude is fixed by the prescribed $w_i(z)$ and by $\nu$, while its axial variation follows that of $w_i(z)$. In the general case, $w_i(z)$ and $k_i(z)$ are assigned independently, allowing the model to represent non-isotropic effective participation, selective stiffness degradation, or hybrid material compositions.
+where $\nu$ is the Poisson ratio. This shortcut derives $k_i(z)$ directly from $w_i(z)$ through the isotropic shear-modulus relation; $k_i(z)$ is therefore not an additional independent field. Its magnitude is fixed by the prescribed $w_i(z)$ and by $\nu$, while its axial variation follows that of $w_i(z)$. In the general case, $w_i(z)$ and $k_i(z)$ are assigned independently, allowing the model to represent non-isotropic effective participation, selective stiffness variation or degradation, or hybrid material compositions.
 
+A simple homogenization-oriented use of these fields is obtained when the participation is defined from longitudinally varying elastic moduli. For example, if zone $i$ is associated with a Young's modulus $E_i(z)$ and a shear modulus $G_i(z)$, one possible choice is
+
+$$
+w_i(z) = \frac{E_i(z)}{E_{\mathrm{ref}}},
+\qquad
+k_i(z) = \frac{G_i(z)}{G_{\mathrm{ref}}},
+$$
+
+where $E_{\mathrm{ref}}$ and $G_{\mathrm{ref}}$ are reference moduli. Through the CSF formulation, this homogenization process is cast as a continuous operation along the member axis. This is only one admissible definition of the participation fields: in the general case, $w_i(z)$ and $k_i(z)$ remain arbitrary user-defined longitudinal field, as long as they can be evaluated at the requested coordinate $z$.
+
+
+### 2.5 Nested zones and effective participation
+
+When polygonal zones overlap - as in nested regions, voids, or embedded inclusions - CSF does not superpose their participation contributions over the same area. Instead, each contained zone replaces the participation contribution of its immediate container over the overlapping region. This represents a local material-replacement assumption: two material contributions are not allowed to occupy the same portion of the section simultaneously. The effective participation of a nested zone is therefore evaluated relative to its direct parent, while non-adjacent ancestors remain unaffected by this replacement.
+
+For a contained zone $i$ with immediate parent $p(i)$, the effective participation fields are
+
+$$
+w_i^{\mathrm{eff}}(z) = w_i(z) - w_{p(i)}(z),
+\qquad
+k_i^{\mathrm{eff}}(z) = k_i(z) - k_{p(i)}(z),
+$$
+
+where $p(i)$ denotes the direct parent zone of $i$. For zones that are not contained in another zone, the effective fields coincide with the assigned fields.
+
+The replacement rule is applied independently to axial/bending participation and shear/torsion participation. Because $w_i(z)$ and $k_i(z)$ are decoupled, a zone may have null participation in one field while remaining active in the other. For example, a region may contribute to axial/bending behavior while contributing no shear/torsional participation, or vice versa. A geometric void corresponds to null participation in both fields.
+
+As a result, CSF defines $w_i(z)$ and $k_i(z)$ as absolute zone-level participation fields, rather than as parent-corrected increments. The effective, non-overlapping contribution used in the section-property integrals is obtained from the containment hierarchy, without requiring the user to pre-build a non-overlapping geometry.
+
+
+This distinction is part of the model: the assigned fields $w_i(z)$ and $k_i(z)$ remain the absolute zone-level quantities, whereas $w_i^{\mathrm{eff}}(z)$ and $k_i^{\mathrm{eff}}(z)$ are the derived quantities entering the section-property integrals.
+
+
+### 2.6 Evaluated section data
+
+At a requested coordinate $z$, CSF evaluates a `Section` object. This object contains the interpolated polygon coordinates, the containment relations, and the assigned and effective participation fields for axial/bending and shear/torsion. The evaluated fields also reflect whether the shear/torsion participation is prescribed independently or obtained from an isotropic coupling. Section-property calculators operate on this station data to compute quantities such as area, centroid coordinates, second moments of area, section moduli, and torsion-related outputs. The reported or exported properties are therefore outputs computed from the evaluated `Section`, not the stored definition of the member.
+
+
+### 2.7 Section-property evaluation
+
+For sectional quantities written as weighted integrals over the polygonal subdomains, CSF uses the generic form
+
+$$
+P_q(z) = \sum_{i=1}^{n} q_i(z)
+\iint_{\Omega_i(z)} f(x,y)\mathrm{d}A
+$$
+
+where $q_i(z)$ denotes the participation field associated with the quantity being evaluated. For axial and bending properties, $q_i(z)=w_i(z)$; for torsion-related quantities, $q_i(z)=k_i(z)$ . The function $f(x,y)$ is the integrand associated with the selected sectional property, such as unity for area or $y^2$ for the second moment of area about the $x$-axis.
+
+For polygonal domains, the area integrals are evaluated exactly via Green's theorem [[12]](#polygon_moments) , reducing each double integral to a closed-form sum over the polygon edges. This applies to all integrals whose spatial integrands $f(x,y)$ are polynomial in $x$ and $y$ - area, first moments ($Q_x$, $Q_y$), second moments ($I_x$, $I_y$), and product of inertia ($I_{xy}$). The participation fields $w_i(z)$ and $k_i(z)$ depend on $z$ only, not on $x$ and $y$; they factor out of the area integral as station-wise scalars, so the spatial integration remains polynomial at each fixed $z$ and the spatial integrals remain closed-form polygonal quantities.
 
 When the participation fields are constant and the vertex coordinates are interpolated linearly between reference stations, the resulting sectional quantities are not arbitrary interpolants. The geometric quantities
 
@@ -139,80 +204,12 @@ CSF does not prescribe or perform axial integration of these functions; it provi
 
 For all quantities that can be expressed as weighted area integrals, the combination of polygonal geometry and participation fields yields a direct closed-form evaluation at any station, without numerical quadrature in the cross-sectional plane.
 
-The Saint-Venant torsional [[13]](#saintven)  constant is a notable exception. Area-integral properties are separable - geometry and participation factor cleanly - but Saint-Venant torsion is not: the torsional constant cannot be reduced to a weighted area integral, because the warping field couples geometry and material across the section. CSF therefore treats torsion separately. For sections tagged as closed cells or open thin walls, CSF evaluates the Saint-Venant torsional constant through dedicated thin-walled contributions: closed cells are evaluated with the Bredt formula [[14]](#bredt) , while open walls are evaluated with the $b,t^3/3$ estimate  [[13]](#walltors) . These contributions are reported separately and then summed into a single exported torsional constant, under the non-interaction hypotheses of the thin-walled approximation. For general solid sections, multi-cell configurations, connected cell–wall systems, or cases requiring higher accuracy, the continuous geometric field can be passed to `sectionproperties` through the CSF bridge [csf_sp](#CSF_SP) for a full warping analysis, while retaining the same continuous geometric and participation-field description.
+The Saint-Venant torsional [[13]](#saintven)  constant is a notable exception. Area-integral properties are separable - geometry and participation factor cleanly - but Saint-Venant torsion is not: the torsional constant cannot be reduced to a weighted area integral, because the warping field couples geometry and material across the section. CSF therefore treats torsion separately. For sections tagged as closed cells or open thin walls, CSF evaluates the Saint-Venant torsional constant through dedicated thin-walled contributions: closed cells are evaluated with the Bredt formula [[14]](#bredt) , while open walls are evaluated with the $b,t^3/3$ estimate  [[13]](#walltors) . These contributions are reported separately and then summed into a single exported torsional constant, under the non-interaction hypotheses of the thin-walled approximation. For general solid sections, multi-cell configurations, connected cell–wall systems, or cases requiring higher accuracy, the continuous geometric field can be passed to `sectionproperties` through the CSF bridge `csf_sp` for a full warping analysis, while retaining the same continuous geometric and participation-field description.
 
 ---
 
-### 2.3 Geometric field
 
-In a single CSF interval, the member igeometry is represented by two reference sections located at $z_0$ and $z_1$. Each section is decomposed into an arbitrary number of polygonal zones, and each zone is defined by corresponding vertex coordinates at the two stations. The geometric field is then generated by linear interpolation of the corresponding vertices:
-
-
-$$
-\mathbf{v}_{i,k}(z) = \mathbf{v}_{i,k}^{(0)} + \frac{z - z_0}{z_1 - z_0}
-\bigl(\mathbf{v}_{i,k}^{(1)} - \mathbf{v}_{i,k}^{(0)}\bigr)
-$$
-
-
->*Linear interpolation is adopted here as the baseline geometric realization of the CSF interval. It defines the lowest-order admissible continuous mapping between corresponding sectional zones within the framework, while higher-order or alternative interpolation schemes are not excluded by the CSF formulation.*
-
-
-where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$ respectively, and $k$ indexes the vertices of zone $i$. This produces a continuous, linearly tapered geometry at any intermediate station. A single CSF interval describes the continuous evolution of the section between
-two reference stations, with its own geometry and participation fields. Members
-requiring more than one interpolation interval are represented by a concatenated
-sectional field, implemented as `CSFStack`. This preserves continuity of the
-section-property field at shared stations, while allowing each interval to retain
-its own reference geometry, participation laws, and closed-form polygonal
-evaluation.
-
-
-### 2.4 Participation fields
-
-
-Once the geometric field has defined the continuous evolution of each polygonal zone, CSF assigns to every zone two longitudinal participation fields: $w_i(z)$ for axial and bending participation, and $k_i(z)$ for shear and torsional participation. These fields scale the contribution of the corresponding geometric zone at each station, so that geometry and material participation can vary independently along the member axis.
-
-The functions $w_i(z)$ and $k_i(z)$ are user-defined functions of the longitudinal coordinate, or, for $k_i(z)$, may be obtained from $w_i(z)$ through the isotropic relation of §2.2. Supported forms include polynomials, exponentials, piecewise-linear laws, and discrete lookup tables. The only requirement is that each function be evaluable at any requested station.
-
-A simple homogenization-oriented use of these fields is obtained when the participation is defined from longitudinally varying elastic moduli. For example, if zone $i$ is associated with a Young's modulus $E_i(z)$ and a shear modulus $G_i(z)$, one possible choice is
-
-$$
-w_i(z) = \frac{E_i(z)}{E_{\mathrm{ref}}},
-\qquad
-k_i(z) = \frac{G_i(z)}{G_{\mathrm{ref}}},
-$$
-
-where $E_{\mathrm{ref}}$ and $G_{\mathrm{ref}}$ are reference moduli. Through the CSF formulation, this homogenization process is cast as a continuous operation along the member axis. This is only one admissible definition of the participation fields: in the general case, $w_i(z)$ and $k_i(z)$ remain arbitrary user-defined station-wise fields, as long as they can be evaluated at the requested coordinate $z$.
-
-
-
-### 2.5 Nested zones and effective participation
-
-When polygonal zones overlap - as in nested regions, voids, or embedded inclusions - CSF does not superpose their participation contributions over the same area. Instead, each contained zone replaces the participation contribution of its immediate container over the overlapping region. This represents a local material-replacement assumption: two material contributions are not allowed to occupy the same portion of the section simultaneously. The effective participation of a nested zone is therefore evaluated relative to its direct parent, while non-adjacent ancestors remain unaffected by this replacement.
-
-For a contained zone $i$ with immediate parent $p(i)$, the effective participation fields are
-
-$$
-w_i^{\mathrm{eff}}(z) = w_i(z) - w_{p(i)}(z),
-\qquad
-k_i^{\mathrm{eff}}(z) = k_i(z) - k_{p(i)}(z),
-$$
-
-where $p(i)$ denotes the direct parent zone of $i$. For zones that are not contained in another zone, the effective fields coincide with the assigned fields.
-
-The replacement rule is applied independently to axial/bending participation and shear/torsion participation. Because $w_i(z)$ and $k_i(z)$ are decoupled, a zone may have null participation in one field while remaining active in the other. For example, a region may contribute to axial/bending behavior while contributing no shear/torsional participation, or vice versa. A geometric void corresponds to null participation in both fields.
-
-As a result, CSF defines $w_i(z)$ and $k_i(z)$ as absolute, physically meaningful zone-level participation fields, rather than as parent-corrected increments. The effective, non-overlapping contribution used in the section-property integrals is obtained from the containment hierarchy, without requiring the user to pre-build a non-overlapping geometry.
-
-This distinction is part of the model: the assigned fields $w_i(z)$ and $k_i(z)$ remain the absolute zone-level quantities, whereas $w_i^{\mathrm{eff}}(z)$ and $k_i^{\mathrm{eff}}(z)$ are the derived quantities entering the section-property integrals.
-
-### 2.6 Evaluated section data
-
-At a requested coordinate $z$, CSF evaluates a `Section` object. This object contains the interpolated polygon coordinates, the containment relations, and the assigned and effective participation fields for axial/bending and shear/torsion. The evaluated fields also reflect whether the shear/torsion participation is prescribed independently or obtained from an isotropic coupling. Section-property calculators operate on this station data to compute quantities such as area, centroid coordinates, second moments of area, section moduli, and torsion-related outputs. The reported or exported properties are therefore outputs computed from the evaluated `Section`, not the stored definition of the member.
-
-
-
-
-### 2.7 Assumptions
+### 2.8 Assumptions
 
 
 - **A - Fixed topology.** Vertex count per zone is constant along $z$; zones whose boundaries appear or disappear are not supported within a single interval.
@@ -336,11 +333,11 @@ The decoupling between the member definition and the numerical operations applie
 
 | Study | Station set | Purpose |
 |---|---|---|
-| Visual inspection | Dense uniform grid (100+ stations) | Section plots, centroid locus |
-| Beam model input | 11 Gauss-Lobatto stations | OpenSees / BeamDyn tables |
+| Visual inspection | Dense uniform grid |  Section plots, centroid locus, and property trend |
+| Beam model input | Gauss-Lobatto stations |Station-wise input tables for beam solvers |
 | Reference comparison | Stations from external dataset | Validation against tabulated data |
 
-In all cases. the continuous geometric field is evaluated on demand; no re-meshing or re-definition of the member is required.
+In all cases, the continuous CSF model is evaluated on demand at the requested stations; no redefinition of the member geometry, participation fields, or model topology is required.
 
 
 
@@ -398,7 +395,34 @@ The example consists of two CSF intervals assembled into a single member. Each s
 
 
 
-The model is therefore hybrid in the participation-field sense. The middle and lower components retain an isotropic coupling between axial/bending and shear/torsion participation through `iso(0.2)` (`iso(ν)`), whereas the upper component is assigned independent axial/bending and shear/torsion participation fields. This construction separates three effects that are usually coupled in a discrete section description: the geometric variation of one part of the section, the axial/bending participation variation of another part, and the independent shear/torsion participation assigned to that same part.
+The model is therefore hybrid in the participation-field sense. All rectangular components in both interpolation intervals have the same constant width $B = 0.30$.
+
+The participation laws for the two CSF intervals are defined in the YAML inputs as follows:
+
+```yaml
+# First interval: 0 <= z <= 5
+weight_laws:
+  - 'upper0,upper0: 1.0 - 0.5*(1.0 - t)'
+
+shear_weight_laws:
+  - 'upper0,upper0: 1.0 - 0.8*(1.0-t)'
+  - 'lower0,lower0: iso(0.2)'
+  - 'middle0,middle0: iso(0.2)'
+
+# Second interval: 5 <= z <= 10
+weight_laws:
+  - 'upper1,upper1: 1.0 - 0.5*t'
+
+shear_weight_laws:
+  - 'upper1,upper1: 1.0 - 0.8*t'
+  - 'lower1,lower1: iso(0.2)'
+  - 'middle1,middle1: iso(0.2)'
+```
+
+The first interval increases the upper-component axial/bending and shear/torsion participation fields, while the second interval applies the reverse variation. The middle and lower components retain isotropic shear/torsion coupling in both intervals through `iso(0.2)`.
+
+
+This construction separates three effects that are usually coupled in a discrete section description: the geometric variation of one part of the section, the axial/bending participation variation of another part, and the independent shear/torsion participation assigned to that same part.
 
 
 
@@ -424,10 +448,10 @@ $$
 while its shear/torsion participation field is
 
 $$
-\kappa_u(t) = 0.2 + 0.8t.
+k_u(t) = 0.2 + 0.8t.
 $$
 
-The lower component has constant width $B = 0.30$ and linearly decreasing height
+The lower component has linearly decreasing height
 
 $$
 h_l(t) = 0.30 - 0.10t.
@@ -518,7 +542,7 @@ $$
 and
 
 $$
-\kappa_u(t) = 1.0 - 0.8t.
+k_u(t) = 1.0 - 0.8t.
 $$
 
 The weighted-area compensation is preserved:
@@ -570,8 +594,8 @@ $$
 5.55 \times 10^{-17}.
 $$
 
-This controlled example therefore verifies the internal consistency of the continuous section-field representation at section level, before any external structural solver is involved. It shows that CSF evaluates geometry, axial/bending participation, and shear/torsion participation as continuous fields, and that the resulting sectional properties follow from their combined distribution within the section.
 
+This controlled example therefore verifies the internal consistency of the continuous section-field representation at section level, before any external structural solver is involved. It shows that CSF evaluates geometry, axial/bending participation, and shear/torsion participation as continuous fields, while the plotted sectional properties reflect the combined distribution of geometry and axial/bending participation within the section.
 
 As an additional station-wise post-processing check, the same rectangular case is also used to report the four interface coordinates `h1`, `h2`, `h3`, and `h4`, together with their axial derivatives `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz`. The centroid coordinate `Cy` is sampled from the CSF section analysis and differentiated along the member axis as `dCy_dz`. These quantities are obtained by sampling the same continuous map $z \mapsto S(z)$.
 
