@@ -1,0 +1,43 @@
+# geometry.yaml
+# Outer rectangle remains constant.
+# Inner rectangle represents a moving hole/void with weight = 0.0.
+
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        outer:
+          weight: 1.0
+          vertices:
+            - [-0.4, -0.4]
+            - [ 0.4, -0.4]
+            - [ 0.4,  0.4]
+            - [-0.4,  0.4]
+
+        hole:
+          weight: 0.0
+          vertices:
+            - [-0.15,  0.10]
+            - [ 0.15,  0.10]
+            - [ 0.15,  0.3666667]
+            - [-0.15,  0.3666667]
+
+    S1:
+      z: 10.0
+      polygons:
+        outer:
+          weight: 1.0
+          vertices:
+            - [-0.4, -0.4]
+            - [ 0.4, -0.4]
+            - [ 0.4,  0.4]
+            - [-0.4,  0.4]
+
+        hole:
+          weight: 0.0
+          vertices:
+            - [-0.15, -0.3666667]
+            - [ 0.15, -0.3666667]
+            - [ 0.15, -0.10]
+            - [-0.15, -0.10]
