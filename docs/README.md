@@ -34,7 +34,7 @@ Compact overview of where CSF sits in the workflow.
 |------|-------------|
 | [programmer-guide](programmer-guide) |This is a practical programmer guide for CSF.. |
 | [Modeling and Sectional Analysis](user_guide.md)  | Python API user guide: constructing `Polygon`, `Section`, and `ContinuousSectionField`, retrieving intermediate sections, and computing section properties along Z. |
-| [CSF API](api.md) | Complete Python API reference: geometry primitives (`Pt`, `Polygon`, `Section`), `ContinuousSectionField` and all its methods, section analysis functions, polygon utilities, torsion routines, volume integration, element stiffness assembly, export functions, and weight law utilities. |
+| [CSF API](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/API) | Complete Python API reference: geometry primitives (`Pt`, `Polygon`, `Section`), `ContinuousSectionField` and all its methods, section analysis functions, polygon utilities, torsion routines, volume integration, element stiffness assembly, export functions, and weight law utilities. |
 
 ## Geometry
 
