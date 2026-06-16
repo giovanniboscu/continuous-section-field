@@ -204,22 +204,27 @@ Any additional polygons or inclusions (e.g. rebars, inner shapes):
 **Example.**
 
 ```yaml
-polygons:
-  - name: outer_shell@cell
-    points: [...]
-    t: 0.30
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        outer@cell:
+          weight: 1.0
+          # Thin-walled slit-cell example.
+          # The outer loop is a 3x3 rectangle written in CCW order.
+          # The repeated point [2.0, 3.0] explicitly closes the outer loop.
+          # After that, the vertex stream continues with the inner loop.
+          # The inner polygon is  kept very close to the outer boundary
+          # so that the section represents a genuinely thin profile.
+          # The inner loop is written in CW order.
+          vertices:
+            # Outer loop (CCW)
+            - [2.0, 3.0]
+            - [2.0, 2.0]
+            - [5.0, 2.0]
+            - [5.0, 5.0]
 
-  - name: inner_void
-    points: [...]
-    w: 0.0
-
-  - name: rebar_row_1
-    points: [...]
-    w: 7.85
-
-  - name: rebar_row_2
-    points: [...]
-    w: 7.85
 ```
 
 Interpretation:
@@ -326,7 +331,7 @@ CSF:
 **Practical checklist.** A `@cell` polygon is valid if all of the following hold:
 
 1. name includes `@cell` (or `@closed`);
-2. name includes `@t=<t>` with `t > 0`;
+2. when an explicit thickness is provided, the name includes `@t=<t>` with `t > 0`;
 3. `vertices` contains **two** loops;
 4. the outer loop encloses the inner loop and has the larger area magnitude.
 
