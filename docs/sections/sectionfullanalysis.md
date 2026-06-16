@@ -477,3 +477,6 @@ The formula implemented in `_roark_torsion_rect` is a compact approximation of S
 | `Wy` | `e.zyy+`, `e.zyy-` | homogenized | CSF computes `Wy = Iy / c_x,max`, i.e. the controlling modulus `min(e.zyy+, e.zyy-)` |
 | `J_sv_cell` / `J_sv_wall` | `e.j` | torsion comparison | `sectionproperties` reports `e.j` on the E-weighted transformed section, whereas CSF evaluates torsion using the shear/torsion participation field, i.e. the G-based weighting. Use this mapping as a comparison of torsional constants, not as an identical material-weighting convention. |
 | `Q_na` | - | CSF-only | first moment of area |
+
+> **Important note on torsion mapping.** The mapping to `sectionproperties` field `e.j` is not a strict equivalence of material weighting conventions. In the native `sectionproperties` composite run, `e.j` is associated with the elastic-modulus weighting used by the SP material definition. In CSF, torsion may instead be governed by the independent shear/torsion participation field, i.e. by a G-based weighting. When axial/bending and shear/torsion participation differ, the CSF-consistent torsional value should be obtained through the dedicated CSF/SP torsion-carrier bridge. See [CSF and sectionproperties torsion carrier bridge](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md#spissue).
+
