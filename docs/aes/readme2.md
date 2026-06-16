@@ -399,7 +399,21 @@ The model is therefore hybrid in the participation-field sense.
 
 All rectangular components in both interpolation intervals have the same constant width $B = 0.30$.
 
-The middle and lower components retain an isotropic coupling between axial/bending and shear/torsion participation through `iso(0.2)` (`iso(ν)`), whereas the upper component is assigned independent axial/bending and shear/torsion participation fields. This construction separates three effects that are usually coupled in a discrete section description: the geometric variation of one part of the section, the axial/bending participation variation of another part, and the independent shear/torsion participation assigned to that same part.
+The middle and lower components retain an isotropic coupling between axial/bending and shear/torsion participation through `iso(0.2)` (`iso(ν)`), whereas the upper component is assigned independent axial/bending and shear/torsion participation fields.
+
+
+```
+  shear_weight_laws:
+    - 'upper0,upper0: 1.0 - 0.8*(1.0-t)'
+    - 'lower0,lower0: iso(0.2)'    
+    - 'middle0,middle0: iso(0.2)'   
+  weight_laws:
+    - 'upper0,upper0: 1.0 - 0.5*(1.0 - t)'
+```
+
+
+
+This construction separates three effects that are usually coupled in a discrete section description: the geometric variation of one part of the section, the axial/bending participation variation of another part, and the independent shear/torsion participation assigned to that same part.
 
 
 
