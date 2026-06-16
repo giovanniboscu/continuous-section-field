@@ -412,6 +412,17 @@ The middle and lower components retain an isotropic coupling between axial/bendi
 ```
 
 
+```
+  shear_weight_laws:
+    - 'upper1,upper1: 1.0 - 0.8*t'      
+    - 'lower1,lower1: iso(0.2)'    
+    - 'middle1,middle1: iso(0.2)'    
+  weight_laws:
+    - 'upper1,upper1: 1.0 - 0.5*t'
+
+```
+
+
 
 This construction separates three effects that are usually coupled in a discrete section description: the geometric variation of one part of the section, the axial/bending participation variation of another part, and the independent shear/torsion participation assigned to that same part.
 
