@@ -475,5 +475,5 @@ The formula implemented in `_roark_torsion_rect` is a compact approximation of S
 | `ry` | `ry` | homogenized-derived | consistent with `sqrt(e.iyy_c / e.a)` |
 | `Wx` | `e.zxx+`, `e.zxx-` | homogenized | CSF computes `Wx = Ix / c_y,max`, i.e. the controlling modulus `min(e.zxx+, e.zxx-)` |
 | `Wy` | `e.zyy+`, `e.zyy-` | homogenized | CSF computes `Wy = Iy / c_x,max`, i.e. the controlling modulus `min(e.zyy+, e.zyy-)` |
-| `J_sv_cell` / `J_sv_wall` | `e.j` | torsion (cell/wall polygon) | [De Saint-Venant Torsional Constant](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md) |
+| `J_sv_cell` / `J_sv_wall` | `e.j` | torsion comparison | `sectionproperties` reports `e.j` on the E-weighted transformed section, whereas CSF evaluates torsion using the shear/torsion participation field, i.e. the G-based weighting. Use this mapping as a comparison of torsional constants, not as an identical material-weighting convention. |
 | `Q_na` | - | CSF-only | first moment of area |
