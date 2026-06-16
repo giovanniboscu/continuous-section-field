@@ -45,7 +45,15 @@ This absence of a clearly separated sectional-field layer is both a limitation a
 
 ### 2.1 Scope
 
-The formulation targets members whose sectional variation is defined at the level of the evaluated section $S(z)$, rather than directly as prescribed sectional-property distributions. At each longitudinal coordinate, the model defines polygonal geometry, material participation, stiffness variation or degradation, and effective zone contribution as part of the same section object. Sectional properties are then treated as derived quantities extracted from $S(z)$ when inspection, export, validation, or downstream numerical models require them.
+
+The CSF section model defines an evaluable sectional field along the member coordinate $z$. Its primary object is the station-dependent section $S(z)$, obtained from reference cross-sectional geometries and longitudinal participation fields.
+
+The scope of the model is the construction, evaluation, and inspection of this section field independently of any specific beam element, solver mesh, or downstream data format. At each requested coordinate, CSF returns the corresponding evaluated section, from which geometric and stiffness-related quantities can be computed when needed.
+
+In this sense, sectional properties are outputs of the evaluated section, not the defining objects of the model.
+
+
+
 
 ### 2.2 Zone-based definition of $S(z)$
 
