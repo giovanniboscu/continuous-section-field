@@ -72,8 +72,6 @@ All coordinates are given in the local cross-section plane.
 
 <img width="996" height="435" alt="Screenshot 2026-06-16 at 10 46 49" src="https://github.com/user-attachments/assets/870226f8-e27f-41ef-8730-47b0387e379d" />
 
-<img width="1177" height="484" alt="Screenshot 2026-06-16 at 10 32 01" src="https://github.com/user-attachments/assets/a188e644-3856-4ce4-8ba6-a41a5dac4ca5" />
-
 ## Input files
 
 The case uses:
