@@ -1,4 +1,5 @@
 # CSF Moving Internal Hole Example
+<img width="456" height="477" alt="Screenshot 2026-06-16 at 10 34 50" src="https://github.com/user-attachments/assets/5db934cc-7fce-46ee-99ac-540d4bea333d" />
 
 ## Purpose
 
@@ -10,7 +11,8 @@ The case is intended to show a sectional geometry variation that is not a global
 
 Member length:
 
-```text
+```text<img width="1177" height="484" alt="Screenshot 2026-06-16 at 10 32 01" src="https://github.com/user-attachments/assets/a188e644-3856-4ce4-8ba6-a41a5dac4ca5" />
+
 z = 0.0 to z = 10.0
 ```
 
@@ -36,6 +38,7 @@ At `S1`, the void is located in the lower part of the section.
 
 The outer rectangle is unchanged between `S0` and `S1`.
 
+
 ## Input files
 
 The case uses:
@@ -50,6 +53,9 @@ actions.yaml
 ```bash
 csf-actions geometry.yaml actions.yaml
 ```
+
+<img width="362" height="473" alt="Screenshot 2026-06-16 at 10 31 35" src="https://github.com/user-attachments/assets/3a8fa70e-cc6b-42d4-b793-84a88e39d15d" />
+
 
 ## Main expected behaviour
 
