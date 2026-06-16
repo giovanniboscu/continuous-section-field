@@ -1,4 +1,30 @@
 # CSF Moving Internal Hole Example
+
+
+## Section dimensions at end stations
+
+All coordinates are given in the local cross-section plane.
+
+### Station `S0` - `z = 0.0`
+
+| Region          | Weight |         x-range |             y-range | Width |    Height |     Area |          Centroid |
+| --------------- | -----: | --------------: | ------------------: | ----: | --------: | -------: | ----------------: |
+| Outer rectangle |    1.0 | `[-0.40, 0.40]` |     `[-0.40, 0.40]` |  0.80 |      0.80 | 0.640000 |      `(0.0, 0.0)` |
+| Internal void   |    0.0 | `[-0.15, 0.15]` | `[0.10, 0.3666667]` |  0.30 | 0.2666667 | 0.080000 | `(0.0, 0.233333)` |
+
+### Station `S1` - `z = 10.0`
+
+| Region          | Weight |         x-range |               y-range | Width |    Height |     Area |           Centroid |
+| --------------- | -----: | --------------: | --------------------: | ----: | --------: | -------: | -----------------: |
+| Outer rectangle |    1.0 | `[-0.40, 0.40]` |       `[-0.40, 0.40]` |  0.80 |      0.80 | 0.640000 |       `(0.0, 0.0)` |
+| Internal void   |    0.0 | `[-0.15, 0.15]` | `[-0.3666667, -0.10]` |  0.30 | 0.2666667 | 0.080000 | `(0.0, -0.233333)` |
+
+The outer rectangle is unchanged between `S0` and `S1`.
+The internal void keeps the same dimensions and translates from the upper part of the section to the lower part.
+
+
+
+
 <img width="456" height="477" alt="Screenshot 2026-06-16 at 10 34 50" src="https://github.com/user-attachments/assets/5db934cc-7fce-46ee-99ac-540d4bea333d" />
 
 <img width="998" height="437" alt="Screenshot 2026-06-16 at 10 34 43" src="https://github.com/user-attachments/assets/e4d9ade9-922d-4eb7-b64a-5e109d192b49" />
