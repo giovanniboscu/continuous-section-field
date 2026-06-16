@@ -33,14 +33,11 @@ A = 0.640000 - 0.060000 = 0.580000
 The outer rectangle is unchanged between `S0` and `S1`.
 The internal void keeps the same dimensions and translates from the upper part of the section to the lower part.
 
+<img width="455" height="403" alt="Screenshot 2026-06-16 at 10 44 49" src="https://github.com/user-attachments/assets/f2b6df10-895e-497e-9a4b-81af48c69e8a" />
+<img width="455" height="401" alt="Screenshot 2026-06-16 at 10 44 37" src="https://github.com/user-attachments/assets/0d9c2abf-1dd8-497c-a6cb-3a3786977632" />
+<img width="455" height="403" alt="Screenshot 2026-06-16 at 10 44 49" src="https://github.com/user-attachments/assets/ebc1cb35-07c5-47c4-9643-141890e54fc6" />
+<img width="316" height="476" alt="Screenshot 2026-06-16 at 10 45 03" src="https://github.com/user-attachments/assets/24dc8ec5-9019-41d8-b9e8-f6a784f0ede7" />
 
-
-
-<img width="456" height="477" alt="Screenshot 2026-06-16 at 10 34 50" src="https://github.com/user-attachments/assets/5db934cc-7fce-46ee-99ac-540d4bea333d" />
-
-<img width="998" height="437" alt="Screenshot 2026-06-16 at 10 34 43" src="https://github.com/user-attachments/assets/e4d9ade9-922d-4eb7-b64a-5e109d192b49" />
-<img width="481" height="479" alt="Screenshot 2026-06-16 at 10 34 37" src="https://github.com/user-attachments/assets/7c078427-6e3c-4068-aaca-73d94c696ccb" />
-<img width="452" height="474" alt="Screenshot 2026-06-16 at 10 34 22" src="https://github.com/user-attachments/assets/b0e1852e-10e6-4cf8-81c7-05793ddab9e1" />
 
 
 ## Purpose
