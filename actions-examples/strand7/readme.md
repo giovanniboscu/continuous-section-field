@@ -1,10 +1,10 @@
 # CSF Moving Internal Hole Example
+<img width="456" height="477" alt="Screenshot 2026-06-16 at 10 34 50" src="https://github.com/user-attachments/assets/5db934cc-7fce-46ee-99ac-540d4bea333d" />
 
 <img width="998" height="437" alt="Screenshot 2026-06-16 at 10 34 43" src="https://github.com/user-attachments/assets/e4d9ade9-922d-4eb7-b64a-5e109d192b49" />
 <img width="481" height="479" alt="Screenshot 2026-06-16 at 10 34 37" src="https://github.com/user-attachments/assets/7c078427-6e3c-4068-aaca-73d94c696ccb" />
 <img width="452" height="474" alt="Screenshot 2026-06-16 at 10 34 22" src="https://github.com/user-attachments/assets/b0e1852e-10e6-4cf8-81c7-05793ddab9e1" />
 
-<img width="456" height="477" alt="Screenshot 2026-06-16 at 10 34 50" src="https://github.com/user-attachments/assets/5db934cc-7fce-46ee-99ac-540d4bea333d" />
 
 ## Purpose
 
