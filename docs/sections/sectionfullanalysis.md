@@ -13,10 +13,8 @@ Whenever a quantity depends on a specific modelling choice or policy defined els
 ---
 
 ## General Notes
+CSF computes section quantities from polygon geometry and scalar participation fields. `weight` defines the axial/bending participation field $w_i$ and is used for `A`, `Cx`, `Cy`, flexural inertias, section moduli, and related weighted sectional properties. `shear_weight` defines the shear/torsion participation field $k_i$ and is used for shear/torsion-related quantities where required. Weights act as scalar multipliers and do not modify polygon geometry; no assumptions are made about profile families.
 
-- All quantities are computed **from geometry and polygon `weight` or `shear_weight`**. `weight` is used for axial and flexural sectional properties; `shear_weight` is used for torsional stiffness. (`weight` corresponds to the axial/bending field $w_i$ and `shear_weight` to the shear/torsion field $\kappa_i$.)
-- No assumptions are made about profile families (I, H, box, tube, etc.).
-- Polygon `weight` is treated as a **scalar field multiplier** (e.g. modular ratio, material factor).
 
 ---
 
