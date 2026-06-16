@@ -334,7 +334,7 @@ The decoupling between the member definition and the numerical operations applie
 | Study | Station set | Purpose |
 |---|---|---|
 | Visual inspection | Dense uniform grid (100+ stations) | Section plots, centroid locus |
-| Beam model input | 11 Gauss-Lobatto stations | OpenSees / BeamDyn tables |
+| Beam model input | Gauss-Lobatto stations |Station-wise input tables for beam solvers |
 | Reference comparison | Stations from external dataset | Validation against tabulated data |
 
 In all cases. the continuous geometric field is evaluated on demand; no re-meshing or re-definition of the member is required.
