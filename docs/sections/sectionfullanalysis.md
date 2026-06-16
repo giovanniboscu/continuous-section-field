@@ -70,9 +70,6 @@ Second moment of area about the centroidal Y-axis.
 
 Product of inertia about centroidal axes.
 
-**Notes**
-- A zero value indicates symmetry with respect to the X or Y axis.
-
 ### 7. Polar Moment (Ip)
 
 **Key:** `Ip`
