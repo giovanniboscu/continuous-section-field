@@ -1,0 +1,30 @@
+### SECTION SELECTED ANALYSIS @ z = 1.0 ###
+A                   : 0.55999999  [Total net cross-sectional area]
+Ip                  : 0.06400681  [Polar second moment (Ix + Iy)]
+### SECTION SELECTED ANALYSIS @ z = 2.0 ###
+A                   : 0.55999999  [Total net cross-sectional area]
+Ip                  : 0.06540059  [Polar second moment (Ix + Iy)]
+### SECTION SELECTED ANALYSIS @ z = 3.0 ###
+A                   : 0.55999999  [Total net cross-sectional area]
+Ip                  : 0.06639615  [Polar second moment (Ix + Iy)]
+### SECTION SELECTED ANALYSIS @ z = 4.0 ###
+A                   : 0.55999999  [Total net cross-sectional area]
+Ip                  : 0.06699348  [Polar second moment (Ix + Iy)]
+### SECTION SELECTED ANALYSIS @ z = 5.0 ###
+A                   : 0.55999999  [Total net cross-sectional area]
+Ip                  : 0.06719259  [Polar second moment (Ix + Iy)]
+### SECTION SELECTED ANALYSIS @ z = 6.0 ###
+A                   : 0.55999999  [Total net cross-sectional area]
+Ip                  : 0.06699348  [Polar second moment (Ix + Iy)]
+### SECTION SELECTED ANALYSIS @ z = 7.0 ###
+A                   : 0.55999999  [Total net cross-sectional area]
+Ip                  : 0.06639615  [Polar second moment (Ix + Iy)]
+### SECTION SELECTED ANALYSIS @ z = 8.0 ###
+A                   : 0.55999999  [Total net cross-sectional area]
+Ip                  : 0.06540059  [Polar second moment (Ix + Iy)]
+### SECTION SELECTED ANALYSIS @ z = 9.0 ###
+A                   : 0.55999999  [Total net cross-sectional area]
+Ip                  : 0.06400681  [Polar second moment (Ix + Iy)]
+### SECTION SELECTED ANALYSIS @ z = 10.0 ###
+A                   : 0.55999999  [Total net cross-sectional area]
+Ip                  : 0.06221481  [Polar second moment (Ix + Iy)]
