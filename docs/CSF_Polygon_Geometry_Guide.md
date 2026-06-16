@@ -1,7 +1,7 @@
 # CSF Polygon Geometry Guide: `@cell` and `@wall`
 
-This guide covers the **geometric construction** of tagged polygons in CSF.  
-It does not describe the underlying torsion calculations - those are documented in the [section analysis reference](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md).
+This guide covers the **geometric construction** of tagged polygons in CSF and the thickness rules used by the `@cell` and `@wall` tags.  
+It does not replace the full section-analysis reference: [section analysis reference](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md).
 
 ---
 
@@ -9,10 +9,10 @@ It does not describe the underlying torsion calculations - those are documented 
 
 CSF supports two torsion-related polygon tags:
 
-| Tag | Section type | Loop structure |
-|-----|-------------|----------------|
-| `@cell` | Closed thin-walled cell | Two closed loops in the same `vertices` list: outer + inner |
-| `@wall` | Open thin-walled strip | One closed loop per polygon |
+| Tag | Section type | Loop structure | Automatic thickness rule |
+|-----|-------------|----------------|--------------------------|
+| `@cell` | Closed thin-walled cell | Two closed loops in the same `vertices` list: outer + inner | `t = 2A/P` |
+| `@wall` | Open thin-walled strip | One closed loop per polygon | `Tglobal = (P - sqrt(P^2 - 16A)) / 4` |
 
 The tag is embedded directly in the polygon name key in the YAML definition.  
 Tags control which calculation path CSF uses. They do not change the section interpolation rules.
@@ -75,13 +75,49 @@ inner loop, CW, closed
 
 ### Thickness: `@t=`
 
-The wall thickness `t` can be:
+For `@cell` polygons, the wall thickness `t` is selected as follows:
 
-- **specified explicitly** in the polygon name: `@t=<value>`; for example, `@cell@t=0.03`
-- **omitted**: CSF estimates it as `t = 2A / P`, where `A` is the cell wall area and `P` is the total perimeter
+```text
+1. explicit thickness from polygon name: @t=<value>
+2. automatic estimate: t = 2A/P
+```
+
+where `A` is the cell wall area and `P` is the total perimeter used by the closed-cell logic.
+
+The explicit form has priority:
+
+```text
+box@cell@t=0.03
+```
 
 If thickness is specified at both `S0` and `S1`, CSF interpolates it linearly along `z`.  
 If specified at only one section, it is treated as constant.
+
+---
+
+### Closed-cell Torsion Contribution
+
+For each closed cell `k`, CSF uses:
+
+$$
+J_{\mathrm{sv,cell},k} = \frac{4 A_{m,k}^2 \, t_k}{b_{m,k}}
+$$
+
+with:
+
+$$
+A_{m,k} = \frac{A_{\mathrm{outer},k} + A_{\mathrm{inner},k}}{2}
+$$
+
+$$
+b_{m,k} = \frac{P_{\mathrm{outer},k} + P_{\mathrm{inner},k}}{2}
+$$
+
+The total closed-cell contribution is:
+
+$$
+J_{\mathrm{sv,cell}} = \sum_{k=1}^{n_c} J_{\mathrm{sv,cell},k}
+$$
 
 ---
 
@@ -165,7 +201,7 @@ CSF:
 
 ---
 
-### Checklist - `@cell` polygon
+### Checklist - `@cell` Polygon
 
 - [ ] Name contains `@cell`
 - [ ] `vertices` contains exactly two closed loops: outer + inner
@@ -205,12 +241,75 @@ The polygon must represent a **thin elongated strip**: its length must be much l
 
 ### Thickness: `@t=`
 
-The wall thickness `t` can be:
+For `@wall` polygons, the wall thickness `t` is selected as follows:
 
-- **specified explicitly** in the polygon name: `@t=<value>`; this is recommended for complex or irregular strips
-- **omitted**: CSF estimates it as `t = 2A / P`
+```text
+1. explicit thickness from polygon name: @t=<value>
+2. automatic global estimate: Tglobal
+```
 
-For non-rectangular or irregular strips, use explicit `@t=`.
+The explicit form has priority:
+
+```text
+web@wall@t=0.02
+```
+
+If `@t=` is present, the automatic estimator is not used.
+
+When no explicit thickness is provided, CSF estimates:
+
+$$
+t_{\mathrm{global}} = \frac{P - \sqrt{P^2 - 16A}}{4}
+$$
+
+where:
+
+- `A` is the polygon area;
+- `P` is the polygon perimeter.
+
+This estimator comes from the rectangular strip relations:
+
+$$
+A = Lt
+$$
+
+$$
+P = 2L + 2t
+$$
+
+solved for the smaller dimension `t`.
+
+For `@wall`, this `Tglobal` estimator is preferred because it recovers the correct thickness for a rectangular strip. 
+
+---
+
+### Open-wall Torsion Contribution
+
+Each thin open wall `i` contributes:
+
+$$
+J_{\mathrm{sv,wall},i} = \frac{b_i t_i^3}{3}
+$$
+
+where `b_i` is the wall length and `t_i` is the wall thickness.
+
+Since the polygon area of a slender wall is:
+
+$$
+A_i = b_i t_i
+$$
+
+CSF can equivalently use the area-based form:
+
+$$
+J_{\mathrm{sv,wall},i} = \frac{A_i t_i^2}{3}
+$$
+
+The total open-wall contribution is:
+
+$$
+J_{\mathrm{sv,wall}} = \sum_{i=1}^{n_w} J_{\mathrm{sv,wall},i}
+$$
 
 ---
 
@@ -323,15 +422,46 @@ CSF:
 
 ---
 
-### Checklist - `@wall` polygon
+### Checklist - `@wall` Polygon
 
 - [ ] Name contains `@wall`
 - [ ] `vertices` defines one single closed loop
 - [ ] Polygon is a thin strip: length ≫ thickness
 - [ ] One polygon per physical strip: web, flange, stiffener, or similar part
-- [ ] Thickness is provided via `@t=` or left for CSF to estimate as `t = 2A/P`
+- [ ] Thickness is provided via `@t=` or left for CSF to estimate as `Tglobal = (P - sqrt(P^2 - 16A)) / 4`
 - [ ] Same polygon count and vertex count at `S0` and `S1`
 - [ ] Section plot verified
+
+---
+
+## Thickness Selection Summary
+
+```text
+@cell@t=<value>  -> use explicit thickness
+@cell            -> use 2A/P
+
+@wall@t=<value>  -> use explicit thickness
+@wall            -> use Tglobal = (P - sqrt(P^2 - 16A)) / 4
+```
+
+---
+
+## Torsion Output Summary
+
+CSF reports the Saint-Venant torsional constant using two separate contributions:
+
+```text
+J_sv_cell = contribution from all @cell polygons
+J_sv_wall = contribution from all @wall polygons
+```
+
+For export-oriented workflows, the scalar torsional constant is obtained by direct summation:
+
+$$
+J_{\mathrm{sv}} = J_{\mathrm{sv,cell}} + J_{\mathrm{sv,wall}}
+$$
+
+This summation is intended for geometries satisfying the non-interaction assumptions between closed cells and open walls.
 
 ---
 
