@@ -448,7 +448,7 @@ $$
 while its shear/torsion participation field is
 
 $$
-\kappa_u(t) = 0.2 + 0.8t.
+k_u(t) = 0.2 + 0.8t.
 $$
 
 The lower component has linearly decreasing height
@@ -542,7 +542,7 @@ $$
 and
 
 $$
-\kappa_u(t) = 1.0 - 0.8t.
+k_u(t) = 1.0 - 0.8t.
 $$
 
 The weighted-area compensation is preserved:
