@@ -451,7 +451,7 @@ $$
 \kappa_u(t) = 0.2 + 0.8t.
 $$
 
-The lower component has constant width $B = 0.30$ and linearly decreasing height
+The lower component has linearly decreasing height
 
 $$
 h_l(t) = 0.30 - 0.10t.
