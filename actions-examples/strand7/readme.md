@@ -5,14 +5,14 @@
 
 All coordinates are given in the local cross-section plane.
 
-### Station `S0` — `z = 0.0`
+### Station `S0` - `z = 0.0`
 
 | Region          | Weight |         x-range |         y-range | Width | Height |     Area |      Centroid |
 | --------------- | -----: | --------------: | --------------: | ----: | -----: | -------: | ------------: |
 | Outer rectangle |    1.0 | `[-0.40, 0.40]` | `[-0.40, 0.40]` |  0.80 |   0.80 | 0.640000 |  `(0.0, 0.0)` |
 | Internal void   |    0.0 | `[-0.15, 0.15]` |  `[0.10, 0.30]` |  0.30 |   0.20 | 0.060000 | `(0.0, 0.20)` |
 
-### Station `S1` — `z = 10.0`
+### Station `S1` - `z = 10.0`
 
 | Region          | Weight |         x-range |          y-range | Width | Height |     Area |       Centroid |
 | --------------- | -----: | --------------: | ---------------: | ----: | -----: | -------: | -------------: |
