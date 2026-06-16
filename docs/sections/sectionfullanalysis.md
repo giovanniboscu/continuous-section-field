@@ -442,7 +442,7 @@ A practical rule for automated pipelines is to reject `J_s_vroark` whenever fide
 
 **Suggested wording for reports.**
 
-> `J_s_vroark_fidelity` quantifies the geometric validity of the equivalent-rectangle mapping used to compute `J_s_vroark`. It reflects how close the actual cross-section is to a filled rectangle, not the absolute error on the torsional constant. Values above 0.9 indicate reliable Roark applicability; values below 0.7 indicate that the section should be treated with a thin-walled or full Saint-Venant method.
+> `J_s_vroark_fidelity` quantifies the geometric validity of the equivalent-rectangle mapping used to compute `J_s_vroark`. It reflects how close the actual cross-section is to a filled rectangle, not the absolute error on the torsional constant. Values above 0.9 indicate reliable Roark applicability; values below 0.8 indicate that the section should be treated with a thin-walled or full Saint-Venant method.
 
 ---
 
