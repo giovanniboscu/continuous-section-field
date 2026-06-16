@@ -1,4 +1,4 @@
-# API Reference — `Continuous_section_field.py`
+# API Reference - `Continuous_section_field.py`
 
 This document covers the APIs defined in this file only; imported symbols from other modules are not documented here as standalone APIs.
 
@@ -294,7 +294,7 @@ Prints an accountant-style area listing for the section at `z`, grouped by absol
 
 | Parameter | Type | Default | Description |
 |---|---|---:|---|
-| `z` | `float` | — | Longitudinal coordinate. |
+| `z` | `float` | - | Longitudinal coordinate. |
 | `w_tol` | `float` | `0.0` | Weight grouping tolerance. |
 | `zero_w_eps` | `float` | `0.0` | Passed to `section_area_by_weight`. |
 | `group_mode` | `str` | `"weight"` | Grouping mode. Only `"weight"` is supported by the code. |
@@ -335,7 +335,7 @@ Computes the area breakdown at `z`, grouped by absolute weight `w_abs`.
 
 | Parameter | Type | Default | Description |
 |---|---|---:|---|
-| `z` | `float` | — | Longitudinal coordinate. |
+| `z` | `float` | - | Longitudinal coordinate. |
 | `w_tol` | `float` | `0.0` | Weight grouping tolerance. |
 | `include_per_polygon` | `bool` | `False` | Includes detailed per-polygon records. |
 | `debug` | `bool` | `False` | Prints diagnostic information. |
