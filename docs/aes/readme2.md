@@ -333,7 +333,7 @@ The decoupling between the member definition and the numerical operations applie
 
 | Study | Station set | Purpose |
 |---|---|---|
-| Visual inspection | Dense uniform grid | Section plots, centroid locus |
+| Visual inspection | Dense uniform grid |  Section plots, centroid locus, and property trend |
 | Beam model input | Gauss-Lobatto stations |Station-wise input tables for beam solvers |
 | Reference comparison | Stations from external dataset | Validation against tabulated data |
 
