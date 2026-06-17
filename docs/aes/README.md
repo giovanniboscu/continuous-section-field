@@ -763,7 +763,7 @@ E(z)=E_0 \max\left[
 1
 -0.10 \exp\left(-\frac{(z-0.33L)^2}{2(0.03L)^2}\right)
 -0.14 \exp\left(-\frac{(z-0.67L)^2}{2(0.03L)^2}\right)
-\right],
+\right]
 $$
 
 where
