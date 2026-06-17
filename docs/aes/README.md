@@ -224,8 +224,7 @@ The Saint-Venant torsional [[13]](#saintven)  constant is a notable exception. A
 - **B - Linear vertex interpolation.** Zone geometry varies linearly between the two reference stations.
 - **C - Polygonal representation.** Curved boundaries must be approximated by polygon discretisation.
 - **D - Straight element axis.** Each CSF interval is defined along a straight local member coordinate. Multiple intervals can be concatenated but curved member axes with continuously varying centerline geometry are not currently represented.
-- **E - Computational and physical admissibility.** CSF evaluates the geometric and participation fields provided by the user. Computational admissibility is therefore distinct from physical admissibility: inputs such as negative participation values, self-intersecting polygonal descriptions, or non-standard material parameters may still produce well-defined algebraic section properties, but their mechanical interpretation depends on the modelling intent.
-
+- **E - Computational and physical admissibility.** CSF evaluates the geometric and participation fields defined by the user and reports the corresponding algebraic sectional quantities. Computational admissibility is therefore distinct from physical admissibility: the mechanical interpretation of the results depends on the modelling assumptions associated with the prescribed geometry and participation fields.
 
 ---
 
