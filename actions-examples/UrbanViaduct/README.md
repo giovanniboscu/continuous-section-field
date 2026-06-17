@@ -6,6 +6,7 @@ This example is provided as a demonstrative case for using `CSFStacked` to assem
 
 The purpose of the example is to show the stacked-field workflow on a tower/pier-type member with changing section geometry and reinforcement layout. It should therefore be read as a CSFStacked usage example, not as a complete bridge-design model or a project-calibrated structural assessment.
 
+---
 
 Parametric geometry model of a **50 m tall reinforced concrete bridge pier**
 for an urban elevated highway in seismic zone 2 (Italy).
