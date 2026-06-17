@@ -23,7 +23,7 @@ import openseespy.opensees as ops
 
 Before running the check example, install OpenSeesPy by following this setup guide:
 
-[OpenSeesPy setup for Win11](./openseespy_win11_setup.md)
+[OpenSeesPy setup for Win11](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/opensees_win11_setup.md)
 
 If you are working inside a virtual environment, activate that environment first and then run the same commands inside it.
 
