@@ -1,4 +1,11 @@
 # Parametric CSF Geometry Guide  
+
+## Scope of this example
+
+This example is provided as a demonstrative case for generating a variable tower-like CSF geometry with internal steel bar rows. Its purpose is to show how a tapered and optionally twisted hollow section can be combined with two longitudinal bar layouts, each represented explicitly in the generated YAML and assigned its own material participation through polygon weights and optional longitudinal laws.
+
+The model should therefore be read as a geometry-generation and CSF-input example, not as a calibrated tower design, a verified reinforcement layout, or a complete structural assessment.
+
 ## Variable rounded-rectangle / circle section with optional twist, two internal rebar rows, and paired weight laws
 
 This guide explains how to use the Python generator `writegeometry_rio_v2.py`
