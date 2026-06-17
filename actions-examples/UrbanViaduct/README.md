@@ -1,5 +1,12 @@
 # Pier50 - Urban Viaduct Bridge Pier
 
+## Scope of this example
+
+This example is provided as a demonstrative case for using `CSFStacked` to assemble a structural member from multiple independently defined CSF fields. The pier is divided into three longitudinal zones — base zone, main shaft, and pier head — so that each segment can have its own geometry while the assembled object is handled through a single stack-level interface.
+
+The purpose of the example is to show the stacked-field workflow on a tower/pier-type member with changing section geometry and reinforcement layout. It should therefore be read as a CSFStacked usage example, not as a complete bridge-design model or a project-calibrated structural assessment.
+
+
 Parametric geometry model of a **50 m tall reinforced concrete bridge pier**
 for an urban elevated highway in seismic zone 2 (Italy).
 
