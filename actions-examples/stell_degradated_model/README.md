@@ -1,5 +1,11 @@
 # CSF Example: Closed-Cell CHS with Independent Weight and Shear-Weight Laws
 
+## Scope of this example
+
+This example is provided only as a demonstrative case for the application of prescribed variation laws in CSF. The CHS geometry, the axial/bending `weight_laws`, and the independent shear/torsional `shear_weight_laws` are intentionally simple, so that the effect of the imposed fields can be inspected directly.
+
+The case should therefore be read as a reproducible workflow example, not as a calibrated structural assessment, site-specific degradation model, or validation of a real degraded member.
+
 CLI command
 ```
 csf-actions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
