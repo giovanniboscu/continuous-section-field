@@ -1,5 +1,5 @@
 # preprint Draft v4.1
-# Continuous section fields along non-uniform and axially graded structural members
+# Decoupling Geometry and Material Participation in Non-Prismatic and Axially Graded Structural Members: The Continuous Section Field Framework
 
 ## Abstract
 
