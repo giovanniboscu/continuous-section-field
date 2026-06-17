@@ -759,7 +759,7 @@ The degraded elastic modulus used in the axially graded NREL case is defined as
 
 $$
 E(z)=E_0 \max\left[
-0.84,,
+0.84,
 1
 -0.10 \exp\left(-\frac{(z-0.33L)^2}{2(0.03L)^2}\right)
 -0.14 \exp\left(-\frac{(z-0.67L)^2}{2(0.03L)^2}\right)
