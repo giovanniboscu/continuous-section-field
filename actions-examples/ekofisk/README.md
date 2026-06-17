@@ -1,4 +1,12 @@
-# Case 3: Ekofisk Jacket Platform - Foundation Piles
+#  Ekofisk Jacket Platform - Foundation Piles
+
+## Scope of this example
+
+This example is provided as a reconstructed benchmark for CSF degradation modeling of offshore tubular foundation piles. It uses public-domain platform context together with explicit engineering assumptions to define a transparent and reproducible input case, including the pile geometry, wall-thickness variation, void representation, and a smooth longitudinal degradation law.
+
+The purpose of the example is to demonstrate how CSF can represent a degradation-oriented benchmark within a single geometry-and-analysis workflow. It should therefore be read as a numerical CSF example, not as a certified Ekofisk as-built model, pile schedule, or forensic reconstruction.
+
+
 ## Reconstructed CSF Benchmark for Degradation Modeling
 create the geometry 
 
