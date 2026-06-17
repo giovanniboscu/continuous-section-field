@@ -1,5 +1,5 @@
 # preprint Draft v4.1
-# Decoupling Geometry and Material Participation in Non-Prismatic Members: A Continuous Section Field Framework
+# Continuous Section Field for Non-Prismatic Members with Decoupled Geometry and Material Participation
 
 
 ## Abstract
