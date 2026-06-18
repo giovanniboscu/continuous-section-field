@@ -77,8 +77,8 @@ Each cross-section is not represented as two independent polygons, but as a sing
 
 The script generates two YAML models:
 
-* `NREL-5-MW.yaml` — baseline tower model, with the original stiffness distribution;
-* `NREL-5-MW-degr.yaml` — degraded tower model, with the same geometry and a longitudinal stiffness-reduction law.
+* `NREL-5-MW.yaml` - baseline tower model, with the original stiffness distribution;
+* `NREL-5-MW-degr.yaml` - degraded tower model, with the same geometry and a longitudinal stiffness-reduction law.
 
 The two files define the same tower geometry. Their difference is limited to the stiffness weighting law assigned through `weight_laws` (participation fields).
 
