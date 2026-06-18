@@ -1308,7 +1308,12 @@ class ContinuousSectionField:
         self.shear_weight_laws_default: Optional[str] = None   
         self.shear_weight_laws: Optional[Dict[int, str]] = None
         self._validate_inputs()
-         
+  
+    @property
+    def L(self) -> float:
+        """Return the absolute longitudinal length of the CSF segment."""
+        return abs(float(self.z1) - float(self.z0))      
+          
     def _strip_model_tags(name: str) -> str:
         """
         Remove everything starting from @cell or @wall (case-insensitive).
