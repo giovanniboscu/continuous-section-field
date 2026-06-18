@@ -181,8 +181,7 @@ def scenario_interpretation(scenario: str) -> str:
         return (
             "This case validates the CSF-OpenSees coupling on a smooth, "
             "undegraded reference configuration. The response converges rapidly, "
-            "showing that a small number of beam elements is sufficient when the "
-            "sectional stiffness variation is regular."
+            "and coarse meshes already give small errors for this configuration."
         )
 
     if scenario == "NREL-5-MW-degr":
@@ -265,8 +264,13 @@ def write_markdown(rows: List[TipRow], output_file: Path, title: str) -> None:
 
     lines.append("## Input files")
     lines.append("")
-    lines.append("- Analytical reference: `analytical_reference.txt`.")
-    lines.append("- OpenSees tip response: `openseeslab_tip_response.csv`.")
+
+    for scenario in grouped:
+        scenario_dir = Path(f"openseeslab_output_{scenario}")
+        lines.append(f"- `{scenario}`:")
+        lines.append(f"  - Analytical reference: `{scenario_dir / 'analytical_reference.txt'}`.")
+        lines.append(f"  - OpenSees tip response: `{scenario_dir / 'openseeslab_tip_response.csv'}`.")
+
     lines.append("")
 
     output_file.write_text("\n".join(lines), encoding="utf-8")
