@@ -71,6 +71,10 @@ The geometric parameters used to generate the two boundary sections are:
 | Inner radius        |    `R_i = 2.9649` |   `R_i = 1.9103` |
 | Inner diameter      |    `D_i = 5.9298` |   `D_i = 3.8206` |
 
+> **Geometry note.**
+> The outer diameters are taken directly from NREL/TP-500-38060, Section 6. Only the wall thickness is scaled: the original values reported for the tower, 0.027 m at the base and 0.019 m at the top, are increased by 30%, giving 0.0351 m and 0.0247 m, respectively. The outer radii are computed as $R = D/2$, the inner radii as $R_i = R - t$, and the inner diameters as $D_i = 2R_i$.
+
+
 
 Each cross-section is not represented as two independent polygons, but as a single @cell polygonal path: one ordered point list describes the outer contour together with the inner void contour, using opposite orientations to define the annular closed cell.
 
