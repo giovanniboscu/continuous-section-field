@@ -49,15 +49,14 @@ class TipRow:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build the published CSF/OpenSees validation comparison.")
-    parser.add_argument("--gauss-points", type=int, default=2, help="Gauss points used by the OpenSees output directories.")
     return parser.parse_args()
 
 
-def scenario_files(name: str, gauss_points: int) -> ScenarioFiles:
+def scenario_files(name: str) -> ScenarioFiles:
     return ScenarioFiles(
         name=name,
         reference_file=Path(f"baseline_output_{name}") / "analytical_reference.txt",
-        tip_response_file=Path(f"openseeslab_output_{name}_gauss{gauss_points}") / "openseeslab_tip_response.csv",
+        tip_response_file=Path(f"openseeslab_output_{name}") / "openseeslab_tip_response.csv",
     )
 
 
@@ -240,7 +239,7 @@ def write_markdown(rows: List[TipRow], files_by_scenario: Dict[str, ScenarioFile
 def main() -> None:
     args = parse_args()
 
-    files_by_scenario = {name: scenario_files(name, args.gauss_points) for name in DEFAULT_SCENARIOS}
+    files_by_scenario = {name: scenario_files(name) for name in DEFAULT_SCENARIOS}
     rows: List[TipRow] = []
 
     for name in DEFAULT_SCENARIOS:

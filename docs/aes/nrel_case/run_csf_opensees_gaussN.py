@@ -1,20 +1,30 @@
 """
 CSF / OpenSeesPy tip-response validation
-=======================================================
+========================================
 
-This script computes the OpenSees tip response used in the published CSF
-validation comparison. It is intentionally case-specific and keeps only the
-quantities used by the validation report:
+This script computes the OpenSees tip response used in the CSF validation
+comparison.
 
-    CSF field
+The relevant modelling chain is intentionally kept single-source:
+
+    CSF YAML input
+        -> CSFReader
+        -> ContinuousSectionField
+        -> section_field.section(z)
+        -> section_full_analysis(section)
         -> sampled section records
         -> OpenSees beam model
         -> tip-response CSV/report/plots
 
+No geometric quantity used in the printed summary or in the OpenSees model is
+reconstructed directly from raw YAML polygons or vertices. The YAML file is read
+only by CSFReader; after that point, section data come from the evaluated CSF
+section and from section_full_analysis().
+
 Run example
 -----------
 
-    python run_csf_opensees_gaussN_public.py NREL-5-MW.yaml --gauss-points 2
+    python run_csf_opensees_gaussN_public_csf_only.py NREL-5-MW.yaml --gauss-points 2
 """
 
 from __future__ import annotations
@@ -23,13 +33,13 @@ import argparse
 import csv
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-import yaml
 
 from csf import ContinuousSectionField, section_full_analysis
+from csf.visualizer import Visualizer
 from csf.io.csf_issues import CSFIssues
 from csf.io.csf_reader import CSFReader
 
@@ -44,15 +54,15 @@ ELEMENT_COUNTS: Tuple[int, ...] = (4, 6, 8, 12, 16, 24, 32)
 
 # Loads used in the static cantilever case.
 # They define the numerical experiment and are therefore stated as constants.
-FY_TIP = 1.2e6   # Concentrated transverse tip force applied at the reference tip node.
+FY_TIP = 1.2e6   # Concentrated transverse tip force at the reference tip node.
 MX_TIP = 8.0e6   # Concentrated bending moment about global X.
 MZ_TIP = 3.0e6   # Concentrated torsional moment about global Z.
 WY_DIST = 8.0e3  # Uniform distributed load in the OpenSees local transverse direction.
 
 # CSF provides the section quantities already in the stiffness scale selected for
 # this comparison. OpenSees therefore receives unit material scalars in the
-# Elastic section definition. This is a deliberate CSF-to-OpenSees projection,
-# not a claim that the physical material has E = G = 1.
+# Elastic section definition. This is a CSF-to-OpenSees projection convention,
+# not a statement that the physical material has E = G = 1.
 E_OPENSEES_UNIT = 1.0
 G_OPENSEES_UNIT = 1.0
 
@@ -61,7 +71,7 @@ G_OPENSEES_UNIT = 1.0
 # DATA STRUCTURES
 # =====================================================================
 
-@dataclass
+@dataclass(frozen=True)
 class SectionRecord:
     """One CSF-evaluated section mapped to one OpenSees section definition."""
 
@@ -75,13 +85,13 @@ class SectionRecord:
     yc: float
 
 
-@dataclass
+@dataclass(frozen=True)
 class CSFOpenSeesProjection:
-    """Data produced by CSF and consumed by OpenSees.
+    """Data produced by CSF and consumed by one OpenSees model.
 
-    This object is the interface between the CSF model and the OpenSees model.
-    OpenSees does not query the CSF field directly; it only receives sampled
-    section records, station nodes, and integration-rule data.
+    This object is the interface between the CSF model and OpenSees. OpenSees
+    does not query the CSF field directly; it receives sampled section records,
+    station nodes, and integration-rule data.
     """
 
     z_nodes: np.ndarray
@@ -92,7 +102,7 @@ class CSFOpenSeesProjection:
     n_section_calls: int
 
 
-@dataclass
+@dataclass(frozen=True)
 class ModelResult:
     """OpenSees result for one uniform discretization."""
 
@@ -109,11 +119,7 @@ class ModelResult:
 # =====================================================================
 
 def parse_args() -> argparse.Namespace:
-    """Read explicit experiment inputs from the command line.
-
-    The YAML file and the Gauss rule are required inputs. The run command then
-    records the numerical experiment instead of relying on hidden defaults.
-    """
+    """Read explicit experiment inputs from the command line."""
     parser = argparse.ArgumentParser(
         description="Run the CSF/OpenSees tip-response validation model."
     )
@@ -140,51 +146,85 @@ def parse_args() -> argparse.Namespace:
 
 
 # =====================================================================
-# 2. CSF MODEL LOADING AND INPUT SUMMARY
+# 2. CSF MODEL LOADING
 # =====================================================================
 
-def load_yaml_data(path: Path) -> Dict[str, Any]:
-    """Load raw YAML data for the human-readable input summary."""
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+def build_section_field(yaml_file: Path) -> ContinuousSectionField:
+    """Load the CSF member from YAML through the CSF reader.
 
-
-def polygon_radii(vertices: List[List[float]]) -> Tuple[float, float]:
-    """Return minimum and maximum radius from polygon vertices."""
-    radii = [float(np.hypot(float(v[0]), float(v[1]))) for v in vertices]
-
-    if not radii:
-        raise ValueError("Polygon has no vertices.")
-
-    return min(radii), max(radii)
-
-
-def print_csf_opensees_input_summary(yaml_file: Path, gauss_points: int) -> None:
-    """Print the model inputs that control the CSF-to-OpenSees projection.
-
-    This summary is intentionally descriptive. It helps the reviewer connect the
-    YAML input, the CSF section field, and the OpenSees sampling rule.
+    The returned ContinuousSectionField is the authoritative model used by this
+    script. The raw YAML structure is not parsed elsewhere to reconstruct
+    geometric quantities.
     """
-    data = load_yaml_data(yaml_file)
-    csf = data["CSF"]
+    res = CSFReader().read_file(str(yaml_file))
 
-    s0 = csf["sections"]["S0"]
-    s1 = csf["sections"]["S1"]
+    if not res.ok:
+        print(CSFIssues.format_report(res.issues))
+        raise SystemExit(1)
 
-    z0 = float(s0["z"])
-    z1 = float(s1["z"])
-    L = abs(z1 - z0)
+    return res.field
 
-    # The NREL tower benchmark uses one closed-cell polygon at each endpoint
-    # section. This summary is intentionally tied to that controlled case.
-    poly0 = next(iter(s0["polygons"].values()))
-    poly1 = next(iter(s1["polygons"].values()))
 
-    ri0, ro0 = polygon_radii(poly0["vertices"])
-    ri1, ro1 = polygon_radii(poly1["vertices"])
+# =====================================================================
+# 3. CSF SECTION EVALUATION
+# =====================================================================
 
-    weight_laws = csf.get("weight_laws", [])
-    shear_weight_laws = csf.get("shear_weight_laws", [])
+def sample_section_record(
+    section_field: ContinuousSectionField,
+    z: float,
+    tag: int,
+) -> SectionRecord:
+    """Evaluate CSF at one station and create an OpenSees section record.
+
+    This is the only source of section properties used by the model. The
+    function evaluates the CSF section first, then reads the required quantities
+    from section_full_analysis().
+    """
+    sec = section_field.section(float(z))
+    analysis = section_full_analysis(sec)
+
+    return SectionRecord(
+        tag=int(tag),
+        z=float(z),
+        A=float(analysis["A"]),
+        Iz=float(analysis["Ix"]),
+        Iy=float(analysis["Iy"]),
+        J=float(analysis["J_sv_cell"][0]),
+        xc=float(analysis["Cx"]),
+        yc=float(analysis["Cy"]),
+    )
+
+
+def sample_sections(
+    section_field: ContinuousSectionField,
+    z_values: np.ndarray,
+    tag0: int,
+) -> List[SectionRecord]:
+    """Sample all requested CSF sections."""
+    return [
+        sample_section_record(section_field, float(z), int(tag0 + i))
+        for i, z in enumerate(z_values)
+    ]
+
+
+def print_csf_opensees_input_summary(
+    section_field: ContinuousSectionField,
+    yaml_file: Path,
+    gauss_points: int,
+) -> None:
+    """Print the inputs controlling the CSF-to-OpenSees projection.
+
+    The printed section quantities are evaluated from the CSF model itself:
+
+        section_field.section(z) -> section_full_analysis(section)
+
+    No radius, area, inertia, centroid, or torsion quantity is reconstructed
+    directly from raw YAML polygons or vertices.
+    """
+    L = float(section_field.L)
+
+    base = sample_section_record(section_field, z=0.0, tag=0)
+    top = sample_section_record(section_field, z=L, tag=0)
 
     lines: List[str] = []
     lines.append("")
@@ -194,28 +234,23 @@ def print_csf_opensees_input_summary(yaml_file: Path, gauss_points: int) -> None
     lines.append(f"L                          : {L:.12e}")
 
     lines.append("")
-    lines.append("Geometry")
+    lines.append("Endpoint section quantities from CSF")
     lines.append("-" * 78)
-    lines.append(f"R_OUTER_BASE               : {ro0:.12e}")
-    lines.append(f"R_OUTER_TOP                : {ro1:.12e}")
-    lines.append(f"R_INNER_BASE               : {ri0:.12e}")
-    lines.append(f"R_INNER_TOP                : {ri1:.12e}")
-
-    lines.append("")
-    lines.append("Weight laws")
-    lines.append("-" * 78)
-    if weight_laws:
-        lines.extend(str(law) for law in weight_laws)
-    else:
-        lines.append("<none>")
-
-    lines.append("")
-    lines.append("Shear-weight laws")
-    lines.append("-" * 78)
-    if shear_weight_laws:
-        lines.extend(str(law) for law in shear_weight_laws)
-    else:
-        lines.append("<none>")
+    lines.append("Source                     : section_full_analysis(section_field.section(z))")
+    lines.append(f"BASE z                     : {base.z:.12e}")
+    lines.append(f"TOP z                      : {top.z:.12e}")
+    lines.append(f"A_BASE                     : {base.A:.12e}")
+    lines.append(f"A_TOP                      : {top.A:.12e}")
+    lines.append(f"Cx_BASE                    : {base.xc:.12e}")
+    lines.append(f"Cx_TOP                     : {top.xc:.12e}")
+    lines.append(f"Cy_BASE                    : {base.yc:.12e}")
+    lines.append(f"Cy_TOP                     : {top.yc:.12e}")
+    lines.append(f"Ix_BASE                    : {base.Iz:.12e}")
+    lines.append(f"Ix_TOP                     : {top.Iz:.12e}")
+    lines.append(f"Iy_BASE                    : {base.Iy:.12e}")
+    lines.append(f"Iy_TOP                     : {top.Iy:.12e}")
+    lines.append(f"J_sv_cell_BASE             : {base.J:.12e}")
+    lines.append(f"J_sv_cell_TOP              : {top.J:.12e}")
 
     lines.append("")
     lines.append("CSF to OpenSees projection")
@@ -229,23 +264,8 @@ def print_csf_opensees_input_summary(yaml_file: Path, gauss_points: int) -> None
     print("\n".join(lines))
 
 
-def build_section_field(yaml_file: Path) -> ContinuousSectionField:
-    """Load the CSF member from YAML.
-
-    The loaded object is the authoritative CSF model. Its public length property
-    `L` is used later instead of reconstructing the length externally.
-    """
-    res = CSFReader().read_file(str(yaml_file))
-
-    if not res.ok:
-        print(CSFIssues.format_report(res.issues))
-        raise SystemExit(1)
-
-    return res.field
-
-
 # =====================================================================
-# 3. CSF SAMPLING AND PROJECTION DATA
+# 4. CSF SAMPLING AND PROJECTION DATA
 # =====================================================================
 
 def make_uniform_station_nodes(L: float, n_elems: int) -> np.ndarray:
@@ -253,7 +273,7 @@ def make_uniform_station_nodes(L: float, n_elems: int) -> np.ndarray:
     if n_elems < 1:
         raise ValueError(f"n_elems must be >= 1. Got: {n_elems}.")
 
-    return np.linspace(0.0, float(L), n_elems + 1)
+    return np.linspace(0.0, float(L), int(n_elems) + 1)
 
 
 def gauss_points_on_station_mesh(
@@ -265,7 +285,7 @@ def gauss_points_on_station_mesh(
     Physical station nodes are not changed by the integration rule. Gauss points
     are internal element sampling stations used to build element stiffness.
     """
-    xi_raw, w_raw = np.polynomial.legendre.leggauss(n_gauss_points)
+    xi_raw, w_raw = np.polynomial.legendre.leggauss(int(n_gauss_points))
     gauss_xi = 0.5 * (xi_raw + 1.0)
     gauss_w = 0.5 * w_raw
 
@@ -278,37 +298,6 @@ def gauss_points_on_station_mesh(
     return np.asarray(z_gauss, dtype=float), gauss_xi, gauss_w
 
 
-def sample_section_record(section_field: ContinuousSectionField, z: float, tag: int) -> SectionRecord:
-
-    """Evaluate CSF at one station and create an OpenSees section record.
-
-    The analysis keys are used directly. This is intentional: the script knows
-    the CSF API and does not probe alternative names as if the model were an
-    unknown external object.
-    """
-    sec = section_field.section(float(z))
-    analysis = section_full_analysis(sec)
-
-    A = float(analysis["A"])
-    Iz = float(analysis["Ix"])
-    Iy = float(analysis["Iy"])
-
-    # For this single closed-cell polygon case, CSF returns J_sv_cell as
-    # (J_sv_cell, t), where t is the cell wall thickness used by the torsion
-    # calculation. OpenSees Elastic section requires only the torsional constant J.
-    J = float(analysis["J_sv_cell"][0])
-
-    xc = float(analysis["Cx"])
-    yc = float(analysis["Cy"])
-
-    return SectionRecord(tag=tag, z=float(z), A=A, Iz=Iz, Iy=Iy, J=J, xc=xc, yc=yc)
-
-
-def sample_sections(section_field: ContinuousSectionField, z_values: np.ndarray, tag0: int) -> List[SectionRecord]:
-    """Sample all requested CSF sections."""
-    return [sample_section_record(section_field, float(z), tag0 + i) for i, z in enumerate(z_values)]
-
-
 def build_csf_opensees_projection(
     section_field: ContinuousSectionField,
     n_elems: int,
@@ -316,18 +305,21 @@ def build_csf_opensees_projection(
 ) -> CSFOpenSeesProjection:
     """Build the complete CSF data package consumed by one OpenSees model.
 
-    This function is the end of the CSF side of the workflow. It samples the
-    continuous section field at physical station nodes and at Gauss integration
-    points, then returns plain records for OpenSees to consume.
+    The function samples the continuous CSF section field at physical station
+    nodes and at Gauss integration points, then returns plain records for
+    OpenSees to consume.
     """
     L = float(section_field.L)
-    z_nodes = make_uniform_station_nodes(L, n_elems)
-    z_gauss, gauss_xi, gauss_w = gauss_points_on_station_mesh(z_nodes, n_gauss_points)
+    z_nodes = make_uniform_station_nodes(L, int(n_elems))
+    z_gauss, gauss_xi, gauss_w = gauss_points_on_station_mesh(
+        z_nodes,
+        int(n_gauss_points),
+    )
 
     # Node sections define the centroidal axis geometry.
     node_sections = sample_sections(section_field, z_nodes, tag0=100000)
 
-    # Integration sections define the element stiffness through OpenSees
+    # Integration sections define element stiffness through OpenSees
     # UserDefined beamIntegration.
     integration_sections = sample_sections(section_field, z_gauss, tag0=1)
 
@@ -344,15 +336,17 @@ def build_csf_opensees_projection(
 
 
 # =====================================================================
-# 4. OPENSEES MODEL BUILDING AND SOLUTION
+# 5. OPENSEES MODEL BUILDING AND SOLUTION
 # =====================================================================
 
-def build_local_basis(axis_e3: np.ndarray, vecxz: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def build_local_basis(
+    axis_e3: np.ndarray,
+    vecxz: np.ndarray,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Build a right-handed local basis from the member axis and reference vector.
 
-    The local basis is used to place centroidal nodes from CSF centroid offsets.
-    The same reference direction also makes the OpenSees transverse load
-    orientation explicit.
+    The local basis places centroidal nodes from CSF centroid offsets. The same
+    reference direction also fixes the OpenSees transverse load orientation.
     """
     e3 = axis_e3 / np.linalg.norm(axis_e3)
 
@@ -400,16 +394,15 @@ def create_reference_and_centroid_nodes(
     node_sections: List[SectionRecord],
     e1: np.ndarray,
     e2: np.ndarray,
-) -> Tuple[List[int], List[int], List[np.ndarray]]:
+) -> Tuple[List[int], List[int]]:
     """Create reference-axis nodes, centroidal nodes, and rigid offsets.
 
     Loads and boundary conditions are applied on the reference axis. Beam
-    elements are placed on the centroidal axis. The rigid links make this choice
-    explicit instead of silently merging the two axes.
+    elements are placed on the centroidal axis. Rigid links make this modelling
+    choice explicit instead of silently merging the two axes.
     """
     ref_nodes: List[int] = []
     cen_nodes: List[int] = []
-    cen_xyzs: List[np.ndarray] = []
 
     for i, sec in enumerate(node_sections):
         ref_tag = 1 + i
@@ -421,14 +414,13 @@ def create_reference_and_centroid_nodes(
         ops.node(ref_tag, float(ref_xyz[0]), float(ref_xyz[1]), float(ref_xyz[2]))
         ops.node(cen_tag, float(cen_xyz[0]), float(cen_xyz[1]), float(cen_xyz[2]))
 
-        # Rigid kinematic offset from reference axis to centroidal axis.
+        # Rigid kinematic offset from the reference axis to the centroidal axis.
         ops.rigidLink("beam", ref_tag, cen_tag)
 
         ref_nodes.append(ref_tag)
         cen_nodes.append(cen_tag)
-        cen_xyzs.append(cen_xyz)
 
-    return ref_nodes, cen_nodes, cen_xyzs
+    return ref_nodes, cen_nodes
 
 
 def create_force_beam_column_elements(
@@ -446,11 +438,14 @@ def create_force_beam_column_elements(
         ele_tag = i + 1
         int_tag = 20000 + i
 
-        sec_tags = [int(projection.integration_sections[n_ip * i + k].tag) for k in range(n_ip)]
+        sec_tags = [
+            int(projection.integration_sections[n_ip * i + k].tag)
+            for k in range(n_ip)
+        ]
 
         # UserDefined integration receives section tags, normalized locations,
-        # and weights. This is the precise OpenSees mechanism used to project
-        # the continuous CSF section field into element stiffness.
+        # and weights. This is the OpenSees mechanism used to project the
+        # continuous CSF section field into element stiffness.
         ops.beamIntegration(
             "UserDefined",
             int_tag,
@@ -460,14 +455,26 @@ def create_force_beam_column_elements(
             *[float(w) for w in projection.gauss_w],
         )
 
-        ops.element("forceBeamColumn", ele_tag, cen_nodes[i], cen_nodes[i + 1], transf_tag, int_tag)
+        ops.element(
+            "forceBeamColumn",
+            ele_tag,
+            cen_nodes[i],
+            cen_nodes[i + 1],
+            transf_tag,
+            int_tag,
+        )
 
         ele_tags.append(ele_tag)
 
     return ele_tags
 
 
-def solve_static_case(ops, base_ref_node: int, tip_ref_node: int, ele_tags: List[int]) -> Tuple[float, float]:
+def solve_static_case(
+    ops,
+    base_ref_node: int,
+    tip_ref_node: int,
+    ele_tags: List[int],
+) -> Tuple[float, float]:
     """Apply the controlled static case and return the tip response."""
     ops.fix(int(base_ref_node), 1, 1, 1, 1, 1, 1)
 
@@ -488,7 +495,7 @@ def solve_static_case(ops, base_ref_node: int, tip_ref_node: int, ele_tags: List
 
     # OpenSees beamUniform loads are element-local loads. WY_DIST is therefore
     # intentionally interpreted in the local transverse direction defined by the
-    # geometric transformation, not as an automatically global-Y load.
+    # geometric transformation.
     for ele_tag in ele_tags:
         ops.eleLoad(
             "-ele",
@@ -500,7 +507,7 @@ def solve_static_case(ops, base_ref_node: int, tip_ref_node: int, ele_tags: List
             0.0,
         )
 
-    # Linear transformation and static analysis are used because the laboratory
+    # Linear transformation and static analysis are used because the validation
     # checks linear elastic section projection, not P-Delta effects, buckling, or
     # large-displacement kinematics.
     ops.constraints("Transformation")
@@ -532,8 +539,8 @@ def run_opensees_model(
     """
     try:
         import openseespy.opensees as ops
-    except Exception as e:
-        raise RuntimeError("openseespy is not available. Install openseespy.") from e
+    except Exception as exc:
+        raise RuntimeError("openseespy is not available. Install openseespy.") from exc
 
     n_elems = int(len(projection.z_nodes) - 1)
     L = float(projection.z_nodes[-1] - projection.z_nodes[0])
@@ -553,7 +560,7 @@ def run_opensees_model(
 
     define_opensees_sections(ops, projection.integration_sections)
 
-    ref_nodes, cen_nodes, cen_xyzs = create_reference_and_centroid_nodes(
+    ref_nodes, cen_nodes = create_reference_and_centroid_nodes(
         ops,
         projection.node_sections,
         e1,
@@ -568,6 +575,7 @@ def run_opensees_model(
     )
 
     uy_tip, rz_tip = solve_static_case(ops, ref_nodes[0], ref_nodes[-1], ele_tags)
+
     print(
         f"[RUN] {label:<24} | "
         f"CSF_section_calls={projection.n_section_calls:d} | "
@@ -586,7 +594,7 @@ def run_opensees_model(
 
 
 # =====================================================================
-# 5. OUTPUTS: CSV, MARKDOWN, TIP-RESPONSE PLOTS
+# 7. OUTPUTS: CSV, MARKDOWN, TIP-RESPONSE PLOTS
 # =====================================================================
 
 def write_tip_response_csv(output_dir: Path, results: List[ModelResult]) -> Path:
@@ -596,7 +604,14 @@ def write_tip_response_csv(output_dir: Path, results: List[ModelResult]) -> Path
 
     with open(csv_file, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["model_id", "model_label", "n_elems", "n_section_calls", "Uy_tip", "Rz_tip"])
+        writer.writerow([
+            "model_id",
+            "model_label",
+            "n_elems",
+            "n_section_calls",
+            "Uy_tip",
+            "Rz_tip",
+        ])
 
         for result in results:
             writer.writerow([
@@ -611,7 +626,12 @@ def write_tip_response_csv(output_dir: Path, results: List[ModelResult]) -> Path
     return csv_file
 
 
-def write_markdown_report(output_dir: Path, results: List[ModelResult], yaml_file: Path, gauss_points: int) -> Path:
+def write_markdown_report(
+    output_dir: Path,
+    results: List[ModelResult],
+    yaml_file: Path,
+    gauss_points: int,
+) -> Path:
     """Write a compact report with inputs, modelling choices, and tip responses."""
     report_file = output_dir / "openseeslab_report.md"
 
@@ -624,11 +644,14 @@ def write_markdown_report(output_dir: Path, results: List[ModelResult], yaml_fil
         f.write(f"- Element counts: `{ELEMENT_COUNTS}`\n\n")
 
         f.write("## Modelling choices encoded in the script\n\n")
-        f.write("- CSF section records are built before the OpenSees model is created.\n")
+        f.write("- The YAML input is loaded only through `CSFReader`.\n")
+        f.write("- Section quantities are obtained from `section_full_analysis(section_field.section(z))`.\n")
+        f.write("- No geometric quantity is reconstructed directly from raw YAML vertices.\n")
+        f.write("- The 3D volume plot is generated from `Visualizer(section_field)`.\n")
         f.write("- CSF section properties are passed to OpenSees with unit E and G scalars.\n")
         f.write("- `J_sv_cell` is used as the torsional constant for the closed-cell tower case.\n")
         f.write("- Beam stiffness is sampled at Gauss integration points through UserDefined beamIntegration.\n")
-        f.write("- The beam line follows the CSF centroidal axis; rigid links connect reference nodes to centroidal nodes.\n")
+        f.write("- The beam line follows the CSF centroidal axis; rigid links connect reference nodes to centroidal nodes.\n\n")
 
         f.write("## Loads\n\n")
         f.write(f"- FY_tip = {FY_TIP:.6e}\n")
@@ -649,6 +672,7 @@ def write_markdown_report(output_dir: Path, results: List[ModelResult], yaml_fil
 
         f.write("\n## Output files\n\n")
         f.write("- `openseeslab_tip_response.csv`\n")
+        f.write("- `plot_csf_volume_3d.png`\n")
         f.write("- `plot_tip_displacement_convergence.png`\n")
         f.write("- `plot_tip_torsional_rotation_convergence.png`\n")
 
@@ -688,59 +712,67 @@ def plot_tip_torsional_rotation(output_dir: Path, results: List[ModelResult]) ->
 
 
 # =====================================================================
-# 6. WORKFLOW
+# 8. COMMAND-LINE WORKFLOW
 # =====================================================================
 
-def run_lab(yaml_file: Path, gauss_points: int) -> Tuple[List[ModelResult], Path, Path]:
-    """Run the CSF/OpenSees tip-response validation."""
-    output_dir = Path(f"openseeslab_output_{yaml_file.stem}_gauss{gauss_points}")
+def main() -> None:
+    """Run the complete validation workflow.
+
+    The reviewer-facing execution order is intentionally explicit here. Helper
+    functions above do one operation each; this function shows the actual script
+    sequence from command-line input to final files.
+    """
+    # 1. Read command-line inputs.
+    args = parse_args()
+    yaml_file = args.yaml
+    gauss_points = args.gauss_points
+
+    # 2. Create the output directory from the YAML file stem.
+    output_dir = Path(f"openseeslab_output_{yaml_file.stem}")
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # 3. Load the CSF model once. All section quantities below come from this
+    #    object, not from direct YAML reconstruction.
     section_field = build_section_field(yaml_file)
-    print_csf_opensees_input_summary(yaml_file, gauss_points)
+    print_csf_opensees_input_summary(section_field, yaml_file, gauss_points)
 
+    # 4. Run one OpenSees model for each requested uniform mesh density.
     results: List[ModelResult] = []
     for n_elems in ELEMENT_COUNTS:
         model_id = f"uniform_{n_elems}"
         label = f"uniform {n_elems}"
 
+        # Sample CSF at the element nodes and Gauss integration stations.
         projection = build_csf_opensees_projection(
             section_field=section_field,
             n_elems=n_elems,
             n_gauss_points=gauss_points,
         )
 
-        results.append(
-            run_opensees_model(
-                projection=projection,
-                model_id=model_id,
-                label=label,
-            )
+        # Build and solve the corresponding OpenSees model.
+        result = run_opensees_model(
+            projection=projection,
+            model_id=model_id,
+            label=label,
         )
+        results.append(result)
 
+    # 5. Write numerical outputs.
     tip_csv_file = write_tip_response_csv(output_dir, results)
     report_file = write_markdown_report(output_dir, results, yaml_file, gauss_points)
 
-    # Only tip-response convergence plots are produced.
+    # 6. Write plots. These calls save figures and close them; they do not block
+    #    the command-line workflow.
     plot_tip_displacement(output_dir, results)
     plot_tip_torsional_rotation(output_dir, results)
+    #volume_plot_file = plot_csf_volume_3d(output_dir, section_field)
 
-    return results, tip_csv_file, report_file
-
-
-def main() -> None:
-    """Entry point."""
-    args = parse_args()
-    results, tip_csv_file, report_file = run_lab(
-        yaml_file=args.yaml,
-        gauss_points=args.gauss_points,
-    )
-
+    # 7. Print final file locations and the same compact response table.
     print("\nDONE")
     print(f"Tip response CSV: {tip_csv_file}")
     print(f"Markdown report: {report_file}")
-    print("Tip displacement plot: plot_tip_displacement_convergence.png")
-    print("Tip torsional rotation plot: plot_tip_torsional_rotation_convergence.png")
+    print(f"Tip displacement plot: {output_dir / 'plot_tip_displacement_convergence.png'}")
+    print(f"Tip torsional rotation plot: {output_dir / 'plot_tip_torsional_rotation_convergence.png'}")
 
     print("\nTip response:")
     print(f"{'Model':<18} | {'CSF calls':>9} | {'Uy_tip':>13} | {'Rz_tip [rad]':>13}")
@@ -753,7 +785,15 @@ def main() -> None:
             f"{result.uy_tip:13.6e} | "
             f"{result.rz_tip:13.6e}"
         )
-
-
+    vis = Visualizer(section_field)
+    vis.plot_volume_3d(
+        show_end_sections=True,
+        line_percent=15.0,
+        seed="w",
+        title="Ruled volume (vertex-connection lines)",
+        ax=None
+    )
+    plt.show()
+    
 if __name__ == "__main__":
     main()
