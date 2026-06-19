@@ -481,7 +481,7 @@ $$
 
 
 <p align="center">
-  <em>Figure 3. Axial/bending participation and shear/torsion participation assigned to the upper component over the two CSFStack intervals.</em>
+  <em>Figure 3. axial/bending participation and shear/torsion participation assigned to the upper component over the two CSFStack intervals.</em>
 </p>
 
 <p align="center">
@@ -490,7 +490,7 @@ $$
 
 
 <p align="center">
-  <em>Figure 4. Shear/torsion and Axial/bending participation fields over the first CSF interval.</em>
+  <em>Figure 4. Shear/torsion and axial/bending participation fields over the first CSF interval.</em>
 </p>
 
 <p align="center">
