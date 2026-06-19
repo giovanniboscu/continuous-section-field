@@ -425,7 +425,7 @@ Comparing this directory with the baseline output directory allows the influence
 
 The independent continuous baseline for the degraded case is executed with:
 
-```bash id="lj4wxh"
+```bash
 python3 run_analytical_reference.py degraded
 ```
 
