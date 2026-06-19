@@ -935,7 +935,7 @@ Giovanni Boscu: Conceptualization, Methodology, Software, Validation, Formal ana
 
 
 
-# References
+## References
 
 [1] <a id="vabs"></a> VABS, *Variational Asymptotic Beam Sectional Analysis*. https://analyswift.com/vabs-cross-sectional-analysis-tool-for-composite-beams/
 
