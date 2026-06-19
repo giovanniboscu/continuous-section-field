@@ -3,7 +3,6 @@
 
 
 ## Abstract
-f
 Continuous Section Field (CSF) is a computational modelling framework that represents geometric description and material distribution along a member axis as an evaluable continuous sectional field, which can be inspected, sampled, and exported as station-wise data for downstream workflows.
 
 The central idea is to treat the cross-section as a field defined along the longitudinal coordinate, rather than as an isolated section or a fixed table of sectional properties. Geometry is specified at reference stations and obtained by interpolating corresponding polygon vertices, producing continuous intermediate cross-sections. Material participation fields prescribe the longitudinal variation of material contribution independently of geometry. The independence of geometry and participation is foundational: each can vary along the axis without requiring the other to follow the same law. At any requested station, CSF evaluates the corresponding section by combining the interpolated geometry with the participation fields; sectional quantities such as area, centroid, second moments of area, principal inertias, and section moduli are then obtained as derived outputs.
