@@ -527,9 +527,10 @@ This validation case provides a compact and reproducible workflow for checking t
 * baseline, non-degraded tower;
 * tower with longitudinal stiffness degradation.
 
-Both scenarios are defined by YAML inputs that describe the tower as a continuous sectional field. The CSF-OpenSees model and the independent continuous baseline read the same YAML data but follow different computational paths.
+Both scenarios are defined as CSF YAML inputs for the OpenSees workflow, where the tower is represented as a continuous sectional field. The independent continuous baseline does not read those YAML files; it uses the same tower data and material cases defined directly in the reference script.
 
-The agreement between the two paths confirms the consistency of the YAML-defined sectional model, its sampled representation in OpenSees, and the independent continuous-reference calculation.
+The agreement between the two paths confirms the consistency between the sampled CSF-OpenSees representation and the independent continuous-reference calculation.
 
 The degraded case further shows why the continuous-field representation is useful: local stiffness variations are part of the same model definition, while the solver discretization only controls how that field is sampled.
+
 
