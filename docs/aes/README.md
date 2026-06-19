@@ -673,7 +673,7 @@ The tower is modelled as a linearly tapered circular steel tube of height $L = 8
 Two configurations are analysed:
 
 * **Case A**: the undegraded tower, representing a smooth reference case in which the sectional stiffness varies regularly along the height because of the geometric taper.
-* **Case B**: the same tower geometry with a localized longitudinal stiffness degradation introduced through the participation field $w_i(z)$, leaving the polygonal geometry unchanged.
+* ****: the same tower geometry with a localized longitudinal stiffness degradation introduced through the participation field $w_i(z)$, leaving the polygonal geometry unchanged.
 
 The two configurations are defined by separate YAML inputs with identical geometry. The difference between them is limited to the longitudinal stiffness weighting law.
 #### Validation design
@@ -716,7 +716,7 @@ $$
 {\text{reference}} .
 $$
 
-The NREL tower provides a convenient application case because its circular annular sections admit closed-form sectional expressions. The CSF representation is more general: the same continuous-field workflow can be applied to arbitrary polygonal geometries and participation fields, even when closed-form sectional laws are not available.
+The NREL tower provides a convenient application ecause its circular annular sections admit closed-form sectional expressions. The CSF representation is more general: the same continuous-field workflow can be applied to arbitrary polygonal geometries and participation fields, even when closed-form sectional laws are not available.
 
 
 #### Loading configuration
@@ -744,9 +744,9 @@ The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated
 
 <!-- LATEX_PAGEBREAK -->
 
-#### Case B - degraded tower
+####  - degraded tower
 
-In this specific case, $E_0 = 210 \mathrm{GPa}$, corresponding to the undegraded value assigned in the YAML model as `weight: 210e9`. The degraded `weight_laws` entry overrides this constant value and defines the station-wise elastic modulus field $E(z)$ directly.
+In this specific case, $E_0 = 210\,\mathrm{GPa}$, corresponding to the undegraded value assigned in the YAML model as `weight: 210e9`. The degraded `weight_laws` entry overrides this constant value and defines the station-wise elastic modulus field $E(z)$ directly.
 
 
 $$
