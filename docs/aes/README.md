@@ -371,7 +371,7 @@ $$
 
 where $S(z)$ denotes the cross-section obtained by querying the CSF field at the longitudinal coordinate $z$.
 
-For any quantity $q$ derived from the evaluated section, the station-wise values are obtained as
+For any quantity $q$ derived from the evaluated section, the value at station $z_i$ is obtained as
 
 $$
 q_i = q(S(z_i)).
