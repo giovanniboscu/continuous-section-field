@@ -337,7 +337,7 @@ CSF_ACTIONS:
 ```
 Here, $I_1$ and $I_2$ denote the principal second moments of area.
 
-The same geometry file can therefore support visual inspection, property evaluation, solver export, or validation-oriented sampling. In each case the continuous field, is evaluated at the stations requested by the action file.
+The same geometry file can therefore support visual inspection, property evaluation, solver export, or validation-oriented sampling. In each case the continuous field is evaluated at the stations requested by the action file.
 
 ### 3.3 Reusability across studies
 
@@ -489,12 +489,10 @@ $$
 
 
 <p align="center">
-  <em>  </em>
   <em>Figure 4. Shear/torsion  and Axial/bending participation fields over the first CSF interval.</em>
 </p>
 
 <p align="center">
-  <em>  </em>
   <img width="1169" height="553" alt="participation fields over the first CSF interval" src="figures/fig4.png" />
 </p>
 
@@ -844,7 +842,7 @@ Table 1 reports the relative errors in tip displacement $U_y$ and torsional rota
 
 
 > **Note:** At high discretization levels the relative error in $U_y$ stabilises 
-> near zero ($\sim 10^{-4}\,\%$). This residual level reflects the numerical precision of the independently selected reference integration grid, which in this case corresponds to 2001 points, rather than a modelling inconsistency..
+> near zero ($\sim 10^{-4}\,\%$). This residual level reflects the numerical precision of the independently selected reference integration grid, which in this case corresponds to 2001 points, rather than a modelling inconsistency.
 
 The continuous stiffness representation enables this convergence study. With a fixed discrete table - as in the original NREL reference definition, which provides properties at 11 stations [[16]](#NREL_5MW) - the structural description is tied to the prescribed stations and its axial resolution cannot be refined independently. The continuous representation decouples the member definition from its numerical discretization: the same YAML input can be sampled at any resolution, allowing convergence toward the reference solution to be progressively assessed.
 
