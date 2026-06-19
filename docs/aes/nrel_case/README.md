@@ -367,7 +367,7 @@ The purpose of this step is to provide a second response calculation that is ind
 The independent continuous baseline is executed with:
 
 ```bash
-python3 run_analytical_reference.py NREL-5-MW.yaml
+python3 run_analytical_reference.py constant
 ```
 
 The script does not use a fixed reference discretization prescribed a priori. Instead, it selects the reference integration grid from a prescribed admissible tolerance:
@@ -420,7 +420,7 @@ Comparing this directory with the baseline output directory allows the influence
 ### 7. Run the independent continuous baseline for the degraded case
 
 ```bash
-python3 run_analytical_reference.py NREL-5-MW-degr.yaml
+python3 run_analytical_reference.py degraded
 ```
 
 This computes the independent continuous-reference response for the degraded YAML input.
