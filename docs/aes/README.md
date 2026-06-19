@@ -64,10 +64,6 @@ $$
 S(z)=\left((\Omega_i(z)\,w_i(z),\,k_i(z))\right)_{i=1}^{n}.
 $$
 
-$$
-S(z)=\left((\Omega_i(z),\,w_i(z),\,k_i(z))\right)_{i=1}^{n}.
-$$
-
 where:
 
 * $\Omega_i(z)$ is the polygonal domain of zone $i$ at station $z$;
