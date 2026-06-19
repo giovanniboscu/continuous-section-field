@@ -760,7 +760,7 @@ $$
 where
 
 $$
-E_0 = 210\mathrm{GPa}.
+E_0 = 210 \mathrm{GPa}.
 $$
 
 
