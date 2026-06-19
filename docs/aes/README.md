@@ -214,7 +214,7 @@ CSF does not prescribe or perform axial integration of these functions; it provi
 
 For all quantities that can be expressed as weighted area integrals, the combination of polygonal geometry and participation fields yields a direct closed-form evaluation at any station, without numerical quadrature in the cross-sectional plane.
 
-The Saint-Venant torsional [[13]](#saintven)  constant is a notable exception. Area-integral properties are separable - geometry and participation factor cleanly - but Saint-Venant torsion is not: the torsional constant cannot be reduced to a weighted area integral, because the warping field couples geometry and material across the section. CSF therefore treats torsion separately. For sections tagged as closed cells or open thin walls, CSF evaluates the Saint-Venant torsional constant through dedicated thin-walled contributions: closed cells are evaluated with the Bredt formula [[14]](#bredt) , while open walls are evaluated with the $b,t^3/3$ estimate  [[13]](#walltors) . These contributions are reported separately and then summed into a single exported torsional constant, under the non-interaction hypotheses of the thin-walled approximation. For general solid sections, multi-cell configurations, connected cell–wall systems, or cases requiring higher accuracy, the continuous geometric field can be passed to `sectionproperties` through the CSF bridge `csf_sp` for a full warping analysis, while retaining the same continuous geometric and participation-field description.
+The Saint-Venant torsional [[13]](#saintven) constant is a notable exception. Area-integral properties are separable - geometry and participation factor cleanly - but Saint-Venant torsion is not: the torsional constant cannot be reduced to a weighted area integral, because the warping field couples geometry and material across the section. CSF therefore treats torsion separately. For sections tagged as closed cells or open thin walls, CSF evaluates the Saint-Venant torsional constant through dedicated thin-walled contributions: closed cells are evaluated with the Bredt formula [[14]](#bredt) , while open walls are evaluated with the $b,t^3/3$ estimate  [[13]](#walltors) . These contributions are reported separately and then summed into a single exported torsional constant, under the non-interaction hypotheses of the thin-walled approximation. For general solid sections, multi-cell configurations, connected cell–wall systems, or cases requiring higher accuracy, the continuous geometric field can be passed to `sectionproperties` through the CSF bridge `csf_sp` for a full warping analysis, while retaining the same continuous geometric and participation-field description.
 
 ---
 
@@ -473,7 +473,7 @@ $$
 The middle and lower components retain unit axial/bending participation. For shear/torsion, their participation is generated from the isotropic shortcut `iso(0.2)`, giving
 
 $$
-\kappa_m =  0.41666667.
+\kappa_m = 0.41666667.
 $$
 
 
@@ -481,7 +481,7 @@ $$
 
 
 <p align="center">
-  <em>Figure 3. Axial/bending participation and shear/torsion participation assigned to the upper component over the two CSFStack intervals. </em>
+  <em>Figure 3. Axial/bending participation and shear/torsion participation assigned to the upper component over the two CSFStack intervals.</em>
 </p>
 
 <p align="center">
@@ -585,7 +585,7 @@ stack.section_full_analysis(z, junction_side="left")
 ```
 
 <p align="center">
-  <em>Figure 7. Section-property profiles of the assembled CSFStack member evaluated along the global coordinate z</em>
+  <em>Figure 7. Section-property profiles of the assembled CSFStack member evaluated along the global coordinate z.</em>
   <img width="794" height="692" alt="image" src="figures/fig7.png" />
 
 </p>
