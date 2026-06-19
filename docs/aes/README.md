@@ -374,7 +374,7 @@ where $S(z)$ denotes the cross-section obtained by querying the CSF field at the
 For any quantity $q$ derived from the evaluated section, the value at station $z_i$ is obtained as
 
 $$
-q_i = q(S(z_i)).
+q(z_i) = q(S(z_i)).
 $$
 
 Axial derivatives can then be estimated by repeated evaluations of the same CSF field at neighbouring stations. For example, at an interior station,
