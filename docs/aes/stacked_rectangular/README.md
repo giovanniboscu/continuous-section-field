@@ -742,7 +742,21 @@ Only `h1` varies in this example, because the lower boundary of the lower compon
 
 
 
-```Closed-form verification table
+```
+Closed-form verification table
+Closed-form laws used for the reference path
+- stacked_0.yaml, z in [0, 5], t = z/5
+  upper weight       : w_u(t)  = 1.0 - 0.5*(1.0 - t)
+  upper shear weight : sw_u(t) = 1.0 - 0.8*(1.0 - t)
+  lower height       : h_l(t)  = 0.30 - 0.10*t
+- stacked_1.yaml, z in [5, 10], t = (z - 5)/5
+  upper weight       : w_u(t)  = 1.0 - 0.5*t
+  upper shear weight : sw_u(t) = 1.0 - 0.8*t
+  lower height       : h_l(t)  = 0.20 + 0.10*t
+- lower shear_weight: iso(0.2)
+- middle shear_weight: iso(0.2)
+
+Closed-form verification table
      z seg     t   w_u  sw_u |  A_csf  A_ref |    Cy_csf    Cy_ref |     Ix_csf     Ix_ref |     Iy_csf     Iy_ref |     err_%     err_Cy
 -----------------------------------------------------------------------------------------------------------------------------------------
   0.00   0  0.00  0.50  0.20 |   0.21   0.21 | -0.242857 -0.242857 |  0.0096143  0.0096143 |  0.0015750  0.0015750 |  1.38e-14   2.78e-17
@@ -784,6 +798,11 @@ finite-difference step dz = 1.0e-04
 h1..h4 and h1_prime..h4_prime are extracted from CSF Section evaluations
 junction z = 5.0 is excluded from this derivative table
 
+Wrote csf out/lobatto_station_export_0.csv
+Wrote csf out/lobatto_station_export_3.csv
+Wrote csf out/lobatto_station_export_5.csv
+Wrote csf out/lobatto_station_export_7.csv
+Wrote csf out/lobatto_station_export_10.csv
 
 ```
 
