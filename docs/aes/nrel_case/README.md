@@ -133,7 +133,7 @@ The tower is loaded with the same transverse tip force, tip bending moment, tors
 
 This is the baseline path:
 
-```text id="rn6sez"
+```
 fixed tower data → continuous section-property functions → tolerance-based integration grid → analytical integration → tip response
 ```
 
@@ -437,13 +437,13 @@ The reference grid is selected from the prescribed admissible tolerance, `REF_TO
 
 The outputs are written to:
 
-```text id="c9cmxf"
+```
 baseline_output_NREL-5-MW-degr
 ```
 
 This directory contains the independent continuous-reference report:
 
-```text id="yqyc4d"
+```
 analytical_reference.txt
 ```
 
