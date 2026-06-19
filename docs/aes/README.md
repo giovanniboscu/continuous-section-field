@@ -721,7 +721,8 @@ The NREL tower provides a convenient application case because its circular annul
 
 #### Loading configuration
 
-Both NREL configurations are analysed under the same loading conditions. The tower is modelled as a cantilever beam, fixed at the base and loaded at the free end. The structural model includes a transverse tip force, an axial tip force, a tip bending moment, a torsional tip moment, and a uniform transverse distributed load. These loads are not intended to reproduce a full aeroelastic operating condition; they define a controlled static test case for comparing the CSF-to-OpenSees response with the independent continuous baseline.
+Both NREL configurations are analysed under the same loading conditions. The tower is modelled as a cantilever beam, fixed at the base and loaded at the free end. The structural model includes a transverse tip force, an axial tip force, a tip bending moment, a torsional tip moment, and a uniform transverse distributed load. These loads are not intended to reproduce a full aeroelastic operating condition; they define a controlled static test case for comparing the CSF-to-OpenSees response with the independent continuous baseline. The axial tip force is included in the OpenSees model for completeness of the structural loading configuration. It is not included in the independent continuous baseline because the reported verification quantities are limited to the transverse tip displacement $U_y$ and the torsional tip rotation $R_z$, and no axial shortening or second-order geometric effects are evaluated in this comparison.
+
 
 The same loading definition is used for the undegraded and degraded towers. Therefore, differences between the two configurations are caused by the sectional stiffness field, not by changes in loading or geometry. 
 
