@@ -60,7 +60,7 @@ In this sense, sectional properties are outputs of the evaluated section, not th
 The cross-section at station $z$ is represented as an ordered collection of $n$ polygonal zones:
 
 $$
-S(z)=\left((\Omega_i(z)\,w_i(z),\,k_i(z))\right)_{i=1}^{n}.
+S(z)=\left((\Omega_i(z),\,w_i(z),\,k_i(z))\right)_{i=1}^{n}.
 $$
 
 where:
