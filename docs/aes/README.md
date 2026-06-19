@@ -746,7 +746,7 @@ The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated
 #### Case B - degraded tower
 
 
-The degraded elastic modulus used in the axially graded NREL case is defined as
+In the YAML model, the undegraded value `weight: 210000000000` provides the base axial/bending participation value. In the degraded case, the assigned `weight_law` overrides this constant value and defines the station-wise field $E(z)$ directly.
 
 $$
 E(z)=E_0 \max\left[
