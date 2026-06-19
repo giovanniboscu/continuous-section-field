@@ -314,7 +314,8 @@ CSF:
 
 ```
 
-The example separates three ingredients that are often collapsed into a single tabulated section-property description: the reference geometry, the longitudinal geometric interpolation, and the material participation law. Changing the station set or the requested output does not require modifying this member definition.
+The example separates three ingredients that are often collapsed into a single tabulated section-property description: the reference geometry, the longitudinal geometric interpolation, and the material participation law, with `weight` defining the constant axial/bending participation assigned to a zone and entries in `weight_laws` and `shear_weight_laws`, when provided, overriding the corresponding participation assignment to define the station-wise axial/bending and shear/torsion fields used during evaluation; changing the station set or the requested output does not require modifying this member definition.
+
 
 The action file specifies how the continuous model is sampled and which quantities are extracted. It does not redefine the member geometry.
 
