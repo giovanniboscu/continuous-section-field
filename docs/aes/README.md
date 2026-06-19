@@ -818,7 +818,7 @@ This behaviour illustrates the main motivation for a continuous sectional repres
 
 
 <p align="center">
-   <em>Figure 12. Continuous variation of selected sectional properties for the degraded NREL tower case. The localized reductions arise from the prescribed axial/bending participation field and are reflected in the sectional area and bending stiffness distributions.</em>
+   <em>Figure 12. Continuous variation of selected sectional properties for the degraded NREL tower case. The localized reductions arise from the prescribed axial/bending participation field and are reflected in the weighted axial and bending stiffness distributions.</em>
   <img width="992" height="654" alt="image" src="figures/fig12.png" />
 </p>
 
