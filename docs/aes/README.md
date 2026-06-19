@@ -366,8 +366,9 @@ Interoperability with `sectionproperties` is provided through two companion modu
 The continuous nature of CSF makes it possible to evaluate section-derived quantities at arbitrary member coordinates. The primary object is the evaluated section
 
 $$
-S : [0,L] \to \mathcal{S}, \qquad z \mapsto S(z),
+z \in [0,L] \longmapsto S(z)
 $$
+
 
 where $S(z)$ denotes the cross-section obtained by querying the CSF field at the longitudinal coordinate $z$.
 
