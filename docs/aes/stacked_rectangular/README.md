@@ -530,7 +530,7 @@ and assembled into a `CSFStacked` object:
 stack = CSFStacked(eps_z=1e-9)
 
 for file_name in SEGMENT_FILES:
-    stack.append(load_csf_field(file_name
+    stack.append(load_csf_field(file_name))
 ```
 
 
@@ -854,7 +854,7 @@ The station-wise CSV export is included to show what CSF evaluates before the re
 In `run_stacked.py`, the selected export stations are
 
 ```python
-manual_station = [0, 3, 5, 7, 10]
+manual_stations = [0, 3, 5, 7, 10]
 ```
 
 and each station produces a file of the form
