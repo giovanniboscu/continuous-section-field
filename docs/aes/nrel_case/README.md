@@ -360,21 +360,17 @@ This directory contains the structural response reports, numerical outputs, and 
 
 ### 5. Run the independent continuous baseline for the baseline case
 
-After the CSF-OpenSees model has been executed, the same baseline YAML input is processed with an independent continuous-reference procedure.
+After the CSF-OpenSees model has been executed, the independent continuous-reference calculation is run for the baseline tower case.
 
-The purpose of this step is to provide a second response calculation that is independent of the OpenSees beam model. This reference calculation does not use OpenSees and does not call CSF section-sampling APIs. It reads the same YAML input data, reconstructs the geometry and stiffness distributions required for the calculation, and computes the structural response by direct integration.
+The purpose of this step is to provide a second response calculation that is independent of the OpenSees beam model. This reference calculation does not use OpenSees, does not call CSF section-sampling APIs, and does not read any YAML input file. The tower endpoint dimensions, loads, and supported material cases are defined directly inside `run_analytical_reference.py`.
 
-The independent continuous baseline is executed with:
+The independent continuous baseline for the baseline case is executed with:
 
 ```bash
 python3 run_analytical_reference.py constant
 ```
 
-The script does not use a fixed reference discretization prescribed a priori. Instead, it selects the reference integration grid from a prescribed admissible tolerance:
-
-```python
-REF_TOL_PCT = 1.0e-10
-```
+The script does not use a fixed reference discretization prescribed a priori. Instead, it selects the reference integration grid from a prescribed admissible tolerance, `REF_TOL_PCT = 1.0e-10`.
 
 The selected grid is then used to compute the transverse tip displacement and the torsional tip rotation.
 
@@ -386,9 +382,15 @@ The outputs are written to:
 baseline_output_NREL-5-MW
 ```
 
-This directory contains the independent continuous-reference report, the reference-grid convergence table, and the adaptive grid-selection table.
+This directory contains the independent continuous-reference report:
 
-These results are later compared with the CSF-OpenSees outputs to verify that the sampled beam model reproduces the same structural response when driven by the same YAML-defined tower data.
+```text
+analytical_reference.txt
+```
+
+These results are later compared with the CSF-OpenSees outputs to verify that the sampled beam model reproduces the same structural response when evaluated against the corresponding continuous reference calculation.
+
+
 
 ### 6. Run the CSF-OpenSees model for the degraded case
 
@@ -419,34 +421,32 @@ Comparing this directory with the baseline output directory allows the influence
 
 ### 7. Run the independent continuous baseline for the degraded case
 
-```bash
+The independent continuous baseline for the degraded case is executed with:
+
+```bash id="lj4wxh"
 python3 run_analytical_reference.py degraded
 ```
 
-This computes the independent continuous-reference response for the degraded YAML input.
+This computes the continuous-reference response for the degraded tower case. The calculation does not use OpenSees, does not call CSF section-sampling APIs, and does not read any YAML input file. The tower endpoint dimensions, loads, and degraded material law are defined directly inside `run_analytical_reference.py`.
 
-The purpose of this step is the same as in the baseline reference case, but applied to the degraded stiffness field. The calculation does not use OpenSees and does not call CSF section-sampling APIs. It reads the degraded YAML input, reconstructs the geometry and stiffness distributions required for the calculation, and integrates the response through an autonomous continuous-reference procedure.
+The purpose of this step is the same as in the baseline reference case, but applied to the degraded stiffness distribution. The reference calculation uses the same tower geometry and loading assumptions, while the selected material case introduces the prescribed longitudinal stiffness reduction.
 
-The reference grid is selected from the prescribed admissible tolerance:
-
-```python
-REF_TOL_PCT = 1.0e-10
-```
-
-rather than from a fixed number of reference sections.
+The reference grid is selected from the prescribed admissible tolerance, `REF_TOL_PCT = 1.0e-10`, rather than from a fixed number of reference sections.
 
 The outputs are written to:
 
-```text
+```text id="c9cmxf"
 baseline_output_NREL-5-MW-degr
 ```
 
-This directory contains the independent continuous-reference report, the reference-grid convergence table, and the adaptive grid-selection table for the degraded case.
+This directory contains the independent continuous-reference report:
 
-The degraded continuous baseline is used to assess both:
+```text id="yqyc4d"
+analytical_reference.txt
+```
 
-* the interpretation of the degraded stiffness law from the YAML input;
-* the sensitivity of the OpenSees sampling of the continuous CSF field to localized stiffness variation.
+The degraded continuous baseline is used to compare the sampled OpenSees response against a continuous reference calculation for the same degraded stiffness case. It also provides a reference for assessing the sensitivity of the OpenSees sampling of the continuous CSF field to localized stiffness variation.
+
 
 
 ## Expected output organization
@@ -483,15 +483,16 @@ The `baseline_output_*` directories contain the independent continuous-reference
 
 This organization keeps the two validation cases separated and also keeps the two computational paths distinct: the OpenSees sampling of the continuous CSF field and the independent continuous baseline.
 
+
 ## Interpretation of the validation
 
-The validation compares two computational paths applied to the same YAML-defined tower models.
+The validation compares two computational paths applied to the same tower cases.
 
 The first path is the OpenSees sampling of the continuous CSF field. The YAML file defines the continuous sectional field, and OpenSees receives a sampled beam-model representation of that field.
 
-The second path is the independent continuous baseline. It reads the same YAML input, reconstructs the required geometry and stiffness distributions, and computes the response by direct integration without using OpenSees and without calling CSF section-sampling APIs.
+The second path is the independent continuous baseline. It does not read any YAML input file. The required tower geometry and stiffness distributions are defined directly in the reference script, and the response is computed by direct integration without using OpenSees and without calling CSF section-sampling APIs.
 
-The purpose of the comparison is therefore not only to observe convergence with mesh refinement. The main point is to verify that the YAML-defined continuous sectional model can be transferred to a structural solver and compared against an independently reconstructed continuous reference.
+The purpose of the comparison is therefore not only to observe convergence with mesh refinement. The main point is to verify that the CSF-defined continuous sectional model can be transferred to a structural solver and compared against an independent continuous reference.
 
 Two tower configurations are considered:
 
@@ -504,11 +505,11 @@ The degraded case is more demanding. The local stiffness reductions introduce sh
 
 The comparison supports the consistency of:
 
-* the YAML model definition;
+* the CSF model definition;
 * the continuous sectional-property field;
 * the stiffness degradation law;
 * the CSF-OpenSees projection;
-* The comparison supports the consistency between the sampled OpenSees model and the continuous baseline.
+* the consistency between the sampled OpenSees model and the continuous baseline.
 
 The final comparison is reported in:
 
@@ -517,6 +518,7 @@ The final comparison is reported in:
 That document collects the OpenSees tip responses and compares them against the independent continuous baseline for both tower configurations. The reported quantities are the transverse tip displacement `Uy`, the torsional tip rotation `Rz`, the number of OpenSees elements, the number of CSF section evaluations, and the relative errors with respect to the continuous baseline.
 
 The comparison therefore supports the intended validation message: CSF defines a continuous sectional model, while the beam solver receives a sampled representation of that model. The discretization controls how the field is interrogated; it does not define the field itself.
+
 
 ## Summary
 
