@@ -745,7 +745,7 @@ The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated
 
 #### Case B - degraded tower
 
-In this specific case, $E_0 = 210e9$ Pa, corresponding to the undegraded value assigned in the YAML model as weight: 210e9. The degraded `weight_law` overrides this constant value and defines the station-wise elastic modulus field $E(z)$ directly.
+In this specific case, $E_0 = 210e9$ Pa, corresponding to the undegraded value assigned in the YAML model as `weight: 210e9`. The degraded `weight_law` overrides this constant value and defines the station-wise elastic modulus field $E(z)$ directly.
 
 
 $$
