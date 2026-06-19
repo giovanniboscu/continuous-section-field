@@ -1,4 +1,5 @@
 # NREL 5-MW Tower Validation Case
+
 <img width="631" height="547" alt="image" src="https://github.com/user-attachments/assets/2bf9827f-df1d-44ee-9937-bacb486373d8" />
 
 > ### Reproducibility environment
@@ -7,11 +8,12 @@
 >
 > [Reproducibility environment](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/reproducibility_environment.md)
 >
-> The commands in this document must be executed from:he CSF geometry uses the reported base and top diameters, with the 30% wall-thickness increase stated in Section 6: 6.0 m / 0.0351 m at the base and 3.87 m / 0.0247 m at the top. The radius and thickness are linearly tapered along the 87.6 m tower height.
+> The commands in this document must be executed from:
 >
 > ```bash
 > docs/aes/nrel_case
 > ```
+
 
 ## Purpose of this document
 
