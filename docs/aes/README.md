@@ -489,7 +489,7 @@ $$
 
 
 <p align="center">
-  <em>Figure 4. Shear/torsion  and Axial/bending participation fields over the first CSF interval.</em>
+  <em>Figure 4. Shear/torsion and Axial/bending participation fields over the first CSF interval.</em>
 </p>
 
 <p align="center">
@@ -726,7 +726,7 @@ The same loading definition is used for the undegraded and degraded towers. Ther
 
 ## Validation
 
-The NREL case involves two validation levels. First, the sectional properties generated from the CSF model are compared with the tabulated NREL tower data reported in Table 6-1 [[16]](#NREL_5MW) , to verify that the CSF model reproduces the reference distributed properties of the tower. The maximum relative difference is below $0.04%$ over the full tower height, confirming that the model reproduces the original NREL sectional stiffness distribution before the structural-response comparison is performed.
+The NREL case involves two validation levels. First, the sectional properties generated from the CSF model are compared with the tabulated NREL tower data reported in Table 6-1 [[16]](#NREL_5MW), to verify that the CSF model reproduces the reference distributed properties of the tower. The maximum relative difference is below $0.04\%$ over the full tower height, confirming that the model reproduces the original NREL sectional stiffness distribution before the structural-response comparison is performed.
 
 Second, the structural response obtained from the CSF/OpenSees model is compared with an independent analytical reference, constructed from the same geometric and material definitions without using CSF section-sampling APIs or OpenSees.
 
