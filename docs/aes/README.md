@@ -58,10 +58,10 @@ In this sense, sectional properties are outputs of the evaluated section, not th
 
 ### 2.2 Zone-based definition of $S(z)$
 
-The cross-section at station $z$ is represented as an ordered set of $n$ polygonal zones:
+The cross-section at station $z$ is represented as an ordered collection of $n$ polygonal zones:
 
 $$
-S(z) = {,\Omega_i(z),; w_i(z),; k_i(z),}_{i=1}^{n}
+S(z)=\left((\Omega_i(z),\,w_i(z),\,k_i(z))\right)_{i=1}^{n}.
 $$
 
 where:
