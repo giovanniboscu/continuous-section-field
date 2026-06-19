@@ -12,7 +12,7 @@ The script also shows that a CSF evaluation provides more than scalar section pr
 
 Following the role of layer interfaces in non-prismatic beam formulations, as discussed by Balduzzi et al. [[1,2]](#balduzzi), this example uses the stacked rectangular member to show how interface-related quantities can be obtained from CSF evaluations. The calculation is limited to a small operational subset: the extraction of interface coordinates and their axial derivatives from the evaluated CSF geometry. It is intended as an example of how CSF can provide such station-wise inputs, while the complete Balduzzi formulation also involves additional equilibrium, stress-recovery, and constitutive terms.
 
-From this evaluated geometry, the four interface coordinates `h1`, `h2`, `h3`, and `h4` are extracted from the polygon vertices. Their axial derivatives, reported as `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz`, are then computed by evaluating the same CSF field at neighbouring axial stations. The centroid coordinate `Cy` is treated in the same way and reported together with `dCy_dz`.
+From this evaluated geometry, the four interface coordinates `h1`, `h2`, `h3`, and `h4` are extracted from the polygon vertices. Their axial derivatives, reported as `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz`, are then computed by evaluating the same CSF field at neighbouring axial stations. The centroid coordinate is reported as `c=Cy_csf` and differentiated as `dc_dz`.
 
 
 This makes the continuous-field role explicit: CSF supplies the station-wise section object, including geometry and material participation; section properties and interface derivatives are obtained from that evaluated object along the member axis.
@@ -530,7 +530,7 @@ and assembled into a `CSFStacked` object:
 stack = CSFStacked(eps_z=1e-9)
 
 for file_name in SEGMENT_FILES:
-    stack.append(load(file_name))
+    stack.append(load_csf_field(file_name
 ```
 
 
@@ -706,10 +706,10 @@ At each station, the CSF section is evaluated through
 stack.section_full_analysis(z, junction_side="left")
 ```
 
-and compared with the independent analytical solution
+and compared with the independent closed-form reference function
 
 ```python
-reference(z)
+closed_form_reference_properties(z)
 ```
 
 The argument `junction_side="left"` is only relevant when a station lies exactly on an interval boundary. In this example the section field is continuous at $z=5$, therefore evaluating the junction from the left or from the right interval produces identical results.
