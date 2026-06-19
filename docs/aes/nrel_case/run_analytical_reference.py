@@ -8,19 +8,18 @@ OpenSees validation model against an independent continuous calculation.
 
 The script is intentionally case-specific:
 
-1. It reads the endpoint geometry from a CSF YAML file.
-2. It extracts the single YAML weight law only to identify which supported
-   material law is being used.
-3. It does not evaluate arbitrary YAML expressions. Instead, it maps the YAML
-   law to one of two hardcoded Python functions:
-      - constant NREL elastic modulus E = 210e9;
-      - the degraded NREL E(z) law used in the validation case.
-4. It computes two reference responses by direct numerical integration:
+1. The NREL endpoint dimensions are fixed directly in this file.
+2. The only external input is the material-case selector:
+      - constant;
+      - degraded.
+3. No CSF YAML file is read by this analytical reference.
+4. No arbitrary material expression is parsed or evaluated.
+5. The script computes two reference responses by direct numerical integration:
       - Uy: tip displacement contribution from the prescribed bending actions;
       - Rz: torsional rotation from the prescribed tip torque.
 
-This file is therefore not a general CSF post-processor. It is a controlled,
-case-specific baseline generator for the supported NREL validation examples.
+This file is therefore not a CSF post-processor. It is a controlled,
+case-specific baseline generator for the NREL validation examples.
 """
 
 from __future__ import annotations
@@ -29,10 +28,9 @@ import argparse
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Tuple
 
 import numpy as np
-import yaml
 
 
 # Relative tolerance, expressed in percent, used to select a sufficiently fine
@@ -61,36 +59,62 @@ WY_DIST = 8.0e3
 
 
 @dataclass(frozen=True)
+class EndpointDimensions:
+    """Fixed endpoint dimensions for one NREL tower section."""
+
+    label: str
+    z: float
+    outer_diameter_x: float
+    outer_diameter_y: float
+    outer_radius: float
+    wall_thickness: float
+    inner_radius: float
+    inner_diameter: float
+
+
+# Fixed endpoint dimensions used by the analytical reference.
+BASE_SECTION = EndpointDimensions(
+    label="S0",
+    z=0.0,
+    outer_diameter_x=6.0,
+    outer_diameter_y=6.0,
+    outer_radius=3.0,
+    wall_thickness=0.0351,
+    inner_radius=2.9649,
+    inner_diameter=5.9298,
+)
+
+TOP_SECTION = EndpointDimensions(
+    label="S1",
+    z=87.6,
+    outer_diameter_x=3.87,
+    outer_diameter_y=3.87,
+    outer_radius=1.935,
+    wall_thickness=0.0247,
+    inner_radius=1.9103,
+    inner_diameter=3.8206,
+)
+
+
+@dataclass(frozen=True)
 class ProblemData:
-    """Input data needed by the analytical reference calculation.
+    """Input data needed by the analytical reference calculation."""
 
-    The dataclass is frozen to make the extracted problem definition immutable
-    after reading the YAML file.
-    """
-
-    # Source YAML file used to define endpoint geometry and material-law label.
-    yaml_file: Path
-
-    # Axial coordinates of the two endpoint sections read from the YAML file.
-    z0: float
-    z1: float
-
-    # Member length computed from the endpoint coordinates.
-    L: float
-
-    # Inner and outer radii at the base endpoint.
-    ri0: float
-    ro0: float
-
-    # Inner and outer radii at the top endpoint.
-    ri1: float
-    ro1: float
+    # External material-case key selected from the command line.
+    case_key: str
 
     # Human-readable name of the selected material case.
     material_case: str
 
     # Function returning E(z, L) for the selected material case.
     E_fn: Callable[[float, float], float]
+
+    # Fixed endpoint dimensions.
+    base: EndpointDimensions
+    top: EndpointDimensions
+
+    # Member length computed from the fixed endpoint coordinates.
+    L: float
 
 
 @dataclass(frozen=True)
@@ -110,43 +134,12 @@ class ReferenceResult:
     rz_reference: float
 
 
-def parse_args() -> argparse.Namespace:
-    """Read the command-line argument containing the CSF YAML path."""
+@dataclass(frozen=True)
+class MaterialCase:
+    """Supported NREL material case."""
 
-    parser = argparse.ArgumentParser(
-        description="Compute the independent Uy/Rz reference for the supported NREL tower cases."
-    )
-
-    # The script expects exactly one positional input: the YAML file to process.
-    parser.add_argument("yaml", type=Path, help="CSF YAML input file.")
-    return parser.parse_args()
-
-
-def load_yaml(path: Path) -> Dict[str, Any]:
-    """Load a YAML file and return its parsed dictionary representation."""
-
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
-
-
-def polygon_radii(vertices: List[List[float]]) -> Tuple[float, float]:
-    """Return the minimum and maximum radial distance of polygon vertices.
-
-    For this NREL tower case the section is represented by circular/annular
-    endpoint polygons. The smallest vertex radius is used as the inner radius;
-    the largest vertex radius is used as the outer radius.
-    """
-
-    # Convert every vertex coordinate to float and compute its distance from
-    # the origin in the section plane.
-    radii = [math.hypot(float(v[0]), float(v[1])) for v in vertices]
-
-    # A polygon without vertices cannot define a section radius.
-    if not radii:
-        raise ValueError("Polygon has no vertices.")
-
-    # Return inner and outer radii inferred from the endpoint polygon.
-    return min(radii), max(radii)
+    label: str
+    E_fn: Callable[[float, float], float]
 
 
 def nrel_constant_E(z: float, L: float) -> float:
@@ -171,122 +164,78 @@ def nrel_degraded_E(z: float, L: float) -> float:
     )
 
 
-def extract_single_weight_expression(csf: Dict[str, Any]) -> str:
-    """Extract the only supported weight-law expression from the CSF YAML data.
-
-    This reference script supports exactly one weight law. That restriction is
-    deliberate because the analytical baseline is defined only for the NREL
-    cases handled in this file.
-    """
-
-    # Read the YAML list of weight laws. Missing weight_laws is treated as an
-    # empty list, which will fail the explicit length check below.
-    weight_laws = csf.get("weight_laws", [])
-
-    # The reference calculation is case-specific and expects one global law.
-    if len(weight_laws) != 1:
-        raise ValueError(f"Expected exactly one weight law. Found {len(weight_laws)}.")
-
-    # Convert the stored law to string and remove leading/trailing whitespace.
-    raw = str(weight_laws[0]).strip()
-
-    # CSF weight laws may include a label before a colon. The analytical script
-    # only needs the expression after the colon.
-    if ":" in raw:
-        raw = raw.split(":", 1)[1].strip()
-
-    return raw
+MATERIAL_CASES: Dict[str, MaterialCase] = {
+    "constant": MaterialCase(
+        label="NREL constant E = 210e9",
+        E_fn=nrel_constant_E,
+    ),
+    "degraded": MaterialCase(
+        label="NREL degraded E(z)",
+        E_fn=nrel_degraded_E,
+    ),
+}
 
 
-def normalize_expression(expr: str) -> str:
-    """Normalize a material-law expression for simple string matching."""
+def parse_args() -> argparse.Namespace:
+    """Read the material-case selector from the command line."""
 
-    # Lowercase and remove whitespace/newlines so that equivalent formatting in
-    # the YAML file does not prevent recognition of the supported laws.
-    return str(expr).strip().lower().replace(" ", "").replace("\n", "")
+    parser = argparse.ArgumentParser(
+        description="Compute the independent Uy/Rz reference for the supported NREL tower cases."
+    )
 
-
-def select_material_law(weight_expr: str) -> Tuple[str, Callable[[float, float], float]]:
-    """Map the YAML weight expression to one supported hardcoded E(z) law.
-
-    The function intentionally does not evaluate arbitrary expressions. It only
-    recognizes the two validation laws supported by this reference script.
-    """
-
-    expr = normalize_expression(weight_expr)
-
-    # First recognition path: the YAML expression is a numeric constant.
-    try:
-        value = float(expr)
-
-        # Accept values numerically equal to 210e9 within an absolute tolerance
-        # of 1.0 Pa, avoiding false rejection due to harmless formatting.
-        if math.isclose(value, 210.0e9, rel_tol=0.0, abs_tol=1.0):
-            return "NREL constant E = 210e9", nrel_constant_E
-    except ValueError:
-        # If the expression is not a single float, continue with the string-token
-        # recognition path for the degraded law.
-        pass
-
-    # Tokens that identify the nominal modulus scale in the degraded expression.
-    degraded_scale_tokens = ("210000000000", "210e9", "210.0e9", "2.1e11", "2.10e11")
-
-    # Tokens that identify the specific degraded-law shape used by the NREL case.
-    degraded_shape_tokens = ("0.84", "0.10", "0.14", "0.33*l", "0.67*l", "0.03*l", "exp")
-
-    # The degraded law is selected only when one recognized modulus scale and all
-    # expected shape tokens are present in the normalized YAML expression.
-    if any(t in expr for t in degraded_scale_tokens) and all(t in expr for t in degraded_shape_tokens):
-        return "NREL degraded E(z)", nrel_degraded_E
-
-    # Any other material law is outside the scope of this case-specific reference.
-    raise ValueError(f"Unsupported NREL material law: {weight_expr}")
+    # The script expects exactly one positional input: the material case.
+    parser.add_argument(
+        "case",
+        choices=tuple(MATERIAL_CASES.keys()),
+        help="Material case to compute: constant or degraded.",
+    )
+    return parser.parse_args()
 
 
-def read_problem_data(yaml_file: Path) -> ProblemData:
-    """Read the CSF YAML file and assemble the data required by the baseline."""
+def validate_endpoint(section: EndpointDimensions) -> None:
+    """Check that the fixed endpoint dimensions are internally consistent."""
 
-    data = load_yaml(yaml_file)
-    csf = data["CSF"]
+    # The NREL case used here has equal outer diameters in x and y.
+    if not math.isclose(section.outer_diameter_x, section.outer_diameter_y, rel_tol=0.0, abs_tol=1.0e-12):
+        raise ValueError(f"Endpoint {section.label} has unequal outer diameters.")
 
-    # Select the analytical E(z) function corresponding to the YAML weight law.
-    material_case, E_fn = select_material_law(extract_single_weight_expression(csf))
+    # Check the relation between outer diameter and outer radius.
+    if not math.isclose(0.5 * section.outer_diameter_x, section.outer_radius, rel_tol=0.0, abs_tol=1.0e-12):
+        raise ValueError(f"Endpoint {section.label} has inconsistent outer diameter and radius.")
 
-    # This reference expects two endpoint sections named S0 and S1.
-    s0 = csf["sections"]["S0"]
-    s1 = csf["sections"]["S1"]
+    # Check the relation between wall thickness and inner radius.
+    if not math.isclose(section.outer_radius - section.wall_thickness, section.inner_radius, rel_tol=0.0, abs_tol=1.0e-12):
+        raise ValueError(f"Endpoint {section.label} has inconsistent wall thickness and inner radius.")
 
-    # Read endpoint coordinates and derive the absolute member length.
-    z0 = float(s0["z"])
-    z1 = float(s1["z"])
-    L = abs(z1 - z0)
+    # Check the relation between inner radius and inner diameter.
+    if not math.isclose(2.0 * section.inner_radius, section.inner_diameter, rel_tol=0.0, abs_tol=1.0e-12):
+        raise ValueError(f"Endpoint {section.label} has inconsistent inner radius and diameter.")
+
+
+def build_problem_data(case_key: str) -> ProblemData:
+    """Build the fixed NREL problem data for the selected material case."""
+
+    validate_endpoint(BASE_SECTION)
+    validate_endpoint(TOP_SECTION)
+
+    material_case = MATERIAL_CASES[case_key]
+
+    # Compute the member length from the fixed endpoint coordinates.
+    L = abs(TOP_SECTION.z - BASE_SECTION.z)
 
     # A non-positive length would invalidate all following interpolation and
     # integration steps.
     if L <= 0.0:
-        raise ValueError(f"Invalid member length from YAML endpoints: z0={z0}, z1={z1}")
-
-    # The NREL YAML case is expected to contain one annular polygon per endpoint.
-    # next(iter(...)) takes that polygon without depending on its display name.
-    poly0 = next(iter(s0["polygons"].values()))
-    poly1 = next(iter(s1["polygons"].values()))
-
-    # Infer inner and outer endpoint radii from the endpoint polygon vertices.
-    ri0, ro0 = polygon_radii(poly0["vertices"])
-    ri1, ro1 = polygon_radii(poly1["vertices"])
+        raise ValueError(f"Invalid member length from endpoint coordinates: L={L}")
 
     # Return an immutable object that contains all data needed downstream.
     return ProblemData(
-        yaml_file=yaml_file,
-        z0=z0,
-        z1=z1,
+        case_key=case_key,
+        material_case=material_case.label,
+        E_fn=material_case.E_fn,
+        base=BASE_SECTION,
+        top=TOP_SECTION,
         L=L,
-        ri0=ri0,
-        ro0=ro0,
-        ri1=ri1,
-        ro1=ro1,
-        material_case=material_case,
-        E_fn=E_fn,
     )
 
 
@@ -327,8 +276,8 @@ def compute_reference(n_ref: int, problem: ProblemData) -> ReferenceResult:
     eta = z / L
 
     # Linear interpolation of outer and inner radii between endpoint sections.
-    r_outer = problem.ro0 + (problem.ro1 - problem.ro0) * eta
-    r_inner = problem.ri0 + (problem.ri1 - problem.ri0) * eta
+    r_outer = problem.base.outer_radius + (problem.top.outer_radius - problem.base.outer_radius) * eta
+    r_inner = problem.base.inner_radius + (problem.top.inner_radius - problem.base.inner_radius) * eta
 
     # Evaluate the selected elastic modulus law at every integration station.
     E = np.array([problem.E_fn(float(zi), L) for zi in z], dtype=float)
@@ -413,22 +362,41 @@ def select_reference_grid(convergence: List[ReferenceResult]) -> Tuple[Reference
     return selected, status, selected_max_err
 
 
+def format_endpoint(section: EndpointDimensions) -> List[str]:
+    """Build report lines for one fixed endpoint section."""
+
+    return [
+        f"{section.label} z [m]                 : {section.z:.12e}",
+        f"{section.label} outer diameter x [m]  : {section.outer_diameter_x:.12e}",
+        f"{section.label} outer diameter y [m]  : {section.outer_diameter_y:.12e}",
+        f"{section.label} outer radius [m]      : {section.outer_radius:.12e}",
+        f"{section.label} wall thickness [m]    : {section.wall_thickness:.12e}",
+        f"{section.label} inner radius [m]      : {section.inner_radius:.12e}",
+        f"{section.label} inner diameter [m]    : {section.inner_diameter:.12e}",
+    ]
+
+
 def build_report(problem: ProblemData, selected: ReferenceResult, status: str, max_err_pct: float) -> str:
     """Build the text report written to disk and printed to the terminal."""
 
-    # The report records the input geometry, selected material case, selected
+    # The report records the fixed dimensions, selected material case, selected
     # integration grid, convergence status, and final reference values.
     lines = [
         "",
         "INDEPENDENT CONTINUOUS BASELINE",
         "==============================================================================",
-        f"YAML file                  : {problem.yaml_file}",
+        f"Case selector              : {problem.case_key}",
         f"Material case              : {problem.material_case}",
-        f"L                          : {problem.L:.12e}",
-        f"R_OUTER_BASE               : {problem.ro0:.12e}",
-        f"R_OUTER_TOP                : {problem.ro1:.12e}",
-        f"R_INNER_BASE               : {problem.ri0:.12e}",
-        f"R_INNER_TOP                : {problem.ri1:.12e}",
+        f"L [m]                      : {problem.L:.12e}",
+        "",
+        "FIXED ENDPOINT DIMENSIONS",
+        "==============================================================================",
+        *format_endpoint(problem.base),
+        "",
+        *format_endpoint(problem.top),
+        "",
+        "REFERENCE INTEGRATION",
+        "==============================================================================",
         f"N_REF                      : {selected.n_ref:d}",
         f"dz [m]                     : {selected.dz:.12e}",
         f"Selection status           : {status}",
@@ -442,15 +410,15 @@ def build_report(problem: ProblemData, selected: ReferenceResult, status: str, m
     return "\n".join(lines)
 
 
-def run_baseline(yaml_file: Path) -> Path:
-    """Run the complete baseline workflow for one YAML input file."""
+def run_baseline(case_key: str) -> Path:
+    """Run the complete baseline workflow for one material case."""
 
-    # Create one output directory per YAML stem, keeping reports separated by case.
-    output_dir = Path(f"baseline_output_{yaml_file.stem}")
+    # Create one output directory per material case, keeping reports separated.
+    output_dir = Path(f"baseline_output_nrel_{case_key}")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Read geometry and select the supported material law.
-    problem = read_problem_data(yaml_file)
+    # Build the fixed NREL problem definition for the selected material case.
+    problem = build_problem_data(case_key)
 
     # Compute the reference response on every candidate integration grid.
     convergence = [compute_reference(n_ref, problem) for n_ref in N_REF_SEQUENCE]
@@ -476,9 +444,9 @@ def run_baseline(yaml_file: Path) -> Path:
 def main() -> None:
     """Command-line entry point."""
 
-    # Parse the YAML path from the command line and run the baseline workflow.
+    # Parse the material-case selector and run the baseline workflow.
     args = parse_args()
-    run_baseline(args.yaml)
+    run_baseline(args.case)
 
 
 # Standard Python guard: execute main() only when this file is run as a script,
