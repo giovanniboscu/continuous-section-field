@@ -125,17 +125,21 @@ YAML input → continuous CSF sectional field → section sampling → OpenSees 
 
 ### Independent continuous baseline
 
-The baseline is computed by `run_analytical_reference.py`. The script evaluates the tip displacement and torsional rotation through a procedure that does not call CSF section-sampling APIs. Instead, it reads the same YAML input file, extracts the boundary geometry and the longitudinal stiffness law, and reconstructs the continuous functions used for the analytical integration.
+The baseline is computed by `run_analytical_reference.py`. The script evaluates the tip displacement and torsional rotation without calling CSF section-sampling APIs. It does not read any YAML input file. The tower endpoint dimensions, loads, and supported material cases are defined directly inside the script, and the selected case is controlled by a single external parameter.
 
-The tower is loaded with the same transverse tip force, tip bending moment, torsional tip moment, and uniform distributed transverse load used in the OpenSees model. The axial force applied in OpenSees is not used in this independent reference, because this check does not evaluate axial shortening or second-order geometric effects.
+The tower is loaded with the same transverse tip force, tip bending moment, torsional tip moment, and uniform distributed transverse load used in the OpenSees model. The axial force applied in OpenSees is not used in this reference calculation, because this check does not evaluate axial shortening or second-order geometric effects.
 
-This is the independent baseline path:
+This is the baseline path:
 
-```text
-YAML input → continuous section-property functions → tolerance-based integration grid → analytical integration → tip response
+```text id="rn6sez"
+fixed tower data → continuous section-property functions → tolerance-based integration grid → analytical integration → tip response
 ```
 
-The purpose of this independent path is to avoid validating the CSF-OpenSees model only against another output produced by the same computational machinery. The baseline uses the same physical input file, but follows an autonomous integration procedure. Therefore, agreement with the beam model verifies the sampled OpenSees model against an independently reconstructed continuous reference.
+The purpose of this path is to compare the sampled OpenSees model with a continuous reference calculation that is not obtained from CSF section sampling. The two calculations use the same tower data and loading assumptions, but they follow different computational procedures.
+
+
+
+
 
 #### The CSF-OpenSees model and the independent continuous baseline are evaluated as paired procedures for each scenario: first for the baseline tower model, and then for the degraded tower model.
 
