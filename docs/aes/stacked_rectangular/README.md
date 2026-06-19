@@ -743,7 +743,6 @@ Only `h1` varies in this example, because the lower boundary of the lower compon
 
 
 ```
-Closed-form verification table
 Closed-form laws used for the reference path
 - stacked_0.yaml, z in [0, 5], t = z/5
   upper weight       : w_u(t)  = 1.0 - 0.5*(1.0 - t)
