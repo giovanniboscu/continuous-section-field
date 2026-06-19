@@ -726,7 +726,7 @@ Both NREL configurations are analysed under the same loading conditions. The tow
 
 The same loading definition is used for the undegraded and degraded towers. Therefore, differences between the two configurations are caused by the sectional stiffness field, not by changes in loading or geometry. 
 
-## Validation
+### Validation
 
 The NREL case involves two validation levels. First, the sectional properties generated from the CSF model are compared with the tabulated NREL tower data reported in Table 6-1 [[16]](#NREL_5MW), to verify that the CSF model reproduces the reference distributed properties of the tower. The maximum relative difference is below $0.04\%$ over the full tower height, confirming that the model reproduces the original NREL sectional stiffness distribution before the structural-response comparison is performed.
 
@@ -761,7 +761,7 @@ $$
 where
 
 $$
-E_0 = 210,\mathrm{GPa}.
+E_0 = 210 \mathrm{GPa}.
 $$
 
 
