@@ -10,7 +10,7 @@ Next, `stacked_0.yaml` and `stacked_1.yaml` are assembled into a global member u
 
 The script also shows that a CSF evaluation provides more than scalar section properties. At each selected station, the stacked field is queried through `stack.section(z)`, which returns the evaluated `Section`: polygonal geometry, polygon vertices, axial/bending participation, shear/torsion participation, and resolved material-participation data at that station.
 
-Following the role of layer interfaces in non-prismatic beam formulations, as discussed by Balduzzi et al. [2], this example uses the stacked rectangular member to show how interface-related quantities can be obtained from CSF evaluations. The calculation is limited to a small operational subset: the extraction of interface coordinates and their axial derivatives from the evaluated CSF geometry. It is intended as an example of how CSF can provide such station-wise inputs, while the complete Balduzzi formulation also involves additional equilibrium, stress-recovery, and constitutive terms.
+Following the role of layer interfaces in non-prismatic beam formulations, as discussed by Balduzzi et al. [[1,2]](#balduzzi), this example uses the stacked rectangular member to show how interface-related quantities can be obtained from CSF evaluations. The calculation is limited to a small operational subset: the extraction of interface coordinates and their axial derivatives from the evaluated CSF geometry. It is intended as an example of how CSF can provide such station-wise inputs, while the complete Balduzzi formulation also involves additional equilibrium, stress-recovery, and constitutive terms.
 
 From this evaluated geometry, the four interface coordinates `h1`, `h2`, `h3`, and `h4` are extracted from the polygon vertices. Their axial derivatives, reported as `dh1_dz`, `dh2_dz`, `dh3_dz`, and `dh4_dz`, are then computed by evaluating the same CSF field at neighbouring axial stations. The centroid coordinate `Cy` is treated in the same way and reported together with `dCy_dz`.
 
@@ -922,3 +922,9 @@ This export separates the model from its sampled representation. The YAML files 
 
 The CSV files therefore contain station-wise samples of the continuous geometry and participation fields defined by the CSF model.
 
+---
+
+
+[1] <a id="balduzzi"></a>   G. Balduzzi, M. Aminbaghai, J. Füssl, F. Auricchio, Non-prismatic beams: a simple and effective Timoshenko-like model, Int. J. Solids Struct. 90 (2016) 236–250. https://doi.org/10.1016/j.ijsolstr.2016.03.022
+
+[1] <a id="balduzzi2"></a>  G. Balduzzi, M. Aminbaghai, F. Auricchio, J. Füssl, Planar Timoshenko-like model for multilayer non-prismatic beams, Int. J. Mech. Mater. Des. 14 (2018) 51–70. https://doi.org/10.1007/s10999-016-9360-3
