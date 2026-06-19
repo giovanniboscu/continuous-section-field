@@ -597,7 +597,7 @@ so that the user supplies only the global coordinate $z$. The active interval, t
 The section properties computed from the assembled CSF member are compared with an independent closed-form reference for $A$, $C_y$, $I_x$, and $I_y$ at Gauss-Lobatto stations over both intervals. The comparison gives roundoff-level discrepancies, with maximum relative error for $A$, $I_x$, and $I_y$ equal to
 
 $$
-1.09 \times 10^{-13}%,
+1.09 \times 10^{-13}\%
 $$
 
 and maximum absolute error in $C_y$ equal to
@@ -739,7 +739,7 @@ Within this validation workflow, the two CSF interaction modes serve different p
 
 For the undegraded configuration, the stiffness field varies smoothly and monotonically. This case is used as a baseline check of the undegraded tower model against the reference response.
 
-The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated across the tested discretization levels. The torsional rotation $R_z$ exhibits a small residual offset of approximately $3.44 \times 10^{-3},%$ across all tested discretization levels. This offset is attributed to the thin-walled torsional approximation adopted internally by the CSF workflow, whereas the analytical reference uses the exact circular torsional constant $J = \tfrac{\pi}{2}(R_o^4 - R_i^4)$.
+The transverse displacement $U_y$ and the torsional rotation $R_z$ are evaluated across the tested discretization levels. The torsional rotation $R_z$ exhibits a small residual offset of approximately $3.44 \times 10^{-3}\%$  across all tested discretization levels. This offset is attributed to the thin-walled torsional approximation adopted internally by the CSF workflow, whereas the analytical reference uses the exact circular torsional constant $J = \tfrac{\pi}{2}(R_o^4 - R_i^4)$.
 
 
 <!-- LATEX_PAGEBREAK -->
