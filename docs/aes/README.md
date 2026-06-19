@@ -201,7 +201,8 @@ $$
 P(z) = \sum_i q_i(z)\,P_i^{\mathrm{geom}}(z),
 $$
 
-where $P_i^{\mathrm{geom}}(z)$ denotes the geometric contribution associated with zone $i$ and  $q_i(z)$ denotes the participation field associated with the quantity being evaluated.
+where $P_i^{\mathrm{geom}}(z)$ denotes the geometric contribution associated with zone $i$, and $q_i(z)$ denotes the effective participation field entering the integral for the selected quantity.
+
 
 The longitudinal variation therefore arises from two independent mechanisms:
 
