@@ -481,8 +481,7 @@ The `openseeslab_output_*` directories contain the results produced by the OpenS
 The `baseline_output_*` directories contain the independent continuous-reference results:
 
 * `analytical_reference.txt`;
-* `analytical_reference_convergence.csv`;
-* `analytical_reference_grid_selection.csv`.
+
 
 This organization keeps the two validation cases separated and also keeps the two computational paths distinct: the OpenSees sampling of the continuous CSF field and the independent continuous baseline.
 
