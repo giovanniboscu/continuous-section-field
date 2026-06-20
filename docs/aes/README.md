@@ -1,4 +1,3 @@
-# preprint Draft v4.1
 # Continuous Section Field for Non-Prismatic Members with Decoupled Geometry and Material Participation
 
 
