@@ -96,9 +96,6 @@ geometry.yaml
 actions.yaml
 ```
 
-
-<img width="362" height="473" alt="Screenshot 2026-06-16 at 10 31 35" src="https://github.com/user-attachments/assets/3a8fa70e-cc6b-42d4-b793-84a88e39d15d" />
-
 ## Main expected behaviour
 
 The net area remains constant because the outer rectangle and the void area are unchanged.
