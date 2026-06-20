@@ -1,40 +1,40 @@
 ### SECTION SELECTED ANALYSIS @ z = 1.0 ###
 A                   : 0.58000000  [Total net cross-sectional area]
-Ip                  : 0.06592177  [Polar second moment (Ix + Iy)]
 Ix                  : 0.03223844  [Second moment about centroidal X-axis]
+Ip                  : 0.06592177  [Polar second moment (Ix + Iy)]
 ### SECTION SELECTED ANALYSIS @ z = 2.0 ###
 A                   : 0.58000000  [Total net cross-sectional area]
-Ip                  : 0.06666329  [Polar second moment (Ix + Iy)]
 Ix                  : 0.03297995  [Second moment about centroidal X-axis]
+Ip                  : 0.06666329  [Polar second moment (Ix + Iy)]
 ### SECTION SELECTED ANALYSIS @ z = 3.0 ###
 A                   : 0.58000000  [Total net cross-sectional area]
-Ip                  : 0.06719294  [Polar second moment (Ix + Iy)]
 Ix                  : 0.03350961  [Second moment about centroidal X-axis]
+Ip                  : 0.06719294  [Polar second moment (Ix + Iy)]
 ### SECTION SELECTED ANALYSIS @ z = 4.0 ###
 A                   : 0.58000000  [Total net cross-sectional area]
-Ip                  : 0.06751074  [Polar second moment (Ix + Iy)]
 Ix                  : 0.03382740  [Second moment about centroidal X-axis]
+Ip                  : 0.06751074  [Polar second moment (Ix + Iy)]
 ### SECTION SELECTED ANALYSIS @ z = 5.0 ###
 A                   : 0.58000000  [Total net cross-sectional area]
-Ip                  : 0.06761667  [Polar second moment (Ix + Iy)]
 Ix                  : 0.03393333  [Second moment about centroidal X-axis]
+Ip                  : 0.06761667  [Polar second moment (Ix + Iy)]
 ### SECTION SELECTED ANALYSIS @ z = 6.0 ###
 A                   : 0.58000000  [Total net cross-sectional area]
-Ip                  : 0.06751074  [Polar second moment (Ix + Iy)]
 Ix                  : 0.03382740  [Second moment about centroidal X-axis]
+Ip                  : 0.06751074  [Polar second moment (Ix + Iy)]
 ### SECTION SELECTED ANALYSIS @ z = 7.0 ###
 A                   : 0.58000000  [Total net cross-sectional area]
-Ip                  : 0.06719294  [Polar second moment (Ix + Iy)]
 Ix                  : 0.03350961  [Second moment about centroidal X-axis]
+Ip                  : 0.06719294  [Polar second moment (Ix + Iy)]
 ### SECTION SELECTED ANALYSIS @ z = 8.0 ###
 A                   : 0.58000000  [Total net cross-sectional area]
-Ip                  : 0.06666329  [Polar second moment (Ix + Iy)]
 Ix                  : 0.03297995  [Second moment about centroidal X-axis]
+Ip                  : 0.06666329  [Polar second moment (Ix + Iy)]
 ### SECTION SELECTED ANALYSIS @ z = 9.0 ###
 A                   : 0.58000000  [Total net cross-sectional area]
-Ip                  : 0.06592177  [Polar second moment (Ix + Iy)]
 Ix                  : 0.03223844  [Second moment about centroidal X-axis]
+Ip                  : 0.06592177  [Polar second moment (Ix + Iy)]
 ### SECTION SELECTED ANALYSIS @ z = 10.0 ###
 A                   : 0.58000000  [Total net cross-sectional area]
-Ip                  : 0.06496839  [Polar second moment (Ix + Iy)]
 Ix                  : 0.03128506  [Second moment about centroidal X-axis]
+Ip                  : 0.06496839  [Polar second moment (Ix + Iy)]
