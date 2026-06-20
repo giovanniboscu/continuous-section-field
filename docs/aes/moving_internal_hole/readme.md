@@ -65,12 +65,8 @@ All coordinates are given in the local cross-section plane.
 | Internal void   |    0.0 | `[-0.15, 0.15]` | `[-0.30, -0.10]` |  0.30 |   0.20 | 0.060000 | `(0.0, -0.20)` |
 
 ## Figures
-
-<img width="655" height="578" alt="image" src="https://github.com/user-attachments/assets/64da331b-2449-48e0-819c-a9e6afd5af4b" />
-<img width="652" height="578" alt="image" src="https://github.com/user-attachments/assets/fd6969fc-1dda-4a9e-ad3f-0e7f67928a6a" />
-<img width="652" height="578" alt="image" src="https://github.com/user-attachments/assets/465cad54-b42a-45f0-b309-be40aa8d192b" />
-<img width="1014" height="758" alt="image" src="https://github.com/user-attachments/assets/9a1da69a-e455-4070-b030-eb2cbca21256" />
-
+<img width="662" height="578" alt="image" src="https://github.com/user-attachments/assets/bb85afe1-97df-4a4b-8d0a-424a9422581c" />
+<img width="1022" height="758" alt="image" src="https://github.com/user-attachments/assets/b56e1f8d-bbda-430a-9baa-6ea8c8f88e69" />
 
 ## Input files
 
