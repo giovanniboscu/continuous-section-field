@@ -66,11 +66,12 @@ All coordinates are given in the local cross-section plane.
 
 <img width="455" height="403" alt="Screenshot 2026-06-16 at 10 44 49" src="https://github.com/user-attachments/assets/f2b6df10-895e-497e-9a4b-81af48c69e8a" />
 
+<img width="1014" height="758" alt="image" src="https://github.com/user-attachments/assets/8e852def-3b29-4a10-9990-806a91193500" />
+
+
 <img width="455" height="401" alt="Screenshot 2026-06-16 at 10 44 37" src="https://github.com/user-attachments/assets/0d9c2abf-1dd8-497c-a6cb-3a3786977632" />
 
 <img width="316" height="476" alt="Screenshot 2026-06-16 at 10 45 03" src="https://github.com/user-attachments/assets/24dc8ec5-9019-41d8-b9e8-f6a784f0ede7" />
-
-<img width="996" height="435" alt="Screenshot 2026-06-16 at 10 46 49" src="https://github.com/user-attachments/assets/870226f8-e27f-41ef-8730-47b0387e379d" />
 
 ## Input files
 
