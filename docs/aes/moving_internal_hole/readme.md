@@ -66,13 +66,11 @@ All coordinates are given in the local cross-section plane.
 
 ## Figures
 
-<img width="455" height="403" alt="Screenshot 2026-06-16 at 10 44 49" src="https://github.com/user-attachments/assets/f2b6df10-895e-497e-9a4b-81af48c69e8a" />
+<img width="655" height="578" alt="image" src="https://github.com/user-attachments/assets/64da331b-2449-48e0-819c-a9e6afd5af4b" />
+<img width="652" height="578" alt="image" src="https://github.com/user-attachments/assets/fd6969fc-1dda-4a9e-ad3f-0e7f67928a6a" />
+<img width="652" height="578" alt="image" src="https://github.com/user-attachments/assets/465cad54-b42a-45f0-b309-be40aa8d192b" />
+<img width="1014" height="758" alt="image" src="https://github.com/user-attachments/assets/9a1da69a-e455-4070-b030-eb2cbca21256" />
 
-<img width="1014" height="758" alt="Section-property variation for moving internal hole" src="https://github.com/user-attachments/assets/8e852def-3b29-4a10-9990-806a91193500" />
-
-<img width="455" height="401" alt="Screenshot 2026-06-16 at 10 44 37" src="https://github.com/user-attachments/assets/0d9c2abf-1dd8-497c-a6cb-3a3786977632" />
-
-<img width="316" height="476" alt="Screenshot 2026-06-16 at 10 45 03" src="https://github.com/user-attachments/assets/24dc8ec5-9019-41d8-b9e8-f6a784f0ede7" />
 
 ## Input files
 
