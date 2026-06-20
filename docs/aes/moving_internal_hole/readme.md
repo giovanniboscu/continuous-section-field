@@ -67,6 +67,8 @@ All coordinates are given in the local cross-section plane.
 ## Figures
 <img width="662" height="578" alt="image" src="https://github.com/user-attachments/assets/bb85afe1-97df-4a4b-8d0a-424a9422581c" />
 <img width="1022" height="758" alt="image" src="https://github.com/user-attachments/assets/b56e1f8d-bbda-430a-9baa-6ea8c8f88e69" />
+<img width="662" height="578" alt="image" src="https://github.com/user-attachments/assets/b7f78cf8-ce17-4927-b103-8940bcf4ad96" />
+<img width="662" height="578" alt="image" src="https://github.com/user-attachments/assets/b92f9cb0-1b6c-4f40-8855-d3c59b91f01f" />
 
 ## Input files
 
