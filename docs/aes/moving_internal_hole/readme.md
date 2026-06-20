@@ -8,6 +8,13 @@ The case is intended to show a sectional geometry variation that is not a global
 
 This example is provided as additional repository material for illustrating CSF containment behaviour.
 
+## Run command
+
+```bash
+csf-actions geometry.yaml actions.yaml
+```
+
+
 ## Geometry
 
 Member length:
@@ -46,11 +53,7 @@ The net participating area is:
 A = 0.640000 - 0.060000 = 0.580000
 ```
 
-## Run command
 
-```bash
-csf-actions geometry.yaml actions.yaml
-```
 
 ## Section dimensions at end stations
 
