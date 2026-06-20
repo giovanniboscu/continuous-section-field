@@ -90,10 +90,7 @@ $$
 
 
 where superscripts $(0)$ and $(1)$ denote the values at $z_0$ and $z_1$ respectively, and $k$ indexes the vertices of zone $i$. This produces a continuous, linearly tapered geometry at any intermediate station. A single CSF interval describes the continuous evolution of the section between
-two reference stations, with its own geometry and participation fields. Members
-requiring more than one interpolation interval are represented by a concatenated
-sectional field, implemented as `CSFStack`. This preserves continuity of the
-section-property field at shared stations, while allowing each interval to retain
+two reference stations, with its own geometry and participation fields. Members requiring more than one interpolation interval are represented as a concatenated sectional field. This preserves continuity of the section-property field at shared stations, while allowing each interval to retain
 its own reference geometry, participation laws, and closed-form polygonal
 evaluation.
 
