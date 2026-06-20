@@ -345,6 +345,7 @@ The baseline tower model is executed with:
 ```bash
 python3 run_csf_opensees_gaussN.py NREL-5-MW.yaml --gauss-points 2
 ```
+>The ruled-volume lines are coloured by the participation field; when the field is constant, the lines appear with a single colour while the colour bar is retained for consistency with cases involving spatially varying participation laws.
 
 The script reads the tower geometry and stiffness distribution from the YAML file, samples the continuous CSF sectional field along the tower axis, and builds the corresponding OpenSees beam model. The analysis computes the transverse tip displacement, the torsional tip rotation, and the nodal resultants along the tower height.
 
