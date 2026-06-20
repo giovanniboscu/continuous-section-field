@@ -46,6 +46,12 @@ The net participating area is:
 A = 0.640000 - 0.060000 = 0.580000
 ```
 
+## Run command
+
+```bash
+csf-actions geometry.yaml actions.yaml
+```
+
 ## Section dimensions at end stations
 
 All coordinates are given in the local cross-section plane.
