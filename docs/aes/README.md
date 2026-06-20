@@ -1,5 +1,5 @@
+# DRAFT preprint
 # Continuous Section Field for Non-Prismatic Members with Decoupled Geometry and Material Participation
-
 
 ## Abstract
 Continuous Section Field (CSF) is a computational modelling framework that represents geometric description and material distribution along a member axis as an evaluable continuous sectional field, which can be inspected, sampled, and exported as station-wise data for downstream workflows.
