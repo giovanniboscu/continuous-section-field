@@ -1,4 +1,8 @@
 # Changelog
+## v0.1.9.1 
+add explicit CSF model length
+
+
 ## v0.1.9
 fix Roark shear_weight deviation; move plot_section_variation to Visualizer; unify Lobatto intervals
 
