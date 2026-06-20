@@ -382,7 +382,7 @@ In this baseline case, no degradation law is applied. Therefore, the computed re
 The outputs are written to:
 
 ```text
-baseline_output_NREL-5-MW
+baseline_output_nrel_constant
 ```
 
 This directory contains the independent continuous-reference report:
@@ -439,7 +439,7 @@ The reference grid is selected from the prescribed admissible tolerance, `REF_TO
 The outputs are written to:
 
 ```
-baseline_output_NREL-5-MW-degr
+baseline_output_nrel_degraded
 ```
 
 This directory contains the independent continuous-reference report:
