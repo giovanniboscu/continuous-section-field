@@ -27,7 +27,7 @@ CSF_ACTIONS:
         output:
           - stdout
     - plot_properties:
-        properties: [A,Ix]
+        properties: [A,Ix,Ip]
     - plot_section_2d:
         stations:
           - station_edge
@@ -37,7 +37,7 @@ CSF_ACTIONS:
         #properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy,J_s_vroark, J_s_vroark_fidelity]
         output:
           - selected_analysis.txt
-        properties: [A, Ip]
+        properties: [A, Ix,Ip]
     - volume:
         stations:
           - station_edge
