@@ -103,7 +103,7 @@ whereas the CSF/OpenSees workflow uses the `J_sv_cell` value associated with the
 After the CSF-OpenSees analyses and the independent continuous baselines have been executed for both scenarios, the final comparison report is generated with:
 
 ```bash
-python3 compare_validation_results.py --gauss-points 2
+python3 compare_validation_results.py
 ```
 
 This script collects the tip-response outputs produced by the CSF-OpenSees analyses and compares them with the independent continuous-baseline values.
