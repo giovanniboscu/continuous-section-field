@@ -1,5 +1,8 @@
 # NREL 5-MW Tower Validation Case
 
+For installation instructions and the reproducibility workflow, see [Reproducibility environment](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/reproducibility_environment.md).
+
+
 <img width="631" height="547" alt="image" src="https://github.com/user-attachments/assets/2bf9827f-df1d-44ee-9937-bacb486373d8" />
 
 > ### Reproducibility environment
