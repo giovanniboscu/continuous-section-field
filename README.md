@@ -154,7 +154,7 @@ csf-actions geometry.yaml actions.yaml
 ```
 **Windows**
 ```
-python3 -m venv venv
+py -3.12 -m venv venv
 .\venv\Scripts\activate 
 pip install csfpy
 csf-actions geometry.yaml actions.yaml
@@ -250,7 +250,7 @@ csf-actions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 ### Option 1 - Install from PyPI (recommended)
 
 ```bash
-python3 -m venv venv
+py -3.12 -m venv venv
 .\venv\Scripts\activate 
 pip install csfpy
 
