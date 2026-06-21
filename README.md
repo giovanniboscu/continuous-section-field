@@ -351,8 +351,6 @@ The following table reports the full output of the validation script, comparing 
 
 ## 512sided polygons
 
-[NREL 5-MW Tower - CSF Actions Example](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/README.md)
-
 
 <img width="358" height="508" alt="Screenshot 2026-05-16 at 18 03 21" src="https://github.com/user-attachments/assets/bb0c0460-9bb3-4c4e-afb5-cb2333ef2bf5" />
 
