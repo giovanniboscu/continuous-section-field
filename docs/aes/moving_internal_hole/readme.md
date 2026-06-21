@@ -1,5 +1,17 @@
 # CSF Moving Internal Hole Example
 
+> ### Reproducibility environment
+>
+> This validation case assumes that the repository and Python environment have been configured as described in:
+>
+> [Reproducibility environment](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/reproducibility_environment.md)
+>
+> The commands in this document must be executed from:
+>
+> ```bash
+>  docs/aes/moving_internal_hole
+> ```
+
 ## Purpose
 
 This example defines a CSF member with a constant outer rectangular section and an internal rectangular void that moves from the upper part of the section to the lower part along the member axis.
