@@ -34,7 +34,6 @@ uv pip install -e .
 
 **Windows**
 
-**Windows with OpenSeesPy examples**
 
 ```powershell
 git clone https://github.com/giovanniboscu/continuous-section-field.git
