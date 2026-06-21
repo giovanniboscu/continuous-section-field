@@ -267,7 +267,7 @@ py -3.12 -m venv venv
 .\venv\Scripts\Activate.ps1
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
-
+pip install -e .
 
 python .\example\nrel_5mw_tower.py
 python .\example\cylinder_withcheck.py
