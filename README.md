@@ -431,6 +431,13 @@ Density = 8500 kg/m3
 For a complete example of CSF integrated into the OpenFAST aeroelastic 
 simulation framework - from parametric tower geometry through BModes 
 to ElastoDyn - see the 
+
+Two NREL/OpenFAST tower examples are provided:
+
+* **Code-only example:** [`example/nrel_5mw_tower.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/example/nrel_5mw_tower.py)
+* **Formal AES reproducibility case:** [`docs/aes/nrel_case/README.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/README.md)
+
+[OPENFAST tower example](https://github.com/giovanniboscu/continuous-section-field/blob/main/example/nrel_5mw_tower.py)
 [OPENFAST tower example](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/README.md).
 
 
