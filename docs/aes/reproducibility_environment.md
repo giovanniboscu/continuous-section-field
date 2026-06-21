@@ -25,13 +25,14 @@ python -m pip install -e .
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 
-uv venv --python 3.14.6 venv
+uv venv --python 3.14.6 venva
 source venv/bin/activate
 python --version
 
 uv pip install -e .
 ```
 
+**Windows**
 
 ```powershell
 git clone https://github.com/giovanniboscu/continuous-section-field.git
