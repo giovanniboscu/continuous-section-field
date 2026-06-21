@@ -496,6 +496,8 @@ For example, a void polygon with zero participation inside a solid polygon remov
 This containment logic applies only when one polygonal region is fully contained inside another. If two polygons overlap or intersect without one fully containing the other, they are not in a containment relationship. In that case, there is no nesting hierarchy and no parent-child effective contribution. The overlapping area remains a user-defined superposition of polygonal regions, and its contribution follows from the participation values assigned by the user to the overlapping polygons.
 
 CSF does not prohibit such configurations. Their interpretation belongs to the modelling assumptions chosen by the user.
+> **Note on identical nested polygons**
+> If two polygons have identical geometry and one is interpreted as nested inside the other, the immediate container cannot be determined from geometry alone. In this case, CSF assigns the immediate container according to polygon order. The first valid polygon in the section order acts as the container, and the effective contribution of the nested polygon is computed relative to it.
 
 
 #### 7.5 Examples
