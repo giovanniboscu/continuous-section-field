@@ -301,6 +301,10 @@ CSF handles this automatically. No manual subtraction or containment correction 
 | Concrete | 30 000 | none (root) | 30 000 |
 | Steel bar | 210 000 | Concrete | 210 000 − 30 000 = 180 000 |
 
+```text
+W_eff = W_child - W_parent
+```
+
 The user declares only the absolute material property of each polygon. The effective contribution is derived automatically from the containment relationship.
 
 This means the effective contribution of an inclusion is always computed relative to its immediate parent. Ancestors higher in the hierarchy are already correctly represented by their own material properties and nested contents.
@@ -312,9 +316,7 @@ This means the effective contribution of an inclusion is always computed relativ
 > In CSF, a polygon is a container only when its polygonal region fully contains the region of another polygon. If two polygons overlap or intersect without one fully containing the other, they are not in a containment relationship. In that case, no parent-child effective correction is applied: both polygons participate with their full assigned contribution, and the overlapping area is interpreted as a user-defined superposition.
 
 
-```text
-W_eff = W_child - W_parent
-```
+
 ---
 
 ### Why "Weight" and not "E"?
