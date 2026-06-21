@@ -308,6 +308,10 @@ This means the effective contribution of an inclusion is always computed relativ
 >**Note on identical nested polygons:**  
 >If two polygons have identical geometry and one is treated as nested inside the other, CSF assigns the immediate container according to polygon order. In this case, the first valid polygon in the section order acts as the container, and the effective weight is computed relative to it:
 
+> **Note on polygon containment**
+> In CSF, a polygon is a container only when its polygonal region fully contains the region of another polygon. If two polygons overlap or intersect without one fully containing the other, they are not in a containment relationship. In that case, no parent-child effective correction is applied: both polygons participate with their full assigned contribution, and the overlapping area is interpreted as a user-defined superposition.
+
+
 ```text
 W_eff = W_child - W_parent
 ```
