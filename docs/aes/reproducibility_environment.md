@@ -33,7 +33,9 @@ uv pip install -e .
 ```
 
 **Windows**
+For Windows/OpenSees setup instructions, see:
 
+[OpenSees Win11 setup](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/opensees_win11_setup.md)
 
 ```powershell
 git clone https://github.com/giovanniboscu/continuous-section-field.git
