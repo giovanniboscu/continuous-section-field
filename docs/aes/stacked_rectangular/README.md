@@ -1,8 +1,18 @@
 # Stacked rectangular member with compensated geometric variation and participation-field variation
 
-For installation instructions and the reproducibility workflow, see [Reproducibility environment](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/reproducibility_environment.md).
+> ### Reproducibility environment
+>
+> This validation case assumes that the repository and Python environment have been configured as described in:
+>
+> [Reproducibility environment](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/reproducibility_environment.md)
+>
+> The commands in this document must be executed from:
+>
+> ```bash
+> docs/aes/stacked_rectangular
+> ```
 
-working directory: `docs/aes/stacked_rectangular`
+
 
 This verification case illustrates how geometry and participation fields combine in a continuous section field. The example is intentionally simple: one component changes its geometry while another changes its material participation, with the two variations arranged to compensate exactly in total weighted area. This makes the role of the internal weighted-area distribution visible, since the centroid and bending inertia remain continuously variable even though the total weighted area is constant.
 
