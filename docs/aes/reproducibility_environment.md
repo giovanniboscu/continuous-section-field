@@ -4,6 +4,8 @@ CSF requires Python 3.8 or newer.
 
 The repository has been tested with Python 3.14.6.
 
+OpenSeesPy-dependent examples on Windows should be run with Python 3.12.
+
 **Linux / macOS**
 
 ```bash
@@ -32,13 +34,16 @@ uv pip install -e .
 
 **Windows**
 
+**Windows with OpenSeesPy examples**
+
 ```powershell
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 
-python -m venv venv
-.\venv\Scripts\activate
+py -3.12 -m venv venv
+.\venv\Scripts\Activate.ps1
 python --version
 
 python -m pip install -e .
+python -m pip install --no-cache-dir openseespy
 ```
