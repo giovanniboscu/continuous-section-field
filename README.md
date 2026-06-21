@@ -430,6 +430,8 @@ For a complete example of CSF integrated into the OpenFAST aeroelastic
 simulation framework - from parametric tower geometry through BModes 
 to ElastoDyn - see the 
 
+[HISTWIN Example](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/histwin)
+
 Two NREL/OpenFAST tower examples are provided:
 
 * **Code-only example:** [`example/nrel_5mw_tower.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/example/nrel_5mw_tower.py)
