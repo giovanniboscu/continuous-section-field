@@ -384,6 +384,23 @@ CSF:
 > **Note on `@t=` suffix**  
 > If the `@t=` thickness suffix is specified on only one of the two reference sections (`S0` or `S1`), CSF treats that thickness value as **constant along the entire element length**.
 
+### 6.1 Polygon Containment and Overlapping Regions
+
+In CSF, polygon containment is a geometric relationship between polygonal regions in the same section. A polygon acts as a container when its region fully contains the region of another polygon. The contained polygon is then interpreted relative to its immediate container, which is the closest polygon that fully contains it.
+
+For nested polygons, CSF uses this containment relationship to compute the effective contribution of the contained region. The effective weight is evaluated relative to the immediate container:
+
+```text
+W_eff = W_child - W_parent
+```
+
+For example, a void polygon with `weight = 0.0` inside a solid polygon removes the contribution of the material it directly replaces. Similarly, an embedded material with a different weight contributes only the difference between its own weight and the weight of its immediate container.
+
+This containment logic applies only when one polygonal region is fully contained inside another. If two polygons overlap or intersect without one fully containing the other, they are not in a containment relationship. In that case, there is no nesting hierarchy and no parent-child effective weight correction. The overlapping area remains a user-defined superposition of polygonal regions, and its contribution follows from the weights assigned by the user to the overlapping polygons.
+
+CSF does not prohibit such configurations. Their interpretation belongs to the modelling assumptions chosen by the user.
+
+
 ---
 
 ### 7. Weight Variation and Custom Laws
