@@ -154,10 +154,11 @@ csf-actions geometry.yaml actions.yaml
 ```
 **Windows**
 ```
-py -3.12 -m venv venv
+python3 -m venv venv
 .\venv\Scripts\activate 
 pip install csfpy
 csf-actions geometry.yaml actions.yaml
+
 ```
 
 **Minimal working CSF model:** two sections, one polygon per section, custom `weight` laws, isotropic `shear_weight_laws`, and automatic evaluation of continuous section properties along the member axis.
@@ -250,7 +251,7 @@ csf-actions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 ### Option 1 - Install from PyPI (recommended)
 
 ```bash
-py -3.12 -m venv venv
+python3 -m venv venv
 .\venv\Scripts\activate 
 pip install csfpy
 
@@ -263,8 +264,8 @@ csf-actions geometry.yaml actions.yaml
 
 ```powershell
 
-py -3.12 -m venv venv
-.\venv\Scripts\Activate.ps1
+python3 -m venv venv
+.\venv\Scripts\Activate
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 pip install -e .
