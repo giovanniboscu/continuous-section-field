@@ -875,24 +875,15 @@ These limitations suggest three natural extensions of the present framework. Fir
 
 ---
 
-## Acknowledgements
+## Declaration of competing interest
 
-The author thanks the developers of `sectionproperties` for providing an open finite-element section-analysis ecosystem that can be used in validation and interoperability workflows.
+The author declares no competing interests.
 
 ## Funding
 
 This research received no external funding.
 
-
-# Declaration of competing interest
-
-The author declares no competing interests.
-
-# Funding
-
-This research received no external funding.
-
-# Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
+## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
 
 During manuscript preparation, generative AI-assisted tools were used to support language editing, clarity checking, and structural revision of author-prepared text. The author reviewed, revised, and approved all content and takes full responsibility for the final manuscript. No generative AI tools were used to generate research data, perform numerical analyses, create results, or produce evidential figures.
 
