@@ -4,13 +4,19 @@
 
 ## Abstract
 
-In many computational workflows, the longitudinal sectional description of a structural member is introduced only after the member has been decomposed into local or discretized descriptions. Continuous Section Field (CSF) reverses this order: it defines the continuous field first and treats local or discrete descriptions as evaluations of that field. Here, continuity refers to the domain of representation along the member coordinate, not to the exclusion of prescribed jumps or piecewise laws.
+**Purpose** – This paper introduces Continuous Section Field (CSF), a representation in which the longitudinal geometric and material description of a structural member is defined as a continuous field before being reduced to local or discrete descriptions.
 
-CSF formalizes this view through a field $S(z)$ whose value at each axial coordinate is a local state composed of spatial regions and participation values. To make the field constructible, each local state is defined as an ordered collection of region triples $(\Omega_i(z), w_i(z), k_i(z))$. The spatial region $\Omega_i(z)$ is induced by boundary-vertex correspondences along the axial coordinate. The quantities $w_i(z)$ and $k_i(z)$ are the values, at the same coordinate, of the axial/bending and shear/torsion participation fields assigned to region $i$. The spatial region, the axial/bending participation field, and the shear/torsion participation field are therefore connected region by region, while remaining free to follow different evolution laws.
+**Design/methodology/approach** – The member is represented through a field $S(z)$ whose value at each axial coordinate is an ordered collection of region triples $(\Omega_i(z), w_i(z), k_i(z))$. The spatial regions are induced by boundary-vertex correspondences, while $w_i(z)$ and $k_i(z)$ define axial/bending and shear/torsion participation fields. The formulation is assessed through a closed-form stacked-section example and a tapered-tower application case.
 
-With these components defined, $S(z)$ becomes the primary mathematical object. Field-level operations-local evaluation, differentiation where the prescribed laws are regular, and integration-act on the same underlying description rather than on separately assembled local values. The paper formalizes this representation and its composition rules for longitudinal models in which spatial regions and participation fields are independently prescribed components of the same function $S(z)$.
+**Findings** – The stacked-section example reproduces the closed-form reference at roundoff level, confirming that geometric regions and participation fields are composed consistently at section level. In the tapered-tower case, CSF reproduces the reference sectional distribution with a maximum relative difference below $0.04\%$. The response convergence study further shows that localized stiffness reductions require adequate axial sampling, while the continuous field remains independent of the chosen discretization.
+
+**Originality** – The originality of the work lies in reversing the usual order of representation: CSF defines the continuous sectional field first and treats local or discretized descriptions as evaluations of that field. This provides a compact mathematical and computational representation for longitudinal models with independently prescribed spatial regions and participation fields.
 
 **Keywords:** continuous section field; continuous field representation; longitudinal coordinate; material participation fields; independent geometry and participation; functional modelling
+
+**Paper type:** Research paper
+
+---
 
 ## 1. Motivation
 
@@ -19,7 +25,6 @@ A longitudinal member can often be described without difficulty at isolated stat
 The role of CSF is to keep that relation explicit by treating the longitudinal field as the definition of the model. Local evaluations and derived operations act on this field; they do not replace it. This distinction matters because a field-level object can be evaluated, differentiated where the prescribed laws are regular, and integrated while preserving the laws that generate each local state. The model therefore remains a complete but tractable representation, rather than a set of values assembled after the fact.
 
 The relevant methodological gap is not the ability to account for longitudinal variation, but the level at which that variation is organized. When variation is expressed only after decomposition into stations, elements, or formulation-specific quantities, the field that links geometric regions and participation laws is no longer the primary object. CSF addresses this gap by making $S(z)$ the object from which local sections, derived quantities, and discrete representations are obtained. The contribution of this work is the formalization of this field object and its composition rules: spatial regions and participation fields are kept as coupled components of the same $S(z)$ while retaining independent evolution laws.
-
 
 
 ---
