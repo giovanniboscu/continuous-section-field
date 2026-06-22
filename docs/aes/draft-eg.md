@@ -31,9 +31,6 @@ Existing approaches may account for longitudinal variation, but they typically e
 
 ## 2. The CSF Section Model
 
-
-### 2.1 Scope
-
 ### 2.1 Scope
 
 This section describes the mathematical model used in this work and the way participation laws are assigned to geometric regions. A CSF member is represented as a longitudinal arrangement of regions. Each region may have its own geometric evolution and is assigned axial/bending and shear/torsion participation fields. The model therefore describes how regions exist, vary, and participate along the member coordinate $z$ before any sampling or derived property calculation is requested.
