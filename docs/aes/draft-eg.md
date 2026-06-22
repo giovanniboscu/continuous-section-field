@@ -1,16 +1,17 @@
 # DRAFT preprint
 # Continuous Section Field for Non-Prismatic Members with Decoupled Geometry and Material Participation
 
+
 ## Abstract
 
 Before any discretization is introduced, a structural member is treated as an object defined over a longitudinal continuum. Here, continuity refers to the domain of representation rather than to the exclusion of prescribed jumps or piecewise laws. Continuous Section Field (CSF) formalizes this view through a field $S(z)$ whose value at each axial coordinate is a local state composed of spatial regions and participation values.
 
-To make this field well defined and constructible, CSF defines each local state as an ordered collection of region triples $(\Omega_i(z), w_i(z), k_i(z))$. The spatial region $\Omega_i(z)$ is induced by boundary-vertex correspondences along the axial coordinate. The quantities $w_i(z)$ and $k_i(z)$ are the values, at the same coordinate, of the axial/bending and shear/torsion participation fields assigned to region $i$. In this way, geometry and participation are connected region by region while remaining separate components of the model. The spatial region $\Omega_i(z)$, the axial/bending participation field $w_i(z)$, and the shear/torsion participation field $k_i(z)$ are not constrained to share a common evolution law.
+To make the field constructible, CSF defines each local state as an ordered collection of region triples $(\Omega_i(z), w_i(z), k_i(z))$. The spatial region $\Omega_i(z)$ is induced by boundary-vertex correspondences along the axial coordinate. The quantities $w_i(z)$ and $k_i(z)$ are the values, at the same coordinate, of the axial/bending and shear/torsion participation fields assigned to region $i$. Geometry and participation are therefore connected region by region, while the three components remain free to follow different evolution laws.
 
+With these components defined, $S(z)$ becomes the primary mathematical object. Field-level operations—local evaluation, differentiation where the prescribed laws are regular, and integration—act on the same underlying description rather than on separately assembled local values. The model remains a parametric description within the representation class defined by the boundary-vertex correspondences and prescribed participation fields.
 
-With these components defined, $S(z)$ becomes the primary mathematical object. Field-level operations — local evaluation, differentiation where the prescribed laws are regular, and integration — act on the same underlying description rather than on separately assembled local values. The model remains a parametric description within the representation class defined by boundary-vertex correspondences and prescribed participation fields.
+The paper formalizes this representation and its composition rules for longitudinal models in which spatial regions and participation fields are independently prescribed components of the same function $S(z)$.
 
-The paper formalizes this representation and its composition rules for the class of longitudinal models in which spatial regions and participation fields remain independently prescribed components of the same function $S(z)$.
 
 
 
