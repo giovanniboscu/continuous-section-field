@@ -6,7 +6,7 @@
 
 Continuous Section Field (CSF) is a computational modelling framework that represents a longitudinal object through continuous user-defined fields along an axial coordinate. The model is expressed as a function $S(z)$, defined over the longitudinal domain, whose value at each coordinate is a local state composed of geometric domains and material participation.
 
-The geometric component of $S(z)$ is a continuous mapping from the axial coordinate to the polygonal domains assigned to the model regions. Material participation is represented by independent longitudinal fields that define the axial/bending and shear/torsion contribution of each region. The geometric field, the axial/bending participation field $w_i(z)$, and the shear/torsion participation field $k_i(z)$ are separate components of the same model and are not constrained to follow a common evolution law.
+The geometric component of $S(z)$ is a continuous mapping from the axial coordinate to the spatial domains assigned to the model regions. Material participation is represented by independent longitudinal fields that define the axial/bending and shear/torsion contribution of each region. The geometric field, the axial/bending participation field $w_i(z)$, and the shear/torsion participation field $k_i(z)$ are separate components of the same model and are not constrained to follow a common evolution law.
 
 This formulation makes the continuous field the central mathematical object. Operations such as local evaluation, differentiation, and integration act on $S(z)$ without redefining the underlying description. The paper formalizes the CSF data model and the rules by which geometric domains and participation fields combine into a local state.
 
@@ -38,7 +38,6 @@ Second, structural solvers such as OpenSees [[6]](#opensees), ABAQUS [[7]](#abaq
 Third, wind-energy simulation and design workflows embed non-prismaticity in application-specific representations. Aeroelastic codes such as BeamDyn [[9]](#beamdyn) rely on distributed sectional-property tables along the member axis, whereas systems-engineering tools such as NREL's WISDEM [[10]](#wisdem) represent the tower as a tapered cylindrical shell with closed-form sectional properties, analysed through the external frame finite-element code Frame3DD [[11]](#frame3dd). In these cases, the longitudinal variation is bound to a specific geometry, solver, or workflow rather than expressed as an independent, reusable sectional field.
 
 This absence of a clearly separated sectional-field layer is both a limitation and a motivation. It makes direct tool-to-tool benchmarking difficult, since most existing tools do not provide the same modelling object. At the same time, it identifies the methodological gap addressed by CSF. The contribution of this work is the definition and implementation of a solver-independent continuous sectional-field layer. Unlike station-wise section tables, CSF defines geometry and material participation as evaluable fields along the member axis, so that the same member description can be inspected, sampled, exported, and reused independently of the downstream solver discretization.
-
 
 
 
