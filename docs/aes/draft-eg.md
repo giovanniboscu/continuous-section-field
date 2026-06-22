@@ -19,10 +19,9 @@ The paper formalizes this representation and its composition rules for longitudi
 **Keywords:** continuous section field; continuous field representation; longitudinal coordinate; material participation fields; independent geometry and participation; functional modelling
 
 ## 1. Motivation
+A longitudinal model may be simple to describe locally, but harder to preserve as one continuous object when its components follow different laws. This difficulty becomes fundamental when form and participation vary independently: a local state can be evaluated at a coordinate, but the relation between the laws that generate those states is lost if the model is represented only through assembled local descriptions.
 
-A longitudinal model may be simple to describe locally, but harder to retain as one continuous object when its components follow different laws. This difficulty becomes fundamental when form and participation vary independently: a local state can be evaluated at a coordinate, but the relation between the laws that generate those states is lost if the model is represented only through assembled local descriptions.
-
-The motivation for CSF is to keep that relation explicit. The longitudinal field is treated as the object to be defined, rather than as something reconstructed from its local readings. A reading of the field at a coordinate is an operation on the object; it is not a substitute for the object. The same applies to differentiation, integration, and other derived operations.
+The role of CSF is to keep that relation explicit by treating the longitudinal field as the definition of the model. Local readings and derived operations act on this field; they do not replace it. This distinction matters because a field-level object can be evaluated, differentiated where the prescribed laws are regular, and integrated while preserving the laws that generate each local state. The model therefore remains a complete but tractable representation, rather than a set of values assembled after the fact.
 
 This distinction is central when spatial domains, axial/bending participation, and shear/torsion participation are prescribed independently. Their laws may evolve separately, yet the model must retain them as coupled components of one continuous representation. CSF promotes $S(z)$ to the primary object of the model for this purpose.
 
