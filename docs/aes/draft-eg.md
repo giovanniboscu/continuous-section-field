@@ -217,7 +217,9 @@ The Saint-Venant torsional [[13]](#saintven) constant is a notable exception. Ar
 
 ## 3. Computational Architecture and Declarative Workflow
 
-CSF can be used either as a Python library or through a declarative file-based YAML workflow. In the YAML workflow, the member definition and the requested numerical actions are written as input files rather than encoded directly in procedural Python code.
+This section describes how the CSF field representation is organized computationally without replacing it by a predefined station table. The architecture separates the continuous member definition from the operations applied to it, such as inspection, sampling, property evaluation, visualization, and exchange with external analysis tools.
+
+In implementation, the same CSF model can be accessed either through the Python API or through a declarative file-based YAML workflow. In the YAML workflow, the geometry and participation laws are defined in a model file, while the requested numerical actions are specified separately. Changing the station set, output format, or inspection operation therefore does not require redefining the member model.
 
 
 
