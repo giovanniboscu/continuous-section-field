@@ -23,9 +23,7 @@ A longitudinal model may be simple to describe locally, but harder to preserve a
 
 The role of CSF is to keep that relation explicit by treating the longitudinal field as the definition of the model. Local readings and derived operations act on this field; they do not replace it. This distinction matters because a field-level object can be evaluated, differentiated where the prescribed laws are regular, and integrated while preserving the laws that generate each local state. The model therefore remains a complete but tractable representation, rather than a set of values assembled after the fact.
 
-This distinction is central when spatial domains, axial/bending participation, and shear/torsion participation are prescribed independently. Their laws may evolve separately, yet the model must retain them as coupled components of one continuous representation. CSF promotes $S(z)$ to the primary object of the model for this purpose.
-
-Existing approaches generally represent longitudinal variation through derived or assembled descriptions within a specific modelling context. They do not generally provide a single continuous field in which spatial domains, axial/bending participation, and shear/torsion participation are independent components governed by separate evolution laws. The contribution of this work is the formalization of that field object as a compact mathematical and computational representation.
+Existing approaches may account for longitudinal variation, but the variation is typically broken into local or discretized descriptions before it becomes an independent modelling object. CSF changes this order: it defines the continuous field first, and treats local or discrete descriptions as readings of that field.
 
 
 ---
