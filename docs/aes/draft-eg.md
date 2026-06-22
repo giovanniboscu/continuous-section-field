@@ -1,17 +1,18 @@
 # DRAFT preprint
 # Continuous Section Field for Non-Prismatic Members with Decoupled Geometry and Material Participation
 
-## Abstract
-Continuous Section Field (CSF) is a computational modelling framework that represents geometric description and material distribution along a member axis as an evaluable continuous sectional field, which can be inspected, sampled, and exported as station-wise data for downstream workflows.
 
-The central idea is to treat the cross-section as a field defined along the longitudinal coordinate, rather than as an isolated section or a fixed table of sectional properties. Geometry is specified at reference stations and obtained by interpolating corresponding polygon vertices, producing continuous intermediate cross-sections. Material participation fields prescribe the longitudinal variation of material contribution independently of geometry. The independence of geometry and participation is foundational: each can vary along the axis without requiring the other to follow the same law. At any requested station, CSF evaluates the corresponding section by combining the interpolated geometry with the participation fields; sectional quantities such as area, centroid, second moments of area, principal inertias, and section moduli are then obtained as derived outputs.
+# Abstract
+
+Continuous Section Field (CSF) is a computational modelling framework that represents geometric description and material distribution along a member axis as an evaluable continuous sectional field, which can be queried at any longitudinal position as a fully defined sectional field state, available to any downstream process that requires it.
+
+The central idea is to treat the sectional description as a field defined along the longitudinal coordinate, rather than as an isolated entity or a fixed table of properties. Geometry is specified at reference stations and extended continuously along the axis as a geometric section field — a single continuous entity whose local character can be extracted at any position, not enumerated in advance. Material participation fields prescribe the longitudinal variation of material contribution independently of geometry. The independence of geometry and participation is foundational: each can vary along the axis without requiring the other to follow the same law. At any requested position, CSF returns the local state of the field as a fully defined geometric and material entity — one whose properties, gradients, or integral measures are obtainable as particular readings of that state, not as its purpose.
 
 CSF makes an explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two longitudinal participation fields define how much each region contributes: the axial/bending field $w_i(z)$ and the shear/torsion field $k_i(z)$. Their independence allows geometry, axial/bending contribution, and shear/torsion contribution to vary separately along the member axis, while optional isotropic coupling can be used when appropriate.
 
-This separation preserves a continuous member representation while generating solver-facing station-wise data only when required.
+This separation preserves a continuous member representation that can be interrogated, transformed, or consumed by any process — numerical, analytical, or otherwise — without prescribing how or when.
 
-
-**Keywords:** Continuous section field; non-prismatic members; section properties; material participation fields; solver-independent preprocessing; beam modelling; axially graded members
+**Keywords:** continuous section field; non-prismatic members; longitudinal field representation; material participation fields; member axis field; beam modelling; axially graded members
 
 
 ## 1. Motivation
