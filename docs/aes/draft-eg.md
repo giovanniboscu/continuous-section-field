@@ -3,13 +3,15 @@
 
 ## Abstract
 
-Before any discretization is introduced, a structural member is treated as an object defined over a longitudinal continuum. Here, continuity refers to the domain of representation rather than to the exclusion of prescribed jumps or piecewise laws. The resulting formulation is referred to as Continuous Section Field (CSF).
+Before any discretization is introduced, a structural member is treated as an object defined over a longitudinal continuum. Here, continuity refers to the domain of representation rather than to the exclusion of prescribed jumps or piecewise laws. Continuous Section Field (CSF) formalizes this view through a field $S(z)$ whose value at each axial coordinate is a local state composed of spatial regions and participation values.
 
-To make the field representation well defined and constructible, the model must specify how each local state is built. In CSF, this is done by separating the local state into a geometric component and material-participation components. The geometric component of $S(z)$ is defined by boundary-vertex correspondences along the axial coordinate; the spatial regions at each coordinate are induced by these correspondences. Material participation is represented by independent longitudinal fields that define the axial/bending and shear/torsion contribution of each region. The geometric field, the axial/bending participation field $w_i(z)$, and the shear/torsion participation field $k_i(z)$ are separate components of the same model and are not constrained to follow a common evolution law.
+To make this field well defined and constructible, CSF defines each local state as an ordered collection of region triples $(\Omega_i(z), w_i(z), k_i(z))$. The spatial region $\Omega_i(z)$ is induced by boundary-vertex correspondences along the axial coordinate. The quantities $w_i(z)$ and $k_i(z)$ are the values, at the same coordinate, of the axial/bending and shear/torsion participation fields assigned to region $i$. In this way, geometry and participation are connected region by region while remaining separate components of the model. The spatial region $\Omega_i(z)$, the axial/bending participation field $w_i(z)$, and the shear/torsion participation field $k_i(z)$ are not constrained to share a common evolution law.
 
-With these components defined, $S(z)$ is promoted to a first-class mathematical entity. Field-level operations can then be applied to the same underlying object: local evaluation, differentiation where the prescribed laws are regular, and integration all act on $S(z)$ rather than on separately assembled local values. The model therefore remains a complete parametric description within the representation class defined by the boundary-vertex correspondences and the prescribed participation fields. The paper formalizes this representation and the rules by which spatial regions and participation fields combine into a local state.
 
-CSF therefore defines a first-class field object for the class of longitudinal models in which spatial regions and participation fields are combined within the same function $S(z)$ while remaining independently prescribed components.
+With these components defined, $S(z)$ becomes the primary mathematical object. Field-level operations — local evaluation, differentiation where the prescribed laws are regular, and integration — act on the same underlying description rather than on separately assembled local values. The model remains a parametric description within the representation class defined by boundary-vertex correspondences and prescribed participation fields.
+
+The paper formalizes this representation and its composition rules for the class of longitudinal models in which spatial regions and participation fields remain independently prescribed components of the same function $S(z)$.
+
 
 
 
