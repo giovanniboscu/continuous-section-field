@@ -638,9 +638,6 @@ The resulting table shows that only the lower interface `h1` varies in this exam
 
 The complete reproducibility material for this example, including the CSF input files, action file, figures, station-wise exports, and the full comparison table, is provided in the repository:
 
-Complete workflow Stacked rectangular example:
-[https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/stacked_rectangular ](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/stacked_rectangular)
-
 ---
 
 ## 6. Application example: NREL 5-MW reference tower
@@ -844,10 +841,6 @@ The two cases exhibit qualitatively different convergence regimes under the same
 
 This interpretation is enabled by the continuous nature of the sectional representation, rather than by treating the station discretization as the model itself.
 
-
-Complete workflow, convergence plots, and numerical tables for the NREL validation case:
-[https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case ](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/aes/nrel_case)
- 
 ---
 
 
@@ -879,24 +872,6 @@ Accordingly, CSF should be interpreted as the continuous sectional-field represe
 These limitations suggest three natural extensions of the present framework. First, automatic evaluation of derivatives of sectional properties and participation-weighted stiffness fields would facilitate coupling with non-prismatic beam formulations that explicitly require longitudinal gradients of geometric and constitutive quantities. Second, support for curved member axes would extend the applicability of the framework beyond straight beam-like structures. Third, tighter integration with nonlinear structural solvers could allow participation fields to evolve during the analysis, enabling applications beyond the current static sectional representation.
 
 
-## Data and software availability
-
-The CSF software implementation, input files, validation workflows, figures, and numerical data supporting this study are available in the project repository:
-
-https://github.com/giovanniboscu/continuous-section-field
-
-The repository contains a dedicated `docs/aes/` directory with the reproduction material for the examples discussed in this paper, including the model definitions, generated outputs, convergence data, and figures.
-
-The software package is distributed as `csfpy`. It is implemented in Python 3.8 or later and released under the GPL-3.0 license. The command-line workflow used for the reproducible examples is based on the `csf-actions` entry point:
-
-```bash
-csf-actions geometry.yaml actions.yaml
-```
-
-An archived software release is available on Zenodo:
-
-https://doi.org/10.5281/zenodo.20687216
-
 
 ---
 
@@ -904,24 +879,22 @@ https://doi.org/10.5281/zenodo.20687216
 
 The author thanks the developers of `sectionproperties` for providing an open finite-element section-analysis ecosystem that can be used in validation and interoperability workflows.
 
-## Declaration of competing interest
-
-The author declares that there are no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
-
 ## Funding
 
 This research received no external funding.
 
----
 
-## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
+# Declaration of competing interest
 
-During the preparation of this work, the author used ChatGPT and Claude for drafting assistance, copy-editing, and code-review suggestions. After using these tools, the author reviewed, edited, and validated the content as needed and takes full responsibility for the scientific claims, software implementation, and manuscript.
+The author declares no competing interests.
 
-## CRediT author statement
+# Funding
 
-Giovanni Boscu: Conceptualization, Methodology, Software, Validation, Formal analysis, Writing – original draft, Writing – review and editing, Visualization.
+This research received no external funding.
 
+# Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
+
+During manuscript preparation, generative AI-assisted tools were used to support language editing, clarity checking, and structural revision of author-prepared text. The author reviewed, revised, and approved all content and takes full responsibility for the final manuscript. No generative AI tools were used to generate research data, perform numerical analyses, create results, or produce evidential figures.
 
 
 ## References
