@@ -34,12 +34,13 @@ Existing approaches may account for longitudinal variation, but they typically e
 
 ### 2.1 Scope
 
+### 2.1 Scope
 
-The CSF section model defines an evaluable sectional field along the member coordinate $z$. Its primary object is the station-dependent section $S(z)$, obtained from reference cross-sectional geometries and longitudinal participation fields.
+This section describes the mathematical model used in this work and the way participation laws are assigned to geometric regions. A CSF member is represented as a longitudinal arrangement of regions. Each region may have its own geometric evolution and is assigned axial/bending and shear/torsion participation fields. The model therefore describes how regions exist, vary, and participate along the member coordinate $z$ before any sampling or derived property calculation is requested.
 
-The scope of the model is the construction, evaluation, and inspection of this section field independently of any specific beam element, solver mesh, or downstream data format. At each requested coordinate, CSF returns the corresponding evaluated section, from which geometric and stiffness-related quantities can be computed when needed.
+A central part of the model is the geometric relation between regions. Regions may be independent or contained within other regions. This nesting relation is the part of the model that connects the geometric decomposition with material participation: when one region is contained in another, the containment hierarchy determines how the assigned participation fields are converted into effective contributions.
 
-In this sense, sectional properties are outputs of the evaluated section, not the defining objects of the model.
+Sectional properties, visualizations, exports, and solver inputs are therefore secondary operations on the evaluated field. They are useful outputs of the model, but they are not its defining objects.
 
 
 
