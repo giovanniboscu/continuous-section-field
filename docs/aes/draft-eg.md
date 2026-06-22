@@ -635,9 +635,6 @@ The relevant point is that the interface coordinates, the centroid coordinate, a
 
 The resulting table shows that only the lower interface `h1` varies in this example, because only the lower boundary of the lower component changes along the member. The other interfaces remain fixed, and their derivatives are therefore zero. The centroid derivative `dCy_dz` remains non-zero because the centroid follows the combined effect of the changing lower geometry and the varying upper participation field.
 
-
-The complete reproducibility material for this example, including the CSF input files, action file, figures, station-wise exports, and the full comparison table, is provided in the repository:
-
 ---
 
 ## 6. Application example: NREL 5-MW reference tower
