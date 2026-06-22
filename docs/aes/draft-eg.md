@@ -2,17 +2,18 @@
 # Continuous Section Field for Non-Prismatic Members with Decoupled Geometry and Material Participation
 
 
-# Abstract
+## Abstract
 
-Continuous Section Field (CSF) is a computational modelling framework that represents geometric description and material distribution along a member axis as an evaluable continuous sectional field, which can be queried at any longitudinal position as a fully defined sectional field state, available to any downstream process that requires it.
+Continuous Section Field (CSF) is a computational modelling framework that represents a longitudinal member through continuous user-defined fields along its axis. The model is expressed as a single function $S(z)$, defined over the member length, whose value at each coordinate is a complete local state composed of geometric regions and material participation.
 
-The central idea is to treat the sectional description as a field defined along the longitudinal coordinate, rather than as an isolated entity or a fixed table of properties. Geometry is specified at reference stations and extended continuously along the axis as a geometric section field — a single continuous entity whose local character can be extracted at any position, not enumerated in advance. Material participation fields prescribe the longitudinal variation of material contribution independently of geometry. The independence of geometry and participation is foundational: each can vary along the axis without requiring the other to follow the same law. At any requested position, CSF returns the local state of the field as a fully defined geometric and material entity — one whose properties, gradients, or integral measures are obtainable as particular readings of that state, not as its purpose.
+Geometry is constructed as a continuous geometric field from reference configurations. Material participation is prescribed through independent longitudinal fields that define how each region contributes to axial/bending and shear/torsion response. These components are not constrained to share the same evolution law: shape, axial/bending participation $w_i(z)$, and shear/torsion participation $k_i(z)$ may vary independently while belonging to one continuous member description.
 
-CSF makes an explicit separation between the geometric description of the member and the sectional participation fields that govern its mechanical contribution. Two longitudinal participation fields define how much each region contributes: the axial/bending field $w_i(z)$ and the shear/torsion field $k_i(z)$. Their independence allows geometry, axial/bending contribution, and shear/torsion contribution to vary separately along the member axis, while optional isotropic coupling can be used when appropriate.
+CSF separates the definition of the member from the operations later applied to it. Local evaluation, differentiation, integration, and conversion to analysis-specific data are consequences of the same field definition, rather than separate descriptions of the member.
 
-This separation preserves a continuous member representation that can be interrogated, transformed, or consumed by any process — numerical, analytical, or otherwise — without prescribing how or when.
+The paper formalizes the CSF data model, defines the evaluation rules for combining geometric and participation fields, and demonstrates the representation on non-uniform members with independently varying contribution fields. CSF provides a compact functional formulation for members whose form and mechanical participation evolve continuously and independently along the longitudinal coordinate.
 
-**Keywords:** continuous section field; non-prismatic members; longitudinal field representation; material participation fields; member axis field; beam modelling; axially graded members
+**Keywords:** continuous section field; continuous member representation; longitudinal field model; material participation fields; non-uniform members; user-defined field laws; independent contribution fields
+
 
 
 ## 1. Motivation
