@@ -24,6 +24,7 @@ CSF introduces a single field object, $S(z)$, defined over the longitudinal doma
 The motivation is to keep the longitudinal definition as one continuous object. Evaluation, differentiation, integration, or other readings are operations on $S(z)$; they do not create new definitions of the model. The same field preserves the relation between form and participation while allowing each component to follow its own law.
 
 This work formalizes that field level. The contribution is the definition of a continuous representation in which geometry and participation are distinct but combined components of one longitudinal function. This makes it possible to describe models whose form and participation vary continuously and independently along the longitudinal coordinate.
+Existing approaches may represent longitudinal variation through solver formulations, local section descriptions, property tables, or workflow-specific data structures, but they do not generally expose the longitudinal field itself as a first-class modelling object. CSF addresses this gap by promoting the continuous field $S(z)$ to the primary object of the model.
 
 
 ---
