@@ -5,7 +5,7 @@
 
 Continuous Section Field (CSF) is a mathematical modelling framework that represents a longitudinal object through independently prescribed fields along an axial coordinate. The model is expressed as a function $S(z)$, defined over the longitudinal domain, whose value at each coordinate is a local state composed of spatial domains and material participation.
 
-The geometric component of $S(z)$ is a continuous mapping from the axial coordinate to the spatial domains assigned to the model regions. Material participation is represented by independent longitudinal fields that define the axial/bending and shear/torsion contribution of each region. The geometric field, the axial/bending participation field $w_i(z)$, and the shear/torsion participation field $k_i(z)$ are separate components of the same model and are not constrained to follow a common evolution law.
+The geometric component of $S(z)$ is defined by boundary-vertex correspondences along the axial coordinate; the spatial regions at each coordinate are induced by these correspondences. Material participation is represented by independent longitudinal fields that define the axial/bending and shear/torsion contribution of each region. The geometric field, the axial/bending participation field $w_i(z)$, and the shear/torsion participation field $k_i(z)$ are separate components of the same model and are not constrained to follow a common evolution law.
 
 This formulation makes the continuous field the central mathematical object. Operations such as local evaluation, differentiation, and integration act on $S(z)$ without redefining the underlying description. The paper formalizes the CSF representation and the rules by which spatial domains and participation fields combine into a local state.
 
