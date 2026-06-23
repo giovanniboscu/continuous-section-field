@@ -377,11 +377,15 @@ $$
 The same procedure applies to interface coordinates, centroid coordinates, sectional properties, and other quantities extracted from the evaluated section. CSF supplies the continuous station-wise section object; the downstream formulation selects the derived quantities and the differentiation rule.
 
 ---
-## 5. Controlled stacked-section example
 
-A controlled stacked-section example is introduced to verify, under closed-form conditions, how geometric interpolation and participation fields combine within the CSF formulation. The objective is not to represent a complex structure, but to show how the fields introduced in the model combine at section level before any structural solver is involved.
+## 5. Controlled stacked insert-hole example
 
-The example consists of two CSF intervals assembled into a single member. Each section is composed of three rectangular components: an upper component, a middle component, and a lower component. The upper and middle components keep constant geometry, while the lower component changes its height along the member axis. At the same time, the participation fields of the upper component vary continuously.
+A controlled stacked insert-hole example is introduced to verify, under closed-form conditions, how geometric interpolation, nested polygons, and participation fields combine within the CSF formulation. The objective is not to represent a complex structure, but to show how the prescribed fields combine at section level before any structural solver is involved.
+
+The example consists of two CSF intervals assembled into a single member. Each section contains an upper external polygon, an internal insert polygon, a non-participating hole inside the insert, and a lower rectangular component. The upper nested polygons keep constant geometry, while the lower component changes its height along the member axis. At the same time, the axial/bending participation field assigned to the insert varies continuously over the two intervals.
+
+This construction provides a controlled demonstration of polygon nesting within a stacked CSF member: the outer polygon, the insert, and the internal hole contribute through their effective participation, while the lower component introduces an independent geometric variation along the member axis.
+
 
 
 <p align="center">
