@@ -382,7 +382,7 @@ The same procedure applies to interface coordinates, centroid coordinates, secti
 
 A controlled stacked insert-hole example is introduced to verify, under closed-form conditions, how geometric interpolation, nested polygons, and participation fields combine within the CSF formulation. The objective is not to represent a complex structure, but to show how the prescribed fields combine at section level before any structural solver is involved.
 
-The example consists of two CSF intervals assembled into a single member. Each section contains an upper external polygon, an internal insert polygon, a non-participating hole inside the insert, and a lower rectangular component. The upper nested polygons keep constant geometry, while the lower component changes its height along the member axis. At the same time, the axial/bending participation field assigned to the insert varies continuously over the two intervals.
+The example consists of two CSF intervals assembled into a single member. Each section contains an upper external polygon, an internal insert polygon, a non-participating hole inside the insert, and a lower rectangular component. The upper polygons keep constant geometry, while the lower component changes its height along the member axis. At the same time, the axial/bending participation field assigned to the insert varies continuously over the two intervals.
 
 This construction provides a controlled demonstration of polygon nesting within a stacked CSF member: the outer polygon, the insert, and the internal hole contribute through their effective participation, while the lower component introduces an independent geometric variation along the member axis.
 
