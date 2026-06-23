@@ -1,0 +1,54 @@
+CSF_ACTIONS:
+  stations:
+    station_middle:
+      - 7.5
+    station_edges:
+      - 5
+      - 10  
+
+    station_precise:
+      - 5  
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+
+  actions:
+    - plot_volume_3d:
+        params:
+          seed: w
+          title: "Right element"
+          line_percent: 100.0
+    - plot_volume_3d:
+        params:
+          seed: s 
+          title: "Element with shear weight"
+          line_percent: 100.0
+    - section_selected_analysis:
+        stations: station_precise
+        output:
+          - [out/sec_var.txt]
+        properties:
+          [geometry,A, Cy, Iy, Iy]
+    - plot_section_2d:
+        stations:
+          - station_middle
+        show_ids: false
+        show_vertex_ids: false
+        output:
+          - [stdout, out/section_a.jpg]
+    - plot_properties:
+        output:
+          - stdout
+          - out/section_properties.jpg
+        params:
+          num_points: 100
+        properties: [A,Cy, Ix, Iy]
+  
+    - plot_weight:
+        output:
+          - out/weight.jpg
+    - plot_shear_weight:
+        output:
+          - out/shear_weight.jpg

@@ -1,0 +1,80 @@
+CSF:
+  sections:
+    S0:
+      z: 5.0
+      polygons:
+        upper0:
+          weight: 1.0
+          vertices:
+            - [-0.25,  0.00]
+            - [ 0.25,  0.00]
+            - [ 0.25,  0.25]
+            - [-0.25,  0.25]
+
+        upper0_insert:
+          weight: 2.0
+          vertices:
+            - [-0.20,  0.025]
+            - [ 0.20,  0.025]
+            - [ 0.20,  0.225]
+            - [-0.20,  0.225]
+
+        upper0_insert_hole:
+          weight: 0.0
+          vertices:
+            - [-0.10,  0.075]
+            - [ 0.10,  0.075]
+            - [ 0.10,  0.175]
+            - [-0.10,  0.175]
+
+        lower0:
+          weight: 1.0
+          vertices:
+            - [-0.15, -0.20]
+            - [ 0.15, -0.20]
+            - [ 0.15,  0.00]
+            - [-0.15,  0.00]
+
+    S1:
+      z: 10.0
+      polygons:
+        upper0:
+          weight: 1.0
+          vertices:
+            - [-0.25,  0.00]
+            - [ 0.25,  0.00]
+            - [ 0.25,  0.25]
+            - [-0.25,  0.25]
+
+        upper0_insert:
+          weight: 2.0
+          vertices:
+            - [-0.20,  0.025]
+            - [ 0.20,  0.025]
+            - [ 0.20,  0.225]
+            - [-0.20,  0.225]
+
+        upper0_insert_hole:
+          weight: 0.0
+          vertices:
+            - [-0.10,  0.075]
+            - [ 0.10,  0.075]
+            - [ 0.10,  0.175]
+            - [-0.10,  0.175]
+
+        lower0:
+          weight: 1.0
+          vertices:
+            - [-0.15, -0.30]
+            - [ 0.15, -0.30]
+            - [ 0.15,  0.00]
+            - [-0.15,  0.00]
+
+  shear_weight_laws:
+    - 'upper0,upper0: iso(1.0)'
+    - 'upper0_insert,upper0_insert: iso(2.0)'
+    - 'upper0_insert_hole,upper0_insert_hole: iso(0.0)'
+    - 'lower0,lower0: iso(0.2)'
+
+  weight_laws:
+    - 'upper0_insert,upper0_insert: 2.0 - 0.5*t'
