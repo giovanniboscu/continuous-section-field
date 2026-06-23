@@ -390,7 +390,7 @@ This construction provides a controlled demonstration of polygon nesting within 
 
 <p align="center">
   
-<img width="741" height="277" alt="image" src="img/image1.jpg" />
+<img width="741" height="277" alt="image" src="stacked_insert/img/image1.jpg" />
 
 </p>
 
