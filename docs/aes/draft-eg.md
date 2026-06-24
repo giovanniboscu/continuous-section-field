@@ -4,7 +4,8 @@
 
 ## Abstract
 
-**Purpose** – This paper introduces Continuous Section Field (CSF), an axially parametrized representation of a structural member whose evaluations provide local cross-sectional data before any station-wise or solver-specific discretization is chosen.
+**Purpose** – This paper introduces Continuous Section Field (CSF), an axially parametrized representation of a structural member whose evaluations provide local cross-sectional descriptions before any station-wise or solver-specific discretization is chosen.
+
 
 **Design/methodology/approach** – The member is represented through a field $S(z)$ whose value at each axial coordinate is an ordered collection of region triples $(\Omega_i(z), w_i(z), k_i(z))$. The spatial regions are induced by boundary-vertex correspondences, while $w_i(z)$ and $k_i(z)$ define axial/bending and shear/torsion participation fields. The formulation is assessed through a closed-form stacked-section example and a tapered-tower application case.
 
