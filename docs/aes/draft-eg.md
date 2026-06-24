@@ -21,14 +21,14 @@
 
 ---
 
+
 ## 1. Motivation
 
-A longitudinal member can often be described without difficulty at isolated stations. The difficulty arises when those local descriptions are not the model itself, but evaluations of geometric and participation laws that vary independently along the member coordinate. In that case, a local state can be evaluated at a coordinate, but the relation between the laws that generate all local states is weakened if the model is represented only after being decomposed into assembled local descriptions.
+A longitudinal member can often be described without difficulty at isolated stations. The difficulty arises when those local descriptions are not the model itself, but evaluations of geometric and participation laws that vary independently along the member coordinate. In that case, a local state can be evaluated at a coordinate, but the relation between the laws that generate all local states is weakened if the model is represented only after being decomposed into assembled local descriptions. When geometry and participation vary independently, the member's mechanical state at any station depends on the coupled evolution of both fields; this coupling is obscured once the generating laws are lost in a table of sampled values.
 
 The role of CSF is to keep that relation explicit by treating the longitudinal field as the definition of the model. Local evaluations and derived operations act on this field; they do not replace it. This distinction matters because a field-level object can be evaluated, differentiated where the prescribed laws are regular, and integrated while preserving the laws that generate each local state. The model therefore remains a complete but tractable representation, rather than a set of values assembled after the fact.
 
 The relevant methodological gap is not the ability to account for longitudinal variation, but the level at which that variation is organized. When variation is expressed only after decomposition into stations, elements, or formulation-specific quantities, the field that links geometric regions and participation laws is no longer the primary object. CSF addresses this gap by making $S(z)$ the object from which local sections, derived quantities, and discrete representations are obtained. The contribution of this work is the formalization of this field object and its composition rules: spatial regions and participation fields are kept as coupled components of the same $S(z)$ while retaining independent evolution laws.
-
 
 ---
 
