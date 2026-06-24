@@ -4,14 +4,16 @@
 
 ## Abstract
 
-**Purpose** – This paper introduces Continuous Section Field (CSF), a representation in which the longitudinal geometric and material description of a structural member is defined as a continuous field before being reduced to local or discrete descriptions.
+**Purpose** – This paper introduces Continuous Section Field (CSF), an axially parametrized representation of a structural member whose evaluations provide local cross-sectional data before any station-wise or solver-specific discretization is chosen.
 
 **Design/methodology/approach** – The member is represented through a field $S(z)$ whose value at each axial coordinate is an ordered collection of region triples $(\Omega_i(z), w_i(z), k_i(z))$. The spatial regions are induced by boundary-vertex correspondences, while $w_i(z)$ and $k_i(z)$ define axial/bending and shear/torsion participation fields. The formulation is assessed through a closed-form stacked-section example and a tapered-tower application case.
 
-**Findings** – The stacked-section example shows that the continuous combination of sectional geometry variation and material-participation variation produces coupled sectional effects that are not captured as independent scalar trends. In particular, a scalar quantity such as total weighted area can remain constant while centroid location and bending inertia vary because the internal distribution of geometry and participation changes along $z$. In the tapered-tower case, the reference sectional distribution is recovered by evaluating the same field at the required stations, rather than by redefining the model for each discretization. The response convergence study further shows that localized stiffness reductions require adequate axial sampling, while the continuous field remains independent of the chosen discretization.
+**Findings** – The stacked-section example shows that the continuous combination of geometry variation and material-participation variation produces coupled effects that are not captured as independent scalar trends. In particular, a scalar quantity such as total weighted area can remain constant while centroid location and bending inertia vary because the internal distribution of geometry and participation changes along $z$. In the tapered-tower case, the reference distribution is recovered by evaluating the same field at the required stations, rather than by redefining the model for each discretization. The response convergence study further shows that localized stiffness reductions require adequate axial sampling, while the field remains independent of the chosen discretization.
 
+**Originality** – The originality of the work lies in reversing the usual order of representation: CSF keeps the member definition at the field level and derives local or discretized descriptions from it. This provides a compact mathematical and computational representation for longitudinal models with independently prescribed spatial regions and participation fields.
 
-**Originality** – The originality of the work lies in reversing the usual order of representation: CSF defines the continuous sectional field first and treats local or discretized descriptions as evaluations of that field. This provides a compact mathematical and computational representation for longitudinal models with independently prescribed spatial regions and participation fields.
+**Keywords:** continuous section field; continuous field representation; longitudinal coordinate; material participation fields; independent geometry and participation; functional modelling
+
 
 **Keywords:** continuous section field; continuous field representation; longitudinal coordinate; material participation fields; independent geometry and participation; functional modelling
 
