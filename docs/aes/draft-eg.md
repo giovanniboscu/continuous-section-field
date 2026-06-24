@@ -13,7 +13,6 @@
 
 **Originality** – The originality of the work lies in treating the axially parametrized sectional field as the primary representation of the member. Local sections, station-wise properties, and solver-oriented descriptions are obtained as evaluations of this field. This provides a compact mathematical and computational representation for longitudinal models with independently prescribed spatial regions and participation fields.
 
-**Keywords:** continuous section field; continuous field representation; longitudinal coordinate; material participation fields; independent geometry and participation; functional modelling
 
 
 **Keywords:** continuous section field; continuous field representation; longitudinal coordinate; material participation fields; independent geometry and participation; functional modelling
