@@ -28,7 +28,7 @@ It represents section geometry and material as continuous functions along z, com
 
 ---
 <p align="center">     
-  <img width="1126" height="468" alt="steel_degradated" src="https://github.com/user-attachments/assets/c5e3e529-2d2b-43a8-a868-d03e427ec348" />
+  <img width="631" height="547" alt="image" src="https://github.com/user-attachments/assets/2bf9827f-df1d-44ee-9937-bacb486373d8" />
 
 
 The colors show how material participation changes continuously along the member: one field controls shear/torsional stiffness (`shear_weight`) , while a separate field controls axial/bending stiffness (`weight`).
