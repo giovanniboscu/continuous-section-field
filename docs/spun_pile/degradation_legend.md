@@ -136,7 +136,7 @@ The yield-strength reduction can be stored as a separate material-limit field fo
 
 $$f_{y,\mathrm{bar}}(z,t)=f_{y,0}\left(1-0.4448\psi(z,t)\right)$$
 
-A yielded/non-yielded state requires an additional stress or strain state. For example, using a bar stress field sigma_bar:
+A yielded/non-yielded state requires an additional stress or strain state. For example, using a bar stress field $$\sigma_{\mathrm{bar}}$$:
 
 $$\eta_y(z,t)=\frac{\sigma_{\mathrm{bar}}(z,t)}{f_{y,\mathrm{bar}}(z,t)}$$
 
