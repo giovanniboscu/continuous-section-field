@@ -18,7 +18,9 @@
 
 ## Purpose of this document
 
-This document describes a fully reproducible validation workflow for the transverse tip displacement and torsional tip rotation of a cantilever tower under combined loading. The tower is the NREL 5-MW reference wind turbine tower, modelled as a tapered thin-walled steel tube fixed at the base. The validation checks that two independent computation paths produce consistent results for both the undegraded tower and a tower with localized longitudinal stiffness degradation.
+This document describes a fully reproducible validation workflow for the transverse tip displacement and torsional tip rotation of a cantilever tower under combined loading. The tower is the NREL 5-MW  [[NREL/TP-500-38060 (NREL)](https://doi.org/10.2172/947422)]reference wind turbine tower, modelled as a tapered thin-walled steel tube fixed at the base. The validation checks that two independent computation paths produce consistent results for both the undegraded tower and a tower with localized longitudinal stiffness degradation.
+
+
 
 The objective is to compare two modelling paths:
 
