@@ -1,4 +1,3 @@
-# DRAFT
 # Refani–Nagao spun pile as a literature-based CSF input case
 
 ## 1. Scope of this document
