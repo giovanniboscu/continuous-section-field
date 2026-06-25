@@ -30,10 +30,9 @@ It represents section geometry and material as continuous functions along z, com
 <p align="center">     
   <img width="631" height="547" alt="image" src="https://github.com/user-attachments/assets/2bf9827f-df1d-44ee-9937-bacb486373d8" />
 
-
-The colors show how material participation changes continuously along the member: one field controls shear/torsional stiffness (`shear_weight`) , while a separate field controls axial/bending stiffness (`weight`).
+Visualization of the NREL 5-MW tower with two localized stiffness degradations. The blue regions mark the degraded zones introduced through the axial/bending participation field, centred at $0.33L$ and $0.67L$
   
-Full reproducible example: [`stell_degradated_model`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/stell_degradated_model)
+Full reproducible example: [`NREL 5-MW model`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/README.md)
 
 ---
 
