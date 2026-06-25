@@ -1,183 +1,242 @@
 # DRAFT
-# Refani–Nagao spun-pile degradation case: uniform CSF scenario generation and verification
+# Refani–Nagao spun pile as a literature-based CSF input case
 
-## 1. Purpose
+## 1. Scope of this document
 
-This document records the complete procedure used to build four uniform degradation scenarios for a prestressed spun pile modelled with CSF.
+This document describes a CSF procedure based on data taken from the Refani–Nagao spun-pile corrosion study.
 
-The objective is narrow:
+The paper is used as a **source of input data**.
 
-1. start from the geometric and material data of the Refani–Nagao spun-pile study;
-2. map the paper-derived material degradation quantities to CSF polygon weights;
-3. generate one fixed CSF geometry/YAML model and four period-specific lookup directories;
-4. run the CSF section-property extraction for the four uniform scenarios;
-5. verify that the resulting CSF equivalent section properties change consistently from the undegraded to the degraded state.
+It is not used here as a direct numerical benchmark for CSF section properties, because the paper does not provide CSF-type section-property outputs such as `A_eq`, `Ix_eq`, `Iy_eq`, or `J_sv_cell` for a full member.
 
-The verification performed here is a mapping check. It is not a reproduction of the local 3D nonlinear finite-element analysis performed in the paper.
+The chain used here is:
 
-The paper provides local material degradation quantities. CSF then converts those material reductions into equivalent section quantities, such as axial and bending weighted properties.
+```text
+paper data
+→ CSF material-weight mapping
+→ CSF lookup files
+→ CSF equivalent section properties
+```
 
-## 2. Source paper data used in this case
+The paper contributes the physical starting point:
+
+```text
+geometry
+initial material quantities
+corrosion degree
+material degradation factors
+```
+
+CSF contributes the sectional transformation:
+
+```text
+polygonal section model
+per-polygon material weights
+weighted/equivalent section properties
+```
+
+## 2. What is, and is not, compared
+
+The comparison is not:
+
+```text
+CSF section property = paper section property
+```
+
+because the paper does not provide those section properties.
+
+The meaningful checks are:
+
+```text
+paper geometry/material data
+→ correctly transferred into the CSF model
+
+paper-derived degradation factors
+→ correctly transferred into CSF lookup weights
+
+CSF lookup weights
+→ produce consistent equivalent section properties
+```
+
+Therefore, the role of the paper is upstream. It defines the input state. CSF then propagates that state to section-level quantities.
+
+## 3. Source paper
 
 Reference:
 
 Refani, A. N.; Nagao, T. *Corrosion Effects on the Mechanical Properties of Spun Pile Materials*. Applied Sciences 2023, 13, 1507. DOI: 10.3390/app13031507.
 
-The following values are used by the CSF case.
+The relevant information used from the paper is restricted to:
 
-### 2.1 Geometry
+1. the spun-pile geometry;
+2. the initial material quantities;
+3. the corrosion degree at the selected exposure periods;
+4. the degradation of cover concrete, core concrete, and PC-bars.
 
-| quantity | value |
-|---|---:|
-| outer diameter | 600 mm |
-| wall thickness | 100 mm |
-| inner diameter | 400 mm |
-| cover concrete thickness | 50 mm |
-| number of PC-bars | 32 |
-| PC-bar diameter | 9 mm |
-| transverse helical rebar diameter | 4 mm |
-| transverse helical rebar spacing | 120 mm |
+The local 3D nonlinear finite-element analysis performed in the paper is not reproduced here.
 
-The CSF polygon model uses the main circular hollow section and the 32 longitudinal PC-bars. The transverse helical reinforcement is part of the paper's local 3D material-degradation model, but it is not represented as an explicit longitudinal CSF bar polygon in this elastic sectional mapping.
+## 4. Primary paper data used as CSF input
 
-### 2.2 Material quantities
+### 4.1 Geometry
 
-| quantity | value |
-|---|---:|
-| cover concrete peak strength, fc | 52 MPa |
-| cover concrete peak strain, εc | 0.00275 |
-| core concrete peak strength, fcc | 52 MPa |
-| core concrete peak strain, εcc | 0.00323 |
-| PC-bar modulus, Es | 196500 MPa |
-| PC-bar 75-year corrosion degree, ψ75 | 0.1856 |
+| quantity | paper value | CSF value used |
+|---|---:|---:|
+| outer diameter | 600 mm | 0.600 m |
+| outer radius | 300 mm | 0.300 m |
+| wall thickness | 100 mm | 0.100 m |
+| inner radius | 200 mm | 0.200 m |
+| cover concrete thickness | 50 mm | boundary at approximately R = 0.250 m |
+| number of PC-bars | 32 | 32 PC-bar polygons |
+| PC-bar diameter | 9 mm | 0.009 m |
+| transverse helical rebar diameter | 4 mm | not represented as a longitudinal CSF polygon |
+| transverse helical rebar spacing | 120 mm | not represented as a longitudinal CSF polygon |
 
-The CSF equivalent weights are expressed in MPa because the lookup files are used as absolute material weights.
+The transverse helical reinforcement is part of the paper's local material-degradation analysis. In the current CSF elastic section-property mapping, the explicit longitudinal reinforcement is represented by the 32 PC-bars.
 
-## 3. CSF geometric representation
+### 4.2 Initial material quantities
 
-The CSF section is represented as concentric polygonal regions plus 32 discrete PC-bar polygons.
+| quantity | paper value | CSF use |
+|---|---:|---|
+| cover concrete strength, fc | 52 MPa | used to derive cover equivalent weight |
+| cover concrete peak strain, εc | 0.00275 | used to derive cover equivalent weight |
+| core concrete strength, fcc | 52 MPa | used to derive core equivalent weight |
+| core concrete peak strain, εcc | 0.00323 | used to derive core equivalent weight |
+| PC-bar modulus, Es | 196500 MPa | used as undegraded PC-bar weight |
 
-The geometric decomposition used by the case is:
+The undegraded equivalent weights used by the CSF mapping are:
 
-| CSF polygon family | radial meaning |
+```text
+E_cover,0 = 52 / 0.00275 = 18909.091 MPa
+E_core,0  = 52 / 0.00323 = 16099.071 MPa
+E_bar,0   = 196500.000 MPa
+```
+
+The concrete values above are not claimed to be the initial elastic modulus from the paper. They are equivalent secant-type weights used in this CSF elastic mapping.
+
+## 5. CSF section model
+
+The CSF geometry is represented by concentric polygonal regions and discrete PC-bar polygons.
+
+The participating polygon families are:
+
+```text
+core_inner
+pcbar_host_layer
+cover_inner
+cover_outer
+pcbar_00 ... pcbar_31
+```
+
+The central void is present geometrically but is not assigned a participating degradation lookup.
+
+The material-family assignment is:
+
+| CSF polygon family | material family used for the lookup |
 |---|---|
-| void | central hollow region, non-participating |
-| core_inner | inner concrete layer |
-| pcbar_host_layer | concrete layer hosting the PC-bar ring |
-| cover_inner | inner part of cover concrete |
-| cover_outer | outer part of cover concrete |
-| pcbar_00 ... pcbar_31 | 32 discrete PC-bar polygons |
+| core_inner | core concrete |
+| pcbar_host_layer | core concrete |
+| cover_inner | cover concrete |
+| cover_outer | cover concrete |
+| pcbar_00 ... pcbar_31 | PC-bars |
 
-The void is excluded from the degradation lookup generation.
+This assignment is the bridge between the paper-derived degradation data and the CSF polygonal model.
 
-The PC-bars remain geometrically fixed. Their corrosion area loss is represented as an equivalent material weight reduction, not by changing the bar polygon diameter.
+## 6. Degradation mapping
 
-## 4. Material-to-CSF mapping
+### 6.1 Corrosion degree
 
-### 4.1 Corrosion degree by scenario
+The 75-year corrosion degree used in the case is:
 
-The four uniform scenarios are:
+```text
+ψ75 = 0.1856
+```
 
-| scenario | year | corrosion degree |
+The four scenarios use a linear interpolation of corrosion degree with time:
+
+```text
+ψ(y) = ψ75 * y / 75
+```
+
+This gives:
+
+| scenario | year | ψ |
 |---:|---:|---:|
 | 000y | 0 | 0.0000 |
 | 025y | 25 | 0.0619 |
 | 050y | 50 | 0.1237 |
 | 075y | 75 | 0.1856 |
 
-The interpolation used here is:
+### 6.2 Cover concrete
 
-$$
-\psi(y) = \psi_{75} \frac{y}{75}
-$$
+The paper provides degradation of cover-concrete compressive strength.
 
-with:
+In this CSF case, that degradation factor is used as a modelling input to reduce the cover-concrete equivalent section weight.
 
-$$
-\psi_{75} = 0.1856
-$$
+The generator uses:
 
-### 4.2 Cover and core concrete
+```text
+r_cover(ψ) = 0.25 * atan((0.149 - ψ) / 0.025) + 0.65
+```
 
-The paper provides degradation of concrete compressive strength, not a direct initial elastic modulus degradation law. Therefore, this CSF case uses an equivalent secant-type material weight derived from peak strength and peak strain.
+with `r_cover(0) = 1.0`.
 
-The undegraded equivalent concrete weights are:
+The lookup weight for cover polygons is:
 
-$$
-E_{cover,0} = \frac{52}{0.00275} = 18909.091\;\text{MPa}
-$$
+```text
+w_cover(ψ) = E_cover,0 * r_cover(ψ)
+```
 
-$$
-E_{core,0} = \frac{52}{0.00323} = 16099.071\;\text{MPa}
-$$
+### 6.3 Core concrete
 
-The reduction factors used by the generator are:
+The paper provides degradation of core-concrete compressive strength.
 
-$$
-r_{cover}(\psi)
-=
-0.25\arctan\left(\frac{0.149-\psi}{0.025}\right)+0.65
-$$
+In this CSF case, that degradation factor is used as a modelling input to reduce the core-concrete equivalent section weight.
 
-$$
-r_{core}(\psi)
-=
-0.14\arctan\left(\frac{0.170-\psi}{0.100}\right)+0.848
-$$
+The generator uses:
 
-At ψ = 0, the generator forces both factors to exactly 1.0.
+```text
+r_core(ψ) = 0.14 * atan((0.170 - ψ) / 0.100) + 0.848
+```
 
-The CSF absolute lookup weights are then:
+with `r_core(0) = 1.0`.
 
-$$
-E_{cover,eq}(\psi) = E_{cover,0} r_{cover}(\psi)
-$$
+The lookup weight for core polygons is:
 
-$$
-E_{core,eq}(\psi) = E_{core,0} r_{core}(\psi)
-$$
+```text
+w_core(ψ) = E_core,0 * r_core(ψ)
+```
 
-### 4.3 PC-bars
+### 6.4 PC-bars
 
-For the PC-bars, the paper defines corrosion degree as mass loss relative to initial mass. If corrosion is uniformly distributed along the bar, this can be treated as area loss.
+For PC-bars, corrosion degree is treated as an area-loss factor.
 
-Since the CSF geometry keeps the PC-bar polygons fixed, the bar area loss is mapped to an equivalent material weight:
+Because the CSF PC-bar polygons remain geometrically fixed, the area loss is represented by an equivalent material weight:
 
-$$
-E_{bar,eq}(\psi) = E_s(1-\psi)
-$$
+```text
+w_bar(ψ) = Es * (1 - ψ)
+```
 
-This is a computational equivalent for a fixed bar polygon. It should not be read as a physical degradation of the steel elastic modulus itself.
+This is an equivalent fixed-geometry representation of area loss. It is not a statement that the steel elastic modulus physically degrades by the same amount.
 
-The PC-bar yield-strength degradation and bond-strength degradation from the paper are not used in the present elastic section-property mapping. They would be relevant for a nonlinear fiber or bond-slip model, not for this elastic equivalent-property extraction.
+## 7. Uniform scenario check
 
-## 5. Uniform scenario definition
+The uniform scenario check sets:
 
-The uniform verification uses:
+```text
+g(z/L) = 1
+```
 
-$$
-g(z/L)=1
-$$
+for all participating polygons.
 
-for every participating polygon and for every station along the member.
+This means that the full degradation associated with each period is applied everywhere along the member.
 
-The lookup value generated for each polygon is:
+The purpose of the uniform case is to isolate the material/period mapping from any axial distribution effect.
 
-$$
-w(z) = E_0\left(1-d_{period}g(z/L)\right)
-$$
+In the uniform case, each scenario must produce constant properties at all selected `z` stations.
 
-Since g(z/L) = 1 everywhere in this verification, each period produces constant lookup values along z.
+## 8. Directory structure
 
-This removes the axial-shape variable from the verification. The only tested operation is:
-
-$$
-\text{paper-derived degradation} \rightarrow \text{CSF polygon weight} \rightarrow \text{CSF equivalent section properties}
-$$
-
-## 6. Directory structure
-
-The procedure assumes a case directory of this form:
+A compact directory structure for this case is:
 
 ```text
 spun_pile_refani/
@@ -213,17 +272,13 @@ spun_pile_refani/
     └── spun_pile_refani_section_properties_075.txt
 ```
 
-The important structural point is that the geometry YAML is unique. The period-specific physical state is selected by the local lookup files in the active scenario directory.
+The YAML geometry/lookup model is unique. The scenario is selected by the directory from which the calculation is run.
 
-## 7. Python scripts
+## 9. Python scripts used
 
-Two Python scripts are used.
+### 9.1 `attach_polygon_axial_degradation.py`
 
-### 7.1 `attach_polygon_axial_degradation.py`
-
-This script creates or updates the CSF YAML so that every participating polygon receives a `T_lookup(...)` weight law.
-
-It does not generate the numeric lookup files. It only attaches the lookup-file references to the YAML.
+This script attaches one `T_lookup(...)` law to each participating polygon.
 
 Typical command:
 
@@ -234,35 +289,23 @@ python attach_polygon_axial_degradation.py \
     axial_degradation.txt
 ```
 
-The third argument is used as a base name. The script expands it into per-polygon file names such as:
+The third argument is only used as a filename base. The generated YAML points to per-polygon files:
 
 ```text
 axial_degradation_core_inner.txt
+axial_degradation_pcbar_host_layer.txt
+axial_degradation_cover_inner.txt
 axial_degradation_cover_outer.txt
 axial_degradation_pcbar_00.txt
 ...
 axial_degradation_pcbar_31.txt
 ```
 
-The resulting YAML contains a block of this form:
+### 9.2 `generate_period_lookup_files_v2.py`
 
-```yaml
-weight_laws:
-  - "core_inner,core_inner: T_lookup('axial_degradation_core_inner.txt')"
-  - "pcbar_host_layer,pcbar_host_layer: T_lookup('axial_degradation_pcbar_host_layer.txt')"
-  - "cover_inner,cover_inner: T_lookup('axial_degradation_cover_inner.txt')"
-  - "cover_outer,cover_outer: T_lookup('axial_degradation_cover_outer.txt')"
-  - "pcbar_00,pcbar_00: T_lookup('axial_degradation_pcbar_00.txt')"
-  - "pcbar_01,pcbar_01: T_lookup('axial_degradation_pcbar_01.txt')"
-  - "..."
-  - "pcbar_31,pcbar_31: T_lookup('axial_degradation_pcbar_31.txt')"
-```
+This script creates the four period directories and the corresponding lookup files.
 
-### 7.2 `generate_period_lookup_files_v2.py`
-
-This script generates the period folders and all per-polygon lookup files.
-
-Uniform verification command:
+Uniform generation command:
 
 ```bash
 python generate_period_lookup_files_v2.py \
@@ -271,23 +314,13 @@ python generate_period_lookup_files_v2.py \
     --uniform
 ```
 
-The option `--uniform` forces:
+The option `--uniform` makes each lookup file constant along `t_norm`, corresponding to:
 
-$$
-g(z/L)=1
-$$
-
-for all generated lookup values.
-
-Non-uniform axial-shape generation is still available by omitting `--uniform`:
-
-```bash
-python generate_period_lookup_files_v2.py \
-    spun_pile_refani_onion_lookup.yaml \
-    degradation_lookups
+```text
+g(z/L) = 1
 ```
 
-The generated lookup files have the format:
+The generated lookup files have this structure:
 
 ```text
 # t_norm  absolute_weight
@@ -299,23 +332,17 @@ The generated lookup files have the format:
 1.00000000  <absolute_weight>
 ```
 
-For the uniform verification, each file is constant along t_norm within a given period.
+## 10. Execution procedure
 
-## 8. Execution procedure
+### Step 1: generate or provide the CSF geometry YAML
 
-### Step 1: create the fixed geometry YAML
-
-The geometry-generation scripts create the onion/rebar polygonal CSF section.
-
-Expected output:
+Expected file:
 
 ```text
 spun_pile_refani_onion.yaml
 ```
 
-This file contains the geometric polygon definitions.
-
-### Step 2: attach per-polygon lookup laws
+### Step 2: attach lookup-based weight laws
 
 Run:
 
@@ -326,15 +353,13 @@ python attach_polygon_axial_degradation.py \
     axial_degradation.txt
 ```
 
-Expected output:
+Expected file:
 
 ```text
 spun_pile_refani_onion_lookup.yaml
 ```
 
-This is still one unique YAML model. The physical period is not hard-coded in the YAML.
-
-### Step 3: generate the four uniform period directories
+### Step 3: generate uniform period lookup directories
 
 Run:
 
@@ -345,7 +370,7 @@ python generate_period_lookup_files_v2.py \
     --uniform
 ```
 
-Expected output:
+Expected folders:
 
 ```text
 degradation_lookups_uniform/degradation_000y/
@@ -354,143 +379,173 @@ degradation_lookups_uniform/degradation_050y/
 degradation_lookups_uniform/degradation_075y/
 ```
 
-Each directory contains:
+### Step 4: run section-property extraction per scenario
 
-```text
-spun_pile_refani_onion_lookup.yaml
-axial_degradation_core_inner.txt
-axial_degradation_pcbar_host_layer.txt
-axial_degradation_cover_inner.txt
-axial_degradation_cover_outer.txt
-axial_degradation_pcbar_00.txt
-...
-axial_degradation_pcbar_31.txt
-```
+The section-property extraction must be run from inside each period directory, so that `T_lookup(...)` resolves the local files.
 
-The YAML in each period directory is a symlink to the same fixed geometry/lookup YAML.
-
-### Step 4: run the CSF section-property extraction per period
-
-The section-property extraction is run from inside each period directory, so that `T_lookup(...)` resolves the local lookup files.
-
-Example execution pattern:
+Pattern:
 
 ```bash
 cd degradation_lookups_uniform/degradation_000y
-# run the CSF section-property extraction using spun_pile_refani_onion_lookup.yaml
+# run section-property extraction with spun_pile_refani_onion_lookup.yaml
 
 cd ../degradation_025y
-# run the same extraction command
+# run the same extraction
 
 cd ../degradation_050y
-# run the same extraction command
+# run the same extraction
 
 cd ../degradation_075y
-# run the same extraction command
+# run the same extraction
 ```
 
-The output files recorded for this verification are:
+## 11. Input-to-CSF mapping results
 
-```text
-spun_pile_refani_section_properties_000.txt
-spun_pile_refani_section_properties_025.txt
-spun_pile_refani_section_properties_050.txt
-spun_pile_refani_section_properties_075.txt
-```
+| scenario | year | ψ | cover factor used as CSF input | core factor used as CSF input | PC-bar area factor used as CSF input | E_cover,eq [MPa] | E_core,eq [MPa] | E_bar,eq [MPa] |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 000y | 0 | 0.0000 | 1.0000 | 1.0000 | 1.0000 | 18909.091 | 16099.071 | 196500.000 |
+| 025y | 25 | 0.0619 | 0.9728 | 0.9634 | 0.9381 | 18395.640 | 15510.229 | 184343.200 |
+| 050y | 50 | 0.1237 | 0.8477 | 0.9087 | 0.8763 | 16028.779 | 14628.699 | 172186.400 |
+| 075y | 75 | 0.1856 | 0.4071 | 0.8263 | 0.8144 | 7698.221 | 13303.220 | 160029.600 |
 
-## 9. Generated paper-derived factors and CSF equivalents
+These are the values transferred into the CSF lookup files. This table is the actual paper-to-CSF mapping check.
 
-| scenario | ψ | cover factor | core factor | PC-bar area factor | E_cover,eq [MPa] | E_core,eq [MPa] | E_bar,eq [MPa] | A_eq | Ix = Iy_eq | J_sv_cell |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 000y | 0.0000 | 1.000 | 1.000 | 1.000 | 18909.091 | 16099.071 | 196500.000 | 3129.420 | 102.225 | 76.378 |
-| 025y | 0.0619 | 0.973 | 0.963 | 0.938 | 18395.640 | 15510.229 | 184343.200 | 3020.491 | 98.775 | 74.075 |
-| 050y | 0.1237 | 0.848 | 0.909 | 0.876 | 16028.779 | 14628.699 | 172186.400 | 2731.336 | 88.709 | 66.231 |
-| 075y | 0.1856 | 0.407 | 0.826 | 0.814 | 7698.221 | 13303.220 | 160029.600 | 1896.468 | 58.223 | 41.313 |
+## 12. CSF section-property results
 
-## 10. Relative change of CSF equivalent section properties
+| scenario | A_eq | Ix_eq | Iy_eq | J_sv_cell | rx | Wx | Q_na |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 000y | 3129.420 | 102.225 | 102.225 | 76.378 | 0.180737 | 340.749 | 253.121 |
+| 025y | 3020.491 | 98.775 | 98.775 | 74.075 | 0.180836 | 329.252 | 244.445 |
+| 050y | 2731.336 | 88.709 | 88.709 | 66.231 | 0.180217 | 295.697 | 220.272 |
+| 075y | 1896.468 | 58.223 | 58.223 | 41.313 | 0.175217 | 194.078 | 148.689 |
 
-| scenario | ΔA_eq vs 000y | ΔIx = ΔIy vs 000y | ΔJ_sv_cell vs 000y |
+These are CSF outputs. They are not reported by the paper.
+
+They are the equivalent section properties obtained after applying the paper-derived input degradation factors to the CSF polygonal model.
+
+## 13. Relative changes in CSF section properties
+
+| scenario | ΔA_eq vs 000y | ΔIx_eq vs 000y | ΔJ_sv_cell vs 000y |
 |---:|---:|---:|---:|
 | 000y | 0.00% | 0.00% | 0.00% |
 | 025y | -3.48% | -3.37% | -3.02% |
 | 050y | -12.72% | -13.22% | -13.29% |
 | 075y | -39.40% | -43.04% | -45.91% |
 
-## 11. Scenario-by-scenario comparison tables
+The decreasing trend is consistent with the applied degradation.
+
+The reduction in section properties is not expected to be numerically identical to the material degradation factors, because the section properties are obtained by integrating multiple weighted polygon families at different radial positions.
+
+## 14. Scenario details
 
 ### Scenario 000y
 
-| item | paper / paper-derived quantity | CSF equivalent used | CSF uniform section result |
-|---|---:|---:|---:|
-| corrosion degree | ψ = 0.0000 | full period degradation because g(z/L) = 1 | constant along z |
-| cover concrete | r_cover = 1.000 | E_cover,eq = 18909.091 MPa | included in weighted section properties |
-| core concrete | r_core = 1.000 | E_core,eq = 16099.071 MPa | included in weighted section properties |
-| PC-bars | area factor = 1 - ψ = 1.000 | E_bar,eq = 196500.000 MPa | included through fixed bar polygons |
-| axial equivalent property | not given by the paper | computed by CSF from polygon weights | A_eq = 3129.420 |
-| bending equivalent property | not given by the paper | computed by CSF from polygon weights | Ix = Iy = 102.225 |
-| torsion cell estimate | not given by the paper | computed by the selected CSF/SP torsion carrier | J_sv_cell = 76.378 |
-| symmetry check | circular section with symmetric PC-bar layout | no centroid drift expected | Cx = 0, Cy = 0, Ixy = 0 |
+Input side:
+
+- corrosion degree: ψ = 0.0000
+- cover-concrete reduction factor used in the CSF lookup: 1.0000
+- core-concrete reduction factor used in the CSF lookup: 1.0000
+- PC-bar area-loss equivalent factor used in the CSF lookup: 1.0000
+
+CSF lookup weights:
+
+- cover polygons: E_cover,eq = 18909.091 MPa
+- core polygons: E_core,eq = 16099.071 MPa
+- PC-bar polygons: E_bar,eq = 196500.000 MPa
+
+CSF section-property output:
+
+- A_eq = 3129.420
+- Ix_eq = Iy_eq = 102.225
+- J_sv_cell = 76.378
+- Cx = 0, Cy = 0, Ixy = 0 in the printed output
 
 ### Scenario 025y
 
-| item | paper / paper-derived quantity | CSF equivalent used | CSF uniform section result |
-|---|---:|---:|---:|
-| corrosion degree | ψ = 0.0619 | full period degradation because g(z/L) = 1 | constant along z |
-| cover concrete | r_cover = 0.973 | E_cover,eq = 18395.640 MPa | included in weighted section properties |
-| core concrete | r_core = 0.963 | E_core,eq = 15510.229 MPa | included in weighted section properties |
-| PC-bars | area factor = 1 - ψ = 0.938 | E_bar,eq = 184343.200 MPa | included through fixed bar polygons |
-| axial equivalent property | not given by the paper | computed by CSF from polygon weights | A_eq = 3020.491 |
-| bending equivalent property | not given by the paper | computed by CSF from polygon weights | Ix = Iy = 98.775 |
-| torsion cell estimate | not given by the paper | computed by the selected CSF/SP torsion carrier | J_sv_cell = 74.075 |
-| symmetry check | circular section with symmetric PC-bar layout | no centroid drift expected | Cx = 0, Cy = 0, Ixy = 0 |
+Input side:
+
+- corrosion degree: ψ = 0.0619
+- cover-concrete reduction factor used in the CSF lookup: 0.9728
+- core-concrete reduction factor used in the CSF lookup: 0.9634
+- PC-bar area-loss equivalent factor used in the CSF lookup: 0.9381
+
+CSF lookup weights:
+
+- cover polygons: E_cover,eq = 18395.640 MPa
+- core polygons: E_core,eq = 15510.229 MPa
+- PC-bar polygons: E_bar,eq = 184343.200 MPa
+
+CSF section-property output:
+
+- A_eq = 3020.491
+- Ix_eq = Iy_eq = 98.775
+- J_sv_cell = 74.075
+- Cx = 0, Cy = 0, Ixy = 0 in the printed output
 
 ### Scenario 050y
 
-| item | paper / paper-derived quantity | CSF equivalent used | CSF uniform section result |
-|---|---:|---:|---:|
-| corrosion degree | ψ = 0.1237 | full period degradation because g(z/L) = 1 | constant along z |
-| cover concrete | r_cover = 0.848 | E_cover,eq = 16028.779 MPa | included in weighted section properties |
-| core concrete | r_core = 0.909 | E_core,eq = 14628.699 MPa | included in weighted section properties |
-| PC-bars | area factor = 1 - ψ = 0.876 | E_bar,eq = 172186.400 MPa | included through fixed bar polygons |
-| axial equivalent property | not given by the paper | computed by CSF from polygon weights | A_eq = 2731.336 |
-| bending equivalent property | not given by the paper | computed by CSF from polygon weights | Ix = Iy = 88.709 |
-| torsion cell estimate | not given by the paper | computed by the selected CSF/SP torsion carrier | J_sv_cell = 66.231 |
-| symmetry check | circular section with symmetric PC-bar layout | no centroid drift expected | Cx = 0, Cy = 0, Ixy = 0 |
+Input side:
+
+- corrosion degree: ψ = 0.1237
+- cover-concrete reduction factor used in the CSF lookup: 0.8477
+- core-concrete reduction factor used in the CSF lookup: 0.9087
+- PC-bar area-loss equivalent factor used in the CSF lookup: 0.8763
+
+CSF lookup weights:
+
+- cover polygons: E_cover,eq = 16028.779 MPa
+- core polygons: E_core,eq = 14628.699 MPa
+- PC-bar polygons: E_bar,eq = 172186.400 MPa
+
+CSF section-property output:
+
+- A_eq = 2731.336
+- Ix_eq = Iy_eq = 88.709
+- J_sv_cell = 66.231
+- Cx = 0, Cy = 0, Ixy = 0 in the printed output
 
 ### Scenario 075y
 
-| item | paper / paper-derived quantity | CSF equivalent used | CSF uniform section result |
-|---|---:|---:|---:|
-| corrosion degree | ψ = 0.1856 | full period degradation because g(z/L) = 1 | constant along z |
-| cover concrete | r_cover = 0.407 | E_cover,eq = 7698.221 MPa | included in weighted section properties |
-| core concrete | r_core = 0.826 | E_core,eq = 13303.220 MPa | included in weighted section properties |
-| PC-bars | area factor = 1 - ψ = 0.814 | E_bar,eq = 160029.600 MPa | included through fixed bar polygons |
-| axial equivalent property | not given by the paper | computed by CSF from polygon weights | A_eq = 1896.468 |
-| bending equivalent property | not given by the paper | computed by CSF from polygon weights | Ix = Iy = 58.223 |
-| torsion cell estimate | not given by the paper | computed by the selected CSF/SP torsion carrier | J_sv_cell = 41.313 |
-| symmetry check | circular section with symmetric PC-bar layout | no centroid drift expected | Cx = 0, Cy = 0, Ixy = 0 |
+Input side:
+
+- corrosion degree: ψ = 0.1856
+- cover-concrete reduction factor used in the CSF lookup: 0.4071
+- core-concrete reduction factor used in the CSF lookup: 0.8263
+- PC-bar area-loss equivalent factor used in the CSF lookup: 0.8144
+
+CSF lookup weights:
+
+- cover polygons: E_cover,eq = 7698.221 MPa
+- core polygons: E_core,eq = 13303.220 MPa
+- PC-bar polygons: E_bar,eq = 160029.600 MPa
+
+CSF section-property output:
+
+- A_eq = 1896.468
+- Ix_eq = Iy_eq = 58.223
+- J_sv_cell = 41.313
+- Cx = 0, Cy = 0, Ixy = 0 in the printed output
 
 
-## 12. Uniformity check along z
+## 15. Uniformity check along the member axis
 
-For each scenario, the extracted properties are constant at all selected stations:
+For each scenario, the section-property output was constant at the selected stations:
 
 ```text
-z = 0.0, 1.0, 3.0, 3.5, 4.5, 5.5, 10.0, 15.0, 20.0
+z = 0.0
+z = 1.0
+z = 3.0
+z = 3.5
+z = 4.5
+z = 5.5
+z = 10.0
+z = 15.0
+z = 20.0
 ```
 
-This confirms that `--uniform` generated `g(z/L)=1` lookup files and that the period variation is not being introduced through the axial coordinate.
+This confirms that the uniform lookup generation did not introduce an axial variation.
 
-The four outputs show:
-
-| scenario | A_eq | Ix = Iy_eq | J_sv_cell | Cx | Cy | Ixy |
-|---:|---:|---:|---:|---:|---:|---:|
-| 000y | 3129.420 | 102.225 | 76.378 | 0 | 0 | 0 |
-| 025y | 3020.491 | 98.775 | 74.075 | 0 | 0 | 0 |
-| 050y | 2731.336 | 88.709 | 66.231 | 0 | 0 | 0 |
-| 075y | 1896.468 | 58.223 | 41.313 | 0 | 0 | 0 |
-
-The symmetry checks remain exact in the printed output:
+In all four scenarios, the printed symmetry quantities were:
 
 ```text
 Cx = 0
@@ -499,53 +554,50 @@ Ixy = 0
 Ix = Iy
 ```
 
-## 13. Interpretation of the verification
+This is consistent with the circular geometry and symmetric 32-bar layout.
 
-The verification confirms the following points.
+## 16. What the procedure demonstrates
 
-1. The unique CSF geometry remains fixed across all four scenarios.
+The procedure demonstrates the following.
 
-2. The period state is controlled only by lookup files.
+1. A published corrosion/material degradation study can be used as a literature-based input source.
 
-3. With `g(z/L)=1`, all stations in a given period have identical material weights and identical equivalent section properties.
+2. The published degradation information can be transferred to CSF through polygon-specific lookup weights.
 
-4. The degradation sequence is monotonic:
+3. A single fixed CSF geometry can support multiple physical scenarios by changing only the local lookup files.
 
-```text
-000y > 025y > 050y > 075y
-```
+4. CSF converts the mapped degradation inputs into equivalent section properties.
 
-for `A_eq`, `Ix = Iy`, and `J_sv_cell`.
+5. The resulting section properties are internally consistent: they are uniform along `z` for the uniform case, symmetric, and monotonically degraded from 000y to 075y.
 
-5. The 75-year scenario applies approximately:
+## 17. What the procedure does not demonstrate
 
-| material family | paper-derived degradation factor used by CSF |
-|---|---:|
-| cover concrete | 0.407 |
-| core concrete | 0.826 |
-| PC-bars | 0.814 |
+This procedure does not reproduce the local 3D nonlinear FEM of the paper.
 
-This is consistent with the intended use of the paper-derived degradation quantities in an elastic CSF section-property mapping.
+It does not validate CSF against paper-provided values of `A_eq`, `Ix_eq`, `Iy_eq`, or `J_sv_cell`, because the paper does not provide those quantities.
 
-## 14. Interpretation limits
+It does not use the paper's PC-bar yield-strength degradation as a nonlinear steel law.
 
-The comparison is not a direct comparison between CSF and the paper's 3D finite-element results.
+It does not use the paper's bond-strength degradation as a bond-slip model.
 
-The paper's FEM model is a local nonlinear 3D model used to extract material degradation behaviour. It does not provide global beam response or CSF-style section functions such as:
+It does not represent the transverse helical reinforcement as an explicit longitudinal CSF polygon.
+
+## 18. Technical interpretation
+
+The correct interpretation is:
 
 ```text
-A(z)
-Ix(z)
-Iy(z)
-J(z)
-EA(z)
-EI(z)
-GJ(z)
+Paper:
+  corrosion and local FEM/material analysis
+  → material degradation quantities
+
+CSF:
+  material degradation quantities
+  → polygon weights
+  → equivalent section properties
 ```
 
-The CSF procedure instead uses the paper-derived degradation quantities as input and computes equivalent section properties for a continuous-section model.
-
-The PC-bar yield-strength degradation and bond-strength degradation reported by the paper are not part of this elastic equivalent-property verification. They would require a nonlinear material/fiber or bond-slip formulation.
+The paper is therefore an input source, not a final-output benchmark.
 
 ## Appendix A: full `attach_polygon_axial_degradation.py`
 
