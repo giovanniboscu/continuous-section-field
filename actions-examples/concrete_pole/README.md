@@ -29,7 +29,7 @@ tapered_pc_pole_lookup.yaml
 tapered_pc_pole_iso_lookup.yaml
 ```
 
-## 1. Generate the CSF YAML input
+## 1. Generate the CSF YAML input and perform analysis
 
 Run the launcher from this directory:
 
@@ -79,6 +79,17 @@ participation scenario    = non-isotropic
 ```
 
 means that axial/bending participation and shear/torsion participation are assigned through separate lookup laws.
+
+Esecuzione modello 
+
+```text
+csf-actions tapered_pole_lookup.yaml action_tapered_pole_lookup.yaml
+```
+
+la directory  `out` conterra tutti i dati richiesti dal file `taction_tapered_pole_lookup.yaml`t
+
+
+
 
 ## 2. What the generated YAML file contains
 
