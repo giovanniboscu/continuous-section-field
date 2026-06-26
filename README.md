@@ -47,8 +47,6 @@ It represents section geometry and material as continuous functions along z, com
   See [Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case. 
 
 
-### Conceptul Model of CSF - [Model](https://github.com/giovanniboscu/continuous-section-field/blob/8f2f17157976bcf40d12ce3826817852161d2316/docs/model/geometric_material_decomposition.md)
-
 
 ---
 ## CSF accepts two input files: geometry.yaml (cross-section definition) and actions.yaml (post-processing pipeline).
