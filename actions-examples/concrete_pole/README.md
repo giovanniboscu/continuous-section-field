@@ -86,16 +86,22 @@ tapered_pole_lookup.yaml
 
 is the generated CSF input model.
 
-It describes the tapered pole as a longitudinal member field. The model is built from two end sections and from the laws that define how the effective contribution of each part changes along the pole.
+It describes the tapered pole as a longitudinal member field. The model is built from:
 
-The two end sections are:
+* the base section;
+* the top section;
+* the named concrete regions;
+* the named prestressing components;
+* the polygon vertices that describe each region;
+* the base weights assigned by the generator;
+* the longitudinal laws that modify the effective elastic contribution of each part.
+
+The two end sections are identified as:
 
 ```text
 S0  -> base section, at z = 0.0 m
 S1  -> top section, at z = 20.0 m
 ```
-
-Each section contains the polygonal geometry of the cross-section at that position. The circular hollow concrete wall is divided into named annular regions. The prestressing components are represented as named polygonal inserts placed around the wall.
 
 A simplified view of the YAML structure is:
 
@@ -116,54 +122,81 @@ CSF:
     ...
 ```
 
-The `sections` block defines the end-section geometry.
+The `sections` block contains the geometry of the two end sections.
 
-Inside `sections`, each named polygon contains its vertex coordinates and its base weight. In this case, the concrete regions are generated with reference weight `1.0`. The prestressing components are generated with the base weight assigned by the generator.
+Inside `sections`, each named part of the cross-section is written as a polygon. The circular hollow concrete wall is divided into named annular regions. The prestressing components are written as small named polygonal inserts placed around the wall.
 
-The `weight_laws` and `shear_weight_laws` blocks then assign longitudinal normalized elastic-modulus factors to the named regions and prestressing components.
+Each polygon contains:
 
-In this case:
+* a name;
+* a base weight;
+* a list of vertex coordinates.
+
+In this case, the concrete regions are generated with reference base weight `1.0`. The prestressing components are generated with the base weight assigned by the generator.
+
+The participation laws used in this case are normalized elastic-modulus factors. They describe how the effective elastic contribution of each concrete region and prestressing component changes along the pole axis.
+
+The geometry defines where each part is located. The participation laws define how strongly that part contributes at each longitudinal position.
+
+A value of `1.0` means full reference contribution. A value of `0.90` means 90% of the reference contribution at that position.
+
+The YAML contains two groups of participation laws:
 
 ```yaml
 weight_laws:
 ```
 
-defines the normalized factors used for axial and bending contribution.
+and:
 
 ```yaml
 shear_weight_laws:
 ```
 
-defines the normalized factors used for shear and torsion contribution.
+The `weight_laws` block assigns the normalized elastic-modulus factors used for axial and bending contribution.
 
-For example, a line such as:
+The `shear_weight_laws` block assigns the normalized elastic-modulus factors used for shear and torsion contribution.
+
+This separation is the reason why the generated summary reports:
+
+```text
+participation scenario    = non-isotropic
+```
+
+In this case, axial/bending contribution and shear/torsion contribution are allowed to follow different normalized laws.
+
+A law assignment has this form:
+
+```text
+component at S0, component at S1: law used between S0 and S1
+```
+
+For example:
 
 ```yaml
 - 'core_inner,core_inner: T_lookup("laws/weight_law_core_inner.dat")'
 ```
 
-means that the region named `core_inner` at `S0` is connected to the region named `core_inner` at `S1`, and its axial/bending contribution is scaled along the pole using the table:
+means that the concrete region named `core_inner` at the base section is connected to the concrete region named `core_inner` at the top section. Its axial/bending contribution is scaled along the pole using:
 
 ```text
 laws/weight_law_core_inner.dat
 ```
 
-The same structure is used for shear and torsion:
+The corresponding shear/torsion assignment is:
 
 ```yaml
 - 'core_inner,core_inner: T_lookup("laws/shear_weight_law_core_inner.dat")'
 ```
 
-This assigns the shear/torsion normalized factor for the same concrete region.
+This assigns the shear/torsion normalized elastic-modulus factor for the same concrete region.
 
-The prestressing components follow the same rule. For example:
+The function:
 
-```yaml
-- 'pcbar_00,pcbar_00: T_lookup("laws/weight_law_pcbar.dat")'
-- 'pcbar_01,pcbar_01: T_lookup("laws/weight_law_pcbar.dat")'
+```text
+T_lookup(...)
 ```
 
-assign the same axial/bending normalized factor table to two different prestressing components. The generated file repeats this assignment for all 16 components, from `pcbar_00` to `pcbar_15`.
+means that the numerical law is read from an external lookup table.
 
 A lookup table has this form:
 
@@ -196,23 +229,34 @@ For example:
 0.0000 1.0000
 ```
 
-means full reference contribution at the base.
+means full reference contribution at the base section.
 
 ```text
 1.0000 0.9000
 ```
 
-means 90% of the reference contribution at the top.
+means 90% of the reference contribution at the top section.
 
-The YAML file therefore combines:
+The same assignment structure is used for the prestressing components. For example:
 
-* the geometry of the tapered hollow pole;
-* the explicit concrete and prestressing-component regions;
-* the base weights assigned by the generator;
-* the normalized axial/bending contribution laws;
-* the normalized shear/torsion contribution laws.
+```yaml
+- 'pcbar_00,pcbar_00: T_lookup("laws/weight_law_pcbar.dat")'
+- 'pcbar_01,pcbar_01: T_lookup("laws/weight_law_pcbar.dat")'
+```
 
-Later CSF operations read this YAML file to evaluate sections along the pole, compute derived sectional properties, generate plots, or sample the member field for structural analysis.
+assign the same axial/bending normalized elastic-modulus factor table to two different prestressing components.
+
+The generated YAML repeats this assignment for all 16 prestressing components:
+
+```text
+pcbar_00
+pcbar_01
+...
+pcbar_15
+```
+
+The YAML file therefore combines the geometric model and the longitudinal elastic contribution model. Later CSF operations read this file to inspect sections along the pole, compute derived sectional properties, generate plots, or sample the member field for structural analysis.
+
 
 
 
