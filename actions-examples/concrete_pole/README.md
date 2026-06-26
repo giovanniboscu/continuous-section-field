@@ -84,6 +84,7 @@ After generating the CSF YAML input, run the action file:
 ```bash
 csf-actions tapered_pole_lookup.yaml action_tapered_pole_lookup.yaml
 ```
+<img width="982" height="761" alt="image" src="https://github.com/user-attachments/assets/49704fae-f4a6-42bc-995b-208fcb45a989" />
 
 <img width="981" height="940" alt="image" src="https://github.com/user-attachments/assets/f1106e0a-51c2-43c1-b9af-130db0ddcb99" />
 <img width="657" height="614" alt="image" src="https://github.com/user-attachments/assets/e39c2fac-27ce-4db8-92ca-0c1b70f99b95" />
