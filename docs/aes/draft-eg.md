@@ -16,7 +16,7 @@ In the tapered-tower case, the same continuous field is evaluated at the station
 In the tapered prestressed-pole case, the member is defined by named concentric regions and discrete prestressing bars, each associated with its own longitudinal participation law. The sectional properties are not prescribed as the model itself; they are projections of a component-wise field in which the internal material-participation structure is explicit and modifiable before any solver-specific sampling is performed. A change in participation assumption, such as a zone-wise degradation law, is therefore a change in the field definition and propagates automatically to all derived outputs.
 
 
-**Originality** – CSF introduces a new representational object: the continuous generating field of a member. Geometry, sectional components, reinforcement, and participation laws are represented before they are reduced to sectional properties or solver-specific samples. This object is not natively available in the structural systems considered here.
+**Originality** – CSF introduces a field-level representation of longitudinal members. The model is the continuous generating field itself: geometry, sectional components, reinforcement, and participation laws remain explicit functions of the member coordinate. Sectional properties and solver inputs are derived evaluations of this field.**
 
 
 
