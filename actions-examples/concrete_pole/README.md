@@ -103,7 +103,7 @@ The requested results are written to the `out/` directory.
 
  ### Expected result
 
-After a successful run, the generator prints a short summary and writes the selected YAML file. The YAML contains:
+After a successful run, the generator prints a short summary and writes the selected file. The YAML contains:
 
 - the two boundary stations of the tapered member;
 - the annular region polygons at each station;
