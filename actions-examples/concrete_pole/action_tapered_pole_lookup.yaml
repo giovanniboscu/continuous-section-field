@@ -75,7 +75,7 @@ CSF_ACTIONS:
     - plot_volume_3d:
         params:
           seed: w
-          title: "Refani-Nagao spun pile CSF onion/rebars model"
+          title: "Pile CSF onion/rebars model"
           line_percent: 20.0
 
     # -------------------------------------------------------------------------
@@ -88,7 +88,7 @@ CSF_ACTIONS:
     - section_selected_analysis:
         stations: station_precise
         output:
-          - [stdout,out/spun_pile_refani_section_properties.txt]
+          - [stdout,out/spun_pile_section_properties.txt]
         properties:
           [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2,J_sv_cell,rx, ry, Wx, Wy, Q_na]
 
