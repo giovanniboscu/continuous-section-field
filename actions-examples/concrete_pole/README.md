@@ -132,11 +132,30 @@ Each polygon contains:
 * a base weight;
 * a list of vertex coordinates.
 
-In this case, the concrete regions are generated with reference base weight `1.0`. The prestressing components are generated with the base weight assigned by the generator.
+For example, one prestressing component may appear in the YAML as:
+
+```yaml
+pcbar_15:
+  weight: 6.0
+  vertices:
+    ...
+```
+
+Here, `pcbar_15` is one of the 16 prestressing components generated around the section.
+
+The line:
+
+```yaml
+weight: 6.0
+```
+
+is the base relative weight assigned to that prestressing component by the generator. In this case, the concrete regions are generated with reference base weight `1.0`, while the prestressing components are generated with base weight `6.0`.
+
+The base weight is the starting relative contribution of the component in the generated geometry. The longitudinal lookup laws then describe how that contribution changes along the pole.
 
 The participation laws used in this case are normalized elastic-modulus factors. They describe how the effective elastic contribution of each concrete region and prestressing component changes along the pole axis.
 
-The geometry defines where each part is located. The participation laws define how strongly that part contributes at each longitudinal position.
+The geometry defines where each part is located. The base weight defines its reference relative contribution. The participation laws define how strongly that part contributes at each longitudinal position.
 
 A value of `1.0` means full reference contribution. A value of `0.90` means 90% of the reference contribution at that position.
 
@@ -255,7 +274,15 @@ pcbar_01
 pcbar_15
 ```
 
+The prestressing components therefore have two levels of contribution in this case:
+
+* the base geometric weight, for example `weight: 6.0`;
+* the longitudinal normalized law read from `laws/weight_law_pcbar.dat` or `laws/shear_weight_law_pcbar.dat`.
+
+The base weight gives the reference relative contribution of the prestressing component. The lookup law gives its variation along the pole.
+
 The YAML file therefore combines the geometric model and the longitudinal elastic contribution model. Later CSF operations read this file to inspect sections along the pole, compute derived sectional properties, generate plots, or sample the member field for structural analysis.
+
 
 
 
