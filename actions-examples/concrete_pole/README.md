@@ -84,18 +84,16 @@ The file:
 tapered_pole_lookup.yaml
 ```
 
-is a text input file written in YAML format.
+is the generated CSF input model.
 
-It is not a structural-analysis result. It is the generated CSF model that will be read by later CSF operations.
+It describes the tapered pole as a longitudinal member field built from:
 
-The file contains the information needed to describe the tapered pole as a longitudinal member field:
-
-* the base section of the pole;
-* the top section of the pole;
-* the polygonal concrete regions at each end section;
-* the polygonal prestressing components at each end section;
-* the base weights assigned to those regions and components;
-* the lookup-law assignments used to vary the effective contribution along the pole.
+* two end sections;
+* named concrete regions;
+* named prestressing components;
+* polygon vertices for each region and component;
+* base weights assigned by the generator;
+* lookup-law assignments that define how the effective contribution varies along the pole.
 
 The two end sections are identified as:
 
@@ -104,7 +102,7 @@ S0  -> base section, at z = 0.0 m
 S1  -> top section, at z = 20.0 m
 ```
 
-The circular hollow cross-section is represented through polygonal regions. This means that the annular concrete wall is written as a set of closed polygons. The prestressing components are also written as polygonal components placed around the wall.
+Each end section contains a polygonal description of the cross-section at that longitudinal position. The circular hollow concrete wall is represented by annular polygonal regions. The prestressing components are represented by small polygonal regions placed around the wall.
 
 A simplified view of the YAML structure is:
 
@@ -125,11 +123,9 @@ CSF:
     ...
 ```
 
-The `sections` block defines the geometry at the two end stations. The `weight_laws` and `shear_weight_laws` blocks define how the contribution of each named part varies between those two stations.
+The `sections` block defines the end-section geometry. The `weight_laws` and `shear_weight_laws` blocks assign longitudinal contribution laws to the named regions and prestressing components.
 
-In this case, the concrete regions are assigned base geometric weights in the generated section description. The longitudinal variation of their effective contribution is then assigned through lookup files.
-
-The same logic is used for the prestressing components. The generator creates 16 prestressing components named:
+The generator creates the prestressing components as explicit named parts of the section model:
 
 ```text
 pcbar_00
@@ -138,16 +134,9 @@ pcbar_01
 pcbar_15
 ```
 
-These names appear in the YAML because each prestressing component is an explicit part of the generated section model.
+These names appear in the YAML because each prestressing component is connected from the base section to the top section and can receive its own participation-law assignment.
 
-At this point, the YAML file contains the model definition. It does not yet contain plots, sectional-property tables, or solver results. Those are produced by later operations that read this YAML file.
-
-
-
-
-
-
-
+The generated YAML is the input read by later CSF operations for section inspection, derived sectional-property plots, and member-field sampling.
 
 
 
