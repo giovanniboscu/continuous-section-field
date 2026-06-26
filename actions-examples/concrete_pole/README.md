@@ -28,8 +28,7 @@ tapered_pole_lookup.yaml
 tapered_pc_pole_lookup.yaml
 tapered_pc_pole_iso_lookup.yaml
 ```
-
-## 1. Generate the CSF YAML input and perform analysis
+## 1. Generate the CSF YAML input and run the analysis
 
 Run the launcher from this directory:
 
@@ -68,9 +67,9 @@ This step generates:
 tapered_pole_lookup.yaml
 ```
 
-The file contains the tapered pole geometry, the prestressing components, and the participation-law assignments read from the lookup tables in `./laws/`.
+The generated file contains the tapered pole geometry, the prestressing components, and the participation-law assignments read from the lookup tables in `./laws/`.
 
-The summary confirms that the generated model is a 20 m tapered hollow circular pole with 16 prestressing components. The base outer diameter is 0.600 m and the top outer diameter is 0.440 m.
+The summary confirms that the model is a 20 m tapered hollow circular pole with 16 prestressing components. The base outer diameter is 0.600 m and the top outer diameter is 0.440 m.
 
 The line:
 
@@ -80,15 +79,19 @@ participation scenario    = non-isotropic
 
 means that axial/bending participation and shear/torsion participation are assigned through separate lookup laws.
 
-Esecuzione modello 
+After generating the CSF YAML input, run the action file:
 
-```text
+```bash
 csf-actions tapered_pole_lookup.yaml action_tapered_pole_lookup.yaml
 ```
 
-la directory  `out` conterra tutti i dati richiesti dal file `taction_tapered_pole_lookup.yaml`t
+This command evaluates the generated CSF model according to the operations defined in:
 
+```text
+action_tapered_pole_lookup.yaml
+```
 
+The requested results are written to the `out/` directory.
 
 
 ## 2. What the generated YAML file contains
