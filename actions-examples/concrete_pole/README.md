@@ -88,7 +88,6 @@ The generated file:
 tapered_pole_lookup.yaml
 ```
 
-is the CSF input model produced by the workflow.
 
 To define the tapered pole geometry, the file describes the cross-section only at the two end stations: S0 (bottom) and S1 (top). At each station, the cross-section is represented by a set of polygons. Each named region is defined by a polygon at S0 and a corresponding polygon at S1. This polygon pair establishes the region's extent at both boundaries and determines how the region transitions along the member axis..
 
