@@ -1,9 +1,99 @@
 # DRAFT
 # Tapered prestressed concrete pole CSF input case
 
-This directory contains a Python-based input-generation case for a tapered circular hollow prestressed concrete pole. The case is intended for users who are comfortable running Python scripts but are not assumed to know the internal CSF model syntax.
+This directory contains a Python-based input-generation case for a tapered circular hollow prestressed concrete pole.
 
-The workflow builds a CSF YAML input from explicit geometric parameters and external participation-law tables. The generated YAML can then be used by CSF tools for section inspection, property plots, or solver-oriented sampling.README.md
+The case is intended for users who can run Python scripts but do not need to know the internal CSF input syntax.
+
+The workflow generates a CSF YAML input file from explicit geometric parameters and external participation-law tables. These tables define how the contribution of each concrete region and prestressing-steel component varies along the pole axis.
+
+The generated YAML file is the starting point for the following CSF operations:
+
+- inspecting the cross-section at selected longitudinal stations;
+- plotting derived sectional properties;
+- sampling the member field for downstream structural analysis.
+
+## Directory contents
+
+This case uses the following files:
+
+```text
+create_yaml_tapered_pole_lookup.py   # main launcher
+writegeometry_tapered_rebars.py      # geometry/YAML generator
+laws/                                # lookup tables for participation laws
+run_lookup_shear.sh                  # ready-to-run non-isotropic variant
+run_iso_shear.sh                     # ready-to-run isotropic shear/torsion variant
+```
+
+## 1. Generate the CSF YAML input
+
+Run the launcher from this directory:
+
+```bash
+python3 create_yaml_tapered_pole_lookup.py
+```
+
+Expected terminal output:
+
+```text
+File generated successfully: tapered_pole_lookup.yaml
+Layers: 3
+Bars: 16
+S0 outer radius: 0.300000 m
+S1 outer radius: 0.220000 m
+
+Generated:
+  - tapered_pole_lookup.yaml
+
+Geometry summary:
+  L                         = 20.0 m
+  base outer diameter       = 0.600 m
+  base inner diameter       = 0.400 m
+  top outer diameter        = 0.440 m
+  top inner diameter        = 0.280 m
+  prestressing components   = 16
+  component diameter        = 0.0127 m
+  axial/bending laws        = T_lookup(...), files in ./laws/
+  shear/torsion laws        = T_lookup(...), files in ./laws/
+  participation scenario    = non-isotropic
+```
+
+This step generates the file:
+
+```text
+tapered_pole_lookup.yaml
+```
+
+This file is the CSF input model produced by the generator. It contains the tapered pole geometry, the prestressing components, and the participation-law assignments read from the lookup tables in `./laws/`.
+
+The summary confirms that the generated model is a 20 m tapered hollow circular pole with 16 prestressing components. The base outer diameter is 0.600 m and the top outer diameter is 0.440 m.
+
+The line:
+
+```text
+participation scenario    = non-isotropic
+```
+
+means that axial/bending participation and shear/torsion participation are assigned through separate lookup laws.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+---
 
 ## What the case is intended to test
 
