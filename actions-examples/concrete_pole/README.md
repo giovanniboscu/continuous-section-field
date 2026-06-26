@@ -131,7 +131,7 @@ You can mix lookup and isotropic shear laws per layer:
 
 ## What to expect
 
-- `create_yaml_tapered_pc_pole_onion_lookup.py` generates the YAML case file.
+- `create_yaml_tapered_pole_lookup.py` generates the YAML case fil.
 - The central hollow core is defined by the first annular radius and is not a zero-weight polygon.
 - `core_inner` is the inner annular material layer, not a void.
 - All axial/bending participation is external lookup-driven.
