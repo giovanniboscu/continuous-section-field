@@ -325,3 +325,22 @@ After a successful run, the generator prints a short summary and writes the sele
 - the shear/torsion law assignments.
 
 The generated file is the CSF input case. Subsequent CSF operations can evaluate the member field at selected stations or sample it for downstream structural analysis.
+
+---
+
+# Reference basis
+
+## Primary reference
+
+J. Bolander Jr., K. Sowlat, and A. E. Naaman, **“Design Considerations for Tapered Prestressed Concrete Poles,” PCI Journal, 1988**.  
+https://www.pci.org/PCI_Docs/Publications/PCI%20Journal/1988/January/Design%20Considerations%20for%20Tapered%20Prestressed%20Concrete%20Poles.pdf
+
+Reason for use: this paper directly addresses tapered prestressed circular hollow-cored concrete poles and the longitudinal change of section properties in tapered poles.
+
+## Supporting reference
+
+ASCE Task Force / PCI Committee on Concrete Poles, **“Guide for the Design of Prestressed Concrete Poles,” PCI Journal, 1997**.  
+https://www.pci.org/PCI_Docs/Publications/PCI%20Journal/1997/November/Guide%20for%20the%20Design%20of%20Prestressed%20Concrete%20Poles.pdf
+
+Reason for use: this guide documents prestressed concrete pole families, spun-cast poles, hollow cores, prestressing steel, spiral reinforcement, and typical reinforcement arrangements.
+
