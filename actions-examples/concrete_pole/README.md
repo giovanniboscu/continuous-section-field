@@ -1,151 +1,89 @@
-# Tapered PC pole onion CSF case - lookup-driven version
+# DRAFT
+# Tapered prestressed concrete pole CSF input case
 
-This README is a user guide for the tapered circular hollow prestressed-concrete pole case.
-It explains how to generate the YAML, what the case models, and how to use explicit shear/torsion laws.
+This directory contains a Python-based input-generation case for a tapered circular hollow prestressed concrete pole. The case is intended for users who are comfortable running Python scripts but are not assumed to know the internal CSF model syntax.
 
-## Files
+The workflow builds a CSF YAML input from explicit geometric parameters and external participation-law tables. The generated YAML can then be used by CSF tools for section inspection, property plots, or solver-oriented sampling.README.md
+
+## What the case is intended to test
+
+The case tests the construction of a member field in which geometry and participation data are both functions of the longitudinal coordinate.
+
+The member is defined by:
+
+- two end stations, `z0 = 0.0` and `z1 = 20.0`;
+- a tapered circular hollow geometry;
+- four named annular concrete regions;
+- a ring of prestressing steel components represented by polygonal inserts;
+- external lookup tables for axial/bending participation;
+- external or isotropic laws for shear/torsion participation.
+
+The useful point of the test is that the geometry, named regions, prestressing steel components, and participation laws remain explicit input data. Sectional quantities such as area, centroid, bending inertia, and torsion-related quantities are derived from this field after the model is generated.
+
+The lookup files make the longitudinal degradation field external to the YAML. Changing a `.dat` file changes the participation field without changing the geometric generator.
+
+## Directory contents
 
 ```text
-create_yaml_tapered_pole_lookup.py
-writegeometry_tapered_rebars.py
+create_yaml_tapered_pole_lookup.py   # Convenience launcher for the lookup-driven case
+writegeometry_tapered_rebars.py      # Low-level YAML geometry generator
+run_lookup_shear.sh                  # Shell script using lookup laws for shear/torsion
+run_iso_shear.sh                     # Shell script using iso(...) laws for shear/torsion
+laws/                                # External participation-law tables
+docs/README.md                       # This guide
+```
+
+Generated YAML files are written in the case directory. Depending on the command used, the output file name is one of:
+
+```text
 tapered_pole_lookup.yaml
-laws/
+tapered_pc_pole_lookup.yaml
+tapered_pc_pole_iso_lookup.yaml
 ```
 
-## Model summary
+## Model geometry
 
-- Tapered circular hollow pole between two stations: `S0` (base) and `S1` (top).
-- Four annular concrete layers:
-  - `core_inner`
-  - `pcbar_host_layer`
-  - `cover_inner`
-  - `cover_outer`
-- The central hollow core is not a material polygon; it is defined by the inner radius of `core_inner`.
-- 16 discrete prestressing bars are placed on a guide ring inside `pcbar_host_layer`.
-- Axial/bending participation is lookup-driven.
-- Shear/torsion participation is explicit per layer and may be either lookup-driven or isotropic.
+The model uses two tapered end stations.
 
-## Key rules
+At `z0 = 0.0`:
 
-- The generator does not assume any implicit shear law default.
-- Every shear law must be specified explicitly if needed.
-- `--layer-shear-law` assigns shear behavior to a concrete layer by index.
-- `--all-bars-shear-law` assigns shear behavior to all bars.
-- `iso(<nu>)` is supported as a full shear formula when isotropic behavior is desired.
-- `T_lookup(...)` is supported for external shear lookup tables.
-
-## How to generate the YAML
-
-### 1. Use the launcher
-
-The simplest workflow is:
-
-```bash
-python3 create_yaml_tapered_pole_lookup.py
+```text
+inner radius = 0.200 m
+outer radius = 0.300 m
 ```
 
-This regenerates `tapered_pole_lookup.yaml`.
+At `z1 = 20.0`:
 
-### 2. Use the generator directly for explicit shear law control
-
-The underlying generator is `writegeometry_tapered_onion_rebars.py`.
-Use it when you need to set shear laws explicitly for each layer or bars.
-
-Example with lookup-driven shear laws:
-
-```bash
-python3 writegeometry_tapered_rebars.py \
-  --z0 0.0 --z1 20.0 \
-  --cx 0.0 --cy 0.0 \
-  --radii0 0.200,0.225,0.250,0.275,0.300 \
-  --radii1 0.140,0.160,0.180,0.200,0.220 \
-  --layer-names core_inner,pcbar_host_layer,cover_inner,cover_outer \
-  --layer-weights 1,1,1,1 \
-  --N 256 \
-  --n-bars 16 \
-  --bar-guide-radius0 0.24365 \
-  --bar-guide-radius1 0.17365 \
-  --bar-host-layer-index 1 \
-  --bar-diameter 0.0127 \
-  --bar-sides 16 \
-  --bar-weight 6.0 \
-  --bar-prefix pcbar \
-  --theta0-deg 0.0 \
-  --layer-law '0:T_lookup("laws/weight_law_core_inner.dat")' \
-  --layer-law '1:T_lookup("laws/weight_law_pcbar_host_layer.dat")' \
-  --layer-law '2:T_lookup("laws/weight_law_cover_inner.dat")' \
-  --layer-law '3:T_lookup("laws/weight_law_cover_outer.dat")' \
-  --all-bars-law 'T_lookup("laws/weight_law_pcbar.dat")' \
-  --layer-shear-law '0:T_lookup("laws/shear_weight_law_core_inner.dat")' \
-  --layer-shear-law '1:T_lookup("laws/shear_weight_law_pcbar_host_layer.dat")' \
-  --layer-shear-law '2:T_lookup("laws/shear_weight_law_cover_inner.dat")' \
-  --layer-shear-law '3:T_lookup("laws/shear_weight_law_cover_outer.dat")' \
-  --all-bars-shear-law 'T_lookup("laws/shear_weight_law_pcbar.dat")' \
-  --out tapered_pc_pole_onion_lookup.yaml
+```text
+inner radius = 0.140 m
+outer radius = 0.220 m
 ```
 
-Example with explicit isotropic shear laws:
+The wall is split into four annular regions:
 
-```bash
-python3 writegeometry_tapered_rebars.py \
-  --z0 0.0 --z1 20.0 \
-  --cx 0.0 --cy 0.0 \
-  --radii0 0.200,0.225,0.250,0.275,0.300 \
-  --radii1 0.140,0.160,0.180,0.200,0.220 \
-  --layer-names core_inner,pcbar_host_layer,cover_inner,cover_outer \
-  --layer-weights 1,1,1,1 \
-  --N 256 \
-  --n-bars 16 \
-  --bar-guide-radius0 0.24365 \
-  --bar-guide-radius1 0.17365 \
-  --bar-host-layer-index 1 \
-  --bar-diameter 0.0127 \
-  --bar-sides 16 \
-  --bar-weight 6.0 \
-  --bar-prefix pcbar \
-  --theta0-deg 0.0 \
-  --layer-law '0:T_lookup("laws/weight_law_core_inner.dat")' \
-  --layer-law '1:T_lookup("laws/weight_law_pcbar_host_layer.dat")' \
-  --layer-law '2:T_lookup("laws/weight_law_cover_inner.dat")' \
-  --layer-law '3:T_lookup("laws/weight_law_cover_outer.dat")' \
-  --all-bars-law 'T_lookup("laws/weight_law_pcbar.dat")' \
-  --layer-shear-law '0:T_lookup("laws/shear_weight_law_core_inner.dat")' \
-  --layer-shear-law '1:T_lookup("laws/shear_weight_law_pcbar_host_layer.dat")' \
-  --layer-shear-law '2:T_lookup("laws/shear_weight_law_cover_inner.dat")' \
-  --layer-shear-law '3:T_lookup("laws/shear_weight_law_cover_outer.dat")' \
-  --all-bars-shear-law 'T_lookup("laws/shear_weight_law_pcbar.dat")' \
-  --out tapered_pc_pole_onion_lookup.yaml
-
+```text
+core_inner
+pcbar_host_layer
+cover_inner
+cover_outer
 ```
 
-### Mixed mode
+The central hollow core is represented by the first inner radius. It is not a material region in the CSF input.
 
-You can mix lookup and isotropic shear laws per layer:
+The prestressing steel components are placed on a guide radius inside `pcbar_host_layer`. The command-line option names use the code labels `bar` and `pcbar` for these polygonal steel components.
 
-```bash
---layer-shear-law 0:iso(0.20) \
---layer-shear-law 1:T_lookup("laws/shear_weight_law_pcbar_host_layer.dat") \
---layer-shear-law 2:iso(0.18) \
---layer-shear-law 3:T_lookup("laws/shear_weight_law_cover_outer.dat")
+## Participation laws
+
+The case separates two participation fields:
+
+```text
+weight_law          -> axial/bending participation
+shear_weight_law    -> shear/torsion participation
 ```
 
-## What to expect
+The lookup-driven case reads these fields from `.dat` files in `laws/`.
 
-- `create_yaml_tapered_pole_lookup.py` generates the YAML case fil.
-- The central hollow core is defined by the first annular radius and is not a zero-weight polygon.
-- `core_inner` is the inner annular material layer, not a void.
-- All axial/bending participation is external lookup-driven.
-- Shear/torsion participation is explicit and must be supplied:
-  - `T_lookup(...)` for external tables,
-  - `iso(<nu>)` for isotropic shear derived from Poisson's ratio.
-- If a shear option is not provided, that polygon or bar receives no shear law.
-
-## Lookup laws
-
-The generated YAML references external lookup tables through `T_lookup(...)`.
-The `laws/` directory contains the data files.
-
-### Axial/bending laws
+### Axial/bending lookup files
 
 ```text
 laws/weight_law_core_inner.dat
@@ -155,7 +93,7 @@ laws/weight_law_cover_outer.dat
 laws/weight_law_pcbar.dat
 ```
 
-### Shear/torsion laws
+### Shear/torsion lookup files
 
 ```text
 laws/shear_weight_law_core_inner.dat
@@ -165,17 +103,225 @@ laws/shear_weight_law_cover_outer.dat
 laws/shear_weight_law_pcbar.dat
 ```
 
-Each `.dat` file is a two-column table:
+Each lookup file is a two-column table:
 
 ```text
-z  value
+xi  value
 ```
 
-with no header lines.
+where `xi` is the normalized member coordinate:
 
-## Notes
+```text
+xi = 0.0  -> z0
+xi = 1.0  -> z1
+```
 
-- The launcher is a convenience script for this specific CSF case.
-- The underlying generator is `writegeometry_tapered_onion_rebars.py`.
-- The case is designed as a lookup-driven structural example, not as a source of analytical degradation formulas.
-- `iso(<nu>)` is a valid shear law only when used explicitly and on its own.
+The current tables describe a monotone nonlinear degradation field: the values remain close to one near `xi = 0.0` and decrease more rapidly toward `xi = 1.0`.
+
+## Basic workflow
+
+Run the launcher from the case directory:
+
+```bash
+python3 create_yaml_tapered_pole_lookup.py
+```
+
+This writes:
+
+```text
+tapered_pole_lookup.yaml
+```
+
+The launcher contains the case parameters near the top of the file. A Python user can modify radii, number of steel components, guide radii, weights, output name, and law references there, then rerun the script.
+
+## Shell-script workflows
+
+The two shell scripts provide ready-to-run variants.
+
+### Lookup-driven shear/torsion laws
+
+```bash
+bash run_lookup_shear.sh
+```
+
+This writes:
+
+```text
+tapered_pc_pole_lookup.yaml
+```
+
+In this variant, both `weight_law` and `shear_weight_law` are read from lookup tables.
+
+### Isotropic shear/torsion laws
+
+```bash
+bash run_iso_shear.sh
+```
+
+This writes:
+
+```text
+tapered_pc_pole_iso_lookup.yaml
+```
+
+In this variant, axial/bending participation remains lookup-driven, while shear/torsion is assigned through explicit `iso(...)` laws.
+
+## Direct generator use
+
+The launcher and shell scripts call the lower-level generator:
+
+```text
+writegeometry_tapered_rebars.py
+```
+
+Use the generator directly when all parameters must be visible in one command.
+
+For Bash, every argument containing `T_lookup(...)` must be quoted as a complete argument. The correct form is:
+
+```bash
+--layer-law '0:T_lookup("laws/weight_law_core_inner.dat")'
+```
+
+The unquoted form is rejected by Bash before Python receives the argument.
+
+### Direct lookup-driven command
+
+```bash
+python3 writegeometry_tapered_rebars.py \
+  --z0 0.0 --z1 20.0 \
+  --cx 0.0 --cy 0.0 \
+  --radii0 0.200,0.225,0.250,0.275,0.300 \
+  --radii1 0.140,0.160,0.180,0.200,0.220 \
+  --layer-names core_inner,pcbar_host_layer,cover_inner,cover_outer \
+  --layer-weights 1,1,1,1 \
+  --N 256 \
+  --n-bars 16 \
+  --bar-guide-radius0 0.24365 \
+  --bar-guide-radius1 0.17365 \
+  --bar-host-layer-index 1 \
+  --bar-diameter 0.0127 \
+  --bar-sides 16 \
+  --bar-weight 6.0 \
+  --bar-prefix pcbar \
+  --theta0-deg 0.0 \
+  --layer-law '0:T_lookup("laws/weight_law_core_inner.dat")' \
+  --layer-law '1:T_lookup("laws/weight_law_pcbar_host_layer.dat")' \
+  --layer-law '2:T_lookup("laws/weight_law_cover_inner.dat")' \
+  --layer-law '3:T_lookup("laws/weight_law_cover_outer.dat")' \
+  --all-bars-law 'T_lookup("laws/weight_law_pcbar.dat")' \
+  --layer-shear-law '0:T_lookup("laws/shear_weight_law_core_inner.dat")' \
+  --layer-shear-law '1:T_lookup("laws/shear_weight_law_pcbar_host_layer.dat")' \
+  --layer-shear-law '2:T_lookup("laws/shear_weight_law_cover_inner.dat")' \
+  --layer-shear-law '3:T_lookup("laws/shear_weight_law_cover_outer.dat")' \
+  --all-bars-shear-law 'T_lookup("laws/shear_weight_law_pcbar.dat")' \
+  --out tapered_pc_pole_lookup.yaml
+```
+
+### Direct command with isotropic shear/torsion laws
+
+```bash
+python3 writegeometry_tapered_rebars.py \
+  --z0 0.0 --z1 20.0 \
+  --cx 0.0 --cy 0.0 \
+  --radii0 0.200,0.225,0.250,0.275,0.300 \
+  --radii1 0.140,0.160,0.180,0.200,0.220 \
+  --layer-names core_inner,pcbar_host_layer,cover_inner,cover_outer \
+  --layer-weights 1,1,1,1 \
+  --N 256 \
+  --n-bars 16 \
+  --bar-guide-radius0 0.24365 \
+  --bar-guide-radius1 0.17365 \
+  --bar-host-layer-index 1 \
+  --bar-diameter 0.0127 \
+  --bar-sides 16 \
+  --bar-weight 6.0 \
+  --bar-prefix pcbar \
+  --theta0-deg 0.0 \
+  --layer-law '0:T_lookup("laws/weight_law_core_inner.dat")' \
+  --layer-law '1:T_lookup("laws/weight_law_pcbar_host_layer.dat")' \
+  --layer-law '2:T_lookup("laws/weight_law_cover_inner.dat")' \
+  --layer-law '3:T_lookup("laws/weight_law_cover_outer.dat")' \
+  --all-bars-law 'T_lookup("laws/weight_law_pcbar.dat")' \
+  --layer-shear-law '0:iso(0.20)' \
+  --layer-shear-law '1:iso(0.20)' \
+  --layer-shear-law '2:iso(0.20)' \
+  --layer-shear-law '3:iso(0.20)' \
+  --all-bars-shear-law 'iso(0.30)' \
+  --out tapered_pc_pole_iso_lookup.yaml
+```
+
+## Meaning of the main command-line options
+
+```text
+--z0, --z1
+    Member end coordinates.
+
+--radii0, --radii1
+    Radial boundaries of the annular regions at z0 and z1.
+    The number of region names must be len(radii)-1.
+
+--layer-names
+    Names assigned to the annular regions.
+
+--layer-weights
+    Base weights assigned to the annular regions before lookup laws are applied.
+
+--N
+    Number of vertices used to approximate each circular boundary.
+
+--n-bars
+    Number of prestressing steel components on the guide ring.
+
+--bar-guide-radius0, --bar-guide-radius1
+    Guide-ring radius for the steel components at z0 and z1.
+
+--bar-host-layer-index
+    Zero-based index of the annular region that hosts the steel components.
+    In this case, index 1 corresponds to pcbar_host_layer.
+
+--bar-diameter
+    Diameter of each steel component polygon.
+
+--bar-sides
+    Number of polygon sides used to approximate each steel component.
+
+--bar-weight
+    Base relative weight assigned to the steel components before lookup laws are applied.
+
+--layer-law
+    Axial/bending participation law for one annular region.
+
+--all-bars-law
+    Axial/bending participation law for all steel components.
+
+--layer-shear-law
+    Shear/torsion participation law for one annular region.
+
+--all-bars-shear-law
+    Shear/torsion participation law for all steel components.
+
+--out
+    Output YAML file.
+```
+
+## Editing the case
+
+For routine changes, edit `create_yaml_tapered_pole_lookup.py` and run it again.
+
+For law-only changes, edit the `.dat` files in `laws/` and regenerate the YAML. Keep the first column normalized between `0.0` and `1.0`.
+
+For a different radial subdivision, update `radii0`, `radii1`, `layer_names`, `layer_weights`, and the layer-indexed law assignments consistently.
+
+For a different steel-component ring, update `n_bars`, `bar_guide_radius0`, `bar_guide_radius1`, `bar_diameter`, `bar_sides`, and `bar_host_layer_index`.
+
+## Expected result
+
+After a successful run, the generator prints a short summary and writes the selected YAML file. The YAML contains:
+
+- the two boundary stations of the tapered member;
+- the annular region polygons at each station;
+- the prestressing steel component polygons at each station;
+- the axial/bending law assignments;
+- the shear/torsion law assignments.
+
+The generated file is the CSF input case. Subsequent CSF operations can evaluate the member field at selected stations or sample it for downstream structural analysis.
