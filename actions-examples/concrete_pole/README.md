@@ -93,6 +93,16 @@ action_tapered_pole_lookup.yaml
 
 The requested results are written to the `out/` directory.
 
+ ### Expected result
+
+After a successful run, the generator prints a short summary and writes the selected YAML file. The YAML contains:
+
+- the two boundary stations of the tapered member;
+- the annular region polygons at each station;
+- the prestressing steel component polygons at each station;
+- the axial/bending law assignments;
+- the shear/torsion law assignments.
+
 
 ## 2. What the generated YAML file contains
 
@@ -595,18 +605,6 @@ For law-only changes, edit the `.dat` files in `laws/` and regenerate the YAML. 
 For a different radial subdivision, update `radii0`, `radii1`, `layer_names`, `layer_weights`, and the layer-indexed law assignments consistently.
 
 For a different steel-component ring, update `n_bars`, `bar_guide_radius0`, `bar_guide_radius1`, `bar_diameter`, `bar_sides`, and `bar_host_layer_index`.
-
-## 11. Expected result
-
-After a successful run, the generator prints a short summary and writes the selected YAML file. The YAML contains:
-
-- the two boundary stations of the tapered member;
-- the annular region polygons at each station;
-- the prestressing steel component polygons at each station;
-- the axial/bending law assignments;
-- the shear/torsion law assignments.
-
-The generated file is the CSF input case. Subsequent CSF operations can evaluate the member field at selected stations or sample it for downstream structural analysis.
 
 # Reference basis
 
