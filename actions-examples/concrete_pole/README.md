@@ -41,10 +41,10 @@ laws/
 The simplest workflow is:
 
 ```bash
-python3 create_yaml_tapered_pc_pole_onion_lookup.py
+python3 create_yaml_tapered_pole_lookup.py
 ```
 
-This regenerates `tapered_pc_pole_onion_lookup.yaml`.
+This regenerates `tapered_pole_lookup.yaml`.
 
 ### 2. Use the generator directly for explicit shear law control
 
