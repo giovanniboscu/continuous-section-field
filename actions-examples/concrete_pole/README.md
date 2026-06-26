@@ -54,7 +54,7 @@ Use it when you need to set shear laws explicitly for each layer or bars.
 Example with lookup-driven shear laws:
 
 ```bash
-python3 writegeometry_tapered_onion_rebars.py \
+python3 writegeometry_tapered_rebars.py \
   --z0 0.0 --z1 20.0 \
   --cx 0.0 --cy 0.0 \
   --radii0 0.200,0.225,0.250,0.275,0.300 \
@@ -71,16 +71,16 @@ python3 writegeometry_tapered_onion_rebars.py \
   --bar-weight 6.0 \
   --bar-prefix pcbar \
   --theta0-deg 0.0 \
-  --layer-law 0:T_lookup("laws/weight_law_core_inner.dat") \
-  --layer-law 1:T_lookup("laws/weight_law_pcbar_host_layer.dat") \
-  --layer-law 2:T_lookup("laws/weight_law_cover_inner.dat") \
-  --layer-law 3:T_lookup("laws/weight_law_cover_outer.dat") \
-  --all-bars-law T_lookup("laws/weight_law_pcbar.dat") \
-  --layer-shear-law 0:T_lookup("laws/shear_weight_law_core_inner.dat") \
-  --layer-shear-law 1:T_lookup("laws/shear_weight_law_pcbar_host_layer.dat") \
-  --layer-shear-law 2:T_lookup("laws/shear_weight_law_cover_inner.dat") \
-  --layer-shear-law 3:T_lookup("laws/shear_weight_law_cover_outer.dat") \
-  --all-bars-shear-law T_lookup("laws/shear_weight_law_pcbar.dat") \
+  --layer-law '0:T_lookup("laws/weight_law_core_inner.dat")' \
+  --layer-law '1:T_lookup("laws/weight_law_pcbar_host_layer.dat")' \
+  --layer-law '2:T_lookup("laws/weight_law_cover_inner.dat")' \
+  --layer-law '3:T_lookup("laws/weight_law_cover_outer.dat")' \
+  --all-bars-law 'T_lookup("laws/weight_law_pcbar.dat")' \
+  --layer-shear-law '0:T_lookup("laws/shear_weight_law_core_inner.dat")' \
+  --layer-shear-law '1:T_lookup("laws/shear_weight_law_pcbar_host_layer.dat")' \
+  --layer-shear-law '2:T_lookup("laws/shear_weight_law_cover_inner.dat")' \
+  --layer-shear-law '3:T_lookup("laws/shear_weight_law_cover_outer.dat")' \
+  --all-bars-shear-law 'T_lookup("laws/shear_weight_law_pcbar.dat")' \
   --out tapered_pc_pole_onion_lookup.yaml
 ```
 
