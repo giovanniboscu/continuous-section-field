@@ -165,6 +165,11 @@ tapered_pc_pole_non-iso_lookup.yaml
 Define the tapered pole geometry, the file describes the cross-section only at the two end stations: S0 (bottom) and S1 (top). At each station, the cross-section is represented by a set of polygons. Each named region is defined by a polygon at S0 and a corresponding polygon at S1. This polygon pair establishes the region's extent at both boundaries and determines how the region transitions along the member axis..
 
 In this case, the hollow concrete pole is represented as a layered circular wall. The section is subdivided into annular regions, giving an onion-like representation of the concrete wall rather than a single undifferentiated annulus. This makes each concrete layer a named controllable region in the CSF model.
+
+><p style="text-align: center;">
+>  Figure 2. Cross-section of the tapered prestressed concrete pole evaluated at <em>z</em> = 10 m. The annular concrete wall is divided into concentric participation zones, while the prestressing components are represented as discrete circular polygons distributed along the strand guide radius.
+></p>
+
 <p align="center">
 <img width="394" height="352" alt="image" src="https://github.com/user-attachments/assets/30c13d73-a3ba-41cd-b456-64a30a6c925c" />
 </p>
@@ -372,24 +377,8 @@ After the geometry and law assignments are defined, the CSF model can be evaluat
 
 The same generated geometry can therefore be used to represent different degradation configurations by changing only the lookup tables or the law assignments. This is useful for comparing alternative degradation patterns, including successive states of the same pole over time.
 
-## 3. What the case is intended to test
 
-The case tests the construction of a member field in which geometry and participation data are both functions of the longitudinal coordinate.
-
-The member is defined by:
-
-- two end stations, `z0 = 0.0` and `z1 = 20.0`;
-- a tapered circular hollow geometry;
-- four named annular concrete regions;
-- a ring of prestressing steel components represented by polygonal inserts;
-- external lookup tables for axial/bending participation;
-- external or isotropic laws for shear/torsion participation.
-
-The relevant point of the test is that the geometry, named regions, prestressing steel components, and participation laws remain explicit input data. Sectional quantities such as area, centroid, bending inertia, and torsion-related quantities are derived from this field after the model is generated.
-
-The lookup files keep the longitudinal degradation field outside the geometric generator. Changing a `.dat` file changes the participation field without changing the geometry-generation script.
-
-## 4. Model geometry
+## 3. Model geometry
 
 The model uses two tapered end stations.
 
@@ -420,7 +409,7 @@ The central hollow core is represented by the first inner radius. It is not a ma
 
 The prestressing steel components are placed on a guide radius inside `pcbar_host_layer`. The command-line option names use the code labels `bar` and `pcbar` for these polygonal steel components.
 
-## 5. Participation laws
+## 4. Participation laws
 
 The case separates two participation fields:
 
@@ -466,7 +455,25 @@ xi = 1.0  -> z1
 
 The current tables describe a monotone nonlinear degradation field: the values remain close to one near `xi = 0.0` and decrease more rapidly toward `xi = 1.0`.
 
-## 6. Basic workflow
+## 4. What the case is intended to test
+
+The case tests the construction of a member field in which geometry and participation data are both functions of the longitudinal coordinate.
+
+The member is defined by:
+
+- two end stations, `z0 = 0.0` and `z1 = 22.86`;
+- a tapered circular hollow geometry;
+- four named annular concrete regions;
+- a ring of prestressing steel components represented by polygonal inserts;
+- external lookup tables for axial/bending participation;
+- external or isotropic laws for shear/torsion participation.
+
+The relevant point of the test is that the geometry, named regions, prestressing steel components, and participation laws remain explicit input data. Sectional quantities such as area, centroid, bending inertia, and torsion-related quantities are derived from this field after the model is generated.
+
+The lookup files keep the longitudinal degradation field outside the geometric generator. Changing a `.dat` file changes the participation field without changing the geometry-generation script.
+
+
+## 5. Basic workflow
 
 Run the launcher from the case directory:
 
