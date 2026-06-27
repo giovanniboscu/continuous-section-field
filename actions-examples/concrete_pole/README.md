@@ -241,7 +241,7 @@ CSF:
 ...
 ...
     S1:
-      z: 20.0
+      z: 22.86
       polygons:
         core_inner@cell:
           weight: 1.0
