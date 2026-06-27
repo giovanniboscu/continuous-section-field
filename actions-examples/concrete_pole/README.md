@@ -4,6 +4,8 @@
 
 Prestressed concrete poles are commonly used for lighting, electric distribution and transmission lines, antenna masts, and related applications. Circular hollow-cored sections are especially relevant in this class of members because they combine reduced weight, torsional capacity, and internal space for wires or accessories. The PCI Journal reference considered here addresses tapered prestressed hollow-cored poles, whose cross-sectional properties vary along the pole height.
 
+
+
 In the design setting of the reference study, the pole is treated as a cantilever member fixed at its base, and the structural demand is evaluated through axial force and bending moment at different section locations along the height. In the present CSF example, however, no external actions are applied. The model is used at the pre-solver level to generate the tapered sectional field and to evaluate the corresponding sectional properties along the member coordinate.
 
 This CSF case follows the same geometric setting at input level. The member is defined as a tapered hollow circular pole using two boundary stations, annular concrete regions, and discrete prestressing-steel components. The longitudinal variation is represented directly in the CSF input through geometric interpolation and component-wise participation laws.
@@ -14,6 +16,33 @@ The purpose of this CSF model is to represent the tapered prestressed hollow pol
 The external law files define the axial variation of the normalized stiffness participation assigned to the concrete and steel components. For axial and bending response, this variation is expressed through the normalized elastic modulus $E/E_0$. For shear and torsional response, the corresponding normalized shear modulus $G/G_0$ is used consistently with the adopted material assumption; in the isotropic case with constant Poisson ratio, $G/G_0$ follows from $E/E_0$ rather than being an independent degradation law.
 
 In the CSF model, these longitudinal variations represent prescribed degradation fields that can be modified by the user without changing the geometric definition of the pole. The generated field can then be evaluated at any height to inspect the local section, compute the corresponding sectional properties, or sample station-wise sections for downstream structural analysis.
+
+
+## Source of pole dimensions
+
+The geometric dimensions used in this example are taken from **Appendix G — Design Examples, Example 1: Self-supporting single pole** of the ASCE/PCI committee report:
+
+> ASCE Task Force/PCI Committee on Concrete Poles, *Guide for the Design of Prestressed Concrete Poles*, PCI Journal, November–December 1997.
+
+Only the above-ground portion of the pole is represented in the CSF field. The embedded length is not included. Therefore, the CSF member length is:
+
+```text
+L = 75 ft = 22.86 m
+```
+
+The end sections used in the CSF input correspond to the round pole section properties reported for Example 1:
+
+```text
+S0 = groundline section, z = 0 ft
+S1 = top section,        z = 75 ft
+```
+
+| station |    source position | outside diameter | inside diameter | CSF value                      |
+| ------- | -----------------: | ---------------: | --------------: | ------------------------------ |
+| S0      |  0 ft above ground |          27.2 in |         20.3 in | Do = 0.69088 m, Di = 0.51562 m |
+| S1      | 75 ft above ground |          11.0 in |          6.0 in | Do = 0.27940 m, Di = 0.15240 m |
+
+The 16 prestressing components with diameter 1/2 in are also taken from the same Example 1 pole description and are represented in the CSF model as discrete polygonal steel inserts.
 
 
 ---
