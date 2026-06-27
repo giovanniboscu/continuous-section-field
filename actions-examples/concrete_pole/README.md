@@ -384,9 +384,13 @@ In detail, the model is defined by two tapered end stations.
 
 At `z0 = 0.0`:
 
+
+The physical hollow circular geometry is defined by the inner and outer radii at the two end stations:
 ```text
-inner radius = 0.200 m
-outer radius = 0.300 m
+S0: ri = 0.25781 m, ro = 0.34544 m
+S1: ri = 0.07620 m, ro = 0.13970 m
+
+The annular wall is then subdivided into concentric CSF participation zones for assigning independent lookup-based participation factors.
 ```
 
 At `z1 = 22.86`:
