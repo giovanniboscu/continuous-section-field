@@ -29,8 +29,7 @@ It represents section geometry and material as continuous functions along z, com
 ---
 
 
->Normalized participation fields assigned to the tapered prestressed concrete pole.
->Left: axial/bending weight field, with a localized reduction near the groundline and recovery to full participation along the member height. Right: independent shear/torsion weight field defined by separate lookup tables, showing a different degradation pattern for the same geometric pole. The color scales represent normalized participation factors, where 1.0 denotes full participation.
+>Normalized weighting fields assigned to the tapered prestressed concrete pole. Left: axial/bending participation weight field, with a localized reduction near the groundline and recovery to full contribution along the member height. Right: independent shear/torsion weight field defined by separate lookup tables, showing a different degradation pattern for the same geometric pole. The color scales represent normalized weighting factors, where 1.0 denotes full participation
 
 
 <p align="center">
