@@ -16,9 +16,6 @@ The external law files define the axial variation of the normalized stiffness pa
 In the CSF model, these longitudinal variations represent prescribed degradation fields that can be modified by the user without changing the geometric definition of the pole. The generated field can then be evaluated at any height to inspect the local section, compute the corresponding sectional properties, or sample station-wise sections for downstream structural analysis.
 
 
-
-
-
 ---
 
 <img width="657" height="614" alt="image" src="https://github.com/user-attachments/assets/e39c2fac-27ce-4db8-92ca-0c1b70f99b95" />
@@ -47,32 +44,35 @@ docs/README.md                       # this guide
 
 ## 1. Generate the CSF YAML input and run the analysis
 
-La geometria puo essere create con lo script `create_yaml_tapered_pole_lookup.py` il quale richiede due parametri 
+The CSF geometry can be generated with the script `create_yaml_tapered_pole_lookup.py`, which requires two command-line arguments:
 
 ```bash
 usage: create_yaml_tapered_pole_lookup.py [-h] {iso,non-iso} out_yaml
 ```
 
-il primo definisce il modello come isotropo il secondo caso E e G hanno un adamento indipendente definito da file di lookup (vedi piu avanti)
+The first argument selects the participation scenario. In the `iso` case, the shear/torsion participation is tied to the isotropic relation used by the model. In the `non-iso` case, the axial/bending and shear/torsion participation fields are assigned independently through lookup files, as described below.
 
-Run the launcher from this directory:
+The second argument is the name of the YAML file to be written.
 
-esempio
+Run the generator from this directory.
 
-```bash
-python3 create_yaml_tapered_pole_lookup.py iso  tapered_pc_pole_iso_lookup.yaml
-```
-oppure caso non isotropo
+For the isotropic case:
 
 ```bash
-python3 create_yaml_tapered_pole_lookup.py non-iso  tapered_pc_pole_non-iso_lookup.yaml
+python3 create_yaml_tapered_pole_lookup.py iso tapered_pc_pole_iso_lookup.yaml
 ```
 
-Expected terminal output:
+For the non-isotropic case:
+
+```bash
+python3 create_yaml_tapered_pole_lookup.py non-iso tapered_pc_pole_non-iso_lookup.yaml
+```
+
+Expected terminal output for the isotropic case:
 
 ```text
+python3 create_yaml_tapered_pole_lookup.py iso tapered_pc_pole_iso_lookup.yaml
 
-python3 create_yaml_tapered_pole_lookup.py iso  tapered_pc_pole_iso_lookup.yaml
 File generated successfully: tapered_pc_pole_iso_lookup.yaml
 Layers: 3
 Bars: 16
@@ -93,18 +93,21 @@ Geometry summary:
   axial/bending laws        = T_lookup(...), files in ./laws/
   shear/torsion laws        = iso(0.20/0.30)
   participation scenario    = isotropic
+```
 
-# 
-python3 create_yaml_tapered_pole_lookup.py non-iso  tapered_pc_pole_non-iso_lookup.yaml
+Expected terminal output for the non-isotropic case:
 
-File generated successfully: tapered_pc_pole_iso_lookup.yaml
+```text
+python3 create_yaml_tapered_pole_lookup.py non-iso tapered_pc_pole_non-iso_lookup.yaml
+
+File generated successfully: tapered_pc_pole_non-iso_lookup.yaml
 Layers: 3
 Bars: 16
 S0 outer radius: 0.300000 m
 S1 outer radius: 0.220000 m
 
 Generated:
-  - tapered_pc_pole_iso_lookup.yaml
+  - tapered_pc_pole_non-iso_lookup.yaml
 
 Geometry summary:
   L                         = 20.0 m
@@ -119,18 +122,19 @@ Geometry summary:
   participation scenario    = non-isotropic
 ```
 
-This step generates:
+This step generates the selected CSF YAML input file:
 
 ```text
 tapered_pc_pole_iso_lookup.yaml
 ```
+
+or:
+
 ```text
 tapered_pc_pole_non-iso_lookup.yaml
 ```
 
-
-
-The generated file contains the tapered pole geometry, the prestressing components, and the participation-law assignments read from the lookup tables in `./laws/`.
+The generated YAML file contains the tapered pole geometry, the annular concrete regions, the prestressing-steel components, and the participation-law assignments read from the lookup tables in `./laws/`.
 
 The summary confirms that the model is a 20 m tapered hollow circular pole with 16 prestressing components. The base outer diameter is 0.600 m and the top outer diameter is 0.440 m.
 
@@ -140,14 +144,21 @@ The line:
 participation scenario    = non-isotropic
 ```
 
-means that axial/bending participation and shear/torsion participation are assigned through separate lookup laws.
+means that the axial/bending participation and the shear/torsion participation are assigned through separate lookup laws.
 
-After generating the CSF YAML input, run the action file:
+After generating the CSF YAML input, run the action file.
+
+For the isotropic case:
 
 ```bash
-csf-actions tapered_pole_lookup.yaml action_tapered_pole_lookup.yaml
+csf-actions tapered_pc_pole_iso_lookup.yaml action_tapered_pole_lookup.yaml
 ```
 
+For the non-isotropic case:
+
+```bash
+csf-actions tapered_pc_pole_non-iso_lookup.yaml action_tapered_pole_lookup.yaml
+```
 
 This command evaluates the generated CSF model according to the operations defined in:
 
@@ -161,17 +172,15 @@ The requested results are written to the `out/` directory.
 
 <img width="981" height="940" alt="image" src="https://github.com/user-attachments/assets/f1106e0a-51c2-43c1-b9af-130db0ddcb99" />
 
+### Expected result
 
- ### Expected result
-
-After a successful run, the generator prints a short summary and writes the selected file. The YAML contains:
+After a successful run, the generator prints a short summary and writes the selected YAML file. The file contains:
 
 - the two boundary stations of the tapered member;
 - the annular region polygons at each station;
-- the prestressing steel component polygons at each station;
+- the prestressing-steel component polygons at each station;
 - the axial/bending law assignments;
 - the shear/torsion law assignments.
-
 
 ## 2. What the generated YAML file contains
 
