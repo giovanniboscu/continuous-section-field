@@ -44,32 +44,67 @@ run_iso_shear.sh                     # ready-to-run isotropic shear/torsion vari
 docs/README.md                       # this guide
 ```
 
-Generated YAML files are written in the case directory. Depending on the command used, the output file name is one of:
 
-```text
-tapered_pole_lookup.yaml
-tapered_pc_pole_lookup.yaml
-tapered_pc_pole_iso_lookup.yaml
-```
 ## 1. Generate the CSF YAML input and run the analysis
+
+La geometria puo essere create con lo script `create_yaml_tapered_pole_lookup.py` il quale richiede due parametri 
+
+```bash
+usage: create_yaml_tapered_pole_lookup.py [-h] {iso,non-iso} out_yaml
+```
+
+il primo definisce il modello come isotropo il secondo caso E e G hanno un adamento indipendente definito da file di lookup (vedi piu avanti)
 
 Run the launcher from this directory:
 
+esempio
+
 ```bash
-python3 create_yaml_tapered_pole_lookup.py
+python3 create_yaml_tapered_pole_lookup.py iso  tapered_pc_pole_iso_lookup.yaml
+```
+oppure caso non isotropo
+
+```bash
+python3 create_yaml_tapered_pole_lookup.py non-iso  tapered_pc_pole_non-iso_lookup.yaml
 ```
 
 Expected terminal output:
 
 ```text
-File generated successfully: tapered_pole_lookup.yaml
+
+python3 create_yaml_tapered_pole_lookup.py iso  tapered_pc_pole_iso_lookup.yaml
+File generated successfully: tapered_pc_pole_iso_lookup.yaml
 Layers: 3
 Bars: 16
 S0 outer radius: 0.300000 m
 S1 outer radius: 0.220000 m
 
 Generated:
-  - tapered_pole_lookup.yaml
+  - tapered_pc_pole_iso_lookup.yaml
+
+Geometry summary:
+  L                         = 20.0 m
+  base outer diameter       = 0.600 m
+  base inner diameter       = 0.400 m
+  top outer diameter        = 0.440 m
+  top inner diameter        = 0.280 m
+  prestressing components   = 16
+  component diameter        = 0.0127 m
+  axial/bending laws        = T_lookup(...), files in ./laws/
+  shear/torsion laws        = iso(0.20/0.30)
+  participation scenario    = isotropic
+
+# 
+python3 create_yaml_tapered_pole_lookup.py non-iso  tapered_pc_pole_non-iso_lookup.yaml
+
+File generated successfully: tapered_pc_pole_iso_lookup.yaml
+Layers: 3
+Bars: 16
+S0 outer radius: 0.300000 m
+S1 outer radius: 0.220000 m
+
+Generated:
+  - tapered_pc_pole_iso_lookup.yaml
 
 Geometry summary:
   L                         = 20.0 m
@@ -87,8 +122,13 @@ Geometry summary:
 This step generates:
 
 ```text
-tapered_pole_lookup.yaml
+tapered_pc_pole_iso_lookup.yaml
 ```
+```text
+tapered_pc_pole_non-iso_lookup.yaml
+```
+
+
 
 The generated file contains the tapered pole geometry, the prestressing components, and the participation-law assignments read from the lookup tables in `./laws/`.
 
