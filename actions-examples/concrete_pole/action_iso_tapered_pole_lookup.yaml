@@ -89,7 +89,7 @@ CSF_ACTIONS:
         params:
         properties: [A, Cx, Cy, Ix, Iy, Ixy,J_sv_cell]
     - plot_weight:
-        output: out/iso/weights.png
+        output: out/iso/weights.jpg
         
     - plot_shear_weight:
         output:
