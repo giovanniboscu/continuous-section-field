@@ -1,0 +1,101 @@
+# =============================================================================
+# CSF ACTIONS FILE - Refani–Nagao spun pile onion/rebars model
+# =============================================================================
+
+CSF_ACTIONS:
+
+  stations:
+    # -------------------------------------------------------------------------
+    # Boundary stations of the CSF field. The section is prismatic in geometry;
+    # S0 and S1 use the same onion/rebar section. Longitudinal variation, if
+    # introduced, is carried by weight_laws and shear_weight_laws.
+    # -------------------------------------------------------------------------
+    station_edges:
+      - 0.00
+      - 22.86
+    station_short:
+      - 0.00
+      - 10.00
+      - 22.86
+
+    # Representative station for visual cross-section inspection.
+    station_middle:
+      - 10.00
+
+    # -------------------------------------------------------------------------
+    # Stations selected for model-level inspection. These are not taken from
+    # the Refani–Nagao paper; they are CSF case stations chosen to inspect a
+    # possible marine exposure field along the member.
+    # -------------------------------------------------------------------------
+    station_precise:
+      - 0.00
+      - 1.00
+      - 3.00
+      - 3.50
+      - 4.50
+      - 5.50
+      - 10.00
+      - 15.00
+      - 22.86
+
+  actions:
+    # -------------------------------------------------------------------------
+    # 3-D volume render of the prismatic spun pile CSF model.
+    # -------------------------------------------------------------------------
+    - plot_volume_3d:
+        params:
+          seed: w # weight visualization
+          title: "weght prestressed pole"
+          line_percent: 50.0
+    - plot_volume_3d:
+        params:
+          seed: s # shear weight visulization
+          title: "shear prestressed pole"
+          line_percent: 50.0          
+    - export_model:
+        output:
+          - out/non-iso/model_template.txt
+        params:
+          n_intervals: 5   # Lobatto intervals (stations = n+1) (optional)
+
+    # -------------------------------------------------------------------------
+    # Section analysis at selected stations.
+    # -------------------------------------------------------------------------
+    - section_selected_analysis:
+        stations: station_precise
+        output:
+          - [out/non-iso/pile_section_properties.txt]
+        properties:
+          [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2,J_sv_cell,rx, ry, Wx, Wy, Q_na]
+
+    # -------------------------------------------------------------------------
+    # 2-D section plot at mid-height.
+    # -------------------------------------------------------------------------
+    - plot_section_2d:
+        stations:
+          - station_middle
+        show_ids: false
+        show_vertex_ids: false
+        output:
+          - [stdout, out/non-iso/pile_section.jpg]
+
+    # -------------------------------------------------------------------------
+    # Longitudinal property plots.
+    # With geometry-only YAML these curves are expected to be constant along z.
+    # After degradation laws are added, the same action will show the resulting
+    # CSF property fields along the member.
+    # -------------------------------------------------------------------------
+    - plot_properties:
+        output:
+          - stdout
+          - out/non-iso/spun_pile_properties.jpg
+        params:
+        properties: [A, Cx, Cy, Ix, Iy, Ixy,J_sv_cell]
+    - plot_weight:
+        output: out/non-iso/weights.png
+        
+    - plot_shear_weight:
+        output:
+          - out/non-iso/shear_weights.jpg
+
+        
