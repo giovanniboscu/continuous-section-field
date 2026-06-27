@@ -378,9 +378,9 @@ After the geometry and law assignments are defined, the CSF model can be evaluat
 The same generated geometry can therefore be used to represent different degradation configurations by changing only the lookup tables or the law assignments. This is useful for comparing alternative degradation patterns, including successive states of the same pole over time.
 
 
-## 3. Model geometry
+### Model geometry
 
-The model uses two tapered end stations.
+In detail, the model is defined by two tapered end stations.
 
 At `z0 = 0.0`:
 
@@ -409,7 +409,7 @@ The central hollow core is represented by the first inner radius. It is not a ma
 
 The prestressing steel components are placed on a guide radius inside `pcbar_host_layer`. The command-line option names use the code labels `bar` and `pcbar` for these polygonal steel components.
 
-## 4. Participation laws
+###  Participation laws
 
 The case separates two participation fields:
 
@@ -455,7 +455,7 @@ xi = 1.0  -> z1
 
 The current tables describe a monotone nonlinear degradation field: the values remain close to one near `xi = 0.0` and decrease more rapidly toward `xi = 1.0`.
 
-## 4. What the case is intended to test
+## 3. What the case is intended to test
 
 The case tests the construction of a member field in which geometry and participation data are both functions of the longitudinal coordinate.
 
@@ -473,7 +473,7 @@ The relevant point of the test is that the geometry, named regions, prestressing
 The lookup files keep the longitudinal degradation field outside the geometric generator. Changing a `.dat` file changes the participation field without changing the geometry-generation script.
 
 
-## 5. Basic workflow
+## 4. Basic workflow
 
 Run the launcher from the case directory:
 
@@ -515,7 +515,7 @@ The results produced by the analysis are written to the `out/` directory.
 
 
 
-## 7. Direct generator use
+## 5. Direct generator use
 
 The launcher and shell scripts call the lower-level generator:
 
@@ -599,7 +599,7 @@ python3 writegeometry_tapered_rebars.py \
   --out tapered_pc_pole_iso_lookup.yaml
 ```
 
-## 8. Meaning of the main command-line options
+## 6. Meaning of the main command-line options
 
 ```text
 --z0, --z1
@@ -653,7 +653,7 @@ python3 writegeometry_tapered_rebars.py \
     Output YAML file.
 ```
 
-## 9. Editing the case
+## 7. Editing the case
 
 For routine changes, edit `create_yaml_tapered_pole_lookup.py` and run it again.
 
