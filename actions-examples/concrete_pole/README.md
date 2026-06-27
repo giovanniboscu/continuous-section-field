@@ -20,7 +20,7 @@ In the CSF model, these longitudinal variations represent prescribed degradation
 
 ## Source of pole dimensions
 
-The geometric dimensions used in this example are taken from **Appendix G — Design Examples, Example 1: Self-supporting single pole** of the ASCE/PCI committee report:
+The geometric dimensions used in this example are taken from **Appendix G - Design Examples, Example 1: Self-supporting single pole** of the ASCE/PCI committee report:
 
 > ASCE Task Force/PCI Committee on Concrete Poles, *Guide for the Design of Prestressed Concrete Poles*, PCI Journal, November–December 1997.
 
