@@ -29,7 +29,7 @@ In the CSF model, these longitudinal variations represent prescribed degradation
 
 
 
-
+---
 
 This directory contains a Python-based input-generation case for a tapered circular hollow prestressed concrete pole.
 
