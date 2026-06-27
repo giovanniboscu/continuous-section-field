@@ -179,12 +179,14 @@ CSF_ACTIONS:
 
     # -------------------------------------------------------------------------
     # SAP2000 / OPENSEESPY TEMPLATE PACK EXPORT
+    # alias export_model
     # Writes a structured text file with section properties at Lobatto stations.
     # Includes four tables: solver input, section quality, torsion quality,
     # station names. Optionally writes a preview plot.
     # stations: FORBIDDEN (uses internal Lobatto station generation).
     # output: FILE-ONLY (stdout is not supported). Exactly one path required.
     # -------------------------------------------------------------------------
+    # - export_model
     - write_sap2000_geometry:
         output:
           - out/sap2000_template.txt
