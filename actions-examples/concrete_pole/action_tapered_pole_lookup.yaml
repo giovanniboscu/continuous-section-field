@@ -1,29 +1,5 @@
-#
-# Documented section data used by this CSF case:
-#   - closed-ended circular hollow spun pile section
-#   - outer diameter: 600 mm  -> R_ext = 0.300 m
-#   - wall thickness: 100 mm
-#   - inner diameter: 400 mm  -> R_int = 0.200 m
-#   - cover concrete thickness: 50 mm
-#   - single layer of 32 PC-bars, diameter 9 mm
-#   - helix-shaped transverse rebars, diameter 4 mm, spacing 120 mm
-#
-# CSF modelling choice:
-#   The documented cover/core wall is represented by a radial onion idealization:
-#     void:             R = 0.000 -> 0.200 m
-#     core_inner:       R = 0.200 -> 0.225 m
-#     pcbar_host_layer: R = 0.225 -> 0.250 m
-#     cover_inner:      R = 0.250 -> 0.275 m
-#     cover_outer:      R = 0.275 -> 0.300 m
-#
-#   The 32 PC-bars are modelled as discrete embedded zones on an explicit guide
-#   circle. The helix-shaped transverse reinforcement is not modelled as geometry;
-#   its equivalent effect, if used, should be assigned later through the
-#   shear_weight_law of the appropriate annular layer.
-#
-# Member length:
-#   L = 20.0 m is a CSF demonstration parameter, not a section dimension from
-#   the cited paper.
+# =============================================================================
+# CSF ACTIONS FILE - Refani–Nagao spun pile onion/rebars model
 # =============================================================================
 
 CSF_ACTIONS:
@@ -36,6 +12,10 @@ CSF_ACTIONS:
     # -------------------------------------------------------------------------
     station_edges:
       - 0.00
+      - 20.00
+    station_short:
+      - 0.00
+      - 10.00
       - 20.00
 
     # Representative station for visual cross-section inspection.
@@ -59,7 +39,6 @@ CSF_ACTIONS:
       - 20.00
 
   actions:
-
     # -------------------------------------------------------------------------
     # 3-D volume render of the prismatic spun pile CSF model.
     # The visible longitudinal variation is geometric only if later laws change
@@ -70,6 +49,12 @@ CSF_ACTIONS:
           seed: w
           title: "Pile CSF onion/rebars model"
           line_percent: 20.0
+          
+    - export_model:
+        output:
+          - out/export_model_template.txt
+        params:
+          n_intervals: 5                      # Lobatto intervals (stations = n+1) (optional)
 
     # -------------------------------------------------------------------------
     # Section analysis at selected stations.
@@ -81,7 +66,7 @@ CSF_ACTIONS:
     - section_selected_analysis:
         stations: station_precise
         output:
-          - [stdout,out/spun_pile_section_properties.txt]
+          - [out/spun_pile_section_properties.txt]
         properties:
           [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2,J_sv_cell,rx, ry, Wx, Wy, Q_na]
 
@@ -95,7 +80,7 @@ CSF_ACTIONS:
         show_ids: false
         show_vertex_ids: false
         output:
-          - [stdout, out/spun_pile_refani_section.jpg]
+          - [stdout, out/spun_pile_section.jpg]
 
     # -------------------------------------------------------------------------
     # Longitudinal property plots.
@@ -105,12 +90,16 @@ CSF_ACTIONS:
     # -------------------------------------------------------------------------
     - plot_properties:
         output:
-          - stdout
-          - out/spun_pile_refani_properties.jpg
+          #- stdout
+          - out/spun_pile_properties.jpg
         params:
           num_points: 200
         properties: [A, Cx, Cy, Ix, Iy, Ixy,J_sv_cell]
     - plot_weight:
-        output: [out/weights.png]
+        output: out/weights.png
+        
     - plot_shear_weight:
-        output: [out/shear_weights.png]
+        output:
+          - out/shear_weights.jpg
+
+        
