@@ -165,9 +165,9 @@ tapered_pc_pole_non-iso_lookup.yaml
 Define the tapered pole geometry, the file describes the cross-section only at the two end stations: S0 (bottom) and S1 (top). At each station, the cross-section is represented by a set of polygons. Each named region is defined by a polygon at S0 and a corresponding polygon at S1. This polygon pair establishes the region's extent at both boundaries and determines how the region transitions along the member axis..
 
 In this case, the hollow concrete pole is represented as a layered circular wall. The section is subdivided into annular regions, giving an onion-like representation of the concrete wall rather than a single undifferentiated annulus. This makes each concrete layer a named controllable region in the CSF model.
-
+<p align="center">
 <img width="394" height="352" alt="image" src="https://github.com/user-attachments/assets/30c13d73-a3ba-41cd-b456-64a30a6c925c" />
-
+</p>
 
 The prestressing-steel components are represented by polygonal inserts. All steel bars are placed inside the region named:
 
