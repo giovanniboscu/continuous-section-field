@@ -17,15 +17,17 @@ In the CSF model, these longitudinal variations represent prescribed degradation
 
 
 ---
+
+
+>Figure 1. Normalized participation fields assigned to the tapered prestressed concrete pole.
+>Left: axial/bending weight field, with a localized reduction near the groundline and recovery to full participation along the member height. Right: independent shear/torsion weight field defined by separate lookup tables, showing a different degradation pattern for the same geometric pole. The color scales represent normalized participation factors, where 1.0 denotes full participation.
+
+
 <p align="center">
   <img width="1027" height="457" alt="image" src="https://github.com/user-attachments/assets/806c6ea5-6d4b-4b5f-bf6c-9760de05c688" />
 </p>
 
 
-<p align="center">
-Figure 1. Normalized participation fields assigned to the tapered prestressed concrete pole.
-Left: axial/bending weight field, with a localized reduction near the groundline and recovery to full participation along the member height. Right: independent shear/torsion weight field defined by separate lookup tables, showing a different degradation pattern for the same geometric pole. The color scales represent normalized participation factors, where 1.0 denotes full participation.
-</p>
 
 
 
