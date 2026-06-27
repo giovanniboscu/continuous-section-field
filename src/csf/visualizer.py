@@ -838,7 +838,7 @@ class Visualizer:
         show_ids: bool = True,
         show_weights: bool = True,
         show_vertex_ids: bool = False,
-        show_legenda: bool= False,
+        show_legenda: bool= True,
         title: Optional[str] = None,
         ax=None,
         
@@ -966,8 +966,9 @@ class Visualizer:
         _ = w_abs_z  # currently used by optional legend blocks only
         legend_handles = []
         legend_labels = []
-        show_legenda=True
-        if show_legenda and len(sec.polygons) < 20:
+        leg = None
+        #show_legenda=True
+        if show_legenda:
             # -------------------------------------------------------------------------
             # 4) Build legend entries (relative weights + container id)
             # -------------------------------------------------------------------------
@@ -1007,38 +1008,52 @@ class Visualizer:
             title = f"Section at z={z:g}"
         ax.set_title(title)
 
-
-        if ax is None:
-            fig, ax = plt.subplots(constrained_layout=True)
-            created_new_fig = True
-        else:
-            fig = ax.figure
-            try:
-                fig.set_constrained_layout(True)
-            except Exception:
-                pass
-
+        fig = ax.figure
+        try:
+            fig.set_constrained_layout(False)
+        except Exception:
+            pass
 
         # -------------------------------------------------------------------------
         # 6) Legend below axes (axes-anchored, no overlap with X label)
         # -------------------------------------------------------------------------
-        leg = ax.legend(
-            legend_handles,
-            legend_labels,
-            loc="upper center",                 # top-center of legend box
-            bbox_to_anchor=(0.5, -0.16),        # place below axes
-            bbox_transform=ax.transAxes,        # anchor in AXES coordinates
-            borderaxespad=0.0,
-            frameon=True,
-            title="Polygons",
-            handler_map={tuple: HandlerTuple(ndivide=None)},
-            ncol=1,
-        )
+        if show_legenda and legend_handles:
+            legend_ncol = min(6, max(1, (len(legend_handles) + 9) // 10))
+            legend_fontsize = 9 if len(legend_handles) <= 20 else 8
+            leg = ax.legend(
+                legend_handles,
+                legend_labels,
+                loc="upper center",                 # top-center of legend box
+                bbox_to_anchor=(0.5, -0.16),        # place below axes
+                bbox_transform=ax.transAxes,        # anchor in AXES coordinates
+                borderaxespad=0.0,
+                frameon=True,
+                title="Polygons",
+                handler_map={tuple: HandlerTuple(ndivide=None)},
+                ncol=legend_ncol,
+                fontsize=legend_fontsize,
+                handlelength=2.5,
+                columnspacing=0.8,
+            )
 
         # -------------------------------------------------------------------------
-        # 7) Final draw (no manual subplots_adjust needed)
+        # 7) Final draw and adjust bottom margin if needed
         # -------------------------------------------------------------------------
         fig.canvas.draw()
+
+        if leg is not None:
+            renderer = fig.canvas.get_renderer()
+            bbox = leg.get_window_extent(renderer=renderer)
+            bbox_fig = bbox.transformed(fig.transFigure.inverted())
+            required_bottom = fig.subplotpars.bottom
+            if bbox_fig.y0 < 0:
+                required_bottom = max(required_bottom, fig.subplotpars.bottom - bbox_fig.y0 + 0.02)
+
+            # Clamp to valid subplot bounds to avoid bottom >= top errors.
+            required_bottom = min(required_bottom, fig.subplotpars.top - 0.01)
+            if required_bottom > fig.subplotpars.bottom:
+                fig.subplots_adjust(bottom=required_bottom)
+                fig.canvas.draw()
 
         return ax
 

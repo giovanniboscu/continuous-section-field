@@ -36,6 +36,7 @@ def register(
     """
     SPEC = spec  # Use the hub spec to guarantee help/param defaults stay identical.
 
+
     def RUN(
         field: Any,
         stations_map: Dict[str, List[float]],
@@ -43,6 +44,8 @@ def register(
         *,
         debug_flag: bool = False,
     ) -> None:
+        
+        
         """Action: export_model/write_sap2000_geometry (SAP2000 template pack)
 
         This action writes a *human-readable* text file designed to help users build
@@ -58,8 +61,8 @@ def register(
               params:
                 n_intervals: 6                          # required int (stations = n_intervals + 1)
                 material_name: S355                     # optional (default 'S355')
-                E_ref: 2.1e+11                          # required float (suggested; written in header)
-                nu: 0.30                                # required float (suggested; written in header)
+                E_ref: 2.1e+11                          # optional float (suggested; written in header)
+                nu: 0.30                                # optional float (suggested; written in header)
                 mode: BOTH                              # optional: CENTROIDAL_LINE | REFERENCE_LINE | BOTH
                 include_plot: true                      # optional (default True)
                 plot_filename: section_variation.png    # optional (default 'section_variation.png')
@@ -77,7 +80,7 @@ def register(
 
         # Read and normalize parameters.
         params = action.get("params", {}) or {}
-
+        
         n_intervals = params.get("n_intervals")
         E_ref = params.get("E_ref")
         nu = params.get("nu")
@@ -129,7 +132,7 @@ def register(
             # Defensive check (should not happen if validation passed).
             raise ValueError(f"export_model/write_sap2000_geometry requires exactly one output template path, got: {output_list}")
         template_path = Path(out_files[0])
-
+        
         # Ensure the output directory exists. We do this here (runtime) in addition to
         # the validator's basic writability checks, because users often generate the
         # destination folder as part of their workflow.
@@ -157,7 +160,7 @@ def register(
         action_stations = action.get("stations", [])
         if isinstance(action_stations, str):
             action_stations = [action_stations]
-
+        
         if len(action_stations) == 0:
             # Backward-compatible path: no explicit stations -> Lobatto (n_intervals)
             z_values = None
@@ -191,8 +194,7 @@ def register(
                         f"Station set '{sname}' must be strictly increasing (index {i-1}->{i})."
                     )
                 prev = zv
-
-
+        
 
 
 
@@ -215,7 +217,7 @@ def register(
             plt = None  # type: ignore
 
         figs_before = set(plt.get_fignums()) if plt is not None else set()
-
+        
         try:
             try:
                 write_sap2000_template_pack(
@@ -224,8 +226,8 @@ def register(
                     template_filename=str(template_path),
                     mode=mode_norm,  # type: ignore[arg-type]
                     material_name=str(material_name),
-                    E_ref=float(E_ref),
-                    nu=float(nu),
+                    E_ref=E_ref,
+                    nu=nu,
                     include_plot=include_plot_bool,
                     plot_filename=plot_filename_str,
                     show_plot=False,
@@ -290,5 +292,5 @@ def register(
                     raise RuntimeError(
                         f"Preview image was created but could not be prepared for display: {preview_path} ({e})"
                     )
-
+    
     register_action(SPEC, RUN)

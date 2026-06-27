@@ -507,8 +507,9 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
             "\n"
             "Params (required)\n"
             "- n_points (int) : number of sampling / integration points along the member (stations = n_points).\n"
+            "Params (optional)\n"
             "- E_ref (float)  : reference Young's modulus written into exported Elastic sections.\n"
-            "- nu (float)     : Poisson ratio; the exporter uses isotropic elasticity (G derived from E_ref and nu).\n"
+            "- nu (float)     : Poisson ratio; written into exported Elastic sections.\n"
             "\n"
             "Material/weight contract (important)\n"
             "- CSF section properties exported by this action are assumed to be already *modular/weighted*.\n"
@@ -554,7 +555,7 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
             "- output:   REQUIRED. File-only: exactly one path (typically *.txt). 'stdout' is forbidden.\n"
             "- Alias: export_model.\n"
             "\n"
-            "Params (required)\n"
+            "Params (OPTIONAL)\n"
             "- n_intervals (int): number of Lobatto intervals (stations = n_intervals + 1).\n"
             "- E_ref (float)    : suggested physical Young's modulus for the SAP2000 material/header.\n"
             "- nu (float)       : suggested Poisson ratio (used for shear modulus derivation if needed).\n"
@@ -581,14 +582,14 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
             ),
             ParamSpec(
                 name="E_ref",
-                required=True,
+                required=False,
                 typ="float",
                 default=None,
                 description="Suggested Young's modulus written into the template header (required).",
             ),
             ParamSpec(
                 name="nu",
-                required=True,
+                required=False,
                 typ="float",
                 default=None,
                 description="Suggested Poisson ratio written into the template header (required).",
@@ -2607,8 +2608,8 @@ def _run_actions(field: Any, actions_root: Dict[str, Any]) -> Tuple[bool, List[I
             issues.append(
                 CSFIssues.make(
                     "CSFA_E_ACTION_RUNTIME",
-                    path=f"{TOP_KEY}.actions[{idx}].{name}",
-                    message=f"Action '{name}' failed during execution.",
+                    path=f"{TOP_KEY}.actions[{idx}].{display_name}",
+                    message=f"Action '{TOP_KEY}.actions[{idx}].{display_name}' failed during execution.",
                     hint="See Details for the runtime error.",
                     context={"details": str(e)},
                 )
@@ -2858,11 +2859,11 @@ def main(argv: Optional[List[str]] = None) -> int:
                 "  material_name (str, optional)\n"
                 "    A label written into the candidate section property lines.\n"
                 "\n"
-                "  E_ref (float, required)\n"
+                "  E_ref (float, optional)\n"
                 "    Suggested Young modulus printed in the template header and material notes.\n"
                 "    Units are not enforced; keep the unit system consistent.\n"
                 "\n"
-                "  nu (float, required)\n"
+                "  nu (float, optional)\n"
                 "    Suggested Poisson ratio printed in the template header. The template also prints:\n"
                 "      G_ref = E_ref / (2*(1+nu))  (isotropic assumption)\n"
                 "\n"

@@ -234,23 +234,9 @@ class CSFStacked:
                     f"'{seg.tag}' start={seg.z_start}."
                 )
 
+
+
     def _find_segment(self, z: float, junction_side: str = "left") -> StackSegment:
-        """
-        Return the stack segment mapped from global ``z``.
-
-        Junction policy
-        --------------
-        - External boundaries are unambiguous and always map to the outer segments.
-        - Internal junctions are handled explicitly via ``junction_side``:
-            * ``"left"``  -> segment on the left of the junction
-            * ``"right"`` -> segment on the right of the junction
-
-        Notes
-        -----
-        This method is the single internal dispatch implementation for ``z -> segment``.
-        Higher-level methods (``field_at``, ``section``, ``section_full_analysis``) must
-        delegate to this method to keep junction behavior consistent.
-        """
         if not self.segments:
             raise ValueError("Stack is empty.")
 
@@ -258,49 +244,54 @@ class CSFStacked:
             raise ValueError("junction_side must be 'left' or 'right'.")
 
         query_z = float(z)
-        first_segment = self.segments[0]
-        last_segment = self.segments[-1]
-        stack_z_min = float(first_segment.z_start)
-        stack_z_max = float(last_segment.z_end)
+        eps = self.eps_z
 
-        # Global domain check with tolerance.
-        if query_z < stack_z_min - self.eps_z or query_z > stack_z_max + self.eps_z:
+        z_min = float(self.segments[0].z_start)
+        z_max = float(self.segments[-1].z_end)
+
+        if query_z < z_min - eps or query_z > z_max + eps:
             raise ValueError(
-                f"z={query_z} is outside stack domain [{stack_z_min}, {stack_z_max}]."
+                f"z={query_z} is outside stack domain [{z_min}, {z_max}]."
             )
 
-        # External boundaries are never ambiguous.
-        if abs(query_z - stack_z_min) <= self.eps_z:
-            return first_segment
-        if abs(query_z - stack_z_max) <= self.eps_z:
-            return last_segment
+        for i, seg in enumerate(self.segments):
+            a = float(seg.z_start)
+            b = float(seg.z_end)
 
-        # Internal junctions: explicit side selection.
-        for segment_index in range(1, len(self.segments)):
-            right_segment = self.segments[segment_index]
-            left_segment = self.segments[segment_index - 1]
-            junction_z = float(right_segment.z_start)
+            inside = (a - eps <= query_z <= b + eps)
+            if not inside:
+                continue
 
-            if abs(query_z - junction_z) <= self.eps_z:
+            on_left = abs(query_z - a) <= eps
+            on_right = abs(query_z - b) <= eps
+
+            # External boundaries
+            if i == 0 and on_left:
+                return seg
+
+            if i == len(self.segments) - 1 and on_right:
+                return seg
+
+            # Internal left boundary of this segment
+            if on_left and i > 0:
+                if junction_side == "right":
+                    return seg
+                return self.segments[i - 1]
+
+            # Internal right boundary of this segment
+            if on_right and i < len(self.segments) - 1:
                 if junction_side == "left":
-                    return left_segment
-                return right_segment
+                    return seg
+                return self.segments[i + 1]
 
-        # Interior (non-junction) query point.
-        for current_segment in self.segments:
-            segment_z_start = float(current_segment.z_start)
-            segment_z_end = float(current_segment.z_end)
-
-            strictly_inside_left = query_z > segment_z_start + self.eps_z
-            strictly_inside_right = query_z < segment_z_end - self.eps_z
-
-            if strictly_inside_left and strictly_inside_right:
-                return current_segment
+            # Strict interior
+            return seg
 
         raise ValueError(
             f"z={query_z} could not be mapped to any segment "
             f"(check stack contiguity and eps_z={self.eps_z})."
         )
+
 
     def section(self, z: float, junction_side: str = "left"):
         return self.field_at(z, junction_side=junction_side).section(float(z))

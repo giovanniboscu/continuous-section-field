@@ -42,8 +42,9 @@ def _build_spec(ActionSpec: Any, ParamSpec: Any) -> Any:
             "\n"
             "Params (required)\n"
             "- n_points (int) : number of sampling / integration points along the member (stations = n_points).\n"
+            "Params (optional)\n"
             "- E_ref (float)  : reference Young's modulus written into exported Elastic sections.\n"
-            "- nu (float)     : Poisson ratio; the exporter uses isotropic elasticity (G derived from E_ref and nu).\n"
+            "- nu (float)     : reference Poisson ratio; written into exported Elastic sections.\n"
             "\n"
             "Material/weight contract (important)\n"
             "- CSF section properties exported by this action are assumed to be already *modular/weighted*.\n"
@@ -62,17 +63,17 @@ def _build_spec(ActionSpec: Any, ParamSpec: Any) -> Any:
             ),
             ParamSpec(
                 name="E_ref",
-                required=True,
+                required=False,
                 typ="float",
                 default=None,
-                description="Reference Young's modulus (required).",
+                description="Reference Young's modulus (optional).",
             ),
             ParamSpec(
                 name="nu",
-                required=True,
+                required=False,
                 typ="float",
                 default=None,
-                description="Poisson ratio (required).",
+                description="Poisson ratio (optional).",
             ),
         ),
     )
@@ -117,6 +118,7 @@ def _run(
 
     params = action.get("params", {}) or {}
     n_points = params.get("n_points")
+    
     E_ref = params.get("E_ref")
     nu = params.get("nu")
 
@@ -129,11 +131,12 @@ def _run(
 
     # Delegate export to the helper function.
     # The writer is responsible for generating the correct Tcl content.
+    
     write_opensees_geometry(
         field,
         n_points=int(n_points),
-        E_ref=float(E_ref),
-        nu=float(nu),
+        E_ref=E_ref,
+        nu=nu,
         filename=tcl_path,
     )
 

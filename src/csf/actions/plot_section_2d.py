@@ -212,6 +212,10 @@ def register(
 
                 # Force a draw to ensure extents are up-to-date before savefig.
                 try:
+                    fig.set_constrained_layout(False)
+                except Exception:
+                    pass
+                try:
                     fig.canvas.draw()
                 except Exception:
                     pass

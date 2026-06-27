@@ -219,6 +219,15 @@ def _run(
             composite.save(str(outp), dpi=(dpi, dpi))
             print(f"[OK] plot_properties wrote: {outp}")
 
+    # Close generated figures when the caller did not request interactive
+    # display to avoid accumulating open GUI figures and memory usage.
+    if not do_show:
+        try:
+            for _fig in figs:
+                plt.close(_fig)
+        except Exception:
+            pass
+
 
 # -----------------------------------------------------------------------------
 # Explicit registration hook (no side effects)

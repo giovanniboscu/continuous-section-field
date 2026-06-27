@@ -272,6 +272,10 @@ def _compute_station_data(
     
 
 #------------------------------------------------------------------------------
+def _parse_optional_float(value: Any) -> Optional[float]:
+    if value is None:
+        return None
+    return float(value)
 def write_sap2000_template_pack(
     field: Any,
     n_intervals: int = 20,
@@ -280,8 +284,8 @@ def write_sap2000_template_pack(
     mode: Literal["BOTH", "CENTROIDAL_LINE", "REFERENCE_LINE"] = "BOTH",
     section_prefix: str = "SEC",
     material_name: str = "S355",
-    E_ref: Optional[float] = None,
-    nu: Optional[float] = None,
+    E_ref = None,
+    nu = None,
     include_plot: bool = True,
     plot_filename: str = "section_variation.png",
     show_plot: bool = True,
@@ -534,12 +538,14 @@ def write_sap2000_template_pack(
     lines.append(f"# stations     : {N}")
     lines.append(f"# station_mode : {'user' if z_values is not None else 'lobatto'}")
     lines.append(f"# stations_list: {' '.join(_fmt(z) for z in station_z)}")
-    lines.append(f"# material     : {material_name}")
+    #lines.append(f"# material     : {material_name}")
     lines.append(f"# J_tors       : J_sv_cell + J_sv_wall - see TABLE 3 for per-method breakdown and fidelity")
+    
     if E_ref is not None:
         lines.append(f"# E_ref        : {_fmt(E_ref)} is reported for reference only, E is polygon-pair based.")
     if nu is not None:
         lines.append(f"# nu           : {_fmt(nu)} is reported for reference only, nu is polygon-pair based.")
+    
     if plot_path_written is not None:
         lines.append(f"# plot         : {plot_path_written}")
     lines.append(f"# doc          : docs/sections/sectionfullanalysis.md")
@@ -1386,10 +1392,10 @@ def section_full_analysis_keys() -> List[str]:
 def write_opensees_geometry(
     field,
     n_points: int,
-    E_ref: float = 2.1e11,
-    nu: float = 0.30,
+    E_ref = None,
+    nu = None,
     filename: str = "geometry.tcl",
-):
+):  
     """
     Write a CSF-style OpenSees geometry file **as DATA** (to be parsed line-by-line),
     not as a Tcl script to be sourced.
@@ -1482,8 +1488,9 @@ def write_opensees_geometry(
     results = []
     cx_list = []
     cy_list = []
-
     for z in z_coords:
+
+
         sec = field.section(z)
 
         # NOTE:
@@ -1494,6 +1501,7 @@ def write_opensees_geometry(
         res = section_full_analysis(sec)
 
         # Minimal required keys
+        
         for k in ("A", "Ix", "Iy", "Cx", "Cy"):
             if k not in res:
                 raise KeyError(f"section_full_analysis() missing required key '{k}' at z={z}")
@@ -1501,22 +1509,29 @@ def write_opensees_geometry(
         results.append(res)
         cx_list.append(float(res["Cx"]))
         cy_list.append(float(res["Cy"]))
-
+    
+    
     # -------------------------------------------------------------------------
     # 3) Informational-only: best-fit straight line through centroid offsets
     #    (used only for exported geometry metadata)
     # -------------------------------------------------------------------------
     m_y, q_y = np.polyfit(z_coords, cy_list, 1)
     m_x, q_x = np.polyfit(z_coords, cx_list, 1)
-
+    
+    
     # -------------------------------------------------------------------------
     # 4) Reference shear modulus
     # -------------------------------------------------------------------------
-    G_ref = float(E_ref) / (2.0 * (1.0 + float(nu)))
+    if E_ref is None or nu is None:
+        G_ref = None
+    else:
+        G_ref = float(E_ref) / (2.0 * (1.0 + float(nu)))
 
     # -------------------------------------------------------------------------
     # 5) Write file (DATA)
     # -------------------------------------------------------------------------
+    
+
     try:
         with open(filename, "w", encoding="utf-8") as f:
             # ---- Header (comments only) ----
@@ -1526,10 +1541,13 @@ def write_opensees_geometry(
             f.write("# NOTE: This file is meant to be PARSED AS DATA (do NOT source it as Tcl).\n")
             f.write("# NOTE: Section records are CSF data records, not OpenSees Tcl syntax.\n")
             f.write("#\n")
-            f.write("# CSF_EXPORT_MODE: weighted section properties only\n")
-            f.write(f"# CSF_METADATA_E_REF: {float(E_ref):.6e}\n")
-            f.write(f"# CSF_METADATA_NU_REF: {float(nu):.6e}\n")
-            f.write(f"# CSF_METADATA_G_REF: {float(G_ref):.6e}\n")
+            f.write("# CSF_EXPORT_MODE:\n")
+            if E_ref is not None:
+                f.write(f"# CSF_METADATA_E_REF: {E_ref} Only weighted section properties are exported; E_ref is kept as a reference modulus.\n")
+            if nu is not None:
+                f.write(f"# CSF_METADATA_NU_REF: {nu} Only weighted section properties are exported; nu is kept as a reference poisson ratio.\n")
+            if G_ref is not None:
+                f.write(f"# CSF_METADATA_G_REF: {G_ref}\n")
             f.write("# CSF_TORSION_SELECTION: J_tors = J_sv_cell + J_sv_wall")
             # ---- Exact z stations ----
             f.write("\n\n# CSF_Z_STATIONS: " + " ".join(f"{z:.12g}" for z in z_coords) + "\n\n")
@@ -2467,7 +2485,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
         if not _same_point(xy[inner_end], xy[inner_start]):
             raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' INNER closure is not valid."
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}' INNER closure is not valid"
             )
 
         return outer_end, inner_start, inner_end
@@ -2513,7 +2531,7 @@ def compute_saint_venant_J_cell(section: "Section") -> float:
 
         if not _same_point(xy[inner_end], xy[inner_start]):
             raise CSFError(
-                f"compute_saint_venant_J_cell(v3): polygon '{nm}' : INNER closure is not valid."
+                f"compute_saint_venant_J_cell(v3): polygon '{nm}'INNER closure is not valid."
             )
 
         return split_indices

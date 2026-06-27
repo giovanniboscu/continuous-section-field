@@ -252,6 +252,16 @@ def _run(
                     fig.savefig(str(target_path), dpi=dpi, bbox_inches="tight")
                     #print(f"[OK] plot_weight wrote: {target_path}")
 
+    # Close figures that were created by this action when the caller did not
+    # request interactive display. This prevents accumulation of open figures
+    # and the Matplotlib 'more than 20 figures' warning.
+    if not do_show:
+        try:
+            for _fig in figs:
+                plt.close(_fig)
+        except Exception:
+            pass
+
 
 # -----------------------------------------------------------------------------
 # Explicit registration hook (no side effects)
