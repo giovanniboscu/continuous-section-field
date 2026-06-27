@@ -164,6 +164,9 @@ This command evaluates the generated CSF model according to the operations defin
 ```text
 action_tapered_pole_lookup.yaml
 ```
+The file `action_tapered_pole_lookup.yaml` contains the analysis directives to be applied to the generated CSF geometry. It defines which operations are executed on the tapered pole model and where the resulting outputs are written.
+
+
 
 The requested results are written to the `out/` directory.
 
