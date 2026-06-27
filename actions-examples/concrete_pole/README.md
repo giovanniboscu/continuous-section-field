@@ -9,7 +9,7 @@
 > The commands in this document must be executed from:
 >
 > ```bash
-> docs/aes/nrel_case
+> actions-examples/actions-examples/concrete_pole
 > ```
 
 
