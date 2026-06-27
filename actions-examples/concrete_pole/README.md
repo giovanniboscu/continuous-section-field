@@ -1,5 +1,18 @@
 # Tapered prestressed concrete pole CSF input case
 
+## Engineering context from the cited sources
+
+Prestressed concrete poles are commonly used for lighting, electric distribution and transmission lines, antenna masts, and related applications. In this family of members, circular hollow-cored sections are structurally relevant because they combine low weight, torsional capacity, and internal space for wires or accessories. The cited PCI Journal study specifically addresses tapered prestressed circular hollow-cored poles, where the cross-sectional properties change along the pole height.
+
+In that design setting, the pole is treated as a cantilever member fixed at its base. External loads are evaluated through the axial force and bending moment acting at different section locations along the height. Because the geometry is tapered, the section properties are not constant; they must be evaluated along the member axis.
+
+This CSF case follows that same geometric setting at input level. The member is defined as a tapered hollow circular pole with two boundary stations, annular concrete regions, and discrete prestressing-steel components. The longitudinal variation is represented directly in the CSF input through geometry interpolation and component-wise participation laws.
+
+The supporting literature on slender nonprismatic and hollow concrete bridge piers provides the broader computational context: such members are commonly analysed by subdividing the member along its length and evaluating sectional response at discrete locations. In this example, the generated CSF field provides the continuous source from which those station-wise sections and derived properties can be inspected or sampled for downstream structural analysis.
+
+
+---
+
 <img width="657" height="614" alt="image" src="https://github.com/user-attachments/assets/e39c2fac-27ce-4db8-92ca-0c1b70f99b95" />
 
 This directory contains a Python-based input-generation case for a tapered circular hollow prestressed concrete pole.
