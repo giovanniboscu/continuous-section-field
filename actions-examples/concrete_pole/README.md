@@ -182,7 +182,7 @@ Define the tapered pole geometry, the file describes the cross-section only at t
 In this case, the hollow concrete pole is represented as a layered circular wall. The section is subdivided into annular regions, giving an onion-like representation of the concrete wall rather than a single undifferentiated annulus. This makes each concrete layer a named controllable region in the CSF model.
 
 ><p style="text-align: center;">
->  Figure 2. Cross-section of the tapered prestressed concrete pole evaluated at <em>z</em> = 10 m. The annular concrete wall is divided into concentric participation zones, while the prestressing components are represented as discrete circular polygons distributed along the strand guide radius.
+>  Figure 1. Cross-section of the tapered prestressed concrete pole evaluated at <em>z</em> = 10 m. The annular concrete wall is divided into concentric participation zones, while the prestressing components are represented as discrete circular polygons distributed along the strand guide radius.
 ></p>
 
 <p align="center">
@@ -506,7 +506,7 @@ out/non-iso
 ### Expected result
 
 
->Figure 1. Normalized participation fields assigned to the tapered prestressed concrete pole.
+>Figure 2. Normalized participation fields assigned to the tapered prestressed concrete pole.
 >Left: axial/bending weight field, with a localized reduction near the groundline and recovery to full participation along the member height. Right: independent shear/torsion weight field defined by separate lookup tables, showing a different degradation pattern for the same geometric pole. The color scales represent normalized participation factors, where 1.0 denotes full participation.
 
 
