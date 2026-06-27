@@ -417,11 +417,6 @@ At
 and
 `z1 = 22.86`:
 
-The physical hollow circular geometry is defined by the inner and outer radii at the two end stations:
-```text
-S0: ri = 0.258 m, ro = 0.345 m
-S1: ri = 0.076 m, ro = 0.138 m
-```
 
 The wall is split into four annular regions:
 
