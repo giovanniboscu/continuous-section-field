@@ -12,6 +12,17 @@
 > ```bash
 > actions-examples/actions-examples/concrete_pole
 > ```
+> ### Quick functional check
+>
+>Run the following commands to generate the isotropic lookup YAML input and execute the CSF actions:
+>
+>```bash
+>python3 create_yaml_tapered_pole_lookup.py iso tapered_pc_pole_iso_lookup.yaml
+>csf-actions tapered_pc_pole_iso_lookup.yaml action_iso_tapered_pole_lookup.yaml
+>```
+
+
+
 
 
 ## Engineering context from the cited sources
