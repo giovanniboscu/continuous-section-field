@@ -27,12 +27,18 @@ It represents section geometry and material as continuous functions along z, com
 
 
 ---
-<p align="center">     
-  <img width="631" height="547" alt="image" src="https://github.com/user-attachments/assets/2bf9827f-df1d-44ee-9937-bacb486373d8" />
 
->Visualization of the NREL 5-MW tower with two localized stiffness degradations. The blue regions mark the degraded zones introduced through the axial/bending participation field, centred at $0.33L$ and $0.67L$
->  
->Full reproducible example: [`NREL 5-MW model`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/nrel_case/README.md)
+
+>Normalized participation fields assigned to the tapered prestressed concrete pole.
+>Left: axial/bending weight field, with a localized reduction near the groundline and recovery to full participation along the member height. Right: independent shear/torsion weight field defined by separate lookup tables, showing a different degradation pattern for the same geometric pole. The color scales represent normalized participation factors, where 1.0 denotes full participation.
+
+
+<p align="center">
+  <img width="1027" height="457" alt="image" src="https://github.com/user-attachments/assets/806c6ea5-6d4b-4b5f-bf6c-9760de05c688" />
+</p>
+
+
+>Full reproducible example: [`Tapered prestressed concrete pole`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/concrete_pole/README.md)
 
 ---
 
