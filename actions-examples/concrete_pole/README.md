@@ -166,7 +166,12 @@ action_tapered_pole_lookup.yaml
 ```
 The file `action_tapered_pole_lookup.yaml` contains the analysis directives to be applied to the generated CSF geometry. It defines which operations are executed on the tapered pole model and where the resulting outputs are written.
 
+Further details on the CSF input structure and on the available action-file directives are provided in the CSF tutorial and in the action-template documentation:
 
+* [CSF tutorial](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md)
+* [Action-file template](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/actions_template.yaml)
+
+---
 
 The requested results are written to the `out/` directory.
 
