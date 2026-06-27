@@ -522,7 +522,7 @@ The requested results are written to the `out/` directory.
 
 <img width="981" height="940" alt="image" src="https://github.com/user-attachments/assets/f1106e0a-51c2-43c1-b9af-130db0ddcb99" />
 
-After a successful run, the generator prints a short summary and writes the selected YAML file. The file contains:
+After a successful run, the generator prints a short summary and writes the selected file. The file contains:
 
 * the two boundary stations of the tapered member;
 * the annular region polygons at each station;
