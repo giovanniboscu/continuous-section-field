@@ -30,7 +30,7 @@ In the CSF model, these longitudinal variations represent prescribed degradation
 
 
 ---
-
+## Directory contents
 This directory contains a Python-based input-generation case for a tapered circular hollow prestressed concrete pole.
 
 The case is intended for users who can run Python scripts but do not need to write the CSF YAML input syntax manually. The Python launcher collects the geometric parameters, prestressing-steel layout, and external participation-law tables, then writes a complete CSF input file.
@@ -41,7 +41,7 @@ The generated YAML file is the starting point for the following CSF operations:
 - plotting derived sectional properties;
 - sampling the member field for downstream structural analysis.
 
-## Directory contents
+
 
 ```text
 create_yaml_tapered_pole_lookup.py   # main launcher
