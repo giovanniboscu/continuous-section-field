@@ -8,7 +8,12 @@ In the design setting of the reference study, the pole is treated as a cantileve
 
 This CSF case follows the same geometric setting at input level. The member is defined as a tapered hollow circular pole using two boundary stations, annular concrete regions, and discrete prestressing-steel components. The longitudinal variation is represented directly in the CSF input through geometric interpolation and component-wise participation laws.
 
-The purpose of this CSF model is to represent the tapered prestressed hollow pole as a continuous sectional field before any structural solver is introduced. Instead of defining a separate cross-section at each analysis station, the pole is described once through its boundary geometries, annular concrete regions, prestressing-steel components, and longitudinal participation laws. The external law files define the axial variation of the normalized elastic and shear moduli, $E/E_0$ and $G/G_0$, for the concrete and steel components. In the CSF model, these variations represent the prescribed degradation fields, which can be modified by the user without changing the geometric definition of the pole. The generated field can then be evaluated at any height to inspect the local section, compute the corresponding sectional properties, or sample station-wise sections for downstream structural analysis.
+The purpose of this CSF model is to represent the tapered prestressed hollow pole as a continuous sectional field before any structural solver is introduced. Instead of defining a separate cross-section at each analysis station, the pole is described once through its boundary geometries, annular concrete regions, prestressing-steel components, and longitudinal participation laws.
+
+The external law files define the axial variation of the normalized stiffness participation assigned to the concrete and steel components. For axial and bending response, this variation is expressed through the normalized elastic modulus $E/E_0$. For shear and torsional response, the corresponding normalized shear modulus $G/G_0$ is used consistently with the adopted material assumption; in the isotropic case with constant Poisson ratio, $G/G_0$ follows from $E/E_0$ rather than being an independent degradation law.
+
+In the CSF model, these longitudinal variations represent prescribed degradation fields that can be modified by the user without changing the geometric definition of the pole. The generated field can then be evaluated at any height to inspect the local section, compute the corresponding sectional properties, or sample station-wise sections for downstream structural analysis.
+
 
 
 
