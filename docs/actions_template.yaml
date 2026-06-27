@@ -174,8 +174,7 @@ CSF_ACTIONS:
           - out/geometry.tcl
         params:
           n_points: 10                         # number of integration stations (required)
-          E_ref: 2.1e+11                       # reference Young's modulus (required)
-          nu: 0.30                             # Poisson ratio (required)
+
 
     # -------------------------------------------------------------------------
     # SAP2000 / OPENSEESPY TEMPLATE PACK EXPORT
@@ -192,8 +191,6 @@ CSF_ACTIONS:
           - out/sap2000_template.txt
         params:
           n_intervals: 10                      # Lobatto intervals (stations = n+1) (required)
-          E_ref: 2.1e+11                       # reference Young's modulus (required)
-          nu: 0.30                             # Poisson ratio (required)
           material_name: "S355"               # material label in template (optional)
           mode: "BOTH"                         # CENTROIDAL_LINE | REFERENCE_LINE | BOTH (optional)
           include_plot: true                   # write preview PNG (optional)
