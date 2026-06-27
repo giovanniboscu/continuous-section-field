@@ -175,11 +175,14 @@ The requested results are written to the `out/` directory.
 
 After a successful run, the generator prints a short summary and writes the selected YAML file. The file contains:
 
-- the two boundary stations of the tapered member;
-- the annular region polygons at each station;
-- the prestressing-steel component polygons at each station;
-- the axial/bending law assignments;
-- the shear/torsion law assignments.
+* the two boundary stations of the tapered member;
+* the annular region polygons at each station;
+* the prestressing-steel component polygons at each station;
+* the axial/bending law assignments;
+* the shear/torsion law assignments.
+
+The results produced by the analysis are written to the `out/` directory.
+
 
 ## 2. What the generated YAML file contains
 
@@ -511,7 +514,14 @@ This writes:
 tapered_pc_pole_iso_lookup.yaml
 ```
 
-The launcher contains the case parameters near the top of the file. A Python user can modify radii, number of steel components, guide radii, weights, output name, and law references there, then rerun the script.
+Run analysis
+
+```text
+csf-actions tapered_pc_pole_iso_lookup.yaml  action_tapered_pole_lookup.yaml
+```
+
+The results produced by the analysis are written to the out/ directory
+
 
 ## 7. Shell-script workflows  Linux optionls scripts
 
