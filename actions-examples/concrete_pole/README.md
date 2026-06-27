@@ -36,9 +36,6 @@ The generated YAML file is the starting point for the following CSF operations:
 create_yaml_tapered_pole_lookup.py   # main launcher
 writegeometry_tapered_rebars.py      # geometry/YAML generator
 laws/                                # lookup tables for participation laws
-run_lookup_shear.sh                  # ready-to-run non-isotropic variant
-run_iso_shear.sh                     # ready-to-run isotropic shear/torsion variant
-docs/README.md                       # this guide
 ```
 
 
