@@ -27,7 +27,7 @@ dependencies = [
     "matplotlib",
     "PyYAML>=6.0",
     "openseespy",
-    "scipy>=1.18"
+    "scipy>=1.15,<1.16"   
 ]
 
 
