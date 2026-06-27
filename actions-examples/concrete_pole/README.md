@@ -139,23 +139,6 @@ Further details on the CSF input structure and on the available action-file dire
 
 ---
 
-The requested results are written to the `out/` directory.
-
-<img width="982" height="761" alt="image" src="https://github.com/user-attachments/assets/49704fae-f4a6-42bc-995b-208fcb45a989" />
-
-<img width="981" height="940" alt="image" src="https://github.com/user-attachments/assets/f1106e0a-51c2-43c1-b9af-130db0ddcb99" />
-
-### Expected result
-
-After a successful run, the generator prints a short summary and writes the selected YAML file. The file contains:
-
-* the two boundary stations of the tapered member;
-* the annular region polygons at each station;
-* the prestressing-steel component polygons at each station;
-* the axial/bending law assignments;
-* the shear/torsion law assignments.
-
-The results produced by the analysis are written to the `out/` directory.
 
 
 ## 2. What the generated YAML file contains
@@ -479,22 +462,43 @@ The current tables describe a monotone nonlinear degradation field: the values r
 Run the launcher from the case directory:
 
 ```bash
-python3 create_yaml_tapered_pole_lookup.py iso tapered_pc_pole_iso_lookup.yaml
+csf-actions  tapered_pc_pole_iso_lookup.yaml action_iso_tapered_pole_lookup.yaml 
+
 ```
 
-This writes:
-
-```text
-tapered_pc_pole_iso_lookup.yaml
-```
 
 Run analysis
 
-```text
-csf-actions tapered_pc_pole_iso_lookup.yaml  action_tapered_pole_lookup.yaml
+ csf-actions tapered_pc_pole_non-iso_lookup.yaml action_non_iso_tapered_pole_lookup.yaml
 ```
 
-The results produced by the analysis are written to the out/ directory
+
+The results produced by the analysis are written to the directories:
+
+```
+out/iso 
+out/non-iso 
+```
+
+
+### Expected result
+
+The requested results are written to the `out/` directory.
+
+<img width="982" height="761" alt="image" src="https://github.com/user-attachments/assets/49704fae-f4a6-42bc-995b-208fcb45a989" />
+
+<img width="981" height="940" alt="image" src="https://github.com/user-attachments/assets/f1106e0a-51c2-43c1-b9af-130db0ddcb99" />
+
+After a successful run, the generator prints a short summary and writes the selected YAML file. The file contains:
+
+* the two boundary stations of the tapered member;
+* the annular region polygons at each station;
+* the prestressing-steel component polygons at each station;
+* the axial/bending law assignments;
+* the shear/torsion law assignments.
+
+The results produced by the analysis are written to the `out/` directory.
+
 
 
 ## 7. Direct generator use
