@@ -1,10 +1,3 @@
-# =============================================================================
-# CSF ACTIONS FILE - Refani–Nagao spun pile onion/rebars model
-# =============================================================================
-# Source geometry:
-#   Refani, A.N.; Nagao, T. (2023).
-#   Corrosion Effects on the Mechanical Properties of Spun Pile Materials.
-#   Applied Sciences, 13, 1507.
 #
 # Documented section data used by this CSF case:
 #   - closed-ended circular hollow spun pile section
