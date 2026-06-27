@@ -1,5 +1,18 @@
 # Tapered prestressed concrete pole CSF input case
 
+> ### Reproducibility environment
+>
+> This validation case assumes that the repository and Python environment have been configured as described in:
+>
+> [Reproducibility environment](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/concrete_pole/reproducibility_environment.md)
+>
+> The commands in this document must be executed from:
+>
+> ```bash
+> docs/aes/nrel_case
+> ```
+
+
 ## Engineering context from the cited sources
 
 Prestressed concrete poles are commonly used for lighting, electric distribution and transmission lines, antenna masts, and related applications. Circular hollow-cored sections are especially relevant in this class of members because they combine reduced weight, torsional capacity, and internal space for wires or accessories. The PCI Journal reference considered here addresses tapered prestressed hollow-cored poles, whose cross-sectional properties vary along the pole height.
