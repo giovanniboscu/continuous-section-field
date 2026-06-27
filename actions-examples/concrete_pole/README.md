@@ -531,39 +531,7 @@ csf-actions tapered_pc_pole_iso_lookup.yaml  action_tapered_pole_lookup.yaml
 The results produced by the analysis are written to the out/ directory
 
 
-## 7. Shell-script workflows  Linux optionls scripts
-
-The two shell scripts provide ready-to-run variants.
-
-### Lookup-driven shear/torsion laws
-
-```bash
-bash run_lookup_shear.sh
-```
-
-This writes:
-
-```text
-tapered_pc_pole_lookup.yaml
-```
-
-In this variant, both `weight_law` and `shear_weight_law` are read from lookup tables.
-
-### Isotropic shear/torsion laws
-
-```bash
-bash run_iso_shear.sh
-```
-
-This writes:
-
-```text
-tapered_pc_pole_iso_lookup.yaml
-```
-
-In this variant, axial/bending participation remains lookup-driven, while shear/torsion is assigned through explicit `iso(...)` laws.
-
-## 8. Direct generator use
+## 7. Direct generator use
 
 The launcher and shell scripts call the lower-level generator:
 
@@ -647,7 +615,7 @@ python3 writegeometry_tapered_rebars.py \
   --out tapered_pc_pole_iso_lookup.yaml
 ```
 
-## 9. Meaning of the main command-line options
+## 8. Meaning of the main command-line options
 
 ```text
 --z0, --z1
@@ -701,7 +669,7 @@ python3 writegeometry_tapered_rebars.py \
     Output YAML file.
 ```
 
-## 10. Editing the case
+## 9. Editing the case
 
 For routine changes, edit `create_yaml_tapered_pole_lookup.py` and run it again.
 
