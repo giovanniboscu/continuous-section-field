@@ -1612,9 +1612,9 @@ csf-actions geometry.yaml actions.yaml
 ---
 
 
-# `write_sap2000_geometry` - Action Reference
+# `write_sap2000_geometry` alias `export_model` - Action Reference
 
-### 6.11 `write_sap2000_geometry`
+### 6.11 `write_sap2000_geometry`  alias `export_model` 
 
 **Concept**
 
