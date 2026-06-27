@@ -155,6 +155,9 @@ Define the tapered pole geometry, the file describes the cross-section only at t
 
 In this case, the hollow concrete pole is represented as a layered circular wall. The section is subdivided into annular regions, giving an onion-like representation of the concrete wall rather than a single undifferentiated annulus. This makes each concrete layer a named controllable region in the CSF model.
 
+<img width="394" height="352" alt="image" src="https://github.com/user-attachments/assets/30c13d73-a3ba-41cd-b456-64a30a6c925c" />
+
+
 The prestressing-steel components are represented by polygonal inserts. All steel bars are placed inside the region named:
 
 ```text
@@ -458,12 +461,11 @@ Run the launcher from the case directory:
 
 ```bash
 csf-actions  tapered_pc_pole_iso_lookup.yaml action_iso_tapered_pole_lookup.yaml 
-
 ```
 
 
 Run analysis
-
+```
  csf-actions tapered_pc_pole_non-iso_lookup.yaml action_non_iso_tapered_pole_lookup.yaml
 ```
 
@@ -475,12 +477,11 @@ out/iso
 out/non-iso 
 ```
 
-
 ### Expected result
 
 The requested results are written to the `out/` directory.
 
-<img width="982" height="761" alt="image" src="https://github.com/user-attachments/assets/49704fae-f4a6-42bc-995b-208fcb45a989" />
+<img width="954" height="600" alt="image" src="https://github.com/user-attachments/assets/22a3feee-45ba-4b47-940f-de6806fc5924" />
 
 <img width="981" height="940" alt="image" src="https://github.com/user-attachments/assets/f1106e0a-51c2-43c1-b9af-130db0ddcb99" />
 
