@@ -17,6 +17,8 @@ python --version
 
 python -m pip install -e .
 cd actions-examples/concrete_pole
+mkdir {out/iso/,out/non-iso/}
+
 
 ```
 
@@ -32,5 +34,7 @@ python --version
 
 python -m pip install -e .
 cd actions-examples\concrete_pole
+mkdir out\iso,
+mkdir out\non-iso
 
 ```
