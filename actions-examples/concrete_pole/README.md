@@ -259,7 +259,7 @@ CSF:
 The sequence of polygons in `S0` and `S1` defines the boundary geometry of the pole field. The base weights attached to the polygons define the base material participation assigned to the concrete and steel regions before any longitudinal law is applied.
 
 These base weights can be overridden, region by region, by axial participation laws. In this case, the override is specified at the end of the YAML file through `weight_laws` and `shear_weight_laws`.
-A representative portion of the generated law assignments is shown below:
+A representative portion of the generated law assignments `tapered_pc_pole_non-iso_lookup.yaml` is shown below:
 
 ```yaml
   shear_weight_laws:
@@ -370,6 +370,9 @@ shear_weight_laws
 In the lookup-driven variant, `weight_laws` and `shear_weight_laws` are assigned independently. The axial/bending participation field and the shear/torsion participation field therefore do not need to follow a single isotropic elastic relation. This is the non-isotropic variant reported by the launcher.
 
 An isotropic shear/torsion variant can also be generated. In that case, the shear/torsion field is assigned through `iso(...)` laws instead of external shear/torsion lookup tables. The value passed to `iso(...)` is the Poisson ratio: for example, `iso(0.20)` assigns the shear/torsion participation consistently with an isotropic material having $\nu = 0.20$.
+
+A representative portion of the generated law assignments `tapered_pc_pole_iso_lookup.yaml` is shown below:
+
 
 ```yaml
  shear_weight_laws:
