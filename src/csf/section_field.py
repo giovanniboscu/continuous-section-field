@@ -30,7 +30,7 @@ from contextlib import redirect_stdout
 import random as _random
 from typing import Literal,TYPE_CHECKING
 import numpy as np
-
+from scipy.special import roots_jacobi
 
 from . import _tol
 # ruff: noqa: F821
@@ -176,9 +176,12 @@ def compute_lobatto_integration_points(z_min: float, z_max: float, n_points: int
             abscissae = [-1.0, 1.0]
         else:
             # The internal points are the roots of the derivative of Legendre polynomial P_{n-1}
+            '''
             roots = np.polynomial.legendre.Legendre.deriv(
                 np.polynomial.legendre.Legendre([0]*(n_points-1) + [1])
             ).roots()
+            '''
+            roots, _ = roots_jacobi(n_points - 2, 1, 1)
             abscissae = np.concatenate(([-1.0], roots, [1.0]))
 
         # 3. Mapping from [-1, 1] to [z_start, z_start + actual_L]
