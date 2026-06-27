@@ -131,36 +131,6 @@ tapered_pc_pole_non-iso_lookup.yaml
 
 The generated YAML file contains the tapered pole geometry, the annular concrete regions, the prestressing-steel components, and the participation-law assignments read from the lookup tables in `./laws/`.
 
-The summary confirms that the model is a 20 m tapered hollow circular pole with 16 prestressing components. The base outer diameter is 0.600 m and the top outer diameter is 0.440 m.
-
-The line:
-
-```text
-participation scenario    = non-isotropic
-```
-
-means that the axial/bending participation and the shear/torsion participation are assigned through separate lookup laws.
-
-After generating the CSF YAML input, run the action file.
-
-For the isotropic case:
-
-```bash
-csf-actions tapered_pc_pole_iso_lookup.yaml action_tapered_pole_lookup.yaml
-```
-
-For the non-isotropic case:
-
-```bash
-csf-actions tapered_pc_pole_non-iso_lookup.yaml action_tapered_pole_lookup.yaml
-```
-
-This command evaluates the generated CSF model according to the operations defined in:
-
-```text
-action_tapered_pole_lookup.yaml
-```
-The file `action_tapered_pole_lookup.yaml` contains the analysis directives to be applied to the generated CSF geometry. It defines which operations are executed on the tapered pole model and where the resulting outputs are written.
 
 Further details on the CSF input structure and on the available action-file directives are provided in the CSF tutorial and in the action-template documentation:
 
