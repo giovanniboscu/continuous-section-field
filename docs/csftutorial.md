@@ -1589,8 +1589,7 @@ CSF_ACTIONS:
         output: [out/geometry.tcl]
         params:
           n_points: 10
-          E_ref: 2.1e+11
-          nu: 0.30
+
 ```
 
 **CLI**
@@ -1608,7 +1607,7 @@ csf-actions geometry.yaml actions.yaml
 **Pitfalls**
 - `stations` is forbidden.
 - `stdout` is forbidden.
-- Use `2.1e+11` (with `+`) to avoid YAML parsing edge cases.
+
 
 ---
 
@@ -1647,9 +1646,6 @@ CSF_ACTIONS:
         params:
           n_intervals: 6
           material_name: "S355"
-          E_ref: 2.1e+11
-          nu: 0.30
-          mode: "BOTH"
           include_plot: true
           plot_filename: "out/section_variation.png"
 ```
@@ -1684,15 +1680,6 @@ csf-actions geometry.yaml actions.yaml
 | `show_plot` | `bool` | `False` | If `True`, displays the plot interactively. |
 | `z_values` | `list` | - | Explicit station list. Overrides `n_intervals` when provided. |
 | `float_fmt` | `str` | `".9g"` | Format spec for all numeric output fields. |
-
-**Notes**
-
-- `E_ref` and `nu` must be provided **together** to populate the `G_ref` column.
-  If either is missing, `G_ref` is blank in the output - the file is still valid
-  for SAP2000 (material defined separately) but requires `MATERIAL_INPUT_MODE='override'`
-  in `csf_template_pack_opensees.py`.
-- `E_ref` and `nu` are solver input parameters only, independent of the CSF weight
-  laws `w_i(z)` which encode material variation through the modular ratio `α_i(z)`.
 
 
 **CLI**
