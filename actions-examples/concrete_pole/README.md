@@ -502,18 +502,18 @@ The current tables describe a monotone nonlinear degradation field: the values r
 Run the launcher from the case directory:
 
 ```bash
-python3 create_yaml_tapered_pole_lookup.py
+python3 create_yaml_tapered_pole_lookup.py iso tapered_pc_pole_iso_lookup.yaml
 ```
 
 This writes:
 
 ```text
-tapered_pole_lookup.yaml
+tapered_pc_pole_iso_lookup.yaml
 ```
 
 The launcher contains the case parameters near the top of the file. A Python user can modify radii, number of steel components, guide radii, weights, output name, and law references there, then rerun the script.
 
-## 7. Shell-script workflows
+## 7. Shell-script workflows  Linux optionls scripts
 
 The two shell scripts provide ready-to-run variants.
 
