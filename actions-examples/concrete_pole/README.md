@@ -382,18 +382,17 @@ The same generated geometry can therefore be used to represent different degrada
 
 In detail, the model is defined by two tapered end stations.
 
-At `z0 = 0.0`:
+At
 
+`z0 = 0.0`:
+and
+`z1 = 22.86`:
 
 The physical hollow circular geometry is defined by the inner and outer radii at the two end stations:
 ```text
-S0: ri = 0.25781 m, ro = 0.34544 m
-S1: ri = 0.07620 m, ro = 0.13970 m
-
-The annular wall is then subdivided into concentric CSF participation zones for assigning independent lookup-based participation factors.
+S0: ri = 0.258 m, ro = 0.345 m
+S1: ri = 0.076 m, ro = 0.138 m
 ```
-
-At `z1 = 22.86`:
 
 The wall is split into four annular regions:
 
