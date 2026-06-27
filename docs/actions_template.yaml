@@ -187,6 +187,8 @@ CSF_ACTIONS:
     # -------------------------------------------------------------------------
     # - export_model
     - write_sap2000_geometry:
+        stations:                              # If stations is provided, it overrides n_intervals and the Lobatto points are not generated internally
+          - station_3pt 
         output:
           - out/sap2000_template.txt
         params:
