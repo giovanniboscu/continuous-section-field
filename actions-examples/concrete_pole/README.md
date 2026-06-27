@@ -389,12 +389,7 @@ inner radius = 0.200 m
 outer radius = 0.300 m
 ```
 
-At `z1 = 20.0`:
-
-```text
-inner radius = 0.140 m
-outer radius = 0.220 m
-```
+At `z1 = 22.86`:
 
 The wall is split into four annular regions:
 
