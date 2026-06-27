@@ -259,6 +259,7 @@ CSF:
 The sequence of polygons in `S0` and `S1` defines the boundary geometry of the pole field. The base weights attached to the polygons define the base material participation assigned to the concrete and steel regions before any longitudinal law is applied.
 
 These base weights can be overridden, region by region, by axial participation laws. In this case, the override is specified at the end of the YAML file through `weight_laws` and `shear_weight_laws`.
+
 A representative portion of the generated law assignments `tapered_pc_pole_non-iso_lookup.yaml` is shown below:
 
 ```yaml
