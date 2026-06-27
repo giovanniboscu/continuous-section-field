@@ -123,7 +123,7 @@ This step generates the selected CSF YAML input file:
 tapered_pc_pole_iso_lookup.yaml
 ```
 
-or:
+and:
 
 ```text
 tapered_pc_pole_non-iso_lookup.yaml
