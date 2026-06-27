@@ -67,55 +67,54 @@ python3 create_yaml_tapered_pole_lookup.py non-iso tapered_pc_pole_non-iso_looku
 Expected terminal output for the isotropic case:
 
 ```text
-python3 create_yaml_tapered_pole_lookup.py iso tapered_pc_pole_iso_lookup.yaml
-
 File generated successfully: tapered_pc_pole_iso_lookup.yaml
 Layers: 3
 Bars: 16
-S0 outer radius: 0.300000 m
-S1 outer radius: 0.220000 m
+S0 outer radius: 0.345440 m
+S1 outer radius: 0.139700 m
 
 Generated:
   - tapered_pc_pole_iso_lookup.yaml
 
 Geometry summary:
-  L                         = 20.0 m
-  base outer diameter       = 0.600 m
-  base inner diameter       = 0.400 m
-  top outer diameter        = 0.440 m
-  top inner diameter        = 0.280 m
+  L                         = 22.86 m
+  base outer diameter       = 0.69088 m
+  base inner diameter       = 0.51562 m
+  top outer diameter        = 0.27940 m
+  top inner diameter        = 0.15240 m
   prestressing components   = 16
   component diameter        = 0.0127 m
   axial/bending laws        = T_lookup(...), files in ./laws/
   shear/torsion laws        = iso(0.20/0.30)
   participation scenario    = isotropic
+
+
 ```
 
 Expected terminal output for the non-isotropic case:
 
 ```text
-python3 create_yaml_tapered_pole_lookup.py non-iso tapered_pc_pole_non-iso_lookup.yaml
-
 File generated successfully: tapered_pc_pole_non-iso_lookup.yaml
 Layers: 3
 Bars: 16
-S0 outer radius: 0.300000 m
-S1 outer radius: 0.220000 m
+S0 outer radius: 0.345440 m
+S1 outer radius: 0.139700 m
 
 Generated:
   - tapered_pc_pole_non-iso_lookup.yaml
 
 Geometry summary:
-  L                         = 20.0 m
-  base outer diameter       = 0.600 m
-  base inner diameter       = 0.400 m
-  top outer diameter        = 0.440 m
-  top inner diameter        = 0.280 m
+  L                         = 22.86 m
+  base outer diameter       = 0.69088 m
+  base inner diameter       = 0.51562 m
+  top outer diameter        = 0.27940 m
+  top inner diameter        = 0.15240 m
   prestressing components   = 16
   component diameter        = 0.0127 m
   axial/bending laws        = T_lookup(...), files in ./laws/
   shear/torsion laws        = T_lookup(...), files in ./laws/
   participation scenario    = non-isotropic
+
 ```
 
 This step generates the selected CSF YAML input file:
