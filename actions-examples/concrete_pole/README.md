@@ -49,8 +49,7 @@ The CSF geometry can be generated with the script `create_yaml_tapered_pole_look
 ```bash
 usage: create_yaml_tapered_pole_lookup.py [-h] {iso,non-iso} out_yaml
 ```
-
-The first argument selects the participation scenario. In the `iso` case, the shear/torsion participation is tied to the isotropic relation used by the model. In the `non-iso` case, the axial/bending and shear/torsion participation fields are assigned independently through lookup files, as described below.
+The first argument selects how the axial/bending and shear/torsion stiffness-reduction factors are assigned along the member. In the `iso` case, the shear/torsion reduction is derived from the axial/bending reduction through the specified Poisson-ratio relation. In the `non-iso` case, the axial/bending and shear/torsion reductions are prescribed independently through separate lookup files.
 
 The second argument is the name of the YAML file to be written.
 
