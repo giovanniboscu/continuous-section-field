@@ -38,7 +38,8 @@ The purpose of this CSF model is to represent the tapered, materially degraded, 
 
 The external law files define the degradation in terms of the axial variation of the normalized stiffness participation fields, E(z) and G(z), assigned to the concrete and prestressing-steel components.For axial and bending response, the degradation is expressed through the normalized elastic modulus $E/E_0$. For shear and torsional response, the corresponding normalized shear modulus $G/G_0$ is used consistently with the adopted material assumption. In the isotropic case with constant Poisson ratio, $G/G_0$ follows from $E/G_0$ through the same degradation factor and is therefore derived from $E/E_0$.
 
-In the CSF model, these longitudinal variations represent prescribed degradation fields that can be modified by the user without changing the geometric definition of the pole. The generated field can then be evaluated at any height to inspect the local section, compute the corresponding sectional properties, or sample station-wise sections for downstream structural analysis.
+In summary, these longitudinal variations define prescribed degradation fields within the CSF model. The user can modify them without changing the geometric definition of the pole. The generated field can then be evaluated at any height to inspect the local section, compute the corresponding sectional properties, or sample station-wise sections for downstream structural analysis.
+
 
 
 ## Source of pole dimensions
