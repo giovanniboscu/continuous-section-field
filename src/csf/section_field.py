@@ -1894,6 +1894,16 @@ def compute_saint_venant_Jv2(poly_input: Any) -> Tuple[float, float]:
       (q_iso > 0.90), J and fidelity are forced to zero.
     - Weight-dispersion penalty:  fid_final = fid * (1 - dev_weightabs^2).
     """
+    
+    section = poly_input
+
+    if any(
+        "@cell" in str(getattr(p, "name", "")) or
+        "@closed" in str(getattr(p, "name", ""))
+        for p in section.polygons
+    ):
+        return 0.0, 0.0 
+    
     # ------------------------------------------------------------------
     # Helper: normalised weight-dispersion (coefficient of variation)
     # ------------------------------------------------------------------
@@ -1933,12 +1943,7 @@ def compute_saint_venant_Jv2(poly_input: Any) -> Tuple[float, float]:
         """
 
         polygons = section.polygons
-
-        for idx, polygon in enumerate(polys):
-            name = str(getattr(polygon, "name", ""))
-            if "@cell" in name or "@closed" in name:
-                return 0.0, 0.0
-        
+   
         area_by_idx: Dict[int, float] = {}
 
         for idx, polygon in enumerate(polygons):
@@ -3960,8 +3965,7 @@ def integrate_volume(
             volume_weighted += A_w * w * half_L
 
     return volume_legacy if idx is None else (volume_geom, volume_weighted)
-
-
+    
 def section_full_analysis(section: Section, compute_vroark=True):
     """
     Perform a complete geometric and sectional analysis of a cross-section.
