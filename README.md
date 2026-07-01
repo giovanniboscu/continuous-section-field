@@ -33,7 +33,8 @@ It represents section geometry and material as continuous functions along z, com
 
 
 <p align="center">
-  <img width="1027" height="457" alt="image" src="https://github.com/user-attachments/assets/806c6ea5-6d4b-4b5f-bf6c-9760de05c688" />
+  <img width="1027" height="457" alt="614108668-806c6ea5-6d4b-4b5f-bf6c-9760de05c688" src="https://github.com/user-attachments/assets/8f8164c7-1bd2-40b9-99b6-2405935f945d" />
+
 </p>
 
 
