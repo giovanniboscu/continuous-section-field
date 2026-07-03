@@ -17,7 +17,37 @@ In the tapered prestressed-pole case, the member is defined by named concentric 
 
 
 **Originality** – CSF introduces a field-level representation of longitudinal members. The model is the continuous generating field itself: geometry, sectional components, reinforcement, and participation laws remain explicit functions of the member coordinate. Sectional properties and solver inputs are derived evaluations of this field.**
+## Originality
 
+The main originality lies in the persistence of the continuous, weighted
+section field $S(z)$ throughout the analysis workflow, rather than its
+consumption at the point of projection. Existing approaches - including
+parametric fiber generators evaluated on demand at a chosen axial
+coordinate - still discretize the section into a finite set of fibers at
+the moment of evaluation, whether that evaluation occurs once, before
+analysis, or repeatedly, during post-processing; the discretization is
+simply relocated, not eliminated, and forward projection and stress
+recovery remain two independently reconstructed approximations of the
+same underlying section.
+
+In the proposed framework, $S(z)$ is never discretized. It is first
+projected, by exact integration, into the reduced stiffness quantities
+required by a beam solver ($A_{id}(z)$, $J_{id}(z)$, and related terms).
+After the solution is obtained, the same continuous field is
+re-interrogated at any axial coordinate selected by the user - including
+coordinates not evaluated by the solver - to recover local elastic
+stresses at every material point, using the identical, undiscretized
+geometric and material description from which the solver input was
+derived. Forward projection and stress recovery are therefore not two
+separate procedures requiring the user to maintain consistency between
+them, but two evaluations of a single persistent representation, differing
+only in the quantity extracted.
+
+This eliminates discretization error as a structural property of the
+method rather than as an asymptotic limit approached through mesh
+refinement, and removes the need to anticipate, at model-building time,
+which axial locations or material subdivisions will later be of interest
+for stress recovery.
 
 
 **Keywords:** continuous section field; continuous field representation; longitudinal coordinate; material participation fields; independent geometry and participation; functional modelling
