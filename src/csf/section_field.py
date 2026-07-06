@@ -107,7 +107,780 @@ else:
 #     of each polygon (polygon area minus its immediate children areas).
 
 
+def analyse_polygon_jourawski_shear_stress(
+    section_field,
+    z: float,
+    Tx: float,
+    Ty: float,
+    *,
+    num_sudx: int = 100,
+    num_sudy: int = 100,
+    debug: bool = False,
+) -> list[dict[str, object]]:
+    """
+    Compute polygon-wise Jourawski shear-stress envelopes from global section scans.
+
+    Conventions
+    -----------
+    - Tx is the shear component associated with My.
+    - Ty is the shear component associated with Mx.
+    - tau_x is evaluated from vertical cuts x = constant.
+    - tau_y is evaluated from horizontal cuts y = constant.
+
+    Scan rule
+    ---------
+    The section is scanned once along x and once along y over the active-section
+    bounding box:
+
+        deltaX = (xmax - xmin) / num_sudx
+        deltaY = (ymax - ymin) / num_sudy
+
+    The sampled coordinates are cell centres, not extrema.
+
+    For each cut, Jourawski returns one mean shear stress over the full active
+    intersection length b. The same value is assigned to all active polygons
+    intersected by that cut. Polygon-wise min/max values are then envelopes of
+    the global scan values assigned to each polygon.
+    """
+    num_sudx = int(num_sudx)
+    num_sudy = int(num_sudy)
+    if num_sudx < 1:
+        raise ValueError("num_sudx must be >= 1.")
+    if num_sudy < 1:
+        raise ValueError("num_sudy must be >= 1.")
+
+    section = section_field.section(float(z))
+    transformed_section, weight_ref, weight_norm_by_idx = _jourawski_normalized_section(
+        section
+    )
+
+    props = section_properties(transformed_section)
+    A = float(props["A"])
+    Cx = float(props["Cx"])
+    Cy = float(props["Cy"])
+    Ix = float(props["Ix"])
+    Iy = float(props["Iy"])
+    Ixy = float(props["Ixy"])
+
+    if abs(A) <= _tol.EPS_A:
+        raise ValueError(f"Zero transformed section area at z={float(z)}.")
+
+    D = Ix * Iy - Ixy * Ixy
+    if abs(D) <= _tol.EPS_K_ATOL:
+        raise ValueError(
+            f"Singular transformed bending inertia matrix at z={float(z)}."
+        )
+
+    # Same algebraic matrix used in analyse_polygon_navier_stress(), with
+    # dMy/ds = Tx and dMx/ds = Ty.
+    dbx = (float(Tx) * Ix - float(Ty) * Ixy) / D
+    dby = (float(Ty) * Iy - float(Tx) * Ixy) / D
+
+    xmin, xmax, ymin, ymax = _section_active_bbox(section)
+
+    if debug:
+        print(
+            "[JOURAWSKI SCAN START]",
+            f"z={float(z):.12e}",
+            f"Tx={float(Tx):.12e}",
+            f"Ty={float(Ty):.12e}",
+            f"num_sudx={num_sudx}",
+            f"num_sudy={num_sudy}",
+            f"xmin={xmin:.12e}",
+            f"xmax={xmax:.12e}",
+            f"ymin={ymin:.12e}",
+            f"ymax={ymax:.12e}",
+            flush=True,
+        )
+
+    tau_x_scan = _jourawski_global_axis_scan(
+        original_section=section,
+        transformed_section=transformed_section,
+        axis="x",
+        coord_min=xmin,
+        coord_max=xmax,
+        num_subdivisions=num_sudx,
+        Cx=Cx,
+        Cy=Cy,
+        dbx=dbx,
+        dby=dby,
+    )
+
+    tau_y_scan = _jourawski_global_axis_scan(
+        original_section=section,
+        transformed_section=transformed_section,
+        axis="y",
+        coord_min=ymin,
+        coord_max=ymax,
+        num_subdivisions=num_sudy,
+        Cx=Cx,
+        Cy=Cy,
+        dbx=dbx,
+        dby=dby,
+    )
+
+    values_x_by_polygon = _group_scan_values_by_polygon(
+        scan_values=tau_x_scan,
+        polygon_count=len(section.polygons),
+    )
+    values_y_by_polygon = _group_scan_values_by_polygon(
+        scan_values=tau_y_scan,
+        polygon_count=len(section.polygons),
+    )
+
+    if debug:
+        print(
+            "[JOURAWSKI SCAN AXIS DONE]",
+            f"z={float(z):.12e}",
+            f"axis=x",
+            f"cuts_valid={len(tau_x_scan)}",
+            f"cuts_total={num_sudx}",
+            flush=True,
+        )
+        print(
+            "[JOURAWSKI SCAN AXIS DONE]",
+            f"z={float(z):.12e}",
+            f"axis=y",
+            f"cuts_valid={len(tau_y_scan)}",
+            f"cuts_total={num_sudy}",
+            flush=True,
+        )
+
+    rows: list[dict[str, object]] = []
+
+    for idx, _poly in enumerate(transformed_section.polygons):
+        original_poly = section.polygons[idx]
+        name_s0 = str(section_field.s0.polygons[idx].name)
+        weight_raw = float(original_poly.weight)
+        weight_norm = float(weight_norm_by_idx[idx])
+
+        tau_x_values = values_x_by_polygon[idx]
+        tau_y_values = values_y_by_polygon[idx]
+
+        tau_x_min = _min_scan_value(tau_x_values)
+        tau_x_max = _max_scan_value(tau_x_values)
+        tau_y_min = _min_scan_value(tau_y_values)
+        tau_y_max = _max_scan_value(tau_y_values)
+
+        if debug:
+            print(
+                "[JOURAWSKI SCAN POLYGON DONE]",
+                f"z={float(z):.12e}",
+                f"idx={idx}",
+                f"name={name_s0}",
+                f"scan_count_x={len(tau_x_values)}",
+                f"scan_count_y={len(tau_y_values)}",
+                f"grid_x={num_sudx}",
+                f"grid_y={num_sudy}",
+                flush=True,
+            )
+
+        rows.append(
+            {
+                "idx": int(idx),
+                "name": name_s0,
+                "weight": weight_raw,
+                "weight_ref": float(weight_ref),
+                "weight_norm": weight_norm,
+
+                "tau_x_min": tau_x_min["tau"],
+                "x_tau_x_min": tau_x_min["x"],
+                "y_tau_x_min": tau_x_min["y"],
+
+                "tau_x_max": tau_x_max["tau"],
+                "x_tau_x_max": tau_x_max["x"],
+                "y_tau_x_max": tau_x_max["y"],
+
+                "tau_y_min": tau_y_min["tau"],
+                "x_tau_y_min": tau_y_min["x"],
+                "y_tau_y_min": tau_y_min["y"],
+
+                "tau_y_max": tau_y_max["tau"],
+                "x_tau_y_max": tau_y_max["x"],
+                "y_tau_y_max": tau_y_max["y"],
+                "coord_tau_y_max": tau_y_max["coord"],
+                "tau_reference_y_max": tau_y_max["tau_reference"],
+                "b_weighted_y_max": tau_y_max["b_weighted"],
+                "Sx_part_y_max": tau_y_max["Sx_part"],
+                "Sy_part_y_max": tau_y_max["Sy_part"],
+
+                "tau_x_mean": _mean_scan_tau(tau_x_values),
+                "tau_y_mean": _mean_scan_tau(tau_y_values),
+                "scan_count_x": int(len(tau_x_values)),
+                "scan_count_y": int(len(tau_y_values)),
+                "grid_x": int(num_sudx),
+                "grid_y": int(num_sudy),
+                "converged_x": bool(tau_x_values),
+                "converged_y": bool(tau_y_values),
+                "relative_change_x": float("nan"),
+                "relative_change_y": float("nan"),
+            }
+        )
+
+    if debug:
+        print(
+            "[JOURAWSKI SCAN DONE]",
+            f"z={float(z):.12e}",
+            f"rows={len(rows)}",
+            f"cuts_x={len(tau_x_scan)}",
+            f"cuts_y={len(tau_y_scan)}",
+            flush=True,
+        )
+
+    return rows
     
+def _section_active_bbox(section: Section) -> tuple[float, float, float, float]:
+    xs: list[float] = []
+    ys: list[float] = []
+
+    for poly in section.polygons:
+        if not _jourawski_polygon_is_active_for_b(poly):
+            continue
+
+        for vertex in poly.vertices:
+            xs.append(float(vertex.x))
+            ys.append(float(vertex.y))
+
+    if not xs or not ys:
+        raise ValueError(
+            "No active polygon with non-zero weightabs available for Jourawski scan."
+        )
+
+    return min(xs), max(xs), min(ys), max(ys)
+
+def _jourawski_global_axis_scan(
+    *,
+    original_section: Section,
+    transformed_section: Section,
+    axis: str,
+    coord_min: float,
+    coord_max: float,
+    num_subdivisions: int,
+    Cx: float,
+    Cy: float,
+    dbx: float,
+    dby: float,
+) -> list[dict[str, object]]:
+    if axis not in ("x", "y"):
+        raise ValueError("axis must be 'x' or 'y'.")
+
+    n = int(num_subdivisions)
+    span = float(coord_max) - float(coord_min)
+    if abs(span) <= _tol.EPS_L:
+        return []
+
+    delta = span / n
+    out: list[dict[str, object]] = []
+
+    for i in range(n):
+        coord = float(coord_min) + (i + 0.5) * delta
+        value = _jourawski_value_at_coord(
+            original_section=original_section,
+            transformed_section=transformed_section,
+            axis=axis,
+            coord=coord,
+            Cx=Cx,
+            Cy=Cy,
+            dbx=dbx,
+            dby=dby,
+        )
+        if value is not None:
+            out.append(value)
+
+    return out
+
+
+def _jourawski_value_at_coord(
+    *,
+    original_section: Section,
+    transformed_section: Section,
+    axis: str,
+    coord: float,
+    Cx: float,
+    Cy: float,
+    dbx: float,
+    dby: float,
+) -> dict[str, object] | None:
+    """
+    Compute the mean Jourawski stress for one global cut.
+
+    The stress value is global for the full active cut width b_total.
+    The localization is per intersected polygon segment and is stored in
+    cut_segments. The grouped polygon rows then receive the same tau but their
+    own segment midpoint coordinates.
+    """
+    b_total, cut_segments = _section_active_cut_width_and_polygons(
+        section=original_section,
+        axis=axis,
+        coord=coord,
+    )
+    if abs(b_total) <= _tol.EPS_L:
+        return None
+
+    Sx_part, Sy_part = _section_partial_first_moments(
+        section=transformed_section,
+        axis=axis,
+        coord=coord,
+        Cx=Cx,
+        Cy=Cy,
+    )
+
+    shear_flow = dbx * Sx_part + dby * Sy_part
+    tau_reference = shear_flow / b_total
+    tau_local = tau_reference
+
+    return {
+        "tau": float(tau_local),
+        "x": float("nan"),
+        "y": float("nan"),
+        "coord": float(coord),
+        "axis": str(axis),
+        "tau_reference": float(tau_reference),
+        "b_weighted": float(b_total),
+        "Sx_part": float(Sx_part),
+        "Sy_part": float(Sy_part),
+        "cut_segments": tuple(cut_segments),
+        "polygon_indices": tuple(int(seg["polygon_idx"]) for seg in cut_segments),
+    }
+
+
+
+def _section_active_cut_width_and_polygons(
+    *,
+    section: Section,
+    axis: str,
+    coord: float,
+) -> tuple[float, list[dict[str, object]]]:
+    """
+    Return the total active cut width and one localization record per polygon.
+
+    For axis == "y", the cut is horizontal Y = coord. The segment endpoints are
+    x-like values, and the marker is placed at their length-weighted midpoint.
+
+    For axis == "x", the cut is vertical X = coord. The segment endpoints are
+    y-like values, and the marker is placed at their length-weighted midpoint.
+    """
+    total = 0.0
+    cut_segments: list[dict[str, object]] = []
+
+    for idx, poly in enumerate(section.polygons):
+        if not _jourawski_polygon_is_active_for_b(poly):
+            continue
+
+        segments = _polygon_line_segments(poly=poly, axis=axis, coord=coord)
+        if not segments:
+            continue
+
+        length = sum(abs(b - a) for a, b in segments)
+        if length <= _tol.EPS_L:
+            continue
+
+        midpoint_other = sum(
+            abs(b - a) * 0.5 * (float(a) + float(b))
+            for a, b in segments
+        ) / length
+
+        if axis == "x":
+            x_marker = float(coord)
+            y_marker = float(midpoint_other)
+            segment_x0 = float(coord)
+            segment_y0 = float(min(min(a, b) for a, b in segments))
+            segment_x1 = float(coord)
+            segment_y1 = float(max(max(a, b) for a, b in segments))
+        elif axis == "y":
+            x_marker = float(midpoint_other)
+            y_marker = float(coord)
+            segment_x0 = float(min(min(a, b) for a, b in segments))
+            segment_y0 = float(coord)
+            segment_x1 = float(max(max(a, b) for a, b in segments))
+            segment_y1 = float(coord)
+        else:
+            raise ValueError("axis must be 'x' or 'y'.")
+
+        total += length
+        cut_segments.append(
+            {
+                "polygon_idx": int(idx),
+                "length": float(length),
+                "x": float(x_marker),
+                "y": float(y_marker),
+                "segment_x0": float(segment_x0),
+                "segment_y0": float(segment_y0),
+                "segment_x1": float(segment_x1),
+                "segment_y1": float(segment_y1),
+                "segments_other": tuple((float(a), float(b)) for a, b in segments),
+            }
+        )
+
+    return float(total), cut_segments
+
+
+def _group_scan_values_by_polygon(
+    *,
+    scan_values: list[dict[str, object]],
+    polygon_count: int,
+) -> list[list[dict[str, object]]]:
+    """
+    Assign global cut values to crossed polygons with per-polygon localization.
+
+    Each cut has one tau value. Each crossed polygon receives a localized copy
+    whose x/y are the midpoint of that polygon's cut segment.
+    """
+    grouped: list[list[dict[str, object]]] = [[] for _ in range(int(polygon_count))]
+
+    for value in scan_values:
+        cut_segments = value.get("cut_segments", ())
+        for segment in cut_segments:  # type: ignore[union-attr]
+            idx = int(segment["polygon_idx"])
+            if not (0 <= idx < int(polygon_count)):
+                continue
+
+            localized = dict(value)
+            localized.pop("cut_segments", None)
+            localized["polygon_indices"] = (idx,)
+            localized["x"] = float(segment["x"])
+            localized["y"] = float(segment["y"])
+            localized["segment_length"] = float(segment["length"])
+            localized["segment_x0"] = float(segment["segment_x0"])
+            localized["segment_y0"] = float(segment["segment_y0"])
+            localized["segment_x1"] = float(segment["segment_x1"])
+            localized["segment_y1"] = float(segment["segment_y1"])
+
+            grouped[idx].append(localized)
+
+    return grouped
+
+
+def _jourawski_polygon_is_active_for_b(poly: Polygon) -> bool:
+    weightabs = float(getattr(poly, "weightabs", getattr(poly, "weight", 0.0)))
+    return math.isfinite(weightabs) and abs(weightabs) > _tol.EPS_A
+
+
+def _jourawski_normalized_section(section: Section) -> tuple[Section, float, list[float]]:
+    weight_ref = _jourawski_reference_weightabs(section)
+
+    transformed_polygons = []
+    weight_norm_by_idx: list[float] = []
+
+    for poly in section.polygons:
+        weight_norm = float(poly.weight) / weight_ref
+        weight_norm_by_idx.append(weight_norm)
+
+        transformed_polygons.append(
+            Polygon(
+                vertices=poly.vertices,
+                weight=weight_norm,
+                name=getattr(poly, "name", None),
+            )
+        )
+
+    return (
+        Section(polygons=tuple(transformed_polygons), z=float(section.z)),
+        float(weight_ref),
+        weight_norm_by_idx,
+    )
+
+
+def _jourawski_reference_weightabs(section: Section) -> float:
+    for poly in section.polygons:
+        w = float(poly.weightabs)
+        if math.isfinite(w) and w > _tol.EPS_A:
+            return w
+
+    raise ValueError("No finite non-zero polygon weight available for normalization.")
+
+
+def _section_partial_first_moments(
+    *,
+    section: Section,
+    axis: str,
+    coord: float,
+    Cx: float,
+    Cy: float,
+) -> tuple[float, float]:
+    Sx_part = 0.0
+    Sy_part = 0.0
+
+    for poly in section.polygons:
+        clipped = _clip_polygon_half_plane(poly=poly, axis=axis, coord=coord)
+        if len(clipped) < 3:
+            continue
+
+        area_part_raw = _polygon_area_from_points(clipped)
+        if abs(area_part_raw) <= _tol.EPS_A:
+            continue
+
+        clipped_poly = Polygon(
+            vertices=tuple(clipped),
+            weight=float(poly.weight),
+            name=getattr(poly, "name", None),
+        )
+
+        area_part, (cx_part, cy_part) = polygon_area_centroid(clipped_poly)
+        if abs(area_part) <= _tol.EPS_A:
+            continue
+
+        Sx_part += area_part * (cx_part - Cx)
+        Sy_part += area_part * (cy_part - Cy)
+
+    return float(Sx_part), float(Sy_part)
+
+
+def _clip_polygon_half_plane(
+    *,
+    poly: Polygon,
+    axis: str,
+    coord: float,
+) -> list[Pt]:
+    verts = poly.vertices
+    n = len(verts)
+    if n < 3:
+        return []
+
+    clipped: list[Pt] = []
+
+    for i in range(n):
+        p1 = verts[i]
+        p2 = verts[(i + 1) % n]
+
+        c1 = float(p1.x if axis == "x" else p1.y)
+        c2 = float(p2.x if axis == "x" else p2.y)
+
+        p1_in = c1 >= coord - _tol.EPS_L
+        p2_in = c2 >= coord - _tol.EPS_L
+
+        if p1_in and p2_in:
+            clipped.append(p2)
+
+        elif p1_in and not p2_in:
+            denom = c2 - c1
+            if abs(denom) > _tol.EPS_L:
+                t = (coord - c1) / denom
+                clipped.append(_interpolate_point_on_segment(p1, p2, t))
+
+        elif (not p1_in) and p2_in:
+            denom = c2 - c1
+            if abs(denom) > _tol.EPS_L:
+                t = (coord - c1) / denom
+                clipped.append(_interpolate_point_on_segment(p1, p2, t))
+            clipped.append(p2)
+
+    return clipped
+
+
+def _interpolate_point_on_segment(p1: Pt, p2: Pt, t: float) -> Pt:
+    return Pt(
+        float(p1.x) + float(t) * (float(p2.x) - float(p1.x)),
+        float(p1.y) + float(t) * (float(p2.y) - float(p1.y)),
+    )
+
+
+def _polygon_area_from_points(points: list[Pt]) -> float:
+    if len(points) < 3:
+        return 0.0
+
+    a2 = 0.0
+    n = len(points)
+
+    for i in range(n):
+        p0 = points[i]
+        p1 = points[(i + 1) % n]
+        a2 += float(p0.x) * float(p1.y) - float(p1.x) * float(p0.y)
+
+    return 0.5 * a2
+
+
+def _polygon_line_segments(
+    *,
+    poly: Polygon,
+    axis: str,
+    coord: float,
+) -> list[tuple[float, float]]:
+    verts = poly.vertices
+    n = len(verts)
+    if n < 3:
+        return []
+
+    values: list[float] = []
+
+    for i in range(n):
+        p1 = verts[i]
+        p2 = verts[(i + 1) % n]
+
+        c1 = float(p1.x if axis == "x" else p1.y)
+        c2 = float(p2.x if axis == "x" else p2.y)
+        o1 = float(p1.y if axis == "x" else p1.x)
+        o2 = float(p2.y if axis == "x" else p2.x)
+
+        if abs(c1 - coord) <= _tol.EPS_L and abs(c2 - coord) <= _tol.EPS_L:
+            continue
+
+        crosses = (c1 <= coord < c2) or (c2 <= coord < c1)
+        if not crosses:
+            continue
+
+        denom = c2 - c1
+        if abs(denom) <= _tol.EPS_L:
+            continue
+
+        t = (coord - c1) / denom
+        values.append(o1 + t * (o2 - o1))
+
+    values = _unique_sorted(values)
+    if len(values) < 2:
+        return []
+
+    segments: list[tuple[float, float]] = []
+    for a, b in zip(values[0::2], values[1::2]):
+        if abs(b - a) > _tol.EPS_L:
+            segments.append((float(a), float(b)))
+
+    return segments
+
+
+def _unique_sorted(values: list[float]) -> list[float]:
+    values = sorted(float(v) for v in values if math.isfinite(float(v)))
+    if not values:
+        return []
+
+    out = [values[0]]
+    for v in values[1:]:
+        if abs(v - out[-1]) > _tol.EPS_L:
+            out.append(v)
+    return out
+
+
+def _mean_scan_tau(values: list[dict[str, object]]) -> float:
+    if not values:
+        return float("nan")
+    tau_values = [float(v["tau"]) for v in values]
+    return float(sum(tau_values) / len(tau_values))
+
+
+def _empty_scan_value() -> dict[str, object]:
+    return {
+        "tau": float("nan"),
+        "x": float("nan"),
+        "y": float("nan"),
+        "coord": float("nan"),
+        "axis": "",
+        "tau_reference": float("nan"),
+        "b_weighted": float("nan"),
+        "Sx_part": float("nan"),
+        "Sy_part": float("nan"),
+        "polygon_indices": tuple(),
+        "segment_length": float("nan"),
+        "segment_x0": float("nan"),
+        "segment_y0": float("nan"),
+        "segment_x1": float("nan"),
+        "segment_y1": float("nan"),
+    }
+
+def _min_scan_value(values: list[dict[str, object]]) -> dict[str, object]:
+    if not values:
+        return _empty_scan_value()
+    return min(values, key=lambda r: float(r["tau"]))
+
+
+def _max_scan_value(values: list[dict[str, object]]) -> dict[str, object]:
+    if not values:
+        return _empty_scan_value()
+    return max(values, key=lambda r: float(r["tau"]))
+
+# -----------------------------------------------
+#     NAVIER
+# ----------------------------------------------
+
+def analyse_polygon_navier_stress(
+    section_field,
+    z: float,
+    N: float,
+    Mx: float,
+    My: float,
+) -> list[dict[str, object]]:
+    """
+    Compute polygon-wise signed normal stresses from the general Navier formula.
+
+    For each polygon all vertices are checked.
+
+    Returned stress values:
+    - sigma_min      : minimum signed vertex stress in the polygon
+    - sigma_max      : maximum signed vertex stress in the polygon
+    - sigma_extreme  : signed vertex stress selected by largest absolute value
+
+    The coordinates and vertex indices of all three governing values are returned.
+    """
+    section = section_field.section(float(z))
+    analysis = section_full_analysis(section)
+
+    A = float(analysis["A"])
+    Cx = float(analysis["Cx"])
+    Cy = float(analysis["Cy"])
+    Ix = float(analysis["Ix"])
+    Iy = float(analysis["Iy"])
+    Ixy = float(analysis["Ixy"])
+
+    D = Ix * Iy - Ixy * Ixy
+    if A == 0.0:
+        raise ValueError(f"Zero section area at z={float(z)}.")
+    if D == 0.0:
+        raise ValueError(f"Singular bending inertia matrix at z={float(z)}.")
+
+    axial = -float(N) / A
+    bx = (float(My) * Ix - float(Mx) * Ixy) / D
+    by = (float(Mx) * Iy - float(My) * Ixy) / D
+
+    rows: list[dict[str, object]] = []
+
+    for i, poly in enumerate(section.polygons):
+        name_s0 = str(section_field.s0.polygons[i].name)
+        weightabs = float(poly.weightabs)
+
+        vertex_rows: list[tuple[int, float, float, float]] = []
+
+        for j, vertex in enumerate(poly.vertices):
+            x = float(vertex.x)
+            y = float(vertex.y)
+
+            sigma = weightabs * (
+                axial
+                + bx * (x - Cx)
+                + by * (y - Cy)
+            )
+
+            vertex_rows.append((int(j), x, y, float(sigma)))
+
+        if not vertex_rows:
+            raise ValueError(f"Polygon {i} has no vertices at z={float(z)}.")
+
+        j_min, x_min, y_min, sigma_min = min(vertex_rows, key=lambda r: r[3])
+        j_max, x_max, y_max, sigma_max = max(vertex_rows, key=lambda r: r[3])
+        j_ext, x_ext, y_ext, sigma_extreme = max(vertex_rows, key=lambda r: abs(r[3]))
+
+        rows.append(
+            {
+                "idx": int(i),
+                "name": name_s0,
+                "weightabs": weightabs,
+
+                "sigma_min": float(sigma_min),
+                "vertex_index_min": int(j_min),
+                "x_min": float(x_min),
+                "y_min": float(y_min),
+
+                "sigma_max": float(sigma_max),
+                "vertex_index_max": int(j_max),
+                "x_max": float(x_max),
+                "y_max": float(y_max),
+
+                "sigma_extreme": float(sigma_extreme),
+                "vertex_index": int(j_ext),
+                "x": float(x_ext),
+                "y": float(y_ext),
+            }
+        )
+
+    return rows
 
 # -----------------------------------------------------------------------------
 # Station generation
