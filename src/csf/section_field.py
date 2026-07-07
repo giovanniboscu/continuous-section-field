@@ -106,7 +106,6 @@ else:
 #     This method reconstructs absolute weights w_abs and assigns area to the exclusive region
 #     of each polygon (polygon area minus its immediate children areas).
 
-
 def analyse_polygon_jourawski_shear_stress(
     section_field,
     z: float,
@@ -138,9 +137,16 @@ def analyse_polygon_jourawski_shear_stress(
     The sampled coordinates are cell centres, not extrema.
 
     For each cut, Jourawski returns one mean shear stress over the full active
-    intersection length b. The same value is assigned to all active polygons
-    intersected by that cut. Polygon-wise min/max values are then envelopes of
-    the global scan values assigned to each polygon.
+    intersection length b. That line-average value is then redistributed among
+    the crossed polygon segments using their sampled shear carrier
+    ``shear_weightabs`` and their actual segment length on the cut.
+
+    For one cut:
+        tau_i = tau_ref * b_total * G_i / sum(G_j * b_j)
+
+    where G_i is the polygon ``shear_weightabs`` and b_i is the segment length
+    of the same cut inside polygon i. This preserves the cut resultant:
+        sum(tau_i * b_i) = tau_ref * b_total.
     """
     num_sudx = int(num_sudx)
     num_sudy = int(num_sudy)
@@ -427,10 +433,30 @@ def _jourawski_value_at_coord(
 
     shear_flow = dbx * Sx_part + dby * Sy_part
     tau_reference = shear_flow / b_total
-    tau_local = tau_reference
+
+    shear_length_sum = sum(
+        float(seg["shear_weightabs"]) * float(seg["length"])
+        for seg in cut_segments
+    )
+    
+    #   
+    #
+    if abs(shear_length_sum) <= _tol.EPS_L:
+        return None
+
+    localized_segments: list[dict[str, object]] = []
+    for seg in cut_segments:
+        shear_weightabs = float(seg["shear_weightabs"])
+        tau_local = tau_reference * b_total * shear_weightabs / shear_length_sum
+
+        localized = dict(seg)
+        localized["tau"] = float(tau_local)
+        localized["tau_factor"] = float(b_total * shear_weightabs / shear_length_sum)
+        localized["shear_length_sum"] = float(shear_length_sum)
+        localized_segments.append(localized)
 
     return {
-        "tau": float(tau_local),
+        "tau": float(tau_reference),
         "x": float("nan"),
         "y": float("nan"),
         "coord": float(coord),
@@ -439,8 +465,8 @@ def _jourawski_value_at_coord(
         "b_weighted": float(b_total),
         "Sx_part": float(Sx_part),
         "Sy_part": float(Sy_part),
-        "cut_segments": tuple(cut_segments),
-        "polygon_indices": tuple(int(seg["polygon_idx"]) for seg in cut_segments),
+        "cut_segments": tuple(localized_segments),
+        "polygon_indices": tuple(int(seg["polygon_idx"]) for seg in localized_segments),
     }
 
 
@@ -497,11 +523,14 @@ def _section_active_cut_width_and_polygons(
         else:
             raise ValueError("axis must be 'x' or 'y'.")
 
+        shear_weightabs = _jourawski_polygon_shear_weightabs(poly)
+
         total += length
         cut_segments.append(
             {
                 "polygon_idx": int(idx),
                 "length": float(length),
+                "shear_weightabs": float(shear_weightabs),
                 "x": float(x_marker),
                 "y": float(y_marker),
                 "segment_x0": float(segment_x0),
@@ -538,6 +567,10 @@ def _group_scan_values_by_polygon(
             localized = dict(value)
             localized.pop("cut_segments", None)
             localized["polygon_indices"] = (idx,)
+            localized["tau"] = float(segment["tau"])
+            localized["tau_factor"] = float(segment["tau_factor"])
+            localized["shear_weightabs"] = float(segment["shear_weightabs"])
+            localized["shear_length_sum"] = float(segment["shear_length_sum"])
             localized["x"] = float(segment["x"])
             localized["y"] = float(segment["y"])
             localized["segment_length"] = float(segment["length"])
@@ -549,6 +582,21 @@ def _group_scan_values_by_polygon(
             grouped[idx].append(localized)
 
     return grouped
+
+
+def _jourawski_polygon_shear_weightabs(poly: Polygon) -> float:
+    """Return the sampled shear carrier used for local cut redistribution."""
+    for attr_name in ("shear_weightabs", "shear_w"):
+        if not hasattr(poly, attr_name):
+            continue
+        value = getattr(poly, attr_name)
+        if value is None:
+            continue
+        value = float(value)
+        if math.isfinite(value):
+            return value
+
+    return float(getattr(poly, "weightabs", getattr(poly, "weight", 0.0)))
 
 
 def _jourawski_polygon_is_active_for_b(poly: Polygon) -> bool:
@@ -774,6 +822,9 @@ def _empty_scan_value() -> dict[str, object]:
         "segment_y0": float("nan"),
         "segment_x1": float("nan"),
         "segment_y1": float("nan"),
+        "shear_weightabs": float("nan"),
+        "shear_length_sum": float("nan"),
+        "tau_factor": float("nan"),
     }
 
 def _min_scan_value(values: list[dict[str, object]]) -> dict[str, object]:
@@ -786,6 +837,8 @@ def _max_scan_value(values: list[dict[str, object]]) -> dict[str, object]:
     if not values:
         return _empty_scan_value()
     return max(values, key=lambda r: float(r["tau"]))
+
+
 
 # -----------------------------------------------
 #     NAVIER

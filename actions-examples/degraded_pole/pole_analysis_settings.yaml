@@ -1,0 +1,51 @@
+model:
+  csf_yaml: degradated_pole.yaml
+
+debug:
+  enabled: false
+
+prestress:
+  bar_type: S
+  force_healthy: -1.256e6
+
+z_stations:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 14.25   
+  - 15
+
+
+shear:
+ num_sudx: 256
+ num_sudy: 256
+ sp_mesh: 1
+# nu_sp: 0.0
+  
+moment_gradient:
+  dz: 0.01
+  scheme: central_shift_inside_domain
+
+loads:
+  tip_force_y: -7350.0
+  tip_torque_z: 0 #10000.0
+
+outputs:
+  directory: output
+  prestress_resultant: prestress_resultant.csv
+  internal_actions: internal_actions.csv
+  navier_stresses: navier_stresses.csv
+  shear_stresses: shear_stresses.csv
+  mechanical_report: mechanical_report.txt

@@ -1,0 +1,97 @@
+# =============================================================================
+# CSF ACTIONS FILE - Refani–Nagao spun pile onion/rebars model
+# =============================================================================
+
+CSF_ACTIONS:
+
+  stations:
+    # -------------------------------------------------------------------------
+    # Boundary stations of the CSF field. The section is NOT prismatic:
+    # S0 and S1 use different onion/rebar geometries, so the cross-section
+    # itself varies along z. Longitudinal variation is therefore carried both
+    # by the geometric interpolation between S0 and S1 and by weight_laws /
+    # shear_weight_laws for material/exposure degradation.
+    # -------------------------------------------------------------------------
+
+    station_edges:
+      - 0.00
+      - 15
+    station_short:
+      - 0.00
+      - 7.5 
+      - 15
+
+    # Representative station for visual cross-section inspection.
+    station_middle:
+      - 7.5
+    station_3_2_CH:
+      - 14.25
+
+    station_precise:
+      - 0.00
+      - 1.00
+      - 3.00
+      - 3.50
+      - 4.50
+      - 5.50
+      - 10.00     
+      - 15.00
+
+  actions:
+    # -------------------------------------------------------------------------
+    # 3-D volume render of the prismatic spun pile CSF model.
+    # -------------------------------------------------------------------------
+    - plot_volume_3d:
+        params:
+          seed: w # weight visualization
+          title: "prestressed pole"
+          line_percent: 50.0
+          
+    - export_model:
+        output:
+          - out/iso/model_template.txt
+        params:
+          n_intervals: 5 # Lobatto intervals (stations = n+1) (optional)
+
+    # -------------------------------------------------------------------------
+    # Section analysis at selected stations.
+    # -------------------------------------------------------------------------
+    - section_selected_analysis:
+        stations: station_3_2_CH
+        output:
+          - [out/iso/pile_section_properties.txt]
+        properties:
+          [geometry,A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2,J_sv_cell,rx, ry, Wx, Wy, Q_na]
+
+    # -------------------------------------------------------------------------
+    # 2-D section plot at mid-height.
+    # Shows the onion layers and the 32 embedded PC-bars.
+    # -------------------------------------------------------------------------
+    - plot_section_2d:
+        stations:
+          - station_middle
+        show_ids: false
+        show_vertex_ids: false
+        output:
+          - [stdout, out/iso/pile_section.jpg]
+
+    # -------------------------------------------------------------------------
+    # Longitudinal property plots.
+    # With geometry-only YAML these curves are expected to be constant along z.
+    # After degradation laws are added, the same action will show the resulting
+    # CSF property fields along the member.
+    # -------------------------------------------------------------------------
+    - plot_properties:
+        output:
+          - stdout
+          - out/iso/pile_properties.jpg
+        params:
+        properties: [A, Cx, Cy, Ix, Iy, Ixy,J_sv_cell]
+    - plot_weight:
+        output: out/iso/weights.jpg
+        
+    - plot_shear_weight:
+        output:
+          - out/iso/shear_weights.jpg
+
+        
