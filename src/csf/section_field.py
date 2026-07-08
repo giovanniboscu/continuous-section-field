@@ -898,7 +898,7 @@ def analyse_polygon_navier_stress(
     if D == 0.0:
         raise ValueError(f"Singular bending inertia matrix at z={float(z)}.")
 
-    axial = -float(N) / A
+    axial = float(N) / A
     bx = (float(My) * Ix - float(Mx) * Ixy) / D
     by = (float(Mx) * Iy - float(My) * Ixy) / D
 
