@@ -6,9 +6,9 @@ This document covers the top-level functions defined in `section_field.py`. Impo
 
 - Top-level function definitions found: `68`.
 - Top-level classes found: `0`.
-- `analyse_polygon_jourawski_shear_stress(...)` - line 111
-- `analyse_polygon_navier_stress(...)` - line 868
-- `get_lobatto_intervals(...)` - line 115
+- `analyse_polygon_jourawski_shear_stress(...)`
+- `analyse_polygon_navier_stress(...)` 
+- `get_lobatto_intervals(...)` 
 - `get_lobatto_intervals(z_min: float, z_max: float, n_intervals: int) -> 'np.ndarray'` - line 115
 - `compute_lobatto_integration_points(z_min: float, z_max: float, n_points: int = 5, L: float = None) -> List[float]` - line 133
 - `write_sap2000_template_pack(field: Any, n_intervals: int = 20, template_filename: str = 'export_template_pack.txt', *, mode: Literal['BOTH', 'CENTROIDAL_LINE', 'REFERENCE_LINE'] = 'BOTH', section_prefix: str = 'SEC', material_name: str = 'S355', E_ref: Optional[float] = None, nu: Optional[float] = None, include_plot: bool = True, plot_filename: str = 'section_variation.png', show_plot: bool = True, z_values: Optional[List[float]] = None, plot_n: int = 100, float_fmt: str = '.9g') -> str` - line 275
