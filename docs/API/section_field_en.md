@@ -6,21 +6,17 @@ This document covers the top-level functions defined in `section_field.py`. Impo
 
 - Top-level function definitions found: `68`.
 - Top-level classes found: `0`.
-- Duplicate function names found:
-  - `execute_string_to_float` at lines 947, 1189. The later definition is the active binding at import time.
-
-## Public API index
-
+- `analyse_polygon_jourawski_shear_stress(...)` - line 111
+- `analyse_polygon_navier_stress(...)` - line 868
+- `get_lobatto_intervals(...)` - line 115
 - `get_lobatto_intervals(z_min: float, z_max: float, n_intervals: int) -> 'np.ndarray'` - line 115
 - `compute_lobatto_integration_points(z_min: float, z_max: float, n_points: int = 5, L: float = None) -> List[float]` - line 133
 - `write_sap2000_template_pack(field: Any, n_intervals: int = 20, template_filename: str = 'export_template_pack.txt', *, mode: Literal['BOTH', 'CENTROIDAL_LINE', 'REFERENCE_LINE'] = 'BOTH', section_prefix: str = 'SEC', material_name: str = 'S355', E_ref: Optional[float] = None, nu: Optional[float] = None, include_plot: bool = True, plot_filename: str = 'section_variation.png', show_plot: bool = True, z_values: Optional[List[float]] = None, plot_n: int = 100, float_fmt: str = '.9g') -> str` - line 275
 - `write_sap2000_geometry(*args: Any, **kwargs: Any) -> str` - line 632
 - `safe_evaluate_weight_zrelative(formula: str, p0: Polygon, p1: Polygon, z0: float, z1: float, z: float, print = True) -> tuple[float, dict]` - line 797
 - `print_evaluation_report(value: float, report: dict)` - line 899
-- `execute_string_to_float(code_string, x_value)` - line 947
 - `evaluate_shear_weight_formula(formula: str, p0: Polygon, p1: Polygon, z0: float, z1: float, zt: float, w: float) -> float` - line 962
 - `evaluate_weight_formula(formula: str, p0: Polygon, p1: Polygon, z0: float, z1: float, zt: float) -> float` - line 1085
-- `execute_string_to_float(code_string, z_val, t_val)` - line 1189
 - `evaluate_weight_formula_zrelative(formula: str, p0: Polygon, p1: Polygon, z0: float, z1: float, z: float) -> float` - line 1221
 - `section_geometry(section: Section, fmt = '.8f')` - line 1282
 - `section_print_analysis(full_analysis, fmt = '.8f')` - line 1303
@@ -422,50 +418,6 @@ def print_evaluation_report(value: float, report: dict)
 
 **Returns:** `not annotated`
 
-
-### `execute_string_to_float`
-
-**Source lines:** `947-959`
-
-**Duplicate note:** This definition is shadowed by a later `execute_string_to_float` definition at line 1189.
-
-```python
-def execute_string_to_float(code_string, x_value)
-```
-
-**Summary:** Docstring absent.
-
-**Parameters**
-
-| Name | Type | Default |
-|---|---|---|
-| `code_string` | `not annotated` | `-` |
-| `x_value` | `not annotated` | `-` |
-
-**Returns:** `not annotated`
-
-
-### `execute_string_to_float`
-
-**Source lines:** `1189-1218`
-
-**Duplicate note:** This is the last definition with this name and is the active binding at import time.
-
-```python
-def execute_string_to_float(code_string, z_val, t_val)
-```
-
-**Summary:** Executes a Python procedure from a string and returns a float. Uses 'z' and 't' as input variables.
-
-**Parameters**
-
-| Name | Type | Default |
-|---|---|---|
-| `code_string` | `not annotated` | `-` |
-| `z_val` | `not annotated` | `-` |
-| `t_val` | `not annotated` | `-` |
-
-**Returns:** `not annotated`
 
 
 ### `evaluate_shear_weight_formula`
