@@ -221,7 +221,7 @@ if __name__ == "__main__":
 
     zsec_val=0
     sec_mid = field.section(zsec_val)
-    full_analysis = section_full_analysis(sec_mid,alpha=1)
+    full_analysis = section_full_analysis(sec_mid)
     print(f"Area :{full_analysis['A']}")
     
     section_print_analysis(full_analysis)
