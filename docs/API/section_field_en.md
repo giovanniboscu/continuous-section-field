@@ -80,14 +80,79 @@ This document covers the top-level functions defined in `section_field.py`. Impo
 - `_polygon_signed_area_and_centroid(poly: Polygon) -> Tuple[float, Tuple[float, float]]` - line 5393
 
 # API details
+### `analyse_polygon_jourawski_shear_stress`
 
+```python
+def analyse_polygon_jourawski_shear_stress(
+    section_field,
+    z: float,
+    Tx: float,
+    Ty: float,
+    *,
+    num_sudx: int = 100,
+    num_sudy: int = 100,
+    debug: bool = False,
+) -> list[dict[str, object]]
+```
+
+**Summary:** Compute polygon-wise Jourawski shear-stress envelopes from global section scans.
+
+**Parameters**
+
+| Name | Type | Default |
+|---|---|---|
+| `section_field` | `not annotated` | `-` |
+| `z` | `float` | `-` |
+| `Tx` | `float` | `-` |
+| `Ty` | `float` | `-` |
+| `num_sudx` | `int` | `100` |
+| `num_sudy` | `int` | `100` |
+| `debug` | `bool` | `False` |
+
+**Returns:** `list[dict[str, object]]`
+
+**Returned dictionary keys visible in the code**
+
+`idx`, `name`, `weight`, `weight_ref`, `weight_norm`, `tau_x_min`, `x_tau_x_min`, `y_tau_x_min`, `tau_x_max`, `x_tau_x_max`, `y_tau_x_max`, `tau_y_min`, `x_tau_y_min`, `y_tau_y_min`, `tau_y_max`, `x_tau_y_max`, `y_tau_y_max`, `coord_tau_y_max`, `tau_reference_y_max`, `b_weighted_y_max`, `Sx_part_y_max`, `Sy_part_y_max`, `tau_x_mean`, `tau_y_mean`, `scan_count_x`, `scan_count_y`, `grid_x`, `grid_y`, `converged_x`, `converged_y`, `relative_change_x`, `relative_change_y`
+
+
+### `analyse_polygon_navier_stress`
+
+
+
+```python
+def analyse_polygon_navier_stress(
+    section_field,
+    z: float,
+    N: float,
+    Mx: float,
+    My: float,
+) -> list[dict[str, object]]
+```
+
+**Summary:** Compute polygon-wise signed normal stresses from the general Navier formula.
+
+**Parameters**
+
+| Name | Type | Default |
+|---|---|---|
+| `section_field` | `not annotated` | `-` |
+| `z` | `float` | `-` |
+| `N` | `float` | `-` |
+| `Mx` | `float` | `-` |
+| `My` | `float` | `-` |
+
+**Returns:** `list[dict[str, object]]`
+
+**Returned dictionary keys visible in the code**
+
+`idx`, `name`, `weightabs`, `sigma_min`, `vertex_index_min`, `x_min`, `y_min`, `sigma_max`, `vertex_index_max`, `x_max`, `y_max`, `sigma_extreme`, `vertex_index`, `x`, `y`
 
 ## Station generation
 
 
 ### `get_lobatto_intervals`
 
-**Source lines:** `115-130`
 
 ```python
 def get_lobatto_intervals(z_min: float, z_max: float, n_intervals: int) -> 'np.ndarray'
