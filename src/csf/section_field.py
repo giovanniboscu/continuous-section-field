@@ -234,6 +234,14 @@ def analyse_polygon_jourawski_shear_stress(
         polygon_count=len(section.polygons),
     )
 
+    if not (
+        len(section.polygons)
+        == len(transformed_section.polygons)
+        == len(weight_norm_by_idx)
+        == len(section_field.s0.polygons)
+    ):
+        raise ValueError("Inconsistent polygon count in Jourawski section data.")
+
     if debug:
         print(
             "[JOURAWSKI SCAN AXIS DONE]",
@@ -371,6 +379,10 @@ def _jourawski_global_axis_scan(
         raise ValueError("axis must be 'x' or 'y'.")
 
     n = int(num_subdivisions)
+
+    if n < 1:
+        raise ValueError("num_subdivisions must be >= 1.")
+    
     span = float(coord_max) - float(coord_min)
     if abs(span) <= _tol.EPS_L:
         return []
@@ -434,13 +446,13 @@ def _jourawski_value_at_coord(
     shear_flow = dbx * Sx_part + dby * Sy_part
     tau_reference = shear_flow / b_total
 
-    shear_length_sum = sum(
-        float(seg["shear_weightabs"]) * float(seg["length"])
-        for seg in cut_segments
-    )
-    
-    #   
-    #
+
+    shear_length_sum = 0.0
+    for cut_segment in cut_segments:
+        shear_weightabs = float(cut_segment["shear_weightabs"])
+        length = float(cut_segment["length"])
+        shear_length_sum += shear_weightabs * length
+
     if abs(shear_length_sum) <= _tol.EPS_L:
         return None
 
@@ -600,7 +612,10 @@ def _jourawski_polygon_shear_weightabs(poly: Polygon) -> float:
 
 
 def _jourawski_polygon_is_active_for_b(poly: Polygon) -> bool:
-    weightabs = float(getattr(poly, "weightabs", getattr(poly, "weight", 0.0)))
+    weightabs = getattr(poly, "weightabs", None)
+    if weightabs is None:
+        return False
+    weightabs = float(weightabs)
     return math.isfinite(weightabs) and abs(weightabs) > _tol.EPS_A
 
 
@@ -697,24 +712,21 @@ def _clip_polygon_half_plane(
         p1_in = c1 >= coord - _tol.EPS_L
         p2_in = c2 >= coord - _tol.EPS_L
 
+        t = _cut_edge_t(c1, c2, coord)
+
         if p1_in and p2_in:
             clipped.append(p2)
 
         elif p1_in and not p2_in:
-            denom = c2 - c1
-            if abs(denom) > _tol.EPS_L:
-                t = (coord - c1) / denom
+            if t is not None:
                 clipped.append(_interpolate_point_on_segment(p1, p2, t))
 
         elif (not p1_in) and p2_in:
-            denom = c2 - c1
-            if abs(denom) > _tol.EPS_L:
-                t = (coord - c1) / denom
+            if t is not None:
                 clipped.append(_interpolate_point_on_segment(p1, p2, t))
             clipped.append(p2)
 
     return clipped
-
 
 def _interpolate_point_on_segment(p1: Pt, p2: Pt, t: float) -> Pt:
     return Pt(
@@ -738,6 +750,20 @@ def _polygon_area_from_points(points: list[Pt]) -> float:
     return 0.5 * a2
 
 
+def _cut_edge_t(c1: float, c2: float, coord: float) -> float | None:
+    if abs(c1 - coord) <= _tol.EPS_L and abs(c2 - coord) <= _tol.EPS_L:
+        return None
+
+    crosses = (c1 <= coord < c2) or (c2 <= coord < c1)
+    if not crosses:
+        return None
+
+    denom = c2 - c1
+    if abs(denom) <= _tol.EPS_L:
+        return None
+
+    return float((coord - c1) / denom)
+
 def _polygon_line_segments(
     *,
     poly: Polygon,
@@ -760,19 +786,11 @@ def _polygon_line_segments(
         o1 = float(p1.y if axis == "x" else p1.x)
         o2 = float(p2.y if axis == "x" else p2.x)
 
-        if abs(c1 - coord) <= _tol.EPS_L and abs(c2 - coord) <= _tol.EPS_L:
+        t = _cut_edge_t(c1, c2, coord)
+        if t is None:
             continue
 
-        crosses = (c1 <= coord < c2) or (c2 <= coord < c1)
-        if not crosses:
-            continue
-
-        denom = c2 - c1
-        if abs(denom) <= _tol.EPS_L:
-            continue
-
-        t = (coord - c1) / denom
-        values.append(o1 + t * (o2 - o1))
+        values.append(float(o1 + t * (o2 - o1)))
 
     values = _unique_sorted(values)
     if len(values) < 2:
@@ -784,6 +802,7 @@ def _polygon_line_segments(
             segments.append((float(a), float(b)))
 
     return segments
+
 
 
 def _unique_sorted(values: list[float]) -> list[float]:
