@@ -1,812 +1,1122 @@
-# API Reference - `Continuous_section_field.py`
+# API Reference - `continuous_section_field.py`
 
-This document covers the APIs defined in this file only; imported symbols from other modules are not documented here as standalone APIs.
+This document covers the top-level classes and functions defined in `src/csf/continuous_section_field.py`. Imported symbols are not documented as standalone APIs here.
 
-## Module
+## Module summary
 
-### Local dependencies used by the file
+- Source file: `src/csf/continuous_section_field.py`
+- Output file: `src/doc/continuous_section_field_api_en.md`
+- Top-level function definitions found: `4`.
+- Top-level classes found: `1`.
+- Duplicate function names found: `0`.
 
-```python
-from .entities import Pt, Polygon, Section, CSFError
-from csf.section_field import section_properties
-from .section_field import (
-    CSFDumper, XY,
-    _csf__is_finite_number, _csf__atomic_write_text,
-    _csf__ensure_parent_dir_exists,
-    _bbox_xy, _point_in_poly_inclusive, _point_on_segment_sq,
-    polygon_has_self_intersections, polygon_inertia_about_origin,
-    section_print_analysis, _signed_area_centroid_xy,
-    _simple_yaml_dump, _csf__section_to_Sz_dict,
-)
-from .section_field import (
-    compute_lobatto_integration_points,
-    section_full_analysis,
-    evaluate_weight_formula,
-    evaluate_weight_formula_zrelative,
-    evaluate_shear_weight_formula,
-)
-```
+## Public API index
 
-## Class `ContinuousSectionField`
+- `ContinuousSectionField` - line 30
+- `def _polygon_signed_area_and_centroidpoly: Polygon` - line 2222
+- `def polygon_area_centroidpoly: Polygon` - line 2232
+- `def section_datafield: ContinuousSectionField, z: float` - line 2239
+- `def _set_axes_equal_3dax` - line 2301
+
+## API details
+
+## Classes
+
+### `ContinuousSectionField`
+
+**Source lines:** `30-2216`
 
 ```python
-class ContinuousSectionField:
+class ContinuousSectionField
 ```
 
-Represents a continuous sectional field between two endpoint `Section` objects, `section0` and `section1`.
+**Summary:** Docstring absent.
 
-### Internal state initialized by the constructor
+**Methods visible in the code**
 
-| Attribute | Source in code |
-|---|---|
-| `self.s0` | start section |
-| `self.s1` | end section |
-| `self.z0` | `section0.z` |
-| `self.z1` | `section1.z` |
-| `self.weight_laws` | initialized as `None` |
-| `self.shear_weight_laws_default` | initialized as `None` |
-| `self.shear_weight_laws` | initialized as `None` |
+- `inspect_section_entities` - line 38
+- `build_direct_children_map` - line 192
+- `get_container_polygon_index` - line 266
+- `_get_container_polygon_index_uncached` - line 283
+- `write_section` - line 572
+- `_section_to_dict` - line 724
+- `_polygon_to_dict` - line 739
+- `section_area_list_report` - line 751
+- `section_area_by_weight` - line 888
+- `_determine_magnitude` - line 1118
+- `to_dict` - line 1206
+- `to_yaml` - line 1248
+- `get_lobatto_integration_points` - line 1274
+- `__init__` - line 1288
+- `L` - line 1313
+- `_strip_model_tags` - line 1317
+- `_strip_model_tags` - line 1330
+- `set_shear_weight_laws` - line 1340
+- `set_weight_laws` - line 1548
+- `_validate_inputs` - line 1674
+- `_interpolate_weight` - line 1685
+- `_interpolate_shear_weight` - line 1718
+- `_to_t` - line 1745
+- `section` - line 1753
 
-### Constructor validations
+#### Method details
 
-- `section0.polygons` and `section1.polygons` must have the same length.
-- `section0.z` and `section1.z` must be different.
-- Each homologous polygon pair must have the same number of vertices.
+##### `ContinuousSectionField.inspect_section_entities`
 
----
-
-## Constructor
-
-### `__init__`
+**Source lines:** `38-190`
 
 ```python
-def __init__(self, section0: Section, section1: Section)
+def inspect_section_entitiesself, z: float
 ```
 
-Initializes the continuous section field from two reference sections.
+**Summary:** Perform a sterile inspection of all polygon entities at longitudinal coordinate z.
 
-| Parameter | Type | Description |
-|---|---|---|
-| `section0` | `Section` | Start section. |
-| `section1` | `Section` | End section. |
+**Docstring details**
 
-**Raises**
+```text
+Structural rules:
+- topology is strictly index-based
+- names are labels only
+- no structural branch depends on polygon names or tags
 
-| Error | Condition |
-|---|---|
-| `ValueError` | Different number of polygons in `section0` and `section1`. |
-| `ValueError` | Equal `z` coordinates in the two sections. |
-| `ValueError` | Different number of vertices in homologous polygons. |
+Returned fields:
+- idx (int)
+- name (str | None)
+- s0_name (str | None)
+- s1_name (str | None)
+- s0_weight (float)
+- s1_weight (float)
+- weight_at_z (float)
+- weight_abs_z (float)
+- weight_law (str | None)
+- area_signed (float)
+- is_container (bool)
+- direct_children (List[str | None])
+- container_idx (int | None)
+- container_name (str | None)
 
----
+Raises:
+- TypeError / ValueError only for structural issues
+```
 
-## Public class API
+**Parameters**
 
-### `section`
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `z` | `positional or keyword` | `float` | `-` |
+
+**Returns:** `List[Dict[str, Any]]`
+
+**Returned dictionary keys visible in the code**
+
+`idx`, `name`, `s0_name`, `s1_name`, `s0_weight`, `s1_weight`, `weight_at_z`, `weight_abs_z`, `shear_weight_at_z`, `shear_weight_abs_at_z`, `poisson`, `weight_law`, `area_signed`, `is_container`, `direct_children`, `container_idx`, `container_name`
+
+**Raises visible in the code**
+
+- `TypeError`
+- `ValueError`
+
+**Function/method calls visible in the code**
+
+`self.section`, `self.build_direct_children_map`, `children_map.items`, `enumerate`, `isinstance`, `TypeError`, `float`, `ValueError`, `hasattr`, `_polygon_signed_area_and_centroid`, `records.append`, `list`, `str`, `direct_children_labels.append`, `len`, `type`
+
+##### `ContinuousSectionField.build_direct_children_map`
+
+**Source lines:** `192-263`
 
 ```python
-def section(self, z: float) -> Section
+def build_direct_children_mapself, z: float
 ```
 
-Evaluates the continuous section field at the absolute coordinate `z` and returns a new `Section`.
+**Summary:** Build the direct parent-to-children mapping for polygons at coordinate z.
 
-| Parameter | Type | Description |
-|---|---|---|
-| `z` | `float` | Absolute longitudinal coordinate to evaluate. |
+**Docstring details**
 
-**Returns**
+```text
+Structural rules:
+- polygon identity is strictly the polygon index in self.s0.polygons
+- names are never used
+- topology is expressed strictly as indices
 
-| Type | Description |
-|---|---|
-| `Section` | Interpolated section at `z`, containing a tuple of `Polygon` objects. |
+Output:
+- Dict[parent_idx, List[child_idx]]
 
-**Behavior visible in the code**
-
-- Checks that `z` lies within `[self.z0, self.z1]`.
-- Interpolates homologous polygon vertices through `v0.lerp(v1, origz, lenght)`.
-- Applies `weight_laws` when present.
-- Applies `shear_weight_laws` when present.
-- Computes `weight`, `weightabs`, `shear_weight`, and `shear_weightabs` for generated polygons.
-- Resolves topology tags in polygon names: `@cell`, `@wall`, `@closed`.
-- Resolves `@t=...` when present.
-- Raises an error when `@cell` is used without `@t`.
-- Returns `Section(polygons=tuple(polys), z=float(z))`.
-
-**Raises**
-
-| Error | Condition |
-|---|---|
-| `CSFError` | `z` is outside `[self.z0, self.z1]`. |
-| `CSFError` | Invalid or incompatible topology tags in polygon names. |
-| `CSFError` | `@cell` without thickness tag `@t`. |
-| `ValueError` | Invalid weight or shear-weight formula during interpolation. |
-
----
-
-### `inspect_section_entities`
-
-```python
-def inspect_section_entities(self, z: float) -> List[Dict[str, Any]]
-```
-
-Inspects all polygon entities in the section evaluated at `z`.
-
-| Parameter | Type | Description |
-|---|---|---|
-| `z` | `float` | Longitudinal coordinate to inspect. |
-
-**Returns**
-
-`List[Dict[str, Any]]`, with one record per polygon.
-
-Fields returned by the code:
-
-| Field | Type |
-|---|---|
-| `idx` | `int` |
-| `name` | `str | None` |
-| `s0_name` | `str | None` |
-| `s1_name` | `str | None` |
-| `s0_weight` | `float` |
-| `s1_weight` | `float` |
-| `weight_at_z` | `float` |
-| `weight_abs_z` | `float` |
-| `shear_weight_at_z` | `float` |
-| `shear_weight_abs_at_z` | `float` |
-| `poisson` | `float` |
-| `weight_law` | `str | None` |
-| `area_signed` | `float` |
-| `is_container` | `bool` |
-| `direct_children` | `List[str | None]` |
-| `container_idx` | `int | None` |
-| `container_name` | `str | None` |
-
-**Rules documented in the code**
-
-- Topology is index-based.
-- Names are labels only.
-- No structural branch depends on polygon names or tags.
-
----
-
-### `build_direct_children_map`
-
-```python
-def build_direct_children_map(self, z: float) -> Dict[int, List[int]]
-```
-
-Builds the direct parent-to-children polygon map.
-
-| Parameter | Type | Description |
-|---|---|---|
-| `z` | `float` | Longitudinal coordinate used to validate section evaluation. |
-
-**Returns**
-
-```python
-Dict[parent_idx, List[child_idx]]
-```
-
-**Rules documented in the code**
-
-- Polygon identity is the polygon index in `self.s0.polygons`.
-- Names are not used.
+Notes:
+- The section at z is evaluated only to validate that z is admissible.
+- The containment topology is taken from the stable S0 polygon ordering.
 - Only direct children are returned.
-- Polygons without children do not appear as keys.
+- Polygons with no children do not appear as keys.
 
-**Raises**
+Raises:
+- TypeError if z is not numeric or if self.s0.polygons is not a valid sequence
+- ValueError for invalid topology or invalid container indices
+```
 
-| Error | Condition |
-|---|---|
-| `TypeError` | `z` is not numeric. |
-| `ValueError` | `self.section(z)` returns `None`. |
-| `ValueError` | `self.s0` has no `polygons` attribute. |
-| `ValueError` | Invalid container index. |
-| `ValueError` | A polygon is its own container. |
-| `ValueError` | A polygon has multiple direct containers. |
+**Parameters**
 
----
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `z` | `positional or keyword` | `float` | `-` |
 
-### `get_container_polygon_index`
+**Returns:** `Dict[int, List[int]]`
+
+**Raises visible in the code**
+
+- `TypeError`
+- `ValueError`
+
+**Function/method calls visible in the code**
+
+`self.section`, `enumerate`, `isinstance`, `TypeError`, `float`, `ValueError`, `hasattr`, `self.get_container_polygon_index`, `append`, `len`, `type`
+
+##### `ContinuousSectionField.get_container_polygon_index`
+
+**Source lines:** `266-281`
 
 ```python
-def get_container_polygon_index(self, poly: "Polygon", i: int)
+def get_container_polygon_indexself, poly: 'Polygon', i: int
 ```
 
-Returns the 0-based index of the immediate container of `poly` in `self.s0.polygons`.
+**Summary:** Return the index (0-based) of the immediate container of `poly` in self.s0.polygons.
 
-| Parameter | Type | Description |
-|---|---|---|
-| `poly` | `Polygon` | Polygon to classify. |
-| `i` | `int` | Polygon index. |
+**Docstring details**
 
-**Returns**
+```text
+Cached by polygon index because topology is assumed fixed.
+```
 
-| Type | Description |
-|---|---|
-| `int | None` | Immediate container index, or `None`. |
+**Parameters**
 
-**Code note**
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `poly` | `positional or keyword` | `'Polygon'` | `-` |
+| `i` | `positional or keyword` | `int` | `-` |
 
-The result is cached by polygon index.
+**Returns:** `not annotated`
 
----
+**Function/method calls visible in the code**
 
-### `write_section`
+`self._get_container_polygon_index_uncached`, `hasattr`
+
+##### `ContinuousSectionField._get_container_polygon_index_uncached`
+
+**Source lines:** `283-569`
 
 ```python
-def write_section(self, z0: float, z1: float, yaml_path: str) -> None
+def _get_container_polygon_index_uncachedself, poly: 'Polygon', i: int
 ```
 
-Writes a CSF YAML section generated from two evaluated coordinates.
+**Summary:** Return the index (0-based) of the *immediate container* of `poly` in self.s0.polygons.
 
-| Parameter | Type | Description |
-|---|---|---|
-| `z0` | `float` | First coordinate to evaluate. |
-| `z1` | `float` | Second coordinate to evaluate. |
-| `yaml_path` | `str` | Output YAML path. |
+**Docstring details**
 
-**Behavior visible in the code**
+```text
+Returns the index of the immediate container polygon (smallest-area polygon that contains `poly`),
+not the outermost/global container.
+Logic (as requested):
+1) Take polygon p (= poly).
+2) Collect all other polygons that contain p.
+3) Pick pp such that pp contains p and there is no other polygon between them
+    (i.e., no q with p ⊂ q ⊂ pp). Polygons may touch (boundary counts as inside).
 
-- Checks that `z0` and `z1` lie within `[min(self.s0.z, self.s1.z), max(self.s0.z, self.s1.z)]`.
-- Checks that `z0` and `z1` are finite numbers.
-- Evaluates `self.section(z0)` and `self.section(z1)`.
-- Converts the evaluated sections into `S0` and `S1` dictionaries.
-- Writes the structure:
+Debug:
+- Enable with: self.debug_container = True
+- No global variables are used to activate debug output.
 
-```yaml
-CSF:
-  sections:
-    S0: ...
-    S1: ...
+Returns
+-------
+int | None
+    Index of the immediate container polygon, or None if no container exists.
 ```
 
-- Does not serialize active laws as re-applicable laws.
-- Appends any `weight_laws` and `shear_weight_laws` only as `APPLIED_LAWS_TRACE` comments.
-- Uses atomic writing through `_csf__atomic_write_text`.
+**Parameters**
 
-**Raises**
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `poly` | `positional or keyword` | `'Polygon'` | `-` |
+| `i` | `positional or keyword` | `int` | `-` |
 
-| Error | Condition |
-|---|---|
-| `CSFError` | `z0` or `z1` outside the field domain. |
-| `CSFError` | `z0` or `z1` is not finite. |
-| `CSFError` | Failed `Section -> dict` conversion. |
-| `CSFError` | YAML backend unavailable. |
-| `CSFError` | YAML serialization failure. |
-| `CSFError` | File writing failure. |
+**Returns:** `not annotated`
 
----
+**Function/method calls visible in the code**
 
-### `section_area_list_report`
+`bool`, `_get_coincident_previous_polygon_index`, `len`, `getattr`, `float`, `_strip_closure`, `_area_abs`, `_bbox`, `_dbg`, `enumerate`, `min`, `range`, `abs`, `all`, `_poly_inside`, `_poly_coincident_general`, `print`, `max`, `_point_on_segment`, `_bbox_contains`, `candidates.append`, `immediate.append`, `_point_in_poly`, `_point_on_polygon_boundary`
+
+##### `ContinuousSectionField.write_section`
+
+**Source lines:** `572-718`
 
 ```python
-def section_area_list_report(
-    self,
-    z: float,
-    w_tol: float = 0.0,
-    zero_w_eps: float = 0.0,
-    group_mode: str = "weight",
-) -> None
+def write_sectionself, z0: float, z1: float, yaml_path: str
 ```
 
-Prints an accountant-style area listing for the section at `z`, grouped by absolute weight `w_abs`.
+**Summary:** Docstring absent.
 
-| Parameter | Type | Default | Description |
-|---|---|---:|---|
-| `z` | `float` | - | Longitudinal coordinate. |
-| `w_tol` | `float` | `0.0` | Weight grouping tolerance. |
-| `zero_w_eps` | `float` | `0.0` | Passed to `section_area_by_weight`. |
-| `group_mode` | `str` | `"weight"` | Grouping mode. Only `"weight"` is supported by the code. |
+**Parameters**
 
-**Output**
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `z0` | `positional or keyword` | `float` | `-` |
+| `z1` | `positional or keyword` | `float` | `-` |
+| `yaml_path` | `positional or keyword` | `str` | `-` |
 
-Prints to stdout:
+**Returns:** `None`
 
-- polygon listing;
-- `A_net`;
-- `A*w`;
-- `Occupied Total Surface`;
-- `Homogenized area`.
+**Returned dictionary keys visible in the code**
 
-**Raises**
+`CSF`, `sections`
 
-| Error | Condition |
-|---|---|
-| `ValueError` | `group_mode` is not `"weight"`. |
-| `ValueError` | Polygon index out of range in the report. |
+**Raises visible in the code**
 
----
+- `CSFError`
+- `raise`
 
-### `section_area_by_weight`
+**Function/method calls visible in the code**
+
+`yaml_path.strip`, `_csf__ensure_parent_dir_exists`, `self.section`, `strip`, `s.find`, `min`, `max`, `CSFError`, `all`, `float`, `shear_weight_laws_yaml.append`, `_csf__section_to_Sz_dict`, `applied_laws_comments.append`, `_csf__atomic_write_text`, `str`, `get`, `_csf__is_finite_number`, `_strip_model_suffix`, `weight_laws_yaml.append`, `globals`, `safe_dump`, `dump`, `join`, `yml.rstrip`, `type`
+
+##### `ContinuousSectionField._section_to_dict`
+
+**Source lines:** `724-736`
+
+**Decorators**
+
+- `staticmethod`
 
 ```python
-def section_area_by_weight(
-    self,
-    z: float,
-    w_tol: float = 0.0,
-    include_per_polygon: bool = False,
-    debug: bool = False,
-    zero_w_eps: float = 0.0,
-) -> Dict[str, Any]
+def _section_to_dictsec
 ```
 
-Computes the area breakdown at `z`, grouped by absolute weight `w_abs`.
+**Summary:** Docstring absent.
 
-| Parameter | Type | Default | Description |
-|---|---|---:|---|
-| `z` | `float` | - | Longitudinal coordinate. |
-| `w_tol` | `float` | `0.0` | Weight grouping tolerance. |
-| `include_per_polygon` | `bool` | `False` | Includes detailed per-polygon records. |
-| `debug` | `bool` | `False` | Prints diagnostic information. |
-| `zero_w_eps` | `float` | `0.0` | Threshold used to exclude near-zero contributions from `total_area_nonzero`. |
+**Parameters**
 
-**Returns**
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `sec` | `positional or keyword` | `not annotated` | `-` |
+
+**Returns:** `not annotated`
+
+**Returned dictionary keys visible in the code**
+
+`z`, `polygons`
+
+**Raises visible in the code**
+
+- `ValueError`
+
+**Function/method calls visible in the code**
+
+`ContinuousSectionField._polygon_to_dict`, `float`, `items`, `isinstance`, `ValueError`, `globals`
+
+##### `ContinuousSectionField._polygon_to_dict`
+
+**Source lines:** `739-748`
+
+**Decorators**
+
+- `staticmethod`
 
 ```python
-{
-    "z": float,
-    "total_area": float,
-    "total_area_nonzero": float,
-    "total_area_geometric": float,
-    "groups": list,
-    "per_polygon": list,  # only if include_per_polygon=True
-}
+def _polygon_to_dictpoly
 ```
 
-**Rules documented in the code**
+**Summary:** Docstring absent.
 
-- Polygon identity is the polygon index.
-- Names are not used for topology, matching, or grouping.
-- Direct-children topology comes from `build_direct_children_map(z)`.
-- The net geometric area of a polygon is:
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `poly` | `positional or keyword` | `not annotated` | `-` |
+
+**Returns:** `not annotated`
+
+**Returned dictionary keys visible in the code**
+
+`weight`, `vertices`
+
+**Function/method calls visible in the code**
+
+`float`, `XY`
+
+##### `ContinuousSectionField.section_area_list_report`
+
+**Source lines:** `751-886`
 
 ```python
-area_geom_net[i] = area_geom[i] - sum(area_geom[j] for j in direct_children[i])
+def section_area_list_reportself, z: float, w_tol: float=0.0, zero_w_eps: float=0.0, group_mode: str='weight'
 ```
 
-- The effective area is:
+**Summary:** Print an accountant-style area listing at section z, grouped by ABSOLUTE weight (w_abs),
+
+**Docstring details**
+
+```text
+and include the two requested totals:
+
+    Occupied Total Surface: sum(A_net)
+    Homogenized area:       sum(A*w) where A*w = A_net * w_abs
+
+Sterile/accounting intent:
+- A_net is the polygon signed area as computed (no abs()).
+With CCW-only polygons, A_net should be positive.
+- W in the table is w_abs (absolute weight along the container chain).
+w_tol bins W for grouping/printing only; the product A*w uses the RAW w_abs.
+
+Parameters
+----------
+z : float
+    Longitudinal coordinate where the section is sampled.
+w_tol : float
+    Grouping tolerance for weights. If > 0, weights are rounded to the nearest multiple
+    of w_tol for grouping/printing purposes only.
+zero_w_eps : float
+    Passed through to the underlying computation (kept for consistency with your API).
+    This report's totals are defined strictly by the table columns, not by zero_w_eps.
+group_mode : str
+    Currently only "weight" is supported. Kept as a label in the header.
+```
+
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `z` | `positional or keyword` | `float` | `-` |
+| `w_tol` | `positional or keyword` | `float` | `0.0` |
+| `zero_w_eps` | `positional or keyword` | `float` | `0.0` |
+| `group_mode` | `positional or keyword` | `str` | `'weight'` |
+
+**Returns:** `None`
+
+**Returned dictionary keys visible in the code**
+
+`w_group`, `w_abs_raw`, `idx`, `s0_name`, `s1_name`, `a_net`, `a_w`
+
+**Raises visible in the code**
+
+- `ValueError`
+
+**Function/method calls visible in the code**
+
+`self.section_area_by_weight`, `res.get`, `len`, `max`, `rows.sort`, `sum`, `print`, `ValueError`, `int`, `float`, `getattr`, `rows.append`, `str`, `_bin_weight`, `round`
+
+##### `ContinuousSectionField.section_area_by_weight`
+
+**Source lines:** `888-1115`
 
 ```python
-total_area = sum(area_geom_net[i] * w_abs[i])
+def section_area_by_weightself, z: float, w_tol: float=0.0, include_per_polygon: bool=False, debug: bool=False, zero_w_eps: float=0.0
 ```
 
----
+**Summary:** Compute area breakdown at section z grouped by ABSOLUTE weight (w_abs).
 
-### `to_dict`
+**Docstring details**
+
+```text
+This implementation is strictly index-based:
+- polygon identity is the polygon index
+- names are never used for topology, matching, or grouping
+- direct-children topology is taken from S0 through build_direct_children_map(z)
+
+Geometric reporting rule:
+- For each polygon i, the reported geometric area is:
+    area_geom_net[i] = area_geom[i] - sum(area_geom[j] for j in direct_children[i])
+- This subtraction is purely geometric and does not depend on weight.
+- Children are subtracted even if their weight is zero.
+
+Effective area rule:
+- The effective homogenized area is computed from the net geometric area
+of each polygon multiplied by its absolute weight sampled on the section:
+    total_area = sum(area_geom_net[i] * w_abs[i])
+
+Args:
+    z: Longitudinal coordinate where the section is sampled.
+    w_tol: Grouping tolerance for absolute weights. If > 0, weights are rounded
+        to the nearest multiple of w_tol for grouping purposes only.
+    include_per_polygon: If True, includes detailed per-polygon data in output.
+    debug: If True, prints debug information to stdout.
+    zero_w_eps: Threshold for considering an absolute weight as zero when
+                computing total_area_nonzero. If |w_abs| <= zero_w_eps,
+                that polygon contribution is excluded from the nonzero sum.
+
+Returns:
+    Dictionary containing:
+    - z: Coordinate (float)
+    - total_area: Effective homogenized area = sum(area_net * w_abs)
+    - total_area_nonzero: Effective homogenized area excluding |w_abs| <= zero_w_eps
+    - total_area_geometric: Total net geometric surface = sum(area_net)
+    - groups: List of absolute-weight groups with accumulated net geometric areas
+    - per_polygon: (Optional) Detailed per-polygon data
+```
+
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `z` | `positional or keyword` | `float` | `-` |
+| `w_tol` | `positional or keyword` | `float` | `0.0` |
+| `include_per_polygon` | `positional or keyword` | `bool` | `False` |
+| `debug` | `positional or keyword` | `bool` | `False` |
+| `zero_w_eps` | `positional or keyword` | `float` | `0.0` |
+
+**Returns:** `Dict[str, Any]`
+
+**Returned dictionary keys visible in the code**
+
+`z`, `total_area`, `total_area_nonzero`, `total_area_geometric`, `groups`, `w`, `area`, `polygons`, `idx`, `container_idx`, `children_idx`, `w_rel`, `w_abs`, `area_geom`
+
+**Raises visible in the code**
+
+- `ValueError`
+- `TypeError`
+
+**Function/method calls visible in the code**
+
+`self.section`, `len`, `self.build_direct_children_map`, `direct_children_map.items`, `direct_children.items`, `enumerate`, `range`, `sum`, `sorted`, `ValueError`, `_polygon_signed_area_and_centroid`, `float`, `bin_weight`, `append`, `per_polygon_records.append`, `groups.values`, `print`, `hasattr`, `isinstance`, `TypeError`, `round`, `list`, `abs`, `type`
+
+##### `ContinuousSectionField._determine_magnitude`
+
+**Source lines:** `1118-1202`
 
 ```python
-def to_dict(self, include_weight_laws=True)
+def _determine_magnitudeself
 ```
 
-Converts the CSF object into a Python dictionary.
+**Summary:** Compute a global geometric magnitude (scale) from the model's geometry and
 
-| Parameter | Type | Default | Description |
-|---|---|---:|---|
-| `include_weight_laws` | not annotated | `True` | If true, includes `weight_laws` and `shear_weight_laws` when present. |
+**Docstring details**
 
-**Returns**
+```text
+define tolerance values derived from that scale.
 
-Main dictionary structure:
+This method is intentionally self-contained (no external helper functions),
+so it can be called once after object construction.
+
+It defines:
+  - self.SCALE: characteristic length scale of the model
+  - self._tol.EPS_L: linear/length tolerance (geometry predicates, intersections)
+  - self._tol.EPS_A: area tolerance (degeneracy checks on areas, section integrals)
+  - self._tol.EPS_K_ATOL / self._tol.EPS_K_RTOL: tolerances for matrix/numerical checks
+```
+
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+
+**Returns:** `None`
+
+**Function/method calls visible in the code**
+
+`float`, `max`, `getattr`, `abs`
+
+##### `ContinuousSectionField.to_dict`
+
+**Source lines:** `1206-1245`
 
 ```python
-{
-    "CSF": {
-        "sections": {
-            "S0": ...,
-            "S1": ...,
-        },
-        "weight_laws": ...,        # if present and requested
-        "shear_weight_laws": ...,  # if present and requested
-    }
-}
+def to_dictself, include_weight_laws=True
 ```
 
----
+**Summary:** Docstring absent.
 
-### `to_yaml`
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `include_weight_laws` | `positional or keyword` | `not annotated` | `True` |
+
+**Returns:** `not annotated`
+
+**Returned dictionary keys visible in the code**
+
+`CSF`, `sections`, `S0`, `S1`
+
+**Function/method calls visible in the code**
+
+`sorted`, `shear_out.append`, `self._section_to_dict`, `out.append`, `self.QuotedStr`
+
+##### `ContinuousSectionField.to_yaml`
+
+**Source lines:** `1248-1266`
 
 ```python
-def to_yaml(
-    self,
-    filepath: Optional[str] = None,
-    include_weight_laws: bool = True,
-) -> str
+def to_yamlself, filepath: Optional[str]=None, include_weight_laws: bool=True
 ```
 
-Serializes the CSF object to YAML.
+**Summary:** Docstring absent.
 
-| Parameter | Type | Default | Description |
-|---|---|---:|---|
-| `filepath` | `Optional[str]` | `None` | If provided, writes the YAML text to this file. |
-| `include_weight_laws` | `bool` | `True` | Passed to `to_dict`. |
+**Parameters**
 
-**Returns**
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `filepath` | `positional or keyword` | `Optional[str]` | `None` |
+| `include_weight_laws` | `positional or keyword` | `bool` | `True` |
 
-| Type | Description |
-|---|---|
-| `str` | Generated YAML text. |
+**Returns:** `str`
 
-**Behavior visible in the code**
+**Function/method calls visible in the code**
 
-- Uses `yaml.dump(..., Dumper=CSFDumper, sort_keys=False, allow_unicode=True, indent=2, default_flow_style=False)` if `yaml` is available.
-- Otherwise uses `_simple_yaml_dump(data) + "\n"`.
-- Writes to `filepath` only when `filepath` is provided.
+`self.to_dict`, `yaml.dump`, `_simple_yaml_dump`, `open`, `f.write`
 
----
+##### `ContinuousSectionField.get_lobatto_integration_points`
 
-### `get_lobatto_integration_points`
+**Source lines:** `1274-1284`
 
 ```python
-def get_lobatto_integration_points(
-    self,
-    n_points: int = 5,
-    L: float | None = None,
-) -> List[float]
+def get_lobatto_integration_pointsself, n_points: int=5, L: float | None=None
 ```
 
-Returns Lobatto integration points by delegating to `compute_lobatto_integration_points`.
+**Summary:** Docstring absent.
 
-| Parameter | Type | Default | Description |
-|---|---|---:|---|
-| `n_points` | `int` | `5` | Number of requested points. |
-| `L` | `float | None` | `None` | Parameter passed to the external function. |
+**Parameters**
 
-**Returns**
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `n_points` | `positional or keyword` | `int` | `5` |
+| `L` | `positional or keyword` | `float | None` | `None` |
 
-| Type | Description |
-|---|---|
-| `List[float]` | Points computed between `self.s0.z` and `self.s1.z`. |
+**Returns:** `List[float]`
 
----
+**Function/method calls visible in the code**
 
-### `set_shear_weight_laws`
+`compute_lobatto_integration_points`
+
+##### `ContinuousSectionField.__init__`
+
+**Source lines:** `1288-1310`
 
 ```python
-def set_shear_weight_laws(
-    self,
-    laws: Union[List[str], Dict[Union[int, str], str]],
-) -> None
+def __init__self, section0: Section, section1: Section
 ```
 
-Sets shear-weight variation laws.
+**Summary:** Docstring absent.
 
-| Parameter | Type | Description |
-|---|---|---|
-| `laws` | `Union[List[str], Dict[Union[int, str], str]]` | List or dictionary of laws. |
+**Parameters**
 
-**Rules documented in the code**
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `section0` | `positional or keyword` | `Section` | `-` |
+| `section1` | `positional or keyword` | `Section` | `-` |
 
-- A list item without `:` is interpreted as the global default shear-weight law.
-- A list item with `:` is interpreted as a polygon-specific shear-weight law.
+**Returns:** `not annotated`
+
+**Raises visible in the code**
+
+- `ValueError`
+
+**Function/method calls visible in the code**
+
+`self._determine_magnitude`, `self._validate_inputs`, `len`, `ValueError`
+
+##### `ContinuousSectionField.L`
+
+**Source lines:** `1313-1315`
+
+**Decorators**
+
+- `property`
+
+```python
+def Lself
+```
+
+**Summary:** Return the absolute longitudinal length of the CSF segment.
+
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+
+**Returns:** `float`
+
+**Function/method calls visible in the code**
+
+`abs`, `float`
+
+##### `ContinuousSectionField._strip_model_tags`
+
+**Source lines:** `1317-1328`
+
+```python
+def _strip_model_tagsname: str
+```
+
+**Summary:** Remove everything starting from @cell or @wall (case-insensitive).
+
+**Docstring details**
+
+```text
+If neither tag exists, return original trimmed name.
+Examples:
+  "MP1_outer@cell@t=0.05" -> "MP1_outer"
+  "legA@wall@alpha=0.8"   -> "legA"
+  "poly_no_tags"          -> "poly_no_tags"
+```
+
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `name` | `positional or keyword` | `str` | `-` |
+
+**Returns:** `str`
+
+**Function/method calls visible in the code**
+
+`strip`, `re.sub`
+
+##### `ContinuousSectionField._strip_model_tags`
+
+**Source lines:** `1330-1337`
+
+```python
+def _strip_model_tagsself, name: str
+```
+
+**Summary:** Normalize polygon name for matching:
+
+**Docstring details**
+
+```text
+- trim spaces
+- remove everything starting from @cell, @wall, or @closed (case-insensitive)
+```
+
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `name` | `positional or keyword` | `str` | `-` |
+
+**Returns:** `str`
+
+**Function/method calls visible in the code**
+
+`strip`, `str`, `re.sub`
+
+##### `ContinuousSectionField.set_shear_weight_laws`
+
+**Source lines:** `1340-1543`
+
+```python
+def set_shear_weight_lawsself, laws: Union[List[str], Dict[Union[int, str], str]]
+```
+
+**Summary:** Set shear-weight variation laws.
+
+**Docstring details**
+
+```text
+Rules:
+- List item without ':' is the global default shear-weight law.
+- List item with ':' is a polygon-specific shear-weight law.
 - Polygon indices are 0-based.
-- Polygon-name mapping follows the same S0/S1 homology logic used by `set_weight_laws`.
-
-**Accepted formats in the code**
-
-List:
-
-```python
-[
-    "default_formula",
-    "polygon_name: formula",
-    "s0_polygon_name,s1_polygon_name: formula",
-]
+- Polygon-name mapping follows the same S0/S1 homology logic used by set_weight_laws().
 ```
 
-Dictionary:
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `laws` | `positional or keyword` | `Union[List[str], Dict[Union[int, str], str]]` | `-` |
+
+**Returns:** `None`
+
+**Raises visible in the code**
+
+- `ValueError`
+- `KeyError`
+- `IndexError`
+
+**Function/method calls visible in the code**
+
+`len`, `isinstance`, `normalized_map.items`, `ValueError`, `self._strip_model_tags`, `range`, `str`, `item.strip`, `item.split`, `left.strip`, `formula.strip`, `laws.items`, `valid_names0.index`, `valid_names1.index`, `name.strip`, `left.split`, `KeyError`, `IndexError`, `key.strip`
+
+##### `ContinuousSectionField.set_weight_laws`
+
+**Source lines:** `1548-1669`
 
 ```python
-{
-    0: "formula",
-    "polygon_name": "formula",
-}
+def set_weight_lawsself, laws: Union[List[str], Dict[Union[int, str], str]]
 ```
 
-**Raises**
+**Summary:** Sets weight variation laws.
 
-| Error | Condition |
-|---|---|
-| `ValueError` | `laws` is neither a list nor a dictionary. |
-| `ValueError` | Invalid item or formula. |
-| `ValueError` | Multiple default laws declared. |
-| `KeyError` | Polygon name not found. |
-| `IndexError` | Index out of range. |
-| `ValueError` | S0/S1 homology mismatch. |
+**Docstring details**
 
----
+```text
+If a polygon name is not found or homology fails, it raises an error 
+to prevent falling back to default linear behavior.
+```
 
-### `set_weight_laws`
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `laws` | `positional or keyword` | `Union[List[str], Dict[Union[int, str], str]]` | `-` |
+
+**Returns:** `None`
+
+**Raises visible in the code**
+
+- `ValueError`
+- `KeyError`
+
+**Function/method calls visible in the code**
+
+`len`, `isinstance`, `normalized_map.items`, `ValueError`, `self._strip_model_tags`, `enumerate`, `str`, `item.split`, `tuple`, `abs`, `left.strip`, `formula.strip`, `evaluate_weight_formula`, `left.split`, `KeyError`, `valid_names0.index`, `valid_names1.index`, `v0.lerp`, `zip`
+
+##### `ContinuousSectionField._validate_inputs`
+
+**Source lines:** `1674-1683`
 
 ```python
-def set_weight_laws(
-    self,
-    laws: Union[List[str], Dict[Union[int, str], str]],
-) -> None
+def _validate_inputsself
 ```
 
-Sets `weight` variation laws.
+**Summary:** Docstring absent.
 
-| Parameter | Type | Description |
-|---|---|---|
-| `laws` | `Union[List[str], Dict[Union[int, str], str]]` | The current body handles list input; dictionary input is explicitly rejected. |
+**Parameters**
 
-**Rules documented in the code**
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
 
-- If a polygon name is not found, an error is raised.
-- If S0/S1 homology fails, an error is raised.
-- Laws are stored internally with 1-based indices.
-- Tags `@cell`, `@wall`, and `@closed` are stripped from names during resolution.
+**Returns:** `None`
 
-**Handled list format**
+**Raises visible in the code**
+
+- `ValueError`
+
+**Function/method calls visible in the code**
+
+`enumerate`, `len`, `ValueError`, `zip`
+
+##### `ContinuousSectionField._interpolate_weight`
+
+**Source lines:** `1685-1714`
 
 ```python
-[
-    "s0_polygon_name,s1_polygon_name: formula",
-    "polygon_name: formula",
-]
+def _interpolate_weightself, w0: float, w1: float, z: float, p0: Polygon, p1: Polygon, law: Optional[str]
 ```
 
-**Important code note**
+**Summary:** Docstring absent.
 
-The signature declares `Dict[Union[int, str], str]`, but the branch:
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `w0` | `positional or keyword` | `float` | `-` |
+| `w1` | `positional or keyword` | `float` | `-` |
+| `z` | `positional or keyword` | `float` | `-` |
+| `p0` | `positional or keyword` | `Polygon` | `-` |
+| `p1` | `positional or keyword` | `Polygon` | `-` |
+| `law` | `positional or keyword` | `Optional[str]` | `-` |
+
+**Returns:** `float`
+
+**Raises visible in the code**
+
+- `ValueError`
+
+**Function/method calls visible in the code**
+
+`abs`, `isinstance`, `law.strip`, `evaluate_weight_formula`, `ValueError`
+
+##### `ContinuousSectionField._interpolate_shear_weight`
+
+**Source lines:** `1718-1742`
 
 ```python
-elif isinstance(laws, dict):
-    raise ValueError(f"Critical Error: not valid {laws} ")
+def _interpolate_shear_weightself, w: float, w0: float, w1: float, z: float, p0: Polygon, p1: Polygon, law: Optional[str]
 ```
 
-explicitly rejects dictionaries.
+**Summary:** Docstring absent.
 
-**Raises**
+**Parameters**
 
-| Error | Condition |
-|---|---|
-| `ValueError` | `laws` is neither a list nor a dictionary. |
-| `KeyError` | Polygon name not found. |
-| `ValueError` | S0/S1 homology mismatch. |
-| `ValueError` | Invalid formula during midpoint validation. |
-| `ValueError` | Dictionary input. |
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `w` | `positional or keyword` | `float` | `-` |
+| `w0` | `positional or keyword` | `float` | `-` |
+| `w1` | `positional or keyword` | `float` | `-` |
+| `z` | `positional or keyword` | `float` | `-` |
+| `p0` | `positional or keyword` | `Polygon` | `-` |
+| `p1` | `positional or keyword` | `Polygon` | `-` |
+| `law` | `positional or keyword` | `Optional[str]` | `-` |
 
----
+**Returns:** `float`
 
-## Public module helpers
+**Raises visible in the code**
 
-### `polygon_area_centroid`
+- `ValueError`
+
+**Function/method calls visible in the code**
+
+`isinstance`, `law.strip`, `evaluate_shear_weight_formula`, `ValueError`
+
+##### `ContinuousSectionField._to_t`
+
+**Source lines:** `1745-1749`
 
 ```python
-def polygon_area_centroid(poly: Polygon) -> Tuple[float, Tuple[float, float]]
+def _to_tself, z: float
 ```
 
-Computes polygon area and centroid through `_polygon_signed_area_and_centroid`.
+**Summary:** Docstring absent.
 
-| Parameter | Type | Description |
-|---|---|---|
-| `poly` | `Polygon` | Polygon to evaluate. |
+**Parameters**
 
-**Returns**
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `z` | `positional or keyword` | `float` | `-` |
+
+**Returns:** `float`
+
+**Raises visible in the code**
+
+- `ValueError`
+
+**Function/method calls visible in the code**
+
+`float`, `ValueError`, `min`, `max`
+
+##### `ContinuousSectionField.section`
+
+**Source lines:** `1753-2216`
 
 ```python
-(poly.weight * A_signed, (Cx, Cy))
+def sectionself, z: float
 ```
 
----
+**Summary:** Docstring absent.
 
-### `section_data`
+**Parameters**
 
-```python
-def section_data(field: ContinuousSectionField, z: float) -> dict
-```
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `self` | `positional or keyword` | `not annotated` | `-` |
+| `z` | `positional or keyword` | `float` | `-` |
 
-Returns a snapshot of the section at absolute coordinate `z`.
+**Returns:** `Section`
 
-| Parameter | Type | Description |
-|---|---|---|
-| `field` | `ContinuousSectionField` | Section field to query. |
-| `z` | `float` | Absolute coordinate. |
+**Raises visible in the code**
 
-**Returns**
+- `CSFError`
 
-```python
-{
-    "section": section,
-    "properties": props,
-}
-```
+**Function/method calls visible in the code**
 
-where:
+`abs`, `enumerate`, `Section`, `re.search`, `float`, `_extract_topology`, `_parse_t`, `_left_of_at`, `CSFError`, `zip`, `tuple`, `get_shear_weight_law`, `parse_iso`, `self._interpolate_weight`, `self._interpolate_shear_weight`, `self.get_container_polygon_index`, `_resolve_topology_and_t_from_names`, `Polygon`, `polys.append`, `lower`, `_norm_name`, `str`, `s.lower`, `low.find`, `set`, `_interp_linear`, `strip`, `s.find`, `self.weight_laws.get`, `print`, `_build_interpolated_polygon_name`, `m.group`, `int`, `len`, `v0.lerp`, `buf.append`, `join`, `_fmt_t`
 
-- `section = field.section(z)`
-- `props = section_properties(section)`
+## Functions
 
----
-
-## Internal helpers present in the file
-
-These symbols are present in the file but have a leading underscore; therefore they are treated as internal.
-
-### `_get_container_polygon_index_uncached`
-
-```python
-def _get_container_polygon_index_uncached(self, poly: "Polygon", i: int)
-```
-
-Computes the immediate container without using the cache.
-
-**Returns**
-
-`int | None`.
-
----
-
-### `_section_to_dict`
-
-```python
-@staticmethod
-def _section_to_dict(sec)
-```
-
-Converts a `Section` into a dictionary:
-
-```python
-{
-    "z": float(sec.z),
-    "polygons": {
-        polygon_name: ...
-    }
-}
-```
-
-Raises `ValueError` if duplicate polygon names are found in the section.
-
----
-
-### `_polygon_to_dict`
-
-```python
-@staticmethod
-def _polygon_to_dict(poly)
-```
-
-Converts a `Polygon` into a dictionary:
-
-```python
-{
-    "weight": float(poly.weight),
-    "vertices": ...
-}
-```
-
----
-
-### `_determine_magnitude`
-
-```python
-def _determine_magnitude(self) -> None
-```
-
-Computes a geometric scale from the bounding boxes of `self.s0` and `self.s1`, then updates tolerances in `_tol`.
-
----
-
-### `_strip_model_tags`
-
-```python
-def _strip_model_tags(self, name: str) -> str
-```
-
-Normalizes a polygon name by removing everything from `@cell`, `@wall`, or `@closed` onward.
-
-**Code note**
-
-The file contains two definitions with the same name. In Python, the last definition in the class is the active one.
-
----
-
-### `_validate_inputs`
-
-```python
-def _validate_inputs(self) -> None
-```
-
-Checks:
-
-- same number of polygons in `self.s0` and `self.s1`;
-- same number of vertices for each homologous polygon pair.
-
----
-
-### `_interpolate_weight`
-
-```python
-def _interpolate_weight(
-    self,
-    w0: float,
-    w1: float,
-    z: float,
-    p0: Polygon,
-    p1: Polygon,
-    law: Optional[str],
-) -> float
-```
-
-Interpolates weight.
-
-**Behavior visible in the code**
-
-- If `law` is a non-empty string, uses `evaluate_weight_formula`.
-- Otherwise uses linear interpolation:
-
-```python
-w0 + (w1 - w0) / L_val * z
-```
-
----
-
-### `_interpolate_shear_weight`
-
-```python
-def _interpolate_shear_weight(
-    self,
-    w: float,
-    w0: float,
-    w1: float,
-    z: float,
-    p0: Polygon,
-    p1: Polygon,
-    law: Optional[str],
-) -> float
-```
-
-Interpolates shear-weight.
-
-**Behavior visible in the code**
-
-- If `law` is a non-empty string, uses `evaluate_shear_weight_formula`.
-- Otherwise returns `w`.
-
----
-
-### `_to_t`
-
-```python
-def _to_t(self, z: float) -> float
-```
-
-Converts `z` into a normalized coordinate over `[self.z0, self.z1]`.
-
-Raises `ValueError` if `z` is outside the domain.
-
----
+## Digestor: Section properties (2D polygon-based)
 
 ### `_polygon_signed_area_and_centroid`
 
+**Source lines:** `2222-2230`
+
 ```python
-def _polygon_signed_area_and_centroid(
-    poly: Polygon,
-) -> Tuple[float, Tuple[float, float]]
+def _polygon_signed_area_and_centroidpoly: Polygon
 ```
 
-Computes signed area and centroid through the shoelace formula, without applying weight.
+**Summary:** Shoelace.
 
----
+**Docstring details**
+
+```text
+with no weight
+```
+
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `poly` | `positional or keyword` | `Polygon` | `-` |
+
+**Returns:** `Tuple[float, Tuple[float, float]]`
+
+**Function/method calls visible in the code**
+
+`_signed_area_centroid_xy`
+
+### `polygon_area_centroid`
+
+**Source lines:** `2232-2236`
+
+```python
+def polygon_area_centroidpoly: Polygon
+```
+
+**Summary:** Docstring absent.
+
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `poly` | `positional or keyword` | `Polygon` | `-` |
+
+**Returns:** `Tuple[float, Tuple[float, float]]`
+
+**Function/method calls visible in the code**
+
+`_polygon_signed_area_and_centroid`
+
+## with weight
+
+### `section_data`
+
+**Source lines:** `2239-2292`
+
+```python
+def section_datafield: ContinuousSectionField, z: float
+```
+
+**Summary:** z is ABSOLUTE
+
+**Docstring details**
+
+```text
+Extracts the complete geometric state and physical properties of a section 
+at a specific longitudinal coordinate (z).
+
+TECHNICAL SUMMARY:
+This function acts as a high-level accessor for the Continuous Section Field. 
+It performs a synchronized extraction of both the interpolated boundary 
+geometry and the corresponding integral properties (Area, First/Second Moments). 
+It provides a discrete "snapshot" of a 3D ruled solid at any point along 
+its integration path.
+
+WORKFLOW AND DATA ARCHITECTURE:
+1. Geometric Reconstruction:
+   The function first invokes the internal Linear Interpolation (LERP) 
+   mechanism to reconstruct the homogenized polygonal boundaries at 
+   coordinate 'z'. This ensures topological consistency across the 
+   longitudinal domain.
+
+2. Property Integration:
+   Once the geometry is established, the 'section_properties' engine 
+   is executed to compute the sectional digest. This involves:
+   - Zeroth Moment: Area (A).
+   - First Moments: Centroidal coordinates (Cx, Cy).
+   - Second Moments: Moments of inertia (Ix, Iy, Ixy) and the Polar 
+     Moment (J).
+
+3. Data Encapsulation:
+   The results are packaged into a dictionary structure, decoupling the 
+   raw geometric data (vertices/polygons) from the derived structural 
+   parameters.
+
+APPLICABILITY:
+This function is the standard interface for structural analysis routines 
+that require local stiffness or stress evaluation at specific points 
+along a non-prismatic member.
+
+RETURNS:
+   A dictionary containing:
+   - 'section': The Section object (polygonal boundaries at z).
+   - 'properties': A dictionary of computed geometric constants.
+```
+
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `field` | `positional or keyword` | `ContinuousSectionField` | `-` |
+| `z` | `positional or keyword` | `float` | `-` |
+
+**Returns:** `dict`
+
+**Returned dictionary keys visible in the code**
+
+`section`, `properties`
+
+**Function/method calls visible in the code**
+
+`field.section`, `section_properties`
+
+## Visualization helpers
 
 ### `_set_axes_equal_3d`
 
-```python
-def _set_axes_equal_3d(ax) -> None
-```
-
-Matplotlib helper for adjusting 3D axes while preserving a consistent scale in the `X-Y` plane.
-
----
-
-## Elements not documented as standalone API
-
-The final block under:
+**Source lines:** `2301-2357`
 
 ```python
-if __name__ == "__main__":
+def _set_axes_equal_3dax
 ```
 
-is demonstration/execution code and is not documented as API.
+**Summary:** Configures 3D axis limits to perform a 'selective zoom' and maintain
+
+**Docstring details**
+
+```text
+consistent aspect ratios for cross-sectional visualization.
+
+TECHNICAL SUMMARY:
+This function normalizes the viewport of a Matplotlib 3D projection. 
+It ensures that the horizontal plane (X-Y) is scaled isotropically 
+(equal aspect ratio) to prevent geometric distortion of the sections, 
+while allowing the longitudinal axis (Z) to retain its full physical 
+extent for structural context.
+
+ALGORITHMIC LOGIC:
+1. Limit Extraction:
+   Retrieves current bounding box limits for X, Y, and Z dimensions 
+   to determine the object's spatial center.
+
+2. Planar Isotropic Scaling:
+   Calculates a maximum radius based on the spans of X and Y. By 
+   applying this radius symmetrically to both horizontal axes, the 
+   function ensures that circles or ellipses appear without 
+   eccentricity distortion.
+
+3. Longitudinal Preservation:
+   Unlike standard 'equal axis' commands, this logic preserves the 
+   original Z-limits. This is crucial for high-aspect-ratio solids, 
+   ensuring the entire height is visible within the frame.
+
+4. Box Aspect Ratio:
+   Sets the 'box_aspect' to (1, 1, 2) to force a vertical emphasis, 
+   making slender solids visually representative of their physical 
+   proportions.
+```
+
+**Parameters**
+
+| Name | Kind | Type | Default |
+|---|---|---|---|
+| `ax` | `positional or keyword` | `not annotated` | `-` |
+
+**Returns:** `None`
+
+**Function/method calls visible in the code**
+
+`ax.get_xlim3d`, `ax.get_ylim3d`, `ax.get_zlim3d`, `abs`, `ax.set_xlim3d`, `ax.set_ylim3d`, `ax.set_zlim3d`, `ax.set_box_aspect`, `sum`, `max`
+
+# Notes from the source structure
+
+- The generator reads the Python source through `ast` and does not import the package.
+- `Source lines` are derived from Python AST line numbers.
+- `Returned dictionary keys visible in the code` are literal string keys found in dictionary expressions inside the function body.
+- `Raises visible in the code` lists exception names from explicit `raise` statements.
+- `Function/method calls visible in the code` is a static list of call expressions found in the function body.
