@@ -271,6 +271,7 @@ csf-actions geometry.yaml actions.yaml
 ```powershell
 
 py install 3.12
+py -3.12 -m venv venv
 .\venv\Scripts\activate
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
