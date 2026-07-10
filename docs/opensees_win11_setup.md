@@ -40,6 +40,10 @@ If you cloned the repository in a different location, use that path instead.
 py -V:3.12 -m venv venv312
 ```
 
+```powershell
+ py -3.12 -m venv .venv
+```
+
 ### 5. Verify that the Python executable from the new environment is the correct one
 
 ```powershell
