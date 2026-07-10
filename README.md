@@ -157,8 +157,8 @@ csf-actions geometry.yaml actions.yaml
 ```
 **Windows**
 ```
-python3 -m venv venv
-.\venv\Scripts\activate 
+py install 3.12
+.\venv\Scripts\activate
 pip install csfpy
 csf-actions geometry.yaml actions.yaml
 
