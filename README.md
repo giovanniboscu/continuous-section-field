@@ -158,6 +158,7 @@ csf-actions geometry.yaml actions.yaml
 **Windows**
 ```
 py install 3.12
+py -V:3.12 -m venv venv
 .\venv\Scripts\activate
 pip install csfpy
 csf-actions geometry.yaml actions.yaml
@@ -255,6 +256,7 @@ py install 3.12
 ### Option 1 - Install from PyPI (recommended)
 
 ```bash
+py install 3.12
 py -3.12 -m venv venv
 .\venv\Scripts\activate
 pip install csfpy
