@@ -69,6 +69,19 @@ def _z_key(z: Any) -> str:
     return f"{float(z):.12g}"
 
 
+def _strip_csf_name(name: Any) -> str:
+    return str(name or "").split("@", 1)[0].strip()
+
+
+def _is_s_polygon_name(name: Any) -> bool:
+    base_name = _strip_csf_name(name)
+    return base_name.split("_")[-1] == "S"
+
+
+def _direction_from_component(component: str) -> str:
+    return "x" if str(component).startswith("tau_x_") else "y"
+
+
 def _read_csv_rows(path: Path) -> list[dict[str, str]]:
     if not path.exists():
         raise FileNotFoundError(f"Missing required input file: {path}")
@@ -193,6 +206,7 @@ def _assemble_sections(
                 "idx_container": r["idx_container"],
                 "s0_name": r["s0_name"],
                 "s1_name": r["s1_name"],
+                "polygon_name": r["s0_name"],
                 "w": float(r["w"]),
                 "shear_w": float(r["shear_w"]),
                 "poisson": float(r["poisson"]),
@@ -254,6 +268,8 @@ def _assemble_sections(
         if poly is None:
             continue
 
+        poly["polygon_name"] = str(r.get("polygon_name", poly["s0_name"]))
+
         for key in (
             "tau_x_min",
             "tau_x_max",
@@ -282,26 +298,34 @@ def _assemble_sections(
                 "x": x_val,
                 "y": y_val,
                 "component": key,
+                "direction": _direction_from_component(key),
                 "value": value,
             }
             if math.isfinite(value):
                 candidates.append((key, value, x_val, y_val))
 
         if candidates:
-            key_best, value_best, x_best, y_best = max(candidates, key=lambda item: abs(item[1]))
-            poly["values"]["tau_abs_max"] = abs(value_best)
-            points["tau_abs_max"] = {
+            key_best, value_best, x_best, y_best = max(
+                candidates, key=lambda item: abs(item[1])
+            )
+            direction_best = _direction_from_component(key_best)
+            poly["values"]["tau_governing"] = value_best
+            poly["values"]["tau_governing_direction"] = direction_best
+            points["tau_governing"] = {
                 "x": x_best,
                 "y": y_best,
                 "component": key_best,
+                "direction": direction_best,
                 "value": value_best,
             }
         else:
-            poly["values"]["tau_abs_max"] = float("nan")
-            points["tau_abs_max"] = {
+            poly["values"]["tau_governing"] = float("nan")
+            poly["values"]["tau_governing_direction"] = ""
+            points["tau_governing"] = {
                 "x": float("nan"),
                 "y": float("nan"),
                 "component": "",
+                "direction": "",
                 "value": float("nan"),
             }
 
@@ -324,10 +348,18 @@ def _actions_payload(rows: list[dict[str, str]]) -> dict[str, list[float]]:
 
 
 
-def _shear_extreme_rows(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
+def _shear_extreme_rows(
+    rows: list[dict[str, str]],
+    *,
+    select_s: bool,
+) -> list[dict[str, Any]]:
+    """Return the S or NON-S polygons sharing maximum ``abs(tau_governing)`` per z."""
+
     by_z: dict[str, list[dict[str, str]]] = defaultdict(list)
-    for r in rows:
-        by_z[_z_key(r["z"])].append(r)
+    for row in rows:
+        polygon_name = str(row.get("polygon_name", ""))
+        if _is_s_polygon_name(polygon_name) == bool(select_s):
+            by_z[_z_key(row["z"])].append(row)
 
     components = {
         "tau_x_min": ("x_tau_x_min", "y_tau_x_min"),
@@ -337,33 +369,45 @@ def _shear_extreme_rows(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
     }
 
     out: list[dict[str, Any]] = []
-    for zk in sorted(by_z.keys(), key=lambda k: float(k)):
+    for zk in sorted(by_z.keys(), key=lambda key: float(key)):
         candidates: list[dict[str, Any]] = []
-        for r in by_z[zk]:
-            for comp, (xk, yk) in components.items():
-                value = _to_float(r.get(comp))
+
+        for row in by_z[zk]:
+            for component, (x_key, y_key) in components.items():
+                value = _to_float(row.get(component))
                 if not math.isfinite(value):
                     continue
+
                 candidates.append(
                     {
-                        "z": _to_float(r.get("z")),
-                        "tau": value,
-                        "abs_tau": abs(value),
-                        "component": comp,
-                        "polygon_idx": int(r["polygon_idx"]),
-                        "polygon_name": str(r["polygon_name"]),
-                        "x": _to_float(r.get(xk)),
-                        "y": _to_float(r.get(yk)),
+                        "z": _to_float(row.get("z")),
+                        "tau_governing": value,
+                        "direction": _direction_from_component(component),
+                        "polygon_idx": int(row["polygon_idx"]),
+                        "polygon_name": str(row["polygon_name"]),
+                        "x": _to_float(row.get(x_key)),
+                        "y": _to_float(row.get(y_key)),
                     }
                 )
 
         if not candidates:
             continue
 
-        max_abs = max(c["abs_tau"] for c in candidates)
-        tol = max(1.0e-9 * max_abs, 1.0e-6)
-        matches = [c for c in candidates if abs(c["abs_tau"] - max_abs) <= tol]
-        matches.sort(key=lambda c: (str(c["component"]), int(c["polygon_idx"])))
+        max_abs_tau = max(abs(item["tau_governing"]) for item in candidates)
+        tolerance = max(max_abs_tau, 1.0) * 1.0e-12
+        matches = [
+            item
+            for item in candidates
+            if abs(abs(item["tau_governing"]) - max_abs_tau) <= tolerance
+        ]
+        matches.sort(
+            key=lambda item: (
+                int(item["polygon_idx"]),
+                str(item["direction"]),
+                float(item["x"]),
+                float(item["y"]),
+            )
+        )
         out.extend(matches)
 
     return out
@@ -388,7 +432,7 @@ QUANTITIES = [
     {"id": "tau_y_max", "label": "Jourawski tau_y_max", "signed": True},
     {"id": "tau_x_mean", "label": "Jourawski tau_x_mean", "signed": True},
     {"id": "tau_y_mean", "label": "Jourawski tau_y_mean", "signed": True},
-    {"id": "tau_abs_max", "label": "Jourawski tau_abs_max", "signed": False},
+    {"id": "tau_governing", "label": "Jourawski tau_governing", "signed": True},
     {"id": "scan_count_x", "label": "scan_count_x", "signed": False},
     {"id": "scan_count_y", "label": "scan_count_y", "signed": False},
 ]
@@ -401,7 +445,7 @@ STRESS_QUANTITIES = [
     {"id": "tau_x_max", "label": "Jourawski tau_x_max", "signed": True},
     {"id": "tau_y_min", "label": "Jourawski tau_y_min", "signed": True},
     {"id": "tau_y_max", "label": "Jourawski tau_y_max", "signed": True},
-    {"id": "tau_abs_max", "label": "Jourawski tau_abs_max", "signed": False},
+    {"id": "tau_governing", "label": "Jourawski tau_governing", "signed": True},
 ]
 
 
@@ -415,7 +459,8 @@ def _build_html(
     *,
     actions: dict[str, list[float]],
     section_data: dict[str, Any],
-    shear_extremes: list[dict[str, Any]],
+    shear_extremes_s: list[dict[str, Any]],
+    shear_extremes_non_s: list[dict[str, Any]],
 ) -> str:
     plotly_js = get_plotlyjs()
     css = """
@@ -435,7 +480,7 @@ def _build_html(
     select { width:100%; padding:7px; border:1px solid var(--line); border-radius:7px; background:white; }
     #sectionPlot { height:720px; background:white; border:1px solid var(--line); border-radius:10px; }
     #rangeInfo { margin-top:12px; font-size:12px; color:var(--muted); line-height:1.35; }
-    #extremeTableWrap, #polygonStressWrap { max-height:520px; overflow:auto; border:1px solid var(--line); border-radius:10px; }
+    .extremeTableWrap, #polygonStressWrap { max-height:520px; overflow:auto; border:1px solid var(--line); border-radius:10px; }
     .stress-gallery { display:grid; grid-template-columns: repeat(2, minmax(420px, 1fr)); gap:18px; margin-top:12px; }
     .stress-card { background:white; border:1px solid var(--line); border-radius:10px; padding:8px; }
     .stress-plot { height:520px; }
@@ -518,9 +563,9 @@ def _build_html(
             "Signed blue-white-red scale.",
         ),
         (
-            "Jourawski tau_abs_max",
-            "tau_abs_max is the maximum absolute Jourawski shear stress value present in the polygon, obtained from the x/y cut scans crossing that polygon.",
-            "Viridis min/max scale.",
+            "Jourawski tau_governing",
+            "tau_governing is the signed Jourawski shear-stress value having the largest absolute magnitude in the polygon, selected among tau_x_min, tau_x_max, tau_y_min and tau_y_max. The original sign is preserved; direction identifies x or y.",
+            "Signed blue-white-red scale.",
         ),
         (
             "scan_count_x",
@@ -543,19 +588,24 @@ def _build_html(
             "</tr>"
         )
 
-    extreme_rows_html = []
-    for r in shear_extremes:
-        extreme_rows_html.append(
-            "<tr>"
-            f"<td>{float(r['z']):.6g}</td>"
-            f"<td>{float(r['tau']):.6e}</td>"
-            f"<td class='name'>{html.escape(str(r['component']))}</td>"
-            f"<td>{int(r['polygon_idx'])}</td>"
-            f"<td class='name'>{html.escape(str(r['polygon_name']))}</td>"
-            f"<td>{float(r['x']):.6e}</td>"
-            f"<td>{float(r['y']):.6e}</td>"
-            "</tr>"
-        )
+    def build_extreme_rows_html(rows: list[dict[str, Any]]) -> str:
+        html_rows: list[str] = []
+        for row in rows:
+            html_rows.append(
+                "<tr>"
+                f"<td>{float(row['z']):.6g}</td>"
+                f"<td>{float(row['tau_governing']):.6e}</td>"
+                f"<td class='name'>{html.escape(str(row['direction']))}</td>"
+                f"<td>{int(row['polygon_idx'])}</td>"
+                f"<td class='name'>{html.escape(str(row['polygon_name']))}</td>"
+                f"<td>{float(row['x']):.6e}</td>"
+                f"<td>{float(row['y']):.6e}</td>"
+                "</tr>"
+            )
+        return "".join(html_rows)
+
+    extreme_rows_s_html = build_extreme_rows_html(shear_extremes_s)
+    extreme_rows_non_s_html = build_extreme_rows_html(shear_extremes_non_s)
 
     js_data = "\n".join(
         [
@@ -605,6 +655,27 @@ def _build_html(
         a2 += p0.x * p1.y - p1.x * p0.y;
       }
       return Math.abs(0.5 * a2);
+    }
+
+    function polygonDrawArea(p) {
+      return polygonAbsArea((p && p.vertices) ? p.vertices : []);
+    }
+    function orderedPolygonsForDrawing(polys) {
+      // Draw larger / outer polygons first and smaller / nested polygons later.
+      // Plotly hit-testing then sees the visible local sector instead of an
+      // overlapping carrier/container polygon drawn above it.
+      const out = [...(polys || [])];
+      out.sort((a, b) => {
+        const aa = polygonDrawArea(a);
+        const bb = polygonDrawArea(b);
+        const areaTol = Math.max(aa, bb, 1.0) * 1.0e-12;
+        if (Math.abs(bb - aa) > areaTol) return bb - aa;
+        const da = Number.isFinite(a.depth) ? a.depth : 0;
+        const db = Number.isFinite(b.depth) ? b.depth : 0;
+        if (da !== db) return da - db;
+        return (a.idx || 0) - (b.idx || 0);
+      });
+      return out;
     }
 
     function sectionBounds(polys) {
@@ -794,8 +865,17 @@ def _build_html(
       zSelect.addEventListener('change', renderSection);
       qSelect.addEventListener('change', renderSection);
     }
+    function signedQuantityValue(p, q) {
+      if (!p) return NaN;
+      const rawValue = p.values ? p.values[q.id] : NaN;
+      const pointValue = p.points && p.points[q.id] && finite(p.points[q.id].value)
+        ? p.points[q.id].value
+        : NaN;
+      if (q.signed && finite(pointValue)) return pointValue;
+      return rawValue;
+    }
     function valueRange(polys, q) {
-      const vals = polys.map(p => p.values[q.id]).filter(finite);
+      const vals = polys.map(p => signedQuantityValue(p, q)).filter(finite);
       if (vals.length === 0) return {min:NaN, max:NaN, abs:NaN, vals:[]};
       const minv = Math.min(...vals), maxv = Math.max(...vals);
       const abs = Math.max(...vals.map(v => Math.abs(v)));
@@ -876,18 +956,23 @@ def _build_html(
       }).join('');
     }
     function stressPointHover(p, q, point, value) {
-      const comp = point && point.component ? point.component : q.id;
+      const component = point && point.component ? point.component : q.id;
+      const direction = point && point.direction
+        ? point.direction
+        : (component.indexOf('tau_x_') === 0 ? 'x' : (component.indexOf('tau_y_') === 0 ? 'y' : ''));
       const signedValue = point && finite(point.value) ? point.value : value;
-      return [
-        '<b>idx</b>: ' + p.idx,
-        '<b>name</b>: ' + esc(p.s0_name),
+      const shownValue = q.signed ? signedValue : value;
+      const rows = [
+        '<b>z</b>: ' + fmt(p.z),
+        '<b>polygon_idx</b>: ' + p.idx,
+        '<b>polygon_name</b>: ' + esc(p.polygon_name || p.s0_name),
         '<b>quantity</b>: ' + esc(q.label),
-        '<b>value</b>: ' + fmt(value),
-        '<b>source component</b>: ' + esc(comp),
-        '<b>signed source value</b>: ' + fmt(signedValue),
-        '<b>x</b>: ' + fmt(point ? point.x : NaN),
-        '<b>y</b>: ' + fmt(point ? point.y : NaN)
-      ].join('<br>');
+        '<b>value</b>: ' + fmt(shownValue)
+      ];
+      if (direction) rows.push('<b>direction</b>: ' + esc(direction));
+      rows.push('<b>x</b>: ' + fmt(point ? point.x : NaN));
+      rows.push('<b>y</b>: ' + fmt(point ? point.y : NaN));
+      return rows.join('<br>');
     }
 
     function polygonLineSegmentsForCoord(verts, axis, coord) {
@@ -940,6 +1025,7 @@ def _build_html(
     }
     function localStressPoint(p, q, point) {
       if (!point) return null;
+      if (q.id === 'tau_governing') return point;
       const comp = point.component || q.id;
       if (comp.indexOf('tau_x_') === 0 && finite(point.x)) {
         return representativePointOnPolygonCut(p.vertices, 'x', point.x, point);
@@ -989,19 +1075,19 @@ def _build_html(
       const traces = [];
       const crossMarkers = [];
 
-      for (const p of polys) {
+      for (const p of orderedPolygonsForDrawing(polys)) {
         const verts = p.vertices || [];
         if (verts.length < 3) continue;
         const xs = verts.map(v => v.x);
         const ys = verts.map(v => v.y);
         xs.push(verts[0].x);
         ys.push(verts[0].y);
-        const value = p.values ? p.values[q.id] : NaN;
+        const value = signedQuantityValue(p, q);
         const fill = colorForValue(value, range, q, p.depth);
         const parent = p.idx_container === null || p.idx_container === undefined ? '' : p.idx_container;
         const hover = [
           '<b>idx</b>: ' + p.idx,
-          '<b>s0_name</b>: ' + esc(p.s0_name),
+          '<b>polygon_name</b>: ' + esc(p.polygon_name || p.s0_name),
           '<b>container</b>: ' + parent,
           '<b>depth</b>: ' + p.depth,
           '<b>' + esc(q.label) + '</b>: ' + fmt(value)
@@ -1010,7 +1096,7 @@ def _build_html(
           type:'scatter', mode:'lines', x:xs, y:ys,
           fill:'toself', fillcolor:fill,
           line:{color:'#374151', width:0.55},
-          hoverinfo:'text', text:hover,
+          hoverinfo:'text', hoveron:'fills', text:hover,
           showlegend:false
         });
 
@@ -1092,19 +1178,19 @@ def _build_html(
       const bounds = sectionBounds(polys);
       const stressIds = new Set(STRESS_QUANTITIES.map(item => item.id));
       const showStressCrosses = stressIds.has(q.id);
-      for (const p of polys) {
+      for (const p of orderedPolygonsForDrawing(polys)) {
         const verts = p.vertices || [];
         if (verts.length < 3) continue;
         const xs = verts.map(v => v.x);
         const ys = verts.map(v => v.y);
         xs.push(verts[0].x);
         ys.push(verts[0].y);
-        const value = p.values[q.id];
+        const value = signedQuantityValue(p, q);
         const fill = colorForValue(value, range, q, p.depth);
         const parent = p.idx_container === null || p.idx_container === undefined ? '' : p.idx_container;
         const hover = [
           '<b>idx</b>: ' + p.idx,
-          '<b>s0_name</b>: ' + p.s0_name,
+          '<b>polygon_name</b>: ' + esc(p.polygon_name || p.s0_name),
           '<b>s1_name</b>: ' + p.s1_name,
           '<b>container</b>: ' + parent,
           '<b>depth</b>: ' + p.depth,
@@ -1117,7 +1203,7 @@ def _build_html(
           type:'scatter', mode:'lines', x:xs, y:ys,
           fill:'toself', fillcolor:fill,
           line:{color:'#374151', width:0.6},
-          hoverinfo:'text', text:hover,
+          hoverinfo:'text', hoveron:'fills', text:hover,
           showlegend:false
         });
         if (q.id === 'depth') {
@@ -1195,7 +1281,7 @@ def _build_html(
         const container = (p.idx_container === null || p.idx_container === undefined) ? '' : p.idx_container;
         return '<tr>' +
           '<td>' + p.idx + '</td>' +
-          '<td class="name">' + esc(p.s0_name) + '</td>' +
+          '<td class="name">' + esc(p.polygon_name || p.s0_name) + '</td>' +
           '<td>' + container + '</td>' +
           '<td>' + p.depth + '</td>' +
           '<td>' + fmt(v.sigma_min) + '</td>' +
@@ -1205,7 +1291,8 @@ def _build_html(
           '<td>' + fmt(v.tau_x_max) + '</td>' +
           '<td>' + fmt(v.tau_y_min) + '</td>' +
           '<td>' + fmt(v.tau_y_max) + '</td>' +
-          '<td>' + fmt(v.tau_abs_max) + '</td>' +
+          '<td>' + fmt(v.tau_governing) + '</td>' +
+          '<td>' + esc(v.tau_governing_direction || '') + '</td>' +
         '</tr>';
       }).join('');
     }
@@ -1236,10 +1323,10 @@ def _build_html(
   <h2>Legend</h2>
   <div class="legend-grid">
     <div class="legend-card"><b>Signed quantities</b>Blue = negative, white = zero, red = positive. The scale is symmetric around zero using the local maximum absolute value for the selected station and quantity.</div>
-    <div class="legend-card"><b>Positive / absolute quantities</b>Viridis scale from local minimum to local maximum. This includes w, shear_w, poisson, scan counts, and tau_abs_max.</div>
+    <div class="legend-card"><b>Positive quantities</b>Viridis scale from local minimum to local maximum. This includes w, shear_w, poisson, and scan counts.</div>
     <div class="legend-card"><b>Markers</b>Black crosses mark the available source point or representative cut point associated with the displayed stress value.</div>
   </div>
-  <p class="note">tau_abs_max is the maximum absolute Jourawski shear stress value present in the polygon, obtained from the x/y cut scans crossing that polygon.</p>
+  <p class="note"><b>tau_governing</b> is the signed Jourawski shear-stress value having the largest absolute magnitude in each polygon, selected among tau_x_min, tau_x_max, tau_y_min and tau_y_max. The original sign is preserved; direction identifies x or y.</p>
   <div id="legendTableWrap">
     <table>
       <thead>
@@ -1282,7 +1369,7 @@ def _build_html(
         <tr>
           <th>polygon_idx</th><th class="name">polygon_name</th><th>container</th><th>depth</th>
           <th>sigma_min</th><th>sigma_max</th><th>sigma_extreme</th>
-          <th>tau_x_min</th><th>tau_x_max</th><th>tau_y_min</th><th>tau_y_max</th><th>tau_abs_max</th>
+          <th>tau_x_min</th><th>tau_x_max</th><th>tau_y_min</th><th>tau_y_max</th><th>tau_governing</th><th>direction</th>
         </tr>
       </thead>
       <tbody id="polygonStressBody"></tbody>
@@ -1290,13 +1377,25 @@ def _build_html(
   </div>
 
   <h2>Shear extreme rows</h2>
-  <p class="note">For each z, all polygon rows sharing the maximum absolute shear value are listed.</p>
-  <div id="extremeTableWrap">
+  <p class="note"><b>tau_governing</b> is the signed Jourawski shear-stress value having the largest absolute magnitude in each polygon, selected among tau_x_min, tau_x_max, tau_y_min and tau_y_max. For each z, the tables list the polygons sharing the maximum absolute tau_governing separately for S and NON-S.</p>
+
+  <h3>SHEAR EXTREME ROWS - S</h3>
+  <div class="extremeTableWrap">
     <table>
       <thead>
-        <tr><th>z</th><th>tau</th><th class="name">component</th><th>polygon_idx</th><th class="name">polygon_name</th><th>x</th><th>y</th></tr>
+        <tr><th>z</th><th>tau_governing</th><th class="name">direction</th><th>polygon_idx</th><th class="name">polygon_name</th><th>x</th><th>y</th></tr>
       </thead>
-      <tbody>{''.join(extreme_rows_html)}</tbody>
+      <tbody>{extreme_rows_s_html}</tbody>
+    </table>
+  </div>
+
+  <h3>SHEAR EXTREME ROWS - NON-S</h3>
+  <div class="extremeTableWrap">
+    <table>
+      <thead>
+        <tr><th>z</th><th>tau_governing</th><th class="name">direction</th><th>polygon_idx</th><th class="name">polygon_name</th><th>x</th><th>y</th></tr>
+      </thead>
+      <tbody>{extreme_rows_non_s_html}</tbody>
     </table>
   </div>
 </main>
@@ -1330,12 +1429,14 @@ def create_visual_report(input_dir: Path, output_dir: Path) -> Path:
         navier_rows=navier_rows,
         shear_rows=shear_rows,
     )
-    shear_extremes = _shear_extreme_rows(shear_rows)
+    shear_extremes_s = _shear_extreme_rows(shear_rows, select_s=True)
+    shear_extremes_non_s = _shear_extreme_rows(shear_rows, select_s=False)
 
     html_text = _build_html(
         actions=actions,
         section_data=section_data,
-        shear_extremes=shear_extremes,
+        shear_extremes_s=shear_extremes_s,
+        shear_extremes_non_s=shear_extremes_non_s,
     )
 
     out_path = output_dir / "csf_visual_report.html"
