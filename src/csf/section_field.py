@@ -1616,7 +1616,7 @@ def _yaml_scalar(v):
         return str(v)
 
     s = str(v)
-    # quote se serve
+    
     if s == "" or any(c in s for c in [":", "#", "\n", "{", "}", "[", "]"]):
         return '"' + s.replace('"', '\\"') + '"'
     return s
@@ -1645,7 +1645,7 @@ def _simple_yaml_dump(data, indent: int = 0) -> str:
                 out.append(f"{sp}- {_yaml_scalar(item)}")
         return "\n".join(out)
 
-    # scalare singolo
+
     return f"{sp}{_yaml_scalar(data)}"
 
 def safe_evaluate_weight_zrelative(formula: str, p0: Polygon, p1: Polygon, z0: float, z1: float, z: float,print=True) -> tuple[float, dict]:
@@ -1798,19 +1798,6 @@ def print_evaluation_report(value: float, report: dict):
     print(" " * (bw - len(timestamp_str)) + timestamp_str)
     print("═" * bw + "\n")
 
-def execute_string_to_float(code_string, x_value):
-    # 1. Create a workspace (namespace) for exec to run in
-    # We prepopulate it with 'x' so the string can use it for calculations
-    workspace = {"x": x_value}
-    
-    # 2. Execute the string of code
-    # The string is expected to store the final calculation in a variable named 'risultato'
-    # globals is kept empty {}, and workspace acts as the local namespace
-    exec(code_string, {}, workspace)
-    
-    # 3. Extract the value from the workspace
-    # We use .get() to avoid an error if 'risultato' is missing, then cast to float
-    final_number = float(workspace.get("output", 0.0))
 
 
 def evaluate_shear_weight_formula(
@@ -2040,37 +2027,6 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
     law_value =  float(eval(formula, {"__builtins__": SAFE_BUILTINS}, context))
     return law_value
  
-def execute_string_to_float(code_string, z_val, t_val):
-    """
-    Executes a Python procedure from a string and returns a float.
-    Uses 'z' and 't' as input variables.
-    """
-    
-    # 1. THE BRIDGE (Workspace)
-    # Here we map your numbers to the names 'z' and 't'
-    # These are the only variables the string will "see"
-    workspace = {
-        "z": z_val, 
-        "t": t_val,
-        "math": math
-    }
-    
-    try:
-        # 2. THE EXECUTION
-        exec(code_string, {}, workspace)
-        
-        # 3. THE RETRIEVAL
-        # The code string MUST save the final result in 'output'
-        if "output" not in workspace:
-            raise NameError("Error: The variable 'output' is missing in your string!")
-        
-        return float(workspace["output"])
-        
-    except Exception as e:
-        print(f"--- ERROR IN YOUR CODE STRING ---")
-        print(f"Details: {e}")
-        raise
-
 
 def evaluate_weight_formula_zrelative( formula: str, p0: Polygon, p1: Polygon, z0: float, z1: float, z: float) -> float:
         """
