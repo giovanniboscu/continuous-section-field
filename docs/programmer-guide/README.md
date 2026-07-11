@@ -40,5 +40,5 @@ cd csf_project
 6. [06 opensees export](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/opensees_export.md)
 8. [07 geometry and properties export](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/geometry_properties_export.md)
 9. [08 Parametric vs materialized YAML export](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/to_yaml-write_section.md)
-10. [09 CSF Stress APIs](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/to_yaml-write_section.md)
+10. [09 CSF Stress APIs](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/csf_stress_apis.md)
 11. `...` 
