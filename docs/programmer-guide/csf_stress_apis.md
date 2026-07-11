@@ -1,4 +1,4 @@
-# Introduction to the CSF Stress APIs
+# CSF Stress APIs
 
 CSF provides two polygon-wise stress-analysis functions for evaluating a section at a specified longitudinal station `z`:
 
@@ -11,7 +11,7 @@ They are intended for section-level stress evaluation. The user supplies the int
 
 ---
 
-# Navier normal stress
+# 1. Navier normal stress
 
 Use:
 
@@ -44,16 +44,188 @@ This function is used for axial and bending stress checks.
 
 ---
 
-# CSF Stress APIs
+# 2. Jourawski shear stress
 
-This document shows the basic use of the CSF stress APIs.
+Use:
 
-The two APIs covered are:
+```python
+analyse_polygon_jourawski_shear_stress
+```
 
-- Navier normal stress
-- Jourawski shear stress
+to evaluate signed Jourawski shear stresses produced by:
+
+- `Tx`, the shear component associated with the longitudinal gradient of `My`;
+- `Ty`, the shear component associated with the longitudinal gradient of `Mx`.
+
+For a beam action field:
+
+```python
+Tx = dMy_dz
+Ty = dMx_dz
+```
+
+The function performs x-direction and y-direction section scans.
+
+For each polygon, it returns:
+
+- `tau_x_min`;
+- `tau_x_max`;
+- `tau_y_min`;
+- `tau_y_max`;
+- the coordinates associated with each value;
+- scan and convergence information.
+
+Typical use:
+
+```text
+section_field + z + Tx + Ty + scan subdivisions
+                ↓
+polygon-wise Jourawski shear-stress extrema
+```
+
+This function is used for transverse shear-stress checks.
 
 ---
+
+# 3. Main distinction
+
+The two functions evaluate different stress components:
+
+| Function | Internal actions | Returned stress |
+|---|---|---|
+| `analyse_polygon_navier_stress` | `N`, `Mx`, `My` | Normal stress `sigma` |
+| `analyse_polygon_jourawski_shear_stress` | `Tx`, `Ty` | Shear stress `tau` |
+
+Both functions:
+
+- evaluate the CSF section at station `z`;
+- preserve the signs of the supplied actions;
+- return polygon identity and stress locations;
+- provide one result dictionary for each polygon.
+
+---
+
+# 4. Typical combined workflow
+
+```python
+z = 0.0
+
+navier_rows = analyse_polygon_navier_stress(
+    section_field=section_field,
+    z=z,
+    N=N,
+    Mx=Mx,
+    My=My,
+)
+
+shear_rows = analyse_polygon_jourawski_shear_stress(
+    section_field=section_field,
+    z=z,
+    Tx=Tx,
+    Ty=Ty,
+    num_sudx=100,
+    num_sudy=100,
+    debug=False,
+)
+```
+
+The returned rows can then be:
+
+- written to CSV;
+- summarized in a text report;
+- matched to polygons in a graphical section report;
+- filtered by polygon name or polygon index.
+
+---
+
+# 5. Polygon identification
+
+The primary polygon identifier is:
+
+```text
+polygon index
+```
+
+The polygon name provides a readable identifier.
+
+For report-to-plot verification, use:
+
+```text
+z + polygon index
+```
+
+and verify the associated polygon name, stress value and coordinates.
+
+---
+
+# 6. Sign convention
+
+The APIs use the values supplied by the caller.
+
+No automatic sign correction should be assumed.
+
+The sign convention of:
+
+- `N`;
+- `Mx`;
+- `My`;
+- `Tx`;
+- `Ty`;
+
+must therefore be consistent with the action model used by the caller.
+
+The returned stresses preserve the resulting sign.
+
+---
+
+# 7. Units
+
+The APIs do not impose a unit system.
+
+All inputs must use one consistent unit system.
+
+For example, using:
+
+```text
+force  = N
+length = m
+moment = N·m
+```
+
+produces stresses in:
+
+```text
+Pa
+```
+
+---
+
+# 8. Derived governing shear value
+
+`tau_governing` is not returned directly by:
+
+```python
+analyse_polygon_jourawski_shear_stress
+```
+
+It is a derived report value.
+
+For one polygon, it is selected from:
+
+```text
+tau_x_min
+tau_x_max
+tau_y_min
+tau_y_max
+```
+
+using the largest absolute magnitude while preserving the original sign.
+
+The associated direction and coordinates are taken from the selected source field.
+
+---
+
+# Detailed API Reference
 
 # 1. Navier Stress API
 
