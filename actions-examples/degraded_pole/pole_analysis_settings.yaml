@@ -29,10 +29,9 @@ z_stations:
 
 
 shear:
- num_sudx: 256
- num_sudy: 256
+ num_sudx: 20
+ num_sudy: 20
  sp_mesh: 1
-# nu_sp: 0.0
   
 moment_gradient:
   dz: 0.01

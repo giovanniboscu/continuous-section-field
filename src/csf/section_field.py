@@ -106,7 +106,466 @@ else:
 #     This method reconstructs absolute weights w_abs and assigns area to the exclusive region
 #     of each polygon (polygon area minus its immediate children areas).
 
+
+# Version: JOURAWSKI_BBOX_GLOBAL_UNIFORM_PLUS_LOCAL_TEETH_N2_V1
+# Scan: one global uniform cell-centre grid per axis, plus local one-sided
+# tooth concentration with nearest distance interval_span / (2 * num_sud**2).
+
 def analyse_polygon_jourawski_shear_stress(
+    section_field,
+    z: float,
+    Tx: float,
+    Ty: float,
+    *,
+    num_sudx: int = 100,
+    num_sudy: int = 100,
+    debug: bool = False,
+) -> list[dict[str, object]]:
+    """
+    Compute polygon-wise Jourawski shear-stress envelopes from global section scans.
+
+    Conventions
+    -----------
+    - Tx is the shear component associated with My.
+    - Ty is the shear component associated with Mx.
+    - tau_x is evaluated from vertical cuts x = constant.
+    - tau_y is evaluated from horizontal cuts y = constant.
+
+    Scan rule
+    ---------
+    The scan teeth are the minimum and maximum coordinates of every polygon
+    bounding box, limited to the active-section bounding box.
+
+    Along x:
+        x_teeth = sorted unique polygon xmin/xmax coordinates
+
+    Along y:
+        y_teeth = sorted unique polygon ymin/ymax coordinates
+
+    The scan coordinates are the union of two independent schemes.
+
+    Global uniform scan:
+        num_sudx cell centres over the full active x bounding-box interval
+        num_sudy cell centres over the full active y bounding-box interval
+
+    Local one-sided tooth concentration:
+        deltaX_i = interval_length_x / (2 * num_sudx**2)
+        deltaY_i = interval_length_y / (2 * num_sudy**2)
+
+    For every interval between two consecutive teeth, additional coordinates
+    are placed at geometrically increasing distances:
+
+        delta, 2*delta, 4*delta, ...
+
+    from both interval ends. Exact tooth coordinates are not evaluated.
+    Duplicate coordinates from the global and local schemes are
+    tolerance-deduplicated.
+
+    Polygon bounding boxes are used only to construct the scan coordinates.
+    The Jourawski calculation, active cut width, partial first moments and
+    shear-carrier redistribution remain unchanged.
+
+    For each cut, Jourawski returns one mean shear stress over the full active
+    intersection length b. That line-average value is then redistributed among
+    the crossed polygon segments using their sampled shear carrier
+    ``shear_weightabs`` and their actual segment length on the cut.
+
+    For one cut:
+        tau_i = tau_ref * b_total * G_i / sum(G_j * b_j)
+
+    where G_i is the polygon ``shear_weightabs`` and b_i is the segment length
+    of the same cut inside polygon i. This preserves the cut resultant:
+        sum(tau_i * b_i) = tau_ref * b_total.
+    """
+    num_sudx = int(num_sudx)
+    num_sudy = int(num_sudy)
+    if num_sudx < 1:
+        raise ValueError("num_sudx must be >= 1.")
+    if num_sudy < 1:
+        raise ValueError("num_sudy must be >= 1.")
+
+    section = section_field.section(float(z))
+    transformed_section, weight_ref, weight_norm_by_idx = _jourawski_normalized_section(
+        section
+    )
+
+    props = section_properties(transformed_section)
+    A = float(props["A"])
+    Cx = float(props["Cx"])
+    Cy = float(props["Cy"])
+    Ix = float(props["Ix"])
+    Iy = float(props["Iy"])
+    Ixy = float(props["Ixy"])
+
+    if abs(A) <= _tol.EPS_A:
+        raise ValueError(f"Zero transformed section area at z={float(z)}.")
+
+    D = Ix * Iy - Ixy * Ixy
+    if abs(D) <= _tol.EPS_K_ATOL:
+        raise ValueError(
+            f"Singular transformed bending inertia matrix at z={float(z)}."
+        )
+
+    # Same algebraic matrix used in analyse_polygon_navier_stress(), with
+    # dMy/ds = Tx and dMx/ds = Ty.
+    dbx = (float(Tx) * Ix - float(Ty) * Ixy) / D
+    dby = (float(Ty) * Iy - float(Tx) * Ixy) / D
+
+    xmin, xmax, ymin, ymax = _section_active_bbox(section)
+
+    def _sorted_unique_coords(values: list[float]) -> list[float]:
+        finite_values = sorted(
+            float(value)
+            for value in values
+            if math.isfinite(float(value))
+        )
+
+        unique_values: list[float] = []
+        for value in finite_values:
+            if (
+                not unique_values
+                or abs(value - unique_values[-1]) > _tol.EPS_L
+            ):
+                unique_values.append(value)
+
+        return unique_values
+
+    def _axis_teeth(
+        *,
+        axis: str,
+        coord_min: float,
+        coord_max: float,
+    ) -> list[float]:
+        if axis not in ("x", "y"):
+            raise ValueError("axis must be 'x' or 'y'.")
+
+        teeth: list[float] = [float(coord_min), float(coord_max)]
+
+        for poly in section.polygons:
+            polygon_coords = [
+                float(vertex.x if axis == "x" else vertex.y)
+                for vertex in poly.vertices
+            ]
+            if not polygon_coords:
+                continue
+
+            polygon_min = min(polygon_coords)
+            polygon_max = max(polygon_coords)
+
+            # The global active-section box remains the scan domain.
+            if (
+                polygon_max < float(coord_min) - _tol.EPS_L
+                or polygon_min > float(coord_max) + _tol.EPS_L
+            ):
+                continue
+
+            teeth.append(
+                min(float(coord_max), max(float(coord_min), polygon_min))
+            )
+            teeth.append(
+                min(float(coord_max), max(float(coord_min), polygon_max))
+            )
+
+        unique_teeth = _sorted_unique_coords(teeth)
+
+        if len(unique_teeth) < 2:
+            return []
+
+        return unique_teeth
+
+    def _global_uniform_coords(
+        *,
+        coord_min: float,
+        coord_max: float,
+        teeth: list[float],
+        resolution: int,
+    ) -> list[float]:
+        """
+        Generate one global uniform cell-centre grid over the active axis span.
+
+        Coordinates that coincide with a tooth within EPS_L are excluded so
+        that tooth values are always approached one-sidedly.
+        """
+        a = float(coord_min)
+        b = float(coord_max)
+        span = b - a
+        if span <= _tol.EPS_L:
+            return []
+
+        n = int(resolution)
+        step = span / n
+
+        coords: list[float] = []
+        for k in range(n):
+            coord = a + (k + 0.5) * step
+            if any(abs(coord - tooth) <= _tol.EPS_L for tooth in teeth):
+                continue
+            coords.append(coord)
+
+        return _sorted_unique_coords(coords)
+
+    def _local_concentrated_coords_between_teeth(
+        *,
+        teeth: list[float],
+        resolution: int,
+    ) -> list[float]:
+        """
+        Generate geometrically concentrated one-sided coordinates near teeth.
+
+        Every tooth interval [a, b] is treated independently. The nearest
+        coordinate to each interval end is:
+
+            edge_delta = max(
+                (b - a) / (2 * resolution**2),
+                10 * EPS_L,
+            )
+
+        Additional coordinates are placed at:
+
+            edge_delta, 2*edge_delta, 4*edge_delta, ...
+
+        from both ends while remaining strictly inside the interval.
+
+        Because adjacent intervals generally have different spans, an internal
+        tooth receives two independent one-sided coordinate sequences.
+        """
+        coords: list[float] = []
+        n = int(resolution)
+
+        for coord_0, coord_1 in zip(teeth[:-1], teeth[1:]):
+            a = float(coord_0)
+            b = float(coord_1)
+            span = b - a
+            if span <= _tol.EPS_L:
+                continue
+
+            half_span = 0.5 * span
+            edge_delta = max(
+                span / (2.0 * n * n),
+                10.0 * _tol.EPS_L,
+            )
+
+            offset = edge_delta
+            while offset < half_span - _tol.EPS_L:
+                coords.append(a + offset)
+                coords.append(b - offset)
+                offset *= 2.0
+
+        return _sorted_unique_coords(coords)
+
+    def _scan_axis(
+        *,
+        axis: str,
+        coords: list[float],
+    ) -> list[dict[str, object]]:
+        scan_values: list[dict[str, object]] = []
+
+        for coord in coords:
+            value = _jourawski_value_at_coord(
+                original_section=section,
+                transformed_section=transformed_section,
+                axis=axis,
+                coord=float(coord),
+                Cx=Cx,
+                Cy=Cy,
+                dbx=dbx,
+                dby=dby,
+            )
+            if value is not None:
+                scan_values.append(value)
+
+        return scan_values
+
+    x_teeth = _axis_teeth(
+        axis="x",
+        coord_min=xmin,
+        coord_max=xmax,
+    )
+    y_teeth = _axis_teeth(
+        axis="y",
+        coord_min=ymin,
+        coord_max=ymax,
+    )
+
+    x_uniform_coords = _global_uniform_coords(
+        coord_min=xmin,
+        coord_max=xmax,
+        teeth=x_teeth,
+        resolution=num_sudx,
+    )
+    y_uniform_coords = _global_uniform_coords(
+        coord_min=ymin,
+        coord_max=ymax,
+        teeth=y_teeth,
+        resolution=num_sudy,
+    )
+
+    x_tooth_coords = _local_concentrated_coords_between_teeth(
+        teeth=x_teeth,
+        resolution=num_sudx,
+    )
+    y_tooth_coords = _local_concentrated_coords_between_teeth(
+        teeth=y_teeth,
+        resolution=num_sudy,
+    )
+
+    x_coords = _sorted_unique_coords(x_uniform_coords + x_tooth_coords)
+    y_coords = _sorted_unique_coords(y_uniform_coords + y_tooth_coords)
+
+    if debug:
+        print(
+            "[JOURAWSKI SCAN START]",
+            f"z={float(z):.12e}",
+            f"Tx={float(Tx):.12e}",
+            f"Ty={float(Ty):.12e}",
+            f"num_sudx_global_resolution={num_sudx}",
+            f"num_sudy_global_resolution={num_sudy}",
+            f"xmin={xmin:.12e}",
+            f"xmax={xmax:.12e}",
+            f"ymin={ymin:.12e}",
+            f"ymax={ymax:.12e}",
+            f"x_teeth={len(x_teeth)}",
+            f"y_teeth={len(y_teeth)}",
+            f"x_intervals={max(0, len(x_teeth) - 1)}",
+            f"y_intervals={max(0, len(y_teeth) - 1)}",
+            f"x_uniform_cuts={len(x_uniform_coords)}",
+            f"y_uniform_cuts={len(y_uniform_coords)}",
+            f"x_tooth_cuts={len(x_tooth_coords)}",
+            f"y_tooth_cuts={len(y_tooth_coords)}",
+            f"x_cuts_total={len(x_coords)}",
+            f"y_cuts_total={len(y_coords)}",
+            flush=True,
+        )
+
+    tau_x_scan = _scan_axis(
+        axis="x",
+        coords=x_coords,
+    )
+    tau_y_scan = _scan_axis(
+        axis="y",
+        coords=y_coords,
+    )
+
+    values_x_by_polygon = _group_scan_values_by_polygon(
+        scan_values=tau_x_scan,
+        polygon_count=len(section.polygons),
+    )
+    values_y_by_polygon = _group_scan_values_by_polygon(
+        scan_values=tau_y_scan,
+        polygon_count=len(section.polygons),
+    )
+
+    if not (
+        len(section.polygons)
+        == len(transformed_section.polygons)
+        == len(weight_norm_by_idx)
+        == len(section_field.s0.polygons)
+    ):
+        raise ValueError("Inconsistent polygon count in Jourawski section data.")
+
+    if debug:
+        print(
+            "[JOURAWSKI SCAN AXIS DONE]",
+            f"z={float(z):.12e}",
+            "axis=x",
+            f"cuts_valid={len(tau_x_scan)}",
+            f"cuts_total={len(x_coords)}",
+            flush=True,
+        )
+        print(
+            "[JOURAWSKI SCAN AXIS DONE]",
+            f"z={float(z):.12e}",
+            "axis=y",
+            f"cuts_valid={len(tau_y_scan)}",
+            f"cuts_total={len(y_coords)}",
+            flush=True,
+        )
+
+    rows: list[dict[str, object]] = []
+
+    for idx, _poly in enumerate(transformed_section.polygons):
+        original_poly = section.polygons[idx]
+        name_s0 = str(section_field.s0.polygons[idx].name)
+        weight_raw = float(original_poly.weight)
+        weight_norm = float(weight_norm_by_idx[idx])
+
+        tau_x_values = values_x_by_polygon[idx]
+        tau_y_values = values_y_by_polygon[idx]
+
+        tau_x_min = _min_scan_value(tau_x_values)
+        tau_x_max = _max_scan_value(tau_x_values)
+        tau_y_min = _min_scan_value(tau_y_values)
+        tau_y_max = _max_scan_value(tau_y_values)
+
+        if debug:
+            print(
+                "[JOURAWSKI SCAN POLYGON DONE]",
+                f"z={float(z):.12e}",
+                f"idx={idx}",
+                f"name={name_s0}",
+                f"scan_count_x={len(tau_x_values)}",
+                f"scan_count_y={len(tau_y_values)}",
+                f"grid_x={len(x_coords)}",
+                f"grid_y={len(y_coords)}",
+                flush=True,
+            )
+
+        rows.append(
+            {
+                "idx": int(idx),
+                "name": name_s0,
+                "weight": weight_raw,
+                "weight_ref": float(weight_ref),
+                "weight_norm": weight_norm,
+
+                "tau_x_min": tau_x_min["tau"],
+                "x_tau_x_min": tau_x_min["x"],
+                "y_tau_x_min": tau_x_min["y"],
+
+                "tau_x_max": tau_x_max["tau"],
+                "x_tau_x_max": tau_x_max["x"],
+                "y_tau_x_max": tau_x_max["y"],
+
+                "tau_y_min": tau_y_min["tau"],
+                "x_tau_y_min": tau_y_min["x"],
+                "y_tau_y_min": tau_y_min["y"],
+
+                "tau_y_max": tau_y_max["tau"],
+                "x_tau_y_max": tau_y_max["x"],
+                "y_tau_y_max": tau_y_max["y"],
+                "coord_tau_y_max": tau_y_max["coord"],
+                "tau_reference_y_max": tau_y_max["tau_reference"],
+                "b_weighted_y_max": tau_y_max["b_weighted"],
+                "Sx_part_y_max": tau_y_max["Sx_part"],
+                "Sy_part_y_max": tau_y_max["Sy_part"],
+
+                "tau_x_mean": _mean_scan_tau(tau_x_values),
+                "tau_y_mean": _mean_scan_tau(tau_y_values),
+                "scan_count_x": int(len(tau_x_values)),
+                "scan_count_y": int(len(tau_y_values)),
+                "grid_x": int(len(x_coords)),
+                "grid_y": int(len(y_coords)),
+                "converged_x": bool(tau_x_values),
+                "converged_y": bool(tau_y_values),
+                "relative_change_x": float("nan"),
+                "relative_change_y": float("nan"),
+            }
+        )
+
+    if debug:
+        print(
+            "[JOURAWSKI SCAN DONE]",
+            f"z={float(z):.12e}",
+            f"rows={len(rows)}",
+            f"cuts_x={len(tau_x_scan)}",
+            f"cuts_y={len(tau_y_scan)}",
+            flush=True,
+        )
+
+    return rows
+
+
+def analyse_polygon_jourawski_shear_stress2remove(
     section_field,
     z: float,
     Tx: float,
