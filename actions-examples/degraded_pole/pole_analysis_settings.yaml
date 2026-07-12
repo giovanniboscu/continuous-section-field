@@ -31,14 +31,13 @@ z_stations:
 shear:
  num_sudx: 20
  num_sudy: 20
- sp_mesh: 1
   
 moment_gradient:
   dz: 0.01
   scheme: central_shift_inside_domain
 
 loads:
-  tip_force_y: -7350.0
+  tip_force_y: 7350.0
   tip_torque_z: 0 #10000.0
 
 outputs:

@@ -36,10 +36,12 @@ from __future__ import annotations
 import argparse
 import csv
 import math
+from csf import section_full_analysis
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
+    
 try:
     import yaml
 except Exception as exc:  # pragma: no cover
@@ -570,11 +572,8 @@ def prestress_bar_resultant_at_z(
 
 def section_centroid_at_z(section_field, z: float) -> tuple[float, float]:
     """Return the CSF section centroid at station z."""
-
-    from csf import section_full_analysis
-
     section = section_field.section(float(z))
-    analysis = section_full_analysis(section)
+    analysis = section_full_analysis(section,compute_vroark=False)
     return float(analysis["Cx"]), float(analysis["Cy"])
 
 
@@ -1480,8 +1479,14 @@ def run(settings: AnalysisSettings) -> list[Path]:
     prestress_debug_rows: list[dict[str, Any]] = []
     gradient_debug_rows: list[dict[str, Any]] = []
     section_debug_rows: list[dict[str, Any]] = []
-
-    for z in settings.z_stations:
+    total_stations = len(settings.z_stations)
+    for i,z in enumerate(settings.z_stations, start=1):
+        print(
+             f"[{i}/{total_stations}] Processing z = {float(z):g}",
+             flush=True,
+         )
+         
+    
         prestress_debug_target = prestress_debug_rows if settings.debug_enabled else None
 
         prestress = prestress_state_at_z(
