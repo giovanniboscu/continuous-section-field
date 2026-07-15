@@ -128,20 +128,33 @@ This separation allows the axial and bending behaviour to be varied independentl
 
 ## 5. Degradation along the pole
 
+The longitudinal degradation of each component is defined through lookup data.
 
+Each lookup associates selected elevations along the pole with the corresponding residual property values. A value equal to $1.0$ represents the initial mechanical property, while a lower value represents its residual fraction at that elevation.
 
-The mechanical condition of the pole may vary from one elevation to another.
+For a component $i$, the axial and bending weight is:
 
-Concrete and prestressing steel can therefore retain different portions of their initial properties along the height of the member. A component may remain unchanged over one region and become progressively degraded over another.
+$$
+w_i(z)=w_{0,i},L_i(z)
+$$
 
-This variation is described through lookup data. Each lookup associates selected positions along the pole with the corresponding property values. CSF uses these data to determine the value at any intermediate elevation.
+The shear and torsional weight is:
 
-Separate longitudinal variations are defined for:
+$$
+w_{s,i}(z)=w_{s0,i},L_{s,i}(z)
+$$
 
-* axial and bending behaviour;
-* shear and torsional behaviour.
+where:
 
-The degradation of the concrete and the degradation of the individual prestressing bars can be described independently. This makes it possible to represent localized damage, gradual transitions and different degradation intensities along the pole.
+* $w_{0,i}$ is the initial axial and bending weight;
+* $w_{s0,i}$ is the initial shear and torsional weight;
+* $L_i(z)$ is the value obtained from the axial and bending lookup at elevation $z$;
+* $L_{s,i}(z)$ is the value obtained from the shear and torsional lookup at elevation $z$.
+
+The lookup data define the known mechanical condition at selected elevations. The corresponding values at intermediate elevations are evaluated continuously along the pole.
+
+Each concrete region and each prestressing bar can be associated with its own longitudinal lookup data. Degradation can therefore be localized within the cross-section and can vary independently along the height of the member.
+
 
 
 ---
