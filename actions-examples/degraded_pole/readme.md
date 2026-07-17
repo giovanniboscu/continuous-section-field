@@ -1,6 +1,4 @@
-# Accurate Structural Assessment of a Degraded Pole Using Spatially Resolved Condition Data and Full Section Detail
-
-
+# From Inspection Data to Structural Assessment: Continuous-Field Analysis of a Tapered Prestressed Pole with Localized Degradation
 This project addresses the structural analysis of a prestressed concrete pole subjected to spatially variable degradation. The pole is modelled as a cantilever member, fixed at the base and free at the top, so that the structural response can be evaluated under axial force, bending moments, shear forces.
 
 The geometrical description of the pole is continuous along its longitudinal axis. The complete geometry is generated from the section defined at the base and the section defined at the head of the pole. Intermediate sections are obtained continuously between these two reference geometries, allowing the external profile, the internal cavities, the concrete layers, and the position of the prestressing steel bars to vary consistently with height.
