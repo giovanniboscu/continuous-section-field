@@ -1,6 +1,5 @@
-# Degraded Prestressed Concrete Pole
+# Accurate Structural Assessment of a Degraded Pole Using Spatially Resolved Condition Data and Full Section Detail
 
-# Overview
 
 This project addresses the structural analysis of a prestressed concrete pole subjected to spatially variable degradation. The pole is modelled as a cantilever member, fixed at the base and free at the top, so that the structural response can be evaluated under axial force, bending moments, shear forces.
 
