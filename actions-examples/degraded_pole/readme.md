@@ -1153,7 +1153,7 @@ Its columns are:
 
 `Tx_jourawski` and `Ty_jourawski` are obtained from the longitudinal gradients of the bending moments and are the actions used by the Jourawski shear procedure.
 
-This file is useful for checking how the external load, residual prestress and degradation-induced eccentricity combine along the pole before the stresses are calculated.
+This file is useful for checking how the external load, residual prestress and degradation-induced eccentricity combine along the pole before the stresses are calculated. The generated file is not committed because of its size; it is reproduced automatically when the analysis is executed
 
 #### 5.2.3 `navier_stresses.csv`
 
