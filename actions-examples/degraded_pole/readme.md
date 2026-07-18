@@ -4,8 +4,7 @@
   <img
     src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/pile_section.jpg"
     alt="Cross-section of the prestressed concrete pole"
-    width="400"
-  >
+    width="400">
 </p>
 
 <p align="center">
