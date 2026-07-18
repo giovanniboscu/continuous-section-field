@@ -707,7 +707,6 @@ The derivatives are evaluated numerically with a central difference:
 
 ```text
 dMx/dz = [Mx(z + dz) - Mx(z - dz)] / (2 dz)
-
 dMy/dz = [My(z + dz) - My(z - dz)] / (2 dz)
 ```
 
@@ -720,6 +719,8 @@ moment_gradient:
 ```
 
 Near the base and the top, the centre of the differentiation interval is shifted inside the valid CSF domain. This allows the same central-difference formula to be used without evaluating sections outside the pole.
+
+**This is only possible because `Mx(z)` and `My(z)` are pointwise evaluations of a continuous field, not entries in a pre-discretized list of sections.** The step `dz` is a free numerical choice, unconstrained by any underlying structural mesh, and the window can be shifted to any valid axial coordinate - including non-grid points near the boundaries - without approximation. In a discretized model, this shift would require interpolation between fixed nodes; here, it is simply another query to the generating field.
 
 The functions involved are:
 
