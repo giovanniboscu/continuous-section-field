@@ -100,29 +100,148 @@ S(15.0)  -> section at the top
 The model can generate a section at any required elevation. The analysis is therefore based on the longitudinal definition of the member rather than on a fixed list of manually prepared sections.
 
 ---
+## 3. Section geometry and polygon naming
 
-## 3. Section geometry
+<p align="center">
+  <img
+    src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/section_h.jpg"
+    alt="Polygon subdivision and naming of the prestressed concrete pole cross-section"
+    width="750">
+</p>
 
-Each cross-section is assembled from named polygons.
+<p align="center">
+  <em>Polygon-based representation of the cross-section. The first index identifies the circumferential sector, the second identifies the radial depth, and the suffix identifies the physical component.</em>
+</p>
 
-A polygon represents one physical component of the section, such as:
+The concrete annulus is divided into 16 circumferential sectors and four concentric radial depths.
 
-- a concrete layer;
-- the concrete cover;
-- the bar-hosting region;
-- one prestressing bar.
+Each physical region is represented by a named polygon using the convention:
 
-At every elevation, the model determines the coordinates of all polygons and reconstructs the complete section.
+```text
+<sector>_<radial depth>_<component>
+```
 
-The geometry of each component may vary with `z`. Typical varying quantities are:
+The three fields have the following meaning:
 
-- external radius;
-- internal radius;
-- layer thickness;
-- bar radius from the section centre;
-- polygon vertex coordinates.
+- `sector` ranges from `0` to `15` and identifies the angular position around the circumference;
+- `radial depth` ranges from `1` to `4`, proceeding from the inner hollow core towards the external surface;
+- `component` identifies the type of region:
+  - `C` - concrete;
+  - `CH` - concrete host region containing the prestressing reinforcement;
+  - `S` - individual prestressing bar.
 
-The geometric variation is defined at model level and is evaluated automatically at the requested elevation.
+For example:
+
+- `0_1_C` is the innermost concrete region of sector `0`;
+- `12_2_CH` is the reinforcement-hosting concrete region of sector `12`;
+- `12_2_S` is the prestressing bar located within the same sector and radial depth;
+- `8_4_C` is the outermost concrete region of sector `8`.
+
+The four radial depths correspond to the following concentric regions:
+
+| Radial depth | Polygon family | Position |
+|---:|---|---|
+| `1` | `<sector>_1_C` | inner concrete layer adjacent to the hollow core |
+| `2` | `<sector>_2_CH` | concrete region containing the prestressing bars |
+| `3` | `<sector>_3_C` | intermediate outer concrete layer |
+| `4` | `<sector>_4_C` | external concrete cover |
+
+Each sector also contains one steel polygon named `<sector>_2_S`, located within radial depth `2`.
+
+### Geometry in the YAML model
+
+The geometry is defined at two reference sections:
+
+- `S0`, at `z = 0.0`;
+- `S1`, at `z = 15.0`.
+
+Each reference section contains the same polygon names. The ordered `[x, y]` vertices assigned to each name define its geometry at that elevation.
+
+A reduced geometry-only view of the YAML structure is:
+
+```yaml
+CSF:
+  sections:
+
+    S0:
+      z: 0.0
+      polygons:
+
+        0_1_C:
+          vertices:
+            - [x_0, y_0]
+            - [x_1, y_1]
+            # ...
+
+        0_2_CH:
+          vertices:
+            - [x_0, y_0]
+            - [x_1, y_1]
+            # ...
+
+        0_3_C:
+          vertices:
+            - [x_0, y_0]
+            - [x_1, y_1]
+            # ...
+
+        0_4_C:
+          vertices:
+            - [x_0, y_0]
+            - [x_1, y_1]
+            # ...
+
+        0_2_S:
+          vertices:
+            - [x_0, y_0]
+            - [x_1, y_1]
+            # ...
+
+        # Corresponding polygons for sectors 1 to 15
+        # ...
+
+    S1:
+      z: 15.0
+      polygons:
+
+        0_1_C:
+          vertices:
+            - [x_0, y_0]
+            - [x_1, y_1]
+            # ...
+
+        0_2_CH:
+          vertices:
+            - [x_0, y_0]
+            - [x_1, y_1]
+            # ...
+
+        0_3_C:
+          vertices:
+            - [x_0, y_0]
+            - [x_1, y_1]
+            # ...
+
+        0_4_C:
+          vertices:
+            - [x_0, y_0]
+            - [x_1, y_1]
+            # ...
+
+        0_2_S:
+          vertices:
+            - [x_0, y_0]
+            - [x_1, y_1]
+            # ...
+
+        # Corresponding polygons for sectors 1 to 15
+        # ...
+```
+
+The repeated polygon names establish the correspondence between `S0` and `S1`. For example, `12_3_C` at `S0` and `12_3_C` at `S1` represent the same physical concrete region at the two reference elevations.
+
+CSF uses this correspondence to evaluate the polygon coordinates at any intermediate value of `z`, producing the continuously tapered section geometry.
+
 
 ---
 
