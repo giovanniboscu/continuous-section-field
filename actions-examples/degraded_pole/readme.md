@@ -555,7 +555,11 @@ It returns:
 
 ### 4.6 Section centroid and prestress eccentricity
 
-The centroid of the complete section is calculated independently from the resultant of the prestressing bars.
+Two different points are required at each elevation `z`.
+
+The first point, `(xp, yp)`, is the position of the residual prestressing resultant. It is calculated using only the prestressing-bar polygons and their effective residual areas.
+
+The second point, `(Cx, Cy)`, is the stiffness-weighted centroid of the complete CSF cross-section at the same elevation. It includes all material regions represented in the section, with their current geometry and elastic weights.
 
 The function:
 
@@ -582,6 +586,8 @@ The two points have different meanings:
 - `(Cx, Cy)` is the centroid of the complete section used for the axial and bending calculation.
 
 Local degradation can move either point. Their difference determines the bending moments produced by the eccentric prestressing force.
+
+
 
 ### 4.7 Residual prestressing force
 
