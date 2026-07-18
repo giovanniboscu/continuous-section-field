@@ -87,7 +87,6 @@ Had different values been assigned at `S0` and `S1`, the polygon weight-and ther
 This model, however, requires a degradation profile with a prescribed variation of the elastic modulus along `z`. When a `weight_law` is defined, as in this example, it supersedes the basic variation obtained from the values assigned at `S0` and `S1`.
 
 
-
 3. **Longitudinal material laws**  
    The final part of the YAML contains `weight_laws` and `shear_weight_laws`, which define how the material stiffness changes along the pole.
 
