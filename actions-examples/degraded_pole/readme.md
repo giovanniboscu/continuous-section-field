@@ -154,8 +154,32 @@ where \(w_0\) is the polygon weight at `S0` and \(T(z/L)\) is the factor read fr
 
 Because `weight` represents \(E\) in this example, the lookup directly defines the longitudinal variation of the elastic modulus.
 
-The `shear_weight_laws` block defines the stiffness used for shear and torsion. Here, \(G\) is obtained from \(E\) through an isotropic relation using Poisson's ratio. A separate longitudinal variation of \(G\) could also be defined, but it is not used in this example.
+The `shear_weight_laws` block defines the stiffness used for shear and torsion. In this example, the shear modulus **G** is obtained from the elastic modulus **E** through an isotropic relation based on Poisson’s ratio.
 
+When a law is written without specifying polygon names, it is applied to the entire model. This provides a convenient default rule that can then be replaced for selected polygons by more specific entries.
+
+In this case, `iso(0.2)` is first assigned to all polygons. The prestressing-bar polygons are then assigned `iso(0.30)`, overriding the default value for those regions:
+
+```yaml
+shear_weight_laws:
+  - 'iso(0.2)'
+
+  - '1_2_S,1_2_S: iso(0.30)'
+  - '2_2_S,2_2_S: iso(0.30)'
+  - '3_2_S,3_2_S: iso(0.30)'
+  - '4_2_S,4_2_S: iso(0.30)'
+  - '5_2_S,5_2_S: iso(0.30)'
+  - '6_2_S,6_2_S: iso(0.30)'
+  - '7_2_S,7_2_S: iso(0.30)'
+  - '8_2_S,8_2_S: iso(0.30)'
+  - '9_2_S,9_2_S: iso(0.30)'
+  - '10_2_S,10_2_S: iso(0.30)'
+  - '11_2_S,11_2_S: iso(0.30)'
+  - '12_2_S,12_2_S: iso(0.30)'
+  - '13_2_S,13_2_S: iso(0.30)'
+  - '14_2_S,14_2_S: iso(0.30)'
+  - '15_2_S,15_2_S: iso(0.30)'
+```
 ---
 ## 3. Section geometry and polygon naming
 
