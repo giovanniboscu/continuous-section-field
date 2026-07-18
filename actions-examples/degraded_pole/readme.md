@@ -342,24 +342,554 @@ Given `z`, the model provides:
 This section-generating representation is called a **Continuous Section Field (CSF)**.
 
 ---
-
 ## 4. Structural analysis
 
-The generated sections are used in an elastic structural model of the pole.
+The file `cantilever_beam_pole.py` performs a static check of the pole at a set of selected elevations.
 
-At each required integration point, the analysis obtains the section directly from the continuous model and evaluates its current geometry and material properties.
+The calculation is based directly on the Continuous Section Field defined in `degradated_pole.yaml`. The script does not create a finite-element beam model and does not calculate displacements. Instead, it evaluates the actual cross-section and its material properties at each requested longitudinal position `z`.
 
-The structural model may include:
+The calculation follows this sequence:
 
-- residual prestress;
-- axial force;
-- lateral loading;
-- bending;
-- shear;
-- torsion;
-- degradation varying along the member.
+1. read the analysis settings;
+2. load the Continuous Section Field;
+3. evaluate the cross-section at each requested elevation;
+4. calculate the residual prestressing force and its position;
+5. calculate the axial force and bending moments acting on the section;
+6. derive the shear forces from the variation of the bending moments;
+7. calculate the normal and shear stresses;
+8. write the results to CSV and text files.
 
-The analysis therefore uses the section and material state associated with the actual elevation of each calculation point.
+Each step is described below.
+
+### 4.1 Analysis settings
+
+The analysis is controlled by `pole_analysis_settings.yaml`.
+
+The settings file specifies:
+
+- the CSF model to load;
+- the type of polygon representing the prestressing bars;
+- the prestressing force of the healthy pole;
+- the elevations at which the pole must be checked;
+- the applied force and torque;
+- the numerical settings used for the shear calculation;
+- the names and location of the output files.
+
+For example:
+
+```yaml
+model:
+  csf_yaml: degradated_pole.yaml
+
+prestress:
+  bar_type: S
+  force_healthy: -1.256e6
+
+loads:
+  tip_force_y: 7350.0
+  tip_torque_z: 0.0
+```
+
+The negative value of `force_healthy` represents the sign assigned to the prestressing force in this model. The script preserves the signs supplied in the settings file.
+
+### 4.2 Loading the Continuous Section Field
+
+The function `build_section_field()` reads `degradated_pole.yaml` through `CSFReader`.
+
+```python
+section_field = build_section_field(settings.csf_yaml)
+```
+
+The returned object, `section_field`, represents the complete pole between its initial section `S0` and final section `S1`.
+
+It contains:
+
+- the geometry of the polygons;
+- their longitudinal geometric variation;
+- the elastic modulus assigned to each polygon;
+- the longitudinal degradation laws;
+- the shear-stiffness laws.
+
+The field is continuous along the longitudinal coordinate `z`. Therefore, the script can request a section at any elevation within the pole:
+
+```python
+section = section_field.section(z)
+```
+
+This operation produces the cross-section corresponding to that specific elevation, including the geometry and material properties evaluated at `z`.
+
+The elevations used by the analysis are listed in `z_stations`:
+
+```yaml
+z_stations:
+  - 0
+  - 1
+  - 2
+  # ...
+  - 14.25
+  - 15
+```
+
+These values define where results are written. They do not divide the pole into finite elements.
+
+### 4.3 Identifying the prestressing bars
+
+The cross-section contains several polygon types. Prestressing bars are identified from their polygon names.
+
+The expected naming convention is:
+
+```text
+<sector>_<level>_<bar_type>
+```
+
+For this model, `bar_type` is `S`. Therefore, names such as:
+
+```text
+0_2_S
+1_2_S
+15_2_S
+```
+
+are recognized as prestressing-bar polygons.
+
+The function:
+
+```python
+is_prestressing_bar_name(name, bar_type)
+```
+
+checks whether a polygon name follows this convention.
+
+Only these polygons are used to calculate the residual prestressing force.
+
+### 4.4 Residual contribution of each prestressing bar
+
+At a given elevation `z`, the script first evaluates the actual section:
+
+```python
+section = section_field.section(z)
+```
+
+For each prestressing-bar polygon, it obtains:
+
+- its geometric area;
+- its current elastic modulus;
+- its reference elastic modulus.
+
+The ratio between the current and reference values is:
+
+```text
+q_eff = current weight / reference weight
+```
+
+In this example, `weight` represents the elastic modulus **E**. Therefore, `q_eff` describes the residual stiffness assigned to the bar at that elevation.
+
+A healthy bar has:
+
+```text
+q_eff = 1
+```
+
+A degraded bar can have:
+
+```text
+q_eff < 1
+```
+
+The script converts this ratio into an effective bar area:
+
+```text
+effective area = geometric area × q_eff
+```
+
+This effective area is a calculation quantity used to reduce the contribution of a degraded prestressing bar.
+
+The geometric bar area remains unchanged in the CSF geometry. The reduction is introduced through the longitudinal material law.
+
+### 4.5 Resultant of the prestressing bars
+
+The effective areas of all prestressing bars are added:
+
+```text
+area_effective = sum of the effective bar areas
+```
+
+The corresponding undegraded reference area is:
+
+```text
+area_reference = sum of the geometric bar areas
+```
+
+The residual prestressing ratio is then:
+
+```text
+residual ratio = area_effective / area_reference
+```
+
+This ratio is used to scale the prestressing force of the healthy pole.
+
+The position of the residual prestressing resultant is calculated from the effective-area-weighted centroids of the bars:
+
+```text
+xp = sum(x_bar × effective area) / area_effective
+yp = sum(y_bar × effective area) / area_effective
+```
+
+When degradation is distributed symmetrically, the resultant remains close to the centre of the bar arrangement.
+
+When degradation is asymmetric, the resultant moves toward the bars retaining the greater effective contribution.
+
+The function performing this calculation is:
+
+```python
+prestress_bar_resultant_at_z(...)
+```
+
+It returns:
+
+- `area_effective`;
+- `area_reference`;
+- `ratio`;
+- `x_resultant`;
+- `y_resultant`.
+
+### 4.6 Section centroid and prestress eccentricity
+
+The centroid of the complete section is calculated independently from the resultant of the prestressing bars.
+
+The function:
+
+```python
+section_centroid_at_z(section_field, z)
+```
+
+evaluates the CSF section at `z` and calculates its stiffness-weighted centroid:
+
+```text
+Cx, Cy
+```
+
+The eccentricity of the prestressing resultant relative to this centroid is:
+
+```text
+ex = xp - Cx
+ey = yp - Cy
+```
+
+The two points have different meanings:
+
+- `(xp, yp)` is the position of the residual prestressing resultant;
+- `(Cx, Cy)` is the centroid of the complete section used for the axial and bending calculation.
+
+Local degradation can move either point. Their difference determines the bending moments produced by the eccentric prestressing force.
+
+### 4.7 Residual prestressing force
+
+The healthy prestressing force is read from the settings file:
+
+```yaml
+prestress:
+  force_healthy: -1.256e6
+```
+
+At each elevation, the residual force is calculated as:
+
+```text
+Pp = force_healthy × residual ratio
+```
+
+The force therefore varies with `z` when the degradation of the prestressing bars varies along the pole.
+
+The function:
+
+```python
+prestress_state_at_z(...)
+```
+
+combines the results of the previous steps and returns:
+
+- the residual prestressing force `Pp`;
+- the resultant coordinates `xp` and `yp`;
+- the section centroid `Cx` and `Cy`;
+- the eccentricities `ex` and `ey`;
+- the residual ratio.
+
+### 4.8 External bending moment
+
+The pole is treated as a cantilever of length `L`, with a transverse force applied at its top.
+
+At elevation `z`, the distance from the checked section to the top is:
+
+```text
+arm = L - z
+```
+
+The bending moment generated by `tip_force_y` is:
+
+```text
+Mx_ext = -tip_force_y × (L - z)
+My_ext = 0
+```
+
+With the active settings:
+
+```yaml
+tip_force_y: 7350.0
+```
+
+the external bending moment is largest at the base and decreases linearly to zero at the top.
+
+The minus sign belongs to the convention explicitly adopted by the script.
+
+### 4.9 Bending moments generated by prestress eccentricity
+
+The residual prestressing force acts at `(xp, yp)`, while the section calculation is referred to `(Cx, Cy)`.
+
+The resulting prestress moments are:
+
+```text
+Mx_prestress = Pp × ey
+My_prestress = Pp × ex
+```
+
+These moments can vary along the pole because all the following quantities can depend on `z`:
+
+- `Pp`;
+- `xp`;
+- `yp`;
+- `Cx`;
+- `Cy`;
+- `ex`;
+- `ey`.
+
+The total section actions are:
+
+```text
+N  = Pp
+Mx = Mx_ext + Mx_prestress
+My = My_ext + My_prestress
+Tz = tip_torque_z
+```
+
+The function:
+
+```python
+moment_state_at_z(...)
+```
+
+performs this calculation at one elevation.
+
+### 4.10 Shear forces obtained from the moment variation
+
+The transverse shear forces are obtained from the longitudinal derivatives of the bending moments.
+
+The script uses the convention:
+
+```text
+Tx = dMy/dz
+Ty = dMx/dz
+```
+
+This step is important because the total moments include both:
+
+- the moment produced by the external top force;
+- the moments produced by the eccentric residual prestress.
+
+Consequently, a variation of the degradation profile can also contribute to the moment gradient.
+
+The derivatives are evaluated numerically with a central difference:
+
+```text
+dMx/dz = [Mx(z + dz) - Mx(z - dz)] / (2 dz)
+
+dMy/dz = [My(z + dz) - My(z - dz)] / (2 dz)
+```
+
+The value of `dz` is read from the settings:
+
+```yaml
+moment_gradient:
+  dz: 0.01
+  scheme: central_shift_inside_domain
+```
+
+Near the base and the top, the centre of the differentiation interval is shifted inside the valid CSF domain. This allows the same central-difference formula to be used without evaluating sections outside the pole.
+
+The functions involved are:
+
+```python
+gradient_window(...)
+internal_actions_at_z(...)
+```
+
+`internal_actions_at_z()` returns the complete action set passed to the stress calculations:
+
+```text
+N, Mx, My, Tx_jourawski, Ty_jourawski, Tz
+```
+
+### 4.11 Removal of numerical residuals
+
+The central-difference calculation and the evaluation of asymmetric sections can produce extremely small numerical values where the theoretical result is zero.
+
+Before calculating stresses, the function:
+
+```python
+snap_actions_for_stress(...)
+```
+
+compares each moment and shear component with a tolerance based on the characteristic force, moment and pole length.
+
+Values smaller than this tolerance are replaced by exactly zero.
+
+This operation removes numerical noise only. Values representing significant physical actions remain unchanged.
+
+### 4.12 Normal-stress calculation
+
+The function:
+
+```python
+navier_rows_at_z(...)
+```
+
+passes the section and the actions:
+
+```text
+N, Mx, My
+```
+
+to:
+
+```python
+analyse_polygon_navier_stress(...)
+```
+
+The CSF stress function evaluates the general Navier stress field over the actual section at `z`.
+
+For every polygon, it checks all vertices and returns:
+
+- the minimum signed normal stress;
+- the maximum signed normal stress;
+- the signed stress having the largest absolute value;
+- the coordinates of the corresponding vertices.
+
+Because the polygon weight represents **E**, stresses are recovered using the local elastic modulus assigned to each material region.
+
+### 4.13 Shear-stress calculation
+
+The function:
+
+```python
+shear_rows_at_z(...)
+```
+
+passes:
+
+```text
+Tx_jourawski
+Ty_jourawski
+```
+
+to:
+
+```python
+analyse_polygon_jourawski_shear_stress(...)
+```
+
+The Jourawski calculation is performed on the complete section at the selected elevation.
+
+The section is scanned by vertical and horizontal cuts. For every cut, the method evaluates:
+
+- the active section width;
+- the partial first moments of area;
+- the transformed section inertias;
+- the reference Jourawski shear stress;
+- the redistribution of shear stress among the intersected material regions.
+
+The settings:
+
+```yaml
+shear:
+  num_sudx: 20
+  num_sudy: 20
+```
+
+control the density of the section scans.
+
+For each polygon, the function returns the minimum and maximum values of:
+
+```text
+tau_x
+tau_y
+```
+
+together with their coordinates.
+
+### 4.14 The `run()` function
+
+The function `run()` coordinates the complete calculation.
+
+It first creates the output directory and loads the Continuous Section Field:
+
+```python
+settings.output_directory.mkdir(parents=True, exist_ok=True)
+section_field = build_section_field(settings.csf_yaml)
+```
+
+It then processes the elevations listed in `z_stations` one at a time:
+
+```python
+for z in settings.z_stations:
+```
+
+At each elevation, the operations are executed in this order:
+
+```python
+prestress = prestress_state_at_z(...)
+raw_actions = internal_actions_at_z(...)
+actions = snap_actions_for_stress(...)
+navier_rows = navier_rows_at_z(...)
+shear_rows = shear_rows_at_z(...)
+```
+
+The sequence has a direct mechanical meaning:
+
+```text
+continuous CSF model
+        ↓
+section evaluated at z
+        ↓
+residual prestressing resultant
+        ↓
+axial force and bending moments
+        ↓
+moment gradients and shear forces
+        ↓
+normal and shear stresses
+```
+
+The individual functions do not store one fixed section for the entire pole. Whenever a quantity is required at a new elevation, they query the continuous field again.
+
+For example, the calculation of a moment gradient requires the sections and prestress states at:
+
+```text
+z - dz
+z + dz
+```
+
+The CSF model supplies both directly.
+
+After all stations have been processed, `run()` writes:
+
+- the residual prestress resultants;
+- the internal actions;
+- the polygon-wise Navier stresses;
+- the polygon-wise Jourawski stresses;
+- the polygon vertices at the analysed elevations;
+- the mechanical summary report;
+- optional diagnostic files when debugging is enabled.
+
+Therefore, `run()` is the execution sequence of the static check, while the Continuous Section Field remains the source of the geometry and material properties required at every longitudinal position.
 
 ---
 
