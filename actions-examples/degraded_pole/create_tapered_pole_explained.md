@@ -710,7 +710,7 @@ This creates:
 - the healthy material weights;
 - the initial law blocks.
 
-### Step 2 - Select the degraded polygons
+### Step 2 - Use the prepared degradation laws
 
 Open:
 
@@ -718,57 +718,17 @@ Open:
 weight_laws.yaml
 ```
 
-Keep commented the candidate laws that are not part of the selected scenario.
+The ready-to-use degradation laws are already provided in this file.
 
-Uncomment the laws associated with the concrete regions and prestressing bars that must be degraded.
+The active lines identify the concrete regions and prestressing bars included in the documented example. The commented lines remain available for alternative degradation scenarios.
 
-### Step 3 - Select the property channels
-
-Use:
-
-```text
-weight_laws
-```
-
-for the axial/bending property field.
-
-Use:
-
-```text
-shear_weight_laws
-```
-
-for the shear/torsion property field.
-
-In an isotropic scenario, `G` can be derived from the current `E` through `iso(nu)`.
-
-In a non-isotropic scenario, use independent shear lookup files.
-
-### Step 4 - Insert the selected law blocks
-
-Replace the corresponding `weight_laws` and `shear_weight_laws` blocks in:
+Copy the selected `weight_laws` and `shear_weight_laws` blocks into the corresponding sections of:
 
 ```text
 degradated_pole.yaml
 ```
 
-with the selected content from:
-
-```text
-weight_laws.yaml
-```
-
-### Step 5 - Define the longitudinal profiles
-
-Edit the corresponding `.dat` files in:
-
-```text
-laws/
-```
-
-Each file defines how the residual material property varies from the base to the top.
-
-### Step 6 - Use the final CSF model
+### Step 3 - Use the final CSF model
 
 The resulting `degradated_pole.yaml` is the complete model read by the structural-analysis script.
 
