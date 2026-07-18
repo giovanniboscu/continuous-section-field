@@ -138,15 +138,7 @@ Each sector also contains one steel polygon named `<sector>_2_S`, located within
 
 ### 2.3 Geometry and stiffness in the YAML file
 
-Every polygon contains:
-
-- `vertices`, which define its geometry at the reference section;
-- `weight`, which defines the stiffness used for axial force and bending.
-
-In this example, `weight` is the elastic modulus **E**:
-
-- concrete polygons use **35 GPa**;
-- prestressing-steel polygons use **210 GPa**.
+The YAML file describes the model through a hierarchy of sections, polygons, coordinates, and material rules.
 
 A reduced view of the input structure is:
 
@@ -181,8 +173,35 @@ CSF:
     - '0_2_CH,0_2_CH: w0*T_lookup("laws/weight_law_0_2_CH.dat")'
 ```
 
-The root key is named `CSF`, but the essential idea is straightforward: the file contains section geometry, polygon stiffness, and the rules used to evaluate them at any elevation.
+The YAML elements have the following meaning:
 
+| YAML element | Meaning |
+|---|---|
+| `CSF` | Top-level container of the complete section model. |
+| `sections` | Collection of the reference cross-sections used to describe the pole along its longitudinal axis. |
+| `S0` | Reference section at the base of the pole. |
+| `S1` | Reference section at the top of the pole. |
+| `z` | Longitudinal coordinate of the reference section. In this example, `S0` is at `z = 0.0` and `S1` is at `z = 15.0`. |
+| `polygons` | Ordered collection of the polygonal regions forming the cross-section. |
+| `0_1_C` | Name assigned to a polygon. Polygon names identify physical regions when assigning material laws and reading results. |
+| `vertices` | Ordered list of `[x, y]` coordinates defining the polygon boundary at that reference section. |
+| `weight` | Scalar value used for axial and bending calculations. In this example, it contains the elastic modulus **E**. |
+| `shear_weight_laws` | Rules used to define the stiffness associated with shear and torsion. |
+| `iso(0.2)` | Isotropic relation used to obtain the shear modulus **G** from **E**, using Poisson's ratio `0.2`. Because no polygon names are specified, the rule is initially applied to all polygons. |
+| `weight_laws` | Rules defining how the axial and bending weight varies along the pole. |
+| `0_2_CH,0_2_CH` | Names of the polygons at the two reference sections to which the law is assigned. |
+| `w0` | Weight assigned to the polygon in the first reference section, `S0`. |
+| `T_lookup(...)` | Function that reads the longitudinal multiplier from the specified lookup file. |
+
+The polygons in `S0` and `S1` are associated by their order in the YAML file:
+
+- the first polygon in `S0` corresponds to the first polygon in `S1`;
+- the second polygon corresponds to the second;
+- the same rule continues for all subsequent polygons.
+
+This ordered correspondence defines how each polygon geometry varies between the two reference sections.
+
+Polygon names have a different purpose: they allow a specific physical region to be selected when assigning `weight_laws` and `shear_weight_laws`. The names used in a law are checked when the model is loaded. The input is rejected if a referenced name is missing or if the two named polygons do not occupy corresponding positions in `S0` and `S1`.
 ### 2.4 Basic variation between `S0` and `S1`
 
 In this example, each polygon has the same `weight` in `S0` and `S1`. Under the basic interpolation rule, its elastic modulus therefore remains constant along the pole.
