@@ -21,6 +21,7 @@ A distinctive feature is the continuous nature of the geometric and material fun
 
 Overall, the example provides a practical overview of the complete CSF workflow, from input definition to stress evaluation, while demonstrating the framework’s applicability, flexibility, and ability to represent problems that go beyond conventional sectional-analysis software.
 
+---
 
 The pole is modelled as a cantilever member, fixed at the base and free at the top, so that its response can be evaluated under axial force, bending moments, shear forces, and torsion.
 
