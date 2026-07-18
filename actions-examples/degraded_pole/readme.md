@@ -78,7 +78,7 @@ The file contains three main groups of information:
    - `vertices`, which define its geometry;
    - `weight`, which defines its material stiffness.
 
-   In this example, `weight` is the elastic modulus \(E\): concrete polygons use \(35\ \text{GPa}\), while prestressing-steel polygons use \(210\ \text{GPa}\).
+In this example, `weight` is the elastic modulus $E$: concrete polygons use $35\ \text{GPa}$, while prestressing-steel polygons use $210\ \text{GPa}$.
 
 3. **Longitudinal material laws**  
    The final part of the YAML contains `weight_laws` and `shear_weight_laws`, which define how the material stiffness changes along the pole.
