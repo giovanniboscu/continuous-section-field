@@ -138,7 +138,7 @@ z_over_L  value
 The resulting weight is:
 
 $$
-w(z) = w_0\,T\!\left(\frac{z}{L}\right)
+w(z) = w_0\,T\left(\frac{z}{L}\right)
 $$
 
 where \(w_0\) is the polygon weight at `S0` and \(T(z/L)\) is the factor read from the lookup file.
