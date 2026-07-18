@@ -1,4 +1,4 @@
-# From Inspection Data to Structural Assessment: Continuous-Field Analysis of a Tapered Prestressed Pole with Localized Degradation
+# From Prescribed Degradation Fields to Structural Assessment: Continuous-Field Analysis of a Tapered Prestressed Pole with Localized Degradation
 
 <p align="center">
   <img
