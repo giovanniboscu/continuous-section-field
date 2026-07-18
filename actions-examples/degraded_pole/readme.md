@@ -59,17 +59,18 @@ Each concrete region and each prestressing bar may be assigned its own longitudi
 
 ## 2. From the physical pole to the input model
 
-The complete input model is defined in [`degradated_pole.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/degradated_pole.yaml).
+The complete CSF model is defined in [`degradated_pole.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/degradated_pole.yaml).
 
-The file is introduced after the physical model so that each input key can be related directly to a geometric or mechanical concept.
+The file translates the physical pole into:
 
-It describes:
+1. the base and top reference cross-sections;
+2. the concrete and prestressing-steel polygons;
+3. the reference material properties assigned to each polygon;
+4. the longitudinal laws governing the variation of axial/bending and shear/torsion participation.
 
-1. the reference cross-sections;
-2. the polygons that form each section;
-3. the stiffness assigned to each polygon;
-4. the rules that define how geometry and stiffness vary along the pole;
-5. the analysis settings used by the example scripts.
+The model data can be modified as required, including the pole dimensions, radial layers, angular sectors, prestressing bars, reference material properties and degradation laws. The complete procedure for generating and modifying the model is described in [`create_tapered_pole_explained.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/create_tapered_pole_explained.md). 
+
+The guide explains how the healthy reference geometry and material properties are generated and how the selected longitudinal degradation laws are introduced into the final YAML model. 
 
 ### 2.1 Reference sections
 
