@@ -202,13 +202,17 @@ The polygons in `S0` and `S1` are associated by their order in the YAML file:
 This ordered correspondence defines how each polygon geometry varies between the two reference sections.
 
 Polygon names have a different purpose: they allow a specific physical region to be selected when assigning `weight_laws` and `shear_weight_laws`. The names used in a law are checked when the model is loaded. The input is rejected if a referenced name is missing or if the two named polygons do not occupy corresponding positions in `S0` and `S1`.
-### 2.4 Basic variation between `S0` and `S1`
 
-In this example, each polygon has the same `weight` in `S0` and `S1`. Under the basic interpolation rule, its elastic modulus therefore remains constant along the pole.
+### 2.4 Reference weights and longitudinal degradation
 
-If different values were assigned at `S0` and `S1`, the polygon weight-and therefore the elastic modulus-would be linearly interpolated at each elevation `z`.
+In this example, each polygon is assigned the same `weight` in `S0` and `S1`. These values define the reference elastic modulus of the material.
 
-This basic interpolation applies when no more specific material law is assigned.
+Without an additional `weight_law`, the model would linearly interpolate the two section values. Since they are equal, the resulting elastic modulus would remain constant along the pole.
+
+For the degraded regions, the actual longitudinal variation is defined by a `weight_law`. The polygon weight at `S0` is used as the reference value `w0`, while the associated lookup file provides the multiplier applied at each elevation `z`.
+
+Therefore, for these polygons, the effective elastic modulus along the pole is determined by the lookup profile rather than by the default interpolation between `S0` and `S1`.
+
 
 ### 2.5 Prescribed degradation laws
 
