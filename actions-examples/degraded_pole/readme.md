@@ -82,7 +82,9 @@ Each reference section contains the same set of named polygons. The coordinates 
 
 The same polygon name in `S0` and `S1` identifies the same physical region. For example, `12_3_C` in `S0` and `12_3_C` in `S1` represent the same concrete region at the base and at the top.
 
-The model matches polygons by name and interpolates their vertex coordinates to reconstruct the section geometry at every intermediate elevation `z`.
+The correspondence between polygons in `S0` and `S1` is determined by their order in the input file. The first polygon in `S0` is associated with the first polygon in `S1`, the second with the second, and so on. Their vertex coordinates are then interpolated to obtain the section geometry at each intermediate elevation `z`.
+
+Polygon names are used to identify specific regions when assigning `weight_laws` and `shear_weight_laws`.
 
 Polygon names referenced by the material laws are checked when the input file is loaded. A law can only refer to polygons that are present in the reference sections; unknown or inconsistent names are rejected.
 
