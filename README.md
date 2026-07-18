@@ -22,8 +22,7 @@
 
 CSF provides a continuous representation of the variable geometry and material distribution of non-prismatic members along the longitudinal coordinate (z). Geometric and mechanical variations are defined directly as continuous fields rather than through a sequence of discrete member segments.
 
-
-It represents the variable geometry and material distribution as continuous functions of $z$, deriving the corresponding section-property fields $A(z)$, $I_x(z)$, $I_y(z)$, and others - for tapered and non-homogeneous members. The resulting data can be exported in **CSV** and **YAML** formats for integration with beam solvers such as OpenSees and SAP2000, or with section-analysis tools such as [csf_sp](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md) and [sp_csf](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/sp_csf_guide.md).
+It represents the variable geometry and material distribution as continuous functions of $z$, computing the resulting properties - $A(z)$, $I_x(z)$, $I_y(z)$, and others - as continuous functions along the member. The resulting data can be exported in **CSV** and **YAML** formats for integration with beam solvers such as OpenSees and SAP2000, or with section-analysis tools such as [csf_sp](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md) and [sp_csf](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/sp_csf_guide.md).
 
 
 
