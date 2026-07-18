@@ -295,10 +295,6 @@ $$
 w_{s0,i} = \frac{G_i}{G_{\mathrm{ref}}}
 $$
 
-
-
-The lookup data prescribe the known material condition at selected elevations. Values at intermediate elevations are evaluated continuously.
-
 ---
 
 ## 3. Section generated at any elevation
