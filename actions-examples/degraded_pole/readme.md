@@ -146,6 +146,7 @@ where \(w_0\) is the polygon weight at `S0` and \(T(z/L)\) is the factor read fr
 Because `weight` represents \(E\) in this example, the lookup directly defines the longitudinal variation of the elastic modulus.
 
 The `shear_weight_laws` block defines the stiffness used for shear and torsion. Here, \(G\) is obtained from \(E\) through an isotropic relation using Poisson's ratio. A separate longitudinal variation of \(G\) could also be defined, but it is not used in this example.
+
 ---
 ## 3. Section geometry and polygon naming
 
