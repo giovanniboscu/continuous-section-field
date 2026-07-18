@@ -123,7 +123,9 @@ CSF:
     - '0_2_CH,0_2_CH: w0*T_lookup("laws/weight_law_0_2_CH.dat")'
 ```
 
-The same polygon name in `S0` and `S1` identifies the same physical region. The model uses the two sets of coordinates to obtain its geometry at every intermediate elevation.
+The same polygon name in `S0` and `S1` identifies the same physical region. The model matches polygons by name and interpolates their vertex coordinates to reconstruct the section geometry at every intermediate elevation `z`.
+
+Polygon names referenced by `weight_laws` and `shear_weight_laws` are validated when the model is loaded. A law may only refer to polygons defined in the input sections; unknown or inconsistent names are rejected.
 
 ### Variation of the elastic modulus
 
