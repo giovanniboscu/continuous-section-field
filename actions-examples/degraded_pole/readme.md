@@ -277,11 +277,15 @@ shear_weight_laws:
 
 A separate longitudinal variation of **G** could also be defined through dedicated shear-weight laws. That option is available but is not used in this example.
 
+
 ### 2.7 Absolute and normalized stiffness weights
 
-This example stores the actual elastic moduli directly as polygon weights.
 
-The same formulation can also use normalized weights. For a component `i`, normalized initial values may be written as:
+In the framework, you have the flexibility to define material properties either as **absolute values** or as **normalized weights**.
+
+**In this specific example**, we use **absolute values** for the elastic moduli (as shown in the YAML file in Section 2.3). For instance, the concrete is assigned `weight = 35.0e9 Pa`, which is its actual Young's modulus.
+
+However, the framework also supports an **alternative approach** using normalized weights. This is particularly useful when you want to define a single reference material and scale all others relative to it. In that case:
 
 $$
 w_{0,i} = \frac{E_i}{E_{\mathrm{ref}}}
@@ -291,7 +295,9 @@ $$
 w_{s0,i} = \frac{G_i}{G_{\mathrm{ref}}}
 $$
 
-where `E_ref` and `G_ref` are reference moduli.
+
+
+This example instead stores the actual elastic moduli directly as polygon weights.
 
 Keeping `weight` and `shear_weight` separate allows axial and bending behaviour to vary independently from shear and torsional behaviour.
 
