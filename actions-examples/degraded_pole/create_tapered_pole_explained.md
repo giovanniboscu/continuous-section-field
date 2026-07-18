@@ -693,7 +693,7 @@ A geometric-loss scenario could be represented separately by changing the polygo
 
 The complete model-generation procedure is:
 
-### Step 1 — Generate the healthy pole
+### Step 1 - Generate the healthy pole
 
 Run:
 
@@ -710,7 +710,7 @@ This creates:
 - the healthy material weights;
 - the initial law blocks.
 
-### Step 2 — Select the degraded polygons
+### Step 2 - Select the degraded polygons
 
 Open:
 
@@ -722,7 +722,7 @@ Keep commented the candidate laws that are not part of the selected scenario.
 
 Uncomment the laws associated with the concrete regions and prestressing bars that must be degraded.
 
-### Step 3 — Select the property channels
+### Step 3 - Select the property channels
 
 Use:
 
@@ -744,7 +744,7 @@ In an isotropic scenario, `G` can be derived from the current `E` through `iso(n
 
 In a non-isotropic scenario, use independent shear lookup files.
 
-### Step 4 — Insert the selected law blocks
+### Step 4 - Insert the selected law blocks
 
 Replace the corresponding `weight_laws` and `shear_weight_laws` blocks in:
 
@@ -758,7 +758,7 @@ with the selected content from:
 weight_laws.yaml
 ```
 
-### Step 5 — Define the longitudinal profiles
+### Step 5 - Define the longitudinal profiles
 
 Edit the corresponding `.dat` files in:
 
@@ -768,7 +768,7 @@ laws/
 
 Each file defines how the residual material property varies from the base to the top.
 
-### Step 6 — Use the final CSF model
+### Step 6 - Use the final CSF model
 
 The resulting `degradated_pole.yaml` is the complete model read by the structural-analysis script.
 
