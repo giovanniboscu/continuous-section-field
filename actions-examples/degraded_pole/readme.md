@@ -11,7 +11,18 @@
   <em>Three-dimensional representation of the tapered prestressed concrete pole. The Z-axis is scaled independently for visualization purposes; the displayed aspect ratio is not the true geometric aspect ratio.</em>
 </p>
 
-This project addresses the structural analysis of a prestressed concrete pole subjected to spatially variable degradation. The pole is modelled as a cantilever member, fixed at the base and free at the top, so that its response can be evaluated under axial force, bending moments, shear forces, and torsion.
+The **degraded pole example** is the a complete end-to-end application of Continuous Section Field, covering the entire workflow from model definition to stress evaluation.
+
+It introduces the CSF representation, the geometric and material model, and the laws governing the longitudinal variation of the section. These continuous fields are then used to compute continuous sectional properties, perform the structural analysis, and recover the resulting stresses.
+
+The example considers a degraded prestressed concrete pole represented by forty polygons. It demonstrates how a complex section, including multiple materials and localized degradation, can be described through a highly parametric, flexible, and customizable model.
+
+A distinctive feature is the continuous nature of the geometric and material functions. In addition to evaluating sectional properties at any position, the model also makes it possible to compute numerical derivatives of the continuous fields, enabling analyses based directly on their spatial variation.
+
+Overall, the example provides a practical overview of the complete CSF workflow, from input definition to stress evaluation, while demonstrating the framework’s applicability, flexibility, and ability to represent problems that go beyond conventional sectional-analysis software.
+
+
+The pole is modelled as a cantilever member, fixed at the base and free at the top, so that its response can be evaluated under axial force, bending moments, shear forces, and torsion.
 
 The geometry varies continuously along the longitudinal axis. It is defined from a reference section at the base and a reference section at the top. Intermediate sections are generated between these two geometries, allowing the external profile, the internal hollow core, the concrete layers, and the prestressing bars to vary consistently with height.
 
