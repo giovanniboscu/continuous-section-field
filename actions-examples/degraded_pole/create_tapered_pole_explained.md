@@ -13,8 +13,6 @@ Its main purpose is to create the **healthy reference model**:
 - the initial elastic properties of concrete and steel;
 - the polygon names required to assign longitudinal laws later.
 
-The degradation scenario is introduced after the healthy model has been generated. It is defined through the `weight_laws` and `shear_weight_laws` blocks of the final CSF YAML file.
-
 The complete workflow is:
 
 ```text
