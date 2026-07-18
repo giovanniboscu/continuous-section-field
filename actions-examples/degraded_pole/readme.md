@@ -70,7 +70,7 @@ The file translates the physical pole into:
 3. the reference material properties assigned to each polygon;
 4. the longitudinal laws governing the variation of axial/bending and shear/torsion participation.
 
-The model data can be modified as required, including the pole dimensions, radial layers, angular sectors, prestressing bars, reference material properties and degradation laws. The complete procedure for generating and modifying the model is described in [`create_tapered_pole_explained.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/create_tapered_pole_explained.md). 
+>The model data can be modified as required, including the pole dimensions, radial layers, angular sectors, prestressing bars, reference material properties and degradation laws. The complete procedure for generating and modifying the model is described in  [`create_tapered_pole_explained.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/create_tapered_pole_explained.md). 
 
 The guide explains how the healthy reference geometry and material properties are generated and how the selected longitudinal degradation laws are introduced into the final YAML model. 
 
