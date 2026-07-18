@@ -49,6 +49,7 @@ def register(
             "- show_ids        : include polygon indices (#0, #1, ...).\n"
             "- show_weights    : include polygon weight values in the labels/legend.\n"
             "- show_vertex_ids : label each vertex with a 1-based index (debug/diagnostic).\n"
+            "- show_legenda    : show the polygon legend below the section plot.\n"
             "- title           : optional title string; if it contains '{z}', it is formatted with z.\n"
             "- dpi             : raster DPI for saved images."
         ),
@@ -74,6 +75,13 @@ def register(
                 default=False,
                 description="Label each polygon vertex with a 1-based index.",
             ),
+            ParamSpec(
+                name="show_legenda",
+                required=False,
+                typ="bool",
+                default=True,
+                description="Show the polygon legend below the section plot.",
+            ),            
             ParamSpec(
                 name="title",
                 required=False,
@@ -121,6 +129,7 @@ def register(
             SPEC.params[1].default,
             path="CSF_ACTIONS.actions.plot_section_2d.params.show_weights",
         )
+
         show_vertex_ids = get_bool_param_strict(
             params,
             "show_vertex_ids",
@@ -128,8 +137,15 @@ def register(
             path="CSF_ACTIONS.actions.plot_section_2d.params.show_vertex_ids",
         )
 
-        title_tpl = params.get("title", SPEC.params[3].default)
-        dpi = int(params.get("dpi", SPEC.params[4].default))
+        show_legenda = get_bool_param_strict(
+            params,
+            "show_legenda",
+            SPEC.params[3].default,
+            path="CSF_ACTIONS.actions.plot_section_2d.params.show_legenda",
+        )
+
+        title_tpl = params.get("title", SPEC.params[4].default)
+        dpi = int(params.get("dpi", SPEC.params[5].default))
         spacing_px = int(params.get("spacing_px", 10))
 
         # ----------------------------
@@ -182,6 +198,7 @@ def register(
                 show_ids=show_ids,
                 show_weights=show_weights,
                 show_vertex_ids=show_vertex_ids,
+                show_legenda=show_legenda,
                 title=title,
                 ax=ax,
             )

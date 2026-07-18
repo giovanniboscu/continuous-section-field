@@ -347,8 +347,9 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
             "- line_percent      : percentage (0..100) of generator lines displayed (random subsample).\n"
             "- seed              : int seed for coloring, or 'w' / 'w<int resolution>' for weight-aware coloring.\n"
             "                    : use 's' / 's<int resolution>' for shear_weight-aware coloring.\n"
-            "                      Examples: seed: 0, seed: w, seed: w100.\n"     
+            "                      Examples: seed: 0, seed: w, seed: w100.\n"    
             "- title             : window/figure title."
+            "- equalize_z        :Use proportional visual scaling between Z and the X/Y axes"
         ),
         params=(
             ParamSpec(
@@ -381,6 +382,17 @@ ACTION_SPECS: Dict[str, ActionSpec] = {
                 default="Ruled volume (vertex-connection lines)",
                 description="Plot title.",
             ),
+
+
+            ParamSpec(
+              name="equalize_z",
+              required=False,
+              typ="bool",
+              default=False,
+              description="Use proportional visual scaling between Z and the X/Y axes.",
+            ),
+
+            
         ),
     ),
 
@@ -1940,7 +1952,7 @@ def _validate_actions_doc(doc: Dict[str, Any], text: str, filepath: str) -> Tupl
 
 
         if action_name == "plot_section_2d":
-            for k in ("show_ids", "show_weights", "show_vertex_ids"):
+            for k in ("show_ids", "show_weights", "show_vertex_ids", "show_legenda"):
                 if k in payload:
                     params_norm[k] = payload[k]
                     v = params_norm[k]

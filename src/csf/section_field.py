@@ -59,9 +59,9 @@ if TYPE_CHECKING:
 # Default values below assume S ≈ 1.0 (metre-scale geometry).
 
 
-Point = Tuple[float, float]
-Segment = Tuple[Point, Point]
-PointXY = Tuple[float, float]
+#Point = Tuple[float, float]
+#Segment = Tuple[Point, Point]
+#PointXY = Tuple[float, float]
 
 # (Optional: se vuoi usare PyYAML quando disponibile)
 try:

@@ -137,15 +137,26 @@ def _run(
         prematurely open/flush the GUI. We defer showing until CSFActions main().
         """
         return None
-
+    #
     plt.show = _noop_show
     try:
         # Expected Visualizer signature:
         #   plot_weight(self, num_points=100)
-        viz.plot_weight(num_points=num_points)
+        #
+        # In file-only mode, Visualizer.plot_weight() can create more than
+        # 20 figures before control returns here. The figures are saved and
+        # explicitly closed later in this runner, so suppress only the
+        # intermediate Matplotlib max-open-figures warning.
+        if do_show:
+            viz.plot_weight(num_points=num_points)
+        else:
+            with matplotlib.rc_context({"figure.max_open_warning": 0}):
+                viz.plot_weight(num_points=num_points)
     finally:
         # Always restore the original show function.
         plt.show = old_show
+
+
 
     # ----------------------------
     # 4) Determine which figure(s) were created by this action
@@ -207,6 +218,16 @@ def _run(
 
             return f"poly_{idx:03d}"
 
+        def _name_s0_tag(idx: int) -> str:
+            """Return the S0 polygon name associated with the exported axis."""
+            try:
+                poly = field.s0.polygons[int(idx) - 1]
+                name = str(getattr(poly, "name", "")).strip()
+            except Exception:
+                name = ""
+
+            return _sanitize_filename_fragment(name or f"poly_{idx:03d}")
+
         for out_path in file_outputs:
             outp = Path(out_path)
             if not outp.parent.exists():
@@ -225,7 +246,8 @@ def _run(
                 target_paths = []
                 for i, ax in enumerate(fig.axes, start=1):
                     tag = _axis_tag(ax, i)
-                    target_path = outp.with_name(f"{stem}__{tag}{suffix}")
+                    name_s0 = _name_s0_tag(i)
+                    target_path = outp.with_name(f"{stem}__{tag}_{name_s0}{suffix}")
                     target_paths.append(target_path)
 
                 #print(f"DEBUG plot_weight axis export targets: {[str(p) for p in target_paths]}")
@@ -235,20 +257,27 @@ def _run(
                     bbox_inches = bbox.transformed(fig.dpi_scale_trans.inverted())
 
                     tag = _axis_tag(ax, i)
-                    target_path = outp.with_name(f"{stem}__{tag}{suffix}")
+                    name_s0 = _name_s0_tag(i)
+                    target_path = outp.with_name(f"{stem}__{tag}_{name_s0}{suffix}")
 
                     fig.savefig(str(target_path), dpi=dpi, bbox_inches=bbox_inches)
                     #print(f"[OK] plot_weight wrote: {target_path}")
 
             else:
-                target_paths = [
-                    outp.with_name(f"{stem}__fig_{i:03d}{suffix}")
-                    for i, _fig in enumerate(figs, start=1)
-                ]
+                for i, fig in enumerate(figs, start=1):
+                    # This branch covers either:
+                    #   - one figure with one axis;
+                    #   - multiple figures.
+                    # In both cases the file name must also include the S0 polygon name.
+                    if getattr(fig, "axes", None):
+                        ax = fig.axes[0]
+                        tag = _axis_tag(ax, i)
+                    else:
+                        tag = f"fig_{i:03d}"
 
-                #print(f"DEBUG plot_weight figure export targets: {[str(p) for p in target_paths]}")
+                    name_s0 = _name_s0_tag(i)
+                    target_path = outp.with_name(f"{stem}__{tag}_{name_s0}{suffix}")
 
-                for fig, target_path in zip(figs, target_paths):
                     fig.savefig(str(target_path), dpi=dpi, bbox_inches="tight")
                     #print(f"[OK] plot_weight wrote: {target_path}")
 

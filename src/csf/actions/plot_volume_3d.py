@@ -56,6 +56,7 @@ def register(
             "- line_percent      : percentage (0..100) of generator lines displayed (random subsample).\n"
             "- seed              : legacy integer seed or semantic string mode such as 'w'.\n"
             "- title             : window/figure title."
+            "- equalize_z        : use proportional visual scaling between Z and the X/Y axes."            
         ),
         params=(
             ParamSpec(
@@ -85,6 +86,14 @@ def register(
                 typ="str",
                 default="Ruled volume (vertex-connection lines)",
                 description="Plot title.",
+            ),
+
+            ParamSpec(
+                name="equalize_z",
+                required=False,
+                typ="bool",
+                default=False,
+                description="Use real proportional scaling between the Z axis and the X/Y axes.",
             ),
         ),
     )
@@ -121,12 +130,18 @@ def register(
         show_end_sections = bool(params.get("show_end_sections", SPEC.params[0].default))
         line_percent = float(params.get("line_percent", SPEC.params[1].default))
         
-        
+       
         title_raw = params.get("title", SPEC.params[3].default)
         title = "" if title_raw is None else str(title_raw)
 
+        equalize_z = bool(params.get("equalize_z", SPEC.params[4].default))
+
         # This action is validated as "stdout only" by CSFActions, but we still honor the envelope here.
-        out_list = action.get("output", ["stdout"])
+        out_list = action.get("output", ["stdout"])       
+                
+        
+        
+        
         if isinstance(out_list, str):
             out_list = [out_list]
         do_show = ("stdout" in out_list)
@@ -152,6 +167,7 @@ def register(
             seed=seed,
             title=title,
             ax=ax,
+            equalize_z=equalize_z,
         )
 
         # Label for deferred display logic in CSFActions.

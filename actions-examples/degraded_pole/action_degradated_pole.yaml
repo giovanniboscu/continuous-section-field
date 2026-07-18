@@ -43,9 +43,10 @@ CSF_ACTIONS:
     # -------------------------------------------------------------------------
     - plot_volume_3d:
         params:
-          seed: w # weight visualization
+          seed: 1 # weight visualization
           title: "prestressed pole"
           line_percent: 50.0
+          equalize_z: false
           
     - export_model:
         output:
@@ -70,8 +71,10 @@ CSF_ACTIONS:
     - plot_section_2d:
         stations:
           - station_middle
+        show_legenda: false          
         show_ids: false
         show_vertex_ids: false
+
         output:
           - [stdout, out/iso/pile_section.jpg]
 

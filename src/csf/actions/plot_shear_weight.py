@@ -137,15 +137,27 @@ def _run(
         prematurely open/flush the GUI. We defer showing until CSFActions main().
         """
         return None
-
+    #
+    
     plt.show = _noop_show
     try:
         # Expected Visualizer signature:
-        #   plot_weight(self, num_points=100)
-        viz.plot_shear_weight(num_points=num_points)
+        #   plot_shear_weight(self, num_points=100)
+        #
+        # In file-only mode, Visualizer.plot_shear_weight() can create more than
+        # 20 figures before control returns here. The figures are saved and
+        # explicitly closed later in this runner, so suppress only the
+        # intermediate Matplotlib max-open-figures warning.
+        if do_show:
+            viz.plot_shear_weight(num_points=num_points)
+        else:
+            with matplotlib.rc_context({"figure.max_open_warning": 0}):
+                viz.plot_shear_weight(num_points=num_points)
     finally:
         # Always restore the original show function.
         plt.show = old_show
+
+
 
     # ----------------------------
     # 4) Determine which figure(s) were created by this action
