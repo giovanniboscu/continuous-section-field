@@ -56,6 +56,17 @@ The pole is tapered, so its external and internal dimensions change along the lo
 
 The material condition may also vary along the pole. Each concrete region and each prestressing bar can therefore be assigned its own longitudinal degradation profile.
 
+<p align="center">
+  <img
+    src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/section_h.jpg"
+    alt="Polygon subdivision and polygon names of the prestressed concrete pole cross-section"
+    width="700">
+</p>
+
+<p align="center">
+  <em>Cross-section model showing the polygon names assigned to each circumferential sector and concentric radial region, together with the individual prestressing-bar polygons.</em>
+</p>
+
 ---
 
 ## 2. Longitudinal coordinate
