@@ -43,7 +43,7 @@ CSF_ACTIONS:
     # -------------------------------------------------------------------------
     - plot_volume_3d:
         params:
-          seed: 1 # weight visualization
+          seed: w # weight visualization
           title: "prestressed pole"
           line_percent: 50.0
           equalize_z: false
