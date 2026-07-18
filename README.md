@@ -29,16 +29,16 @@ It represents section geometry and material as continuous functions along z, com
 ---
 
 
->Normalized weighting fields assigned to the tapered prestressed concrete pole. Left: axial/bending participation weight field, with a localized reduction near the groundline and recovery to full contribution along the member height. Right: independent shear/torsion weight field defined by separate lookup tables, showing a different degradation pattern for the same geometric pole. The color scales represent normalized weighting factors, where 1.0 denotes full participation
+>Three-dimensional representation of the tapered pole with localized degradation. Gray regions indicate the non-degraded portions.
 
 
 <p align="center">
-  <img width="1027" height="457" alt="614108668-806c6ea5-6d4b-4b5f-bf6c-9760de05c688" src="https://github.com/user-attachments/assets/8f8164c7-1bd2-40b9-99b6-2405935f945d" />
+  <img alt="Three-dimensional representation " src="https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/plot_volume.jpg" />
 
 </p>
 
 
->Full reproducible example: [`Tapered prestressed concrete pole`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/concrete_pole/README.md)
+>Full reproducible example: [`Tapered prestressed degraded concrete pole`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/degraded_pole)
 
 ---
 
