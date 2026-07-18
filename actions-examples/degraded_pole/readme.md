@@ -44,17 +44,13 @@ The resulting model therefore provides a continuous structural description of th
 
 The structural member is a hollow tapered prestressed concrete pole.
 
-Its cross-section is composed of:
+For its CSF representation, the concrete annulus is partitioned into circumferential sectors. Each sector is further subdivided into concentric radial regions representing the different portions of the concrete wall, including the inner cover, the reinforcement-containing region, and the outer cover.
 
-- concentric concrete regions;
-- an internal hollow core;
-- concrete cover layers;
-- a region containing the prestressing reinforcement;
-- individual prestressing bars distributed around the circumference.
+Individual prestressing bars are distributed around the circumference within the corresponding radial region.
 
-The pole is tapered, so its external and internal dimensions change along the longitudinal axis. The position of the prestressing bars changes consistently with the section geometry.
+The pole is tapered, so the boundaries of all concentric regions, the external and internal dimensions, and the positions of the prestressing bars vary continuously along the longitudinal axis.
 
-The material condition may also vary along the pole. Each concrete region and each prestressing bar can therefore be assigned its own longitudinal degradation profile.
+Each concrete subregion and each prestressing bar can be assigned an independent longitudinal degradation profile. This allows localized material changes to be represented both around the circumference and along the pole.
 
 <p align="center">
   <img
