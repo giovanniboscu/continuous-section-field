@@ -60,7 +60,7 @@ The material condition may also vary along the pole. Each concrete region and ea
   <img
     src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/section_h.jpg"
     alt="Polygon subdivision and polygon names of the prestressed concrete pole cross-section"
-    width="700">
+    width="750">
 </p>
 
 <p align="center">
