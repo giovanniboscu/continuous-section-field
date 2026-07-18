@@ -82,7 +82,7 @@ In this example, `weight` is the elastic modulus $E$: concrete polygons use $35\
 
 In this example, each polygon has the same `weight` in sections `S0` and `S1`. Under the basic interpolation rule, the elastic modulus therefore remains constant along the pole.
 
-Had different values been assigned at `S0` and `S1`, the polygon weight—and therefore the elastic modulus—would have been linearly interpolated at each elevation `z`.
+Had different values been assigned at `S0` and `S1`, the polygon weight-and therefore the elastic modulus-would have been linearly interpolated at each elevation `z`.
 
 This model, however, requires a degradation profile with a prescribed variation of the elastic modulus along `z`. When a `weight_law` is defined, as in this example, it supersedes the basic variation obtained from the values assigned at `S0` and `S1`.
 
