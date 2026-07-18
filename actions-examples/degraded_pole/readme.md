@@ -297,27 +297,6 @@ $$
 
 
 
-This example instead stores the actual elastic moduli directly as polygon weights.
-
-Keeping `weight` and `shear_weight` separate allows axial and bending behaviour to vary independently from shear and torsional behaviour.
-
-For longitudinal degradation, the two weights may be written conceptually as:
-
-$$
-w_i(z) = w_{0,i} L_i(z)
-$$
-
-$$
-w_{s,i}(z) = w_{s0,i} L_{s,i}(z)
-$$
-
-where:
-
-- `w0,i` is the initial axial and bending weight;
-- `ws0,i` is the initial shear and torsional weight;
-- `Li(z)` is the axial and bending lookup value;
-- `Ls,i(z)` is the shear and torsional lookup value.
-
 The lookup data prescribe the known material condition at selected elevations. Values at intermediate elevations are evaluated continuously.
 
 ---
@@ -341,8 +320,6 @@ Given `z`, the model provides:
 - the data required for sectional and structural analysis.
 
 This section-generating representation is called a **Continuous Section Field (CSF)**.
-
-The continuous field is the structural description of the member. Individual sections, sectional properties, and solver inputs are derived from it only at the elevations required by the analysis.
 
 ---
 
