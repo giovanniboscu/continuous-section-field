@@ -30,6 +30,8 @@ Shear stresses are evaluated with the Jourawski formulation using the geometry a
 
 The result is a continuous structural description of the pole from base to top, including localized degradation of concrete and prestressing steel in both the cross-sectional and longitudinal directions.
 
+> **Step-by-step workflow:** the complete procedure for cloning the repository, checking the geometry and material fields, running the mechanical analysis, and inspecting the generated outputs is described in [`run_degraded_pole_analysis.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/run_degraded_pole_analysis.md).
+
 ---
 
 ## 1. Physical model
