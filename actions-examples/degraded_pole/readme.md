@@ -64,41 +64,88 @@ Each concrete subregion and each prestressing bar can be assigned an independent
 </p>
 
 ---
+## 2. Model definition file
 
-## 2. Longitudinal coordinate
+The complete pole model is defined in [`degradated_pole.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/degradated_pole.yaml).
 
-The position along the pole is identified by the coordinate:
+The file contains three main groups of information:
 
-$$
-z
-$$
+1. **Reference sections**  
+   `S0` and `S1` describe the cross-sections at the base and at the top of the pole.
 
-where:
+2. **Polygons**  
+   Each reference section contains the same named polygons. Every polygon has:
+   - `vertices`, which define its geometry;
+   - `weight`, which defines its material stiffness.
 
-- `z = 0` identifies the base;
-- increasing `z` moves towards the top;
-- every admissible value of `z` identifies one cross-section.
+   In this example, `weight` is the elastic modulus \(E\): concrete polygons use \(35\ \text{GPa}\), while prestressing-steel polygons use \(210\ \text{GPa}\).
 
-The section at a given elevation is written as:
+3. **Longitudinal material laws**  
+   The final part of the YAML contains `weight_laws` and `shear_weight_laws`, which define how the material stiffness changes along the pole.
 
-$$
-S(z)
-$$
+A simplified view of the file is:
 
-This notation means simply:
+```yaml
+CSF:
+  sections:
 
-> the cross-section of the pole at elevation `z`.
+    S0:
+      z: 0.0
+      polygons:
+        0_1_C:
+          weight: 35000000000.0
+          vertices:
+            - [x_0, y_0]
+            - [x_1, y_1]
+            # ...
 
-For example:
+    S1:
+      z: 15.0
+      polygons:
+        0_1_C:
+          weight: 35000000000.0
+          vertices:
+            - [x_0, y_0]
+            - [x_1, y_1]
+            # ...
 
-```text
-S(0.0)   -> section at the base
-S(7.5)   -> section at an intermediate elevation
-S(15.0)  -> section at the top
+  shear_weight_laws:
+    - 'iso(0.2)'
+
+  weight_laws:
+    - '0_2_CH,0_2_CH: w0*T_lookup("laws/weight_law_0_2_CH.dat")'
 ```
 
-The model can generate a section at any required elevation. The analysis is therefore based on the longitudinal definition of the member rather than on a fixed list of manually prepared sections.
+The same polygon name in `S0` and `S1` identifies the same physical region. The model uses the two sets of coordinates to obtain its geometry at every intermediate elevation.
 
+### Variation of the elastic modulus
+
+The lookup files are stored in the [`laws`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/degraded_pole/laws) directory.
+
+Each file contains two columns:
+
+```text
+z_over_L  value
+0.000000  0.100000
+0.500000  0.100000
+0.600000  1.000000
+1.000000  1.000000
+```
+
+- `z_over_L` is the normalized position along the pole, from `0` at the base to `1` at the top;
+- `value` is the factor applied to the polygon weight defined at `S0`.
+
+The resulting weight is:
+
+$$
+w(z) = w_0\,T\!\left(\frac{z}{L}\right)
+$$
+
+where \(w_0\) is the polygon weight at `S0` and \(T(z/L)\) is the factor read from the lookup file.
+
+Because `weight` represents \(E\) in this example, the lookup directly defines the longitudinal variation of the elastic modulus.
+
+The `shear_weight_laws` block defines the stiffness used for shear and torsion. Here, \(G\) is obtained from \(E\) through an isotropic relation using Poisson's ratio. A separate longitudinal variation of \(G\) could also be defined, but it is not used in this example.
 ---
 ## 3. Section geometry and polygon naming
 
