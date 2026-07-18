@@ -1,5 +1,14 @@
 # From Inspection Data to Structural Assessment: Continuous-Field Analysis of a Tapered Prestressed Pole with Localized Degradation
+<p align="center">
+  <img
+    src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/volume_3D.jpg"
+    alt="Three-dimensional model of the prestressed concrete pole"
+    width="400">
+</p>
 
+<p align="center">
+  <em>Three-dimensional representation of the tapered prestressed concrete pole.</em>
+</p>
 
 This project addresses the structural analysis of a prestressed concrete pole subjected to spatially variable degradation. The pole is modelled as a cantilever member, fixed at the base and free at the top, so that the structural response can be evaluated under axial force, bending moments, shear forces.
 
