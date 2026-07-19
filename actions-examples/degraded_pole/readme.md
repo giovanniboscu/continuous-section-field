@@ -359,9 +359,10 @@ This section-generating representation is called a **Continuous Section Field (C
 ---
 ## 4. Structural analysis
 
-The file `cantilever_beam_pole.py` performs a static check of the pole at a set of selected elevations.
+The structural analysis is performed by an external Python application that uses the Continuous Section Field (CSF) as a continuous source of geometric and material information `cantilever_beam_pole.py`. The CSF remains independent of the structural analysis itself: it generates the cross-section and its associated properties at any required longitudinal position, while the analysis script coordinates the static calculation and queries the field whenever sectional data are required.
 
-The calculation is based directly on the Continuous Section Field defined in `degradated_pole.yaml`. The script does not create a finite-element beam model and does not calculate displacements. Instead, it evaluates the actual cross-section and its material properties at each requested longitudinal position `z`.
+In this example, the script loads the CSF model, performs the elastic static analysis of the cantilever pole, and repeatedly queries the continuous field throughout the calculation. The CSF is queried whenever the current geometry, material properties, prestressing state, sectional properties, internal actions, or stress recovery require information at a specific longitudinal position.
+
 
 The calculation follows this sequence:
 
