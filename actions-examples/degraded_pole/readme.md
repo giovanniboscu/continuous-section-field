@@ -369,18 +369,20 @@ At the requested coordinate, `S(z)` contains:
 The field is the model; `S(z)` is a resolved local state; the structural analysis is an external consumer of that state. Evaluation coordinates, output stations, finite-difference steps, meshes, and other numerical choices belong to the consuming application and are not part of the CSF definition.
 
 ---
+
 ## 4. Structural analysis
 
-The structural analysis is performed by an external Python application ([cantilever_beam_pole.py](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/cantilever_beam_pole.py)) that uses the Continuous Section Field (CSF) as a continuous source of geometric and material information. The CSF remains independent of the structural analysis itself: it generates the cross-section and its associated properties at any required longitudinal position, while the analysis script coordinates the static calculation and queries the field whenever sectional data are required.
+From this point onward, the workflow belongs to the external structural application. Continuous Section Field remains responsible only for resolving the local geometric and material section state at each requested longitudinal position.
 
-In this example, the script loads the CSF model, performs the elastic static analysis of the cantilever pole, and repeatedly queries the continuous field throughout the calculation. The CSF is queried whenever the current geometry, material properties, prestressing state, sectional properties, internal actions, or stress recovery require information at a specific longitudinal position.
+The elastic analysis is performed by the Python application [`cantilever_beam_pole.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/cantilever_beam_pole.py). The script defines the structural problem, applies the loads and prestressing assumptions, calculates the internal actions, recovers the normal and shear stresses, and writes the results.
 
+Whenever sectional information is required, the application queries CSF at the relevant coordinate `z`. CSF then provides the resolved geometry, material distribution, degradation state, and associated sectional properties used by the structural calculations.
 
 The calculation follows this sequence:
 
 1. read the analysis settings;
 2. load the Continuous Section Field;
-3. evaluate the cross-section at each requested elevation;
+3. request the local section state at each required elevation;
 4. calculate the residual prestressing force and its position;
 5. calculate the axial force and bending moments acting on the section;
 6. derive the shear forces from the variation of the bending moments;
@@ -388,6 +390,7 @@ The calculation follows this sequence:
 8. write the results to CSV and text files.
 
 Each step is described below.
+
 
 ### 4.1 Analysis settings
 
