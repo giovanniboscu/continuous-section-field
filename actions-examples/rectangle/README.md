@@ -120,6 +120,6 @@ Named station sets defined in `actions.yaml` and reused across actions:
 
 - `plot_volume_3d` and `weight_lab_zrelative` write to stdout/screen only — no file output.
 - `write_opensees_geometry` does not support stdout — file output only.
-- The `out/` directory is created automatically if it does not exist.
+- The `out/` directory is not created automatically
 - For full documentation of the solver export format see [`write_sap2000_template_pack.md`](../../docs/write_sap2000_template_pack.md).
 - For full documentation of all section properties see [`sectionfullanalysis.md`](../../docs/sections/sectionfullanalysis.md).
