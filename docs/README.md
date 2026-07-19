@@ -50,13 +50,15 @@ Conceptual overview of CSF as a continuous section-field layer: model responsibi
 |------|-------------|
 | [CSF_Polygon_Geometry_Guide](CSF_Polygon_Geometry_Guide.md) | Geometric construction of tagged polygons: `@cell` (closed thin-walled cell, two-loop encoding) and `@wall` (open thin-walled strip, single loop). Includes YAML examples and checklists. |
 
-## Section Properties Reference
+## Section Properties Reference & Modelling Assumptions
 
 | File | Description |
 |------|-------------|
 | [Section Full Analysis](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md) | Reference for all quantities reported by the CSF Section Full Analysis. Explains what each value represents, how it is computed, and its validity domain. Quantities that depend on specific CSF modelling policies (e.g. torsion selection rules) are explicitly marked. |
 | [SaintVenant Torsional Constant](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md) | Validity conditions for the summation `J_sv = J_sv_cell + J_sv_wall` in CSF. Covers the non-interaction hypotheses (H1–H4), elemental formulas (Bredt for closed cells, thin-wall rectangle for open walls), when the summation holds and when it does not, and how the result is exported to OpenSees and SAP2000. |
 | [Jourawski formulation implemented in CSF](model/csf_jourawski_calculation_model.md) | Calculation model used by CSF for Jourawski shear stresses: the shear flow is evaluated on the E-homogenized section and then redistributed across the material segments intersected by each cut according to their shear modulus G. |
+
+
 ---
 
 ## Weight Laws and Homogenization
