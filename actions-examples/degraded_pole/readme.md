@@ -225,7 +225,7 @@ This ordered correspondence defines how each polygon geometry varies between the
 Polygon names have a different purpose: they allow a specific physical region to be selected when assigning `weight_laws` and `shear_weight_laws`. The names used in a law are checked when the model is loaded. The input is rejected if a referenced name is missing or if the two named polygons do not occupy corresponding positions in `S0` and `S1`.
 
 
-### 2.4 Default variation between `S0` and `S1`
+### 2.4 Default variation of polygon weights between `S0` and `S1`
 
 Each polygon has a `weight` value in `S0`, denoted by `w0`, and a corresponding value in `S1`, denoted by `w1`.
 
@@ -234,7 +234,9 @@ By default, the model evaluates the polygon weight at each intermediate elevatio
 In this example, `w0` and `w1` are equal for each polygon. The default interpolation would therefore produce a constant elastic modulus along the pole.
 
 For selected polygons, this default variation is overridden by a specific longitudinal law, as described in the following section.
+This interpolation applies only to the polygon weight assigned in the reference sections. In this example, the weight represents the elastic modulus **E**.
 
+Derived sectional properties—such as area, centroid coordinates, second moments of area, product of inertia, axial stiffness, and bending stiffness—are not interpolated between values stored at `S0` and `S1`. They are computed from the geometry and material state resolved at each requested coordinate `z`.
 
 ### 2.5 Prescribed degradation laws
 
