@@ -794,7 +794,17 @@ moment_gradient:
 
 Near the base and the top, the centre of the differentiation interval is shifted inside the valid CSF domain. This allows the same central-difference formula to be used without evaluating sections outside the pole.
 
-**This is only possible because `Mx(z)` and `My(z)` are pointwise evaluations of a continuous field, not entries in a pre-discretized list of sections.** The step `dz` is a free numerical choice, unconstrained by any underlying structural mesh, and the window can be shifted to any valid axial coordinate - including non-grid points near the boundaries - without approximation. In a discretized model, this shift would require interpolation between fixed nodes; here, it is simply another query to the generating field.
+
+
+Because `Mx(z)` and `My(z)` are obtained by evaluating the Continuous Section Field at the requested coordinates, the differentiation interval is not constrained by the output stations listed in `z_stations`.
+
+The points `z - dz` and `z + dz` are resolved directly from the field definition, including when the differentiation window is shifted near the domain boundaries. This avoids introducing an additional interpolation over a preselected set of longitudinal section stations.
+
+The derivative itself remains a numerical approximation controlled by the selected finite-difference scheme and by the value of `dz`.
+
+
+
+
 
 The functions involved are:
 
