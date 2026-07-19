@@ -249,6 +249,52 @@ The bar centres are offset by half an angular sector. With 16 sectors, the offse
 
 This places each bar inside its corresponding host sector rather than directly on a sector boundary.
 
+
+### Moving the bars to another radial level
+
+The host level and the actual radial position of the bars are controlled separately.
+
+For example, to move the bars to host-layer index `2`, corresponding to the third radial level because the index is zero-based, use:
+
+```python
+bar_host_layer_index = "2"
+bar_guide_radius0 = "0.16625"
+bar_guide_radius1 = "0.08750"
+```
+
+The guide radii place the bar centres at the radial midpoint of the selected level.
+
+At the base:
+
+```text
+selected level: 0.1550 m to 0.1775 m
+bar-ring radius: (0.1550 + 0.1775) / 2 = 0.16625 m
+```
+
+At the top:
+
+```text
+selected level: 0.0800 m to 0.0950 m
+bar-ring radius: (0.0800 + 0.0950) / 2 = 0.08750 m
+```
+
+The corresponding arguments passed to the geometry generator are:
+
+```python
+"--bar-host-layer-index", "2",
+"--bar-guide-radius0", "0.16625",
+"--bar-guide-radius1", "0.08750",
+```
+
+`bar_host_layer_index` determines which concrete level is identified as the bar host and therefore receives the `CH` suffix. The two guide radii determine the actual radial position of the bar centres in `S0` and `S1`.
+
+With host-layer index `2`, the generated host and steel polygon names use radial level `3`:
+
+```text
+0_3_CH
+0_3_S
+```
+
 ---
 
 ## 7. Angular orientation
