@@ -656,6 +656,14 @@ The special key `geometry` requests the geometry export described in Section 4.2
 
 `J_sv_cell` and `J_sv_wall` may be zero when no corresponding `@cell` or `@wall` model is defined.
 
+### Allowed parameters (`params:`)
+
+| Parameter | Type | Required | Default | Meaning |
+|---|---|:---:|---|---|
+| `fmt_display` | str | no | `".8f"` | Python numeric format used for stdout, CSV values, geometry coordinates, and text reports. |
+
+`properties` is a required action-level field outside `params:`. It accepts the numerical keys listed above and the optional special key `geometry`.
+
 ### YAML
 
 ```yaml
@@ -753,16 +761,16 @@ csf-actions geometry.yaml actions.yaml
 - an image path saves the composite image;
 - omitting `stdout` gives file-only behavior.
 
-### Parameters
+### Allowed parameters (`params:`)
 
-| Parameter | Type | Default | Meaning |
-|---|---:|---:|---|
-| `show_ids` | bool | `true` | Show polygon indices. |
-| `show_weights` | bool | `true` | Show polygon names and weights in labels/legend. |
-| `show_vertex_ids` | bool | `false` | Show vertex indices. |
-| `show_legenda` | bool | `true` | Show the polygon legend below the section plot. |
-| `title` | str | `null` | Optional title; `{z}` is replaced by the station value. |
-| `dpi` | int | `150` | Raster DPI for saved images. |
+| Parameter | Type | Required | Default | Meaning |
+|---|---|:---:|---|---|
+| `show_ids` | bool | no | `true` | Show polygon indices. |
+| `show_weights` | bool | no | `true` | Show polygon names and weights in labels/legend. |
+| `show_vertex_ids` | bool | no | `false` | Show vertex indices. |
+| `show_legenda` | bool | no | `true` | Show the polygon legend below the section plot. |
+| `title` | str | no | `null` | Optional title; `{z}` is replaced by the station value. |
+| `dpi` | int | no | `150` | Raster DPI for saved images. |
 
 ### Pitfalls
 
@@ -793,15 +801,15 @@ CSF_ACTIONS:
           equalize_z: false
 ```
 
-### Parameters
+### Allowed parameters (`params:`)
 
-| Parameter | Type | Default | Meaning |
-|---|---:|---:|---|
-| `show_end_sections` | bool | `true` | Draw endpoint-section outlines. |
-| `line_percent` | float | `100.0` | Percentage of generator lines shown; valid range `0..100`. |
-| `seed` | int or str | `0` | Integer legacy seed, or `w`, `s`, `wN`, `sN`. |
-| `title` | str | `"Ruled volume (vertex-connection lines)"` | Figure title. |
-| `equalize_z` | bool | `false` | Use proportional visual scaling between `z` and the `x/y` axes. |
+| Parameter | Type | Required | Default | Meaning |
+|---|---|:---:|---|---|
+| `show_end_sections` | bool | no | `true` | Draw endpoint-section outlines. |
+| `line_percent` | float | no | `100.0` | Percentage of generator lines shown; valid range `0..100`. |
+| `seed` | int or str | no | `0` | Integer legacy seed, or `w`, `s`, `wN`, `sN`. |
+| `title` | str | no | `"Ruled volume (vertex-connection lines)"` | Figure title. |
+| `equalize_z` | bool | no | `false` | Use proportional visual scaling between `z` and the `x/y` axes. |
 
 ### CLI
 
@@ -836,11 +844,11 @@ CSF_ACTIONS:
           num_points: 100
 ```
 
-### Parameters
+### Allowed parameters (`params:`)
 
-| Parameter | Type | Default | Meaning |
-|---|---:|---:|---|
-| `num_points` | int | `100` | Number of longitudinal samples. |
+| Parameter | Type | Required | Default | Meaning |
+|---|---|:---:|---|---|
+| `num_points` | int | no | `100` | Number of longitudinal samples. |
 
 The allowed property keys are the numerical keys listed for `section_selected_analysis`; `geometry` is not accepted here.
 
@@ -991,14 +999,14 @@ CSF_ACTIONS:
           fmt_display: ".6f"
 ```
 
-### Meaning of parameters
+### Allowed parameters (`params:`)
 
-| Parameter | Type | Default | Meaning |
-|---|---:|---:|---|
-| `group_mode` | str | `"weight"` | `weight` groups by binned weight; `id` sorts by polygon id. |
-| `w_tol` | float | `0.0` | Weight-bin width; raw weights are used when `<= 0`. |
-| `include_per_polygon` | bool | `false` | Include direct-inner and container columns. |
-| `fmt_display` | str | `".6f"` | Numeric format for stdout/text reports. |
+| Parameter | Type | Required | Default | Meaning |
+|---|---|:---:|---|---|
+| `group_mode` | str | no | `"weight"` | `weight` groups by binned weight; `id` sorts by polygon id. |
+| `w_tol` | float | no | `0.0` | Weight-bin width; raw weights are used when `<= 0`. |
+| `include_per_polygon` | bool | no | `false` | Include direct-inner and container columns. |
+| `fmt_display` | str | no | `".6f"` | Numeric format for stdout/text reports. |
 
 ### Example output
 
@@ -1051,13 +1059,13 @@ CSF_ACTIONS:
           w_tol: 0.0
 ```
 
-### Parameters
+### Allowed parameters (`params:`)
 
-| Parameter | Type | Default | Meaning |
-|---|---:|---:|---|
-| `n_points` | int | `20` | Number of Gauss-Legendre integration points. |
-| `fmt_display` | str | `"0.6f"` | Numeric format for the report. |
-| `w_tol` | float | `0.0` | Accepted and printed, but currently ignored by the calculation. |
+| Parameter | Type | Required | Default | Meaning |
+|---|---|:---:|---|---|
+| `n_points` | int | no | `20` | Number of Gauss-Legendre integration points. |
+| `fmt_display` | str | no | `"0.6f"` | Numeric format for the report. |
+| `w_tol` | float | no | `0.0` | Accepted and printed, but currently ignored by the calculation. |
 
 ### Expected output
 
@@ -1102,11 +1110,11 @@ CSF_ACTIONS:
           num_points: 200
 ```
 
-### Parameters
+### Allowed parameters (`params:`)
 
-| Parameter | Type | Default | Meaning |
-|---|---:|---:|---|
-| `num_points` | int | `100` | Number of samples between the endpoint sections. |
+| Parameter | Type | Required | Default | Meaning |
+|---|---|:---:|---|---|
+| `num_points` | int | no | `100` | Number of samples between the endpoint sections. |
 
 ### Output behavior
 
@@ -1137,11 +1145,11 @@ CSF_ACTIONS:
           num_points: 200
 ```
 
-### Parameters
+### Allowed parameters (`params:`)
 
-| Parameter | Type | Default | Meaning |
-|---|---:|---:|---|
-| `num_points` | int | `100` | Number of samples between the endpoint sections. |
+| Parameter | Type | Required | Default | Meaning |
+|---|---|:---:|---|---|
+| `num_points` | int | no | `100` | Number of samples between the endpoint sections. |
 
 ### Output behavior and pitfalls
 
@@ -1180,6 +1188,14 @@ CSF_ACTIONS:
 
 `weight_law` is the canonical key. The historical misspelling `weith_law` is still accepted as an alias but produces a warning.
 
+### Allowed parameters (`params:`)
+
+| Parameter | Type | Required | Default | Meaning |
+|---|---|:---:|---|---|
+| — | — | — | — | This action defines no parameters under `params:`. |
+
+`weight_law` is a required action-level field outside `params:`. It accepts one expression string or a non-empty list of expression strings.
+
 ### CLI
 
 ```bash
@@ -1214,6 +1230,12 @@ CSF_ACTIONS:
         stations: subpart
         output: [out/subpart.yaml]
 ```
+
+### Allowed parameters (`params:`)
+
+| Parameter | Type | Required | Default | Meaning |
+|---|---|:---:|---|---|
+| — | — | — | — | This action defines no parameters under `params:`. |
 
 ### CLI
 
@@ -1251,11 +1273,11 @@ CSF_ACTIONS:
           nu: 0.30
 ```
 
-### Parameters
+### Allowed parameters (`params:`)
 
 | Parameter | Type | Required | Default | Meaning |
-|---|---:|:---:|---:|---|
-| `n_points` | int | yes | - | Number of generated integration/sampling stations. |
+|---|---|:---:|---|---|
+| `n_points` | int | yes | — | Number of generated integration/sampling stations. |
 | `E_ref` | float | no | `null` | Optional reference Young modulus passed to the exporter. |
 | `nu` | float | no | `null` | Optional Poisson ratio passed to the exporter. |
 
@@ -1351,17 +1373,17 @@ CSF_ACTIONS:
 
 `z_values` is an internal argument of the underlying Python exporter; it is **not** an accepted CSFActions YAML parameter. Explicit YAML stations must be supplied through the action-level `stations:` field.
 
-### Parameters
+### Allowed parameters (`params:`)
 
-| Parameter | Type | Default | Description |
-|---|---:|---:|---|
-| `n_intervals` | int | `null` | Required only when `stations:` is omitted. Must be `>= 1`. |
-| `E_ref` | float | `null` | Optional reference value written in the export header. |
-| `nu` | float | `null` | Optional reference Poisson ratio written in the export header. |
-| `material_name` | str | `"S355"` | Informational material label. |
-| `mode` | str | `"BOTH"` | `CENTROIDAL_LINE`, `REFERENCE_LINE`, or `BOTH`. |
-| `include_plot` | bool | `true` | Save a preview image of property variation. |
-| `plot_filename` | str | `"section_variation.png"` | Preview image path. |
+| Parameter | Type | Required | Default | Meaning |
+|---|---|:---:|---|---|
+| `n_intervals` | int | conditional | `null` | Required when `stations:` is omitted; must be `>= 1`. |
+| `E_ref` | float | no | `null` | Optional reference value written in the export header. |
+| `nu` | float | no | `null` | Optional reference Poisson ratio written in the export header. |
+| `material_name` | str | no | `"S355"` | Informational material label. |
+| `mode` | str | no | `"BOTH"` | `CENTROIDAL_LINE`, `REFERENCE_LINE`, or `BOTH`. |
+| `include_plot` | bool | no | `true` | Save a preview image of property variation. |
+| `plot_filename` | str | no | `"section_variation.png"` | Preview image path. |
 
 `show_plot`, `z_values`, `plot_n`, and `float_fmt` are not exposed as CSFActions YAML parameters.
 
