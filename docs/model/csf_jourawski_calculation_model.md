@@ -437,9 +437,9 @@ q=\beta_xQ_x^{(E)}+\beta_yQ_y^{(E)}
 8. calculate the real geometric chord length;
 9. calculate the reference mean stress:
 
-   $$
-   \tau_{\mathrm{ref}}=q/b_{\mathrm{tot}}
-   $$
+$$
+\tau_{\mathrm{ref}}=\frac{q}{b_{\mathrm{tot}}}
+$$
 
 10. redistribute the flow among the crossed segments:
 
