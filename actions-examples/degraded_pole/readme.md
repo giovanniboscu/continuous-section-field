@@ -13,7 +13,7 @@
   <em>Three-dimensional representation of the tapered prestressed concrete pole. The Z-axis is scaled independently for visualization purposes; the displayed aspect ratio is not the true geometric aspect ratio.</em>
 </p>
 
-The degraded pole example is a complete end-to-end application of Continuous Section Field, covering the entire workflow from model definition to stress evaluation and demonstrating its use for a complex, parametrically varying section with localized degradation.
+The degraded pole example is a complete end-to-end application of Continuous Section Field, covering the entire workflow from model definition to stress evaluation and demonstrating how CSF handles a complex, parametrically varying section with localized degradation.
 
 This python application uses the CSF representation, the geometric the material model, and the laws governing the longitudinal variation of the section. These continuous fields are then used to compute continuous sectional properties, perform the structural analysis, and recover the resulting stresses.
 
