@@ -1,5 +1,11 @@
 # Changelog
-# Changelog
+
+## v0.1.9.2
+
+* Added the `equalize_z` parameter to `plot_volume_3d`.
+* Added the `show_legenda` parameter to `plot_section_2d`.
+
+
 ## v0.1.9.2
 add explicit CSF model length
 
