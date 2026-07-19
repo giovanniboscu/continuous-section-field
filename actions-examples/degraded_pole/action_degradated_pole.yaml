@@ -89,7 +89,7 @@ CSF_ACTIONS:
           - stdout
           - out/iso/pile_properties.jpg
         params:
-        properties: [A, Cx, Cy, Ix, Iy, Ixy,J_sv_cell]
+        properties: [A, Cx, Cy, Ix, Iy, Ixy]
     - plot_weight:
         output: out/iso/weights.jpg
         
