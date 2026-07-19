@@ -379,34 +379,84 @@ Each step is described below.
 
 ### 4.1 Analysis settings
 
-The analysis is controlled by `pole_analysis_settings.yaml`.
+The external analysis application is configured through [`pole_analysis_settings.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/pole_analysis_settings.yaml).
 
-The settings file specifies:
+This file does not define the geometry, material distribution, or longitudinal degradation laws of the pole. Those elements belong to the Continuous Section Field and are entirely described by [`degradated_pole.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/degradated_pole.yaml).
 
-- the CSF model to load;
-- the type of polygon representing the prestressing bars;
-- the prestressing force of the healthy pole;
-- the elevations at which the pole must be checked;
-- the applied force and torque;
-- the numerical settings used for the shear calculation;
-- the names and location of the output files.
+Instead, `pole_analysis_settings.yaml` defines how the external Python application must use that field in this specific structural analysis. It identifies the CSF model to be loaded and provides the analysis parameters required by the script, including the prestressing data, the elevations to be examined, the applied loads, the numerical settings, and the output files.
 
-For example:
+The three files therefore have distinct roles:
+
+- `degradated_pole.yaml` defines the pole as a continuous geometric and material field;
+- `pole_analysis_settings.yaml` provides the parameters used for this specific structural analysis;
+- [`cantilever_beam_pole.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/cantilever_beam_pole.py) loads the model and the analysis settings, coordinates the static calculation, and queries the Continuous Section Field whenever sectional information is required.
+
+The complete settings file used in this example is shown below:
 
 ```yaml
 model:
   csf_yaml: degradated_pole.yaml
 
+debug:
+  enabled: false
+
 prestress:
   bar_type: S
   force_healthy: -1.256e6
 
+z_stations:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 14.25
+  - 15
+
+shear:
+  num_sudx: 20
+  num_sudy: 20
+
+moment_gradient:
+  dz: 0.01
+  scheme: central_shift_inside_domain
+
 loads:
   tip_force_y: 7350.0
-  tip_torque_z: 0.0
+  tip_torque_z: 0
+
+outputs:
+  directory: output
+  prestress_resultant: prestress_resultant.csv
+  internal_actions: internal_actions.csv
+  navier_stresses: navier_stresses.csv
+  shear_stresses: shear_stresses.csv
+  mechanical_report: mechanical_report.txt
 ```
 
+The `model` block establishes the connection between the analysis application and the Continuous Section Field by identifying the CSF file to load.
+
+The remaining blocks do not modify the field itself. They specify how the field is used in this analysis:
+
+- `debug` enables or disables the optional diagnostic output;
+- `prestress` defines the reference prestressing force and the polygon type used to identify the prestressing bars;
+- `z_stations` defines the elevations at which results must be evaluated and written;
+- `shear` and `moment_gradient` define the numerical parameters used in the shear-force and shear-stress calculations;
+- `loads` defines the external actions applied to the cantilever pole;
+- `outputs` defines where the calculated results are stored.
+
 The negative value of `force_healthy` represents the sign assigned to the prestressing force in this model. The script preserves the signs supplied in the settings file.
+
 
 ### 4.2 Loading the Continuous Section Field
 
