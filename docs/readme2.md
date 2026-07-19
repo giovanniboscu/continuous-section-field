@@ -142,5 +142,4 @@ The following files are present in the documentation tree but are not yet integr
 | `math/` | Mathematical derivations and formulations. |
 | `model/` | Model-level documentation, implemented formulations, and modelling assumptions. |
 | `programmer-guide/` | Developer and integration guide. |
-| `sap2000/` | SAP2000 integration documentation. |
 
