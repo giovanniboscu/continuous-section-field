@@ -70,6 +70,7 @@ CSF_ACTIONS:
           - station_s0
         show_ids: false
         show_vertex_ids: False
+        show_legenda: False
         output:
           - [stdout,out/twist_tower_sections.jpg]
 
