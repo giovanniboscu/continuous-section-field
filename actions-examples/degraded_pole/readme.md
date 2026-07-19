@@ -13,15 +13,18 @@
   <em>Three-dimensional representation of the tapered prestressed concrete pole. The Z-axis is scaled independently for visualization purposes; the displayed aspect ratio is not the true geometric aspect ratio.</em>
 </p>
 
-The degraded pole example is a complete end-to-end application of Continuous Section Field, from model definition to structural response evaluation. It shows how CSF can represent a parametrically varying section with multiple materials and localized degradation.
+The degraded pole example is a complete end-to-end application built on Continuous Section Field, from model definition to structural response evaluation. It shows how CSF can represent a parametrically varying section with multiple materials and localized degradation.
 
-The Python application uses the CSF geometric and material representation together with the laws governing their longitudinal variation. These continuous fields are evaluated to compute sectional properties, determine the structural response, and recover the resulting normal and shear stresses.
+CSF provides the continuous geometric and material model of the pole, including the laws governing their variation along the longitudinal coordinate. At any requested position, it resolves the corresponding local section state and computes the associated sectional properties.
+
+A separate Python application consumes these section states. It defines the structural problem, applies the external loads and prestress, evaluates the internal actions, and recovers the resulting normal and shear stresses.
 
 The physical case is a degraded prestressed concrete pole represented by forty polygons. Its geometry, material distribution, and component-specific degradation laws are defined through a flexible and customizable parametric model.
 
-A distinctive feature of the approach is that geometry and material properties remain continuous functions of the longitudinal coordinate. Sectional quantities can therefore be evaluated at any position, while numerical derivatives can be computed directly from the underlying fields to support analyses governed by their spatial variation.
+Because the underlying geometry and material properties remain continuous functions of the longitudinal coordinate, sectional quantities can be evaluated at arbitrary positions. The external application can also compute numerical derivatives from values resolved directly from the field, without relying on a predefined set of stored sections.
 
-The example provides a practical view of the CSF architecture and demonstrates its ability to address modelling requirements that extend beyond the scope of conventional sectional-analysis software.
+The example therefore illustrates both parts of the workflow: CSF as the persistent section model and the structural analysis as an independent application built on top of it.
+
 
 
 ---
