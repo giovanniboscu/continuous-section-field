@@ -229,7 +229,7 @@ Polygon names have a different purpose: they allow a specific physical region to
 
 Each polygon has a `weight` value in `S0`, denoted by `w0`, and a corresponding value in `S1`, denoted by `w1`.
 
-By default, the model evaluates the polygon weight at each intermediate elevation `z` by linear interpolation between `w0` and `w1`.
+By default, the model evaluates the material weight assigned to each polygon at an intermediate elevation `z` by linear interpolation between its reference values `w0` and `w1`.
 
 In this example, `w0` and `w1` are equal for each polygon. The default interpolation would therefore produce a constant elastic modulus along the pole.
 
