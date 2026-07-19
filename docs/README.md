@@ -4,6 +4,15 @@
 [CSF positioning and workflow overview](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/architecture.md)
 
 Conceptual overview of CSF as a continuous section-field layer: model responsibilities, workflow position, section sampling, and relation with analysis backends.
+
+## Where to start
+
+- New to CSF: start with the [architecture overview](model/architecture.md).
+- Using YAML and Actions: follow the [YAML tutorial](csftutorial.md).
+- Building sections in Python: see the [modeling and sectional analysis guide](user_guide.md).
+- Looking for calculation models: see the [Section Properties Reference](#section-properties-reference).
+- Integrating with solvers: see [Solver Integration](#solver-integration).
+- Reviewing validated examples: see [Validation Cases](#validation-cases).
  
 ## Overview
 
