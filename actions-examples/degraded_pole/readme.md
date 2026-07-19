@@ -236,7 +236,7 @@ In this example, `w0` and `w1` are equal for each polygon. The default interpola
 For selected polygons, this default variation is overridden by a specific longitudinal law, as described in the following section.
 This interpolation applies only to the polygon weight assigned in the reference sections. In this example, the weight represents the elastic modulus **E**.
 
-Derived sectional properties—such as area, centroid coordinates, second moments of area, product of inertia, axial stiffness, and bending stiffness—are not interpolated between values stored at `S0` and `S1`. They are computed from the geometry and material state resolved at each requested coordinate `z`.
+Derived sectional properties-such as area, centroid coordinates, second moments of area, product of inertia, axial stiffness, and bending stiffness-are not interpolated between values stored at `S0` and `S1`. They are computed from the geometry and material state resolved at each requested coordinate `z`.
 
 ### 2.5 Prescribed degradation laws
 
