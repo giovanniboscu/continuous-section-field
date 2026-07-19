@@ -13,7 +13,7 @@
 
 The degraded pole example is a complete end-to-end application of Continuous Section Field, covering the entire workflow from model definition to stress evaluation and demonstrating its use for a complex, parametrically varying section with localized degradation.
 
-It introduces the CSF representation, the geometric and material model, and the laws governing the longitudinal variation of the section. These continuous fields are then used to compute continuous sectional properties, perform the structural analysis, and recover the resulting stresses.
+This python application uses the CSF representation, the geometric the material model, and the laws governing the longitudinal variation of the section. These continuous fields are then used to compute continuous sectional properties, perform the structural analysis, and recover the resulting stresses.
 
 The example considers a degraded prestressed concrete pole represented by forty polygons. It demonstrates how a complex section, including multiple materials and localized degradation, can be described through a highly parametric, flexible, and customizable model.
 
