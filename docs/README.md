@@ -1,8 +1,6 @@
 
 # CSF Documentation
 
-SF as a continuous section-field layer: model responsibilities, workflow position, section sampling, and relation with analysis backends.
-
 ## Where to start
 
 - New to CSF: start with the [architecture overview](model/architecture.md).
