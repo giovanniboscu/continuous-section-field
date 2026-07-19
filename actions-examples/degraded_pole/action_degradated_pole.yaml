@@ -62,7 +62,7 @@ CSF_ACTIONS:
         output:
           - [out/iso/pile_section_properties.txt]
         properties:
-          [geometry,A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2,J_sv_cell,rx, ry, Wx, Wy, Q_na]
+          [geometry,A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2,rx, ry, Wx, Wy, Q_na]
 
     # -------------------------------------------------------------------------
     # 2-D section plot at mid-height.
