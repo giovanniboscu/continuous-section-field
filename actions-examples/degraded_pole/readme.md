@@ -1,3 +1,5 @@
+
+
 # From Prescribed Degradation Fields to Structural Assessment: Continuous-Field Analysis of a Tapered Prestressed Pole with Localized Degradation
 
 <p align="center">
@@ -1417,3 +1419,5 @@ Its main objective is to provide a reproducible connection between:
 - the resulting stress fields.
 
 The model is designed so that every reported structural quantity can be traced back to the geometry and mechanical condition of the section at the corresponding elevation.
+
+v.1
