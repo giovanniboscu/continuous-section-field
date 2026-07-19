@@ -502,27 +502,29 @@ The example shows how to:
 - obtain polygon-wise Jourawski shear-stress extrema;
 - select the signed governing shear value while preserving its direction and coordinates.
 
-The model contains one polygon, but the same workflow applies to sections composed of multiple polygons with different geometry or material weights.
+The model contains two polygons (T section), but the same workflow applies to sections composed of multiple polygons with different geometry or material weights.
 
 ```python
 """
 Minimal end-to-end example of the CSF stress-analysis APIs.
 
 The model is built directly in Python, without external geometry or
-settings files. One section of a tapered rectangular field is evaluated
-under prescribed internal actions.
+settings files. One section of a tapered T-shaped Continuous Section
+Field is evaluated under prescribed internal actions.
 
 Workflow:
-    1. define the start and end sections;
+    1. define the start and end T-shaped sections;
     2. create the Continuous Section Field;
     3. select one station z;
-    4. assign the internal actions at that station;
-    5. compute Navier normal stresses;
-    6. compute Jourawski shear stresses;
-    7. print the polygon-wise governing results.
+    4. prescribe the internal actions at that station;
+    5. compute the section properties;
+    6. compute Navier normal stresses;
+    7. compute Jourawski shear stresses;
+    8. print the polygon-wise governing results.
 
-The derivation of the internal actions from a beam or structural model is
-outside the scope of this section-level example.
+The internal actions are prescribed directly. Their derivation from a
+beam or structural model is outside the scope of this section-level
+example.
 """
 
 from csf import (
@@ -539,89 +541,136 @@ from csf.section_field import (
 
 
 # ---------------------------------------------------------------------------
-# 1. BUILD A TAPERED RECTANGULAR CONTINUOUS SECTION FIELD
+# 1. DEFINE THE START T-SECTION AT z = 0
 # ---------------------------------------------------------------------------
 
 L = 5.0
 
-# Start section at z = 0.0.
+# The T-section is represented by two adjacent, non-overlapping polygons:
+# a horizontal flange and a vertical web.
 #
-# Rectangle dimensions:
-#     width  = 0.40 m
-#     height = 0.60 m
-#
-# Vertices are listed in counter-clockwise order.
-start_rectangle = Polygon(
+# Polygon vertices are listed counter-clockwise.
+
+# Flange: rectangle from (-1.0, -0.2) to (1.0, 0.2).
+poly0_start = Polygon(
     vertices=(
-        Pt(-0.20, -0.30),
-        Pt(0.20, -0.30),
-        Pt(0.20, 0.30),
-        Pt(-0.20, 0.30),
+        Pt(-1.0, -0.2),
+        Pt(1.0, -0.2),
+        Pt(1.0, 0.2),
+        Pt(-1.0, 0.2),
     ),
     weight=1.0,
-    name="rectangle",
+    name="flange",
 )
 
-# End section at z = L.
-#
-# Rectangle dimensions:
-#     width  = 0.30 m
-#     height = 0.40 m
-#
-# The polygon name, vertex count and vertex order match the start section,
-# allowing CSF to interpolate the geometry continuously along z.
-end_rectangle = Polygon(
+# Web: rectangle from (-0.2, -1.0) to (0.2, -0.2).
+poly1_start = Polygon(
     vertices=(
-        Pt(-0.15, -0.20),
-        Pt(0.15, -0.20),
-        Pt(0.15, 0.20),
-        Pt(-0.15, 0.20),
+        Pt(-0.2, -1.0),
+        Pt(0.2, -1.0),
+        Pt(0.2, -0.2),
+        Pt(-0.2, -0.2),
     ),
     weight=1.0,
-    name="rectangle",
+    name="web",
 )
 
-section_start = Section(
-    polygons=(start_rectangle,),
+
+# ---------------------------------------------------------------------------
+# 2. DEFINE THE END T-SECTION AT z = L
+# ---------------------------------------------------------------------------
+
+# The end section must contain the same number of polygons as the start
+# section. Corresponding polygons must have the same names, vertex counts,
+# and vertex ordering so that CSF can interpolate them along z.
+
+# The flange remains unchanged along the field.
+poly0_end = Polygon(
+    vertices=(
+        Pt(-1.0, -0.2),
+        Pt(1.0, -0.2),
+        Pt(1.0, 0.2),
+        Pt(-1.0, 0.2),
+    ),
+    weight=1.0,
+    name="flange",
+)
+
+# The bottom of the web moves from y = -1.0 at z = 0
+# to y = -2.5 at z = L. The web depth therefore increases
+# linearly along the longitudinal z axis.
+poly1_end = Polygon(
+    vertices=(
+        Pt(-0.2, -2.5),
+        Pt(0.2, -2.5),
+        Pt(0.2, -0.2),
+        Pt(-0.2, -0.2),
+    ),
+    weight=1.0,
+    name="web",
+)
+
+
+# ---------------------------------------------------------------------------
+# 3. CREATE THE ENDPOINT SECTIONS AND THE CONTINUOUS SECTION FIELD
+# ---------------------------------------------------------------------------
+
+# Polygon order establishes the correspondence between the endpoint
+# sections:
+#
+#     poly0_start <-> poly0_end
+#     poly1_start <-> poly1_end
+
+s0 = Section(
+    polygons=(poly0_start, poly1_start),
     z=0.0,
 )
 
-section_end = Section(
-    polygons=(end_rectangle,),
+s1 = Section(
+    polygons=(poly0_end, poly1_end),
     z=L,
 )
 
+# CSF linearly interpolates the corresponding polygon vertices and
+# properties between z = 0 and z = L.
 field = ContinuousSectionField(
-    section0=section_start,
-    section1=section_end,
+    section0=s0,
+    section1=s1,
 )
 
 
 # ---------------------------------------------------------------------------
-# 2. SELECT THE STATION AND ASSIGN THE INTERNAL ACTIONS
+# 4. SELECT THE STATION AND PRESCRIBE THE INTERNAL ACTIONS
 # ---------------------------------------------------------------------------
 
-# Section station to be evaluated.
+# Evaluate the section at the midpoint of the field.
 z = 2.5
 
 # Signed internal actions acting directly on the section at z.
 #
-# Navier uses:
+# Navier stress analysis uses:
 #     N, Mx, My
 #
-# Jourawski uses:
+# Jourawski shear-stress analysis uses:
 #     Tx, Ty
 #
-# The values are prescribed inputs. 
+# CSF convention:
+#     Tx is the shear action associated with the variation of My;
+#     Ty is the shear action associated with the variation of Mx.
+#
+# Tx and Ty are section resultants. The resulting local shear-stress
+# components tau_x and tau_y may each contain contributions from both
+# actions, depending on the section geometry.
+
 N = -100_000.0   # Axial force [N]
 Mx = 25_000.0    # Bending moment about the x axis [N·m]
 My = 10_000.0    # Bending moment about the y axis [N·m]
-Tx = 5_000.0     # Shear component associated with My [N]
-Ty = -10_000.0   # Shear component associated with Mx [N]
+Tx = 5_000.0     # Shear action associated with My [N]
+Ty = 10_000.0    # Shear action associated with Mx [N]
 
 
 # ---------------------------------------------------------------------------
-# 3. COMPUTE THE SECTION PROPERTIES AT z
+# 5. COMPUTE THE SECTION PROPERTIES AT z
 # ---------------------------------------------------------------------------
 
 section_at_z = field.section(z)
@@ -629,10 +678,10 @@ properties = section_properties(section_at_z)
 
 
 # ---------------------------------------------------------------------------
-# 4. COMPUTE NAVIER NORMAL STRESSES
+# 6. COMPUTE NAVIER NORMAL STRESSES
 # ---------------------------------------------------------------------------
 
-# One result dictionary is returned for each polygon.
+# The function returns one result dictionary for each section polygon.
 navier_rows = analyse_polygon_navier_stress(
     section_field=field,
     z=z,
@@ -643,24 +692,30 @@ navier_rows = analyse_polygon_navier_stress(
 
 
 # ---------------------------------------------------------------------------
-# 5. COMPUTE JOURAWSKI SHEAR STRESSES
+# 7. COMPUTE JOURAWSKI SHEAR STRESSES
 # ---------------------------------------------------------------------------
 
+# tau_x values are evaluated through vertical cuts x = constant.
+# tau_y values are evaluated through horizontal cuts y = constant.
+#
+# These names identify the local shear-stress components, not the
+# individual contributions generated exclusively by Tx or Ty.
+#
 # num_sudx and num_sudy control the scan resolution used to locate
-# the shear-stress extrema.
+# the extrema of the two components.
 shear_rows = analyse_polygon_jourawski_shear_stress(
     section_field=field,
     z=z,
     Tx=Tx,
     Ty=Ty,
-    num_sudx=40,
-    num_sudy=40,
+    num_sudx=100,
+    num_sudy=100,
     debug=False,
 )
 
 
 # ---------------------------------------------------------------------------
-# 6. PRINT SECTION PROPERTIES AND APPLIED ACTIONS
+# 8. PRINT SECTION PROPERTIES AND APPLIED ACTIONS
 # ---------------------------------------------------------------------------
 
 print(f"Station z = {z:.3f} m")
@@ -683,14 +738,14 @@ print(
 
 
 # ---------------------------------------------------------------------------
-# 7. PRINT POLYGON-WISE NAVIER RESULTS
+# 9. PRINT POLYGON-WISE NAVIER RESULTS
 # ---------------------------------------------------------------------------
 
 print("\nNAVIER")
 
 for row in navier_rows:
     # sigma_extreme is selected by absolute magnitude while preserving
-    # the original sign and its coordinates.
+    # its original sign and governing coordinates.
     print(
         f"{row['idx']}:{row['name']}  "
         f"sigma_min = {row['sigma_min']:.6e} Pa  "
@@ -701,14 +756,16 @@ for row in navier_rows:
 
 
 # ---------------------------------------------------------------------------
-# 8. PRINT POLYGON-WISE JOURAWSKI RESULTS
+# 10. PRINT POLYGON-WISE JOURAWSKI RESULTS
 # ---------------------------------------------------------------------------
 
 print("\nJOURAWSKI")
 
 for row in shear_rows:
-    # Select the signed governing value from the four shear extrema returned
-    # for the polygon.
+    # Select the governing signed shear-stress component among the four
+    # extrema returned for the polygon. Selection is based on absolute
+    # magnitude, while the original sign, direction, and coordinates
+    # are preserved.
     candidates = [
         ("x", row["tau_x_min"], row["x_tau_x_min"], row["y_tau_x_min"]),
         ("x", row["tau_x_max"], row["x_tau_x_max"], row["y_tau_x_max"]),
@@ -734,4 +791,5 @@ for row in shear_rows:
         f"direction = {direction}  "
         f"at ({x:.6e}, {y:.6e})"
     )
+
 ```
