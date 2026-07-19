@@ -338,25 +338,31 @@ $$
 
 ---
 
-## 3. Section generated at any elevation
+## 3. Continuous model and resolved section state
 
-After the reference sections, polygon names, and material laws have been defined, the model can generate the complete cross-section at any longitudinal coordinate `z`.
+The Continuous Section Field is the persistent geometric and material model of the pole along the longitudinal coordinate `z`. It is independent of any particular structural analysis, numerical scheme, or solver.
 
-The section at that elevation is denoted by:
+When an external application requests a position `z`, the field resolves the complete local section state:
 
 $$
 S(z)
 $$
 
-Given `z`, the model provides:
+```mermaid
+flowchart LR
+    A["Continuous Section Field<br/>geometry · topology · material fields"] -->|"resolve at z"| B["Resolved section state<br/>S(z)"]
+    B --> C["External application<br/>analysis · solver · output"]
+```
+
+At the requested coordinate, `S(z)` contains:
 
 - the complete section geometry;
 - the polygons present at that elevation;
-- the stiffness assigned to each polygon;
-- the degradation level of each component;
-- the data required for sectional and structural analysis.
+- the current material and stiffness values;
+- the degradation state of each component;
+- the information required by downstream sectional or structural calculations.
 
-This section-generating representation is called a **Continuous Section Field (CSF)**.
+The field is the model; `S(z)` is a resolved local state; the structural analysis is an external consumer of that state. Evaluation coordinates, output stations, finite-difference steps, meshes, and other numerical choices belong to the consuming application and are not part of the CSF definition.
 
 ---
 ## 4. Structural analysis
