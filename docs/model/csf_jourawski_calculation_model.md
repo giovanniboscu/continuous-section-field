@@ -430,9 +430,9 @@ At each coordinate $z$, the implemented sequence is:
 6. calculate the transformed partial first moments for each cut;
 7. calculate the total Jourawski flow:
 
-   $$
-   q=\beta_xQ_x^{(E)}+\beta_yQ_y^{(E)}
-   $$
+```math
+q=\beta_xQ_x^{(E)}+\beta_yQ_y^{(E)}
+```
 
 8. calculate the real geometric chord length;
 9. calculate the reference mean stress:
