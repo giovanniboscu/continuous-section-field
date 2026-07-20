@@ -116,6 +116,8 @@ Run:
 python cantilever_beam_pole.py pole_analysis_settings.yaml
 ```
 
+This command starts the dedicated mechanical-analysis application, which is separate from CSF. CSF provides the section states requested along the pole, while the application defines the cantilever model, computes the internal actions, evaluates the corresponding stresses, and writes the analysis results.
+
 The script prints the calculation progress, one analysed elevation at a time.
 
 A successful run ends with a message similar to:
@@ -131,6 +133,7 @@ The analysis results are written to:
 ```text
 output
 ```
+
 
 ---
 
