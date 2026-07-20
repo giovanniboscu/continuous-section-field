@@ -82,7 +82,7 @@ mkdir -p out/iso
 New-Item -ItemType Directory -Force .\out\iso | Out-Null
 ```
 
-Run the CSF actions:
+## Run the CSF actions:
 
 ```bash
 csf-actions degradated_pole.yaml action_degradated_pole.yaml
