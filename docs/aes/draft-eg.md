@@ -17,9 +17,13 @@ In the tapered prestressed-pole case, the member is defined by named concentric 
 
 
 **Originality** – CSF introduces a field-level representation of longitudinal members. The model is the continuous generating field itself: geometry, sectional components, reinforcement, and participation laws remain explicit functions of the member coordinate. Sectional properties and solver inputs are derived evaluations of this field.**
+
 ## Originality
 
-The originality of Continuous Section Field (CSF) lies in defining a longitudinal structural member through a persistent field \(S(z)\), rather than through a predefined sequence of sections, reduced sectional properties, or solver-specific discretisations.
+The originality of Continuous Section Field (CSF) lies in representing the complete internal constitution of a longitudinal structural member as a single parametric field (S(z)), composed of an arbitrary number of persistent cross-sectional regions whose geometry and material participation may evolve independently along (z).
+
+Sectional properties, solver-specific representations, and local mechanical states are derived evaluations of this field and do not replace it as the definition of the member.
+
 
 CSF represents the member as an arbitrary collection of persistent cross-sectional regions, each governed by its own geometric and material-participation laws along \(z\). The boundary, position, shape, and axial/bending and shear/torsion participation of each region may evolve independently while remaining part of the same parametric field. Complex internal constitutions-including layers, voids, inclusions, reinforcement, and locally differentiated regions-therefore remain explicit in the model instead of being reduced in advance to global stiffness functions or discrete fibres.
 
