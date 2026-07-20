@@ -104,7 +104,9 @@ The generated files are written to:
 out/iso
 ```
 
-After verifying the geometry and material fields, run the sectional mechanical analysis.
+The directory contains tabulated section properties at selected elevations, a detailed geometry export for a representative section, and figures showing how the section geometry, sectional properties, `weight`, and `shear_weight` vary along the pole.
+After verifying the geometry and material fields, run the dedicated sectional mechanical analysis.
+
 
 ---
 
