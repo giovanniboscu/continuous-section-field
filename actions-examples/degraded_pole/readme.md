@@ -15,17 +15,15 @@
 
 The degraded pole example is a complete end-to-end application built on Continuous Section Field, from model definition to structural response evaluation. It shows how CSF represents a parametrically varying, multi-material section affected by localized degradation.
 
-CSF provides the continuous geometric and material model of the pole, including the laws governing their variation along the longitudinal coordinate. At any requested position, it resolves the corresponding local section state and computes the associated sectional properties.
+CSF provides the continuous geometric and material model of the pole, including the laws governing their variation along the longitudinal coordinate. At any requested position, it reconstructs the corresponding geometry and mechanical fields at any position along the member.
 
-A separate Python application consumes these section states. It defines the structural problem, applies the external loads and prestress, evaluates the internal actions, and recovers the resulting normal and shear stresses.
+A dedicated Python application, developed separately from CSF, consumes these section states. It defines the structural problem, applies the external loads and prestress, evaluates the internal actions, and recovers the resulting normal and shear stresses.
 
 The physical case is a degraded prestressed concrete pole represented by forty polygons. Its geometry, material distribution, and component-specific degradation laws are defined through a flexible and customizable parametric model.
 
 Because the underlying geometry and material properties remain continuous functions of the longitudinal coordinate, sectional quantities can be evaluated at arbitrary positions. The external application can also compute numerical derivatives from values resolved directly from the field, without relying on a predefined set of stored sections.
 
 The example therefore illustrates both parts of the workflow: CSF as the persistent section model and the structural analysis as an independent application built on top of it.
-
-
 
 ---
 
