@@ -4,7 +4,7 @@
 
 ## Abstract
 
-**Purpose** – CSF provides a modelling infrastructure in which each cross-sectional component acts as the geometric carrier of two independent longitudinal fields governing its axial–bending and shear–torsional participation. The two fields are queryable along the member axis and are decoupled both from the component geometry and from each other.
+**Purpose** – CSF provides a modelling infrastructure in which each cross-sectional component acts as the geometric carrier of two independent longitudinal fields governing its axial–bending and shear–torsional participation. The two fields are queryable along the member axis and are decoupled both from the component geometry , including its longitudinal variation, ansld from each other.
 
 
 **Design/methodology/approach** – The member is represented through a field $S(z)$ whose value at each axial coordinate is an ordered collection of region triples $(\Omega_i(z), w_i(z), k_i(z))$. The spatial regions are induced by boundary-vertex correspondences, while $w_i(z)$ and $k_i(z)$ define axial/bending and shear/torsion participation fields. The formulation is assessed through a closed-form stacked-section example and a tapered-tower application case.
