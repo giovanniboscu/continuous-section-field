@@ -379,6 +379,10 @@ section_field.set_weight_laws([
 | **`E_lookup(file, interpolation='linear')`** | Interpolated value from an external text file. The second argument is optional and can be `'linear'` or `'pchip'`. If it is omitted, linear interpolation is used. | `E_lookup('stiffness.txt')`<br>`E_lookup('stiffness.txt', 'pchip')` |
 | **`T_lookup(file, interpolation='linear')`** | Interpolated value from an external text file, evaluated against normalized `t` in `[0, 1]`. The second argument is optional and can be `'linear'` or `'pchip'`. If it is omitted, linear interpolation is used. | `T_lookup('t_stiffness.txt')`<br>`T_lookup('t_stiffness.txt', 'pchip')` |
 
+> **Note:** PCHIP interpolation is useful when a smooth variation must be reconstructed from discrete lookup values. Unlike linear interpolation, it enables a continuous first derivative and avoids abrupt slope changes at the lookup points, while preserving monotonic trends without introducing significant overshoot. This is particularly important when derivatives of the resulting section functions are required.
+
+
+
 ### ⚠️ Vertex Indexing Rule
 When using the distance function `d(i, j)` in your weight laws:
 * **0-Based Numbering**: Vertex indices start at **0**
