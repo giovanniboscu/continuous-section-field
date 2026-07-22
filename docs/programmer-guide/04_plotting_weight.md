@@ -1,4 +1,4 @@
-# 04 - Plotting weight & shear_weight
+# 04 - Plotting weight & shear_weight and PCHIP interpolation
 
 ## Purpose
 
