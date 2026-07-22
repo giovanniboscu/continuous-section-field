@@ -237,6 +237,8 @@ Polygon names have a different purpose: they allow a specific physical region to
 
 Each polygon has a `weight` value in `S0`, denoted by `w0`, and a corresponding value in `S1`, denoted by `w1`.
 
+`weight: 35000000000.0`
+
 By default, the model evaluates the material weight assigned to each polygon at an intermediate elevation `z` by linear interpolation between its reference values `w0` and `w1`.
 
 In this example, `w0` and `w1` are equal for each polygon. The default interpolation would therefore produce a constant elastic modulus along the pole.
@@ -246,13 +248,15 @@ This interpolation applies only to the polygon weight assigned in the reference 
 
 Derived sectional properties-such as area, centroid coordinates, second moments of area, product of inertia, axial stiffness, and bending stiffness-are not interpolated between values stored at `S0` and `S1`. They are computed from the geometry and material state resolved at each requested coordinate `z`.
 
-### 2.5 Prescribed degradation laws
+### 2.5 Prescribed degradation laws (overrides default variation)
 
-The model requires a degradation profile with a prescribed variation of the elastic modulus along `z`.
+A `weight_law` defines the longitudinal variation of the `weight` associated with a specific component of the model.
 
-These profiles are defined by `weight_laws` and by lookup files stored in the [`laws`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/degraded_pole/laws) directory.
+This variation may be represented in different ways. In the degraded-pole example, the selected formulation applies a position-dependent reduction factor to the polygon weight defined at `S0`. Because `weight` represents the elastic modulus **E** in this model, the law describes the longitudinal variation of **E**.
 
-When a `weight_law` is assigned to a polygon, it supersedes the basic variation obtained from the values stored in `S0` and `S1`.
+The prescribed laws are defined under `weight_laws`, while the lookup data are stored in the [`laws`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/degraded_pole/laws) directory.
+
+When a `weight_law` is assigned to a component, it overrides the default variation derived from the weights specified in `S0` and `S1`.
 
 A typical rule is:
 
@@ -260,6 +264,33 @@ A typical rule is:
 weight_laws:
   - '15_2_S,15_2_S: w0*T_lookup("laws/weight_law_15_2_S.dat","pchip")'
 ```
+
+The rule contains two distinct parts.
+
+The first part,
+
+```text
+15_2_S,15_2_S
+```
+
+identifies the pair of corresponding polygons at `S0` and `S1`. Together, these two polygons identify the same longitudinal component of the pole.
+
+In this example, the polygons have the same name at both end sections for convenience. This is not mandatory: the two names may be different, provided that they identify a valid polygon correspondence. As described previously, invalid or inconsistent correspondences are rejected.
+
+The expression following the colon,
+
+```text
+w0*T_lookup("laws/weight_law_15_2_S.dat","pchip")
+```
+
+defines the continuous longitudinal variation of `weight`.
+
+Here:
+
+- `w0` is the weight assigned to the polygon at `S0`;
+- `T_lookup(...)` returns the position-dependent reduction factor;
+- `"laws/weight_law_15_2_S.dat"` is the lookup-file path;
+- `"pchip"` specifies the interpolation method used between the tabulated values.
 
 The lookup file contains two columns:
 
@@ -279,26 +310,57 @@ The lookup file contains two columns:
 1.000000 1.000000
 ```
 
-- `z_over_L` is the normalized longitudinal position, from `0` at the base to `1` at the top;
-- `value` is a normalized factor, generally between `0` and `1`;
-- the factor multiplies the polygon weight defined at `S0`.
-
-The resulting polygon weight is:
-
-$$
-w(z) = w_0 T\left(\frac{z}{L}\right)
-$$
-
 where:
 
-- `w0` is the polygon weight at `S0`;
-- `T(z/L)` is the factor read from the lookup file.
+- `z_over_L` is the normalized longitudinal coordinate `z/L`, ranging from `0` at `S0` to `1` at `S1`;
+- `value` is the residual fraction of `w0` at that position.
 
-Because `weight` represents **E** in this example, the lookup directly defines the longitudinal variation of the elastic modulus.
+The resulting weight is:
 
-A value of `1.0` preserves the initial modulus. A lower value represents the residual fraction at that position.
+$$
+w(z) = w_0\,T_{\mathrm{lookup}}\left(\frac{z}{L}\right)
+$$
 
-Each concrete region and each prestressing bar may use its own lookup file. Degradation can therefore be assigned independently to different parts of the cross-section and to different height intervals.
+Because `weight` represents the elastic modulus in this example, the same law can be written as:
+
+$$
+E(z) = E_0\,T_{\mathrm{lookup}}\left(\frac{z}{L}\right)
+$$
+
+with:
+
+$$
+E_0 = w_0
+$$
+
+For example:
+
+- at `z/L = 0`, the lookup value is `0.5`, and therefore `E(0) = 0.5 E0`;
+- at `z/L = 0.25`, the lookup value is `0.875`, and therefore `E(z) = 0.875 E0`;
+- from `z/L = 0.5` to `z/L = 1`, the lookup value is `1.0`, and therefore `E(z) = E0`.
+
+The second column therefore represents the residual fraction of the value defined at `S0`. A value of `1.0` preserves the full initial modulus, while a lower value applies a proportional reduction.
+
+#### Interpolation method
+
+If no interpolation method is specified, `T_lookup` uses linear interpolation between consecutive points.
+
+Linear interpolation produces a continuous function, but its first derivative is piecewise constant and changes abruptly at each tabulated point. These changes may be transferred to quantities derived from the interpolated field.
+
+The `"pchip"` option uses a piecewise cubic Hermite interpolating polynomial. It preserves the tabulated values and, for monotonic input data such as those used here, maintains the monotonic trend without introducing oscillations or overshoots between consecutive points.
+
+Unlike linear interpolation, the PCHIP interpolant has a continuous first derivative. It therefore provides a smooth variation of the degradation factor and of the resulting elastic modulus along the pole.
+
+This is relevant when the interpolated field contributes to the longitudinal bending-moment distribution. Since shear is obtained from the first derivative of the bending moment,
+
+$$
+V(z) = \frac{dM(z)}{dz}
+$$
+
+a PCHIP representation avoids artificial step changes in the calculated shear that could otherwise arise from the discontinuous slope of a piecewise-linear interpolation.
+
+Each concrete region and each prestressing bar may be assigned its own `weight_law` and lookup file. The longitudinal variation of the elastic modulus can therefore be prescribed independently for every modeled component.
+
 
 ### 2.6 Shear and torsional stiffness
 
