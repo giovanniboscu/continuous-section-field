@@ -354,6 +354,17 @@ plt.show()
 
 ![Figure_15](https://github.com/user-attachments/assets/3580a98c-e368-412f-bda3-b83cb8d8e940)
 
+
+The `E_lookup` and `T_lookup` functions accept an optional interpolation parameter. It can be set to `'linear'` or `'pchip'`, with `'linear'` used by default. PCHIP interpolation preserves monotonicity and provides a smooth curve without introducing oscillations between lookup points.
+
+```python
+section_field.set_weight_laws([
+    "lowerpart,lowerpart: E_lookup('zlookup_exponential.txt', 'pchip')"
+])
+```
+
+<img width="994" height="476" alt="image" src="https://github.com/user-attachments/assets/4c18bd90-8895-4e85-b9de-7e50de2379a0" />
+
 ---
 
 # Shear weight laws - `set_shear_weight_laws(...)`
