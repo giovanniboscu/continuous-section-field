@@ -527,6 +527,11 @@ The field is the model; `S(z)` is a resolved local state; the structural analysi
 ---
 
 ## 4. Structural analysis
+![Internal-action diagrams along the pole axis](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/globaldiagrams.jpg)
+
+*Internal-action diagrams along the pole axis for the analysed load case.*
+
+[Open the full-size image](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/globaldiagrams.jpg)
 
 From this point onward, the workflow belongs to the external structural application. Continuous Section Field remains responsible only for resolving the local geometric and material section state at each requested longitudinal position.
 
