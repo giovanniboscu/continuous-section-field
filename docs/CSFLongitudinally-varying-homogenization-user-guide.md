@@ -376,8 +376,8 @@ section_field.set_weight_laws([
 | **`d(i, j)`** | Distance between vertex $i$ and $j$ at **current** $z$ | `w0 * d(1, 2)` |
 | **`d0(i, j)`** | Distance between vertex $i$ and $j$ at **start** ($z=0$) | `w0 * (d(1,2) / d0(1,2))` |
 | **`d1(i, j)`** | Distance between vertex $i$ and $j$ at **end** ($z=L$) | `w1 * (d(1,2) / d1(1,2))` |
-| **`E_lookup(file)`** | Interpolated value from an external text file | `E_lookup('stiffness.txt')` |
-| **`T_lookup(file)`** |  Interpolated value from an external text file, evaluated against normalized `t` in `[0, 1]` | `T_lookup('t_stiffness.txt')` |
+| **`E_lookup(file, interpolation='linear')`** | Interpolated value from an external text file. The second argument is optional and can be `'linear'` or `'pchip'`. If it is omitted, linear interpolation is used. | `E_lookup('stiffness.txt')`<br>`E_lookup('stiffness.txt', 'pchip')` |
+| **`T_lookup(file, interpolation='linear')`** | Interpolated value from an external text file, evaluated against normalized `t` in `[0, 1]`. The second argument is optional and can be `'linear'` or `'pchip'`. If it is omitted, linear interpolation is used. | `T_lookup('t_stiffness.txt')`<br>`T_lookup('t_stiffness.txt', 'pchip')` |
 
 ### ⚠️ Vertex Indexing Rule
 When using the distance function `d(i, j)` in your weight laws:
