@@ -339,7 +339,78 @@ For example:
 - at `z/L = 0.25`, the lookup value is `0.875`, and therefore `E(z) = 0.875 E0`;
 - from `z/L = 0.5` to `z/L = 1`, the lookup value is `1.0`, and therefore `E(z) = E0`.
 
+**Examples**
+
 The second column therefore represents the residual fraction of the value defined at `S0`. A value of `1.0` preserves the full initial modulus, while a lower value applies a proportional reduction.
+
+[![Longitudinal weight distributions for two polygon pairs, showing the prescribed variation of the elastic modulus along the pole](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/weights__s0_0_2_CH_s1_0_2_CH_8_1_C.jpg)](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/weights__s0_0_2_CH_s1_0_2_CH_8_1_C.jpg)
+
+*Longitudinal `weight` distributions for two polygon pairs. In this example, `weight` represents the elastic modulus \(E\). The curves show two independently prescribed degradation profiles reconstructed from lookup data using PCHIP interpolation.*
+
+**Poligon 15_2_S**
+
+
+[![Tabulated longitudinal weight law applied to polygon 15_2_S](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/weights__15_2_S_15_2_S.jpg)](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/weights__15_2_S_15_2_S.jpg)
+
+*Tabulated reduction law applied to the polygon pair `15_2_S,15_2_S`. The resulting weight is obtained by multiplying `w0` by the lookup factor. It is equal to 50% of `w0` at `S0`, progressively returns to the full reference value at `z/L = 0.5`, and remains equal to `w0` over the remaining length.*
+
+For the polygon pair `15_2_S,15_2_S`, the lookup file defines the following tabulated reduction law:
+
+```text
+# z_over_L value
+0.000000 0.500000
+0.050000 0.595000
+0.100000 0.680000
+0.150000 0.755000
+0.200000 0.820000
+0.250000 0.875000
+0.300000 0.920000
+0.350000 0.955000
+0.400000 0.980000
+0.450000 0.995000
+0.500000 1.000000
+1.000000 1.000000
+```
+
+The second column defines the factor applied to `w0`:
+
+$$
+w(z) = w_0 \, T_{\mathrm{lookup}}\left(\frac{z}{L}\right)
+$$
+
+The tabulated law therefore reduces `w0` over the initial part of the pole.
+
+At `z/L = 0`, the lookup factor is `0.5`, so:
+
+$$
+w(0) = 0.5 \, w_0
+$$
+
+The reduction progressively decreases along the pole until `z/L = 0.5`, where the lookup factor reaches `1.0`. From that point onward, the full reference value is restored:
+
+$$
+w(z) = w_0
+\qquad
+\text{for}
+\qquad
+\frac{z}{L} \geq 0.5
+$$
+
+Because `weight` represents the elastic modulus **E** in this example, the same law can be written as:
+
+$$
+E(z) = E_0 \, T_{\mathrm{lookup}}\left(\frac{z}{L}\right)
+$$
+
+with:
+
+$$
+E_0 = w_0
+$$
+
+The `"pchip"` interpolation reconstructs a smooth monotonic curve between the tabulated values while preserving the prescribed values.
+
+
 
 #### Interpolation method
 
