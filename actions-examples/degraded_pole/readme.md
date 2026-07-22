@@ -361,6 +361,9 @@ a PCHIP representation avoids artificial step changes in the calculated shear th
 
 Each concrete region and each prestressing bar may be assigned its own `weight_law` and lookup file. The longitudinal variation of the elastic modulus can therefore be prescribed independently for every modeled component.
 
+> **Note:** The longitudinal variation may also be defined directly as an analytical expression. In this example, however, a lookup-based representation was selected so that the prescribed degradation profile can be provided explicitly through tabulated data.
+
+
 
 ### 2.6 Shear and torsional stiffness
 
