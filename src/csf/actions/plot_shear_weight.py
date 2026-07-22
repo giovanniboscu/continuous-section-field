@@ -148,11 +148,9 @@ def _run(
         # 20 figures before control returns here. The figures are saved and
         # explicitly closed later in this runner, so suppress only the
         # intermediate Matplotlib max-open-figures warning.
-        if do_show:
-            viz.plot_shear_weight(num_points=num_points)
-        else:
-            with matplotlib.rc_context({"figure.max_open_warning": 0}):
-                viz.plot_shear_weight(num_points=num_points)
+ 
+        with matplotlib.rc_context({"figure.max_open_warning": 0}):
+             viz.plot_shear_weight(num_points=num_points)
     finally:
         # Always restore the original show function.
         plt.show = old_show
@@ -199,25 +197,38 @@ def _run(
             cleaned = cleaned.strip("_")
             return cleaned or "polygon"
 
-        def _axis_tag(ax: Any, idx: int) -> str:
-            """Try to derive a polygon-related tag from axis metadata; fallback to index."""
-            candidates = [
-                ax.get_title().strip() if hasattr(ax, "get_title") else "",
-                ax.get_ylabel().strip() if hasattr(ax, "get_ylabel") else "",
-                ax.get_xlabel().strip() if hasattr(ax, "get_xlabel") else "",
-            ]
+        def _axis_polygon_tags(ax: Any, idx: int) -> tuple[str, str]:
+            """
+            Return the S0/S1 polygon names represented by one plot axis.
 
+            Visualizer.plot_shear_weight() stores the names in the main curve label:
+                "s0 <name0> - s1 <name1>"
+
+            The y-label is used as a secondary source. A generic index is used
+            only if neither metadata source is available.
+            """
             if getattr(ax, "lines", None):
                 for line in ax.lines:
                     label = str(line.get_label()).strip()
-                    if label and not label.startswith("_"):
-                        candidates.append(label)
+                    if label.startswith("s0 ") and " - s1 " in label:
+                        left, right = label[3:].split(" - s1 ", 1)
+                        return (
+                            _sanitize_filename_fragment(left),
+                            _sanitize_filename_fragment(right),
+                        )
 
-            for text in candidates:
-                if text:
-                    return _sanitize_filename_fragment(text)
+            ylabel = ax.get_ylabel().strip() if hasattr(ax, "get_ylabel") else ""
+            ylabel_lines = [line.strip() for line in ylabel.splitlines() if line.strip()]
+            if len(ylabel_lines) >= 2:
+                s0_text = ylabel_lines[0][3:] if ylabel_lines[0].startswith("s0 ") else ylabel_lines[0]
+                s1_text = ylabel_lines[1][3:] if ylabel_lines[1].startswith("s1 ") else ylabel_lines[1]
+                return (
+                    _sanitize_filename_fragment(s0_text),
+                    _sanitize_filename_fragment(s1_text),
+                )
 
-            return f"poly_{idx:03d}"
+            fallback = f"poly_{idx:03d}"
+            return fallback, fallback
 
         for out_path in file_outputs:
             outp = Path(out_path)
@@ -226,43 +237,46 @@ def _run(
 
             suffix = outp.suffix or ".png"
             stem = outp.stem if outp.suffix else outp.name
+            used_target_paths = set()
+            exported_axes = 0
 
-            if len(figs) == 1 and len(figs[0].axes) > 1:
-                fig = figs[0]
+            # Keep the on-screen layout unchanged (up to two plots per figure),
+            # but export every axis separately so each polygon gets its own file.
+            for fig in figs:
+                axes = list(getattr(fig, "axes", []) or [])
+                if not axes:
+                    continue
 
                 # Force a draw so tight bounding boxes are available.
                 fig.canvas.draw()
                 renderer = fig.canvas.get_renderer()
 
-                target_paths = []
-                for i, ax in enumerate(fig.axes, start=1):
-                    tag = _axis_tag(ax, i)
-                    target_path = outp.with_name(f"{stem}__{tag}{suffix}")
-                    target_paths.append(target_path)
+                for ax in axes:
+                    exported_axes += 1
 
-                #print(f"DEBUG plot_shear_weight axis export targets: {[str(p) for p in target_paths]}")
-
-                for i, ax in enumerate(fig.axes, start=1):
                     bbox = ax.get_tightbbox(renderer).expanded(1.03, 1.08)
                     bbox_inches = bbox.transformed(fig.dpi_scale_trans.inverted())
 
-                    tag = _axis_tag(ax, i)
-                    target_path = outp.with_name(f"{stem}__{tag}{suffix}")
+                    name_s0, name_s1 = _axis_polygon_tags(ax, exported_axes)
+                    target_path = outp.with_name(
+                        f"{stem}__{name_s0}_{name_s1}{suffix}"
+                    )
 
-                    fig.savefig(str(target_path), dpi=dpi, bbox_inches=bbox_inches)
+                    if target_path in used_target_paths:
+                        target_path = outp.with_name(
+                            f"{stem}__{name_s0}_{name_s1}_{exported_axes:03d}{suffix}"
+                        )
+                    used_target_paths.add(target_path)
+
+                    fig.savefig(
+                        str(target_path),
+                        dpi=dpi,
+                        bbox_inches=bbox_inches,
+                    )
                     #print(f"[OK] plot_shear_weight wrote: {target_path}")
 
-            else:
-                target_paths = [
-                    outp.with_name(f"{stem}__fig_{i:03d}{suffix}")
-                    for i, _fig in enumerate(figs, start=1)
-                ]
-
-                #print(f"DEBUG plot_shear_weight figure export targets: {[str(p) for p in target_paths]}")
-
-                for fig, target_path in zip(figs, target_paths):
-                    fig.savefig(str(target_path), dpi=dpi, bbox_inches="tight")
-                    #print(f"[OK] plot_shear_weight wrote: {target_path}")
+            if exported_axes == 0:
+                raise RuntimeError("No plot axes were generated for plot_shear_weight file output.")
 
     # Close generated figures when the caller did not request interactive
     # display to avoid accumulating open GUI figures and memory usage.
