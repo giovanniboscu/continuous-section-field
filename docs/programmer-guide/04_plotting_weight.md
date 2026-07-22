@@ -2,11 +2,14 @@
 
 ## Purpose
 
-Use weight and shear weight plots to verify how each polygon weight `w(z)` and shear weight evolve along the member axis.
+Use weight and shear-weight plots to verify how each polygon's `weight(z)` and `shear_weight(z)` evolve along the member axis, including the selected lookup interpolation method.
 
 This chapter covers:
-- per-polygon weight interpolation plots - `plot_weight` / `set_weight_laws`
-- per-polygon shear weight interpolation plots - `plot_shear_weight` / `set_shear_weight_laws`
+
+* per-polygon weight plots using `plot_weight` and `set_weight_laws`
+* per-polygon shear-weight plots using `plot_shear_weight` and `set_shear_weight_laws`
+* linear and PCHIP interpolation for `E_lookup` and `T_lookup`
+
 
 ---
 
