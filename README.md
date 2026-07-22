@@ -20,7 +20,7 @@
 ---
 ### Motivation 
 
-CSF provides a modelling infrastructure in which each region of the geometry acts as the geometric carrier of two independent longitudinal fields governing its axial–bending and shear–torsional participation. The resulting composite field are queryable along the member axis and are decoupled both from the component geometry , including its longitudinal variation, and from each other.
+CSF provides a modelling infrastructure in which each region hosts two independent longitudinal fields governing its axial–flexural and shear–torsional participation. These fields are queryable along the member axis and are decoupled from material assignment, from the geometry's longitudinal variation, and from each other.
 
 It represents the variable geometry and material distribution as continuous functions of $z$, computing the resulting properties - $A(z)$, $I_x(z)$, $I_y(z)$, together with the associated material details along the member. The resulting data can be exported in **CSV** and **YAML** formats for integration with beam solvers such as OpenSees and SAP2000, or with section-analysis tools such as [csf_sp](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md) and [sp_csf](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/sp_csf_guide.md).
 
