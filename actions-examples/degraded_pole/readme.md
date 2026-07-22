@@ -633,7 +633,7 @@ The negative value of `force_healthy` represents the sign assigned to the prestr
 
 ![Internal-action diagrams along the pole axis](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/globaldiagrams.jpg)
 
-*Internal-action diagrams along the pole axis for the analysed load case.*
+*Internal-action diagrams along the pole axis for the analysed load case. The shear-force diagram was obtained by numerical differentiation of the bending-moment diagram.*
 
 [Open the full-size image](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/globaldiagrams.jpg)
 
