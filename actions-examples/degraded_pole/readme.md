@@ -527,11 +527,6 @@ The field is the model; `S(z)` is a resolved local state; the structural analysi
 ---
 
 ## 4. Structural analysis
-![Internal-action diagrams along the pole axis](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/globaldiagrams.jpg)
-
-*Internal-action diagrams along the pole axis for the analysed load case.*
-
-[Open the full-size image](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/globaldiagrams.jpg)
 
 From this point onward, the workflow belongs to the external structural application. Continuous Section Field remains responsible only for resolving the local geometric and material section state at each requested longitudinal position.
 
@@ -551,6 +546,8 @@ The calculation follows this sequence:
 8. write the results to CSV and text files.
 
 Each step is described below.
+
+
 
 
 ### 4.1 Analysis settings
@@ -632,6 +629,13 @@ The remaining blocks do not modify the field itself. They specify how the field 
 - `outputs` defines where the calculated results are stored.
 
 The negative value of `force_healthy` represents the sign assigned to the prestressing force in this model. The script preserves the signs supplied in the settings file.
+
+
+![Internal-action diagrams along the pole axis](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/globaldiagrams.jpg)
+
+*Internal-action diagrams along the pole axis for the analysed load case.*
+
+[Open the full-size image](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/globaldiagrams.jpg)
 
 
 ### 4.2 Loading the Continuous Section Field
