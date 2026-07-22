@@ -343,7 +343,7 @@ For example:
 
 The second column therefore represents the residual fraction of the value defined at `S0`. A value of `1.0` preserves the full initial modulus, while a lower value applies a proportional reduction.
 
-##Examples
+## Examples
 
 [![Longitudinal weight distributions for two polygon pairs, showing the prescribed variation of the elastic modulus along the pole](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/weights__s0_0_2_CH_s1_0_2_CH_8_1_C.jpg)](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/weights__s0_0_2_CH_s1_0_2_CH_8_1_C.jpg)
 
