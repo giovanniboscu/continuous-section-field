@@ -33,6 +33,10 @@ import numpy as np
 from scipy.special import roots_jacobi
 
 from . import _tol
+from functools import lru_cache
+from scipy.special import roots_jacobi
+from scipy.interpolate import PchipInterpolator
+
 # ruff: noqa: F821
 if TYPE_CHECKING:
     from .continuous_section_field import ContinuousSectionFie
@@ -1899,20 +1903,27 @@ def safe_evaluate_weight_zrelative(formula: str, p0: Polygon, p1: Polygon, z0: f
         # --- BLOCK 1: PROACTIVE FILE SYSTEM CHECK ---
         # Scan formula for E_lookup('filename') calls using Regex
         # Handles single/double quotes and optional spaces
-        match = re.search(r"E_lookup\s*\(\s*['\"](.+?)['\"]\s*\)", report["formula"])
-       
-        if match:
-            filename = match.group(1)
-            # Check if file exists on disk BEFORE calling the core logic
+        lookup_calls = re.finditer(
+            r"\b(?:E_lookup|T_lookup)\s*\(\s*(['\"])(.*?)\1",
+            report["formula"],
+        )
+
+        for match in lookup_calls:
+            filename = match.group(2)
+
             if not os.path.exists(filename):
                 report.update({
                     "status": "ERROR",
                     "error_type": "File System Error",
                     "message": f"Lookup file '{filename}' not found.",
-                    "suggestion": f"Ensure the file exists in the current directory: {os.getcwd()}"
+                    "suggestion": (
+                        "Ensure the file exists in the current directory: "
+                        f"{os.getcwd()}"
+                    ),
                 })
                 print_evaluation_report(0.0, report)
                 return 0.0, report
+
 
         # --- BLOCK 2: FORMULA EVALUATION ---
         # Attempt to run the core evaluation logic
@@ -1946,7 +1957,7 @@ def safe_evaluate_weight_zrelative(formula: str, p0: Polygon, p1: Polygon, z0: f
             "message": "Division by zero encountered during evaluation.",
             "suggestion": "Add a small epsilon to the denominator, e.g., (x + ESP_L)."
         })
-
+    #
     except IndexError:
         # Occurs if d(i,j) refers to a vertex that doesn't exist
         report.update({
@@ -1954,6 +1965,19 @@ def safe_evaluate_weight_zrelative(formula: str, p0: Polygon, p1: Polygon, z0: f
             "error_type": "Geometry Index Error",
             "message": "Vertex index out of range in d(i,j) function.",
             "suggestion": "Ensure polygon indices are correct and start from 1."
+        })
+
+    except ValueError as e:
+        # An unsupported interpolation method is a configuration error
+        # and must stop the model evaluation.
+        if str(e).startswith("Unsupported interpolation method:"):
+            raise
+
+        report.update({
+            "status": "ERROR",
+            "error_type": "Value Error",
+            "message": str(e),
+            "suggestion": "Check the formula arguments and tabulated data."
         })
 
     except Exception as e:
@@ -1964,6 +1988,7 @@ def safe_evaluate_weight_zrelative(formula: str, p0: Polygon, p1: Polygon, z0: f
             "message": str(e),
             "suggestion": "Check the formula syntax and any external data sources."
         })
+
 
     # --- BLOCK 5: IMMEDIATE OUTPUT ---
     # Call the tabular printer before returning values
@@ -2077,13 +2102,32 @@ def evaluate_shear_weight_formula(
 
     t = zt / (z1 - z0)
 
-    def E_lookup(filename: str) -> float:
-        # zt is absolute for E lookup.
-        return lookup_homogenized_elastic_modulus(filename, zt)
 
-    def T_lookup(filename: str) -> float:
+
+    def E_lookup(
+        filename: str,
+        interpolation: str = "linear",
+    ) -> float:
+        # zt is absolute for E lookup.
+        return lookup_tabulated_value(
+            filename,
+            zt,
+            interpolation=interpolation,
+        )
+
+
+    def T_lookup(
+        filename: str,
+        interpolation: str = "linear",
+    ) -> float:
         # t is normalized for T lookup.
-        return lookup_homogenized_elastic_modulus(filename, t)
+        return lookup_tabulated_value(
+            filename,
+            t,
+            interpolation=interpolation,
+    )
+
+
 
     def iso(nu: float) -> float:
         # Isotropic relation: E = 2 * G * (1 + nu)
@@ -2182,14 +2226,31 @@ def evaluate_weight_formula( formula: str, p0: Polygon, p1: Polygon,  z0: float,
     t = zt/(z1-z0)
     
     # 3. Define the external file lookup helper
-    def E_lookup(filename: str) -> float:
-        # in this case z is abosolute
-        # we need to go in relative z
-        return lookup_homogenized_elastic_modulus(filename, zt)
-    
-    def T_lookup(filename: str) -> float:
-        # only for T_lookup zt is normalized
-        return lookup_homogenized_elastic_modulus(filename, t)   
+
+
+    def E_lookup(
+        filename: str,
+        interpolation: str = "linear",
+    ) -> float:
+        # zt is absolute for E lookup.
+        return lookup_tabulated_value(
+            filename,
+            zt,
+            interpolation=interpolation,
+        )
+
+
+    def T_lookup(
+        filename: str,
+        interpolation: str = "linear",
+    ) -> float:
+        # t is normalized for T lookup.
+        return lookup_tabulated_value(
+            filename,
+            t,
+            interpolation=interpolation,
+        )
+
         
     # 4. Define local distance helpers for the context
     # These are used in the formula as d(i,j), d0(i,j), d1(i,j)
@@ -2658,100 +2719,201 @@ def write_opensees_geometry(
         print(f"[ERROR] Could not write '{filename}': {e}")
         raise
 
-
-def lookup_homogenized_elastic_modulus(filename: str, zt: float) -> float:
+def _lookup_file_key(filename: str) -> tuple[str, int, int]:
     """
-    Retrieves the elastic modulus (E) for a given longitudinal coordinate (z) 
-    from an external lookup file.
-    
-    ALGORITHM STRATEGY:
-    1. Parsing: The function reads a text file where each line contains a pair of 
-       values: [coordinate_z, modulus_E].
-    2. Exact Match: If the requested 'z' matches a coordinate in the file, 
-       the corresponding E is returned immediately.
-    3. Boundary Handling: If 'z' is outside the range defined in the file, 
-       it performs flat extrapolation (returns the nearest boundary value).
-    4. Linear Interpolation (LERP): If 'z' falls between two points (z_i, E_i) 
-       and (z_j, E_j), it calculates E via:
-       E = E_i + (E_j - E_i) * (z - z_i) / (z_j - z_i)
-
-    FILE FORMAT ASSUMPTIONS:
-    - The file should be a space, tab, or comma-separated text file.
-    - Column 0: Z-coordinate (must be in increasing order for correct interpolation).
-    - Column 1: Elastic Modulus value.
-
-    Args:
-        filename (str): Path to the lookup data file.
-        zt (float): The current coordinate where the property is needed. can be both normalised or not
-
-    Returns:
-        float: The interpolated or exact Elastic Modulus.
+    Return the absolute file path and metadata used as the cache key.
     """
-    
-    if not os.path.exists(filename):
+    path = Path(filename).expanduser().resolve()
+
+    if not path.is_file():
         raise FileNotFoundError(f"Lookup file not found: {filename}")
 
-    # --- STEP 1: LOAD DATA ---
-    # We use a list of tuples to store the [z, E] pairs.
-    # Data is expected to be numeric.
-    data = []
-    with open(filename, 'r') as f:
-        for line in f:
-            # Skip empty lines or comments starting with '#'
+    stat = path.stat()
+
+    return (
+        str(path),
+        stat.st_mtime_ns,
+        stat.st_size,
+    )
+
+
+@lru_cache(maxsize=128)
+def _read_lookup_data(
+    resolved_filename: str,
+    file_mtime_ns: int,
+    file_size: int,
+) -> tuple[tuple[float, float], ...]:
+    """
+    Read and cache all valid coordinate-value pairs from a lookup file.
+
+    file_mtime_ns and file_size are part of the cache key so that the
+    file is read again if it changes during the same Python process.
+    """
+    data: list[tuple[float, float]] = []
+
+    with open(resolved_filename, "r", encoding="utf-8") as file:
+        for line in file:
             line = line.strip()
-            if not line or line.startswith('#'):
+
+            if not line or line.startswith("#"):
                 continue
-            
+
             try:
-                # Support for common delimiters (comma, tab, space)
-                parts = line.replace(',', ' ').split()
+                parts = line.replace(",", " ").split()
+
                 if len(parts) >= 2:
-                    z_val = float(parts[0])
-                    e_val = float(parts[1])
-                    data.append((z_val, e_val))
+                    coordinate = float(parts[0])
+                    value = float(parts[1])
+                    data.append((coordinate, value))
+
             except ValueError:
-                # Skip lines that do not contain valid numbers
                 continue
 
     if not data:
-        raise ValueError(f"No valid data found in lookup file: {filename}")
+        raise ValueError(
+            f"No valid data found in lookup file: {resolved_filename}"
+        )
 
-    # Ensure data is sorted by Z-coordinate for the interpolation logic
-    data.sort(key=lambda x: x[0])
+    data.sort(key=lambda item: item[0])
 
-    # --- STEP 2: BOUNDARY CHECKS (Extrapolation) ---
-    # If the requested z is below the minimum z in the file
-    if zt <= data[0][0]:
+    return tuple(data)
+
+
+@lru_cache(maxsize=128)
+def _build_pchip_interpolator(
+    resolved_filename: str,
+    file_mtime_ns: int,
+    file_size: int,
+) -> PchipInterpolator:
+    """
+    Build and cache a PCHIP interpolator using all lookup points.
+    """
+    data = _read_lookup_data(
+        resolved_filename,
+        file_mtime_ns,
+        file_size,
+    )
+
+    if len(data) < 2:
+        raise ValueError(
+            "PCHIP interpolation requires at least two valid points: "
+            f"{resolved_filename}"
+        )
+
+    coordinates = [item[0] for item in data]
+    values = [item[1] for item in data]
+
+    for index, (coordinate, value) in enumerate(data):
+        if not math.isfinite(coordinate):
+            raise ValueError(
+                f"Non-finite coordinate at lookup row {index}: "
+                f"{resolved_filename}"
+            )
+
+        if not math.isfinite(value):
+            raise ValueError(
+                f"Non-finite value at lookup row {index}: "
+                f"{resolved_filename}"
+            )
+
+    for index in range(len(coordinates) - 1):
+        if coordinates[index + 1] <= coordinates[index]:
+            raise ValueError(
+                "PCHIP coordinates must be unique: "
+                f"{resolved_filename}"
+            )
+
+    return PchipInterpolator(
+        coordinates,
+        values,
+        extrapolate=False,
+    )
+
+def _evaluate_linear_lookup(
+    data: tuple[tuple[float, float], ...],
+    coordinate: float,
+) -> float:
+    """
+    Evaluate a tabulated law using piecewise-linear interpolation.
+    """
+    for index in range(len(data) - 1):
+        x0, y0 = data[index]
+        x1, y1 = data[index + 1]
+
+        if x0 < coordinate < x1:
+            local_t = (coordinate - x0) / (x1 - x0)
+            return y0 + local_t * (y1 - y0)
+
+    return data[-1][1]
+
+
+def lookup_tabulated_value(
+    filename: str,
+    coordinate: float,
+    interpolation: str = "linear",
+) -> float:
+    """
+    Evaluate a custom tabulated law.
+
+    Parameters
+    ----------
+    filename:
+        File containing coordinate-value pairs.
+
+    coordinate:
+        Coordinate at which the law is evaluated. The coordinate may be
+        absolute or normalized; this function does not interpret its meaning.
+
+    interpolation:
+        Interpolation method:
+
+        - "linear": piecewise-linear interpolation.
+        - "pchip": shape-preserving piecewise-cubic interpolation.
+
+    Outside the tabulated interval, the nearest boundary value is returned.
+    """
+    if not isinstance(interpolation, str):
+        raise TypeError(
+            "interpolation must be a string: 'linear' or 'pchip'"
+        )
+
+    method = interpolation.strip().lower()
+
+    if method not in ("linear", "pchip"):
+        raise ValueError(
+            f"Unsupported interpolation method: {interpolation!r}. "
+            "Allowed methods: 'linear', 'pchip'."
+        )
+
+    coordinate = float(coordinate)
+
+    if not math.isfinite(coordinate):
+        raise ValueError("Lookup coordinate must be finite.")
+
+    cache_key = _lookup_file_key(filename)
+    data = _read_lookup_data(*cache_key)
+
+    # Flat extrapolation below the tabulated interval.
+    if coordinate <= data[0][0]:
         return data[0][1]
-    # If the requested z is above the maximum z in the file
-    if zt >= data[-1][0]:
+
+    # Flat extrapolation above the tabulated interval.
+    if coordinate >= data[-1][0]:
         return data[-1][1]
 
-    # --- STEP 3: SEARCH AND INTERPOLATION ---
-    # Iterate through the pairs to find the interval [z_i, z_i+1] containing z.
-    for i in range(len(data) - 1):
-        z0, e0 = data[i]
-        z1, e1 = data[i+1]
-        
-        # Exact match check
-        if abs(zt - z0) < _tol.EPS_L:
-            
-            return e0
-           # Exact match check
-        if abs(zt - z1) < _tol.EPS_L:
-            
-            return e1
+    # Return the exact tabulated value when the coordinate matches a node.
+    for tabulated_coordinate, tabulated_value in data:
+        if abs(coordinate - tabulated_coordinate) < _tol.EPS_L:
+            return tabulated_value
 
-        # Check if z is within the current segment
-        if z0 < zt < z1:
-            # Linear Interpolation Formula:
-            # weight = (target - start) / (end - start)
-            t = (zt - z0) / (z1 - z0)
-            # Result = start_val + weight * (end_val - start_val)
-            return e0 + t * (e1 - e0)
-    # end for
-    # Fallback for the very last point
-    return data[-1][1]
+    if method == "linear":
+        return _evaluate_linear_lookup(data, coordinate)
+
+    interpolator = _build_pchip_interpolator(*cache_key)
+
+    return float(interpolator(coordinate))
+
+
 
 """
 
