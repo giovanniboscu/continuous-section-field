@@ -263,6 +263,8 @@ The framework distinguishes two families of participation laws:
 
 The model assigns explicit longitudinal participation laws to selected polygon pairs. In each pair, the first name identifies the polygon in the initial section and the second name identifies the corresponding polygon in the final section.
 
+The participation field may be interpreted as a longitudinal generalization of the conventional homogenization coefficient: when evaluated at a given position along the member, it governs the contribution of the corresponding component to the resulting section response.
+
 >Note on terminology. The term participation law is specific to the CSF framework. It does not correspond to damage evolution laws in continuum damage mechanics, nor to modal participation factors in structural dynamics. It describes a geometric-material coupling: how a specific component's geometry and material state participate to the sectional stiffness at a given longitudinal position.
 
 ### Axial–bending participation
