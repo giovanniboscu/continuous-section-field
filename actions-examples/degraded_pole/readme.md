@@ -248,11 +248,57 @@ This interpolation applies only to the polygon weight assigned in the reference 
 
 Derived sectional properties-such as area, centroid coordinates, second moments of area, product of inertia, axial stiffness, and bending stiffness-are not interpolated between values stored at `S0` and `S1`. They are computed from the geometry and material state resolved at each requested coordinate `z`.
 
-### 2.5 Prescribed degradation laws (overrides default variation)
+### 2.5 Prescribed degradation laws (with participation-law overrides)
+
+
+The model assigns explicit longitudinal participation laws to selected polygon pairs. In each pair, the first name identifies the polygon in the initial section and the second name identifies the corresponding polygon in the final section.
+
+### Axial–bending participation
+
+The following polygon pairs use a lookup-based override in `weight_laws`:
+
+| Polygon pair | Participation law |
+|---|---|
+| `0_2_CH, 0_2_CH` | `w0*T_lookup("laws/weight_law_0_2_CH.dat", "pchip")` |
+| `1_2_CH, 1_2_CH` | `w0*T_lookup("laws/weight_law_1_2_CH.dat", "pchip")` |
+| `15_2_CH, 15_2_CH` | `w0*T_lookup("laws/weight_law_15_2_CH.dat", "pchip")` |
+| `0_3_C, 0_3_C` | `w0*T_lookup("laws/weight_law_0_3_C.dat", "pchip")` |
+| `1_3_C, 1_3_C` | `w0*T_lookup("laws/weight_law_1_3_C.dat", "pchip")` |
+| `15_3_C, 15_3_C` | `w0*T_lookup("laws/weight_law_15_3_C.dat", "pchip")` |
+| `0_4_C, 0_4_C` | `w0*T_lookup("laws/weight_law_0_4_C.dat", "pchip")` |
+| `1_4_C, 1_4_C` | `w0*T_lookup("laws/weight_law_1_4_C.dat", "pchip")` |
+| `2_4_C, 2_4_C` | `w0*T_lookup("laws/weight_law_2_4_C.dat", "pchip")` |
+| `3_4_C, 3_4_C` | `w0*T_lookup("laws/weight_law_3_4_C.dat", "pchip")` |
+| `15_4_C, 15_4_C` | `w0*T_lookup("laws/weight_law_15_4_C.dat", "pchip")` |
+| `0_2_S, 0_2_S` | `w0*T_lookup("laws/weight_law_0_2_S.dat", "pchip")` |
+| `1_2_S, 1_2_S` | `w0*T_lookup("laws/weight_law_1_2_S.dat", "pchip")` |
+| `15_2_S, 15_2_S` | `w0*T_lookup("laws/weight_law_15_2_S.dat", "pchip")` |
+
+These overrides affect:
+
+- sectors `15`, `0`, and `1` of layers `2_CH`, `3_C`, and `2_S`;
+- sectors `15`, `0`, `1`, `2`, and `3` of layer `4_C`.
+
+### Shear–torsional participation
+
+All steel polygon pairs in layer `2_S` use the explicit shear-participation override `iso(0.30)`:
+
+| Polygon pairs | Shear-participation law |
+|---|---|
+| `0_2_S, 0_2_S` through `15_2_S, 15_2_S` | `iso(0.30)` |
+
+The shear–torsional override therefore applies to all 16 prestressing-steel components.
+
+
+
+
+
 
 A `weight_law` defines the longitudinal variation of the `weight` associated with a specific component of the model.
 
 This variation may be represented in different ways. In the degraded-pole example, the selected formulation applies a position-dependent reduction factor to the polygon weight defined at `S0`. Because `weight` represents the elastic modulus **E** in this model, the law describes the longitudinal variation of **E**.
+
+**explanation**
 
 The prescribed laws are defined under `weight_laws`, while the lookup data are stored in the [`laws`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/degraded_pole/laws) directory.
 
