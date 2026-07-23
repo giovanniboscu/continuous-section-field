@@ -33,7 +33,7 @@ It represents the variable geometry and material distribution as continuous func
 
 
 <p align="center">
-  <img alt="Three-dimensional representation " src="https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/plot_volume.jpg" />
+  <img alt="Three-dimensional representation " src="https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/degraded_pole2.png" />
 
 </p>
 
