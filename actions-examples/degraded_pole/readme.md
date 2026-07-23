@@ -250,6 +250,8 @@ Derived sectional properties-such as area, centroid coordinates, second moments 
 
 ### 2.5 shear_weight_laws & shear_laws - Prescribed degradation laws
 
+A participation law defines the field assigned to a longitudinal component and used to determine its mechanical participation at each position along the member.
+
 The model assigns explicit longitudinal participation laws to selected polygon pairs. In each pair, the first name identifies the polygon in the initial section and the second name identifies the corresponding polygon in the final section.
 
 ### Axial–bending participation
