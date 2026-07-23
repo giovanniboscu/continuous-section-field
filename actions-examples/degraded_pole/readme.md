@@ -251,6 +251,15 @@ Derived sectional properties-such as area, centroid coordinates, second moments 
 ### 2.5 shear_weight_laws & shear_laws - Prescribed degradation laws
 
 A participation law defines the field assigned to a longitudinal component and used to determine its mechanical participation at each position along the member.
+In the CSF framework, the mechanical response of a section is assembled from the contributions of its individual polygons. The participation law governs how each polygon contributes to specific sectional actions: axial force, bending moments, shear forces, and torsion. It is therefore action-dependent and component-specific.
+
+The framework distinguishes two families of participation laws:
+
+| Family             | Symbol   | Associated actions           | Physical interpretation                                        |
+| ------------------ | -------- | ---------------------------- | -------------------------------------------------------------- |
+| `weight_law`       | $w(z)$   | Axial force, bending moments | Longitudinal variation of the axial/bending stiffness weight   |
+| `shear_weight_law` | $w_s(z)$ | Shear forces, torsion        | Longitudinal variation of the shear/torsional stiffness weight |
+
 
 The model assigns explicit longitudinal participation laws to selected polygon pairs. In each pair, the first name identifies the polygon in the initial section and the second name identifies the corresponding polygon in the final section.
 
