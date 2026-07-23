@@ -263,6 +263,8 @@ The framework distinguishes two families of participation laws:
 
 The model assigns explicit longitudinal participation laws to selected polygon pairs. In each pair, the first name identifies the polygon in the initial section and the second name identifies the corresponding polygon in the final section.
 
+>Note on terminology. The term participation law is specific to the CSF framework. It does not correspond to damage evolution laws in continuum damage mechanics, nor to modal participation factors in structural dynamics. It describes a geometric-material coupling: how a specific component's geometry and material state participate to >the sectional stiffness at a given longitudinal position.
+
 ### Axial–bending participation
 
 The following polygon pairs use a lookup-based override in `weight_laws`:
