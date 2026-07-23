@@ -248,8 +248,7 @@ This interpolation applies only to the polygon weight assigned in the reference 
 
 Derived sectional properties-such as area, centroid coordinates, second moments of area, product of inertia, axial stiffness, and bending stiffness-are not interpolated between values stored at `S0` and `S1`. They are computed from the geometry and material state resolved at each requested coordinate `z`.
 
-### 2.5 Prescribed degradation laws (with participation-law overrides)
-
+### 2.5 shear_weight_laws & shear_laws - Prescribed degradation laws
 
 The model assigns explicit longitudinal participation laws to selected polygon pairs. In each pair, the first name identifies the polygon in the initial section and the second name identifies the corresponding polygon in the final section.
 
