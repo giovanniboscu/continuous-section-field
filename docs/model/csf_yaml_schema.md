@@ -1,6 +1,6 @@
 # CSF YAML Schema - Formal Specification
 
-**Version:** 1.0 (proposal)
+**Version:** 0.9 (proposal) draft
 **Repository:** [giovanniboscu/continuous-section-field](https://github.com/giovanniboscu/continuous-section-field)
 
 ---
