@@ -1,3 +1,5 @@
+DRAFT
+
 # CSF YAML Schema - Formal Specification
 
 **Version:** 0.9 (proposal) draft
@@ -16,7 +18,7 @@ The file is both human-readable and machine-parseable. It contains:
 - the complete geometry of the two end sections
 - the structural type and weight of each polygon
 - optional weight laws as Python expressions
-- optional metadata
+
 
 ---
 
@@ -42,7 +44,7 @@ other than optional lookup data files.
 
 ```yaml
 CSF:
-  metadata:     # optional
+  metadata:     # optional - not implemented
   sections:
     S0:         # required — base section
     S1:         # required — head section
@@ -51,7 +53,7 @@ CSF:
 
 ---
 
-## 1. metadata (optional)
+## 1. metadata (not implemented)
 
 Descriptive information about the model. Not used in computation.
 
