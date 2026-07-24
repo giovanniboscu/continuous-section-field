@@ -152,8 +152,7 @@ of the polygon name.
 > **hollow_cell vs outer + inner_void:**
 > Use `hollow_cell` when the Bredt–Batho closed-cell torsion formula is required
 > (structurally correct for thin-walled closed sections).
-> Use `outer` + `inner_void` when a separate void polygon is preferred for
-> visualization or when the section is open.
+
 
 ### 2.4 Polygon naming
 
