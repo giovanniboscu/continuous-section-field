@@ -1,6 +1,21 @@
 ## CSF Building Blocks
 
-CSF is defined through a small set of building blocks: reference sections, polygon pairs, axial/bending weights, shear/torsion weights, and optional longitudinal variation laws.
+
+CSF is organized around geometric and participation quantities evaluated as continuous functions of the longitudinal coordinate (z).
+
+The two reference configurations, `S0` and `S1`, provide the boundary data used to construct these functions. They are not a sequence of discrete analysis sections. Corresponding polygons in `S0` and `S1` define continuously varying geometric regions along the member, while their associated laws define how the mechanical participation of each region varies independently along the same axis.
+
+At any admissible position (z), CSF evaluates the complete local state directly from these continuous definitions. The resulting geometry, participation values, and derived properties can therefore be queried at arbitrary longitudinal positions without requiring a predefined set of intermediate sections.
+
+The principal building blocks are:
+
+* reference configurations `S0` and `S1`;
+* corresponding polygon pairs;
+* ordered vertex pairs defining the geometric variation;
+* axial/bending participation fields (w_i(z));
+* shear/torsion participation fields (\mathrm{shear_w}_i(z));
+
+The central object of CSF is therefore not an isolated cross-section, but a continuously queryable field generated along the member axis.
 
 ### 1. Geometry Building Blocks
 
