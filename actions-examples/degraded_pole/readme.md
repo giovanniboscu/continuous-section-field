@@ -323,7 +323,7 @@ The physical case is a prestressed concrete pole represented by forty polygons, 
   </a>
 </p>
 
-<p align="center"><em>Polygon-based representation of the pole cross-section at $z = 0$.</em></p>
+<p align="center"><em>Polygon-based representation of the pole cross-section at z = 0.</em></p>
 
 
 **explanation**
