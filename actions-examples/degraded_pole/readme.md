@@ -313,6 +313,19 @@ A `weight_law` defines the longitudinal variation of the `weight` associated wit
 
 This variation may be represented in different ways. In the degraded-pole example, the selected formulation applies a position-dependent reduction factor to the polygon weight defined at `S0`. Because `weight` represents the elastic modulus **E** in this model, the law describes the longitudinal variation of **E**.
 
+---
+
+The physical case is a prestressed concrete pole represented by forty polygons, with localized degradation affecting selected components. Its geometry, material distribution, and component-specific participation laws are defined through a flexible and customizable parametric model.
+
+<p align="center">
+  <a href="https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/degradated_sec_at_z0.png">
+    <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/actions-examples/degraded_pole/img/degradated_sec_at_z0.png" alt="Polygon-based cross-section of the degraded prestressed concrete pole at z = 0" width="700">
+  </a>
+</p>
+
+<p align="center"><em>Polygon-based representation of the pole cross-section at $z = 0$.</em></p>
+
+
 **explanation**
 
 The prescribed laws are defined under `weight_laws`, while the lookup data are stored in the [`laws`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/degraded_pole/laws) directory.
