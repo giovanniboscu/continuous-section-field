@@ -238,7 +238,7 @@ It can be imported and used programmatically to define geometries, evaluate sect
 
 - **Polygon-based section representation (algebraic composition)**: The element is geometrically defined by its end cross-sections, each represented as an algebraic composition of 2D polygons; intermediate sections are generated from these definitions along z. Curved outlines (e.g., circular shells/towers) are represented through discretized polygons with user-selected vertex count.
 
-- **Per-polygon longitudinal weight laws **: independent analytical or lookup-based laws govern each polygon’s axial–bending and shear–torsional participation along the member.
+- **Per-polygon longitudinal weight laws**: independent analytical or lookup-based laws govern each polygon’s axial–bending and shear–torsional participation along the member.
   - > Weight expressions have access to `w0`, `w1` (weights at sections s0/s1) and distance functions `d(i,j)`, `di(i,j)`, `de(i,j)` between polygon points.
     > [Custom Weight Laws](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md) 
  
