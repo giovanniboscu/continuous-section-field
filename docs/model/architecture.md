@@ -6,7 +6,7 @@ A recurring difficulty in the analysis of non-prismatic and materially heterogen
 
 This station-based approach is appropriate for many applications. However, it becomes increasingly cumbersome when geometry, topology, or mechanical participation vary continuously along the member axis. A change in the underlying model may require rebuilding several independent section descriptions and repeating the associated analysis chain.
 
-Continuous Section Field (CSF) addresses this modelling problem by introducing a unified representation defined along (z). Rather than treating the member as a collection of unrelated section models, CSF defines corresponding polygonal regions and participation fields whose local state can be evaluated at any admissible longitudinal position.
+Continuous Section Field (CSF) addresses this modelling problem by introducing a representation defined along (z). Rather than treating the member as a collection of unrelated section models, CSF defines corresponding polygonal regions and participation fields whose local state can be evaluated at any admissible longitudinal position.
 
 The two reference configurations, `S0` and `S1`, provide the boundary data for this construction. Corresponding vertices and polygons define the geometric variation, while independent axial/bending and shear/torsion participation fields define how each region contributes mechanically along the member axis.
 
