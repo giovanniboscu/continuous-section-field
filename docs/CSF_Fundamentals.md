@@ -12,8 +12,8 @@ The principal building blocks are:
 * reference configurations `S0` and `S1`;
 * corresponding polygon pairs;
 * corresponding ordered vertices defining the geometric variation;
-* axial/bending participation fields (w_i(z));
-* shear/torsion participation fields (\mathrm{shear_w}_i(z));
+* axial/bending participation fields  $\mathrm{w}_i(z)$;
+* shear/torsion participation fields  $\mathrm{shear\_w}_i(z)$;
 * optional `weight_laws` and `shear_weight_laws` defining the longitudinal variation of the participation fields.
 
 The central object of CSF is therefore not an isolated cross-section, but a set of continuously queryable geometric and participation fields defined along the member axis.
