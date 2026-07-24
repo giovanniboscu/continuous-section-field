@@ -1,9 +1,9 @@
 ## CSF Building Blocks
 
 
-CSF is organized around geometric and participation quantities evaluated as continuous functions of the longitudinal coordinate (z).
+CSF is organized around geometric and participation quantities represented as continuous functions of the longitudinal coordinate (z).
 
-The two reference configurations, `S0` and `S1`, provide the boundary data used to construct these functions. They are not a sequence of discrete analysis sections. Corresponding polygons in `S0` and `S1` define continuously varying geometric regions along the member, while their associated laws define how the mechanical participation of each region varies independently along the same axis.
+The two reference configurations, `S0` and `S1`, provide the boundary data used to construct these functions. They do not constitute a sequence of discrete analysis sections. Corresponding polygons in `S0` and `S1` define geometric regions that vary continuously along the member, while the associated participation definitions determine how each region contributes mechanically along the same axis.
 
 At any admissible position (z), CSF evaluates the complete local state directly from these continuous definitions. The resulting geometry, participation values, and derived properties can therefore be queried at arbitrary longitudinal positions without requiring a predefined set of intermediate sections.
 
@@ -11,11 +11,13 @@ The principal building blocks are:
 
 * reference configurations `S0` and `S1`;
 * corresponding polygon pairs;
-* ordered vertex pairs defining the geometric variation;
+* corresponding ordered vertices defining the geometric variation;
 * axial/bending participation fields (w_i(z));
 * shear/torsion participation fields (\mathrm{shear_w}_i(z));
+* optional `weight_laws` and `shear_weight_laws` defining the longitudinal variation of the participation fields.
 
-The central object of CSF is therefore not an isolated cross-section, but a continuously queryable field generated along the member axis.
+The central object of CSF is therefore not an isolated cross-section, but a set of continuously queryable geometric and participation fields defined along the member axis.
+
 
 ### 1. Geometry Building Blocks
 
