@@ -118,6 +118,13 @@ After verifying the geometry and material fields, run the dedicated sectional me
 
 ## 3. Run the mechanical analysis
 
+
+before the analysis perform inspection
+
+```bash
+ csf-actions degradated_pole.yaml action_degradated_pole.yaml
+```
+
 Run:
 
 ```bash
