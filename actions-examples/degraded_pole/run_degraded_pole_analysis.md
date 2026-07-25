@@ -118,12 +118,15 @@ After verifying the geometry and material fields, run the dedicated sectional me
 
 ## 3. Run the mechanical analysis
 
-
-before the analysis perform inspection
+Before running the analysis, inspect the CSF model using `csf-actions`:
 
 ```bash
- csf-actions degradated_pole.yaml action_degradated_pole.yaml
+csf-actions degradated_pole.yaml action_degradated_pole.yaml
 ```
+
+This command generates the output files in the `out/iso` directory according to the data and visualization settings defined in `action_degradated_pole.yaml`.
+
+for the analysis:
 
 Run:
 
