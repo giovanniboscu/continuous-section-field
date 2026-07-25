@@ -15,16 +15,15 @@
 
 The degraded pole example is a complete end-to-end application built on Continuous Section Field, from model definition to structural response evaluation. It shows how CSF represents a parametrically varying, multi-material section affected by localized degradation.
 
-CSF provides the continuous geometric and material model of the pole, including the laws governing their variation along the longitudinal coordinate. At any requested position, it reconstructs the corresponding geometry and mechanical fields at any position along the member.
+CSF represents the pole as a continuous geometric and material field along the longitudinal coordinate, rather than as a predefined sequence of beam or finite elements. At any requested position, it resolves the corresponding section geometry, material state, and mechanical properties.
 
-A dedicated Python application, developed separately from CSF, consumes these section states. It defines the structural problem, applies the external loads and prestress, evaluates the internal actions, and recovers the resulting normal and shear stresses.
+A dedicated Python application, developed separately from CSF, consumes these resolved section states. It defines the structural problem, applies the external loads and prestress, evaluates the internal actions, and recovers the resulting normal and shear stresses.
 
 The physical case is a prestressed concrete pole represented by forty polygons, with localized degradation affecting selected components. Its geometry, material distribution, and component-specific participation laws are defined through a flexible and customizable parametric model.
 
+Because the field can be evaluated at arbitrary longitudinal coordinates, the external application can also compute numerical derivatives directly from resolved values, without relying on a mesh or a predefined set of stored sections.
 
-Because the underlying geometry and material properties remain continuous functions of the longitudinal coordinate, sectional quantities can be evaluated at arbitrary positions. The external application can also compute numerical derivatives from values resolved directly from the field, without relying on a predefined set of stored sections.
-
-The example therefore illustrates both parts of the workflow: CSF as the persistent section model and the structural analysis as an independent application built on top of it.
+The example therefore illustrates both parts of the workflow: CSF as the persistent continuous-section model and the structural analysis as an independent application built on top of it.
 
 ---
 
