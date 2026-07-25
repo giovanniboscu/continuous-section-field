@@ -298,3 +298,17 @@ python cantilever_beam_pole.py pole_analysis_settings.yaml
 ```
 
 Both output sets are then recreated from the current model.
+
+---
+
+## Visual report
+```
+python -m pip install plotl
+```
+
+```
+python create_visual_report.py output html
+```
+
+
+
