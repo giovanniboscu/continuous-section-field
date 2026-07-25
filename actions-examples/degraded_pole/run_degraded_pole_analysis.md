@@ -56,8 +56,14 @@ python -c "import csf; print(csf.__file__)"
 
 Move to the example directory:
 
+Linux
 ```bash
 cd actions-examples/degraded_pole
+```
+
+Win
+```bash
+cd actions-examples\degraded_pole
 ```
 
 All the following commands must be run from this directory.
