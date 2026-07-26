@@ -300,7 +300,9 @@ In this model, three wall polygons are defined:
 - `top_flange@wall@t=0.57`
 - `bottom_flange@wall@t=0.57`
 
-The `@wall` suffix tells CSF to treat these polygons as thin-wall components, while `@t=` provides the wall thickness to be used for the corresponding torsional contribution. This avoids relying on the automatic geometric estimate `t_est = 2A / P`, which is only an approximation and may underestimate the intended wall thickness when the strip is not extremely thin.
+
+The `@wall` suffix tells CSF to treat these polygons as thin-wall components, while `@t=` provides an explicit wall thickness for the corresponding torsional contribution. If `@t=` is omitted, CSF determines the thickness according to its automatic thickness-selection procedure. The complete formulation, including the distinction between `@wall` and `@cell`, is provided in the [Saint-Venant torsional constant documentation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/DeSaintVenantTorsionalConstant%20.md).
+
 
 The example therefore represents a simplified three-wall `IPE100`-type section composed of one web and two flanges, with nominal thickness values assigned explicitly in the polygon names. In this way, the wall classification and the thickness used by CSF are both declared directly in the geometry definition.
 
