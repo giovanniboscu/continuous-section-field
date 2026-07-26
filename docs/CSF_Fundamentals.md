@@ -17,7 +17,7 @@ The principal building blocks are:
 * optional `weight_laws` and `shear_weight_laws` defining the longitudinal variation of the participation fields.
 
 The central object of CSF is therefore not an isolated cross-section, but a set of continuously queryable geometric and participation fields defined along the member axis.
-
+Multiple CSF members can be stacked longitudinally, allowing more complex members to be assembled from simple continuously defined segments.
 
 ### 1. Geometry Building Blocks
 
