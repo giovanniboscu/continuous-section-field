@@ -2,7 +2,7 @@
 Create a standalone interactive HTML visual report from CSF pole-check CSV outputs.
 
 Usage:
-    python create_visual_report_v13.py <input_dir> <output_dir>
+    python create_visual_report.py <input_dir> <output_dir>
 
 Expected input files:
     internal_actions.csv
