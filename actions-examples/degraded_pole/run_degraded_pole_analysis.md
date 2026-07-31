@@ -305,7 +305,7 @@ Both output sets are then recreated from the current model.
 
 ## Visual report
 ```
-python -m pip install plotl
+python -m pip install plotly
 ```
 
 ```
