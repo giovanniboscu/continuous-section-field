@@ -312,6 +312,7 @@ python -m pip install plotly
 ```
 
 ```
+mkdir html
 python create_visual_report.py output html
 ```
 
