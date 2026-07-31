@@ -330,7 +330,7 @@ The following table reports the full output of the validation script, comparing 
 | Mass per unit length                | m_lin  | 2.78615789e+03     | 2.78608796e+03     | 0.0025%           | kg/m |
 
 **Total Calculated Tower Volume:** 31.041 m³  
-**Total Calculated Tower Mass:**   243.676 t  
+**Total Calculated Tower Mass:**   244.067 t  
 
 | Description          | Theoretical | Numerical | Error   | Unit |
 |----------------------|-------------|-----------|---------|------|
