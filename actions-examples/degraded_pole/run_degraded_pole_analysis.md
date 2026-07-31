@@ -94,6 +94,9 @@ New-Item -ItemType Directory -Force .\out\iso | Out-Null
 csf-actions degradated_pole.yaml action_degradated_pole.yaml
 ```
 
+> **Note on Saint-Venant torsion:** The message `No valid Saint-Venant torsion contribution (J_sv_cell or J_sv_wall) available for export` is expected. This example does not calculate `J_sv_cell` or `J_sv_wall`; consequently, no Saint-Venant torsional contribution is available for export. The message does not indicate an error in the analysis.
+
+
 `csf-actions` evaluates the model defined in `degradated_pole.yaml` and runs the visualization and section-processing actions configured in `action_degradated_pole.yaml`.
 
 This step allows the following model components to be checked graphically before the mechanical analysis:
