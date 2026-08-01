@@ -29,7 +29,7 @@ It represents the variable geometry and material distribution as continuous func
 ---
 
 
->Three-dimensional representation of the tapered pole with localized degradation. Gray regions indicate the non-degraded portions.
+>Three-dimensional representation of the tapered pole with localized degradation. Gray regions indicate the non-degraded portions. Weight in this model is the elastic modulus.
 
 
 <p align="center">
