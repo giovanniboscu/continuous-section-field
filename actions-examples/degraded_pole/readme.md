@@ -314,7 +314,7 @@ This variation may be represented in different ways. In the degraded-pole exampl
 
 ---
 
-The physical case is a prestressed concrete pole represented by forty polygons, with localized degradation affecting selected components. Its geometry, material distribution, and component-specific participation laws are defined through a flexible and customizable parametric model.
+The physical case is a prestressed concrete pole represented by eighty polygons, with localized degradation affecting selected components. Its geometry, material distribution, and component-specific participation laws are defined through a flexible and customizable parametric model.
 
 <p align="center">
   <a href="https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/degradated_sec_at_z0.png">
