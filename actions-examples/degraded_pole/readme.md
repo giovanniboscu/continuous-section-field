@@ -19,7 +19,7 @@ CSF represents the pole as a continuous geometric and material field along the l
 
 A dedicated Python application, developed separately from CSF, consumes these resolved section states. It defines the structural problem, applies the external loads and prestress, evaluates the internal actions, and recovers the resulting normal and shear stresses.
 
-The physical case is a prestressed concrete pole represented by 80 polygons, with localized degradation affecting selected components. Its geometry, material distribution, and component-specific participation laws are defined through a flexible and customizable parametric model.
+The physical case is a prestressed concrete pole represented by eighty polygons, with localized degradation affecting selected components. Its geometry, material distribution, and component-specific participation laws are defined through a flexible and customizable parametric model.
 
 Because the field can be evaluated at arbitrary longitudinal coordinates, the external application can also compute numerical derivatives directly from resolved values, without relying on a mesh or a predefined set of stored sections.
 
