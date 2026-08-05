@@ -95,8 +95,6 @@ else:
     XY = None
     CSFDumper = None
 
-
-# Add this method inside class ContinuousSectionField.
 #
 # Goal:
 #   Provide an API to compute an AREA BREAKDOWN of one 2D section by MATERIAL WEIGHT (W)
