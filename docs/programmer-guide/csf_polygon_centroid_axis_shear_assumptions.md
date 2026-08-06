@@ -1,6 +1,6 @@
 # DRAFT
 
-# CSF polygon-wise global-centroid-axis shear
+# CSF polygon-wise flexural global-centroid-axis shear
 
 ## Assumptions, formulation, implementation, and interpretation
 
@@ -10,7 +10,6 @@ This note documents the reduced shear-stress contribution implemented by:
 analyse_polygon_centroid_axis_shear(
     section_field,
     z,
-    N,
     Mx,
     My,
     *,
@@ -22,31 +21,32 @@ analyse_polygon_centroid_axis_shear(
 )
 ```
 
-The method is intended for one-dimensional beam models in which the
-axial-flexural centroid of the complete CSF section varies along the
-longitudinal coordinate $z$.
+The method is intended for one-dimensional beam models in which the global
+axial-flexural centroid of the complete Continuous Section Field (CSF) section
+varies along the longitudinal coordinate $z$.
 
 The implemented contribution is:
 
 ```math
 \tau_x^{C}(x,y,z)
 =
-\sigma_{zz}(x,y,z)\frac{dC_x}{dz},
+\sigma_{zz}^{M}(x,y,z)\frac{dC_x}{dz},
 ```
 
 ```math
 \tau_y^{C}(x,y,z)
 =
-\sigma_{zz}(x,y,z)\frac{dC_y}{dz},
+\sigma_{zz}^{M}(x,y,z)\frac{dC_y}{dz},
 ```
 
 where:
 
-- $\sigma_{zz}$ is the polygon-wise CSF Navier normal stress;
-- $C_x(z)$ and $C_y(z)$ are the coordinates of the **single global
-  axial-flexural centroid** of the complete section;
-- the superscript $C$ identifies the contribution associated with the
-  variation of the global centroid axis.
+- $\sigma_{zz}^{M}$ is the polygon-wise **flexural** CSF Navier normal-stress
+  field evaluated from $M_x$ and $M_y$ with $N=0$;
+- $C_x(z)$ and $C_y(z)$ are the coordinates of the single global
+  axial-flexural centroid of the complete CSF section;
+- the superscript $C$ identifies the contribution associated with variation
+  of the global centroid curve.
 
 This is a reduced beam-theory approximation. It is not a complete
 two-dimensional or three-dimensional elasticity solution.
@@ -55,9 +55,9 @@ two-dimensional or three-dimensional elasticity solution.
 
 ## 1. Problem addressed
 
-In a conventional prismatic beam, or in a beam whose section varies
-symmetrically, the axial-flexural centroid normally remains on a fixed
-reference line:
+For a prismatic beam, or for a longitudinally varying beam whose transformed
+section remains symmetric about a fixed reference line, the global
+axial-flexural centroid may remain constant:
 
 ```math
 \frac{dC_x}{dz}=0,
@@ -67,18 +67,18 @@ reference line:
 
 The contribution documented here is then zero.
 
-A CSF model can instead produce a moving axial-flexural centroid because
-geometry and axial-flexural participation may vary continuously along
-$z$. Examples include:
+A CSF model can instead produce a moving global centroid because geometry and
+axial-flexural participation may vary continuously along $z$. Typical causes
+include:
 
 - asymmetric taper;
 - variable material distribution;
 - longitudinally varying polygon `weight`;
 - local deterioration or strengthening;
 - activation or reduction of axial-flexural participation;
-- combined geometric and material variation.
+- combined geometric and participation changes.
 
-The complete centroid curve is:
+The global centroid curve is:
 
 ```math
 \mathbf C(z)
@@ -86,10 +86,10 @@ The complete centroid curve is:
 \begin{bmatrix}
 C_x(z)\\
 C_y(z)
-\end{bmatrix}.
+\end{bmatrix},
 ```
 
-The method uses its local slope:
+and its local slope is:
 
 ```math
 \mathbf C'(z)
@@ -100,15 +100,106 @@ dC_y/dz
 \end{bmatrix}.
 ```
 
+The method uses this section-level slope to convert the flexural Navier field
+into an additional local tangential contribution.
+
 ---
 
-## 2. Central modelling choice
+## 2. Section actions used by the stress APIs
 
-The implementation assumes that the already computed Navier axial stress
-field is transported along the varying global centroid axis.
+The stress analyses involved in the complete workflow use two different sets
+of section actions.
 
-At one section, every axial-stress value is assigned the same transverse
-directional slope:
+### 2.1 Complete Navier normal-stress analysis
+
+The complete Navier field may be evaluated from:
+
+```math
+N,
+\qquad
+M_x,
+\qquad
+M_y.
+```
+
+It is denoted here by:
+
+```math
+\sigma_{zz}^{N+M}(x,y,z).
+```
+
+This field is useful for reporting the complete axial-flexural normal stress
+at the selected station.
+
+### 2.2 Flexural global-centroid-axis contribution
+
+The centroid-axis shear function uses only:
+
+```math
+M_x,
+\qquad
+M_y.
+```
+
+Internally it evaluates the Navier field with:
+
+```math
+N=0.
+```
+
+The resulting normal-stress field is denoted by:
+
+```math
+\sigma_{zz}^{M}(x,y,z).
+```
+
+This distinction is essential:
+
+```math
+\sigma_{zz}^{N+M}
+\neq
+\sigma_{zz}^{M}
+```
+
+when $N\neq 0$.
+
+### 2.3 Jourawski shear-stress analysis
+
+Jourawski receives the section shear resultants:
+
+```math
+T_x,
+\qquad
+T_y,
+```
+
+obtained from beam equilibrium with the external actions.
+
+Under the CSF component convention:
+
+- $T_x$ is associated with the longitudinal variation of $M_y$;
+- $T_y$ is associated with the longitudinal variation of $M_x$.
+
+The exact signs depend on the adopted beam and solver convention. In the
+corresponding convention, the equilibrium relations have the form:
+
+```math
+T_x \sim \frac{dM_y}{dz},
+\qquad
+T_y \sim \frac{dM_x}{dz}.
+```
+
+The section resultants are passed to Jourawski directly.
+
+---
+
+## 3. Central modelling choice
+
+The implementation assumes that the flexural Navier normal-stress field is
+transported along the varying global centroid curve.
+
+At one section, every flexural normal-stress value is assigned the same
+transverse directional slope:
 
 ```math
 \left(
@@ -117,26 +208,26 @@ directional slope:
 \right).
 ```
 
-This produces the local shear-stress contribution:
+This produces:
 
 ```math
 \boldsymbol{\tau}^{C}
 =
-\sigma_{zz}\mathbf C'(z).
+\sigma_{zz}^{M}\mathbf C'(z).
 ```
 
-The method therefore represents a **common translation of the axial
-stress field with the global centroid curve**.
+The method therefore represents a common translation of the flexural
+normal-stress field with the single global centroid curve.
 
-It does not calculate a separate longitudinal trajectory for every
-polygon, vertex, material region, or fibre.
+It does not calculate a separate longitudinal trajectory for every polygon,
+vertex, material region, or fibre.
 
 ---
 
-## 3. Interpretation from a slightly inclined axial-stress direction
+## 4. Interpretation from a slightly inclined flexural-stress direction
 
-A useful mechanical interpretation is obtained by considering an axial
-stress direction tangent to the centroid curve.
+A useful reduced mechanical interpretation is obtained by considering a
+flexural stress direction tangent to the global centroid curve.
 
 The non-normalized tangent is:
 
@@ -150,7 +241,7 @@ dC_y/dz\\
 \end{bmatrix}.
 ```
 
-For small centroid-axis slopes,
+For small centroid slopes,
 
 ```math
 \left|\frac{dC_x}{dz}\right|\ll 1,
@@ -158,7 +249,7 @@ For small centroid-axis slopes,
 \left|\frac{dC_y}{dz}\right|\ll 1,
 ```
 
-the tangent direction is approximately:
+the tangent direction is approximated by:
 
 ```math
 \mathbf t
@@ -170,44 +261,48 @@ dC_y/dz\\
 \end{bmatrix}.
 ```
 
-An axial traction aligned with this direction has first-order transverse
+A flexural traction aligned with this direction has first-order transverse
 components:
 
 ```math
 \tau_x^{C}
 \approx
-\sigma_{zz}\frac{dC_x}{dz},
-\qquad
-\tau_y^{C}
-\approx
-\sigma_{zz}\frac{dC_y}{dz}.
+\sigma_{zz}^{M}\frac{dC_x}{dz},
 ```
 
-This interpretation explains the implemented relation and also its main
+```math
+\tau_y^{C}
+\approx
+\sigma_{zz}^{M}\frac{dC_y}{dz}.
+```
+
+This interpretation explains both the implemented relation and its principal
 limitation: it is a first-order, small-slope beam approximation.
 
-For finite slopes, an exact directional transformation would contain
-normalization factors and a distinction between stress measured along the
-inclined direction and stress measured on the $z=\text{constant}$
-section. Those higher-order effects are not included.
+For finite slopes, an exact directional transformation would require
+normalization factors and a precise distinction between stress components
+measured along the inclined direction and tractions acting on the
+$z=\text{constant}$ section. Those higher-order effects are not included.
 
 ---
 
-## 4. The centroid is global, not polygon-specific
+## 5. The centroid is global, not polygon-specific
 
-The implementation calculates one centroid curve only:
-
-```math
-C_x(z),\qquad C_y(z).
-```
-
-It does **not** calculate:
+The implementation calculates one centroid curve:
 
 ```math
-C_{x,i}(z),\qquad C_{y,i}(z)
+C_x(z),
+\qquad
+C_y(z).
 ```
 
-for each polygon $i$.
+It does not calculate polygon-specific curves:
+
+```math
+C_{x,i}(z),
+\qquad
+C_{y,i}(z).
+```
 
 Consequently, it does not use:
 
@@ -225,12 +320,12 @@ Every polygon receives the same section-level derivatives:
 \frac{dC_y}{dz}.
 ```
 
-The word `polygon` in the API refers to the polygon-wise reporting of the
-stress extrema. It does not imply a polygon-centroid-axis formulation.
+The word `polygon` in the API refers to polygon-wise reporting of the stress
+extrema. It does not imply a polygon-centroid-axis formulation.
 
 ---
 
-## 5. Calculation of the global CSF centroid
+## 6. Calculation of the global CSF centroid
 
 At every sampled coordinate $z$, the implementation evaluates:
 
@@ -247,15 +342,15 @@ section_full_analysis(
 )
 ```
 
-The global centroid is obtained from the complete axial-flexural section:
+The global centroid is obtained from:
 
 ```python
 Cx = analysis["Cx"]
 Cy = analysis["Cy"]
 ```
 
-The underlying section properties are calculated from the algebraic sum
-of the weighted polygon contributions.
+The underlying section properties are calculated from the algebraic sum of
+the weighted polygon contributions.
 
 For nested polygons, CSF uses relative polygon weights in the section
 representation. Conceptually:
@@ -268,43 +363,230 @@ w_{\mathrm{abs,child}}
 w_{\mathrm{abs,parent}}.
 ```
 
-This allows the global area, first moments, centroid, and second moments
-to represent:
+This allows the global area, first moments, centroid, and second moments to
+represent:
 
 - different material regions;
 - nested inclusions;
 - regions with zero axial-flexural participation;
 - holes represented through the CSF weighting convention.
 
-The resulting $C_x$ and $C_y$ are therefore properties of the complete
+The resulting $C_x$ and $C_y$ are properties of the complete transformed
 axial-flexural CSF section, not of its unweighted geometric envelope.
 
 ---
 
-## 6. Navier stress field used by the method
+## 7. Flexural Navier field used by the method
 
-The function calls the public CSF Navier API once:
+The centroid-axis function calls the public Navier API once:
 
 ```python
 navier_rows = analyse_polygon_navier_stress(
     section_field=section_field,
     z=z,
-    N=N,
+    N=0.0,
     Mx=Mx,
     My=My,
 )
 ```
 
-The Navier field is based on the global transformed section properties:
+The flexural field is based on the global transformed section properties:
 
 ```math
-A,\quad
-C_x,\quad
-C_y,\quad
-I_x,\quad
-I_y,\quad
+A,
+\quad
+C_x,
+\quad
+C_y,
+\quad
+I_x,
+\quad
+I_y,
+\quad
 I_{xy}.
 ```
+
+Define:
+
+```math
+D=I_xI_y-I_{xy}^2.
+```
+
+The flexural coefficients are:
+
+```math
+b_x
+=
+\frac{M_yI_x-M_xI_{xy}}{D},
+```
+
+```math
+b_y
+=
+\frac{M_xI_y-M_yI_{xy}}{D}.
+```
+
+For polygon $i$, the local CSF flexural Navier quantity is:
+
+```math
+\sigma_{zz,i}^{M}(x,y)
+=
+w_i^{\mathrm{abs}}
+\left[
+ b_x(x-C_x)
++
+ b_y(y-C_y)
+\right].
+```
+
+The polygon `weightabs` is already included by the Navier API.
+
+The centroid-axis function must therefore not multiply the returned values by
+`weightabs` again.
+
+No `shear_weight` or `shear_weightabs` is used in this contribution.
+
+---
+
+## 8. Local flexural centroid-axis shear field
+
+Once the flexural Navier extrema and global centroid derivatives are
+available, the polygon-wise contribution is:
+
+```math
+\tau_{x,i}^{C}
+=
+\sigma_{zz,i}^{M}\frac{dC_x}{dz},
+```
+
+```math
+\tau_{y,i}^{C}
+=
+\sigma_{zz,i}^{M}\frac{dC_y}{dz}.
+```
+
+At a fixed station, $dC_x/dz$ and $dC_y/dz$ are section constants.
+
+Therefore each component is affine over a polygon whenever the flexural
+Navier field is affine.
+
+---
+
+## 9. Self-equilibrated character of the contribution
+
+The flexural Navier field has zero axial resultant over the complete
+transformed occupied section:
+
+```math
+\int_A \sigma_{zz}^{M}\,dA=0.
+```
+
+Since the centroid derivative is constant over the selected section:
+
+```math
+\int_A \tau_x^{C}\,dA
+=
+\frac{dC_x}{dz}
+\int_A \sigma_{zz}^{M}\,dA
+=0,
+```
+
+and:
+
+```math
+\int_A \tau_y^{C}\,dA
+=
+\frac{dC_y}{dz}
+\int_A \sigma_{zz}^{M}\,dA
+=0.
+```
+
+Hence:
+
+```math
+\boxed{
+\int_A \boldsymbol{\tau}^{C}\,dA
+=
+\mathbf 0
+}
+```
+
+The field may contain non-zero positive and negative local values, but its net
+transverse force is zero.
+
+This is why the contribution can coexist with the Jourawski field without
+modifying the section shear resultants passed to Jourawski.
+
+---
+
+## 10. Role of axial force and beam equilibrium
+
+The function receives only $M_x$ and $M_y$.
+
+Axial-force effects belong to the complete axial-flexural stress analysis and
+to the beam-level equilibrium and moment definition.
+
+After the beam model has determined the internal section moments and their
+longitudinal derivatives, the resulting section shear actions are represented
+by:
+
+```math
+T_x,
+\qquad
+T_y.
+```
+
+Those actions are then passed directly to Jourawski.
+
+In other words:
+
+- beam equilibrium determines the section shear resultants;
+- Jourawski recovers the shear field associated with those resultants;
+- the centroid-axis function adds the separate self-equilibrated field
+  generated by $\sigma_{zz}^{M}\mathbf C'(z)$.
+
+The centroid-axis function does not modify the beam equilibrium resultants.
+
+---
+
+## 11. Relation to `analyse_polygon_jourawski_shear_stress()`
+
+The centroid-axis function and the Jourawski function are independent
+section-level APIs.
+
+### 11.1 Flexural global-centroid-axis contribution
+
+```math
+\boldsymbol{\tau}^{C}
+=
+\sigma_{zz}^{M}\mathbf C'(z).
+```
+
+It uses:
+
+- `weightabs` through the flexural Navier field;
+- $M_x$ and $M_y$;
+- the derivative of the global axial-flexural centroid.
+
+It does not use:
+
+- $N$;
+- $T_x$ or $T_y$;
+- `shear_weight` or `shear_weightabs`;
+- cut widths;
+- partial first moments;
+- Jourawski scans.
+
+### 11.2 Jourawski contribution
+
+`analyse_polygon_jourawski_shear_stress()` receives:
+
+```python
+Tx
+Ty
+```
+
+and uses those values directly.
 
 With:
 
@@ -312,80 +594,134 @@ With:
 D=I_xI_y-I_{xy}^2,
 ```
 
-the implemented coefficients are:
+the function forms:
 
 ```math
-b_x
+\frac{db_x}{dz}
 =
-\frac{M_y I_x-M_x I_{xy}}{D},
+\frac{T_xI_x-T_yI_{xy}}{D},
 ```
 
 ```math
-b_y
+\frac{db_y}{dz}
 =
-\frac{M_x I_y-M_y I_{xy}}{D}.
+\frac{T_yI_y-T_xI_{xy}}{D}.
 ```
 
-For polygon $i$, the local CSF Navier stress quantity is:
+The remaining Jourawski calculation uses:
+
+- global cuts through the section;
+- partial first moments;
+- active cut widths;
+- `shear_weightabs` redistribution;
+- the scan resolutions `num_sudx` and `num_sudy`.
+
+The inputs are:
 
 ```math
-\sigma_{zz,i}(x,y)
-=
-w_i^{\mathrm{abs}}
-\left[
-\frac{N}{A}
-+
-b_x(x-C_x)
-+
-b_y(y-C_y)
-\right].
+\boxed{
+T_x^{J,\mathrm{input}}=T_x,
+\qquad
+T_y^{J,\mathrm{input}}=T_y
+}
 ```
 
-The polygon `weightabs` is already included by the Navier API.
-
-The centroid-axis function must therefore **not multiply by
-`weightabs` again**.
-
-No `shear_weight` or `shear_weightabs` is used in this contribution.
+The supplied section shear resultants are used unchanged.
 
 ---
 
-## 7. Meaning of `weight` and `weightabs` in this workflow
+## 12. Pointwise combination of the two shear fields
 
-Two distinct roles must remain separated.
+The complete reduced shear field is represented as:
 
-### 7.1 Relative `weight`
+```math
+\boldsymbol{\tau}^{\mathrm{total}}(x,y,z)
+=
+\boldsymbol{\tau}^{J}(x,y,z)
++
+\boldsymbol{\tau}^{C}(x,y,z).
+```
 
-The relative polygon `weight` is used by the algebraic section
-integration. It permits nested polygons and differences between parent
-and child participation.
+For the global components:
+
+```math
+\tau_x^{\mathrm{total}}(x,y,z)
+=
+\tau_x^{J}(x,y,z)
++
+\tau_x^{C}(x,y,z),
+```
+
+```math
+\tau_y^{\mathrm{total}}(x,y,z)
+=
+\tau_y^{J}(x,y,z)
++
+\tau_y^{C}(x,y,z).
+```
+
+The two fields must be evaluated at the same physical point before they are
+added.
+
+Their separately reported extrema are generally located at different points.
+Therefore:
+
+```math
+\tau_{\max}^{\mathrm{total}}
+\neq
+\tau_{\max}^{J}
++
+\tau_{\max}^{C}
+```
+
+in general.
+
+A governing total stress requires a common spatial sampling or a common
+point-evaluation API.
+
+---
+
+## 13. Meaning of `weight` and `weightabs`
+
+Two different roles must remain separated.
+
+### 13.1 Relative `weight`
+
+The relative polygon `weight` is used by the algebraic section integration.
+It supports nested polygons and differences between parent and child
+participation.
 
 It contributes to the calculation of:
 
 ```math
-A,\quad
-C_x,\quad
-C_y,\quad
-I_x,\quad
-I_y,\quad
+A,
+\quad
+C_x,
+\quad
+C_y,
+\quad
+I_x,
+\quad
+I_y,
+\quad
 I_{xy}.
 ```
 
-### 7.2 Absolute `weightabs`
+### 13.2 Absolute `weightabs`
 
-The absolute participation value `weightabs` is used when the local
+The absolute participation value `weightabs` is used when the local flexural
 Navier stress is assigned to a polygon.
 
-It represents the axial-flexural carrier associated with that polygon
-under the normalization adopted by the CSF model.
+It represents the axial-flexural carrier associated with that polygon under
+the normalization adopted by the CSF model.
 
-The units and physical interpretation of the returned stress require the
-section carriers, applied actions, geometry, and unit system to be
-mutually consistent.
+The units and physical interpretation of the returned stresses require the
+section carriers, applied moments, geometry, and unit system to be mutually
+consistent.
 
 ---
 
-## 8. Numerical derivative of the centroid curve
+## 14. Numerical derivative of the centroid curve
 
 The method evaluates:
 
@@ -397,7 +733,7 @@ The method evaluates:
 
 with second-order finite differences.
 
-### 8.1 Interior station
+### 14.1 Interior station
 
 For a station sufficiently far from both CSF endpoints:
 
@@ -419,7 +755,7 @@ The reported scheme is:
 central_second_order
 ```
 
-### 8.2 Start station
+### 14.2 Start station
 
 At the first CSF endpoint:
 
@@ -437,7 +773,7 @@ The reported scheme is:
 forward_second_order
 ```
 
-### 8.3 End station
+### 14.3 End station
 
 At the final CSF endpoint:
 
@@ -457,9 +793,9 @@ backward_second_order
 
 ---
 
-## 9. Explicit and automatically converged derivative modes
+## 15. Explicit and automatically converged derivative modes
 
-### 9.1 Explicit `dz`
+### 15.1 Explicit `dz`
 
 When the caller supplies:
 
@@ -483,7 +819,7 @@ derivative_dz_mode = explicit
 
 No numerical convergence claim is made.
 
-### 9.2 Automatic convergence
+### 15.2 Automatic convergence
 
 When:
 
@@ -514,9 +850,9 @@ Convergence is required independently for both centroid components:
 ```math
 \left|C'_{x,k+1}-C'_{x,k}\right|
 \le
-a_{\mathrm{tol}}
+ a_{\mathrm{tol}}
 +
-r_{\mathrm{tol}}
+ r_{\mathrm{tol}}
 \max\left(
 |C'_{x,k+1}|,
 |C'_{x,k}|
@@ -534,38 +870,42 @@ max_refinements = 20
 ```
 
 Automatic refinement checks numerical stability of the finite-difference
-estimate. It does not prove that the underlying centroid curve is
-physically smooth or differentiable.
+estimate. It does not prove that the underlying centroid curve is physically
+smooth or differentiable.
 
 ---
 
-## 10. Local centroid-axis shear field
+## 16. Encapsulation and centroid cache
 
-Once the Navier stress extrema and centroid derivatives are available,
-the polygon-wise contribution is:
+The derivative helpers are defined inside
+`analyse_polygon_centroid_axis_shear()` so that the complete workflow remains
+encapsulated in the public function.
 
-```math
-\tau_{x,i}^{C}
-=
-\sigma_{zz,i}\frac{dC_x}{dz},
-```
+The internal operations include:
 
-```math
-\tau_{y,i}^{C}
-=
-\sigma_{zz,i}\frac{dC_y}{dz}.
-```
+- global centroid evaluation;
+- finite-difference sampling;
+- automatic derivative convergence;
+- scaling of flexural Navier extrema.
 
-At a fixed station, $dC_x/dz$ and $dC_y/dz$ are section constants.
+Centroid evaluations are cached per `section_field` and per sampled station.
+The cache uses a `weakref.WeakKeyDictionary` owned by the public function.
 
-Therefore each component is an affine field over a polygon whenever the
-Navier stress is affine.
+This design has two purposes:
+
+1. repeated derivative refinements can reuse centroid values already
+   evaluated at the same stations;
+2. cached entries associated with a `section_field` can be released when that
+   object is no longer referenced elsewhere.
+
+The cache is a process-local Python object. It is not shared memory and it is
+not a cross-process cache.
 
 ---
 
-## 11. Scaling polygon extrema
+## 17. Scaling polygon extrema
 
-The public Navier API returns, for each polygon:
+The internal flexural Navier call returns, for each polygon:
 
 ```text
 sigma_min
@@ -575,8 +915,16 @@ sigma_extreme
 
 with their coordinates.
 
-Because the centroid derivative is constant over the section, the extrema
-of each centroid-axis shear component can be obtained by scaling only
+Within the centroid-axis result, these values refer to:
+
+```math
+\sigma_{zz}^{M},
+```
+
+not to the complete field $\sigma_{zz}^{N+M}$.
+
+Because the centroid derivative is constant over the section, the extrema of
+each centroid-axis component can be obtained by scaling only
 `sigma_min` and `sigma_max`.
 
 For a positive scale:
@@ -584,11 +932,11 @@ For a positive scale:
 ```math
 \tau_{\min}
 =
-\sigma_{\min}C',
+\sigma_{\min}^{M}C',
 \qquad
 \tau_{\max}
 =
-\sigma_{\max}C'.
+\sigma_{\max}^{M}C'.
 ```
 
 For a negative scale, the ordering reverses:
@@ -596,15 +944,12 @@ For a negative scale, the ordering reverses:
 ```math
 \tau_{\min}
 =
-\sigma_{\max}C',
+\sigma_{\max}^{M}C',
 \qquad
 \tau_{\max}
 =
-\sigma_{\min}C'.
+\sigma_{\min}^{M}C'.
 ```
-
-The implementation avoids a sign-specific branch by constructing both
-scaled candidates and selecting their signed minimum and maximum.
 
 This is why a reported:
 
@@ -615,24 +960,24 @@ tau_bound = max
 may be generated by:
 
 ```text
-source_navier_bound = sigma_min
+source_flexural_navier_bound = sigma_flexural_min
 ```
 
 when the relevant centroid derivative is negative.
 
 ---
 
-## 12. Coordinates returned for polygon extrema
+## 18. Coordinates returned for polygon extrema
 
 The centroid-axis API does not perform a new scan over the polygon area.
 
-Its coordinates are inherited directly from the Navier extrema.
+Its coordinates are inherited directly from the flexural Navier extrema.
 
 In the present Navier implementation, all polygon vertices are checked.
 Therefore the reported centroid-axis extrema are located at:
 
 ```text
-Navier-extreme polygon vertices
+flexural-Navier-extreme polygon vertices
 ```
 
 They are not:
@@ -643,498 +988,101 @@ They are not:
 - polygon centroid locations.
 
 If the relevant centroid derivative is exactly zero, the corresponding
-centroid-axis shear component is zero everywhere. In that case, any
-reported inherited coordinate is non-unique and should not be given
-physical significance.
+centroid-axis shear component is zero everywhere. In that case, any inherited
+coordinate is non-unique and should not be given physical significance.
 
 ---
 
-## 13. Treatment of holes and nested polygons
+## 19. Meaning of `tau_governing`
 
-The global section properties account for the CSF nested-polygon
-weighting convention.
+For each polygon, the API considers the four signed extrema:
 
-The polygon-wise Navier API, however, reports extrema by checking the
-vertices of every polygon separately.
+```math
+\tau_{x,\min}^{C},
+\quad
+\tau_{x,\max}^{C},
+\quad
+\tau_{y,\min}^{C},
+\quad
+\tau_{y,\max}^{C}.
+```
+
+It selects the value with the largest absolute magnitude while preserving its
+sign:
+
+```math
+\tau_{\mathrm{governing}}^{C}
+=
+\operatorname*{arg\,max}_{\tau\in\mathcal E_i}|\tau|,
+```
+
+where:
+
+```math
+\mathcal E_i
+=
+\left\{
+\tau_{x,\min}^{C},
+\tau_{x,\max}^{C},
+\tau_{y,\min}^{C},
+\tau_{y,\max}^{C}
+\right\}
+```
+
+for polygon $i$.
+
+The returned metadata identifies:
+
+```text
+tau_governing
+tau_governing_direction
+tau_governing_bound
+x_tau_governing
+y_tau_governing
+```
+
+`tau_governing` means:
+
+> the signed flexural centroid-axis shear component with the largest absolute
+> magnitude among the four reported extrema for that polygon.
+
+It is not:
+
+- the maximum total shear stress;
+- a sum with Jourawski;
+- a section shear resultant;
+- a single governing value for the complete section.
+
+---
+
+## 20. Treatment of holes and nested polygons
+
+The global section properties account for the CSF nested-polygon weighting
+convention.
+
+The polygon-wise Navier API reports extrema by checking the vertices of every
+polygon separately.
 
 For a child polygon strictly inside its parent:
 
-- the global section properties include the child correctly;
+- the global section properties include the child through the CSF weighting
+  convention;
 - the child receives its own `weightabs`;
-- a zero-participation hole receives zero local Navier stress;
-- the affine Navier extrema of the parent remain on its external polygon
-  vertices.
+- a zero-participation hole receives zero local flexural Navier stress;
+- the affine flexural Navier extrema of the parent remain on its external
+  polygon vertices.
 
-Therefore a strictly internal hole does not require its boundary vertices
-to be added to the parent's extreme-value search.
+A geometric limitation exists if a child removes a governing vertex or a
+governing part of the parent's external occupied boundary. The current
+polygon-wise extreme search still evaluates the original parent vertices and
+does not reconstruct the parent's exclusive occupied boundary.
 
-A more specific geometric limitation exists if a child is permitted to
-remove a governing vertex or a governing part of the parent's external
-boundary. The current Navier extreme search still evaluates all original
-parent vertices and does not explicitly reconstruct the parent's
-exclusive occupied boundary.
-
-This limitation concerns polygon-wise extreme localization. It does not
-change the algebraic calculation of the global section properties.
+This limitation concerns extreme localization. It does not change the
+algebraic calculation of the global section properties.
 
 ---
 
-## 14. Section resultants of the centroid-axis contribution
-
-Over the physical occupied section, the Navier stress field satisfies:
-
-```math
-\int_A \sigma_{zz}\,dA=N.
-```
-
-Since the centroid derivative is constant over the selected section:
-
-```math
-T_x^{C}
-=
-\int_A \tau_x^{C}\,dA
-=
-\frac{dC_x}{dz}
-\int_A \sigma_{zz}\,dA,
-```
-
-and therefore:
-
-```math
-\boxed{
-T_x^{C}=N\frac{dC_x}{dz}
-}
-```
-
-Similarly:
-
-```math
-\boxed{
-T_y^{C}=N\frac{dC_y}{dz}
-}
-```
-
-The bending part of the Navier field can produce non-zero local positive
-and negative centroid-axis shear contributions, but its net force
-integral is zero.
-
-Consequently, the section resultant of this contribution depends on
-$N$, while its local distribution depends on:
-
-```math
-N,\quad M_x,\quad M_y.
-```
-
----
-
-## 15. Optional caller-side decomposition of external shear resultants
-
-The centroid-axis API returns the section resultants:
-
-```math
-T_x^{C}=N\frac{dC_x}{dz},
-\qquad
-T_y^{C}=N\frac{dC_y}{dz}.
-```
-
-The Jourawski API has a separate input contract:
-
-```python
-def analyse_polygon_jourawski_shear_stress(
-    section_field,
-    z: float,
-    Tx: float,
-    Ty: float,
-    *,
-    num_sudx: int = 30,
-    num_sudy: int = 30,
-    debug: bool = False,
-) -> list[dict[str, object]]:
-```
-
-The function uses the supplied `Tx` and `Ty` values directly. It does not:
-
-- classify them as total or residual resultants;
-- call `analyse_polygon_centroid_axis_shear()`;
-- evaluate $dC_x/dz$ or $dC_y/dz$;
-- subtract $N\,dC_x/dz$ or $N\,dC_y/dz$;
-- otherwise modify the supplied shear resultants.
-
-A decomposition may be adopted by the **calling workflow** when the user
-intends to combine the two reduced contributions. For example, the caller
-may define:
-
-```math
-T_x^{J,\mathrm{input}}
-=
-T_x^{\mathrm{external}}
--
-T_x^{C},
-```
-
-```math
-T_y^{J,\mathrm{input}}
-=
-T_y^{\mathrm{external}}
--
-T_y^{C},
-```
-
-and therefore:
-
-```math
-T_x^{J,\mathrm{input}}
-=
-T_x^{\mathrm{external}}
--
-N\frac{dC_x}{dz},
-```
-
-```math
-T_y^{J,\mathrm{input}}
-=
-T_y^{\mathrm{external}}
--
-N\frac{dC_y}{dz}.
-```
-
-The caller can then pass those values explicitly:
-
-```python
-Tx_for_jourawski = Tx_external - Tx_centroid_axis
-Ty_for_jourawski = Ty_external - Ty_centroid_axis
-
-jourawski_rows = analyse_polygon_jourawski_shear_stress(
-    section_field=section_field,
-    z=z,
-    Tx=Tx_for_jourawski,
-    Ty=Ty_for_jourawski,
-)
-```
-
-This subtraction is not part of
-`analyse_polygon_jourawski_shear_stress()`. If the caller instead passes
-`Tx_external` and `Ty_external` directly, the function calculates the
-Jourawski field associated with those values directly.
-
-A caller-computed value may have the opposite sign to the corresponding
-external resultant. That sign belongs to the caller-side decomposition;
-it is not generated by a subtraction or correction inside the Jourawski
-function.
-
----
-
-## 16. Relation to `analyse_polygon_jourawski_shear_stress()`
-
-The centroid-axis function and the Jourawski function are independent
-section-level APIs.
-
-### Global-centroid-axis contribution
-
-```math
-\boldsymbol{\tau}^{C}
-=
-\sigma_{zz}\mathbf C'(z).
-```
-
-It uses:
-
-- `weightabs`;
-- the Navier axial-flexural field;
-- the derivative of the global axial-flexural centroid.
-
-It does not use:
-
-- `shear_weight`;
-- cut widths;
-- first moments of partial areas;
-- Jourawski scans.
-
-### Jourawski contribution from the supplied resultants
-
-`analyse_polygon_jourawski_shear_stress()` uses the values received in
-`Tx` and `Ty` without applying a centroid-axis correction.
-
-With:
-
-```math
-D=I_xI_y-I_{xy}^2,
-```
-
-the function forms:
-
-```math
-\frac{db_x}{dz}
-=
-\frac{T_x I_x-T_y I_{xy}}{D},
-```
-
-```math
-\frac{db_y}{dz}
-=
-\frac{T_y I_y-T_x I_{xy}}{D}.
-```
-
-The `Tx` and `Ty` in these equations are exactly the arguments supplied by
-the caller.
-
-The remaining Jourawski calculation uses:
-
-- global cuts through the section;
-- partial first moments;
-- active cut widths;
-- `shear_weightabs` redistribution;
-- the scan resolutions `num_sudx` and `num_sudy`.
-
-It does not calculate the centroid-axis contribution automatically and it
-does not decide whether its inputs represent total, residual, or otherwise
-preprocessed section resultants.
-
-The two APIs become complementary only when the caller deliberately
-combines them within a documented workflow.
-
-
----
-
-## 17. The two reported extrema must not be added
-
-The Jourawski and centroid-axis APIs generally locate their extrema at
-different physical points.
-
-The centroid-axis coordinates are inherited from Navier polygon
-vertices.
-
-The Jourawski coordinates identify representative points of the scanned
-cut segments. The corresponding Jourawski field is generated from the
-`Tx` and `Ty` values supplied by the caller. It is a residual contribution
-only when the caller has explicitly passed residual resultants.
-
-Therefore this operation is generally invalid:
-
-```math
-\tau_{\max}^{\mathrm{total}}
-\ne
-\tau_{\max}^{J}
-+
-\tau_{\max}^{C}.
-```
-
-A total local shear stress must be formed at the same point:
-
-```math
-\tau_x^{\mathrm{total}}(x,y)
-=
-\tau_x^{J}(x,y)
-+
-\tau_x^{C}(x,y),
-```
-
-```math
-\tau_y^{\mathrm{total}}(x,y)
-=
-\tau_y^{J}(x,y)
-+
-\tau_y^{C}(x,y).
-```
-
-A governing total stress can be identified only after both contributions
-have been evaluated on a common spatial sampling or through a common
-field-evaluation API.
-
-The current separate extreme-value APIs do not perform that final
-same-point combination.
-
----
-
-## 18. Required consistency with a beam solver
-
-When section resultants come from an external beam solver, the following
-conditions must hold.
-
-### 18.1 Same coordinate system
-
-The solver resultants and the CSF centroid derivatives must use the same
-global section axes and sign convention.
-
-### 18.2 Same reference-line interpretation
-
-When the caller intends to decompose solver resultants into a
-centroid-axis contribution and a Jourawski input contribution, the solver
-resultants must represent the total section shear resultants relative to
-the structural reference line used by the CSF model.
-
-### 18.3 No double counting
-
-If a solver formulation already incorporates the effect of the varying
-centroid line in its internal-force definition or kinematics, a
-caller-side subtraction of $N\mathbf C'(z)$ may double count the effect.
-
-This is a coupling decision made before calling the Jourawski API. The
-function itself performs no subtraction. The adopted decomposition must
-therefore be documented for each solver coupling.
-
-### 18.4 Section station consistency
-
-The solver actions:
-
-```math
-N,\quad M_x,\quad M_y,\quad T_x,\quad T_y
-```
-
-and the CSF section must refer to the same longitudinal coordinate $z$.
-
----
-
-## 19. Main mechanical assumptions
-
-The adopted solution relies on the following assumptions.
-
-### 19.1 One-dimensional beam representation
-
-The member is represented by sectional resultants and continuously
-varying cross-sections rather than by a full three-dimensional stress
-solution.
-
-### 19.2 Navier axial-flexural field
-
-The axial stress is described by the CSF Navier formula. Effects not
-represented by that field are also absent from the centroid-axis
-contribution.
-
-### 19.3 Small centroid-axis slopes
-
-The relation:
-
-```math
-\boldsymbol{\tau}^{C}
-=
-\sigma_{zz}\mathbf C'
-```
-
-is interpreted as a first-order directional approximation.
-
-The implementation does not enforce a maximum value of
-$|\mathbf C'|$. The user must assess whether the centroid variation is
-sufficiently gradual.
-
-### 19.4 Smooth centroid curve
-
-The centroid curve must be locally differentiable at the evaluation
-station.
-
-Continuous geometry interpolation does not by itself guarantee a smooth
-centroid derivative if weights, topology, or user-defined laws contain
-non-smooth changes.
-
-### 19.5 Stable section topology over the derivative interval
-
-The sections sampled at:
-
-```math
-z-h,\quad z,\quad z+h
-```
-
-or at the corresponding one-sided coordinates must all be valid and
-structurally consistent CSF sections.
-
-### 19.6 Common transverse direction for the complete axial field
-
-All local axial stress values are assigned the slope of the global
-centroid axis.
-
-The method does not model different longitudinal paths for different
-polygons or fibres.
-
-### 19.7 No local warping solution
-
-The method does not solve for:
-
-- cross-sectional warping;
-- three-dimensional stress redistribution;
-- free-edge boundary conditions;
-- local shear concentrations;
-- stress boundary layers near abrupt transitions.
-
-### 19.8 No direct shear-carrier redistribution
-
-The centroid-axis contribution follows `weightabs` through the Navier
-field.
-
-It is not redistributed according to `shear_weightabs`.
-
-### 19.9 Consistent units
-
-Geometry, actions, section carriers, and returned stresses must use one
-consistent unit system.
-
----
-
-## 20. Non-smooth or discontinuous centroid variation
-
-If $C(z)$ contains a discontinuity, the classical derivative does not
-exist at that location.
-
-For example, a step change in a polygon `weight` may cause a step change
-in the global axial-flexural centroid.
-
-A finite-difference estimate across that discontinuity produces a value
-that depends on the selected step $h$. It should not be interpreted as
-a regular distributed shear stress.
-
-Such a location is more appropriately treated as:
-
-- a discrete interface;
-- a concentrated transfer region;
-- a local three-dimensional transition;
-- or a separately regularized longitudinal law.
-
-Automatic numerical convergence may fail near a discontinuity. If it
-appears to converge because of numerical clipping or sampling placement,
-that does not establish physical differentiability.
-
----
-
-## 21. Abrupt geometric transitions
-
-The formulation is most defensible for gradual longitudinal variation.
-
-Near abrupt shoulders, notches, offsets, terminations, or sudden section
-changes:
-
-- local equilibrium becomes strongly two- or three-dimensional;
-- the small-slope interpretation may fail;
-- Saint-Venant-type boundary layers may dominate;
-- the Navier field may not represent the actual local axial stress;
-- the Jourawski field may not represent the actual local shear stress.
-
-The method may still provide a one-dimensional indicator, but it should
-not be presented as a local stress-concentration solution.
-
----
-
-## 22. What the method does not calculate
-
-The function does not calculate:
-
-- a complete total shear-stress field;
-- a combined Jourawski plus centroid-axis maximum;
-- shear-centre effects;
-- torsional shear stress;
-- restrained-warping stress;
-- shell or solid stress concentrations;
-- interlaminar or interface shear transfer;
-- polygon-specific centroid-axis derivatives;
-- exact finite-slope stress transformation;
-- nonlinear material redistribution;
-- post-yield stress fields;
-- local contact or connection effects.
-
-These effects require separate formulations or higher-dimensional
-analysis.
-
----
-
-## 23. Output structure
+## 21. Output structure
 
 The function returns:
 
@@ -1145,24 +1093,21 @@ The function returns:
 }
 ```
 
-### 23.1 Section-level fields
+### 21.1 Section-level fields
 
 The section dictionary contains:
 
 ```text
 z
-N
 Mx
 My
 Cx
 Cy
 dCx_dz
 dCy_dz
-Tx_centroid_axis
-Ty_centroid_axis
 ```
 
-With `debug=True`, it also includes derivative metadata:
+With `debug=True`, it also contains:
 
 ```text
 derivative_step
@@ -1174,7 +1119,7 @@ derivative_change_x
 derivative_change_y
 ```
 
-### 23.2 Polygon-level fields
+### 21.2 Polygon-level fields
 
 Each polygon row contains:
 
@@ -1199,59 +1144,62 @@ tau_governing_bound
 
 and the corresponding coordinates.
 
-`tau_governing` is the largest absolute centroid-axis component among the
-four signed extrema for that polygon.
+Within this result:
 
-It is not the governing total shear stress.
+```text
+sigma_min
+sigma_max
+sigma_extreme
+```
+
+refer to the flexural Navier field evaluated with $N=0$.
+
+They should be labelled as flexural values when printed beside a separate
+complete Navier result.
 
 ---
 
-## 24. Recommended interpretation of the output
+## 22. Recommended interpretation of a combined example
 
-When the centroid-axis and Jourawski APIs are used in the same example,
-the output should be read in three levels.
+When the complete Navier, Jourawski, and centroid-axis APIs are used in the
+same example, the output should be read in three separate blocks.
 
-### Level 1: axial-flexural state
+### 22.1 Complete axial-flexural normal stress
 
 ```text
-NAVIER
+NAVIER COMPLETE: N + Mx + My
 ```
 
-This reports the polygon-wise normal-stress extrema generated by:
+This reports the polygon-wise complete normal-stress extrema generated by:
 
 ```math
-N,\quad M_x,\quad M_y.
+N,
+\qquad
+M_x,
+\qquad
+M_y.
 ```
 
-### Level 2: Jourawski shear from the supplied resultants
-
-The Jourawski block reports the shear field generated from the `Tx` and
-`Ty` arguments passed to
-`analyse_polygon_jourawski_shear_stress()`.
-
-An example may label this block:
+### 22.2 Jourawski shear
 
 ```text
-JOURAWSKI RESIDUAL SHEAR
+JOURAWSKI SHEAR
 ```
 
-only when the example code has already calculated and passed:
+This reports the shear field generated from the section shear resultants:
 
 ```math
-\mathbf T^{J,\mathrm{input}}
-=
-\mathbf T^{\mathrm{external}}
--
-N\mathbf C'(z).
+T_x,
+\qquad
+T_y.
 ```
 
-The word `RESIDUAL` then describes the caller-provided inputs. It does not
-describe an internal operation performed by the Jourawski function.
+The values are passed directly to the Jourawski API.
 
-### Level 3: centroid-axis contribution
+### 22.3 Flexural global-centroid-axis shear
 
 ```text
-GLOBAL CENTROID-AXIS SHEAR
+FLEXURAL GLOBAL CENTROID-AXIS SHEAR
 ```
 
 This reports:
@@ -1259,42 +1207,25 @@ This reports:
 ```math
 \boldsymbol{\tau}^{C}
 =
-\sigma_{zz}\mathbf C'(z).
+\sigma_{zz}^{M}\mathbf C'(z).
 ```
 
-The separately reported extrema at levels 2 and 3 must not be directly
-added.
+The associated `sigma_min` and `sigma_max` values are flexural-only values
+evaluated with $N=0$.
+
+The separately reported Jourawski and centroid-axis extrema must not be added
+directly.
 
 ---
 
-## 25. Internal consistency checks
+## 23. Internal consistency checks
 
 The following checks are appropriate for every analysis.
 
-### 25.1 Caller-side resultant decomposition
+### 23.1 Symmetry
 
-When the caller adopts the decomposition documented in Section 15, verify:
-
-```math
-T_x^{\mathrm{external}}
-\approx
-T_x^{J,\mathrm{input}}+T_x^{C},
-```
-
-```math
-T_y^{\mathrm{external}}
-\approx
-T_y^{J,\mathrm{input}}+T_y^{C}.
-```
-
-This verifies the values prepared by the calling workflow. It is not an
-internal check or transformation performed by
-`analyse_polygon_jourawski_shear_stress()`.
-
-### 25.2 Symmetry
-
-If the section and participation field remain symmetric about one axis,
-the corresponding centroid coordinate and derivative should remain zero.
+If the transformed section remains symmetric about one global axis, the
+corresponding centroid coordinate and derivative should remain zero.
 
 For example:
 
@@ -1303,108 +1234,324 @@ C_x(z)=0
 \quad\Rightarrow\quad
 \frac{dC_x}{dz}=0
 \quad\Rightarrow\quad
-T_x^{C}=0.
+\tau_x^{C}=0.
 ```
 
-### 25.3 Prismatic field
+### 23.2 Prismatic field
 
-For a longitudinally constant section and constant polygon
-participation:
+For a longitudinally constant section with constant polygon participation:
 
 ```math
 \mathbf C'(z)=\mathbf 0,
 ```
 
-and the complete centroid-axis contribution must be zero.
+and the complete centroid-axis contribution must be zero:
 
-### 25.4 Pure bending resultant
+```math
+\boldsymbol{\tau}^{C}=\mathbf 0.
+```
+
+### 23.3 Zero bending moments
 
 If:
 
 ```math
-N=0,
+M_x=0,
+\qquad
+M_y=0,
 ```
 
 then:
 
 ```math
-T_x^{C}=T_y^{C}=0.
+\sigma_{zz}^{M}=0
 ```
 
-Local centroid-axis shear values may still be positive and negative
-because the Navier bending stress is non-zero, but they must form a
-self-equilibrated field with zero net transverse force.
+and therefore:
 
-### 25.5 Derivative-step sensitivity
+```math
+\boldsymbol{\tau}^{C}=\mathbf 0.
+```
 
-Compare the automatic derivative with one or more explicit `dz` values.
+### 23.4 Self-equilibrium
 
-Strong sensitivity indicates:
+A numerical integration over the complete transformed occupied section should
+satisfy:
+
+```math
+\int_A \tau_x^{C}\,dA\approx0,
+```
+
+```math
+\int_A \tau_y^{C}\,dA\approx0.
+```
+
+The tolerance should reflect the polygon integration and floating-point
+accuracy used by the implementation.
+
+### 23.5 Derivative-step sensitivity
+
+Compare the automatically converged derivative with one or more explicit
+`dz` values.
+
+Strong sensitivity may indicate:
 
 - insufficient smoothness;
 - a discontinuity;
 - a very sharp longitudinal transition;
-- or numerical resolution limitations.
+- numerical resolution limitations.
+
+### 23.6 Jourawski input identity
+
+The values printed as Jourawski inputs should be exactly the section shear
+resultants supplied by the caller:
+
+```math
+T_x^{J,\mathrm{input}}=T_x,
+```
+
+```math
+T_y^{J,\mathrm{input}}=T_y.
+```
 
 ---
 
-## 26. Verification cases already suited to the implementation
+## 24. Verification cases suited to the implementation
 
-### 26.1 Constant geometry with varying polygon weights
+### 24.1 Constant geometry with varying polygon weights
 
-A prismatic section split into multiple polygons can have constant
-geometry but a moving axial-flexural centroid when polygon `weight` laws
-vary along $z$.
+A prismatic geometry split into multiple polygons can have a moving global
+axial-flexural centroid when polygon `weight` laws vary along $z$.
 
-This isolates:
+This case isolates:
 
 - weight-law evaluation;
 - transformed centroid calculation;
 - centroid differentiation;
-- `weightabs` use in Navier stress;
-- resultant closure.
+- use of `weightabs` in the flexural Navier field;
+- self-equilibrium of the centroid-axis shear contribution.
 
-### 26.2 Tapered asymmetric T-section
+### 24.2 Tapered asymmetric T-section
 
-A T-section with a constant flange and a web whose depth changes along
-$z$ produces a varying $C_y(z)$ while symmetry maintains:
+A T-section with a constant flange and a web whose depth changes along $z$
+produces a varying $C_y(z)$ while symmetry maintains:
 
 ```math
 C_x(z)=0.
 ```
 
-This isolates:
+The expected consequences are:
+
+```math
+\frac{dC_x}{dz}=0,
+\qquad
+\frac{dC_y}{dz}\neq 0,
+```
+
+and therefore:
+
+```math
+\tau_x^{C}=0,
+\qquad
+\tau_y^{C}\neq 0.
+```
+
+This case isolates:
 
 - geometric centroid migration;
 - one zero and one non-zero centroid derivative;
-- decomposition of the external shear resultants;
+- flexural Navier scaling;
 - different coordinates for Jourawski and centroid-axis extrema.
+
+### 24.3 Pure $M_x$ or pure $M_y$
+
+A single non-zero bending component allows the sign and coordinate mapping of
+the flexural Navier extrema to be checked independently.
+
+### 24.4 Constant centroid with varying inertia
+
+A section may vary longitudinally while preserving a fixed global centroid.
+In that case:
+
+```math
+\mathbf C'(z)=\mathbf{0}
+```
+
+and this contribution must remain zero even though $I_x$, $I_y$, or
+$I_{xy}$ vary with $z$.
 
 ---
 
-## 27. Suitable use cases
+## 25. Main mechanical assumptions
+
+### 25.1 One-dimensional beam representation
+
+The member is represented through section actions and continuously varying
+cross-sections rather than through a full three-dimensional stress solution.
+
+### 25.2 Flexural Navier field
+
+The local normal stress used by the method is the CSF flexural Navier field.
+Effects not represented by that field are absent from the centroid-axis
+contribution.
+
+### 25.3 Small centroid-axis slopes
+
+The relation:
+
+```math
+\boldsymbol{\tau}^{C}
+=
+\sigma_{zz}^{M}\mathbf C'
+```
+
+is interpreted as a first-order directional approximation.
+
+The implementation does not enforce a maximum value of $|\mathbf C'|$.
+The user must assess whether the centroid variation is sufficiently gradual.
+
+### 25.4 Smooth centroid curve
+
+The centroid curve must be locally differentiable at the evaluation station.
+
+Continuous geometry interpolation does not by itself guarantee a smooth
+centroid derivative when weights, topology, or user-defined laws contain
+non-smooth changes.
+
+### 25.5 Stable section topology over the derivative interval
+
+The sections sampled at:
+
+```math
+z-h,
+\qquad
+z,
+\qquad
+z+h
+```
+
+or at the corresponding one-sided stations must all be valid and
+structurally consistent CSF sections.
+
+### 25.6 Common transverse direction for the complete flexural field
+
+All local flexural normal-stress values are assigned the slope of the single
+global centroid curve.
+
+The method does not model different longitudinal paths for different
+polygons or fibres.
+
+### 25.7 No local warping solution
+
+The method does not solve for:
+
+- cross-sectional warping;
+- three-dimensional stress redistribution;
+- free-edge boundary conditions;
+- local shear concentrations;
+- stress boundary layers near abrupt transitions.
+
+### 25.8 No direct shear-carrier redistribution
+
+The centroid-axis contribution follows `weightabs` through the flexural
+Navier field.
+
+It is not redistributed according to `shear_weightabs`.
+
+### 25.9 Consistent units
+
+Geometry, moments, section carriers, and returned stresses must use one
+consistent unit system.
+
+---
+
+## 26. Non-smooth or discontinuous centroid variation
+
+If $\mathbf C(z)$ contains a discontinuity, the classical derivative does not
+exist at that location.
+
+For example, a step change in polygon `weight` may cause a step change in the
+global axial-flexural centroid.
+
+A finite-difference estimate across that discontinuity produces a value that
+depends on the selected step $h$. It should not be interpreted as a regular
+distributed shear stress.
+
+Such a location is more appropriately treated as:
+
+- a discrete interface;
+- a concentrated transfer region;
+- a local three-dimensional transition;
+- a separately regularized longitudinal law.
+
+Automatic numerical convergence may fail near a discontinuity. Apparent
+numerical stability alone does not establish physical differentiability.
+
+---
+
+## 27. Abrupt geometric transitions
+
+The formulation is most defensible for gradual longitudinal variation.
+
+Near abrupt shoulders, notches, offsets, terminations, or sudden section
+changes:
+
+- local equilibrium becomes strongly two- or three-dimensional;
+- the small-slope interpretation may fail;
+- Saint-Venant-type boundary layers may dominate;
+- the Navier field may not represent the actual local normal stress;
+- the Jourawski field may not represent the actual local shear stress.
+
+The method may still provide a one-dimensional indicator, but it should not
+be presented as a local stress-concentration solution.
+
+---
+
+## 28. What the method does not calculate
+
+The function does not calculate:
+
+- the complete Navier field generated by $N$, $M_x$, and $M_y$;
+- a complete total shear-stress field;
+- a combined Jourawski plus centroid-axis maximum;
+- shear-centre effects;
+- torsional shear stress;
+- restrained-warping stress;
+- shell or solid stress concentrations;
+- interlaminar or interface shear transfer;
+- polygon-specific centroid-axis derivatives;
+- exact finite-slope stress transformation;
+- nonlinear material redistribution;
+- post-yield stress fields;
+- local contact or connection effects.
+
+These effects require separate formulations or higher-dimensional analysis.
+
+---
+
+## 29. Suitable use cases
 
 The method is suitable as a reduced section-level model when:
 
 - a one-dimensional beam representation is required;
-- the axial-flexural centroid varies gradually;
-- the Navier field is an acceptable approximation;
-- the objective is to retain a centroid-migration contribution that
-  would otherwise be omitted;
-- section resultants are available from a compatible beam model;
-- local three-dimensional stress concentrations are not the primary
-  quantity of interest.
+- the global axial-flexural centroid varies gradually;
+- the flexural Navier field is an acceptable approximation;
+- the objective is to retain a self-equilibrated centroid-migration
+  contribution that would otherwise be omitted;
+- section shear resultants are available from a compatible beam model;
+- local three-dimensional stress concentrations are not the primary quantity
+  of interest.
 
-It is particularly relevant when centroid migration is caused by
-continuous changes in CSF polygon geometry or participation rather than
-by a manually prescribed beam-axis offset.
+It is particularly relevant when centroid migration is caused by continuous
+changes in CSF polygon geometry or axial-flexural participation rather than by
+a manually prescribed beam-axis offset.
 
 ---
 
-## 28. Cases requiring caution or a higher-dimensional model
+## 30. Cases requiring caution or a higher-dimensional model
 
-A shell, solid, or specialized higher-order formulation should be
-considered when:
+A shell, solid, or specialized higher-order formulation should be considered
+when:
 
 - centroid slopes are not small;
 - the section changes abruptly;
@@ -1413,47 +1560,44 @@ considered when:
 - material interfaces require explicit shear transfer;
 - the section topology changes;
 - local peak stress is a design-critical quantity;
-- the solver reference-line formulation makes the force decomposition
-  ambiguous;
 - the centroid curve is discontinuous or non-differentiable.
 
 ---
 
-## 29. Concise formulation statement
+## 31. Concise formulation statement
 
 The implemented CSF method can be summarized as follows:
 
-> The polygon-wise global-centroid-axis shear contribution is a reduced
-> beam-theory approximation obtained by transporting the CSF Navier
-> axial-stress field along the derivative of the single global
-> axial-flexural centroid curve. The method produces
-> $\boldsymbol{\tau}^{C}=\sigma_{zz}\mathbf C'(z)$ and the corresponding
-> section resultant $\mathbf T^{C}=N\mathbf C'(z)$. The separate
-> Jourawski API uses the `Tx` and `Ty` values supplied by its caller without
-> applying any centroid-axis subtraction. A calling workflow may calculate
-> residual resultants and pass them explicitly when adopting a combined
-> decomposition. The two local contributions must be combined at common
-> physical points,
-> not by adding their separately reported extrema.
+> The polygon-wise flexural global-centroid-axis shear contribution is a
+> reduced beam-theory approximation obtained by transporting the CSF
+> flexural Navier normal-stress field along the derivative of the single
+> global axial-flexural centroid curve. The function evaluates the Navier
+> field from $M_x$ and $M_y$ with $N=0$ and produces
+> $\boldsymbol{\tau}^{C}=\sigma_{zz}^{M}\mathbf C'(z)$. This contribution is
+> self-equilibrated over the complete transformed occupied section. The
+> separate Jourawski API receives the section shear resultants $T_x$ and
+> $T_y$ directly. The two local fields may be combined only at common
+> physical points, not by adding their separately reported extrema.
 
 ---
 
-## 30. Implementation boundary
+## 32. Implementation boundary
 
-The implementation is internally consistent with its declared reduced
-model when:
+The implementation is internally consistent with its declared reduced model
+when:
 
-1. the global CSF centroid is evaluated from the complete axial-flexural
-   section;
+1. the global CSF centroid is evaluated from the complete transformed
+   axial-flexural section;
 2. its derivative is numerically stable;
-3. the public Navier stress already includes `weightabs`;
-4. no second `weightabs` factor is applied;
-5. the centroid-axis resultants are calculated as
-   $N\,dC_x/dz$ and $N\,dC_y/dz$;
-6. `analyse_polygon_jourawski_shear_stress()` uses its supplied `Tx`
-   and `Ty` values directly and does not apply a centroid-axis subtraction;
-7. when a residual decomposition is adopted, the caller calculates and
-   passes the residual values explicitly;
-8. separately located extrema are not directly summed;
-9. the user accepts the small-slope, beam-theory, and smooth-variation
-   assumptions documented above.
+3. the internal Navier call uses $N=0$ and the prescribed $M_x$, $M_y$;
+4. the public Navier stress already includes `weightabs`;
+5. no second `weightabs` factor is applied;
+6. the local contribution is evaluated as
+   $\boldsymbol{\tau}^{C}=\sigma_{zz}^{M}\mathbf C'(z)$;
+7. the centroid-axis field integrates to zero transverse resultant within
+   numerical tolerance;
+8. Jourawski receives the supplied section shear resultants $T_x$, $T_y$
+   directly;
+9. separately located extrema are not directly summed;
+10. the user accepts the small-slope, beam-theory, and smooth-variation
+    assumptions documented above.
