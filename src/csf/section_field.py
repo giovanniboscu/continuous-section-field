@@ -36,6 +36,7 @@ from . import _tol
 from functools import lru_cache
 from scipy.special import roots_jacobi
 from scipy.interpolate import PchipInterpolator
+import weakref
 
 # ruff: noqa: F821
 if TYPE_CHECKING:
@@ -63,11 +64,6 @@ if TYPE_CHECKING:
 # Default values below assume S ≈ 1.0 (metre-scale geometry).
 
 
-#Point = Tuple[float, float]
-#Segment = Tuple[Point, Point]
-#PointXY = Tuple[float, float]
-
-# (Optional: se vuoi usare PyYAML quando disponibile)
 try:
     import yaml  # type: ignore
 except Exception as e:
@@ -95,7 +91,437 @@ else:
     XY = None
     CSFDumper = None
 
-#
+
+def analyse_polygon_centroid_axis_shear(
+    section_field,
+    z: float,
+    Mx: float,
+    My: float,
+    *,
+    dz: float | None = None,
+    derivative_rtol: float = 1.0e-8,
+    derivative_atol: float = 1.0e-10,
+    max_refinements: int = 20,
+    debug: bool = False,
+) -> dict[str, object]:
+    """
+    Compute the flexural centroid-axis shear contribution.
+
+    The adopted reduced formulation is:
+
+        tau_x = sigma_zz_M * dCx/dz
+        tau_y = sigma_zz_M * dCy/dz
+
+    where ``sigma_zz_M`` is the Navier stress generated only by ``Mx`` and
+    ``My``. The axial-force contribution is excluded by evaluating Navier
+    stresses with ``N=0``.
+
+    The resulting centroid-axis shear field is self-equilibrated:
+
+        integral_A(tau_x dA) = 0
+        integral_A(tau_y dA) = 0
+
+    The global centroid is calculated from the complete axial-flexural CSF
+    section. Centroid values are cached per ``section_field`` and station.
+
+    No Jourawski contribution is calculated by this function.
+    """
+    z = float(z)
+    Mx = float(Mx)
+    My = float(My)
+    derivative_rtol = float(derivative_rtol)
+    derivative_atol = float(derivative_atol)
+    max_refinements = int(max_refinements)
+
+    z_start = float(section_field.s0.z)
+    z_end = float(section_field.s1.z)
+
+    if z_end <= z_start:
+        raise ValueError("The CSF bounds must satisfy s1.z > s0.z.")
+
+    if z < z_start or z > z_end:
+        raise ValueError(
+            f"z={z} is outside CSF bounds [{z_start}, {z_end}]."
+        )
+
+    if not math.isfinite(derivative_rtol) or derivative_rtol < 0.0:
+        raise ValueError(
+            "derivative_rtol must be finite and non-negative."
+        )
+
+    if not math.isfinite(derivative_atol) or derivative_atol < 0.0:
+        raise ValueError(
+            "derivative_atol must be finite and non-negative."
+        )
+
+    if derivative_rtol == 0.0 and derivative_atol == 0.0:
+        raise ValueError(
+            "At least one derivative tolerance must be positive."
+        )
+
+    if max_refinements < 1:
+        raise ValueError("max_refinements must be >= 1.")
+
+    length = z_end - z_start
+    coordinate_tolerance = max(1.0e-14, 1.0e-12 * length)
+    minimum_step = coordinate_tolerance
+
+    # Persistent cache owned by this public function.
+    centroid_cache = getattr(
+        analyse_polygon_centroid_axis_shear,
+        "_centroid_cache",
+        None,
+    )
+
+    if centroid_cache is None:
+        centroid_cache = weakref.WeakKeyDictionary()
+        setattr(
+            analyse_polygon_centroid_axis_shear,
+            "_centroid_cache",
+            centroid_cache,
+        )
+
+    field_cache = centroid_cache.get(section_field)
+
+    if field_cache is None:
+        field_cache = {}
+        centroid_cache[section_field] = field_cache
+
+    def _global_centroid(z_eval: float) -> tuple[float, float]:
+        """Return the cached global axial-flexural centroid."""
+        z_eval = float(z_eval)
+
+        if z_eval not in field_cache:
+            analysis = section_full_analysis(
+                section_field.section(z_eval),
+                compute_vroark=False,
+            )
+
+            field_cache[z_eval] = (
+                float(analysis["Cx"]),
+                float(analysis["Cy"]),
+            )
+
+        return field_cache[z_eval]
+
+    def _sample_derivative(step: float) -> dict[str, object]:
+        """Evaluate the centroid derivative with a second-order scheme."""
+        step = float(step)
+
+        if not math.isfinite(step) or step <= 0.0:
+            raise ValueError("dz must be a finite positive number.")
+
+        left = z - z_start
+        right = z_end - z
+
+        at_start = left <= coordinate_tolerance
+        at_end = right <= coordinate_tolerance
+
+        Cx_0, Cy_0 = _global_centroid(z)
+
+        if not at_start and not at_end:
+            h = min(step, left, right)
+
+            if h <= coordinate_tolerance:
+                raise ValueError(
+                    f"Centroid derivative step is too small at z={z}."
+                )
+
+            Cx_minus, Cy_minus = _global_centroid(z - h)
+            Cx_plus, Cy_plus = _global_centroid(z + h)
+
+            dCx_dz = (Cx_plus - Cx_minus) / (2.0 * h)
+            dCy_dz = (Cy_plus - Cy_minus) / (2.0 * h)
+            scheme = "central_second_order"
+
+        elif at_start:
+            h = min(step, 0.5 * right)
+
+            if h <= coordinate_tolerance:
+                raise ValueError(
+                    f"Centroid derivative step is too small at z={z}."
+                )
+
+            Cx_1, Cy_1 = _global_centroid(z + h)
+            Cx_2, Cy_2 = _global_centroid(z + 2.0 * h)
+
+            dCx_dz = (
+                -3.0 * Cx_0
+                + 4.0 * Cx_1
+                - Cx_2
+            ) / (2.0 * h)
+
+            dCy_dz = (
+                -3.0 * Cy_0
+                + 4.0 * Cy_1
+                - Cy_2
+            ) / (2.0 * h)
+
+            scheme = "forward_second_order"
+
+        else:
+            h = min(step, 0.5 * left)
+
+            if h <= coordinate_tolerance:
+                raise ValueError(
+                    f"Centroid derivative step is too small at z={z}."
+                )
+
+            Cx_1, Cy_1 = _global_centroid(z - h)
+            Cx_2, Cy_2 = _global_centroid(z - 2.0 * h)
+
+            dCx_dz = (
+                3.0 * Cx_0
+                - 4.0 * Cx_1
+                + Cx_2
+            ) / (2.0 * h)
+
+            dCy_dz = (
+                3.0 * Cy_0
+                - 4.0 * Cy_1
+                + Cy_2
+            ) / (2.0 * h)
+
+            scheme = "backward_second_order"
+
+        return {
+            "Cx": float(Cx_0),
+            "Cy": float(Cy_0),
+            "dCx_dz": float(dCx_dz),
+            "dCy_dz": float(dCy_dz),
+            "step": float(h),
+            "derivative_scheme": scheme,
+        }
+
+    def _converged_derivative() -> dict[str, object]:
+        """Refine the centroid derivative until both components converge."""
+        previous = _sample_derivative(0.05 * length)
+
+        for refinement in range(1, max_refinements + 1):
+            next_step = 0.5 * float(previous["step"])
+
+            if next_step <= minimum_step:
+                raise RuntimeError(
+                    "Global centroid derivative convergence reached the "
+                    f"numerical step limit at z={z}."
+                )
+
+            current = _sample_derivative(next_step)
+
+            old_x = float(previous["dCx_dz"])
+            old_y = float(previous["dCy_dz"])
+            new_x = float(current["dCx_dz"])
+            new_y = float(current["dCy_dz"])
+
+            change_x = abs(new_x - old_x)
+            change_y = abs(new_y - old_y)
+
+            tolerance_x = (
+                derivative_atol
+                + derivative_rtol * max(abs(new_x), abs(old_x))
+            )
+
+            tolerance_y = (
+                derivative_atol
+                + derivative_rtol * max(abs(new_y), abs(old_y))
+            )
+
+            if (
+                change_x <= tolerance_x
+                and change_y <= tolerance_y
+            ):
+                current.update(
+                    {
+                        "derivative_dz_mode": "automatic_convergence",
+                        "derivative_converged": True,
+                        "derivative_refinements": refinement,
+                        "derivative_change_x": float(change_x),
+                        "derivative_change_y": float(change_y),
+                    }
+                )
+                return current
+
+            previous = current
+
+        raise RuntimeError(
+            "Global centroid derivative convergence was not reached within "
+            f"max_refinements={max_refinements} at z={z}."
+        )
+
+    def _scale_extrema(
+        row: dict[str, object],
+        *,
+        scale: float,
+        prefix: str,
+    ) -> dict[str, float]:
+        """Scale signed Navier extrema by one centroid derivative."""
+        candidates = (
+            (
+                float(row["sigma_min"]) * scale,
+                float(row["x_min"]),
+                float(row["y_min"]),
+            ),
+            (
+                float(row["sigma_max"]) * scale,
+                float(row["x_max"]),
+                float(row["y_max"]),
+            ),
+        )
+
+        minimum = min(candidates, key=lambda item: item[0])
+        maximum = max(candidates, key=lambda item: item[0])
+
+        return {
+            f"{prefix}_min": float(minimum[0]),
+            f"x_{prefix}_min": float(minimum[1]),
+            f"y_{prefix}_min": float(minimum[2]),
+            f"{prefix}_max": float(maximum[0]),
+            f"x_{prefix}_max": float(maximum[1]),
+            f"y_{prefix}_max": float(maximum[2]),
+        }
+
+    if dz is None:
+        derivative = _converged_derivative()
+    else:
+        derivative = _sample_derivative(float(dz))
+        derivative.update(
+            {
+                "derivative_dz_mode": "explicit",
+                "derivative_converged": None,
+                "derivative_refinements": 0,
+                "derivative_change_x": float("nan"),
+                "derivative_change_y": float("nan"),
+            }
+        )
+
+    dCx_dz = float(derivative["dCx_dz"])
+    dCy_dz = float(derivative["dCy_dz"])
+
+    # Only the flexural part of the Navier field is used.
+    navier_rows = analyse_polygon_navier_stress(
+        section_field=section_field,
+        z=z,
+        N=0.0,
+        Mx=Mx,
+        My=My,
+    )
+
+    polygon_rows: list[dict[str, object]] = []
+
+    for navier_row in navier_rows:
+        tau_x = _scale_extrema(
+            navier_row,
+            scale=dCx_dz,
+            prefix="tau_x",
+        )
+
+        tau_y = _scale_extrema(
+            navier_row,
+            scale=dCy_dz,
+            prefix="tau_y",
+        )
+
+        candidates = (
+            (
+                "x",
+                "min",
+                tau_x["tau_x_min"],
+                tau_x["x_tau_x_min"],
+                tau_x["y_tau_x_min"],
+            ),
+            (
+                "x",
+                "max",
+                tau_x["tau_x_max"],
+                tau_x["x_tau_x_max"],
+                tau_x["y_tau_x_max"],
+            ),
+            (
+                "y",
+                "min",
+                tau_y["tau_y_min"],
+                tau_y["x_tau_y_min"],
+                tau_y["y_tau_y_min"],
+            ),
+            (
+                "y",
+                "max",
+                tau_y["tau_y_max"],
+                tau_y["x_tau_y_max"],
+                tau_y["y_tau_y_max"],
+            ),
+        )
+
+        direction, bound, value, x_value, y_value = max(
+            candidates,
+            key=lambda item: abs(float(item[2])),
+        )
+
+        polygon_rows.append(
+            {
+                "idx": int(navier_row["idx"]),
+                "name": str(navier_row["name"]),
+                "weightabs": float(navier_row["weightabs"]),
+                "sigma_min": float(navier_row["sigma_min"]),
+                "x_sigma_min": float(navier_row["x_min"]),
+                "y_sigma_min": float(navier_row["y_min"]),
+                "sigma_max": float(navier_row["sigma_max"]),
+                "x_sigma_max": float(navier_row["x_max"]),
+                "y_sigma_max": float(navier_row["y_max"]),
+                "sigma_extreme": float(navier_row["sigma_extreme"]),
+                "x_sigma_extreme": float(navier_row["x"]),
+                "y_sigma_extreme": float(navier_row["y"]),
+                **tau_x,
+                **tau_y,
+                "tau_governing": float(value),
+                "tau_governing_direction": str(direction),
+                "tau_governing_bound": str(bound),
+                "x_tau_governing": float(x_value),
+                "y_tau_governing": float(y_value),
+            }
+        )
+
+    section_result: dict[str, object] = {
+        "z": z,
+        "Mx": Mx,
+        "My": My,
+        "Cx": float(derivative["Cx"]),
+        "Cy": float(derivative["Cy"]),
+        "dCx_dz": dCx_dz,
+        "dCy_dz": dCy_dz,
+    }
+
+    if debug:
+        section_result.update(
+            {
+                "derivative_step": float(derivative["step"]),
+                "derivative_scheme": str(
+                    derivative["derivative_scheme"]
+                ),
+                "derivative_dz_mode": str(
+                    derivative["derivative_dz_mode"]
+                ),
+                "derivative_converged": derivative[
+                    "derivative_converged"
+                ],
+                "derivative_refinements": int(
+                    derivative["derivative_refinements"]
+                ),
+                "derivative_change_x": float(
+                    derivative["derivative_change_x"]
+                ),
+                "derivative_change_y": float(
+                    derivative["derivative_change_y"]
+                ),
+            }
+        )
+
+    return {
+        "section": section_result,
+        "polygons": polygon_rows,
+    }
+
+#########################################################################################
 # Goal:
 #   Provide an API to compute an AREA BREAKDOWN of one 2D section by MATERIAL WEIGHT (W)
 #   without requiring the user to manually manage nested polygons and negative "void" weights.
@@ -112,6 +538,7 @@ else:
 # Version: JOURAWSKI_BBOX_GLOBAL_UNIFORM_PLUS_LOCAL_TEETH_N2_V1
 # Scan: one global uniform cell-centre grid per axis, plus local one-sided
 # tooth concentration with nearest distance interval_span / (2 * num_sud**2).
+#########################################################################################
 
 def analyse_polygon_jourawski_shear_stress(
     section_field,
