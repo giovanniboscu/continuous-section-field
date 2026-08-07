@@ -59,14 +59,79 @@ The Navier calculation uses the geometry and the axial-flexural material partici
 
 ---
 
-## 3. The Navier chord state: $SN(y,z)$
+## 3. Complete Navier stress field on `Section(z)`
+
+At each longitudinal coordinate $z$, CSF provides the complete actual section:
+
+```math
+\mathrm{Section}(z).
+```
+
+Together with the section actions
+
+```math
+N(z), \qquad M_x(z), \qquad M_y(z),
+```
+
+this section defines the complete longitudinal Navier normal-stress field
+
+```math
+\boxed{
+\sigma_{zz}(x,y,z)
+}
+```
+
+over the actual cross-sectional domain
+
+```math
+\Omega(z).
+```
+
+Conceptually, the first mechanical passage is therefore
+
+```math
+\boxed{
+\left[
+\mathrm{Section}(z),
+N(z),
+M_x(z),
+M_y(z)
+\right]
+\;\longrightarrow\;
+\sigma_{zz}(x,y,z)
+}
+```
+
+All geometric and material information required by the adopted Navier formulation is taken from the actual `Section(z)`.
+
+No longitudinal decomposition into separate geometry, material, centroid, inertia, or action-derivative terms is introduced at this stage. The formulation uses the complete Navier result evaluated on the actual section.
+
+---
+
+## 4. The Navier chord state: $SN(y,z)$
+
+The chord state is constructed only after the complete Navier field
+$\sigma_{zz}(x,y,z)$ has been established.
 
 Consider the horizontal chord
 
 ```math
 Y=y
 ```
+
 of the section at longitudinal coordinate $z$.
+
+Thus the logical passage is
+
+```math
+\boxed{
+\mathrm{Section}(z)
+\;\longrightarrow\;
+\sigma_{zz}(x,y,z)
+\;\longrightarrow\;
+SN(y,z)
+}
+```
 
 The **Navier chord state**
 
@@ -111,7 +176,7 @@ No equivalent single rectangle, homogenized width, or flattened chord geometry i
 
 ---
 
-## 4. Longitudinal force carried by one chord
+## 5. Longitudinal force carried by one chord
 
 For a fixed chord coordinate $y$, the longitudinal force contribution per unit height is obtained by summing the contributions of all chord segments:
 
@@ -141,7 +206,7 @@ Thus the full chord contribution is obtained directly from the actual segment ge
 
 ---
 
-## 5. Longitudinal resultant above a chord: $N^{+}(y,z)$
+## 6. Longitudinal resultant above a chord: $N^{+}(y,z)$
 
 For a selected chord $Y=y$, define the portion of the section above the chord as
 
@@ -196,7 +261,7 @@ This is the point at which the continuous availability of $\mathrm{Section}(z)$ 
 
 ---
 
-## 6. Global equilibrium and chord shear flow
+## 7. Global equilibrium and chord shear flow
 
 The longitudinal equilibrium of the portion $\Omega^{+}(y,z)$ gives the shear flow transmitted through the chord:
 
@@ -268,7 +333,7 @@ with each value of $N^{+}$ evaluated independently from the corresponding actual
 ```
 ---
 
-## 7. Mean shear stress on the chord
+## 8. Mean shear stress on the chord
 
 The formulation does not require the local shear-stress distribution along the chord.
 
@@ -317,7 +382,7 @@ without assuming that the true local shear stress is uniform along the chord.
 
 ---
 
-## 8. Why the formulation is naturally non-prismatic
+## 9. Why the formulation is naturally non-prismatic
 
 The formulation does not introduce a separate non-prismatic correction.
 
@@ -361,13 +426,15 @@ The formulation is therefore equally applicable, within the assumptions of the a
 
 ---
 
-## 9. Compact formulation
+## 10. Compact formulation
 
 The complete chain is
 
 ```math
 \boxed{
 \mathrm{Section}(z)
+\;\rightarrow\;
+\sigma_{zz}(x,y,z)
 \;\rightarrow\;
 SN(y,z)
 \;\rightarrow\;
@@ -413,7 +480,7 @@ The formulation is global in the sense that equilibrium is applied to the comple
 
 ---
 
-## 10. Present scope
+## 11. Present scope
 
 The present formulation intentionally stops at the **mean shear stress on the complete chord**.
 
