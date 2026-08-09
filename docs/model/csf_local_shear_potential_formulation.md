@@ -3,55 +3,86 @@
 
 ## 1. Purpose
 
-This document describes the reduced local shear-stress formulation used with the
-Continuous Section Field (CSF) representation
-
-```math
-\mathcal{S}(z).
-```
-
-At every longitudinal station $z$, CSF provides the actual polygonal section
-geometry together with polygon-level axial-flexural and shear-torsional
-participation fields.
-
-The objective is to recover the local in-plane shear field
+A longitudinal variation of the normal stress field $\sigma_{zz}(x,y,z)$ produces a local imbalance in the $z$-direction equilibrium of a differential slice. This imbalance must be compensated by in-plane shear stresses
 
 ```math
 \boldsymbol{\tau}(x,y,z)
 =
 \begin{bmatrix}
-\tau_x(x,y,z)\\
+\tau_x(x,y,z) \\
 \tau_y(x,y,z)
-\end{bmatrix}
+\end{bmatrix}.
 ```
 
-from the longitudinal variation of the complete Navier normal-stress field.
+This is the same physical mechanism underlying Jourawski's classical derivation of shear stress in prismatic beams.
 
-The central equations are
+In the classical Jourawski setting, the cross-section is prismatic and does not vary along the longitudinal axis. The longitudinal variation of the normal stress field is therefore associated with the variation of the section actions, through relations such as
 
 ```math
-\boxed{
-\nabla_{xy}\!\cdot
-\left(
-G_{\mathrm{like}}\,\nabla_{xy}\phi
-\right)
-=
--\frac{\partial\sigma_{zz}}{\partial z}
-}
+\frac{dM_x}{dz}=T_y,
+\qquad
+\frac{dM_y}{dz}=T_x.
 ```
 
-and
+The equilibrium of a differential portion of the beam then provides the tangential force required to balance the change of the normal-stress resultant. To obtain a local shear stress from that resultant, the classical construction introduces an additional sectional assumption, namely that the shear stress is constant along the considered chord. The resulting reduction makes it possible to describe the shear problem through a one-dimensional sectional construction.
+
+The Continuous Section Field changes what information is available before such a reduction is introduced. The section is represented as a continuous longitudinal object,
 
 ```math
-\boxed{
-\boldsymbol{\tau}
-=
-G_{\mathrm{like}}\,\nabla_{xy}\phi.
-}
+z \longmapsto \mathcal{S}(z),
 ```
 
-The formulation is a **reduced sectional equilibrium closure**. It is not a
-replacement for a general three-dimensional elasticity solution.
+so that the complete Navier normal-stress field can be evaluated at neighbouring longitudinal stations on the actual evolving section. Its Eulerian longitudinal derivative at fixed global coordinates $(x,y)$,
+
+```math
+\left.
+\frac{\partial \sigma_{zz}}{\partial z}
+\right|_{x,y},
+```
+
+can therefore be obtained directly from the continuous sectional representation.
+
+This derivative contains, within the limits of the adopted sectional model and Navier reconstruction, the combined longitudinal effect of the action gradients and of the geometric or material-participation changes already represented by $\mathcal{S}(z)$. No predefined description in terms of a single section height, width, taper angle, or other reduced geometric parameter is required. Nor is the sectional geometry reduced in advance to a single integration chord.
+
+The starting point can therefore remain the local three-dimensional equilibrium equation in the longitudinal direction,
+
+```math
+\frac{\partial \sigma_{zx}}{\partial x}
++
+\frac{\partial \sigma_{zy}}{\partial y}
++
+\frac{\partial \sigma_{zz}}{\partial z}
+=
+0.
+```
+
+With
+
+```math
+\tau_x=\sigma_{zx},
+\qquad
+\tau_y=\sigma_{zy},
+```
+
+this becomes
+
+```math
+\nabla_{xy}\cdot\boldsymbol{\tau}
+=
+-\frac{\partial \sigma_{zz}}{\partial z}.
+```
+
+CSF therefore provides directly the two-dimensional distribution of the equilibrium source
+
+```math
+-\frac{\partial \sigma_{zz}}{\partial z},
+```
+
+over the evolving cross-section.
+
+At this point, however, equilibrium alone does not determine the complete shear field. The equation above specifies only the divergence of the two-component field $\boldsymbol{\tau}$: it is one scalar equation for the two unknown functions $\tau_x(x,y)$ and $\tau_y(x,y)$. A further closure is therefore required to determine a unique equilibrium-admissible shear field.
+
+The following sections develop this construction in sequence. They first define the CSF quantities entering the normal-stress field, then derive the longitudinal equilibrium source, examine the information that equilibrium provides and the information it leaves undetermined, and only afterwards introduce the additional scalar-potential closure used to recover the local field $\boldsymbol{\tau}(x,y,z)$.
 
 ---
 
