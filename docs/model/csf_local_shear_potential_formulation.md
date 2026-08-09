@@ -38,7 +38,7 @@ resultant. To obtain a local shear stress from that resultant, the classical
 construction introduces an additional sectional assumption, namely that the
 shear stress is constant along the considered chord. The resulting reduction
 makes it possible to describe the shear problem through a one-dimensional
-sectional construction — a simplification well suited to a prismatic member,
+sectional construction - a simplification well suited to a prismatic member,
 where the cutting chord does not change from one section to the next.
 
 The Continuous Section Field changes what information is available before
@@ -112,7 +112,7 @@ two-component field $\boldsymbol{\tau}$: it is one scalar equation for the
 two unknown functions $\tau_x(x,y)$ and $\tau_y(x,y)$. As in every structural
 problem, equilibrium by itself is not enough to close the problem: a
 relation is still needed that describes how the material actually carries
-the required interaction — the role played, in the classical
+the required interaction - the role played, in the classical
 equilibrium–constitutive law–compatibility scheme of structural mechanics,
 by the constitutive law. Section 2 develops this second requirement for the
 shear problem.
@@ -130,7 +130,7 @@ Longitudinal equilibrium tells us how much tangential transfer must be
 produced within the cross-section, but not how that transfer is shared
 between the two in-plane directions, nor how it is distributed from point to
 point. Equilibrium alone never answers this kind of question in structural
-mechanics: it is always a separate physical law — a constitutive relation —
+mechanics: it is always a separate physical law - a constitutive relation -
 that describes how a material or a section actually responds to, or
 transmits, the action equilibrium demands of it.
 
@@ -160,7 +160,7 @@ longitudinal equilibrium source is already available as a two-dimensional
 distribution over the actual section, the transfer problem can remain local
 and two-dimensional throughout. What is still missing is a description of
 how neighbouring points of the section participate in carrying the required
-longitudinal force — precisely the information a constitutive relation would
+longitudinal force - precisely the information a constitutive relation would
 normally supply.
 
 CSF already contains a sectional field intended for this second mechanical
@@ -189,7 +189,7 @@ capacity assigned to each region of the section.
 
 A convenient way to picture this is to imagine a scalar field spread over
 the cross-section, describing the local tendency of the material to
-transfer shear from one point to its neighbours — not unlike how a
+transfer shear from one point to its neighbours - not unlike how a
 temperature field describes the local tendency to transfer heat, or a
 piezometric head the local tendency to drive flow. Where the field is flat,
 no transfer occurs; where it slopes, material moves shear along the
@@ -197,8 +197,8 @@ direction of steepest change, and the local shear-carrying capacity of the
 section governs how much transfer that slope actually produces.
 
 This picture is a physical motivation, not yet a justification. A more
-rigorous argument for adopting precisely this closure — rather than any
-other field consistent with the same equilibrium source — is developed
+rigorous argument for adopting precisely this closure - rather than any
+other field consistent with the same equilibrium source - is developed
 further below through a variational characterization. When `shear_weight`
 represents, or is proportional to, a physical shear modulus, that
 characterization corresponds to minimization of complementary shear energy;
