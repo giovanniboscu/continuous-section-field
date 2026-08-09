@@ -97,6 +97,8 @@ this becomes
 -\frac{\partial \sigma_{zz}}{\partial z}.
 ```
 
+[^nabla]
+
 CSF therefore provides directly the two-dimensional distribution of the
 equilibrium source
 
@@ -124,7 +126,7 @@ its mathematical form as a scalar-potential equation.
 
 ---
 
-## Physical closure of the shear-transfer problem
+## 2. Physical closure of the shear-transfer problem
 
 Longitudinal equilibrium tells us how much tangential transfer must be
 produced within the cross-section, but not how that transfer is shared
@@ -235,13 +237,23 @@ constitutive law for the shear-transfer problem: it states how the section,
 through its assigned shear participation, converts the local tendency for
 transfer, expressed by $\phi$, into an actual shear stress.
 
-When `shear_weightabs` represents, or is proportional to, a physical shear
-modulus, the gradient of $\phi$ can be associated with a reduced
-shear-deformation field, and the relation above takes the familiar
-stress–stiffness–deformation form of an ordinary constitutive law. When
-`shear_weightabs` is used instead as a CSF participation field, the same
-relation keeps its role as a generalized sectional transfer law, without
-requiring $\phi$ to be interpreted as an independent physical displacement.
+When `shear_weightabs` coincides with, or is proportional to, the physical
+shear modulus $G$ of the material, the relation above is a genuine elastic
+constitutive law, and $\phi$ can be given a precise physical meaning: the
+out-of-plane warping displacement $w(x,y)$ of classical Saint-Venant theory,
+
+```math
+\tau_x = G\frac{\partial w}{\partial x},
+\qquad
+\tau_y = G\frac{\partial w}{\partial y}.
+```
+
+This is the same structure as the warping function used in Saint-Venant
+torsion (where it appears as the Prandtl stress function), here applied to
+the shear problem rather than to torsion. When `shear_weightabs` is used
+instead as a CSF participation field, the same relation keeps its role as a
+generalized sectional transfer law, without requiring $\phi$ to be
+interpreted as an independent physical displacement.
 
 Substituting this closure into longitudinal equilibrium finally gives
 
@@ -262,6 +274,22 @@ longitudinal equilibrium imposed by the Navier stress variation, and the
 constitutive-type law governing how the section transmits the required
 shear interaction.
 
+---
+
+[^nabla]: The symbol $\nabla$ ("nabla") is the vector differential operator
+    $\nabla=(\partial/\partial x,\ \partial/\partial y,\ \partial/\partial z)$,
+    collecting the partial derivatives with respect to all coordinates into
+    a single object that can be manipulated like a vector. Applied to a
+    scalar field it gives the **gradient** (e.g. $\nabla\phi$, a vector
+    pointing in the direction of steepest increase of $\phi$); combined with
+    a dot product on a vector field it gives the **divergence**
+    (e.g. $\nabla\cdot\boldsymbol{\tau}$, a scalar measuring the net
+    outflow of $\boldsymbol{\tau}$ at a point). The subscript $xy$, used
+    throughout this document as $\nabla_{xy}$, restricts the operator to the
+    in-plane coordinates $(x,y)$ only, consistent with the fact that the
+    closure problem is solved locally on the cross-section, while the
+    variation along $z$ has already been isolated separately as the source
+    term $s=-\partial\sigma_{zz}/\partial z$.
 >The symbol $\nabla$ ("nabla") is the vector differential operator
     $\nabla=(\partial/\partial x,\ \partial/\partial y,\ \partial/\partial z)$,
     collecting the partial derivatives with respect to all coordinates into
