@@ -124,7 +124,7 @@ its mathematical form as a scalar-potential equation.
 
 ---
 
-## 2. Physical closure of the shear-transfer problem
+## Physical closure of the shear-transfer problem
 
 Longitudinal equilibrium tells us how much tangential transfer must be
 produced within the cross-section, but not how that transfer is shared
