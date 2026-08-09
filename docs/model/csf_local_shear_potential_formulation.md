@@ -262,7 +262,7 @@ longitudinal equilibrium imposed by the Navier stress variation, and the
 constitutive-type law governing how the section transmits the required
 shear interaction.
 
-[^nabla]: The symbol $\nabla$ ("nabla") is the vector differential operator
+>The symbol $\nabla$ ("nabla") is the vector differential operator
     $\nabla=(\partial/\partial x,\ \partial/\partial y,\ \partial/\partial z)$,
     collecting the partial derivatives with respect to all coordinates into
     a single object that can be manipulated like a vector. Applied to a
