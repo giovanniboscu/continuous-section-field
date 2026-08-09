@@ -262,6 +262,22 @@ longitudinal equilibrium imposed by the Navier stress variation, and the
 constitutive-type law governing how the section transmits the required
 shear interaction.
 
+[^nabla]: The symbol $\nabla$ ("nabla") is the vector differential operator
+    $\nabla=(\partial/\partial x,\ \partial/\partial y,\ \partial/\partial z)$,
+    collecting the partial derivatives with respect to all coordinates into
+    a single object that can be manipulated like a vector. Applied to a
+    scalar field it gives the **gradient** (e.g. $\nabla\phi$, a vector
+    pointing in the direction of steepest increase of $\phi$); combined with
+    a dot product on a vector field it gives the **divergence**
+    (e.g. $\nabla\cdot\boldsymbol{\tau}$, a scalar measuring the net
+    outflow of $\boldsymbol{\tau}$ at a point). The subscript $xy$, used
+    throughout this document as $\nabla_{xy}$, restricts the operator to the
+    in-plane coordinates $(x,y)$ only, consistent with the fact that the
+    closure problem is solved locally on the cross-section, while the
+    variation along $z$ has already been isolated separately as the source
+    term $s=-\partial\sigma_{zz}/\partial z$.
+
+
 ---
 
 ## 2. CSF sectional representation
