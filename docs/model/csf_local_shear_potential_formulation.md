@@ -1,9 +1,11 @@
 # DRAFT
 # Local Shear-Stress Recovery from Longitudinal Navier Equilibrium in CSF
-
 ## 1. Purpose
 
-A longitudinal variation of the normal stress field $\sigma_{zz}(x,y,z)$ produces a local imbalance in the $z$-direction equilibrium of a differential slice. This imbalance must be compensated by in-plane shear stresses
+A longitudinal variation of the normal stress field $\sigma_{zz}(x,y,z)$
+produces a local imbalance in the $z$-direction equilibrium of a
+differential slice. This imbalance must be compensated by in-plane shear
+stresses
 
 ```math
 \boldsymbol{\tau}(x,y,z)
@@ -14,9 +16,15 @@ A longitudinal variation of the normal stress field $\sigma_{zz}(x,y,z)$ produce
 \end{bmatrix}.
 ```
 
-This is the same physical mechanism underlying Jourawski's classical derivation of shear stress in prismatic beams.
+This is the same physical mechanism underlying Jourawski's classical
+derivation of shear stress in prismatic beams, and the present formulation
+follows the same logical path before extending it to sections whose
+geometry itself evolves along the beam axis.
 
-In the classical Jourawski setting, the cross-section is prismatic and does not vary along the longitudinal axis. The longitudinal variation of the normal stress field is therefore associated with the variation of the section actions, through relations such as
+In the classical Jourawski setting, the cross-section is prismatic and does
+not vary along the longitudinal axis. The longitudinal variation of the
+normal stress field is therefore associated with the variation of the
+section actions, through relations such as
 
 ```math
 \frac{dM_x}{dz}=T_y,
@@ -24,15 +32,26 @@ In the classical Jourawski setting, the cross-section is prismatic and does not 
 \frac{dM_y}{dz}=T_x.
 ```
 
-The equilibrium of a differential portion of the beam then provides the tangential force required to balance the change of the normal-stress resultant. To obtain a local shear stress from that resultant, the classical construction introduces an additional sectional assumption, namely that the shear stress is constant along the considered chord. The resulting reduction makes it possible to describe the shear problem through a one-dimensional sectional construction.
+The equilibrium of a differential portion of the beam then provides the
+tangential force required to balance the change of the normal-stress
+resultant. To obtain a local shear stress from that resultant, the classical
+construction introduces an additional sectional assumption, namely that the
+shear stress is constant along the considered chord. The resulting reduction
+makes it possible to describe the shear problem through a one-dimensional
+sectional construction — a simplification well suited to a prismatic member,
+where the cutting chord does not change from one section to the next.
 
-The Continuous Section Field changes what information is available before such a reduction is introduced. The section is represented as a continuous longitudinal object,
+The Continuous Section Field changes what information is available before
+such a reduction is introduced. The section is represented as a continuous
+longitudinal object,
 
 ```math
 z \longmapsto \mathcal{S}(z),
 ```
 
-so that the complete Navier normal-stress field can be evaluated at neighbouring longitudinal stations on the actual evolving section. Its Eulerian longitudinal derivative at fixed global coordinates $(x,y)$,
+so that the complete Navier normal-stress field can be evaluated at
+neighbouring longitudinal stations on the actual evolving section. Its
+Eulerian longitudinal derivative at fixed global coordinates $(x,y)$,
 
 ```math
 \left.
@@ -40,11 +59,17 @@ so that the complete Navier normal-stress field can be evaluated at neighbouring
 \right|_{x,y},
 ```
 
-can therefore be obtained directly from the continuous sectional representation.
+can therefore be obtained directly from the continuous sectional
+representation, without first committing to a chord or to a reduced
+geometric parameter such as height, width, or taper angle.
 
-This derivative contains, within the limits of the adopted sectional model and Navier reconstruction, the combined longitudinal effect of the action gradients and of the geometric or material-participation changes already represented by $\mathcal{S}(z)$. No predefined description in terms of a single section height, width, taper angle, or other reduced geometric parameter is required. Nor is the sectional geometry reduced in advance to a single integration chord.
+This derivative contains, within the limits of the adopted sectional model
+and Navier reconstruction, the combined longitudinal effect of the action
+gradients and of the geometric or material-participation changes already
+represented by $\mathcal{S}(z)$.
 
-The starting point can therefore remain the local three-dimensional equilibrium equation in the longitudinal direction,
+The starting point is therefore, as in the classical case, the local
+three-dimensional equilibrium equation in the longitudinal direction,
 
 ```math
 \frac{\partial \sigma_{zx}}{\partial x}
@@ -72,7 +97,8 @@ this becomes
 -\frac{\partial \sigma_{zz}}{\partial z}.
 ```
 
-CSF therefore provides directly the two-dimensional distribution of the equilibrium source
+CSF therefore provides directly the two-dimensional distribution of the
+equilibrium source
 
 ```math
 -\frac{\partial \sigma_{zz}}{\partial z},
@@ -80,15 +106,33 @@ CSF therefore provides directly the two-dimensional distribution of the equilibr
 
 over the evolving cross-section.
 
-At this point, however, equilibrium alone does not determine the complete shear field. The equation above specifies only the divergence of the two-component field $\boldsymbol{\tau}$: it is one scalar equation for the two unknown functions $\tau_x(x,y)$ and $\tau_y(x,y)$. A further closure is therefore required to determine a unique equilibrium-admissible shear field.
+At this point, however, equilibrium alone does not determine the complete
+shear field. The equation above specifies only the divergence of the
+two-component field $\boldsymbol{\tau}$: it is one scalar equation for the
+two unknown functions $\tau_x(x,y)$ and $\tau_y(x,y)$. As in every structural
+problem, equilibrium by itself is not enough to close the problem: a
+relation is still needed that describes how the material actually carries
+the required interaction — the role played, in the classical
+equilibrium–constitutive law–compatibility scheme of structural mechanics,
+by the constitutive law. Section 2 develops this second requirement for the
+shear problem.
 
-The following sections develop this construction in sequence. They first define the CSF quantities entering the normal-stress field, then derive the longitudinal equilibrium source, examine the information that equilibrium provides and the information it leaves undetermined, and only afterwards introduce the additional scalar-potential closure used to recover the local field $\boldsymbol{\tau}(x,y,z)$.
+The sections that follow proceed in this order: first the CSF quantities
+entering the normal-stress field, then the longitudinal equilibrium source,
+then the physical closure that completes the problem, and only afterwards
+its mathematical form as a scalar-potential equation.
 
 ---
 
-## 1.1 Physical closure of the shear-transfer problem
+## 2. Physical closure of the shear-transfer problem
 
-Longitudinal equilibrium determines the local amount of tangential transfer that must be produced within the cross-section, but it does not determine how that transfer is distributed between the two in-plane directions.
+Longitudinal equilibrium tells us how much tangential transfer must be
+produced within the cross-section, but not how that transfer is shared
+between the two in-plane directions, nor how it is distributed from point to
+point. Equilibrium alone never answers this kind of question in structural
+mechanics: it is always a separate physical law — a constitutive relation —
+that describes how a material or a section actually responds to, or
+transmits, the action equilibrium demands of it.
 
 At a given point of the section, the source
 
@@ -96,15 +140,33 @@ At a given point of the section, the source
 -\frac{\partial \sigma_{zz}}{\partial z}
 ```
 
-expresses the local longitudinal imbalance generated by the variation of the normal-stress field. The surrounding material must transmit this imbalance through shear interaction with neighbouring material. The shear field therefore has a direct mechanical role: it transfers longitudinal force across the section so that every differential portion remains in equilibrium.
+expresses the local longitudinal imbalance generated by the variation of the
+normal-stress field. The surrounding material must transmit this imbalance
+through shear interaction with neighbouring material, in the same way a
+differential element of any beam transmits internal forces to remain in
+equilibrium with its neighbours.
 
-In a classical Jourawski construction, this transfer problem is reduced before the local shear field is determined. A portion of the section is isolated, equilibrium gives the tangential resultant acting across the cutting chord, and an additional assumption on the shear distribution along that chord permits the resultant to be converted into a local stress.
+In a classical Jourawski construction, this transfer problem is reduced
+before the local shear field is determined. A portion of the section is
+isolated, equilibrium gives the tangential resultant acting across the
+cutting chord, and an additional assumption on the shear distribution along
+that chord permits the resultant to be converted into a local stress. This
+is convenient for a prismatic section with a well-defined chord, but it is
+precisely the step that CSF sets out to avoid, since a continuously evolving
+section geometry does not offer a single natural chord to cut.
 
-The CSF representation makes a different construction possible. Since the longitudinal equilibrium source is available as a two-dimensional distribution over the actual section, the transfer problem can remain local and two-dimensional. No chord needs to be selected in advance. The missing information is instead how neighbouring points of the section participate in transmitting the required longitudinal force.
+The CSF representation makes a different construction possible. Since the
+longitudinal equilibrium source is already available as a two-dimensional
+distribution over the actual section, the transfer problem can remain local
+and two-dimensional throughout. What is still missing is a description of
+how neighbouring points of the section participate in carrying the required
+longitudinal force — precisely the information a constitutive relation would
+normally supply.
 
-CSF already contains a sectional field intended to describe this second mechanical role: `shear_weight`. Whereas `weight` governs the participation of a region in the axial-flexural response and therefore in the normal-stress field, `shear_weight` governs its participation in the transmission of shear.
-
-Thus the two fields enter different parts of the problem:
+CSF already contains a sectional field intended for this second mechanical
+role: `shear_weight`. Where `weight` governs how a region participates in
+the axial-flexural response, and therefore in the normal-stress field,
+`shear_weight` governs how the same region participates in carrying shear:
 
 ```math
 \texttt{weight}
@@ -114,27 +176,44 @@ Thus the two fields enter different parts of the problem:
 -\frac{\partial \sigma_{zz}}{\partial z},
 ```
 
-while
-
 ```math
 \texttt{shear\_weight}
 \;\longrightarrow\;
 \text{local ability of the section to transmit the required shear interaction}.
 ```
 
-The closure sought here must therefore satisfy two distinct requirements. First, the resulting shear field must provide exactly the local transfer required by longitudinal equilibrium. Second, its spatial distribution must follow the shear-participation field assigned to the section.
+The closure being sought must satisfy two requirements at once: the
+resulting shear field must supply exactly the local transfer demanded by
+equilibrium, and its spatial distribution must respect the shear-carrying
+capacity assigned to each region of the section.
 
-To express this second requirement, consider a scalar field defined over the cross-section whose spatial variation measures the local tendency for longitudinal shear transfer between neighbouring points. Where this scalar field has no spatial variation, no corresponding shear transfer is produced. Where it varies, the direction of its steepest change identifies the local direction of transfer, while the magnitude of that transfer is modulated by the local shear participation of the material.
+A convenient way to picture this is to imagine a scalar field spread over
+the cross-section, describing the local tendency of the material to
+transfer shear from one point to its neighbours — not unlike how a
+temperature field describes the local tendency to transfer heat, or a
+piezometric head the local tendency to drive flow. Where the field is flat,
+no transfer occurs; where it slopes, material moves shear along the
+direction of steepest change, and the local shear-carrying capacity of the
+section governs how much transfer that slope actually produces.
 
-This description is an intuitive motivation, not yet a justification. A more rigorous argument for adopting precisely this closure — rather than any other field satisfying the same equilibrium source — is developed further below through a variational characterization. When $G_{\mathrm{like}}$ represents, or is proportional to, a physical shear modulus, this characterization corresponds to minimization of complementary shear energy; when it is used as a CSF participation field, the same construction defines the corresponding weighted shear-distribution criterion. The construction that follows here should therefore be read as motivation for that result, not as a substitute for it.
+This picture is a physical motivation, not yet a justification. A more
+rigorous argument for adopting precisely this closure — rather than any
+other field consistent with the same equilibrium source — is developed
+further below through a variational characterization. When `shear_weight`
+represents, or is proportional to, a physical shear modulus, that
+characterization corresponds to minimization of complementary shear energy;
+when it is used instead as a CSF participation field, the same construction
+defines the corresponding weighted shear-distribution criterion. What
+follows here should be read as motivation for that result, not as a
+substitute for it.
 
-Only at this stage is it useful to introduce a mathematical representation of that scalar field. Let it be denoted by
+Only at this point is it useful to give the scalar field a name,
 
 ```math
-\phi(x,y,z).
+\phi(x,y,z),
 ```
 
-The local shear-participation field is written as
+and to write the local shear-participation field as
 
 ```math
 G_{\mathrm{like}}(x,y,z)
@@ -151,11 +230,20 @@ G_{\mathrm{like}}
 \nabla_{xy}\phi.
 ```
 
-This relation is not the equilibrium equation. It is the additional assumption used to describe how the shear transfer required by equilibrium is distributed through the section.
+This relation is not the equilibrium equation. It plays the role of a
+constitutive law for the shear-transfer problem: it states how the section,
+through its assigned shear participation, converts the local tendency for
+transfer, expressed by $\phi$, into an actual shear stress.
 
-When `shear_weightabs` represents, or is proportional to, a physical shear modulus, the gradient of $\phi$ can be associated with a reduced shear-deformation field and the relation above has the familiar stress--stiffness--deformation structure. When `shear_weightabs` is used instead as a CSF participation field, the same relation retains its role as a generalized sectional transfer law without requiring $\phi$ to be interpreted as an independent physical displacement.
+When `shear_weightabs` represents, or is proportional to, a physical shear
+modulus, the gradient of $\phi$ can be associated with a reduced
+shear-deformation field, and the relation above takes the familiar
+stress–stiffness–deformation form of an ordinary constitutive law. When
+`shear_weightabs` is used instead as a CSF participation field, the same
+relation keeps its role as a generalized sectional transfer law, without
+requiring $\phi$ to be interpreted as an independent physical displacement.
 
-Substitution of this closure into longitudinal equilibrium finally gives
+Substituting this closure into longitudinal equilibrium finally gives
 
 ```math
 \nabla_{xy}\cdot
@@ -167,8 +255,12 @@ G_{\mathrm{like}}
 -\frac{\partial \sigma_{zz}}{\partial z}.
 ```
 
-The differential operator therefore appears only at the end of the construction. It is the mathematical form obtained by combining two previously stated mechanical requirements: the local longitudinal equilibrium imposed by the Navier stress variation and the assumed law governing how the section transmits that required shear interaction.
-
+The differential operator therefore appears only at the end of the
+construction, as the mathematical form obtained by combining two
+mechanical statements already made on their own physical grounds: the local
+longitudinal equilibrium imposed by the Navier stress variation, and the
+constitutive-type law governing how the section transmits the required
+shear interaction.
 
 ---
 
