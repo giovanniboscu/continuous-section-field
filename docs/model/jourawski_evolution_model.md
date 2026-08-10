@@ -353,3 +353,214 @@ are obtained consistently.
 The classical geometrical width $b$ can therefore be regarded as a particular reduction of the more general chord $\Gamma(z)$. In the CSF representation, this chord can carry both geometric variation and the sectional material information already associated with the regions that it intersects.
 
 This provides a direct route for extending the standard shear-recovery construction to sections that vary continuously in geometry and material participation along the longitudinal axis, without introducing separate problem-specific laws for each sectional parameter.
+
+---
+
+## 5. The Jourawski chord in the evolving section
+
+In the classical Jourawski construction, the shear flow obtained from longitudinal equilibrium is converted into a local shear stress by introducing the width of the cutting chord.
+
+Let
+
+```math
+\Gamma(z)
+```
+
+denote the chord separating the selected sectional portion $\Omega^\ast(z)$ from the remainder of the section at the longitudinal coordinate $z$.
+
+A curvilinear coordinate $s$ is defined along $\Gamma(z)$, and the total geometrical length of the chord is
+
+```math
+\boxed{
+b(z)
+=
+\int_{\Gamma(z)} ds.
+}
+```
+
+For a prismatic homogeneous section, the chord geometry is fixed along the beam axis and its material properties are uniform. Under the classical assumption that the longitudinal shear stress is constant along the chord,
+
+```math
+\tau(s,z)=\tau(z),
+```
+
+the shear flow becomes
+
+```math
+q(z)
+=
+\int_{\Gamma}
+\tau(z)\,ds
+=
+\tau(z)b,
+```
+
+and therefore
+
+```math
+\boxed{
+\tau(z)
+=
+\frac{q(z)}{b}.
+}
+```
+
+This is the geometrical reduction used in the standard Jourawski formula.
+
+### 5.1 Chord extracted from the Continuous Section Field
+
+Within CSF, the chord is not introduced as an independent geometrical parameter. It is obtained from the sectional state $\mathcal S(z)$.
+
+Accordingly,
+
+```math
+\boxed{
+\Gamma
+=
+\Gamma(z),
+}
+```
+
+and its geometrical measure becomes
+
+```math
+\boxed{
+b
+=
+b(z).
+}
+```
+
+The variation of $b(z)$ is therefore not prescribed through an additional longitudinal law. It follows directly from the evolving geometry already represented by $\mathcal S(z)$.
+
+More importantly, the chord may intersect different sectional regions. Since those regions and their mechanical participation are already contained in $\mathcal S(z)$, each point of the chord can also be associated with the local material information of the region to which it belongs.
+
+The chord is therefore no longer described only by its geometrical length. At a given $z$, it carries simultaneously:
+
+```math
+\boxed{
+\Gamma(z)
+\quad\longrightarrow\quad
+\left\{
+\text{geometry along the chord},
+\;
+\text{material participation along the chord}
+\right\}.
+}
+```
+
+Both quantities originate from the same sectional representation and evolve consistently with $z$.
+
+### 5.2 Materially non-uniform chord
+
+Let
+
+```math
+g(s,z)
+```
+
+denote the local shear-participation quantity associated with the point identified by $s$ along the chord.
+
+The shear stress is now allowed to vary along the chord:
+
+```math
+\tau=\tau(s,z).
+```
+
+The equilibrium definition of the shear flow remains unchanged:
+
+```math
+\boxed{
+q(z)
+=
+\int_{\Gamma(z)}
+\tau(s,z)\,ds.
+}
+```
+
+To distribute the required shear flow among regions with different shear participation, the local stress may be written in the form
+
+```math
+\tau(s,z)
+=
+\lambda(z)\,g(s,z),
+```
+
+where $\lambda(z)$ is a scalar factor determined from the equilibrium condition.
+
+Substituting into the shear-flow definition gives
+
+```math
+q(z)
+=
+\lambda(z)
+\int_{\Gamma(z)}
+g(s,z)\,ds,
+```
+
+and therefore
+
+```math
+\lambda(z)
+=
+\frac{q(z)}
+{
+\displaystyle
+\int_{\Gamma(z)}
+g(s,z)\,ds
+}.
+```
+
+The resulting shear-stress distribution is
+
+```math
+\boxed{
+\tau(s,z)
+=
+q(z)
+\frac{
+g(s,z)
+}{
+\displaystyle
+\int_{\Gamma(z)}
+g(\xi,z)\,d\xi
+}.
+}
+```
+
+Here $\xi$ is a dummy integration coordinate along the chord.
+
+For a homogeneous chord,
+
+```math
+g(s,z)=g_0,
+```
+
+so that
+
+```math
+\int_{\Gamma(z)}
+g_0\,ds
+=
+g_0 b(z),
+```
+
+and the expression reduces immediately to
+
+```math
+\boxed{
+\tau(z)
+=
+\frac{q(z)}{b(z)}.
+}
+```
+
+If the section is also prismatic,
+
+```math
+b(z)=b,
+```
+
+and the classical Jourawski reduction is recovered.
+
+Thus, the standard width $b$ appears as the homogeneous and prismatic special case of a more general chord whose geometry and material participation are both obtained from the evolving sectional state $\mathcal S(z)$.
