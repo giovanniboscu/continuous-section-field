@@ -512,6 +512,7 @@ create the output directory
 
 ```bash
 mkdir -p out/iso
+mkdir -p out/non-iso
 ```
 
 
