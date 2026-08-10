@@ -511,7 +511,7 @@ The lookup files keep the longitudinal degradation field outside the geometric g
 create the output directory
 
 ```bash
-mkidr -p out/iso
+mkdir -p out/iso
 ```
 
 
