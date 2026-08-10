@@ -508,7 +508,15 @@ The lookup files keep the longitudinal degradation field outside the geometric g
 
 ## 4. Basic workflow
 
+create the output directory
+
+```bash
+mkidr -p out/iso
+```
+
+
 Run the launcher from the case directory:
+
 
 ```bash
 csf-actions  tapered_pc_pole_iso_lookup.yaml action_iso_tapered_pole_lookup.yaml 
