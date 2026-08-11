@@ -295,16 +295,6 @@ csf-actions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 
 ---
 
-## Cross-sectional properties
-
-At each longitudinal station, CSF evaluates the polygonal zones that define the cross-section and computes the contribution of each zone to the requested sectional property. The final value is obtained by accumulating the zone-wise geometric contributions after applying the corresponding participation field. Geometry and participation therefore remain distinct: the polygon defines the occupied region, while the participation field controls the effective contribution of that region to the sectional property.
-
-
- [CSF – Section Full Analysis Output](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sections/sectionfullanalysis.md)
- 
-
----
-
 # CSF Numerical Validation: Circular Hollow Section
 `examples/cylinder_withcheck.py`
 
