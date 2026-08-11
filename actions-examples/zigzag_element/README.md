@@ -1,7 +1,7 @@
 # Zigzag Stacked Member
 
 <p align="center">
-  <img alt="zigzag" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/degraded_pole2.png" />
+  <img alt="zigzag" src="zigzag.jpg" />
 </p>
 
 
