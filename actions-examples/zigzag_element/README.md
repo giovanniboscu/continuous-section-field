@@ -24,7 +24,7 @@ The assembled geometry therefore forms a continuous zigzag-shaped member.
 ## Run
 
 ```bash
-python zigzag.py
+python3 zigzag.py
 ```
 
 The script displays the assembled 3D geometry.
