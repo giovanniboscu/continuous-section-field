@@ -180,12 +180,11 @@ csf-actions geometry.yaml actions.yaml
 ---
 ### Using CSF as a Python Library
 
-CSF is not only a command-line tool, but also a Python library
-
-It can be imported and used programmatically to define geometries, evaluate section properties along the longitudinal axis, and integrate with custom workflows or external solvers.
-
+CSF can also be imported and used directly as a Python library to evaluate section fields, access sectional properties, and integrate CSF with custom workflows or external solvers.
 
 [Full Python API example - Tapered T-beam](#worked-example-continuously-tapered-t-beam)
+
+[Programmer Guide](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/programmer-guide)
 
 ---
 
