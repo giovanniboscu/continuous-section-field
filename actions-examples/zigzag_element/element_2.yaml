@@ -1,0 +1,27 @@
+# element_2.yaml
+CSF:
+  sections:
+    S0:
+      z: 10.0
+      polygons:
+        section:
+          weight: 1.0
+          vertices:
+            - [0.6, -0.4]
+            - [1.4, -0.4]
+            - [1.4,  0.4]
+            - [0.6,  0.4]
+
+    S1:
+      z: 20.0
+      polygons:
+        section:
+          weight: 1.0
+          vertices:
+            - [-0.4, -0.4]
+            - [ 0.4, -0.4]
+            - [ 0.4,  0.4]
+            - [-0.4,  0.4]
+
+  shear_weight_laws:
+    - 'iso(0.2)'
