@@ -209,8 +209,16 @@ that can sample points along a curve and export their coordinates.
 
 ### CSFStacked module (segmented `ContinuousSectionField` stacking)
 
-CSFStacked is a container that stacks multiple `ContinuousSectionField` segments along the global `z` axis and dispatches any query `z -> correct segment`.  
-It adds a practical layer on top of multiple CSF segments: junctions are handled deterministically and you can query sections/properties anywhere with a single global API (section(z), section_full_analysis(z))
+`CSFStacked` is a container that assembles multiple `ContinuousSectionField` segments along the global `z` coordinate and dispatches each query to the corresponding segment.
+
+It provides a single global interface for segmented CSF geometries, allowing sections and section properties to be queried anywhere along the assembled member through methods such as `section(z)` and `section_full_analysis(z)`.
+
+The individual CSF segments may also have different transverse positions. By enforcing geometric continuity at their junctions, they can therefore be assembled into globally non-straight, piecewise-defined members.
+
+A simple two-segment zigzag example is available here:
+
+[**Zigzag element example**](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/zigzag_element)
+
 
 ---
 ## 🛠 Installation
