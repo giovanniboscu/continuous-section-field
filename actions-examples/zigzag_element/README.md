@@ -1,6 +1,10 @@
 # Zigzag Stacked Member
 
-[**Zigzag element example**](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/zigzag_element)
+<p align="center">
+  <img alt="zigzag" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/degraded_pole2.png" />
+</p>
+
+
 
 This example demonstrates how two `ContinuousSectionField` elements can be assembled with `CSFStacked` to form a globally non-straight member.
 
