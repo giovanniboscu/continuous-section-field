@@ -1,5 +1,7 @@
 # Zigzag Stacked Member
 
+[**Zigzag element example**](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/zigzag_element)
+
 This example demonstrates how two `ContinuousSectionField` elements can be assembled with `CSFStacked` to form a globally non-straight member.
 
 Each individual CSF element is defined along a straight longitudinal coordinate, but the cross-section can move transversely between its end stations.
