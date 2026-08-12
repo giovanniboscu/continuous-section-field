@@ -1,0 +1,48 @@
+CSF:
+  sections:
+    S0:
+      z: 0.000000
+      polygons:
+        # Polygon base name is "outer".
+        # Suffix tags in the same key are metadata for classification and calculation:
+        #   @cell   -> select the closed-cell torsion workflow
+        #   @t=0.30 -> assign thickness parameter t for that workflow
+        # Tags do not define geometric pairing/order; they control how this polygon is processed.
+
+        outer@cell@t=0.03:
+          weight: 1.000000
+          vertices:
+             # OUTER loop (CCW)
+             - [0.0, 0.0]
+             - [10.0, 0.0]
+             - [10.0, 6.0]
+             - [0.0, 6.0]
+             - [0.0, 0.0]
+             # bridge to inner start
+             - [3.0, 2.0]
+             # INNER loop (CW)
+             - [3.0, 4.0]
+             - [7.0, 4.0]
+             - [7.0, 2.0]
+             - [3.0, 2.0]
+    S1:
+      z: 10.000000
+      polygons:
+        outer@cell@t=0.01:
+          weight: 1.000000
+          vertices:
+            # OUTER loop (CCW)
+            - [0.0, 0.0]
+            - [10.0, 0.0]
+            - [10.0, 6.0]
+            - [0.0, 6.0]
+            - [0.0, 0.0]
+            # bridge to inner start
+            - [3.0, 2.0]
+            # INNER loop (CW)
+            - [3.0, 4.0]
+            - [7.0, 4.0]
+            - [7.0, 2.0]
+            - [3.0, 2.0]
+  weight_laws:
+    - 'outer,outer:1.0 '
