@@ -18,6 +18,10 @@ Output filename examples:
     src/csf/section_field.py              -> docs/API/section_field_api_en.md
     src/csf/continuous_section_field.py   -> docs/API/continuous_section_field_api_en.md
     src/csf/utils/csf_sp.py               -> docs/API/utils_csf_sp_api_en.md
+
+An ordered API index is also generated at:
+
+    docs/API/readme.md
 """
 
 from __future__ import annotations
@@ -560,6 +564,54 @@ def generate_one(
     return output_file
 
 
+def generate_index(
+    sources: list[Path],
+    *,
+    source_root: Path,
+    output_dir: Path,
+) -> Path:
+    index_file = output_dir / "readme.md"
+
+    groups: dict[str, list[Path]] = {}
+    for source in sorted(sources, key=lambda p: p.relative_to(source_root).as_posix().lower()):
+        rel = source.relative_to(source_root)
+        group = "csf" if rel.parent == Path(".") else rel.parent.as_posix()
+        groups.setdefault(group, []).append(source)
+
+    lines: list[str] = []
+    lines.append("# CSF API Reference")
+    lines.append("")
+    lines.append(
+        "Automatically generated from the Python sources under `src/csf` "
+        "by `tools/generate_api_doc.py`."
+    )
+    lines.append("")
+
+    group_order = ["csf"] + sorted(group for group in groups if group != "csf")
+
+    for group in group_order:
+        if group not in groups:
+            continue
+
+        title = "Package root" if group == "csf" else f"`{group}`"
+        lines.append(f"## {title}")
+        lines.append("")
+
+        for source in groups[group]:
+            rel = source.relative_to(source_root)
+            module_name = "csf." + ".".join(rel.with_suffix("").parts)
+            doc_name = output_filename_for(source, source_root)
+            source_display = (Path("src") / "csf" / rel).as_posix()
+            lines.append(
+                f"- [`{module_name}`]({doc_name}) — `{source_display}`"
+            )
+
+        lines.append("")
+
+    index_file.write_text("\n".join(lines), encoding="utf-8")
+    return index_file
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate Markdown API documentation for explicit Python source files."
@@ -635,6 +687,14 @@ def main() -> None:
                 include_calls=include_calls,
             )
         )
+
+    written.append(
+        generate_index(
+            sources,
+            source_root=source_root,
+            output_dir=output_dir,
+        )
+    )
 
     print("Generated API documentation:")
     for path in written:
