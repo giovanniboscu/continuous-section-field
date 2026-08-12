@@ -1,0 +1,26 @@
+CSF_ACTIONS:
+  stations:
+    station_1s: [0]
+    station_ends: [0,10]
+      
+  actions:  
+    - plot_section_2d:
+        stations:
+          - station_ends
+    - section_selected_analysis:
+        stations:
+          - station_1s
+        properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy,J_s_vroark,J_s_vroark_fidelity,J_sv_wall]
+    - plot_volume_3d:
+       params:
+         line_percent: 100.0                  # percentage of generator lines shown
+         title: "Ruled volume"                # figure title
+         show_end_sections: true              # draw end-section outlines at z0 and z1
+         seed: w                              # RNG seed when line_percent < 100 or w | w<resolution> for weight line color featur
+    - plot_volume_3d:
+       params:
+         line_percent: 100.0                  # percentage of generator lines shown
+         title: "Ruled volume"                # figure title
+         show_end_sections: true              # draw end-section outlines at z0 and z1
+         seed: s                             # RNG seed when line_percent < 100 or w | w<resolution> for weight line color feature
+

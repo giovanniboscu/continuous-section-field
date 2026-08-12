@@ -1,0 +1,36 @@
+model:
+  csf_yaml: tsec_fem3d.yaml
+
+benchmark:
+  comparison_t: 0.30
+
+  loading:
+    type: simply_supported_udl_y
+    q: 20000.0
+
+csf:
+  local_shear_potential:
+    dz_relative: 1.0e-5
+    mesh_refinements: 7
+    compatibility_rtol: 1.0e-8
+    compatibility_atol: 1.0e-6
+
+fem3d:
+  solver: openseespy
+
+  mesh:
+    nz: 75
+    target_size_xy: 0.03
+
+  analysis:
+    system: UmfPack
+    algorithm: Linear
+
+output:
+  directory: output_tsec_fem3d
+  pointwise_csv: pointwise_comparison.csv
+  summary_csv: comparison_summary.csv
+  csf_field_csv: csf_shear_field.csv
+  fem3d_field_csv: fem3d_stress_field.csv
+  fem3d_section_jpg: fem3d_section_at_comparison_station.jpg
+  report_txt: benchmark_report.txt
