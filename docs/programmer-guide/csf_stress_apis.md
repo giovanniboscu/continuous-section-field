@@ -58,7 +58,7 @@ This function is used for axial and bending stress checks.
 
 # 2. Jourawski shear stress
 
-[Jourawski shear-stress calculation model](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/docs/model/csf_jourawski_calculation_model.md)
+[Jourawski shear-stress calculation model](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_jourawski_calculation_model.md)
 
 Use:
 
