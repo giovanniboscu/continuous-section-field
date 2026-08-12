@@ -11,13 +11,13 @@ Examples from repository root:
 
 Default output directory:
 
-    src/doc/
+    docs/API/
 
 Output filename examples:
 
-    src/csf/section_field.py              -> src/doc/section_field_api_en.md
-    src/csf/continuous_section_field.py   -> src/doc/continuous_section_field_api_en.md
-    src/csf/utils/csf_sp.py               -> src/doc/utils_csf_sp_api_en.md
+    src/csf/section_field.py              -> docs/API/section_field_api_en.md
+    src/csf/continuous_section_field.py   -> docs/API/continuous_section_field_api_en.md
+    src/csf/utils/csf_sp.py               -> docs/API/utils_csf_sp_api_en.md
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SOURCE_ROOT = REPO_ROOT / "src" / "csf"
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "src" / "doc"
+DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "API"
 
 
 def annotation_to_str(node: ast.AST | None) -> str:
@@ -582,7 +582,7 @@ def main() -> None:
     parser.add_argument(
         "--out-dir",
         default=str(DEFAULT_OUTPUT_DIR),
-        help="Output directory. Default: src/doc.",
+        help="Output directory. Default: docs/API/.",
     )
     parser.add_argument(
         "--public-only",
