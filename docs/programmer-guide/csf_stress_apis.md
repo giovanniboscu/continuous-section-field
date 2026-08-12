@@ -795,3 +795,600 @@ for row in shear_rows:
     )
 
 ```
+---
+
+# CSF stress analysis: Navier, Jourawski, and Jourawski v2
+
+This example compares two CSF shear-stress formulations applied to the same tapered T-shaped Continuous Section Field under the same prescribed internal actions. The first uses a Jourawski-type section formulation based on partial first moments and cut-wise shear-stress redistribution, while analyse_jourawski_shear_stress_v2() derives the mean cut shear stress from the longitudinal derivative of the partial Navier force resultant. The comparison therefore highlights the different mechanical basis and output structure of the two approaches.
+
+```python
+"""
+Minimal end-to-end example of the CSF stress-analysis APIs.
+
+The model is built directly in Python, without external geometry or
+settings files. One section of a tapered T-shaped Continuous Section
+Field is evaluated under prescribed internal actions.
+
+Workflow:
+1. define the start and end T-shaped sections;
+2. create the Continuous Section Field;
+3. select one station z;
+4. prescribe the internal actions at that station;
+5. compute the section properties;
+6. compute Navier normal stresses;
+7. compute Jourawski shear stresses;
+8. print the polygon-wise governing results.
+
+The internal actions are prescribed directly. Their derivation from a
+beam or structural model is outside the scope of this section-level
+example.
+"""
+
+from csf import (
+    ContinuousSectionField,
+    Polygon,
+    Pt,
+    Section,
+    section_properties,
+)
+
+from csf.section_field import (
+    analyse_polygon_jourawski_shear_stress,
+    analyse_polygon_navier_stress,
+)
+
+# Jourawski v2 is currently defined in polygon_stress.py.
+from csf.polygon_stress import (
+    analyse_jourawski_shear_stress_v2,
+)
+
+
+def main():
+
+    # -----------------------------------------------------------------------
+    # 1. DEFINE THE START T-SECTION AT z = 0
+    # -----------------------------------------------------------------------
+
+    L = 5.0
+
+    # The T-section is represented by two adjacent, non-overlapping polygons:
+    # a horizontal flange and a vertical web.
+    #
+    # Polygon vertices are listed counter-clockwise.
+
+    # Flange: rectangle from (-1.0, -0.2) to (1.0, 0.2).
+
+    poly0_start = Polygon(
+        vertices=(
+            Pt(-1.0, -0.2),
+            Pt(1.0, -0.2),
+            Pt(1.0, 0.2),
+            Pt(-1.0, 0.2),
+        ),
+        weight=1.0,
+        name="flange",
+    )
+
+    # Web: rectangle from (-0.2, -1.0) to (0.2, -0.2).
+
+    poly1_start = Polygon(
+        vertices=(
+            Pt(-0.2, -1.0),
+            Pt(0.2, -1.0),
+            Pt(0.2, -0.2),
+            Pt(-0.2, -0.2),
+        ),
+        weight=1.0,
+        name="web",
+    )
+
+    # -----------------------------------------------------------------------
+    # 2. DEFINE THE END T-SECTION AT z = L
+    # -----------------------------------------------------------------------
+
+    # The end section must contain the same number of polygons as the start
+    # section. Corresponding polygons must have the same names, vertex counts,
+    # and vertex ordering so that CSF can interpolate them along z.
+
+    # The flange remains unchanged along the field.
+
+    poly0_end = Polygon(
+        vertices=(
+            Pt(-1.0, -0.2),
+            Pt(1.0, -0.2),
+            Pt(1.0, 0.2),
+            Pt(-1.0, 0.2),
+        ),
+        weight=1.0,
+        name="flange",
+    )
+
+    # The bottom of the web moves from y = -1.0 at z = 0
+    # to y = -2.5 at z = L. The web depth therefore increases
+    # linearly along the longitudinal z axis.
+
+    poly1_end = Polygon(
+        vertices=(
+            Pt(-0.2, -2.5),
+            Pt(0.2, -2.5),
+            Pt(0.2, -0.2),
+            Pt(-0.2, -0.2),
+        ),
+        weight=1.0,
+        name="web",
+    )
+
+    # -----------------------------------------------------------------------
+    # 3. CREATE THE ENDPOINT SECTIONS AND THE CONTINUOUS SECTION FIELD
+    # -----------------------------------------------------------------------
+
+    # Polygon order establishes the correspondence between the endpoint
+    # sections:
+    #
+    # poly0_start <-> poly0_end
+    # poly1_start <-> poly1_end
+
+    s0 = Section(
+        polygons=(poly0_start, poly1_start),
+        z=0.0,
+    )
+
+    s1 = Section(
+        polygons=(poly0_end, poly1_end),
+        z=L,
+    )
+
+    # CSF linearly interpolates the corresponding polygon vertices and
+    # properties between z = 0 and z = L.
+
+    field = ContinuousSectionField(
+        section0=s0,
+        section1=s1,
+    )
+
+    # -----------------------------------------------------------------------
+    # 4. SELECT THE STATION AND PRESCRIBE THE INTERNAL ACTIONS
+    # -----------------------------------------------------------------------
+
+    # Evaluate the section at the midpoint of the field.
+
+    z = 2.5
+
+    # Signed internal actions acting directly on the section at z.
+    #
+    # Navier stress analysis uses:
+    # N, Mx, My
+    #
+    # Jourawski shear-stress analysis uses:
+    # Tx, Ty
+    #
+    # CSF convention:
+    # Tx is the shear action associated with the variation of My;
+    # Ty is the shear action associated with the variation of Mx.
+    #
+    # Tx and Ty are section resultants. The resulting local shear-stress
+    # components tau_x and tau_y may each contain contributions from both
+    # actions, depending on the section geometry.
+
+    N = -100_000.0   # Axial force [N]
+    Mx = 25_000.0    # Bending moment about the x axis [N·m]
+    My = 10_000.0    # Bending moment about the y axis [N·m]
+    Tx = 5_000.0     # Shear action associated with My [N]
+    Ty = 10_000.0    # Shear action associated with Mx [N]
+
+    # -----------------------------------------------------------------------
+    # 5. COMPUTE THE SECTION PROPERTIES AT z
+    # -----------------------------------------------------------------------
+
+    section_at_z = field.section(z)
+    properties = section_properties(section_at_z)
+
+    # -----------------------------------------------------------------------
+    # 6. COMPUTE NAVIER NORMAL STRESSES
+    # -----------------------------------------------------------------------
+
+    # The function returns one result dictionary for each section polygon.
+
+    navier_rows = analyse_polygon_navier_stress(
+        section_field=field,
+        z=z,
+        N=N,
+        Mx=Mx,
+        My=My,
+    )
+
+    # -----------------------------------------------------------------------
+    # 7. COMPUTE JOURAWSKI SHEAR STRESSES
+    # -----------------------------------------------------------------------
+
+    # tau_x values are evaluated through vertical cuts x = constant.
+    # tau_y values are evaluated through horizontal cuts y = constant.
+    #
+    # These names identify the local shear-stress components, not the
+    # individual contributions generated exclusively by Tx or Ty.
+    #
+    # num_sudx and num_sudy control the scan resolution used to locate
+    # the extrema of the two components.
+
+    shear_rows = analyse_polygon_jourawski_shear_stress(
+        section_field=field,
+        z=z,
+        Tx=Tx,
+        Ty=Ty,
+        num_sudx=100,
+        num_sudy=100,
+        debug=False,
+    )
+
+    # -----------------------------------------------------------------------
+    # 8. PRINT SECTION PROPERTIES AND APPLIED ACTIONS
+    # -----------------------------------------------------------------------
+
+    print(f"Station z = {z:.3f} m")
+
+    print(
+        f"A = {properties['A']:.6e} m², "
+        f"Ix = {properties['Ix']:.6e} m⁴, "
+        f"Iy = {properties['Iy']:.6e} m⁴, "
+        f"Ixy = {properties['Ixy']:.6e} m⁴"
+    )
+
+    print(
+        f"Actions: "
+        f"N = {N:.6e} N, "
+        f"Mx = {Mx:.6e} N·m, "
+        f"My = {My:.6e} N·m, "
+        f"Tx = {Tx:.6e} N, "
+        f"Ty = {Ty:.6e} N"
+    )
+
+    # -----------------------------------------------------------------------
+    # 9. PRINT POLYGON-WISE NAVIER RESULTS
+    # -----------------------------------------------------------------------
+
+    print("\nNAVIER")
+
+    for row in navier_rows:
+        # sigma_extreme is selected by absolute magnitude while preserving
+        # its original sign and governing coordinates.
+        print(
+            f"{row['idx']}:{row['name']}  "
+            f"sigma_min = {row['sigma_min']:.6e} Pa  "
+            f"sigma_max = {row['sigma_max']:.6e} Pa  "
+            f"sigma_extreme = {row['sigma_extreme']:.6e} Pa  "
+            f"at ({row['x']:.6e}, {row['y']:.6e})"
+        )
+
+    # -----------------------------------------------------------------------
+    # 10. PRINT POLYGON-WISE JOURAWSKI RESULTS
+    # -----------------------------------------------------------------------
+
+    print("\nJOURAWSKI")
+
+    for row in shear_rows:
+        # Select the governing signed shear-stress component among the four
+        # extrema returned for the polygon. Selection is based on absolute
+        # magnitude, while the original sign, direction, and coordinates
+        # are preserved.
+        candidates = [
+            ("x", row["tau_x_min"], row["x_tau_x_min"], row["y_tau_x_min"]),
+            ("x", row["tau_x_max"], row["x_tau_x_max"], row["y_tau_x_max"]),
+            ("y", row["tau_y_min"], row["x_tau_y_min"], row["y_tau_y_min"]),
+            ("y", row["tau_y_max"], row["x_tau_y_max"], row["y_tau_y_max"]),
+        ]
+
+        direction, tau_governing, x, y = max(
+            candidates,
+            key=lambda item: abs(item[1]),
+        )
+
+        print(
+            f"{row['idx']}:{row['name']}  "
+            f"tau_x_min = {row['tau_x_min']:.6e} Pa  "
+            f"tau_x_max = {row['tau_x_max']:.6e} Pa  "
+            f"tau_y_min = {row['tau_y_min']:.6e} Pa  "
+            f"tau_y_max = {row['tau_y_max']:.6e} Pa"
+        )
+
+        print(
+            f"  tau_governing = {tau_governing:.6e} Pa  "
+            f"direction = {direction}  "
+            f"at ({x:.6e}, {y:.6e})"
+        )
+
+    # -----------------------------------------------------------------------
+    # 11. COMPUTE JOURAWSKI V2 FROM LONGITUDINAL EQUILIBRIUM
+    # -----------------------------------------------------------------------
+
+    # Jourawski v2 uses the complete Navier field on a portion of the section.
+    #
+    # For each fixed global cut it evaluates:
+    #
+    #     N_partial(z) = integral_Apartial sigma_zz dA
+    #
+    # and obtains the cut shear flow directly from longitudinal equilibrium:
+    #
+    #     q = dN_partial / dz
+    #
+    # The mean shear stress on that complete cut is:
+    #
+    #     tau_mean = q / b_total
+    #
+    # where b_total is the total active length intersected by the cut.
+    #
+    # The neighbouring section states are evaluated using:
+    #
+    #     dMx/dz = Ty
+    #     dMy/dz = Tx
+    #
+    # and, unlike the previous Jourawski formulation, Section(z) itself is
+    # reevaluated at the derivative stations. Therefore changes in geometry,
+    # centroid, inertia and axial-flexural weight are included in dN_partial/dz.
+    #
+    # This function is cut-based. It does not redistribute tau_mean among the
+    # crossed polygons and does not use shear_weight for that redistribution.
+
+    shear_v2 = analyse_jourawski_shear_stress_v2(
+        section_field=field,
+        z=z,
+        N=N,
+        Mx=Mx,
+        My=My,
+        Tx=Tx,
+        Ty=Ty,
+        dN_dz=0.0,
+        num_sudx=100,
+        num_sudy=100,
+        debug=False,
+    )
+
+    tau_x_scan = shear_v2["tau_x_scan"]
+    tau_y_scan = shear_v2["tau_y_scan"]
+
+    # Find the cut with the largest absolute mean shear stress
+    # independently for the two cut directions.
+
+    governing_x_v2 = max(
+        tau_x_scan,
+        key=lambda row: abs(row["tau_mean"]),
+    )
+
+    governing_y_v2 = max(
+        tau_y_scan,
+        key=lambda row: abs(row["tau_mean"]),
+    )
+
+    if abs(governing_x_v2["tau_mean"]) >= abs(governing_y_v2["tau_mean"]):
+        governing_direction_v2 = "x"
+        governing_v2 = governing_x_v2
+    else:
+        governing_direction_v2 = "y"
+        governing_v2 = governing_y_v2
+
+    # -----------------------------------------------------------------------
+    # 12. PRINT JOURAWSKI V2 RESULTS
+    # -----------------------------------------------------------------------
+
+    print("\nJOURAWSKI V2")
+
+    print(
+        f"tau_x governing cut: "
+        f"x = {governing_x_v2['coord']:.6e} m  "
+        f"b = {governing_x_v2['b_total']:.6e} m  "
+        f"N_partial = {governing_x_v2['N_partial']:.6e} N  "
+        f"dN_partial/dz = {governing_x_v2['shear_flow']:.6e} N/m  "
+        f"tau_mean = {governing_x_v2['tau_mean']:.6e} Pa"
+    )
+
+    print(
+        f"tau_y governing cut: "
+        f"y = {governing_y_v2['coord']:.6e} m  "
+        f"b = {governing_y_v2['b_total']:.6e} m  "
+        f"N_partial = {governing_y_v2['N_partial']:.6e} N  "
+        f"dN_partial/dz = {governing_y_v2['shear_flow']:.6e} N/m  "
+        f"tau_mean = {governing_y_v2['tau_mean']:.6e} Pa"
+    )
+
+    print(
+        f"\nJOURAWSKI V2 GOVERNING SHEAR: "
+        f"direction = {governing_direction_v2}  "
+        f"coord = {governing_v2['coord']:.6e} m  "
+        f"tau_mean = {governing_v2['tau_mean']:.6e} Pa"
+    )
+
+
+if __name__ == "__main__":
+    main()
+```
+
+
+
+## Difference between the two Jourawski formulations
+
+The two functions use the same CSF section representation and the same shear-action convention:
+
+```math
+\frac{dM_x}{dz}=T_y,
+\qquad
+\frac{dM_y}{dz}=T_x.
+```
+
+They differ, however, in how the shear stress is obtained.
+
+### `analyse_polygon_jourawski_shear_stress()`
+
+This formulation applies a Jourawski-type section calculation directly at the requested station \(z\).
+
+For each global cut, it evaluates the partial first moments of the transformed section and obtains a reference cut shear stress from the prescribed \(T_x\) and \(T_y\).
+
+The resulting cut value is then redistributed among the polygon segments crossed by the cut according to their sampled `shear_weightabs`.
+
+For one cut, the redistribution is
+
+```math
+\tau_i
+=
+\tau_{\mathrm{ref}}
+\frac{b_{\mathrm{total}}\,G_i}
+{\sum_j G_j b_j}.
+```
+
+Here:
+
+- \(b_{\mathrm{total}}\) is the total active length of the cut;
+- \(b_j\) is the length of the cut inside polygon \(j\);
+- \(G_j\) is the sampled `shear_weightabs` of polygon \(j\).
+
+The redistribution preserves the shear resultant on the complete cut:
+
+```math
+\sum_j \tau_j b_j
+=
+\tau_{\mathrm{ref}} b_{\mathrm{total}}.
+```
+
+The output is therefore **polygon-oriented**. Each polygon receives sampled values and extrema of `tau_x` and `tau_y`.
+
+The formulation operates on the section evaluated at the requested station and derives the shear stress from the prescribed shear actions and the sectional first moments. It does not obtain the shear flow by differentiating the complete partial Navier resultant along the longitudinal coordinate.
+
+---
+
+### `analyse_jourawski_shear_stress_v2()`
+
+Jourawski v2 starts instead from the complete Navier longitudinal stress field.
+
+For each fixed global cut, it considers the longitudinal-force resultant acting on the positive side of that cut:
+
+```math
+N_c(z)
+=
+\int_{A_c(z)}
+\sigma_{zz}(x,y,z)\,dA.
+```
+
+For a vertical cut \(x=x_c\),
+
+```math
+A_c(z)=\{X \ge x_c\},
+```
+
+while for a horizontal cut \(y=y_c\),
+
+```math
+A_c(z)=\{Y \ge y_c\}.
+```
+
+The shear flow on the cut is then obtained directly from longitudinal equilibrium:
+
+```math
+q_c
+=
+\frac{dN_c}{dz}.
+```
+
+The corresponding mean shear stress on the complete active cut is
+
+```math
+\tau_{\mathrm{mean}}
+=
+\frac{q_c}{b_c},
+```
+
+where \(b_c\) is the total active intersection length of the section with that cut.
+
+The essential difference is therefore the quantity that is differentiated.
+
+Jourawski v2 does not differentiate only the prescribed bending actions. It reevaluates the complete Navier resultant on neighbouring CSF sections:
+
+```math
+N_c(z-\Delta z),
+\qquad
+N_c(z),
+\qquad
+N_c(z+\Delta z).
+```
+
+The neighbouring action states follow the CSF convention
+
+```math
+M_x(z+\Delta z)
+=
+M_x(z)+T_y\,\Delta z,
+```
+
+```math
+M_y(z+\Delta z)
+=
+M_y(z)+T_x\,\Delta z,
+```
+
+and, when present,
+
+```math
+N(z+\Delta z)
+=
+N(z)
++
+\frac{dN}{dz}\Delta z.
+```
+
+At the same time, the actual CSF section is rebuilt at each neighbouring station. Therefore the derivative
+
+```math
+\frac{dN_c}{dz}
+```
+
+automatically contains the effects of:
+
+- geometry variation;
+- centroid motion;
+- inertia variation;
+- axial-flexural `weight` variation;
+- prescribed section-action gradients.
+
+The output is therefore **cut-oriented**, not polygon-oriented.
+
+Each returned row represents one complete vertical or horizontal cut and contains quantities such as:
+
+- `coord`;
+- `b_total`;
+- `N_partial`;
+- `shear_flow`;
+- `tau_mean`.
+
+Jourawski v2 does **not** redistribute `tau_mean` among the individual polygons crossed by the cut and does not use `shear_weight` for such a redistribution.
+
+---
+
+## In short
+
+The first formulation follows the sectional Jourawski path:
+
+```math
+(T_x,T_y)
+\longrightarrow
+\text{partial sectional first moments}
+\longrightarrow
+\tau_{\mathrm{ref}}
+\longrightarrow
+\text{polygon-wise redistribution}.
+```
+
+Jourawski v2 instead follows the longitudinal-equilibrium path:
+
+```math
+\sigma_{zz}(x,y,z)
+\longrightarrow
+N_c(z)
+\longrightarrow
+\frac{dN_c}{dz}
+\longrightarrow
+q_c
+\longrightarrow
+\tau_{\mathrm{mean}}.
+```
+
+For a prismatic homogeneous section, Jourawski v2 reduces to the classical Jourawski result.
+
+For an evolving CSF section, however, the longitudinal derivative acts on the complete partial Navier resultant of the evolving section. Geometry, sectional properties, material participation and action gradients therefore enter the same equilibrium derivative rather than being introduced as separate corrections.
+
