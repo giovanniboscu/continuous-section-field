@@ -313,6 +313,8 @@ This example loads a CSF YAML file, validates it through `CSFReader`, extracts t
 
 The file `boxcell.yaml` is expected to contain a section with a polygon tagged as `@cell`. If the YAML file has syntax errors, missing fields, invalid polygon data, or invalid weight laws, the reader reports the issue before any analysis is executed.
 
+[boxcell.yaml](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/boxcell.yaml)
+
 ```python
 from csf import section_full_analysis
 from csf.io.csf_reader import CSFReader
