@@ -10,12 +10,17 @@ The main APIs considered here are:
 
 `analyse_polygon_navier_stress` evaluates the longitudinal Navier stress field and returns polygon-wise stress extrema.
 
-`analyse_polygon_jourawski_shear_stress` evaluates a Jourawski-type shear formulation at the selected section and returns polygon-oriented shear-stress results obtained from global section cuts.
+The two Jourawski APIs provide two different shear-recovery paths.
 
-`analyse_jourawski_shear_stress_v2` follows a different cut-resultant formulation. It integrates the Navier longitudinal stress over one side of each cut, differentiates the resulting partial axial force along `z`, and converts that derivative into a mean shear stress on the complete cut.
+`analyse_polygon_jourawski_shear_stress` performs a sectional Jourawski-type calculation and returns polygon-oriented shear-stress results, including redistribution along cuts according to the local shear participation.
 
-The functions operate directly on a `section_field`. The user supplies the internal actions acting at the selected station, while the CSF provides the corresponding section geometry and sectional properties.
+`analyse_jourawski_shear_stress_v2` operates directly on the longitudinal variation of the partial Navier resultant and returns the mean shear stress associated with each complete cut.
 
+The theoretical basis of the evolving-section Jourawski formulation is described separately in:
+
+[**Jourawski Shear Recovery over an Evolving Continuous Section Field**](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/jourawski_evolution_model.md)
+
+The present page focuses on the corresponding stress-analysis APIs, their inputs, outputs, and practical differences.
 ---
 
 # 1. Navier normal stress
