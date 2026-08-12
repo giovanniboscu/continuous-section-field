@@ -1,4 +1,4 @@
-# DRAFT
+
 # Jourawski Shear Recovery over an Evolving Continuous Section Field
 
 ## 1. Shear recovery as an operation on the Continuous Section Field
