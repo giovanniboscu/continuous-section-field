@@ -18,7 +18,7 @@ The two Jourawski APIs provide two different shear-recovery paths.
 
 The theoretical basis of the evolving-section Jourawski formulation is described separately in:
 
-[**Jourawski Shear Recovery over an Evolving Continuous Section Field**](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/jourawski_evolution_model.md)
+
 
 The present page focuses on the corresponding stress-analysis APIs, their inputs, outputs, and practical differences.
 ---
@@ -58,7 +58,9 @@ This function is used for axial and bending stress checks.
 
 # 2. Jourawski shear stress
 
-[Jourawski shear-stress calculation model](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_jourawski_calculation_model.md)
+[**Jourawski shear-stress calculation model**](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_jourawski_calculation_model.md)
+
+
 
 Use:
 
@@ -812,6 +814,9 @@ for row in shear_rows:
 # CSF stress analysis: Navier, Jourawski, and Jourawski v2
 
 This example compares two CSF shear-stress formulations applied to the same tapered T-shaped Continuous Section Field under the same prescribed internal actions. The first uses a Jourawski-type section formulation based on partial first moments and cut-wise shear-stress redistribution, while analyse_jourawski_shear_stress_v2() derives the mean cut shear stress from the longitudinal derivative of the partial Navier force resultant. The comparison therefore highlights the different mechanical basis and output structure of the two approaches.
+
+[**Jourawski Shear Recovery over an Evolving Continuous Section Field**](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/jourawski_evolution_model.md)
+
 
 ```python
 """
