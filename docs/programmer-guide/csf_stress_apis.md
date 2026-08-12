@@ -1,13 +1,20 @@
 # CSF Stress APIs
 
-CSF provides two polygon-wise stress-analysis functions for evaluating a section at a specified longitudinal station `z`:
+CSF provides section-level stress-analysis functions for evaluating the mechanical state of a section at a specified longitudinal station `z`.
+
+The main APIs considered here are:
 
 - `analyse_polygon_navier_stress`
 - `analyse_polygon_jourawski_shear_stress`
+- `analyse_jourawski_shear_stress_v2`
 
-The functions operate directly on a `section_field` and return one result row for each polygon of the evaluated section.
+`analyse_polygon_navier_stress` evaluates the longitudinal Navier stress field and returns polygon-wise stress extrema.
 
-They are intended for section-level stress evaluation. The user supplies the internal actions acting at the selected station.
+`analyse_polygon_jourawski_shear_stress` evaluates a Jourawski-type shear formulation at the selected section and returns polygon-oriented shear-stress results obtained from global section cuts.
+
+`analyse_jourawski_shear_stress_v2` follows a different cut-resultant formulation. It integrates the Navier longitudinal stress over one side of each cut, differentiates the resulting partial axial force along `z`, and converts that derivative into a mean shear stress on the complete cut.
+
+The functions operate directly on a `section_field`. The user supplies the internal actions acting at the selected station, while the CSF provides the corresponding section geometry and sectional properties.
 
 ---
 
