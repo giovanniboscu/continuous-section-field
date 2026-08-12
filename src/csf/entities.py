@@ -52,6 +52,7 @@ class Polygon:
     shear_weight: Optional[float] = None
     shear_weightabs: Optional[float] = None
     poisson: Optional[float] = None
+    container_idx: Optional[int] = None
     def __post_init__(self) -> None:
         """
         Validation steps executed automatically after object initialization.

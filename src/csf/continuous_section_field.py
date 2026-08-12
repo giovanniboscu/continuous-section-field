@@ -2201,7 +2201,8 @@ class ContinuousSectionField:
                             shear_weight=interp_shear_weight_relative,
                             shear_weightabs=interp_shear_weight_child,
                             poisson=poisson,
-                            name=poly_name
+                            name=poly_name,
+                            container_idx=idx_pol_parent
                         )
 
             '''
