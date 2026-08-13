@@ -1421,6 +1421,45 @@ def analyse_polygon_jourawski_shear_stress(
     return rows
 
 
+def _direct_children_from_section(
+    section: Section,
+    *,
+    z: float,
+) -> tuple[tuple[int, ...], ...]:
+    """Return direct children by reading only Polygon.container_idx.
+
+    ``Section(z)`` is the canonical CSF state. This helper does not infer
+    containment geometrically and does not call any topology builder: it only
+    exposes the parent relation already stored in each polygon of that section.
+    """
+    polygon_count = len(section.polygons)
+    direct_children: list[list[int]] = [
+        [] for _ in range(polygon_count)
+    ]
+
+    for child_idx, poly in enumerate(section.polygons):
+        parent_idx = poly.container_idx
+        if parent_idx is None:
+            continue
+        if not isinstance(parent_idx, int):
+            raise TypeError(
+                "Polygon.container_idx must be int or None at "
+                f"z={z}: polygon index {child_idx}."
+            )
+        if not (0 <= parent_idx < polygon_count):
+            raise ValueError(
+                f"Invalid container_idx={parent_idx} at z={z} "
+                f"for polygon index {child_idx}."
+            )
+        if parent_idx == child_idx:
+            raise ValueError(
+                f"Polygon index {child_idx} cannot contain itself at z={z}."
+            )
+        direct_children[parent_idx].append(child_idx)
+
+    return tuple(tuple(children) for children in direct_children)
+
+
 def _jourawski_v2_positive_half_plane_resultant(
     *,
     section_field,
@@ -1455,17 +1494,10 @@ def _jourawski_v2_positive_half_plane_resultant(
     )
     section = state["section"]
 
-    build_children = getattr(section_field, "build_direct_children_map", None)
-    if build_children is None:
-        children_map: dict[int, tuple[int, ...]] = {}
-    else:
-        raw_children = build_children(z)
-        if not isinstance(raw_children, dict):
-            raise TypeError("build_direct_children_map(z) must return a dict.")
-        children_map = {
-            int(parent_idx): tuple(int(child_idx) for child_idx in child_indices)
-            for parent_idx, child_indices in raw_children.items()
-        }
+    direct_children = _direct_children_from_section(
+        section,
+        z=z,
+    )
 
     n_polygons = len(section.polygons)
     total_N = 0.0
@@ -1486,7 +1518,7 @@ def _jourawski_v2_positive_half_plane_resultant(
         occupied_N = float(gross["N"])
         occupied_area = float(gross["area"])
 
-        for child_idx in children_map.get(idx, ()):
+        for child_idx in direct_children[idx]:
             if not (0 <= child_idx < n_polygons):
                 raise ValueError(
                     f"Invalid child polygon index {child_idx} at z={z}."
@@ -2120,34 +2152,12 @@ def analyse_navier_four_quadrant_resultants(
     )
     section = state["section"]
 
-    build_children = getattr(section_field, "build_direct_children_map", None)
-    if build_children is None:
-        children_map: dict[int, tuple[int, ...]] = {}
-    else:
-        raw_children = build_children(z)
-        if not isinstance(raw_children, dict):
-            raise TypeError("build_direct_children_map(z) must return a dict.")
-        children_map = {
-            int(parent_idx): tuple(int(child_idx) for child_idx in child_indices)
-            for parent_idx, child_indices in raw_children.items()
-        }
+    direct_children = _direct_children_from_section(
+        section,
+        z=z,
+    )
 
     n_polygons = len(section.polygons)
-    for parent_idx, child_indices in children_map.items():
-        if not (0 <= parent_idx < n_polygons):
-            raise ValueError(
-                f"Invalid container polygon index {parent_idx} at z={z}."
-            )
-        for child_idx in child_indices:
-            if not (0 <= child_idx < n_polygons):
-                raise ValueError(
-                    f"Invalid child polygon index {child_idx} at z={z}."
-                )
-            if child_idx == parent_idx:
-                raise ValueError(
-                    f"Polygon index {parent_idx} cannot contain itself."
-                )
-
     quadrant_specs = (
         ("pp", True, True),
         ("mp", False, True),
@@ -2161,7 +2171,7 @@ def analyse_navier_four_quadrant_resultants(
 
     for idx, poly in enumerate(section.polygons):
         polygon_resultants: dict[str, dict[str, object]] = {}
-        direct_children = children_map.get(idx, ())
+        direct_children_idx = direct_children[idx]
 
         for key, x_positive, y_positive in quadrant_specs:
             gross = _navier_quadrant_resultant(
@@ -2180,7 +2190,7 @@ def analyse_navier_four_quadrant_resultants(
             # CSF occupied-region rule: subtract every direct child from the
             # parent using the PARENT Navier field. The child polygon is then
             # added normally in its own iteration with its own material weight.
-            for child_idx in direct_children:
+            for child_idx in direct_children_idx:
                 child_poly = section.polygons[child_idx]
                 clipped_child = _clip_polygon_quadrant(
                     poly=child_poly,
@@ -2230,7 +2240,7 @@ def analyse_navier_four_quadrant_resultants(
                 "idx": int(idx),
                 "name": str(section_field.s0.polygons[idx].name),
                 "weightabs": float(poly.weightabs),
-                "direct_children": [int(child_idx) for child_idx in direct_children],
+                "direct_children": [int(child_idx) for child_idx in direct_children_idx],
                 "quadrants": polygon_resultants,
             }
         )
@@ -2771,52 +2781,6 @@ def _potential_polygon_components(geometry) -> list[object]:
     return []
 
 
-def _potential_children_map(section_field, z: float, polygon_count: int) -> dict[int, tuple[int, ...]]:
-    """
-    Return the direct, index-based CSF containment topology.
-
-    The local solver follows the same structural rule used elsewhere in CSF:
-    polygon names are labels only; parent/child relationships are identified by
-    polygon indices. Only *direct* children are subtracted from a parent. This
-    avoids double subtraction in nested hierarchies and keeps the local shear
-    domain consistent with Four-Quadrant occupied-region integration.
-    """
-    build_children = getattr(section_field, "build_direct_children_map", None)
-
-    if build_children is None:
-        return {}
-
-    raw_children = build_children(float(z))
-    if not isinstance(raw_children, dict):
-        raise TypeError("build_direct_children_map(z) must return a dict.")
-
-    children_map = {
-        int(parent_idx): tuple(
-            int(child_idx)
-            for child_idx in child_indices
-        )
-        for parent_idx, child_indices in raw_children.items()
-    }
-
-    for parent_idx, child_indices in children_map.items():
-        if not (0 <= parent_idx < polygon_count):
-            raise ValueError(
-                f"Invalid container polygon index {parent_idx} at z={z}."
-            )
-
-        for child_idx in child_indices:
-            if not (0 <= child_idx < polygon_count):
-                raise ValueError(
-                    f"Invalid child polygon index {child_idx} at z={z}."
-                )
-            if child_idx == parent_idx:
-                raise ValueError(
-                    f"Polygon index {parent_idx} cannot contain itself."
-                )
-
-    return children_map
-
-
 def _potential_occupied_regions(section_field, z: float) -> tuple[list[dict[str, object]], object]:
     """
     Build non-overlapping occupied material regions at one station.
@@ -2846,16 +2810,15 @@ def _potential_occupied_regions(section_field, z: float) -> tuple[list[dict[str,
         _potential_polygon_geometry(poly)
         for poly in section.polygons
     ]
-    children_map = _potential_children_map(
-        section_field,
-        float(z),
-        polygon_count,
+    direct_children = _direct_children_from_section(
+        section,
+        z=float(z),
     )
 
     occupied_geometry: list[object] = []
 
     for idx, geometry in enumerate(raw_geometry):
-        children = children_map.get(idx, ())
+        children = direct_children[idx]
 
         if children:
             child_union = unary_union([
@@ -3722,25 +3685,27 @@ def _potential_triangle_direct_csf_mesh(
 
     raw_coordinates = normalized_coordinates
 
-    children_map = _potential_children_map(
-        section_field,
-        z,
-        polygon_count,
-    )
-
-    # The direct hierarchy must be a tree/forest: one child cannot have two
-    # direct parents. This is required for an unambiguous deepest-containing
-    # polygon classification.
+    # Read the hierarchy directly from the canonical Section(z).
     parent_of: dict[int, int] = {}
-    for parent_idx, child_indices in children_map.items():
-        for child_idx in child_indices:
-            existing = parent_of.get(child_idx)
-            if existing is not None and existing != parent_idx:
-                raise ValueError(
-                    "A CSF polygon has more than one direct parent at "
-                    f"z={z}: child={child_idx}, parents={existing},{parent_idx}."
-                )
-            parent_of[child_idx] = int(parent_idx)
+    for child_idx, poly in enumerate(section.polygons):
+        parent_idx = poly.container_idx
+        if parent_idx is None:
+            continue
+        if not isinstance(parent_idx, int):
+            raise TypeError(
+                "Polygon.container_idx must be int or None at "
+                f"z={z}: polygon index {child_idx}."
+            )
+        if not (0 <= parent_idx < polygon_count):
+            raise ValueError(
+                f"Invalid container_idx={parent_idx} at z={z} "
+                f"for polygon index {child_idx}."
+            )
+        if parent_idx == child_idx:
+            raise ValueError(
+                f"Polygon index {child_idx} cannot contain itself at z={z}."
+            )
+        parent_of[child_idx] = parent_idx
 
     depth_cache: dict[int, int] = {}
 
@@ -5300,7 +5265,12 @@ def analyse_navier_local_shear_potential_comb(
         region_global_indices.append(global_indices)
         region_trees.append(cKDTree(nodes[global_indices]))
 
-    derivative_context = _potential_derivative_context(
+    derivative_stencil = _potential_derivative_stencil(
+        section_field,
+        z=z,
+        dz=dz,
+    )
+    navier_states = _potential_navier_stencil_states(
         section_field,
         z=z,
         N=N,
@@ -5308,9 +5278,14 @@ def analyse_navier_local_shear_potential_comb(
         My=My,
         Tx=Tx,
         Ty=Ty,
-        dz=dz,
+        derivative_stencil=derivative_stencil,
     )
-    base_state = derivative_context["base_state"]
+    vertex_velocity = _potential_vertex_velocity(
+        section_field,
+        z=z,
+        derivative_stencil=derivative_stencil,
+    )
+    base_state = navier_states[0.0]
 
     row_indices: list[int] = []
     col_indices: list[int] = []
@@ -5397,7 +5372,8 @@ def analyse_navier_local_shear_potential_comb(
                     coefficients[int(global_idx)] = coefficients.get(int(global_idx), 0.0) + sign * g_like * float(weight)
 
             vx, vy = _potential_boundary_velocity_at_point(
-                derivative_context,
+                section=base_state["section"],
+                vertex_velocity=vertex_velocity,
                 x=float(x_value),
                 y=float(y_value),
                 geometry_tolerance=20.0 * geometry_tolerance,
@@ -5450,7 +5426,8 @@ def analyse_navier_local_shear_potential_comb(
                 for global_idx, weight in zip(indices, weights)
             }
             vx, vy = _potential_boundary_velocity_at_point(
-                derivative_context,
+                section=base_state["section"],
+                vertex_velocity=vertex_velocity,
                 x=float(x_value),
                 y=float(y_value),
                 geometry_tolerance=20.0 * geometry_tolerance,
@@ -5486,7 +5463,8 @@ def analyse_navier_local_shear_potential_comb(
             for global_idx, weight in zip(indices, weights)
         }
         sigma_z = _potential_sigma_z_at_point(
-            derivative_context,
+            navier_states=navier_states,
+            derivative_stencil=derivative_stencil,
             polygon_idx=int(regions[region_idx]["polygon_idx"]),
             x=float(x_value),
             y=float(y_value),
@@ -5563,8 +5541,8 @@ def analyse_navier_local_shear_potential_comb(
         "gauge_count": int(gauge_count),
         "physical_equation_count": int(node_count),
         "equation_count": int(len(rhs_values)),
-        "derivative_step": float(derivative_context["step"]),
-        "derivative_scheme": str(derivative_context["scheme"]),
+        "derivative_step": float(derivative_stencil["step"]),
+        "derivative_scheme": str(derivative_stencil["scheme"]),
         "solver_istop": int(solution[1]),
         "solver_iterations": int(solution[2]),
         "solver_normr": float(solution[3]),
@@ -5810,48 +5788,19 @@ def _potential_triangle_area_gradients(points):
     return float(area), gradients
 
 
-def _potential_derivative_context(
+def _potential_derivative_stencil(
     section_field,
     *,
     z: float,
-    N: float,
-    Mx: float,
-    My: float,
-    Tx: float,
-    Ty: float,
     dz: float | None,
 ) -> dict[str, object]:
-    """
-    Build a common second-order z-derivative stencil for stress and geometry.
+    """Return the second-order longitudinal stencil at one CSF station.
 
-    The same stencil is used for:
-    - the complete Navier-stress derivative at fixed physical (x, y);
-    - vertex velocities dx/dz and dy/dz used by moving-boundary conditions.
-
-    Keeping those derivatives on one stencil is important: the domain motion
-    and the stress source must represent the same local section evolution.
-
-    The neighbouring section-action states use the established CSF tangent
-    convention
-
-        dMx/dz = Ty
-        dMy/dz = Tx,
-
-    while N is held constant in this first implementation. Interior stations
-    use a second-order central difference; CSF endpoints use second-order
-    one-sided formulas.
-
-    ``dz=None`` does not perform an iterative convergence search here. It selects
-    a small scale-based step (1e-5 times the CSF length). Callers that require a
-    controlled derivative step can pass ``dz`` explicitly.
+    This helper contains no section geometry, topology, material data or Navier
+    state. Every physical state used with the stencil is obtained independently
+    from ``section_field.section(z_eval)`` by the dedicated caller.
     """
     z = float(z)
-    N = float(N)
-    Mx = float(Mx)
-    My = float(My)
-    Tx = float(Tx)
-    Ty = float(Ty)
-
     z_start = float(section_field.s0.z)
     z_end = float(section_field.s1.z)
 
@@ -5863,23 +5812,11 @@ def _potential_derivative_context(
         )
 
     length = z_end - z_start
-    requested_step = (
-        1.0e-5 * length
-        if dz is None
-        else float(dz)
-    )
-
-    if (
-        not math.isfinite(requested_step)
-        or requested_step <= 0.0
-    ):
+    requested_step = 1.0e-5 * length if dz is None else float(dz)
+    if not math.isfinite(requested_step) or requested_step <= 0.0:
         raise ValueError("dz must be a finite positive number.")
 
-    coordinate_tolerance = max(
-        1.0e-14,
-        1.0e-12 * length,
-    )
-
+    coordinate_tolerance = max(1.0e-14, 1.0e-12 * length)
     left = z - z_start
     right = z_end - z
     at_start = left <= coordinate_tolerance
@@ -5891,14 +5828,12 @@ def _potential_derivative_context(
         coefficients = (-1.0, +1.0)
         denominator = 2.0 * h
         scheme = "central_second_order"
-
     elif at_start:
         h = min(requested_step, 0.5 * right)
         offsets = (0.0, +h, +2.0 * h)
         coefficients = (-3.0, +4.0, -1.0)
         denominator = 2.0 * h
         scheme = "forward_second_order"
-
     else:
         h = min(requested_step, 0.5 * left)
         offsets = (0.0, -h, -2.0 * h)
@@ -5907,135 +5842,123 @@ def _potential_derivative_context(
         scheme = "backward_second_order"
 
     if h <= coordinate_tolerance:
-        raise ValueError(
-            f"Potential derivative step is too small at z={z}."
-        )
-
-    def actions_at_offset(
-        delta_z: float,
-    ) -> tuple[float, float, float]:
-        return (
-            float(N),
-            float(Mx + Ty * delta_z),
-            float(My + Tx * delta_z),
-        )
-
-    states: dict[float, dict[str, object]] = {}
-
-    for offset in set(offsets) | {0.0}:
-        N_eval, Mx_eval, My_eval = actions_at_offset(offset)
-        states[float(offset)] = _navier_section_state(
-            section_field=section_field,
-            z=z + float(offset),
-            N=N_eval,
-            Mx=Mx_eval,
-            My=My_eval,
-        )
-
-    base_section = states[0.0]["section"]
-    polygon_count = len(base_section.polygons)
-
-    for state in states.values():
-        section = state["section"]
-
-        if len(section.polygons) != polygon_count:
-            raise ValueError(
-                "Polygon count changes across the local derivative stencil."
-            )
-
-        for idx in range(polygon_count):
-            if (
-                len(section.polygons[idx].vertices)
-                != len(base_section.polygons[idx].vertices)
-            ):
-                raise ValueError(
-                    "Polygon vertex count changes across the local "
-                    f"derivative stencil for polygon index {idx}."
-                )
-
-    vertex_velocity: list[list[tuple[float, float]]] = []
-
-    for polygon_idx, base_poly in enumerate(base_section.polygons):
-        velocities: list[tuple[float, float]] = []
-
-        for vertex_idx in range(len(base_poly.vertices)):
-            vx_numerator = 0.0
-            vy_numerator = 0.0
-
-            for offset, coefficient in zip(
-                offsets,
-                coefficients,
-            ):
-                point = states[float(offset)]["section"].polygons[
-                    polygon_idx
-                ].vertices[vertex_idx]
-
-                vx_numerator += (
-                    float(coefficient) * float(point.x)
-                )
-                vy_numerator += (
-                    float(coefficient) * float(point.y)
-                )
-
-            velocities.append(
-                (
-                    float(vx_numerator / denominator),
-                    float(vy_numerator / denominator),
-                )
-            )
-
-        vertex_velocity.append(velocities)
+        raise ValueError(f"Potential derivative step is too small at z={z}.")
 
     return {
         "z": z,
         "step": float(h),
         "scheme": scheme,
-        "dz_mode": (
-            "automatic_scale"
-            if dz is None
-            else "explicit"
-        ),
+        "dz_mode": "automatic_scale" if dz is None else "explicit",
         "offsets": tuple(float(value) for value in offsets),
-        "coefficients": tuple(
-            float(value)
-            for value in coefficients
-        ),
+        "coefficients": tuple(float(value) for value in coefficients),
         "denominator": float(denominator),
-        "states": states,
-        "base_state": states[0.0],
-        "vertex_velocity": vertex_velocity,
     }
 
 
-def _potential_sigma_z_at_point(
-    derivative_context: dict[str, object],
+def _potential_navier_stencil_states(
+    section_field,
     *,
+    z: float,
+    N: float,
+    Mx: float,
+    My: float,
+    Tx: float,
+    Ty: float,
+    derivative_stencil: dict[str, object],
+) -> dict[float, dict[str, object]]:
+    """Build Navier states from the canonical ``Section(z_eval)`` states."""
+    states: dict[float, dict[str, object]] = {}
+
+    for offset in set(derivative_stencil["offsets"]) | {0.0}:
+        offset = float(offset)
+        states[offset] = _navier_section_state(
+            section_field=section_field,
+            z=float(z) + offset,
+            N=float(N),
+            Mx=float(Mx) + float(Ty) * offset,
+            My=float(My) + float(Tx) * offset,
+        )
+
+    return states
+
+
+def _potential_vertex_velocity(
+    section_field,
+    *,
+    z: float,
+    derivative_stencil: dict[str, object],
+) -> list[list[tuple[float, float]]]:
+    """Differentiate CSF vertex coordinates using independent ``Section(z)`` states.
+
+    Polygon and vertex indices identify the same CSF entities along the field;
+    no containment or geometry is reconstructed here. Topology at every sampled
+    station remains whatever ``section_field.section(z_eval)`` provides.
+    """
+    base_section = section_field.section(float(z))
+    polygon_count = len(base_section.polygons)
+    sampled_sections: dict[float, Section] = {}
+
+    for offset in set(derivative_stencil["offsets"]):
+        offset = float(offset)
+        section = section_field.section(float(z) + offset)
+        if len(section.polygons) != polygon_count:
+            raise ValueError(
+                "Polygon count changes across the local derivative stencil."
+            )
+        for idx, base_poly in enumerate(base_section.polygons):
+            if len(section.polygons[idx].vertices) != len(base_poly.vertices):
+                raise ValueError(
+                    "Polygon vertex count changes across the local derivative "
+                    f"stencil for polygon index {idx}."
+                )
+        sampled_sections[offset] = section
+
+    velocities_by_polygon: list[list[tuple[float, float]]] = []
+    denominator = float(derivative_stencil["denominator"])
+
+    for polygon_idx, base_poly in enumerate(base_section.polygons):
+        polygon_velocities: list[tuple[float, float]] = []
+        for vertex_idx in range(len(base_poly.vertices)):
+            vx_numerator = 0.0
+            vy_numerator = 0.0
+            for offset, coefficient in zip(
+                derivative_stencil["offsets"],
+                derivative_stencil["coefficients"],
+            ):
+                point = sampled_sections[float(offset)].polygons[
+                    polygon_idx
+                ].vertices[vertex_idx]
+                vx_numerator += float(coefficient) * float(point.x)
+                vy_numerator += float(coefficient) * float(point.y)
+
+            polygon_velocities.append(
+                (
+                    float(vx_numerator / denominator),
+                    float(vy_numerator / denominator),
+                )
+            )
+        velocities_by_polygon.append(polygon_velocities)
+
+    return velocities_by_polygon
+
+
+def _potential_sigma_z_at_point(
+    *,
+    navier_states: dict[float, dict[str, object]],
+    derivative_stencil: dict[str, object],
     polygon_idx: int,
     x: float,
     y: float,
 ) -> float:
-    """
-    Evaluate partial(sigma_zz)/partial(z) at a fixed global point.
-
-    The point coordinates are intentionally *not* convected with a polygon.
-    Each stencil station reconstructs the complete Navier state of its actual
-    CSF section and evaluates that state at the same spatial (x, y). This is the
-    Eulerian derivative required by the local equilibrium equation.
-
-    Geometry variation, centroid motion, inertia variation, polygon
-    ``weightabs`` variation and the local action gradients are therefore all
-    differentiated together rather than introduced as separate correction
-    terms.
-    """
+    """Evaluate partial(sigma_zz)/partial(z) at one fixed global point."""
     numerator = 0.0
 
     for offset, coefficient in zip(
-        derivative_context["offsets"],
-        derivative_context["coefficients"],
+        derivative_stencil["offsets"],
+        derivative_stencil["coefficients"],
     ):
-        state = derivative_context["states"][float(offset)]
+        state = navier_states[float(offset)]
         poly = state["section"].polygons[int(polygon_idx)]
-
         sigma = _navier_sigma_at_point(
             poly=poly,
             x=float(x),
@@ -6044,9 +5967,7 @@ def _potential_sigma_z_at_point(
         )
         numerator += float(coefficient) * sigma
 
-    return float(
-        numerator / float(derivative_context["denominator"])
-    )
+    return float(numerator / float(derivative_stencil["denominator"]))
 
 
 def _potential_point_segment_parameter(
@@ -6056,14 +5977,7 @@ def _potential_point_segment_parameter(
     p0: Pt,
     p1: Pt,
 ) -> tuple[float, float]:
-    """
-    Project a physical point onto one finite polygon edge.
-
-    The clamped segment parameter is later used to interpolate the two endpoint
-    velocities of that moving CSF edge. The returned distance is the geometric
-    criterion used to decide whether a finite-element boundary quadrature point
-    belongs to the original CSF edge.
-    """
+    """Project one physical point onto one finite polygon edge."""
     x0 = float(p0.x)
     y0 = float(p0.y)
     dx = float(p1.x) - x0
@@ -6073,46 +5987,23 @@ def _potential_point_segment_parameter(
     if length_squared <= _tol.EPS_L * _tol.EPS_L:
         return 0.0, float("inf")
 
-    t = (
-        (float(x) - x0) * dx
-        + (float(y) - y0) * dy
-    ) / length_squared
+    t = ((float(x) - x0) * dx + (float(y) - y0) * dy) / length_squared
     t_clamped = min(1.0, max(0.0, float(t)))
-
     px = x0 + t_clamped * dx
     py = y0 + t_clamped * dy
-    distance = math.hypot(
-        float(x) - px,
-        float(y) - py,
-    )
-
+    distance = math.hypot(float(x) - px, float(y) - py)
     return float(t_clamped), float(distance)
 
 
 def _potential_boundary_velocity_at_point(
-    derivative_context: dict[str, object],
     *,
+    section: Section,
+    vertex_velocity: list[list[tuple[float, float]]],
     x: float,
     y: float,
     geometry_tolerance: float,
 ) -> tuple[float, float]:
-    """
-    Return the in-plane velocity of a physical CSF boundary/interface point.
-
-    Vertex correspondence between the endpoint sections defines the motion of
-    each CSF polygon edge. Once a mesh quadrature point is mapped back to such an
-    edge, its velocity is obtained by linear interpolation between the two edge
-    endpoint velocities.
-
-    Shared material interfaces can be represented by the boundaries of two
-    different polygons. In that case all matching geometric descriptions must
-    predict the same physical velocity. The consistency check is deliberate:
-    applying two incompatible interface motions would make the Neumann jump
-    condition mechanically undefined.
-    """
-    section = derivative_context["base_state"]["section"]
-    vertex_velocity = derivative_context["vertex_velocity"]
-
+    """Interpolate boundary velocity on the canonical current ``Section(z)``."""
     candidates: list[tuple[float, float]] = []
 
     for polygon_idx, poly in enumerate(section.polygons):
@@ -6127,15 +6018,11 @@ def _potential_boundary_velocity_at_point(
                 p0=p0,
                 p1=p1,
             )
-
             if distance > geometry_tolerance:
                 continue
 
             v0x, v0y = velocities[edge_idx]
-            v1x, v1y = velocities[
-                (edge_idx + 1) % len(vertices)
-            ]
-
+            v1x, v1y = velocities[(edge_idx + 1) % len(vertices)]
             candidates.append(
                 (
                     float((1.0 - t) * v0x + t * v1x),
@@ -6145,18 +6032,13 @@ def _potential_boundary_velocity_at_point(
 
     if not candidates:
         raise RuntimeError(
-            "Unable to map a potential-mesh boundary point to the "
-            f"moving CSF polygon geometry at ({x}, {y})."
+            "Unable to map a potential boundary point to the current "
+            f"Section(z) geometry at ({x}, {y})."
         )
 
     vx = sum(value[0] for value in candidates) / len(candidates)
     vy = sum(value[1] for value in candidates) / len(candidates)
-
-    velocity_scale = max(
-        1.0,
-        abs(vx),
-        abs(vy),
-    )
+    velocity_scale = max(1.0, abs(vx), abs(vy))
     velocity_tolerance = 1.0e-7 * velocity_scale
 
     for candidate_vx, candidate_vy in candidates:
@@ -6744,7 +6626,12 @@ def analyse_navier_local_shear_potential_triangle_mesh(
         if not math.isfinite(min_angle) or min_angle <= 0.0:
             raise ValueError("min_angle must be a positive finite value.")
 
-    derivative_context = _potential_derivative_context(
+    derivative_stencil = _potential_derivative_stencil(
+        section_field,
+        z=z,
+        dz=dz,
+    )
+    navier_states = _potential_navier_stencil_states(
         section_field,
         z=z,
         N=N,
@@ -6752,7 +6639,12 @@ def analyse_navier_local_shear_potential_triangle_mesh(
         My=My,
         Tx=Tx,
         Ty=Ty,
-        dz=dz,
+        derivative_stencil=derivative_stencil,
+    )
+    vertex_velocity = _potential_vertex_velocity(
+        section_field,
+        z=z,
+        derivative_stencil=derivative_stencil,
     )
 
     regions, domain = _potential_occupied_regions(
@@ -6862,7 +6754,8 @@ def analyse_navier_local_shear_potential_triangle_mesh(
             point = lam @ points
 
             sigma_z = _potential_sigma_z_at_point(
-                derivative_context,
+                navier_states=navier_states,
+                derivative_stencil=derivative_stencil,
                 polygon_idx=polygon_idx,
                 x=float(point[0]),
                 y=float(point[1]),
@@ -6911,7 +6804,7 @@ def analyse_navier_local_shear_potential_triangle_mesh(
     boundary_edge_count = 0
     interface_edge_count = 0
 
-    base_state = derivative_context["base_state"]
+    base_state = navier_states[0.0]
     gauss_points = (
         -1.0 / math.sqrt(3.0),
         +1.0 / math.sqrt(3.0),
@@ -6982,7 +6875,8 @@ def analyse_navier_local_shear_potential_triangle_mesh(
 
                 point = (1.0 - s) * p0 + s * p1
                 vx, vy = _potential_boundary_velocity_at_point(
-                    derivative_context,
+                    section=base_state["section"],
+                    vertex_velocity=vertex_velocity,
                     x=float(point[0]),
                     y=float(point[1]),
                     geometry_tolerance=geometry_tolerance,
@@ -7033,7 +6927,8 @@ def analyse_navier_local_shear_potential_triangle_mesh(
                 point = (1.0 - s) * p0 + s * p1
 
                 vx, vy = _potential_boundary_velocity_at_point(
-                    derivative_context,
+                    section=base_state["section"],
+                    vertex_velocity=vertex_velocity,
                     x=float(point[0]),
                     y=float(point[1]),
                     geometry_tolerance=geometry_tolerance,
@@ -7247,7 +7142,7 @@ def analyse_navier_local_shear_potential_triangle_mesh(
                 x=x_value,
                 y=y_value,
                 dN_dz=0.0,
-                dz=derivative_context["step"],
+                dz=derivative_stencil["step"],
             )
 
             predicted = {
@@ -7308,9 +7203,9 @@ def analyse_navier_local_shear_potential_triangle_mesh(
             "dN_dz": 0.0,
         },
         "derivative": {
-            "step": float(derivative_context["step"]),
-            "scheme": str(derivative_context["scheme"]),
-            "dz_mode": str(derivative_context["dz_mode"]),
+            "step": float(derivative_stencil["step"]),
+            "scheme": str(derivative_stencil["scheme"]),
+            "dz_mode": str(derivative_stencil["dz_mode"]),
         },
         "mesh": {
             "strategy": str(mesh["backend"]),
@@ -7638,7 +7533,12 @@ def analyse_navier_local_shear_potential_controlled_mesh(
     if num_sudy < 1:
         raise ValueError("num_sudy must be >= 1.")
 
-    derivative_context = _potential_derivative_context(
+    derivative_stencil = _potential_derivative_stencil(
+        section_field,
+        z=z,
+        dz=dz,
+    )
+    navier_states = _potential_navier_stencil_states(
         section_field,
         z=z,
         N=N,
@@ -7646,7 +7546,12 @@ def analyse_navier_local_shear_potential_controlled_mesh(
         My=My,
         Tx=Tx,
         Ty=Ty,
-        dz=dz,
+        derivative_stencil=derivative_stencil,
+    )
+    vertex_velocity = _potential_vertex_velocity(
+        section_field,
+        z=z,
+        derivative_stencil=derivative_stencil,
     )
 
     regions, domain = _potential_occupied_regions(
@@ -7763,7 +7668,8 @@ def analyse_navier_local_shear_potential_controlled_mesh(
             point = lam @ points
 
             sigma_z = _potential_sigma_z_at_point(
-                derivative_context,
+                navier_states=navier_states,
+                derivative_stencil=derivative_stencil,
                 polygon_idx=polygon_idx,
                 x=float(point[0]),
                 y=float(point[1]),
@@ -7812,7 +7718,7 @@ def analyse_navier_local_shear_potential_controlled_mesh(
     boundary_edge_count = 0
     interface_edge_count = 0
 
-    base_state = derivative_context["base_state"]
+    base_state = navier_states[0.0]
     gauss_points = (
         -1.0 / math.sqrt(3.0),
         +1.0 / math.sqrt(3.0),
@@ -7883,7 +7789,8 @@ def analyse_navier_local_shear_potential_controlled_mesh(
 
                 point = (1.0 - s) * p0 + s * p1
                 vx, vy = _potential_boundary_velocity_at_point(
-                    derivative_context,
+                    section=base_state["section"],
+                    vertex_velocity=vertex_velocity,
                     x=float(point[0]),
                     y=float(point[1]),
                     geometry_tolerance=geometry_tolerance,
@@ -7934,7 +7841,8 @@ def analyse_navier_local_shear_potential_controlled_mesh(
                 point = (1.0 - s) * p0 + s * p1
 
                 vx, vy = _potential_boundary_velocity_at_point(
-                    derivative_context,
+                    section=base_state["section"],
+                    vertex_velocity=vertex_velocity,
                     x=float(point[0]),
                     y=float(point[1]),
                     geometry_tolerance=geometry_tolerance,
@@ -8148,7 +8056,7 @@ def analyse_navier_local_shear_potential_controlled_mesh(
                 x=x_value,
                 y=y_value,
                 dN_dz=0.0,
-                dz=derivative_context["step"],
+                dz=derivative_stencil["step"],
             )
 
             predicted = {
@@ -8209,9 +8117,9 @@ def analyse_navier_local_shear_potential_controlled_mesh(
             "dN_dz": 0.0,
         },
         "derivative": {
-            "step": float(derivative_context["step"]),
-            "scheme": str(derivative_context["scheme"]),
-            "dz_mode": str(derivative_context["dz_mode"]),
+            "step": float(derivative_stencil["step"]),
+            "scheme": str(derivative_stencil["scheme"]),
+            "dz_mode": str(derivative_stencil["dz_mode"]),
         },
         "mesh": {
             "strategy": str(refinement_info["strategy"]),
@@ -8515,7 +8423,12 @@ def analyse_navier_local_shear_potential(
             "Compatibility tolerances must be non-negative."
         )
 
-    derivative_context = _potential_derivative_context(
+    derivative_stencil = _potential_derivative_stencil(
+        section_field,
+        z=z,
+        dz=dz,
+    )
+    navier_states = _potential_navier_stencil_states(
         section_field,
         z=z,
         N=N,
@@ -8523,7 +8436,12 @@ def analyse_navier_local_shear_potential(
         My=My,
         Tx=Tx,
         Ty=Ty,
-        dz=dz,
+        derivative_stencil=derivative_stencil,
+    )
+    vertex_velocity = _potential_vertex_velocity(
+        section_field,
+        z=z,
+        derivative_stencil=derivative_stencil,
     )
 
     regions, domain = _potential_occupied_regions(
@@ -8635,7 +8553,8 @@ def analyse_navier_local_shear_potential(
             point = lam @ points
 
             sigma_z = _potential_sigma_z_at_point(
-                derivative_context,
+                navier_states=navier_states,
+                derivative_stencil=derivative_stencil,
                 polygon_idx=polygon_idx,
                 x=float(point[0]),
                 y=float(point[1]),
@@ -8684,7 +8603,7 @@ def analyse_navier_local_shear_potential(
     boundary_edge_count = 0
     interface_edge_count = 0
 
-    base_state = derivative_context["base_state"]
+    base_state = navier_states[0.0]
     gauss_points = (
         -1.0 / math.sqrt(3.0),
         +1.0 / math.sqrt(3.0),
@@ -8755,7 +8674,8 @@ def analyse_navier_local_shear_potential(
 
                 point = (1.0 - s) * p0 + s * p1
                 vx, vy = _potential_boundary_velocity_at_point(
-                    derivative_context,
+                    section=base_state["section"],
+                    vertex_velocity=vertex_velocity,
                     x=float(point[0]),
                     y=float(point[1]),
                     geometry_tolerance=geometry_tolerance,
@@ -8806,7 +8726,8 @@ def analyse_navier_local_shear_potential(
                 point = (1.0 - s) * p0 + s * p1
 
                 vx, vy = _potential_boundary_velocity_at_point(
-                    derivative_context,
+                    section=base_state["section"],
+                    vertex_velocity=vertex_velocity,
                     x=float(point[0]),
                     y=float(point[1]),
                     geometry_tolerance=geometry_tolerance,
@@ -9020,7 +8941,7 @@ def analyse_navier_local_shear_potential(
                 x=x_value,
                 y=y_value,
                 dN_dz=0.0,
-                dz=derivative_context["step"],
+                dz=derivative_stencil["step"],
             )
 
             predicted = {
@@ -9081,9 +9002,9 @@ def analyse_navier_local_shear_potential(
             "dN_dz": 0.0,
         },
         "derivative": {
-            "step": float(derivative_context["step"]),
-            "scheme": str(derivative_context["scheme"]),
-            "dz_mode": str(derivative_context["dz_mode"]),
+            "step": float(derivative_stencil["step"]),
+            "scheme": str(derivative_stencil["scheme"]),
+            "dz_mode": str(derivative_stencil["dz_mode"]),
         },
         "mesh": {
             "initial_triangle_count": int(

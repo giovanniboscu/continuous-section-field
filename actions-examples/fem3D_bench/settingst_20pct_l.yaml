@@ -1,6 +1,5 @@
 model:
-  csf_yaml: tsec_fem3d.yaml
-
+  csf_yaml: tsec_fem3d_web_height_20pct_l.yaml
 
 benchmark:
   comparison_t: 0.30

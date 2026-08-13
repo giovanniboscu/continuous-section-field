@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 """
-CSF / OpenSees 3D continuum benchmark for the T-section model - v3.
+CSF / OpenSees 3D continuum benchmark for the T-section model - v17.
 
 The script has four deliberately separated paths:
 
@@ -13,6 +12,18 @@ The script has four deliberately separated paths:
 The OpenSees path never receives stresses, fitted fields, scale factors or
 section resultants reconstructed from the CSF solution. The two paths share
 only the model representation and the prescribed physical loading.
+
+Paper-oriented comparison diagnostics
+--------------------------------------
+In addition to spatial stress maps, the script can write a 3 x 3 frequency
+figure for the signed pointwise differences CSF - FEM3D. The comparison cells
+are divided geometrically into three structural zones: upper flange, web and
+lower flange. The three columns contain sigma_zz, tau_x and tau_y.
+
+When the histogram mode is "percent", every component is normalised by the
+peak absolute FEM3D value of that component over the complete comparison
+section. The same denominator and bin edges are therefore used for all three
+zones of a component, so the distributions can be compared directly.
 
 Version-2 preflight and meshing scope
 ---------------------------------------
@@ -61,7 +72,7 @@ than inventing an orthotropic constitutive model.
 
 Expected command
 ----------------
-    python3 tsec_fem3d_benchmark_v1.py tsec_fem3d_settings.yaml
+    python3 tsec_fem3d_benchmark_v17.py tsec_fem3d_settings.yaml
 """
 
 from __future__ import annotations
@@ -90,7 +101,7 @@ except ImportError:
 # 0. SMALL I/O / NUMERICAL UTILITIES
 # ============================================================
 
-SCRIPT_VERSION = "3"
+SCRIPT_VERSION = "17"
 
 GEOMETRY_TOL = 1.0e-10
 MATERIAL_RTOL = 1.0e-8
@@ -947,6 +958,7 @@ def run_fem3d_path(
     comparison_z: float,
     comparison_t: float,
     q: float,
+    load_projection_polygon: str,
     nz: int,
     target_size_xy: float,
     system_name: str,
@@ -1316,19 +1328,18 @@ def run_fem3d_path(
     # ------------------------------------------------------------
     # Simply-supported continuum constraints.
     #
-    # The same restraint pattern used by the preceding SSPbrick benchmark is
-    # retained:
-    #   - all active nodes on both end sections: uy = 0
-    #   - one transverse x-track through the model: ux = 0
-    #   - one node on the left section: uz = 0
+    # Point supports are placed at the base of the web, consistently with the
+    # CSF beam support line. A six-scalar 3-2-1 pattern removes the rigid-body
+    # modes without constraining either complete end section or a longitudinal
+    # x-track through the solid:
     #
-    # The x-track is chosen as the grid track closest to x = 0 at S0.
+    #   A, z=0, base of web : ux = uy = uz = 0
+    #   B, z=L, base of web : ux = uy      = 0
+    #   C, z=0, upper point : ux           = 0
+    #
+    # A and B are the two vertical simple supports. C only suppresses the
+    # remaining rigid-body mode in the transverse x direction.
     # ------------------------------------------------------------
-
-    fixity: dict[int, list[int]] = {
-        tag: [0, 0, 0]
-        for tag in node_coordinates
-    }
 
     left_support_nodes = [
         tag
@@ -1341,68 +1352,95 @@ def run_fem3d_path(
         if k == nz
     ]
 
-    for tag in left_support_nodes:
-        fixity[tag][1] = 1
-
-    for tag in right_support_nodes:
-        fixity[tag][1] = 1
-
-    i_anchor = int(
+    support_i = int(
         np.argmin(
             np.abs(x_node_grids[0])
         )
     )
 
-    x_track_nodes = [
-        tag
-        for (k, j, i), tag in node_tag_by_index.items()
-        if i == i_anchor
-    ]
+    support_keys = {
+        "A": (0, 0, support_i),
+        "B": (nz, 0, support_i),
+        "C": (0, ny, support_i),
+    }
 
-    if not x_track_nodes:
+    missing_supports = {
+        name: key
+        for name, key in support_keys.items()
+        if key not in node_tag_by_index
+    }
+    if missing_supports:
         raise RuntimeError(
-            "Could not construct the x rigid-body restraint track."
+            "Could not construct the point-support pattern at the web "
+            f"centreline: {missing_supports}."
         )
 
-    for tag in x_track_nodes:
-        fixity[tag][0] = 1
+    support_A = node_tag_by_index[support_keys["A"]]
+    support_B = node_tag_by_index[support_keys["B"]]
+    support_C = node_tag_by_index[support_keys["C"]]
 
-    s0_analysis = section_full_analysis(
-        node_sections[0],
-        compute_vroark=False,
-    )
-    cx0 = float(s0_analysis["Cx"])
-    cy0 = float(s0_analysis["Cy"])
-
-    left_anchor_tag = min(
-        left_support_nodes,
-        key=lambda tag: (
-            (node_coordinates[tag][0] - cx0) ** 2
-            + (node_coordinates[tag][1] - cy0) ** 2
-        ),
-    )
-    fixity[left_anchor_tag][2] = 1
-
-    for tag, values in fixity.items():
-        if any(values):
-            ops.fix(tag, *values)
+    ops.fix(support_A, 1, 1, 1)
+    ops.fix(support_B, 1, 1, 0)
+    ops.fix(support_C, 1, 0, 0)
 
     # ------------------------------------------------------------
-    # UDL mapped to the upper exposed faces as pressure.
+    # Global-y UDL mapped to the upper exposed faces above a selected CSF
+    # polygon.
     #
-    # At every longitudinal layer, all active cells having no active neighbour
-    # immediately above are considered upward-facing exposed cells. The pressure
-    # is q / total_top_width, so the integrated transverse load is q per unit z.
+    # The physical line load q is unchanged. At each longitudinal layer, the
+    # selected CSF polygon defines the x-range of the loaded strip. Each loaded
+    # face receives the fraction q * dz * dx / loaded_width of the layer load,
+    # distributed equally to its four corner nodes. Every applied nodal force
+    # is parallel to the global y axis, independently of the local surface
+    # inclination. Therefore the FEM3D load has no spurious global-z component.
     # ------------------------------------------------------------
+
+    def projection_polygon_at(section, requested_name: str):
+        matches = []
+
+        for polygon_idx, polygon in enumerate(section.polygons):
+            runtime_name = str(polygon.name)
+            name_tokens = tuple(
+                token.strip()
+                for token in runtime_name.split(":")
+                if token.strip()
+            )
+
+            if (
+                runtime_name == requested_name
+                or requested_name in name_tokens
+            ):
+                matches.append((polygon_idx, polygon))
+
+        if len(matches) != 1:
+            raise RuntimeError(
+                "Load-projection polygon must identify exactly one runtime "
+                f"polygon; requested '{requested_name}', matches={len(matches)}."
+            )
+
+        return matches[0]
 
     ops.timeSeries("Linear", 1)
     ops.pattern("Plain", 1, 1)
 
-    surface_element_count = 0
+    loaded_face_count = 0
 
     for k in range(nz):
         cell_polygon = cell_polygon_by_k[k]
         x_mid_grid = x_mid_grids[k]
+        load_section = mid_sections[k]
+
+        _, load_polygon = projection_polygon_at(
+            load_section,
+            load_projection_polygon,
+        )
+        load_x = [float(vertex.x) for vertex in load_polygon.vertices]
+        load_x_min = min(load_x)
+        load_x_max = max(load_x)
+        load_tolerance = max(
+            GEOMETRY_TOL,
+            1.0e-10 * max(1.0, abs(load_x_min), abs(load_x_max)),
+        )
 
         top_cells = [
             (j, i)
@@ -1410,19 +1448,29 @@ def run_fem3d_path(
             if (j + 1, i) not in cell_polygon
         ]
 
+        loaded_cells = [
+            (j, i)
+            for j, i in top_cells
+            if (
+                float(x_mid_grid[i]) >= load_x_min - load_tolerance
+                and float(x_mid_grid[i + 1]) <= load_x_max + load_tolerance
+            )
+        ]
+
         loaded_width = sum(
             float(x_mid_grid[i + 1] - x_mid_grid[i])
-            for j, i in top_cells
+            for j, i in loaded_cells
         )
 
         if loaded_width <= 0.0:
             raise RuntimeError(
-                f"No loaded top width at layer k={k}."
+                "No upward-facing cells found inside the load projection of "
+                f"polygon '{load_projection_polygon}' at layer k={k}."
             )
 
-        pressure = float(q) / loaded_width
+        dz_layer = float(length) / float(nz)
 
-        for j, i in top_cells:
+        for j, i in loaded_cells:
             try:
                 s1 = node_tag_by_index[(k,     j + 1, i)]
                 s2 = node_tag_by_index[(k + 1, j + 1, i)]
@@ -1434,14 +1482,19 @@ def run_fem3d_path(
                     "longitudinal layers."
                 ) from exc
 
-            ops.element(
-                "SurfaceLoad",
-                next_element_tag,
-                s1, s2, s3, s4,
-                pressure,
-            )
-            next_element_tag += 1
-            surface_element_count += 1
+            dx = float(x_mid_grid[i + 1] - x_mid_grid[i])
+            face_force_y = float(q) * dz_layer * dx / loaded_width
+            nodal_force_y = face_force_y / 4.0
+
+            for node_tag in (s1, s2, s3, s4):
+                ops.load(
+                    node_tag,
+                    0.0,
+                    nodal_force_y,
+                    0.0,
+                )
+
+            loaded_face_count += 1
 
     ops.constraints("Plain")
     ops.numberer("RCM")
@@ -1510,7 +1563,7 @@ def run_fem3d_path(
         "fem_rows": fem_rows,
         "node_count": len(node_tag_by_index),
         "brick_element_count": len(brick_element_tags),
-        "surface_element_count": surface_element_count,
+        "loaded_face_count": loaded_face_count,
         "material_count": len(material_tag_by_k_polygon),
         "nx": nx,
         "ny": ny,
@@ -1662,8 +1715,827 @@ def comparison_metrics(
     }
 
 
+
+def plot_pointwise_difference_map(
+    path: Path,
+    rows: list[dict[str, object]],
+    comparison_z: float,
+    mode: str = "absolute",
+) -> None:
+    """
+    Plot CSF - FEM3D pointwise stress differences on the FEM cell geometry.
+
+    The map uses the exact transverse rectangles associated with the SSPbrick
+    centres used by build_pointwise_comparison(). No spatial interpolation is
+    introduced.
+
+    Three fields are shown:
+        delta_sigma_zz = sigma_zz_csf - sigma_zz_3d
+        delta_tau_x    = tau_x_csf    - tau_zx_3d
+        delta_tau_y    = tau_y_csf    - tau_yz_3d
+
+    mode="absolute"
+        Display absolute differences in MPa.
+
+    mode="percent"
+        Display globally normalised differences in percent, using the peak
+        absolute FEM3D value of each component over the whole comparison
+        section:
+
+            100 * (CSF - FEM3D) / max_A(|FEM3D|)
+    """
+    try:
+        import matplotlib.pyplot as plt
+        from matplotlib.collections import PatchCollection
+        from matplotlib.colors import TwoSlopeNorm
+        from matplotlib.patches import Rectangle
+    except ImportError as exc:
+        raise RuntimeError(
+            "Matplotlib is required to write the CSF/FEM3D difference map."
+        ) from exc
+
+    if not rows:
+        raise ValueError(
+            "Cannot plot the CSF/FEM3D difference map from an empty point set."
+        )
+
+    mode = str(mode).strip().lower()
+
+    if mode not in ("absolute", "percent"):
+        raise ValueError(
+            "difference_map_mode must be either 'absolute' or 'percent'."
+        )
+
+    fields = (
+        ("sigma_zz_error", "sigma_zz_3d", r"$\Delta\sigma_{zz}$"),
+        ("tau_x_error", "tau_zx_3d", r"$\Delta\tau_x$"),
+        ("tau_y_error", "tau_yz_3d", r"$\Delta\tau_y$"),
+    )
+
+    fig, axes = plt.subplots(
+        1,
+        3,
+        figsize=(12.0, 5.2),
+        constrained_layout=True,
+    )
+
+    for ax, (error_key, reference_key, title) in zip(axes, fields):
+        patches = []
+
+        for row in rows:
+            x0 = float(row["x0"])
+            x1 = float(row["x1"])
+            y0 = float(row["y0"])
+            y1 = float(row["y1"])
+
+            patches.append(
+                Rectangle(
+                    (x0, y0),
+                    x1 - x0,
+                    y1 - y0,
+                )
+            )
+
+        if mode == "absolute":
+            values = np.asarray(
+                [float(row[error_key]) / 1.0e6 for row in rows],
+                dtype=float,
+            )
+            title_suffix = "  [MPa]"
+            colorbar_label = "CSF - FEM3D [MPa]"
+        else:
+            references = np.asarray(
+                [float(row[reference_key]) for row in rows],
+                dtype=float,
+            )
+            field_max_abs_reference = float(np.max(np.abs(references)))
+            denominator = max(1.0e-12, field_max_abs_reference)
+            values = np.asarray(
+                [100.0 * float(row[error_key]) / denominator for row in rows],
+                dtype=float,
+            )
+            title_suffix = "  [% of FEM3D peak]"
+            colorbar_label = "100 · (CSF - FEM3D) / max_A(|FEM3D|) [%]"
+
+        maximum = float(np.max(np.abs(values)))
+        if maximum <= 0.0:
+            maximum = 1.0
+
+        collection = PatchCollection(
+            patches,
+            cmap="coolwarm",
+            norm=TwoSlopeNorm(
+                vmin=-maximum,
+                vcenter=0.0,
+                vmax=maximum,
+            ),
+            edgecolor="none",
+        )
+        collection.set_array(values)
+
+        ax.add_collection(collection)
+        ax.autoscale_view()
+        ax.set_aspect("equal", adjustable="box")
+        ax.set_xlabel("x [m]")
+        ax.set_ylabel("y [m]")
+        ax.set_title(title + title_suffix)
+
+        colorbar = fig.colorbar(
+            collection,
+            ax=ax,
+            orientation="vertical",
+            shrink=0.84,
+        )
+        colorbar.set_label(colorbar_label)
+
+    mode_label = "percentage of FEM3D peak" if mode == "percent" else "absolute"
+    fig.suptitle(
+        "CSF - FEM3D pointwise stress differences "
+        f"({mode_label}) at z={float(comparison_z):.6g} m"
+    )
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(
+        path,
+        dpi=220,
+        bbox_inches="tight",
+    )
+    plt.close(fig)
+
+
+def plot_pointwise_stress_maps(
+    path: Path,
+    rows: list[dict[str, object]],
+    comparison_z: float,
+) -> None:
+    """
+    Plot CSF and FEM3D stresses on the common FEM3D comparison-cell mesh.
+
+    The CSF values in this figure are the pointwise CSF evaluations already
+    stored in ``rows`` at the SSPbrick centres. This is therefore the direct
+    same-point visual counterpart of the numerical comparison metrics.
+    """
+    try:
+        import matplotlib.pyplot as plt
+        from matplotlib.collections import PatchCollection
+        from matplotlib.colors import Normalize, TwoSlopeNorm
+        from matplotlib.patches import Rectangle
+    except ImportError as exc:
+        raise RuntimeError(
+            "Matplotlib is required to write the pointwise stress maps."
+        ) from exc
+
+    if not rows:
+        raise ValueError("Cannot plot pointwise stress maps from an empty set.")
+
+    fields = (
+        ("sigma_zz_csf", "sigma_zz_3d", r"$\sigma_{zz}$"),
+        ("tau_x_csf", "tau_zx_3d", r"$\tau_x$ / $\tau_{zx}$"),
+        ("tau_y_csf", "tau_yz_3d", r"$\tau_y$ / $\tau_{yz}$"),
+    )
+
+    patches = [
+        Rectangle(
+            (float(row["x0"]), float(row["y0"])),
+            float(row["x1"]) - float(row["x0"]),
+            float(row["y1"]) - float(row["y0"]),
+        )
+        for row in rows
+    ]
+
+    fig, axes = plt.subplots(
+        2,
+        3,
+        figsize=(13.2, 9.4),
+        constrained_layout=True,
+    )
+
+    for col, (csf_key, fem_key, title) in enumerate(fields):
+        csf_values = np.asarray(
+            [float(row[csf_key]) / 1.0e6 for row in rows],
+            dtype=float,
+        )
+        fem_values = np.asarray(
+            [float(row[fem_key]) / 1.0e6 for row in rows],
+            dtype=float,
+        )
+        combined = np.concatenate((csf_values, fem_values))
+
+        if np.any(combined < 0.0) and np.any(combined > 0.0):
+            limit = float(np.max(np.abs(combined)))
+            if limit <= 0.0:
+                limit = 1.0
+            norm = TwoSlopeNorm(vmin=-limit, vcenter=0.0, vmax=limit)
+            cmap = "coolwarm"
+        else:
+            vmin = min(0.0, float(np.min(combined)))
+            vmax = float(np.max(combined))
+            if vmax <= vmin:
+                vmax = vmin + 1.0
+            norm = Normalize(vmin=vmin, vmax=vmax)
+            cmap = "viridis"
+
+        for row_idx, (values, label) in enumerate(
+            ((csf_values, "CSF"), (fem_values, "FEM3D"))
+        ):
+            ax = axes[row_idx, col]
+            collection = PatchCollection(
+                patches,
+                cmap=cmap,
+                norm=norm,
+                edgecolor="none",
+            )
+            collection.set_array(values)
+            ax.add_collection(collection)
+            ax.autoscale_view()
+            ax.set_aspect("equal", adjustable="box")
+            ax.set_xlabel("x [m]")
+            ax.set_ylabel("y [m]")
+            ax.set_title(f"{label}: {title} [MPa]")
+            colorbar = fig.colorbar(
+                collection,
+                ax=ax,
+                orientation="vertical",
+                shrink=0.84,
+            )
+            colorbar.set_label("[MPa]")
+
+    fig.suptitle(
+        f"CSF and FEM3D stress fields at z={float(comparison_z):.6g} m"
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+
+
+def build_csf_native_stress_rows(
+    csf_path: dict[str, object],
+    selected_section,
+) -> list[dict[str, float | int]]:
+    """
+    Attach sigma_zz to the native CSF potential triangles.
+
+    tau_x and tau_y are the native piecewise-constant values returned directly
+    by the CSF potential solver. sigma_zz is evaluated at each native triangle
+    centroid with the same Navier field used by the CSF solution.
+    """
+    navier_state = csf_path["navier_state"]
+    rows: list[dict[str, float | int]] = []
+
+    for triangle in csf_path["potential"]["triangles"]:
+        polygon_idx = int(triangle["polygon_idx"])
+        x0 = float(triangle["x0"])
+        y0 = float(triangle["y0"])
+        x1 = float(triangle["x1"])
+        y1 = float(triangle["y1"])
+        x2 = float(triangle["x2"])
+        y2 = float(triangle["y2"])
+        x = (x0 + x1 + x2) / 3.0
+        y = (y0 + y1 + y2) / 3.0
+
+        rows.append(
+            {
+                "polygon_idx": polygon_idx,
+                "x0": x0,
+                "y0": y0,
+                "x1": x1,
+                "y1": y1,
+                "x2": x2,
+                "y2": y2,
+                "x": x,
+                "y": y,
+                "sigma_zz": evaluate_csf_sigma_zz(
+                    navier_state,
+                    selected_section.polygons[polygon_idx],
+                    x,
+                    y,
+                ),
+                "tau_x": float(triangle["tau_x"]),
+                "tau_y": float(triangle["tau_y"]),
+            }
+        )
+
+    return rows
+
+
+def plot_native_stress_maps(
+    path: Path,
+    csf_path: dict[str, object],
+    selected_section,
+    fem_rows: list[dict[str, object]],
+    comparison_z: float,
+    percentile: float = 99.0,
+) -> None:
+    """
+    Plot stresses on the native CSF and FEM3D transverse meshes.
+
+    Top row:
+        native CSF potential triangles. No sampling onto the FEM3D grid.
+
+    Bottom row:
+        native FEM3D SSPbrick transverse cells at the comparison layer.
+
+    For each stress component the CSF and FEM3D panels share one colour scale,
+    clipped at ``percentile`` of the combined native values. Actual minima and
+    maxima are annotated so clipping never hides the native extrema.
+    """
+    try:
+        import matplotlib.pyplot as plt
+        from matplotlib.collections import PatchCollection
+        from matplotlib.colors import Normalize, TwoSlopeNorm
+        from matplotlib.patches import Polygon as MplPolygon, Rectangle
+    except ImportError as exc:
+        raise RuntimeError(
+            "Matplotlib is required to write the native-mesh stress maps."
+        ) from exc
+
+    percentile = float(percentile)
+    if not (0.0 < percentile <= 100.0):
+        raise ValueError(
+            "native_stress_maps_percentile must satisfy 0 < value <= 100."
+        )
+    if not fem_rows:
+        raise ValueError("Cannot plot native FEM3D stresses from an empty set.")
+
+    csf_rows = build_csf_native_stress_rows(csf_path, selected_section)
+    if not csf_rows:
+        raise ValueError("Cannot plot native CSF stresses from an empty set.")
+
+    csf_patches = [
+        MplPolygon(
+            [
+                (float(row["x0"]), float(row["y0"])),
+                (float(row["x1"]), float(row["y1"])),
+                (float(row["x2"]), float(row["y2"])),
+            ],
+            closed=True,
+        )
+        for row in csf_rows
+    ]
+    fem_patches = [
+        Rectangle(
+            (float(row["x0"]), float(row["y0"])),
+            float(row["x1"]) - float(row["x0"]),
+            float(row["y1"]) - float(row["y0"]),
+        )
+        for row in fem_rows
+    ]
+
+    fields = (
+        ("sigma_zz", "sigma_zz_3d", r"$\sigma_{zz}$"),
+        ("tau_x", "tau_zx_3d", r"$\tau_x$ / $\tau_{zx}$"),
+        ("tau_y", "tau_yz_3d", r"$\tau_y$ / $\tau_{yz}$"),
+    )
+
+    fig, axes = plt.subplots(
+        2,
+        3,
+        figsize=(13.4, 9.8),
+        constrained_layout=True,
+    )
+
+    for col, (csf_key, fem_key, title) in enumerate(fields):
+        csf_values = np.asarray(
+            [float(row[csf_key]) / 1.0e6 for row in csf_rows],
+            dtype=float,
+        )
+        fem_values = np.asarray(
+            [float(row[fem_key]) / 1.0e6 for row in fem_rows],
+            dtype=float,
+        )
+        combined = np.concatenate((csf_values, fem_values))
+
+        signed = bool(np.any(combined < 0.0) and np.any(combined > 0.0))
+        if signed:
+            limit = float(np.percentile(np.abs(combined), percentile))
+            if limit <= 0.0:
+                limit = max(float(np.max(np.abs(combined))), 1.0)
+            norm = TwoSlopeNorm(vmin=-limit, vcenter=0.0, vmax=limit)
+            cmap = "coolwarm"
+        else:
+            vmin = min(0.0, float(np.min(combined)))
+            vmax = float(np.percentile(combined, percentile))
+            if vmax <= vmin:
+                vmax = max(float(np.max(combined)), vmin + 1.0)
+            norm = Normalize(vmin=vmin, vmax=vmax)
+            cmap = "viridis"
+
+        panels = (
+            (axes[0, col], csf_patches, csf_values, "CSF native"),
+            (axes[1, col], fem_patches, fem_values, "FEM3D native"),
+        )
+
+        for ax, patches, values, label in panels:
+            collection = PatchCollection(
+                patches,
+                cmap=cmap,
+                norm=norm,
+                edgecolor="none",
+            )
+            collection.set_array(values)
+            ax.add_collection(collection)
+            ax.autoscale_view()
+            ax.set_aspect("equal", adjustable="box")
+            ax.set_xlabel("x [m]")
+            ax.set_ylabel("y [m]")
+            ax.set_title(f"{label}: {title} [MPa]")
+            ax.text(
+                0.02,
+                0.02,
+                "actual min="
+                f"{float(np.min(values)):.4g} MPa\n"
+                "actual max="
+                f"{float(np.max(values)):.4g} MPa",
+                transform=ax.transAxes,
+                ha="left",
+                va="bottom",
+                fontsize=8,
+                bbox={
+                    "facecolor": "white",
+                    "alpha": 0.72,
+                    "edgecolor": "none",
+                },
+            )
+            colorbar = fig.colorbar(
+                collection,
+                ax=ax,
+                orientation="vertical",
+                shrink=0.84,
+            )
+            colorbar.set_label("[MPa]")
+
+    fig.suptitle(
+        "Native CSF and FEM3D stress fields "
+        f"at z={float(comparison_z):.6g} m "
+        f"(colour scale: {percentile:.6g}th percentile)"
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+
+
 # ============================================================
-# 5. OUTPUT / REPORT
+# 5. ZONE-WISE FREQUENCY OF CSF / FEM3D DIFFERENCES
+# ============================================================
+
+
+def find_named_polygon(section, requested_name: str):
+    """
+    Return exactly one runtime polygon identified by name.
+
+    Runtime polygon names may contain colon-separated tokens. This mirrors the
+    name matching used by the load-projection code and keeps the diagnostic
+    independent of polygon ordering.
+    """
+    matches = []
+
+    for polygon_idx, polygon in enumerate(section.polygons):
+        runtime_name = str(polygon.name)
+        name_tokens = tuple(
+            token.strip()
+            for token in runtime_name.split(":")
+            if token.strip()
+        )
+
+        if (
+            runtime_name == requested_name
+            or requested_name in name_tokens
+        ):
+            matches.append((polygon_idx, polygon))
+
+    if len(matches) != 1:
+        raise RuntimeError(
+            "Zone-frequency diagnostic requires exactly one runtime polygon "
+            f"identified as '{requested_name}'; matches={len(matches)}."
+        )
+
+    return matches[0]
+
+
+def web_vertical_bounds(selected_section) -> tuple[float, float]:
+    """
+    Return the lower and upper y coordinates of the web polygon.
+
+    The flange/web subdivision is geometric, not material-based. This is useful
+    when a flange is itself split into several material polygons: every FEM3D
+    comparison cell above the web is still assigned to the upper-flange zone,
+    and every cell below the web is assigned to the lower-flange zone.
+    """
+    _, web_polygon = find_named_polygon(selected_section, "web")
+    y_values = np.asarray(
+        [float(vertex.y) for vertex in web_polygon.vertices],
+        dtype=float,
+    )
+
+    if y_values.size == 0:
+        raise RuntimeError("The web polygon has no vertices.")
+
+    return float(np.min(y_values)), float(np.max(y_values))
+
+
+def classify_comparison_zone(
+    row: dict[str, object],
+    web_y_min: float,
+    web_y_max: float,
+) -> str:
+    """
+    Classify one FEM3D comparison cell as upper flange, web or lower flange.
+
+    The SSPbrick comparison rows contain the exact transverse rectangle
+    [x0, x1] x [y0, y1]. Because the mesher is conforming to polygon boundary
+    tracks, the web/flange interfaces coincide with cell edges.
+    """
+    y0 = float(row["y0"])
+    y1 = float(row["y1"])
+
+    scale = max(
+        1.0,
+        abs(web_y_min),
+        abs(web_y_max),
+        abs(y0),
+        abs(y1),
+    )
+    tolerance = 100.0 * GEOMETRY_TOL * scale
+
+    if y0 >= web_y_max - tolerance:
+        return "upper_flange"
+
+    if y1 <= web_y_min + tolerance:
+        return "lower_flange"
+
+    if y0 >= web_y_min - tolerance and y1 <= web_y_max + tolerance:
+        return "web"
+
+    raise RuntimeError(
+        "A comparison cell crosses a web/flange interface, which should not "
+        "occur in the conforming transverse mesh: "
+        f"y0={y0:.12g}, y1={y1:.12g}, "
+        f"web=[{web_y_min:.12g}, {web_y_max:.12g}]."
+    )
+
+
+def zone_difference_values(
+    rows: list[dict[str, object]],
+    zone_by_element: dict[int, str],
+    zone: str,
+    error_key: str,
+    reference_key: str,
+    mode: str,
+    global_reference_peak: float,
+) -> np.ndarray:
+    """
+    Return signed CSF - FEM3D differences for one zone and one component.
+
+    mode="absolute"
+        Values are returned in MPa.
+
+    mode="percent"
+        Values are returned as
+
+            100 * (CSF - FEM3D) / max_A(|FEM3D|)
+
+        where max_A is evaluated over the complete comparison section for the
+        selected stress component. This is the same normalisation used by the
+        percentage difference map, and it avoids singular local percentages
+        where the reference stress passes through zero.
+    """
+    selected = [
+        row
+        for row in rows
+        if zone_by_element[int(row["element_tag"])] == zone
+    ]
+
+    if not selected:
+        return np.asarray([], dtype=float)
+
+    errors = np.asarray(
+        [float(row[error_key]) for row in selected],
+        dtype=float,
+    )
+
+    if mode == "absolute":
+        return errors / 1.0e6
+
+    if mode == "percent":
+        denominator = max(1.0e-12, float(global_reference_peak))
+        return 100.0 * errors / denominator
+
+    raise ValueError(
+        "zone_frequency_mode must be either 'absolute' or 'percent'."
+    )
+
+
+def plot_zone_frequency_histograms(
+    path: Path,
+    rows: list[dict[str, object]],
+    selected_section,
+    comparison_z: float,
+    *,
+    bins: int = 50,
+    mode: str = "percent",
+) -> None:
+    """
+    Plot frequency distributions of pointwise CSF - FEM3D differences.
+
+    Rows of the figure represent structural zones:
+
+        1. upper flange
+        2. web
+        3. lower flange
+
+    Columns represent stress components:
+
+        1. sigma_zz
+        2. tau_x / tau_zx
+        3. tau_y / tau_yz
+
+    The histogram frequency is the number of FEM3D comparison cells whose
+    centre-point difference falls in each bin. No interpolation or smoothing is
+    introduced. For each stress component the same bin edges are used in all
+    three zones, which makes the three distributions directly comparable.
+    """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as exc:
+        raise RuntimeError(
+            "Matplotlib is required to write zone-frequency histograms."
+        ) from exc
+
+    if not rows:
+        raise ValueError(
+            "Cannot plot zone-frequency histograms from an empty point set."
+        )
+
+    bins = int(bins)
+    if bins < 2:
+        raise ValueError("zone_frequency_bins must be >= 2.")
+
+    mode = str(mode).strip().lower()
+    if mode not in ("absolute", "percent"):
+        raise ValueError(
+            "zone_frequency_mode must be either 'absolute' or 'percent'."
+        )
+
+    web_y_min, web_y_max = web_vertical_bounds(selected_section)
+
+    zone_by_element = {
+        int(row["element_tag"]): classify_comparison_zone(
+            row,
+            web_y_min,
+            web_y_max,
+        )
+        for row in rows
+    }
+
+    zones = (
+        ("upper_flange", "Upper flange"),
+        ("web", "Web"),
+        ("lower_flange", "Lower flange"),
+    )
+    fields = (
+        (
+            "sigma_zz_error",
+            "sigma_zz_3d",
+            r"$\Delta\sigma_{zz}$",
+        ),
+        (
+            "tau_x_error",
+            "tau_zx_3d",
+            r"$\Delta\tau_x$",
+        ),
+        (
+            "tau_y_error",
+            "tau_yz_3d",
+            r"$\Delta\tau_y$",
+        ),
+    )
+
+    reference_peaks = {
+        reference_key: float(
+            np.max(
+                np.abs(
+                    np.asarray(
+                        [float(row[reference_key]) for row in rows],
+                        dtype=float,
+                    )
+                )
+            )
+        )
+        for _, reference_key, _ in fields
+    }
+
+    values_by_zone_and_field: dict[tuple[str, str], np.ndarray] = {}
+    bin_edges_by_field: dict[str, np.ndarray] = {}
+
+    for error_key, reference_key, _ in fields:
+        component_values = []
+
+        for zone_key, _ in zones:
+            values = zone_difference_values(
+                rows,
+                zone_by_element,
+                zone_key,
+                error_key,
+                reference_key,
+                mode,
+                reference_peaks[reference_key],
+            )
+            values_by_zone_and_field[(zone_key, error_key)] = values
+
+            if values.size:
+                component_values.append(values)
+
+        if not component_values:
+            maximum = 1.0
+        else:
+            all_values = np.concatenate(component_values)
+            maximum = float(np.max(np.abs(all_values)))
+            if maximum <= 0.0:
+                maximum = 1.0
+
+        # Symmetric bins around zero make positive and negative bias visible.
+        bin_edges_by_field[error_key] = np.linspace(
+            -maximum,
+            maximum,
+            bins + 1,
+        )
+
+    fig, axes = plt.subplots(
+        3,
+        3,
+        figsize=(14.0, 10.5),
+        constrained_layout=True,
+    )
+
+    for row_idx, (zone_key, zone_title) in enumerate(zones):
+        for col_idx, (error_key, reference_key, field_title) in enumerate(fields):
+            ax = axes[row_idx, col_idx]
+            values = values_by_zone_and_field[(zone_key, error_key)]
+            bin_edges = bin_edges_by_field[error_key]
+
+            if values.size:
+                ax.hist(values, bins=bin_edges)
+
+                statistics = (
+                    f"n = {values.size}\n"
+                    f"mean = {float(np.mean(values)):.3g}\n"
+                    f"median = {float(np.median(values)):.3g}\n"
+                    f"std = {float(np.std(values)):.3g}"
+                )
+                ax.text(
+                    0.97,
+                    0.95,
+                    statistics,
+                    transform=ax.transAxes,
+                    ha="right",
+                    va="top",
+                    fontsize=8,
+                    bbox={
+                        "facecolor": "white",
+                        "alpha": 0.78,
+                        "edgecolor": "none",
+                    },
+                )
+            else:
+                ax.text(
+                    0.5,
+                    0.5,
+                    "No cells",
+                    transform=ax.transAxes,
+                    ha="center",
+                    va="center",
+                )
+
+            ax.axvline(0.0, linewidth=0.9)
+            ax.set_xlim(float(bin_edges[0]), float(bin_edges[-1]))
+            ax.set_title(f"{zone_title}: {field_title}")
+            ax.set_ylabel("Frequency [cells]")
+
+            if mode == "absolute":
+                ax.set_xlabel("CSF - FEM3D [MPa]")
+            else:
+                ax.set_xlabel(
+                    "100 · (CSF - FEM3D) / max$_A$(|FEM3D|) [%]"
+                )
+
+    mode_description = (
+        "signed differences in MPa"
+        if mode == "absolute"
+        else "signed differences normalised by the whole-section FEM3D peak"
+    )
+
+    fig.suptitle(
+        "Frequency of CSF - FEM3D pointwise differences by section zone\n"
+        f"z = {float(comparison_z):.6g} m; {mode_description}"
+    )
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=220, bbox_inches="tight")
+    plt.close(fig)
+
+
+# ============================================================
+# 6. OUTPUT / REPORT
 # ============================================================
 
 
@@ -1754,7 +2626,7 @@ def write_report(
         f"  SSPbrick elements     : {fem3d['brick_element_count']}"
     )
     lines.append(
-        f"  SurfaceLoad elements  : {fem3d['surface_element_count']}"
+        f"  loaded top faces      : {fem3d['loaded_face_count']}"
     )
     lines.append(f"  material tags         : {fem3d['material_count']}")
     lines.append(
@@ -1842,14 +2714,14 @@ def write_report(
 
 
 # ============================================================
-# 6. MAIN
+# 7. MAIN
 # ============================================================
 
 
 def main() -> int:
     if len(sys.argv) != 2:
         raise SystemExit(
-            "Usage: python3 tsec_fem3d_benchmark_v3.py "
+            "Usage: python3 tsec_fem3d_benchmark_v17.py "
             "tsec_fem3d_settings.yaml"
         )
 
@@ -1882,6 +2754,14 @@ def main() -> int:
             "benchmark",
             "loading",
             "q",
+        )
+    )
+    load_projection_polygon = str(
+        get_required(
+            settings,
+            "benchmark",
+            "loading",
+            "projection_polygon",
         )
     )
 
@@ -1982,6 +2862,51 @@ def main() -> int:
     ).resolve()
     output_directory.mkdir(parents=True, exist_ok=True)
 
+    difference_map_mode = str(
+        settings.get("output", {}).get("difference_map_mode", "absolute")
+    ).strip().lower()
+
+    if difference_map_mode not in ("absolute", "percent"):
+        raise ValueError(
+            "output.difference_map_mode must be either 'absolute' or 'percent'."
+        )
+
+    native_stress_maps_percentile = float(
+        settings.get("output", {}).get("native_stress_maps_percentile", 99.0)
+    )
+    if not (0.0 < native_stress_maps_percentile <= 100.0):
+        raise ValueError(
+            "output.native_stress_maps_percentile must satisfy 0 < value <= 100."
+        )
+
+    # The zone-frequency figure is optional in the YAML so v17 remains usable
+    # with settings files written before this paper-oriented diagnostic existed.
+    # By default it follows difference_map_mode, keeping the map and histogram
+    # normalisation consistent.
+    zone_frequency_mode = str(
+        settings.get("output", {}).get(
+            "zone_frequency_mode",
+            difference_map_mode,
+        )
+    ).strip().lower()
+    if zone_frequency_mode not in ("absolute", "percent"):
+        raise ValueError(
+            "output.zone_frequency_mode must be either 'absolute' or 'percent'."
+        )
+
+    zone_frequency_bins = int(
+        settings.get("output", {}).get("zone_frequency_bins", 50)
+    )
+    if zone_frequency_bins < 2:
+        raise ValueError("output.zone_frequency_bins must be >= 2.")
+
+    zone_frequency_filename = str(
+        settings.get("output", {}).get(
+            "zone_frequency_jpg",
+            "csf_fem3d_zone_frequency_histograms.jpg",
+        )
+    )
+
     output_paths = {
         "pointwise_csv": output_directory
         / str(get_required(settings, "output", "pointwise_csv")),
@@ -1999,6 +2924,19 @@ def main() -> int:
                 "fem3d_section_jpg",
             )
         ),
+        "difference_map_jpg": output_directory
+        / str(
+            get_required(
+                settings,
+                "output",
+                "difference_map_jpg",
+            )
+        ),
+        "stress_maps_jpg": output_directory
+        / str(get_required(settings, "output", "stress_maps_jpg")),
+        "native_stress_maps_jpg": output_directory
+        / str(get_required(settings, "output", "native_stress_maps_jpg")),
+        "zone_frequency_jpg": output_directory / zone_frequency_filename,
         "report_txt": output_directory
         / str(get_required(settings, "output", "report_txt")),
     }
@@ -2074,6 +3012,7 @@ def main() -> int:
         comparison_z,
         comparison_t,
         q,
+        load_projection_polygon,
         nz,
         target_size_xy,
         system_name,
@@ -2107,6 +3046,37 @@ def main() -> int:
     write_csv(
         output_paths["pointwise_csv"],
         pointwise_rows,
+    )
+
+    plot_pointwise_difference_map(
+        output_paths["difference_map_jpg"],
+        pointwise_rows,
+        comparison_z,
+        difference_map_mode,
+    )
+
+    plot_pointwise_stress_maps(
+        output_paths["stress_maps_jpg"],
+        pointwise_rows,
+        comparison_z,
+    )
+
+    plot_native_stress_maps(
+        output_paths["native_stress_maps_jpg"],
+        csf_path,
+        selected_section,
+        fem3d["fem_rows"],
+        comparison_z,
+        native_stress_maps_percentile,
+    )
+
+    plot_zone_frequency_histograms(
+        output_paths["zone_frequency_jpg"],
+        pointwise_rows,
+        selected_section,
+        comparison_z,
+        bins=zone_frequency_bins,
+        mode=zone_frequency_mode,
     )
 
     summary_row = {

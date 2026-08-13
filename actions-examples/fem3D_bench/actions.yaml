@@ -23,4 +23,9 @@ CSF_ACTIONS:
          title: "Ruled volume"                # figure title
          show_end_sections: true              # draw end-section outlines at z0 and z1
          seed: s                             # RNG seed when line_percent < 100 or w | w<resolution> for weight line color feature
-
+    - plot_weight:
+        output:
+          - stdout
+        params:
+          num_points: 100
+                 # numeric format for display

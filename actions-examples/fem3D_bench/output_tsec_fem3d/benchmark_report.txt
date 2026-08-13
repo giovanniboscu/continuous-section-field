@@ -1,0 +1,88 @@
+CSF / OpenSees 3D continuum benchmark
+===========================================
+
+MODEL
+  CSF YAML        : /home/giarrettu/github/continuous-section-field/actions-examples/fem3D_bench/tsec_fem3d_asymmetric_H_split_bottom_flange.yaml
+  settings YAML   : /home/giarrettu/github/continuous-section-field/actions-examples/fem3D_bench/settingst_20pct.yaml
+  z0              : 0 m
+  z1              : 10 m
+  L               : 10 m
+  comparison_t    : 0.3
+  comparison_z    : 3 m
+
+LOADING
+  type            : simply_supported_udl_y
+  q               : 2.000000000000e+04 N/m
+
+CSF INPUT ACTIONS AT COMPARISON STATION
+  N               : 0.000000000000e+00 N
+  Mx              : 2.100000000000e+05 N m
+  My              : 0.000000000000e+00 N m
+  Tx              : 0.000000000000e+00 N
+  Ty              : 4.000000000000e+04 N
+
+POLYGONS AT COMPARISON STATION
+  idx  name                         container_idx        weightabs     shear_weightabs      poisson    FEM cells
+    0  flange:flange                            -   1.00000000e+00      4.16666667e-01          0.2        104
+    1  web:web                                  -   8.50000000e-01      3.54166667e-01          0.2         96
+    2  flange_bottom:flange_bottom              -   8.50000000e-01      3.54166667e-01          0.2         68
+    3  flange_bottom_right:flange_b             -   5.00000000e-01      2.08333333e-01          0.2         36
+
+FEM 3D MESH
+  nz                    : 75
+  target_size_xy        : 0.03 m
+  transverse nx cells   : 26
+  transverse ny cells   : 32
+  nodes                 : 29260
+  SSPbrick elements     : 22800
+  loaded top faces      : 300
+  material tags         : 300
+  comparison layer k    : 22
+
+FEM 3D REACTIONS
+  left Ry               : -1.000000000006e+05 N
+  right Ry              : -1.000000000006e+05 N
+  total Ry              : -2.000000000012e+05 N
+
+CSF LOCAL-SHEAR-POTENTIAL RESULTANTS
+  Tx recovered          : 5.141269410203e-08 N
+  Ty recovered          : 3.999999999979e+04 N
+  Tx error              : 5.141269410203e-08 N
+  Ty error              : -2.089000190608e-07 N
+
+FEM 3D RECONSTRUCTED SECTION RESULTANTS
+  N                     : -7.430040138701e-08 N
+  Mx                    : 2.098088953900e+05 N m
+  My                    : 2.376577683490e+01 N m
+  Tx                    : -2.474902989274e-08 N
+  Ty                    : 4.000000000032e+04 N
+
+POINTWISE ERROR METRICS
+  sigma_zz_rel_l2         : 3.887454171941e-02
+  sigma_zz_rel_max        : 6.573337507541e-02
+  tau_x_rel_l2            : 6.848913092156e-01
+  tau_x_rel_max           : 4.773773407045e-01
+  tau_y_rel_l2            : 2.267315200537e-01
+  tau_y_rel_max           : 2.797750002786e-01
+  tau_vector_rel_l2       : 3.422673369642e-01
+  tau_vector_rel_max      : 3.564435695300e-01
+
+OUTPUT FILES
+  pointwise_csv           : /home/giarrettu/github/continuous-section-field/actions-examples/fem3D_bench/output_tsec_fem3d/pointwise_comparison.csv
+  summary_csv             : /home/giarrettu/github/continuous-section-field/actions-examples/fem3D_bench/output_tsec_fem3d/comparison_summary.csv
+  csf_field_csv           : /home/giarrettu/github/continuous-section-field/actions-examples/fem3D_bench/output_tsec_fem3d/csf_shear_field.csv
+  fem3d_field_csv         : /home/giarrettu/github/continuous-section-field/actions-examples/fem3D_bench/output_tsec_fem3d/fem3d_stress_field.csv
+  fem3d_section_jpg       : /home/giarrettu/github/continuous-section-field/actions-examples/fem3D_bench/output_tsec_fem3d/fem3d_section_at_comparison_station.jpg
+  difference_map_jpg      : /home/giarrettu/github/continuous-section-field/actions-examples/fem3D_bench/output_tsec_fem3d/csf_fem3d_difference_map.jpg
+  stress_maps_jpg         : /home/giarrettu/github/continuous-section-field/actions-examples/fem3D_bench/output_tsec_fem3d/csf_fem3d_stress_maps.jpg
+  native_stress_maps_jpg  : /home/giarrettu/github/continuous-section-field/actions-examples/fem3D_bench/output_tsec_fem3d/csf_fem3d_native_stress_maps.jpg
+  zone_frequency_jpg      : /home/giarrettu/github/continuous-section-field/actions-examples/fem3D_bench/output_tsec_fem3d/csf_fem3d_zone_frequency_histograms.jpg
+  report_txt              : /home/giarrettu/github/continuous-section-field/actions-examples/fem3D_bench/output_tsec_fem3d/benchmark_report.txt
+
+NOTES
+  - No CSF stress/resultant is passed into the OpenSees solution.
+  - FEM material values are sampled from field.section(z): weightabs, shear_weightabs, poisson.
+  - container_idx controls material replacement / parent punching.
+  - Version 3 performs an interface-noding preflight and never repairs geometry automatically.
+  - OpenSees material is ElasticIsotropic only.
+  - The transverse brick mesher requires rectilinear polygon boundaries.

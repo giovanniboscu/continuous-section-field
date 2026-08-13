@@ -1,5 +1,5 @@
 model:
-  csf_yaml: tsec_fem3d.yaml
+  csf_yaml: tsec_fem3d_web_height_20pct.yaml
 
 
 benchmark:
@@ -13,7 +13,7 @@ benchmark:
 csf:
   local_shear_potential:
     dz_relative: 1.0e-5
-    mesh_refinements: 7
+    mesh_refinements: 5
     compatibility_rtol: 1.0e-8
     compatibility_atol: 1.0e-5
 
@@ -37,3 +37,6 @@ output:
   fem3d_section_jpg: fem3d_section_at_comparison_station.jpg
   difference_map_jpg: csf_fem3d_difference_map.jpg
   report_txt: benchmark_report.txt
+  stress_maps_jpg: csf_fem3d_stress_maps.jpg
+  native_stress_maps_jpg: csf_fem3d_native_stress_maps.jpg
+  native_stress_maps_percentile: 99.0
