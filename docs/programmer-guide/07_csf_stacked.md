@@ -721,6 +721,185 @@ For normal YAML-based CSF workflows, however, the simpler pattern is:
 ```python
 CSFReader -> ContinuousSectionField -> CSFStacked.append()
 ```
+## Building `CSFStacked` directly with `SegmentSpec`
+
+`SegmentSpec` allows a stacked CSF member to be created directly from polygon sets, without using YAML files or `CSFReader`.
+
+Each `SegmentSpec` defines one longitudinal CSF segment through:
+
+- its global interval `z0 -> z1`;
+- the polygons at the initial section;
+- the polygons at the final section;
+- an identifying `tag`.
+
+For example:
+
+```python
+spec = SegmentSpec(
+    tag="element_1",
+    z0=0.0,
+    z1=10.0,
+    polygons_s0=polygons_at_z0,
+    polygons_s1=polygons_at_z10,
+)
+```
+
+`CSFStacked.build_from_specs()` converts each specification into a normal `ContinuousSectionField` and assembles the fields in the supplied order.
+
+### Complete standalone example
+
+The following example creates a two-segment zig-zag member directly in Python.
+
+```python
+import matplotlib.pyplot as plt
+
+from csf.CSFStacked import CSFStacked, SegmentSpec
+from csf.entities import Pt, Polygon
+
+
+# ---------------------------------------------------------------------
+# Section at z = 0
+# Square centred at x = 0
+# ---------------------------------------------------------------------
+
+polygons_at_z0 = (
+    Polygon(
+        name="section",
+        weight=1.0,
+        vertices=(
+            Pt(-0.4, -0.4),
+            Pt( 0.4, -0.4),
+            Pt( 0.4,  0.4),
+            Pt(-0.4,  0.4),
+        ),
+    ),
+)
+
+
+# ---------------------------------------------------------------------
+# Section at z = 10
+# Same square translated by +1.0 along x
+# ---------------------------------------------------------------------
+
+polygons_at_z10 = (
+    Polygon(
+        name="section",
+        weight=1.0,
+        vertices=(
+            Pt(0.6, -0.4),
+            Pt(1.4, -0.4),
+            Pt(1.4,  0.4),
+            Pt(0.6,  0.4),
+        ),
+    ),
+)
+
+
+# ---------------------------------------------------------------------
+# Section at z = 20
+# Return to the original position
+# ---------------------------------------------------------------------
+
+polygons_at_z20 = (
+    Polygon(
+        name="section",
+        weight=1.0,
+        vertices=(
+            Pt(-0.4, -0.4),
+            Pt( 0.4, -0.4),
+            Pt( 0.4,  0.4),
+            Pt(-0.4,  0.4),
+        ),
+    ),
+)
+
+
+# ---------------------------------------------------------------------
+# Define the two stacked segments
+# ---------------------------------------------------------------------
+
+spec_1 = SegmentSpec(
+    tag="element_1",
+    z0=0.0,
+    z1=10.0,
+    polygons_s0=polygons_at_z0,
+    polygons_s1=polygons_at_z10,
+)
+
+spec_2 = SegmentSpec(
+    tag="element_2",
+    z0=10.0,
+    z1=20.0,
+    polygons_s0=polygons_at_z10,
+    polygons_s1=polygons_at_z20,
+)
+
+
+# ---------------------------------------------------------------------
+# Build the stacked CSF
+# ---------------------------------------------------------------------
+
+stack = CSFStacked(eps_z=1e-10)
+
+stack.build_from_specs([
+    spec_1,
+    spec_2,
+])
+
+
+# ---------------------------------------------------------------------
+# Query the assembled member
+# ---------------------------------------------------------------------
+
+print("Global bounds:", stack.global_bounds())
+
+section_z5 = stack.section(5.0)
+section_z15 = stack.section(15.0)
+
+print("Section at z=5 :", section_z5)
+print("Section at z=15:", section_z15)
+
+
+# ---------------------------------------------------------------------
+# Plot the complete geometry
+# ---------------------------------------------------------------------
+
+stack.plot_volume_3d_global(
+    title="CSFStacked - SegmentSpec example",
+    wire=False,
+    colors=True,
+    box_aspect_scale=(1.0, 1.0, 0.5),
+)
+
+plt.show()
+```
+
+The resulting member consists of two consecutive CSF fields:
+
+```text
+x = 0              x = 1              x = 0
+  *------------------*------------------*
+ z=0               z=10               z=20
+
+      spec_1               spec_2
+```
+
+More precisely, the section moves from `x = 0` to `x = 1` in the first segment and then returns from `x = 1` to `x = 0` in the second segment.
+
+The global domain is therefore:
+
+```text
+0.0 <= z <= 20.0
+```
+
+and `CSFStacked` automatically dispatches each query to the corresponding `ContinuousSectionField`:
+
+```python
+stack.section(5.0)    # evaluated inside spec_1
+stack.section(15.0)   # evaluated inside spec_2
+```
+
+The two segments must be supplied in their intended longitudinal order, and consecutive intervals must meet within the `eps_z` tolerance.
 
 ---
 
