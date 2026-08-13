@@ -7,6 +7,8 @@
 >is alias of
 >
 >python3 -m csf.utils.sp_csf
+>
+> pip install sectionproperties
 
 ## Scope
 
