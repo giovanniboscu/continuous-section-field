@@ -25,6 +25,9 @@ import matplotlib.pyplot as plt
 
 ## Minimal Example
 
+[boxcell.yaml](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/programmer-guide/boxcell.yaml)
+
+
 ```python
 from csf.io.csf_reader import CSFReader
 from csf.io.csf_issues import CSFIssues
