@@ -42,6 +42,25 @@ plot_properties(self, keys_to_plot=None, alpha=1, num_points=100)
 ```
 
 Plot the evolution of selected section properties along `z`, highlighting min/max values and their corresponding `z` positions.
+```python
+from csf.io.csf_reader import CSFReader
+from csf import Visualizer
+import matplotlib.pyplot as plt
+
+# Read the CSF model from YAML
+res = CSFReader().read_file("boxcell.yaml")
+
+if not res.ok:
+    raise SystemExit("Invalid CSF input")
+
+field = res.field
+
+# Plot the section at z = 0
+viz = Visualizer(field)
+viz.plot_properties(["A", "I1", "I2", "Ixy", "J_s_vroark", "J_s_vroark_fidelity"])
+plt.show()
+
+```
 
 ## Parameters
 
