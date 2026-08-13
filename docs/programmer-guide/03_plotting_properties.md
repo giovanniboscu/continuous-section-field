@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 ```python
 viz = Visualizer(section_field)
 
-viz.plot_properties(["A", "I1", "I2", "Ixy", "J_s_vroark", "J_s_vroark_fidelity"])
+viz.plot_properties(["A", "I1", "I2", "Ixy"])
 
 plt.show()
 ```
