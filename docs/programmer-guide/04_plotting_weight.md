@@ -213,10 +213,82 @@ The following helper functions are available in weight-law expressions.
 ### Half-cosine smooth ramp
 
 ```python
+
+    section_field.set_weight_laws([
+        "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
+    ])
+
+
+```
+
+```python
+...
+...
+...
+
+# -------------------------------------------------------
+# Continuous section field
+# -------------------------------------------------------
+# Define the longitudinal domain and the two endpoint sections.
+# Corresponding polygons in S0 and S1 define the continuous
+# geometric evolution of the section along z.
+L = 10.0
+
+s0 = Section(
+    polygons=(poly_bottom_start, poly_top_start),
+    z=0.0,
+)
+
+s1 = Section(
+    polygons=(poly_bottom_end, poly_top_end),
+    z=L,
+)
+
+# Build the ContinuousSectionField between S0 and S1.
+section_field = ContinuousSectionField(section0=s0, section1=s1)
+
+
+# -------------------------------------------------------
+# Extract a section
+# -------------------------------------------------------
+# Evaluate the field at the selected longitudinal coordinate.
+# Since z = L, the resulting section coincides geometrically with S1.
+zsec_val = 10.0
+sec_at_z = section_field.section(zsec_val)
+
+
+# -------------------------------------------------------
+# Weight law
+# -------------------------------------------------------
+# Assign a longitudinal weight law to the polygon pair
+# "lowerpart" -> "lowerpart".
+#
+# The law varies smoothly from w0 at z = 0 to w1 at z = L
+# according to a half-cosine interpolation.
 section_field.set_weight_laws([
     "lowerpart,lowerpart : w0 + (w1 - w0) * 0.5 * (1 - np.cos(np.pi * z / L))",
 ])
+
+
+# -------------------------------------------------------
+# Plot longitudinal weight evolution
+# -------------------------------------------------------
+# Create a visualizer for the field and sample the polygon
+# weights at 100 positions along z.
+# poly_indices_to_plot=None plots all non-zero polygon weights.
+viz = Visualizer(section_field)
+
+viz.plot_weight(
+    num_points=100,
+    poly_indices_to_plot=None,
+)
+
+plt.show()
+
 ```
+
+
+
 
 This represents a half-cosine smooth degradation law (cosine ramp), with gradual variation from `w0` to `w1`.
 
