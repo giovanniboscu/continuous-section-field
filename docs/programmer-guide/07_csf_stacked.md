@@ -440,6 +440,11 @@ import matplotlib.pyplot as plt
 plt.show()
 ```
 
+# ZigZag example
+
+[zigzag.py](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/zigzag_element/zigzag.py)
+
+
 ---
 
 # Final note
