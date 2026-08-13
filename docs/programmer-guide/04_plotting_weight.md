@@ -551,6 +551,9 @@ Plot interpolated polygon shear weights along the member axis, using one subplot
 Both `plot_weight` and `plot_shear_weight` accept a `poly_indices_to_plot` argument to restrict the output to a subset of polygons. This is useful when a section contains many polygons and only a few are of interest.
 
 ```python
+...
+...
+...
 viz = Visualizer(section_field)
 
 # Plot only the first polygon (index 0) for both weight and shear weight
@@ -569,6 +572,9 @@ viz.plot_shear_weight(num_points=100, poly_indices_to_plot=[0, 1])
 Example:
 
 ```python
+...
+...
+...
 zsec_val = 10.0
 sec_at_z = section_field.section(zsec_val)
 
