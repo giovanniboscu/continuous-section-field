@@ -26,13 +26,33 @@ import matplotlib.pyplot as plt
 ## Minimal Example
 
 ```python
-viz = Visualizer(section_field)
+from csf.io.csf_reader import CSFReader
+from csf.io.csf_issues import CSFIssues
+import matplotlib.pyplot as plt
+
+from csf import (
+    Pt, Polygon, Section, ContinuousSectionField, Visualizer,
+    section_full_analysis, section_print_analysis, section_full_analysis_keys
+)
+
+res = CSFReader().read_file("boxcell.yaml")
+
+if not res.ok:
+    print(CSFIssues.format_report(res.issues))
+    raise SystemExit(1)
+
+field = res.field
+
+sec = field.section(10.0)
+out = section_full_analysis(sec)
+
+viz = Visualizer(field)
 
 # 3D ruled skeleton (30% of generator lines for readability)
-viz.plot_volume_3d(line_percent=30.0, seed=42)
+viz.plot_volume_3d(line_percent=100.0, seed=42)
 
 # 2D section at selected z
-viz.plot_section_2d(z=zsec_val, show_ids=False)
+viz.plot_section_2d(z=0, show_ids=False)
 
 plt.show()
 ```
