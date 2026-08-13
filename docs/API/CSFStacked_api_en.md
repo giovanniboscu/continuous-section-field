@@ -1,757 +1,925 @@
-# API Reference - `CSFStacked.py`
+# `CSFStacked` - Building a Continuous Member from Multiple CSF Elements
 
-This document covers the top-level classes and functions defined in `src/csf/CSFStacked.py`. Imported symbols are not documented as standalone APIs here.
+`CSFStacked` combines consecutive `ContinuousSectionField` objects into a single member defined over one global `z` coordinate.
 
-## Module summary
+The important idea is simple:
 
-- Source file: `src/csf/CSFStacked.py`
-- Output file: `docs/API/CSFStacked_api_en.md`
-- Top-level function definitions found: `0`.
-- Top-level classes found: `3`.
-- Duplicate function names found: `0`.
+> A `ContinuousSectionField` describes the continuous evolution of one element between two sections.  
+> `CSFStacked` joins several of those elements in sequence and provides one global interface to the whole member.
 
-## Public API index
+This is useful when a member cannot be represented conveniently by only one pair of end sections.
 
-- `SegmentSpec` - line 20
-- `StackSegment` - line 42
-- `CSFStacked` - line 50
+---
 
-## API details
+## 1. From one CSF element to a stacked member
 
-## Classes
-
-### `SegmentSpec`
-
-**Source lines:** `20-38`
-
-**Decorators**
-
-- `dataclass(frozen=True)`
-
-```python
-class SegmentSpec
-```
-
-**Summary:** Generic input specification for one stacked segment.
-
-**Docstring details**
+A single `ContinuousSectionField` describes the evolution
 
 ```text
-Attributes:
-- tag: segment identifier
-- z0, z1: global z-interval for the segment
-- polygons_s0: tuple of polygons at z0
-- polygons_s1: tuple of polygons at z1
-
-Notes:
-- Polygon names should be consistent between z0 and z1 for side-surface pairing.
-- For each polygon name, vertex count must match between z0 and z1.
+S0  -------------------->  S1
+z0                          z1
 ```
 
-### `StackSegment`
+between two sections.
 
-**Source lines:** `42-47`
+Its geometry, polygon weights, shear weights, and other section data evolve continuously between those two stations.
 
-**Decorators**
-
-- `dataclass`
-
-```python
-class StackSegment
-```
-
-**Summary:** Runtime segment container: interval + CSF field.
-
-### `CSFStacked`
-
-**Source lines:** `50-1058`
-
-```python
-class CSFStacked
-```
-
-**Summary:** CSFStacked stacked container for multiple ContinuousSectionField objects.
-
-**Docstring details**
+`CSFStacked` extends this idea to several consecutive fields:
 
 ```text
-Design goals:
-- CSFStacked geometry (any number of polygons per section)
-- Global z dispatch
-- Internal junction sections excluded by definition
-- Explicit validation and clear errors
+field 0                 field 1                 field 2
+S0  ---------------->  S1  ---------------->  S2  ---------------->  S3
+z0                      z1                      z2                      z3
+
+<--------------------------- CSFStacked ------------------------------>
+                         global z
 ```
 
-**Methods visible in the code**
+Each interval remains a normal `ContinuousSectionField`.
 
-- `__init__` - line 61
-- `append` - line 65
-- `append2` - line 111
-- `field_at` - line 162
-- `make_field_from_polygons` - line 168
-- `build_from_specs` - line 184
-- `validate_contiguity` - line 211
-- `_find_segment` - line 239
-- `section` - line 296
-- `section_full_analysis` - line 299
-- `_compute_axis_bounds_with_margin` - line 304
-- `_apply_box_limits` - line 350
-- `plot_weight` - line 358
-- `plot_properties` - line 391
-- `plot_section_2d` - line 642
-- `plot_volume_3d` - line 686
-- `plot_volume_3d_global` - line 729
-- `global_bounds` - line 1049
+`CSFStacked` does **not** replace the individual fields and does not create a new interpolation law spanning the whole member. It stores the fields in order and dispatches each global `z` query to the field that owns that interval.
 
-#### Method details
+This distinction is important when adjacent elements have different interpolation laws, materials, topology, or geometric evolution.
 
-##### `CSFStacked.__init__`
+---
 
-**Source lines:** `61-63`
+## 2. What `CSFStacked` does
+
+Given consecutive fields such as
 
 ```python
-def __init__self, eps_z: float=1e-10
+field_1: z = 0.0  -> 10.0
+field_2: z = 10.0 -> 20.0
 ```
 
-**Summary:** Docstring absent.
-
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `eps_z` | `positional or keyword` | `float` | `1e-10` |
-
-**Returns:** `not annotated`
-
-**Function/method calls visible in the code**
-
-`float`
-
-##### `CSFStacked.append`
-
-**Source lines:** `65-108`
+a stack can be created with:
 
 ```python
-def appendself, field: ContinuousSectionField
+stack = CSFStacked()
+
+stack.append(field_1)
+stack.append(field_2)
 ```
 
-**Summary:** Append one pre-built ContinuousSectionField to the stack.
-
-**Docstring details**
+The resulting object has the global domain
 
 ```text
-...
+0.0 <= z <= 20.0
 ```
 
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `field` | `positional or keyword` | `ContinuousSectionField` | `-` |
-
-**Returns:** `None`
-
-**Raises visible in the code**
-
-- `ValueError`
-- `RuntimeError`
-
-**Function/method calls visible in the code**
-
-`StackSegment`, `self.segments.append`, `float`, `ValueError`, `RuntimeError`, `len`
-
-##### `CSFStacked.append2`
-
-**Source lines:** `111-160`
+and can answer queries such as:
 
 ```python
-def append2self, field: ContinuousSectionField
+stack.section(4.0)
+stack.section(15.0)
+stack.field_at(17.0)
 ```
 
-**Summary:** Append one pre-built ContinuousSectionField to the stack.
+`CSFStacked` determines which field contains the requested global coordinate and delegates the operation to that field.
 
-**Docstring details**
+For example:
 
 ```text
-Stacking contract (strict, no hidden reordering):
-- The new segment must have valid local bounds (z_end > z_start).
-- If the stack is not empty, the new segment must start exactly after the
-  previous segment, within ``self.eps_z`` tolerance.
-- Gaps and overlaps are rejected immediately at append time.
-
-Notes
------
-This method does not sort segments. The user-provided order is the stack order.
+z = 4.0   -> field_1
+z = 15.0  -> field_2
 ```
 
-**Parameters**
+---
 
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `field` | `positional or keyword` | `ContinuousSectionField` | `-` |
+# 3. Complete example: a two-element zig-zag member
 
-**Returns:** `None`
-
-**Raises visible in the code**
-
-- `ValueError`
-
-**Function/method calls visible in the code**
-
-`float`, `StackSegment`, `self.segments.append`, `ValueError`, `len`
-
-##### `CSFStacked.field_at`
-
-**Source lines:** `162-165`
-
-```python
-def field_atself, z: float, junction_side: str='left'
-```
-
-**Summary:** Return the segment field mapped from global z.
-
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `z` | `positional or keyword` | `float` | `-` |
-| `junction_side` | `positional or keyword` | `str` | `'left'` |
-
-**Returns:** `ContinuousSectionField`
-
-**Function/method calls visible in the code**
-
-`self._find_segment`, `float`
-
-##### `CSFStacked.make_field_from_polygons`
-
-**Source lines:** `168-182`
-
-**Decorators**
-
-- `staticmethod`
-
-```python
-def make_field_from_polygonsz0: float, z1: float, polygons_s0: Sequence[Polygon], polygons_s1: Sequence[Polygon]
-```
-
-**Summary:** Create one ContinuousSectionField from two generic polygon sets.
-
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `z0` | `positional or keyword` | `float` | `-` |
-| `z1` | `positional or keyword` | `float` | `-` |
-| `polygons_s0` | `positional or keyword` | `Sequence[Polygon]` | `-` |
-| `polygons_s1` | `positional or keyword` | `Sequence[Polygon]` | `-` |
-
-**Returns:** `ContinuousSectionField`
-
-**Raises visible in the code**
-
-- `ValueError`
-
-**Function/method calls visible in the code**
-
-`Section`, `ContinuousSectionField`, `ValueError`, `tuple`, `float`
-
-##### `CSFStacked.build_from_specs`
-
-**Source lines:** `184-209`
-
-```python
-def build_from_specsself, specs: List[SegmentSpec], sort_by_z: bool=False
-```
-
-**Summary:** Build the full stack from a list of ``SegmentSpec`` objects.
-
-**Docstring details**
+The repository contains a compact example in:
 
 ```text
-Notes
------
-- Specs are consumed in the provided order (stack semantics).
-- Automatic reordering is intentionally not supported.
-- Contiguity/coherence is enforced by ``append()`` for each built segment.
+actions-examples/zigzag_element/
 ```
 
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `specs` | `positional or keyword` | `List[SegmentSpec]` | `-` |
-| `sort_by_z` | `positional or keyword` | `bool` | `False` |
-
-**Returns:** `None`
-
-**Raises visible in the code**
-
-- `ValueError`
-
-**Function/method calls visible in the code**
-
-`ValueError`, `self.make_field_from_polygons`, `self.append`
-
-##### `CSFStacked.validate_contiguity`
-
-**Source lines:** `211-235`
-
-```python
-def validate_contiguityself, require_contiguity: bool=True
-```
-
-**Summary:** Validate ordering, overlap, and optional strict contiguity.
-
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `require_contiguity` | `positional or keyword` | `bool` | `True` |
-
-**Returns:** `None`
-
-**Raises visible in the code**
-
-- `ValueError`
-
-**Function/method calls visible in the code**
-
-`enumerate`, `ValueError`, `abs`
-
-##### `CSFStacked._find_segment`
-
-**Source lines:** `239-293`
-
-```python
-def _find_segmentself, z: float, junction_side: str='left'
-```
-
-**Summary:** Docstring absent.
-
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `z` | `positional or keyword` | `float` | `-` |
-| `junction_side` | `positional or keyword` | `str` | `'left'` |
-
-**Returns:** `StackSegment`
-
-**Raises visible in the code**
-
-- `ValueError`
-
-**Function/method calls visible in the code**
-
-`float`, `enumerate`, `ValueError`, `abs`, `len`
-
-##### `CSFStacked.section`
-
-**Source lines:** `296-297`
-
-```python
-def sectionself, z: float, junction_side: str='left'
-```
-
-**Summary:** Docstring absent.
-
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `z` | `positional or keyword` | `float` | `-` |
-| `junction_side` | `positional or keyword` | `str` | `'left'` |
-
-**Returns:** `not annotated`
-
-**Function/method calls visible in the code**
-
-`section`, `float`, `self.field_at`
-
-##### `CSFStacked.section_full_analysis`
-
-**Source lines:** `299-302`
-
-```python
-def section_full_analysisself, z: float, junction_side: str='left'
-```
-
-**Summary:** Docstring absent.
-
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `z` | `positional or keyword` | `float` | `-` |
-| `junction_side` | `positional or keyword` | `str` | `'left'` |
-
-**Returns:** `float`
-
-**Function/method calls visible in the code**
-
-`self.section`, `section_full_analysis`
-
-##### `CSFStacked._compute_axis_bounds_with_margin`
-
-**Source lines:** `304-347`
-
-```python
-def _compute_axis_bounds_with_marginself, xs: Sequence[float], ys: Sequence[float], zs: Sequence[float], margin_ratio: float=0.1
-```
-
-**Summary:** Compute axis-aligned limits with independent margins per axis.
-
-**Docstring details**
+with:
 
 ```text
+element_1.yaml
+element_2.yaml
+zigzag.py
+```
+
+The example deliberately uses very simple square sections so that the role of `CSFStacked` is visible directly from the coordinates.
+
+---
+
+## 3.1 First CSF element
+
+The first element spans:
+
+```text
+z = 0.0 -> 10.0
+```
+
+At `z = 0`, the square is centred at approximately:
+
+```text
+x = 0
+```
+
+At `z = 10`, the same square is translated to:
+
+```text
+x = 1
+```
+
+Its YAML geometry is:
+
+```yaml
+# element_1.yaml
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        section:
+          weight: 1.0
+          vertices:
+            - [-0.4, -0.4]
+            - [ 0.4, -0.4]
+            - [ 0.4,  0.4]
+            - [-0.4,  0.4]
+
+    S1:
+      z: 10.0
+      polygons:
+        section:
+          weight: 1.0
+          vertices:
+            - [0.6, -0.4]
+            - [1.4, -0.4]
+            - [1.4,  0.4]
+            - [0.6,  0.4]
+
+  shear_weight_laws:
+    - 'iso(0.2)'
+```
+
+So the first field produces a transverse displacement in the positive `x` direction:
+
+```text
+x
+
+1.0                     +---------+
+                        |         |
+                        |   S1    |
+                        |         |
+                        +---------+
+                      z = 10
+
+0.0     +---------+
+        |         |
+        |   S0    |
+        |         |
+        +---------+
+      z = 0
+```
+
+---
+
+## 3.2 Second CSF element
+
+The second element starts exactly where the first one ends:
+
+```text
+z = 10.0 -> 20.0
+```
+
+Its initial section is the translated square at `x = 1`, while its final section returns to `x = 0`:
+
+```yaml
+# element_2.yaml
+CSF:
+  sections:
+    S0:
+      z: 10.0
+      polygons:
+        section:
+          weight: 1.0
+          vertices:
+            - [0.6, -0.4]
+            - [1.4, -0.4]
+            - [1.4,  0.4]
+            - [0.6,  0.4]
+
+    S1:
+      z: 20.0
+      polygons:
+        section:
+          weight: 1.0
+          vertices:
+            - [-0.4, -0.4]
+            - [ 0.4, -0.4]
+            - [ 0.4,  0.4]
+            - [-0.4,  0.4]
+
+  shear_weight_laws:
+    - 'iso(0.2)'
+```
+
+The two fields therefore describe:
+
+```text
+x
+
+1.0                       *
+                         /   \
+                       /       \
+                     /           \
+0.0        *                         *
+           z=0       z=10            z=20
+
+           field 1    |    field 2
+```
+
+The member first moves toward positive `x`, then returns.
+
+A single `ContinuousSectionField` between `z=0` and `z=20` would not describe this geometry: its two end sections are identical, so the intermediate change of direction would be lost.
+
+That is the basic reason for using `CSFStacked`.
+
+---
+
+# 4. Loading the two fields
+
+Each YAML file is read independently with `CSFReader`.
+
+```python
+from csf.io.csf_reader import CSFReader
+from csf.io.csf_issues import CSFIssues
+
+rf1 = CSFReader().read_file("element_1.yaml")
+
+if not rf1.ok:
+    print(CSFIssues.format_report(rf1.issues))
+    raise SystemExit(1)
+
+rf2 = CSFReader().read_file("element_2.yaml")
+
+if not rf2.ok:
+    print(CSFIssues.format_report(rf2.issues))
+    raise SystemExit(1)
+
+f1 = rf1.field
+f2 = rf2.field
+```
+
+At this point:
+
+```text
+f1 = ContinuousSectionField over [0, 10]
+f2 = ContinuousSectionField over [10, 20]
+```
+
+They are still two independent CSF objects.
+
+---
+
+# 5. Creating the stack
+
+Import `CSFStacked`:
+
+```python
+from csf.CSFStacked import CSFStacked
+```
+
+Create an empty stack:
+
+```python
+stack = CSFStacked(eps_z=1e-10)
+```
+
+Then append the fields in longitudinal order:
+
+```python
+stack.append(f1)
+stack.append(f2)
+```
+
+The resulting structure is conceptually:
+
+```text
+stack.segments
+
+[0]  seg_0   z = 0  -> 10    field = f1
+[1]  seg_1   z = 10 -> 20    field = f2
+```
+
+The order is explicit. `CSFStacked` does not silently sort the fields.
+
+---
+
+## 5.1 Contiguity is checked when fields are appended
+
+For two consecutive fields, the end of the first and the start of the second must coincide within `eps_z`.
+
+For the zig-zag example:
+
+```text
+f1.s1.z = 10.0
+f2.s0.z = 10.0
+```
+
+so the append is valid.
+
+A gap is rejected:
+
+```text
+field 1: 0 -> 10
+field 2: 11 -> 20
+
+                 gap
+                  |
+0 ---------- 10   11 ---------- 20
+```
+
+An overlap is also rejected:
+
+```text
+field 1: 0 -> 10
+field 2:  9 -> 20
+
+               overlap
+                  |
+0 --------- 9 == 10 ----------- 20
+```
+
+This prevents an ambiguous global `z` mapping.
+
+---
+
+# 6. Querying the stacked member
+
+Once the stack has been built, use global coordinates.
+
+## `field_at(z)`
+
+```python
+field = stack.field_at(4.0)
+```
+
+returns the field covering `z=4`:
+
+```text
+field 1: [0, 10]
+```
+
+while:
+
+```python
+field = stack.field_at(15.0)
+```
+
+returns:
+
+```text
+field 2: [10, 20]
+```
+
+The caller does not need to determine the segment manually.
+
+---
+
+## `section(z)`
+
+To obtain the actual interpolated section at a global coordinate:
+
+```python
+section = stack.section(5.0)
+```
+
+`CSFStacked` performs two operations:
+
+```text
+global z = 5
+      |
+      v
+find the owning field
+      |
+      v
+field 1
+      |
+      v
+field_1.section(5)
+      |
+      v
+Section at z = 5
+```
+
+Similarly:
+
+```python
+section = stack.section(17.0)
+```
+
+is evaluated by the second field.
+
+This is the main stacked abstraction:
+
+```text
+global z -> correct ContinuousSectionField -> section
+```
+
+---
+
+# 7. What happens exactly at a junction?
+
+An internal junction belongs geometrically to both adjacent intervals.
+
+In the example:
+
+```text
+field 1: [0, 10]
+field 2: [10, 20]
+              ^
+            z=10
+```
+
+`CSFStacked` therefore provides the `junction_side` argument.
+
+The default is:
+
+```python
+stack.section(10.0, junction_side="left")
+```
+
+which selects the field ending at the junction.
+
+To select the field beginning at the junction:
+
+```python
+stack.section(10.0, junction_side="right")
+```
+
+The same policy is available through `field_at()`:
+
+```python
+left_field = stack.field_at(10.0, junction_side="left")
+right_field = stack.field_at(10.0, junction_side="right")
+```
+
+For a geometrically and mechanically continuous junction, both sides normally describe the same junction section.
+
+The distinction becomes important when a property, material assignment, interpolation rule, or other field data changes from one segment to the next.
+
+`CSFStacked` does not hide such a discontinuity by interpolating across the junction.
+
+---
+
+# 8. Analysing a section
+
+`section_full_analysis()` applies the normal CSF section analysis after dispatching the global coordinate to the correct segment.
+
+```python
+props = stack.section_full_analysis(7.5)
+```
+
+For example:
+
+```python
+print(props["A"])
+print(props["Ix"])
+print(props["Iy"])
+```
+
+The workflow is:
+
+```text
+z
+|
+v
+CSFStacked
+|
++--> select segment
+     |
+     +--> ContinuousSectionField.section(z)
+          |
+          +--> Section
+               |
+               +--> section_full_analysis(...)
+```
+
+No separate stacked section formulation is introduced.
+
+---
+
+# 9. Plotting the complete stacked geometry
+
+The most direct way to see what the stack represents is:
+
+```python
+stack.plot_volume_3d_global(
+    title="CSFStacked - two connected elements",
+    wire=False,
+    colors=True,
+    box_aspect_scale=(1.0, 1.0, 0.5),
+)
+```
+
+followed by:
+
+```python
+import matplotlib.pyplot as plt
+
+plt.show()
+```
+
+Unlike `plot_volume_3d(z)`, which displays the individual segment containing `z`, `plot_volume_3d_global()` renders all stacked segments in one global coordinate system.
+
+For the zig-zag example the resulting solid contains both changes of direction:
+
+```text
+z = 0   -> section centred at x = 0
+z = 10  -> section centred at x = 1
+z = 20  -> section centred at x = 0
+```
+
+---
+
+# 10. Complete `zigzag.py`
+
+The complete example is deliberately short:
+
+```python
+import matplotlib.pyplot as plt
+
+from csf.CSFStacked import CSFStacked
+from csf.io.csf_reader import CSFReader
+from csf.io.csf_issues import CSFIssues
+
+
+# Load and validate the first field.
+rf1 = CSFReader().read_file("element_1.yaml")
+
+if not rf1.ok:
+    print(CSFIssues.format_report(rf1.issues))
+    raise SystemExit(1)
+
+
+# Load and validate the second field.
+rf2 = CSFReader().read_file("element_2.yaml")
+
+if not rf2.ok:
+    print(CSFIssues.format_report(rf2.issues))
+    raise SystemExit(1)
+
+
+f1 = rf1.field
+f2 = rf2.field
+
+
+# Assemble the global stacked member.
+stack = CSFStacked(eps_z=1e-10)
+
+stack.append(f1)
+stack.append(f2)
+
+
+# Plot the complete geometry.
+stack.plot_volume_3d_global(
+    title="CSFStacked - two connected elements",
+    wire=False,
+    colors=True,
+    box_aspect_scale=(1.0, 1.0, 0.5),
+)
+
+plt.show()
+```
+
+The important part is only:
+
+```python
+stack = CSFStacked()
+stack.append(f1)
+stack.append(f2)
+```
+
+Everything else in the example loads, validates, and visualises the two CSF fields.
+
+---
+
+# 11. Plotting one section from the global member
+
+A section can be visualised without manually identifying its field:
+
+```python
+stack.plot_section_2d(
+    z=15.0,
+    show_ids=True,
+    show_weights=True,
+)
+```
+
+Because `z=15` lies inside `[10,20]`, the second field is selected automatically.
+
+At a junction, the same left/right rule applies:
+
+```python
+stack.plot_section_2d(
+    z=10.0,
+    junction_side="right",
+)
+```
+
+---
+
+# 12. Plotting section properties over the whole stack
+
+Properties can be evaluated over every segment using:
+
+```python
+stack.plot_properties(
+    keys_to_plot=["A", "Ix", "Iy"],
+    num_points=100,
+    show_junctions=True,
+)
+```
+
+Sampling is performed independently inside every stacked field.
+
+Conceptually:
+
+```text
+field 1 samples           field 2 samples
+|--------------------|    |--------------------|
+0                   10   10                   20
+```
+
+The curves are not artificially connected by an interpolation law across an internal junction.
+
+With:
+
+```python
+show_junctions=True
+```
+
+the internal boundaries are marked explicitly.
+
+This makes the method suitable not only for geometrically continuous members but also for members whose sectional properties change from one CSF element to the next.
+
+---
+
+# 13. Global bounds
+
+The longitudinal domain can be obtained with:
+
+```python
+z_min, z_max = stack.global_bounds()
+```
+
+For the zig-zag example:
+
+```python
+z_min == 0.0
+z_max == 20.0
+```
+
+---
+
+# 14. Alternative construction with `SegmentSpec`
+
+`append()` is the clearest interface when the individual `ContinuousSectionField` objects already exist.
+
+`CSFStacked` can also create fields directly from polygon sets.
+
+A segment can be specified with:
+
+```python
+from csf.CSFStacked import SegmentSpec
+```
+
+```python
+spec = SegmentSpec(
+    tag="element_1",
+    z0=0.0,
+    z1=10.0,
+    polygons_s0=polygons_at_z0,
+    polygons_s1=polygons_at_z10,
+)
+```
+
+Several specifications can then be assembled with:
+
+```python
+stack = CSFStacked()
+
+stack.build_from_specs([
+    spec_1,
+    spec_2,
+])
+```
+
+Internally, each specification is converted into a normal `ContinuousSectionField` and appended to the stack.
+
+Automatic reordering is intentionally not performed. The specifications must already be supplied in their intended longitudinal order.
+
+For normal YAML-based CSF workflows, however, the simpler pattern is:
+
+```python
+CSFReader -> ContinuousSectionField -> CSFStacked.append()
+```
+
+---
+
+# 15. Public API overview
+
+## Construction and assembly
+
+### `CSFStacked(eps_z=1e-10)`
+
+Creates an empty stacked container.
+
+```python
+stack = CSFStacked()
+```
+
+`eps_z` is the tolerance used when comparing longitudinal coordinates at segment boundaries.
+
+---
+
+### `append(field)`
+
+Adds one `ContinuousSectionField` to the end of the stack.
+
+```python
+stack.append(field)
+```
+
+The new field must:
+
+- have `z_end > z_start`;
+- follow the already appended fields;
+- start at the previous field end within `eps_z`;
+- introduce neither a gap nor an overlap.
+
+---
+
+### `build_from_specs(specs, sort_by_z=False)`
+
+Builds the stack from `SegmentSpec` objects.
+
+```python
+stack.build_from_specs(specs)
+```
+
+The supplied order is the stack order.
+
+Passing:
+
+```python
+sort_by_z=True
+```
+
+is rejected because automatic reordering is not supported.
+
+---
+
+### `validate_contiguity(require_contiguity=True)`
+
+Explicitly checks the segment sequence.
+
+```python
+stack.validate_contiguity()
+```
+
+It detects invalid intervals, overlaps, and - when requested - gaps.
+
+---
+
+# 16. Global dispatch API
+
+### `field_at(z, junction_side="left")`
+
+Returns the `ContinuousSectionField` responsible for global coordinate `z`.
+
+```python
+field = stack.field_at(12.0)
+```
+
+---
+
+### `section(z, junction_side="left")`
+
+Returns the section at global coordinate `z`.
+
+```python
+section = stack.section(12.0)
+```
+
+Equivalent in concept to:
+
+```python
+field = stack.field_at(12.0)
+section = field.section(12.0)
+```
+
+---
+
+### `section_full_analysis(z, junction_side="left")`
+
+Returns the standard full section analysis for the section at `z`.
+
+```python
+properties = stack.section_full_analysis(12.0)
+```
+
+---
+
+### `global_bounds()`
+
 Returns:
-    ((xmin, xmax), (ymin, ymax), (zmin, zmax), (dx, dy, dz))
-```
-
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `xs` | `positional or keyword` | `Sequence[float]` | `-` |
-| `ys` | `positional or keyword` | `Sequence[float]` | `-` |
-| `zs` | `positional or keyword` | `Sequence[float]` | `-` |
-| `margin_ratio` | `positional or keyword` | `float` | `0.1` |
-
-**Returns:** `not annotated`
-
-**Raises visible in the code**
-
-- `ValueError`
-
-**Function/method calls visible in the code**
-
-`ValueError`, `min`, `max`
-
-##### `CSFStacked._apply_box_limits`
-
-**Source lines:** `350-356`
-
-**Decorators**
-
-- `staticmethod`
 
 ```python
-def _apply_box_limitsax, bounds
+(z_min, z_max)
 ```
 
-**Summary:** Apply precomputed limits and set data-proportional box aspect.
+for the complete stack.
 
-**Parameters**
+---
 
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `ax` | `positional or keyword` | `not annotated` | `-` |
-| `bounds` | `positional or keyword` | `not annotated` | `-` |
+# 17. Plotting API
 
-**Returns:** `None`
+### `plot_section_2d(z, ...)`
 
-**Function/method calls visible in the code**
-
-`ax.set_xlim`, `ax.set_ylim`, `ax.set_zlim`, `ax.set_box_aspect`
-
-##### `CSFStacked.plot_weight`
-
-**Source lines:** `358-388`
+Plots the section at a global coordinate.
 
 ```python
-def plot_weightself, z: float, poly_indices_to_plot=None, num_points: int=100, tol: float=1e-12, junction_side: str='left'
+stack.plot_section_2d(z=12.0)
 ```
 
-**Summary:** Plot the weight distributions for the segment selected by global ``z``.
+---
 
-**Docstring details**
+### `plot_weight(z, ...)`
+
+Plots weight distributions for the field selected by global `z`.
+
+```python
+stack.plot_weight(z=12.0)
+```
+
+---
+
+### `plot_volume_3d(z, ...)`
+
+Plots only the stacked segment containing `z`.
+
+```python
+stack.plot_volume_3d(z=12.0)
+```
+
+---
+
+### `plot_volume_3d_global(...)`
+
+Plots all segments together.
+
+```python
+stack.plot_volume_3d_global()
+```
+
+This is normally the first plot to use when checking an assembled geometry.
+
+---
+
+### `plot_properties(keys_to_plot, ...)`
+
+Evaluates and plots selected section properties over all stacked intervals.
+
+```python
+stack.plot_properties(
+    keys_to_plot=["A", "Ix", "Iy"],
+)
+```
+
+---
+
+# 18. The key distinction
+
+The difference between `ContinuousSectionField` and `CSFStacked` can be summarised as:
 
 ```text
-Dispatch policy
----------------
-- The target segment is selected through ``field_at(...)`` using the same
-  ``z`` and ``junction_side`` policy used by the other stacked wrappers.
-- Once the correct segment is identified, a ``Visualizer`` is instantiated
-  from that field and the plotting call is delegated to it.
+ContinuousSectionField
+    one continuous evolution between two endpoint sections
 
-Notes
------
-All plotting parameters are forwarded unchanged so that the stacked API
-remains aligned with the single-field plotting API.
+CSFStacked
+    an ordered sequence of ContinuousSectionField objects
+    exposed through one global z coordinate
 ```
 
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `z` | `positional or keyword` | `float` | `-` |
-| `poly_indices_to_plot` | `positional or keyword` | `not annotated` | `None` |
-| `num_points` | `positional or keyword` | `int` | `100` |
-| `tol` | `positional or keyword` | `float` | `1e-12` |
-| `junction_side` | `positional or keyword` | `str` | `'left'` |
-
-**Returns:** `not annotated`
-
-**Function/method calls visible in the code**
-
-`self.field_at`, `Visualizer`, `vis.plot_weight`, `float`
-
-##### `CSFStacked.plot_properties`
-
-**Source lines:** `391-640`
-
-```python
-def plot_propertiesself, keys_to_plot=None, alpha: float=1, title: str=None, num_points: int=100, show_junctions: bool=True
-```
-
-**Summary:** Plot selected section properties over the full CSFStacked domain.
-
-**Docstring details**
+For the zig-zag example:
 
 ```text
-One continuous curve is evaluated inside each stacked segment. Internal
-junctions are kept as segment boundaries, so discontinuities are not
-hidden by interpolating across adjacent fields.
+one field from z=0 to z=20
+    cannot represent the intermediate reversal from x=0 -> 1 -> 0
+    when its two endpoint sections are identical
 
-Parameters
-----------
-keys_to_plot : list[str] | None
-    Property keys to plot, e.g. ["A", "Ix", "Iy", "Ip"].
-    If None or empty, nothing is plotted.
-alpha : float
-    Kept for API alignment with Visualizer.plot_properties.
-title : str | None
-    Figure title. If None, a default stack-wide title is used.
-num_points : int
-    Number of sample points per stacked segment.
-show_junctions : bool
-    If True, draw vertical dotted lines at internal segment junctions.
+two fields in CSFStacked
+    field 1: x=0 -> 1
+    field 2: x=1 -> 0
+    preserve both geometric evolutions
 ```
 
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `keys_to_plot` | `positional or keyword` | `not annotated` | `None` |
-| `alpha` | `positional or keyword` | `float` | `1` |
-| `title` | `positional or keyword` | `str` | `None` |
-| `num_points` | `positional or keyword` | `int` | `100` |
-| `show_junctions` | `positional or keyword` | `bool` | `True` |
-
-**Returns:** `not annotated`
-
-**Raises visible in the code**
-
-- `ValueError`
-
-**Function/method calls visible in the code**
-
-`np.concatenate`, `len`, `plt.subplots`, `fig.suptitle`, `plt.cm.viridis`, `enumerate`, `set_xlabel`, `plt.tight_layout`, `ValueError`, `list`, `np.linspace`, `z_by_segment.append`, `self.global_bounds`, `str`, `segment_slices.append`, `float`, `zip`, `np.asarray`, `np.isfinite`, `bool`, `int`, `ax.scatter`, `np.isclose`, `ax.set_ylim`, `ax.set_ylabel`, `ax.grid`, `ax.text`, `print`, `dict.fromkeys`, `abs`, `seg.field.section`, `section_full_analysis`, `slice`, `np.any`, `ax.plot`, `ax.twinx`, `ax_r.set_ylabel`, `ax_r.grid`, `np.argmin`, `np.argmax`, `ax.annotate`, `max`, `props.get`, `ax.axvline`, `ax_r.plot`, `lower`, `isinstance`, `append`, `_to_float_or_nan`
-
-##### `CSFStacked.plot_section_2d`
-
-**Source lines:** `642-683`
-
-```python
-def plot_section_2dself, z: float, junction_side: str='left', show_ids: bool=True, show_weights: bool=True, show_vertex_ids: bool=False, show_legenda: bool=False, title: Optional[str]=None, ax=None
-```
-
-**Summary:** Plot the 2D section at global coordinate ``z`` using stacked dispatch.
-
-**Docstring details**
-
-```text
-Dispatch policy
----------------
-- The target segment is selected through ``field_at(...)`` using the same
-  ``z`` and ``junction_side`` policy already used by ``section()`` and
-  ``section_full_analysis()``.
-- Once the correct segment is identified, a Visualizer is instantiated
-  from that field and the call is delegated to it.
-
-Notes
------
-All plotting parameters are forwarded unchanged so that the stacked API
-stays aligned with the single-field plotting API.
-```
-
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `z` | `positional or keyword` | `float` | `-` |
-| `junction_side` | `positional or keyword` | `str` | `'left'` |
-| `show_ids` | `positional or keyword` | `bool` | `True` |
-| `show_weights` | `positional or keyword` | `bool` | `True` |
-| `show_vertex_ids` | `positional or keyword` | `bool` | `False` |
-| `show_legenda` | `positional or keyword` | `bool` | `False` |
-| `title` | `positional or keyword` | `Optional[str]` | `None` |
-| `ax` | `positional or keyword` | `not annotated` | `None` |
-
-**Returns:** `not annotated`
-
-**Function/method calls visible in the code**
-
-`self.field_at`, `Visualizer`, `vis.plot_section_2d`, `float`
-
-##### `CSFStacked.plot_volume_3d`
-
-**Source lines:** `686-727`
-
-```python
-def plot_volume_3dself, z: float, junction_side: str='left', show_end_sections: bool=True, line_percent: float=100.0, seed: int=0, title: str=None, ax=None, equalize_z: bool=False
-```
-
-**Summary:** Plot the 3D ruled volume of the stacked segment selected by global ``z``.
-
-**Docstring details**
-
-```text
-Dispatch policy
----------------
-- The target segment is selected through ``field_at(...)`` using the same
-  ``z`` and ``junction_side`` policy already used by ``section()`` and
-  ``plot_section_2d()``.
-- Once the correct segment is identified, a ``Visualizer`` is instantiated
-  from that field and the plotting call is delegated to it.
-
-Notes
------
-All plotting parameters are forwarded unchanged so that the stacked API
-remains aligned with the single-field plotting API.
-```
-
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `z` | `positional or keyword` | `float` | `-` |
-| `junction_side` | `positional or keyword` | `str` | `'left'` |
-| `show_end_sections` | `positional or keyword` | `bool` | `True` |
-| `line_percent` | `positional or keyword` | `float` | `100.0` |
-| `seed` | `positional or keyword` | `int` | `0` |
-| `title` | `positional or keyword` | `str` | `None` |
-| `ax` | `positional or keyword` | `not annotated` | `None` |
-| `equalize_z` | `positional or keyword` | `bool` | `False` |
-
-**Returns:** `not annotated`
-
-**Function/method calls visible in the code**
-
-`self.field_at`, `Visualizer`, `vis.plot_volume_3d`, `float`
-
-##### `CSFStacked.plot_volume_3d_global`
-
-**Source lines:** `729-1047`
-
-```python
-def plot_volume_3d_globalself, title: str=None, line_percent: float=100.0, seed: int=1, margin_ratio: float=0.1, display_scale: tuple[float, float, float]=(1.0, 1.0, 1.0), box_aspect_scale: tuple[float, float, float]=(1.0, 1.0, 1.0), wire: bool=False, colors: bool=True, line_width: float=1.0
-```
-
-**Summary:** Render the full stacked volume in one global 3D plot.
-
-**Docstring details**
-
-```text
-Supported combinations:
-- wire=False, colors=True  : filled colored solids + edges
-- wire=False, colors=False : filled grayscale solids + edges
-- wire=True,  colors=True  : wireframe with per-polygon colors
-- wire=True,  colors=False : wireframe in grayscale/black
-
-Optimizations vs. original
---------------------------
-- All filled faces (caps + side quads) are batched into one
-  ``Poly3DCollection`` per color, replacing O(N) ``plot_surface``
-  / ``plot_trisurf`` calls with a single ``add_collection3d``.
-- All edge segments of the same (linewidth, color) style are
-  concatenated with NaN separators and drawn with a single
-  ``ax.plot`` call, replacing O(N*M) individual calls.
-- Geometry data are accumulated as plain lists and converted to
-  NumPy arrays only at render time (avoids repeated small allocs).
-```
-
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-| `title` | `positional or keyword` | `str` | `None` |
-| `line_percent` | `positional or keyword` | `float` | `100.0` |
-| `seed` | `positional or keyword` | `int` | `1` |
-| `margin_ratio` | `positional or keyword` | `float` | `0.1` |
-| `display_scale` | `positional or keyword` | `tuple[float, float, float]` | `(1.0, 1.0, 1.0)` |
-| `box_aspect_scale` | `positional or keyword` | `tuple[float, float, float]` | `(1.0, 1.0, 1.0)` |
-| `wire` | `positional or keyword` | `bool` | `False` |
-| `colors` | `positional or keyword` | `bool` | `True` |
-| `line_width` | `positional or keyword` | `float` | `1.0` |
-
-**Returns:** `not annotated`
-
-**Returned dictionary keys visible in the code**
-
-`x`, `y`, `z`
-
-**Raises visible in the code**
-
-- `ValueError`
-- `TypeError`
-
-**Function/method calls visible in the code**
-
-`random.Random`, `rng.shuffle`, `plt.figure`, `fig.add_subplot`, `ax.view_init`, `ax.set_proj_type`, `defaultdict`, `faces_by_color.items`, `edges_by_style.items`, `ax.set_xlabel`, `ax.set_ylabel`, `ax.set_zlabel`, `ax.set_title`, `ValueError`, `isinstance`, `TypeError`, `extend`, `len`, `range`, `seg.field.section`, `sorted`, `Poly3DCollection`, `ax.add_collection3d`, `ax.plot`, `max`, `ax.set_xlim`, `ax.set_ylim`, `ax.set_zlim`, `ax.set_box_aspect`, `_add_edge`, `append`, `_get_poly_color`, `np.array`, `np.full`, `list`, `min`, `set`, `zip`, `_add_polygon_edges`, `_add_cap_faces`, `x0.tolist`, `x1.tolist`, `y0.tolist`, `y1.tolist`, `abs`, `p0_map.keys`, `p1_map.keys`, `zz0.tolist`, `zz1.tolist`, `int`, `tolist`, `np.ceil`, `np.linspace`
-
-##### `CSFStacked.global_bounds`
-
-**Source lines:** `1049-1058`
-
-```python
-def global_boundsself
-```
-
-**Summary:** Return global z bounds of the stacked segments as (z_min, z_max).
-
-**Docstring details**
-
-```text
-Raises if the stack is empty.
-```
-
-**Parameters**
-
-| Name | Kind | Type | Default |
-|---|---|---|---|
-| `self` | `positional or keyword` | `not annotated` | `-` |
-
-**Returns:** `not annotated`
-
-**Raises visible in the code**
-
-- `ValueError`
-
-**Function/method calls visible in the code**
-
-`min`, `max`, `ValueError`
-
-# Notes from the source structure
-
-- The generator reads the Python source through `ast` and does not import the package.
-- `Source lines` are derived from Python AST line numbers.
-- `Returned dictionary keys visible in the code` are literal string keys found in dictionary expressions inside the function body.
-- `Raises visible in the code` lists exception names from explicit `raise` statements.
-- `Function/method calls visible in the code` is a static list of call expressions found in the function body.
+`CSFStacked` therefore extends the CSF representation from a single ruled element to a piecewise continuous member while preserving the normal `ContinuousSectionField` formulation inside every segment.
