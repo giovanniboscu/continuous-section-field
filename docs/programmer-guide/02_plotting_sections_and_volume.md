@@ -106,6 +106,7 @@ plot_volume_3d(
     line_percent=100.0,
     seed=0,
     title="Ruled volume (vertex-connection lines)",
+    equalize_z=False|True,
     ax=None
 )
 ```
