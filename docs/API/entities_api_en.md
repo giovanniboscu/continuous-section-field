@@ -15,7 +15,7 @@ This document covers the top-level classes and functions defined in `src/csf/ent
 - `CSFError` - line 5
 - `Pt` - line 13
 - `Polygon` - line 47
-- `Section` - line 109
+- `Section` - line 110
 
 ## API details
 
@@ -88,7 +88,7 @@ Args:
 
 ### `Polygon`
 
-**Source lines:** `47-104`
+**Source lines:** `47-105`
 
 **Decorators**
 
@@ -102,13 +102,13 @@ class Polygon
 
 **Methods visible in the code**
 
-- `__post_init__` - line 55
+- `__post_init__` - line 56
 
 #### Method details
 
 ##### `Polygon.__post_init__`
 
-**Source lines:** `55-104`
+**Source lines:** `56-105`
 
 ```python
 def __post_init__self
@@ -134,7 +134,7 @@ def __post_init__self
 
 ### `Section`
 
-**Source lines:** `109-156`
+**Source lines:** `110-157`
 
 **Decorators**
 
@@ -148,13 +148,13 @@ class Section
 
 **Methods visible in the code**
 
-- `__post_init__` - line 113
+- `__post_init__` - line 114
 
 #### Method details
 
 ##### `Section.__post_init__`
 
-**Source lines:** `113-156`
+**Source lines:** `114-157`
 
 ```python
 def __post_init__self

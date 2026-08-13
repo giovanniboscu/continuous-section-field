@@ -13,10 +13,10 @@ This document covers the top-level classes and functions defined in `src/csf/con
 ## Public API index
 
 - `ContinuousSectionField` - line 30
-- `def _polygon_signed_area_and_centroidpoly: Polygon` - line 2222
-- `def polygon_area_centroidpoly: Polygon` - line 2232
-- `def section_datafield: ContinuousSectionField, z: float` - line 2239
-- `def _set_axes_equal_3dax` - line 2301
+- `def _polygon_signed_area_and_centroidpoly: Polygon` - line 2223
+- `def polygon_area_centroidpoly: Polygon` - line 2233
+- `def section_datafield: ContinuousSectionField, z: float` - line 2240
+- `def _set_axes_equal_3dax` - line 2302
 
 ## API details
 
@@ -24,7 +24,7 @@ This document covers the top-level classes and functions defined in `src/csf/con
 
 ### `ContinuousSectionField`
 
-**Source lines:** `30-2216`
+**Source lines:** `30-2217`
 
 ```python
 class ContinuousSectionField
@@ -903,7 +903,7 @@ def _to_tself, z: float
 
 ##### `ContinuousSectionField.section`
 
-**Source lines:** `1753-2216`
+**Source lines:** `1753-2217`
 
 ```python
 def sectionself, z: float
@@ -934,7 +934,7 @@ def sectionself, z: float
 
 ### `_polygon_signed_area_and_centroid`
 
-**Source lines:** `2222-2230`
+**Source lines:** `2223-2231`
 
 ```python
 def _polygon_signed_area_and_centroidpoly: Polygon
@@ -962,7 +962,7 @@ with no weight
 
 ### `polygon_area_centroid`
 
-**Source lines:** `2232-2236`
+**Source lines:** `2233-2237`
 
 ```python
 def polygon_area_centroidpoly: Polygon
@@ -986,7 +986,7 @@ def polygon_area_centroidpoly: Polygon
 
 ### `section_data`
 
-**Source lines:** `2239-2292`
+**Source lines:** `2240-2293`
 
 ```python
 def section_datafield: ContinuousSectionField, z: float
@@ -1059,7 +1059,7 @@ RETURNS:
 
 ### `_set_axes_equal_3d`
 
-**Source lines:** `2301-2357`
+**Source lines:** `2302-2358`
 
 ```python
 def _set_axes_equal_3dax
