@@ -274,6 +274,11 @@ Here `A` is printed only as a simple example of a standard sectional property.
 
 ```python
 # Load CSF model from YAML
+from csf import section_full_analysis
+from csf.io.csf_reader import CSFReader
+from csf.io.csf_issues import CSFIssues
+
+
 res = CSFReader().read_file("../actions-examples/openandthin/ipe100.yaml")
 field = res.field
 
