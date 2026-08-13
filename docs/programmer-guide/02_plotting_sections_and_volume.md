@@ -29,35 +29,71 @@ import matplotlib.pyplot as plt
 
 
 ```python
+# CSF YAML reader and controlled issue reporting.
 from csf.io.csf_reader import CSFReader
 from csf.io.csf_issues import CSFIssues
+
+# Matplotlib is used to display the figures created by the CSF Visualizer.
 import matplotlib.pyplot as plt
 
+# CSF public entities, field representation, visualization,
+# and sectional-analysis utilities.
 from csf import (
     Pt, Polygon, Section, ContinuousSectionField, Visualizer,
     section_full_analysis, section_print_analysis, section_full_analysis_keys
 )
 
+
+# Read, validate, and build the ContinuousSectionField defined in the YAML file.
+# read_file() returns a ReadResult containing the field and any detected issues.
 res = CSFReader().read_file("boxcell.yaml")
 
+# A ReadResult is valid when no ERROR issues are present.
+# If validation fails, print the controlled CSF issue report and stop execution.
 if not res.ok:
     print(CSFIssues.format_report(res.issues))
     raise SystemExit(1)
 
+# Retrieve the validated ContinuousSectionField created by the reader.
 field = res.field
 
+
+# Evaluate the continuous field at z = 10.0, obtaining the corresponding
+# interpolated cross-section.
 sec = field.section(10.0)
+
+# Perform the complete sectional analysis of the selected section.
+# The returned dictionary includes geometric properties, centroid,
+# inertias, principal properties, section moduli, statical moment,
+# and available Saint-Venant torsional estimates.
 out = section_full_analysis(sec)
 
+
+# Create a visualizer associated with the ContinuousSectionField.
 viz = Visualizer(field)
 
-# 3D ruled skeleton (30% of generator lines for readability)
-viz.plot_volume_3d(line_percent=100.0, seed=42)
+# Plot the 3D ruled skeleton of the field.
+# line_percent=100.0 displays all vertex-connection generator lines.
+# seed controls generator-line selection when only a percentage is displayed.
+# equalize_z=False leaves the Z-axis without real-range aspect equalization.
+viz.plot_volume_3d(
+    line_percent=100.0,
+    seed=42,
+    equalize_z=False
+)
 
-# 2D section at selected z
-viz.plot_section_2d(z=0, show_ids=False)
+# Plot the 2D cross-section evaluated at z = 0.
+# Polygon IDs are not displayed; the other visualization options
+# retain their default values.
+viz.plot_section_2d(
+    z=0,
+    show_ids=False
+)
 
+# Display all Matplotlib figures created above.
 plt.show()
+
+
 ```
 
 ---
