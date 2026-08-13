@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.1.9.7
+* added container_idx on polygon class
+
 ## v0.1.9.6
 
 * Separated the polygon stress analysis into `polygon_stress.py` and added the shear-stress formulations.
