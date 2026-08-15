@@ -5,7 +5,7 @@
 
 ## 1. Scope
 
-This note reorganizes the formal extension of the CUF beam formulation used in Giunta, Belouettar, and Carrera (2010) to the case in which the cross-section is supplied by a Continuous Section Field (CSF)
+This note formulates the coupling between a Continuous Section Field (CSF) and the CUF beam framework for the case of longitudinally varying sectional geometry and constitutive properties. The CSF representation $\mathcal{S}(x)$ supplies the sectional data required by the CUF formulation, while the CUF kinematic and variational structure is retained.
 
 $$ \mathcal{S}(x). $$
 
