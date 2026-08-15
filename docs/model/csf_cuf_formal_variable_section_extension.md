@@ -504,6 +504,18 @@ $$ K_{zz}^{\tau s}: \quad ( J_{\tau,z s,z}^{33} + J_{\tau,y s,y}^{44} ) \delta c
 ### Coupling block `xy`
 
 $$
+K_{xy}^{\tau s}:
+\quad
+J_{\tau,\varnothing\,s,y}^{12}
+\,\delta a_{,x}\,b
++
+J_{\tau,y\,s,\varnothing}^{66}
+\,\delta a\,b_{,x}
+$$
+
+### Coupling block `yx`
+
+$$
 K_{yx}^{\tau s}:
 \quad
 J_{\tau,y\,s,\varnothing}^{12}
@@ -513,17 +525,13 @@ J_{\tau,\varnothing\,s,y}^{66}
 \,\delta b_{,x}\,a
 $$
 
-### Coupling block `yx`
-
-$$ K_{yx}^{\tau s}: \quad J_{\tau,y s,\varnothing}^{21} \delta b a_{,x} + J_{\tau,\varnothing s,y}^{66} \delta b_{,x} a $$
-
 ### Coupling block `xz`
 
 $$ K_{xz}^{\tau s}: \quad J_{\tau,\varnothing s,z}^{13} \delta a_{,x} c + J_{\tau,z s,\varnothing}^{55} \delta a c_{,x} $$
 
 ### Coupling block `zx`
 
-
+$$
 K_{zx}^{\tau s}:
 \quad
 J_{\tau,z\,s,\varnothing}^{13}
