@@ -1,3 +1,7 @@
+# DRAFT
+
+>The following material presents the current conceptual definition of the CSF–CUF sectional interface. The coupling is still under development and is intended to be implemented through a dedicated software bridge able to provide the sectional data required by the CUF formulation from the CSF representation $\mathcal{S}(x)$.
+
 # CSF sectional constitutive representation for CUF coupling
 
 ## Scope
