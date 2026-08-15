@@ -460,12 +460,12 @@ These terms require only the numerical evaluation of the corresponding sectional
 
 | Nuclear terms | Longitudinal structure | Status |
 |---|---|---|
-| $K_{xx}(x)$ | one coefficient × second derivative | Verified - divergence form |
-| $K_{yy}(x)$ | one coefficient × second derivative | Verified - divergence form |
-| $K_{zz}(x)$ | one coefficient × second derivative | Verified - divergence form |
-| $K_{xy}(x)$, $K_{yx}(x)$ | two coefficients × first derivative | **Open** - requires re-derivation |
-| $K_{xz}(x)$, $K_{zx}(x)$ | two coefficients × first derivative | **Open** - requires re-derivation |
-| $K_{yz}(x)$, $K_{zy}(x)$ | zero-order in $x$ | Direct generalization |
+| $K_{xx}^{\tau s}(x)$ | one coefficient × second derivative | Verified - divergence form |
+| $K_{yy}^{\tau s}(x)$ | one coefficient × second derivative | Verified - divergence form |
+| $K_{zz}^{\tau s}(x)$ | one coefficient × second derivative | Verified - divergence form |
+| $K_{xy}^{\tau s}(x)$, $K_{yx}^{\tau s}(x)$ | two coefficients × first derivative | Verified - variable-coefficient form |
+| $K_{xz}^{\tau s}(x)$, $K_{zx}^{\tau s}(x)$ | two coefficients × first derivative | Verified - variable-coefficient form |
+| $K_{yz}^{\tau s}(x)$, $K_{zy}^{\tau s}(x)$ | zero-order in $x$ | Direct generalization |
 
 Until the four first-order mixed terms are re-derived, the operator
 
