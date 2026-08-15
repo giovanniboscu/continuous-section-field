@@ -409,7 +409,7 @@ This generalization is directly justified when a nuclear term contains a single 
 
 ---
 
-## 10.2 Complete fundamental nucleus in weak form
+### 10.2 Complete fundamental nucleus in weak form
 
 The complete nuclear structure can be obtained directly from the Principle of Virtual Displacements before introducing any strong-form longitudinal differential operator.
 
