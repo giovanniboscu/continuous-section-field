@@ -159,23 +159,21 @@ This distinction between $s$ and $\tau$ is subsequently used in the construction
 
 The strain field requires transverse derivatives of the CUF approximation functions.
 
-For each approximation function $F_\tau(y,z)$, define
+For each approximation function $F_\tau(y,z)$, define its derivative with respect to $y$ as
 
-$$ F_{\tau,y}(y,z) = \frac{\partial F_\tau(y,z)}{\partial y, $$
+$$ F_{\tau,y}(y,z) = \partial_y F_\tau(y,z). $$
 
-and
+Similarly, define its derivative with respect to $z$ as
 
-$$ F_{\tau,z}(y,z) = \frac{\partial F_\tau(y,z)}{\partial z. $$
+$$ F_{\tau,z}(y,z) = \partial_z F_\tau(y,z). $$
 
-For compact notation, define also the derivative label
+For compact notation, let $\phi$ denote a transverse derivative label.
 
-$$ \phi \in (\varnothing,y,z\, $$
-
-where $\varnothing$ denotes the absence of a transverse derivative.
+The label $\phi$ may be $\emptyset$, $y$, or $z$, where $\emptyset$ denotes the absence of a transverse derivative.
 
 Accordingly,
 
-$$ F_{\tau,\varnothing}(y,z) \equiv F_\tau(y,z). $$
+$$ F_{\tau,\emptyset}(y,z) = F_\tau(y,z). $$
 
 The same notation applies to the source approximation functions $F_s(y,z)$.
 
