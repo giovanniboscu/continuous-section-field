@@ -135,7 +135,7 @@ The equations above are **definitions**, not closed-form solutions.
 
 For a requested coordinate $x$:
 
-$$ { \mathcal{S}(x) \longrightarrow \Omega^k(x),\mathbf{C}^k(x,y,z) \longrightarrow \text{numerical sectional integration} \longrightarrow J_\bullet^k(x). } $$
+$$ \mathcal{S}(x) \longrightarrow \lbrace \Omega^k(x), \mathbf{C}^k(x,y,z) \rbrace \longrightarrow \text{numerical sectional integration} \longrightarrow J_\bullet^k(x) $$
 
 No polynomial, exponential, or other analytical approximation of $J_\bullet^k(x)$ is required.
 
