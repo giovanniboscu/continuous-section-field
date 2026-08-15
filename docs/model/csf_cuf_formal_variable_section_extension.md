@@ -481,7 +481,7 @@ $$ C_{11}, \quad C_{22}, \quad C_{33}, \quad C_{44}, \quad C_{55}, \quad C_{66},
 
 together with
 
-$$ C_{12}=C_{21}, \qquad C_{13}=C_{13}, \qquad C_{23}=C_{23}. $$
+$$ C_{12}=C_{21}, \qquad C_{13}=C_{31}, \qquad C_{23}=C_{32}. $$
 
 The internal virtual work is
 
@@ -598,7 +598,7 @@ which is exactly the variable-coefficient operator structure required by the cur
 
 Similarly, the `zx` block gives
 
-$$ K_{zx}^{\tau s}(x)[a] = J_{\tau,z s,\varnothing}^{31}(x) \partial_x a(x) - \partial_x [ J_{\tau,\varnothing s,z}^{55}(x)a(x) ] $$
+$$ K_{zx}^{\tau s}(x)[a] = J_{\tau,z s,\varnothing}^{13}(x) \partial_x a(x) - \partial_x [ J_{\tau,\varnothing s,z}^{55}(x)a(x) ] $$
 
 showing directly why the second contribution carries a minus sign after longitudinal integration by parts.
 
@@ -608,7 +608,7 @@ $$ K_{yz}^{\tau s}(x) = J_{\tau,y s,z}^{23}(x) + J_{\tau,z s,y}^{44}(x) $$
 
 and
 
-$$ K_{zy}^{\tau s}(x) = J_{\tau,z s,y}^{32}(x) + J_{\tau,y s,z}^{44}(x). $$
+$$ K_{zy}^{\tau s}(x) = J_{\tau,z s,y}^{23}(x) + J_{\tau,y s,z}^{44}(x). $$
 
 The weak formulation therefore provides a direct derivation of all nine entries of the fundamental nucleus and simultaneously establishes the variable-coefficient longitudinal operator structure already used in the CSF-CUF extension.
 
