@@ -96,7 +96,7 @@ Let
 
 - $F_\tau(y,z)$ be the CUF approximation function associated with index $\tau$;
 - $F_s(y,z)$ be the CUF approximation function associated with index $s$;
-- $\phi$ and $\xi$ denote transverse differentiation directions, with $$ \phi,\xi \in \{\varnothing,y,z\}, $$.
+- $\phi$ and $\xi$ denote transverse differentiation directions, with $$\phi,\xi \in \{\varnothing,y,z\},$$.
 
 The displacement field retains the CUF form
 
