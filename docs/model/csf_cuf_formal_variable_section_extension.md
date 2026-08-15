@@ -181,6 +181,43 @@ $$ { \delta L_i = \int_0^l \delta\mathbf{u}_\tau^{T}(x)\, \mathbf{K}_{\tau s} [ 
 
 No analytical evaluation of $J_\bullet(x)$ is required.
 
+
+### 7.1 Longitudinal section dependence and transverse CUF expansion
+
+The longitudinal dependence of the CSF section does not require the CUF transverse approximation functions to depend explicitly on $x$.
+
+In the present coupling, the CUF approximation functions remain defined in the physical transverse coordinates:
+
+$$ F_\tau = F_\tau(y,z), \qquad F_s = F_s(y,z). $$
+
+The longitudinal coordinate $x$ determines instead the physical sectional state supplied by CSF. For every requested value of $x$, the CSF representation provides the corresponding sectional geometry and constitutive information:
+
+$$ x \longrightarrow \mathcal{S}_{\mathrm{CSF}}(x) \longrightarrow \lbrace \Omega^k(x), \mathbf{C}_k^{\mathrm{CSF}}(x) \rbrace_{k=1}^{N_\Omega}. $$
+
+Thus, changing $x$ changes the domains $\Omega^k(x)$ and the associated constitutive matrices $\mathbf{C}_k^{\mathrm{CSF}}(x)$, while the transverse CUF approximation functions remain functions of $y$ and $z$.
+
+The sectional coefficients are consequently functions of $x$ because their integration domains and constitutive data are supplied by the sectional state at that coordinate:
+
+$$ J_\bullet(x) = \mathcal{J}_\bullet^{}[\mathcal{S}_{\mathrm{CSF}}(x), F_\tau, F_s]. $$
+
+For example, a sectional coefficient may have the form
+
+$$ J_{\tau s}^{ggk}(x) = \int_{\Omega^k(x)} C_{gg}^{k,\mathrm{CSF}}(x) F_\tau(y,z) F_s(y,z) d\Omega. $$
+
+At each longitudinal coordinate $x$, the quantities $\Omega^k(x)$ and $\mathbf{C}_k^{\mathrm{CSF}}(x)$ are known data provided by CSF. Their longitudinal variation therefore does not introduce additional kinematic unknowns.
+
+The CUF displacement expansion retains the form
+
+$$ \mathbf{u}(x,y,z) = F_\tau(y,z) \mathbf{u}_\tau(x). $$
+
+The unknown quantities remain the longitudinal displacement amplitudes $\mathbf{u}_\tau(x)$.
+
+The specific role of CSF in this coupling is therefore to make the longitudinal coordinate a deterministic query of the physical sectional state:
+
+$$ x \longrightarrow \mathcal{S}_{\mathrm{CSF}}(x). $$
+
+As $x$ varies, CSF determines the section on which the CUF sectional quantities are evaluated, while the transverse expansion remains defined in the physical coordinates $y$ and $z$.
+
 ---
 
 ## 8. Virtual work of the external loads
