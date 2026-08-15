@@ -231,7 +231,11 @@ The entries are built from the same CUF sectional coefficient families, now eval
 
 
 # Longitudinally varying coefficients inside the nuclear operator
+# 10 Longitudinally varying coefficients inside the nuclear operator
 
+> This section builds on the sectional interface defined in
+> [`csf_cuf_sectional_constitutive_interface.md`](csf_cuf_sectional_constitutive_interface.md),
+> where the CSF–CUF coupling and the role of the dedicated software bridge are introduced.
 
 
 ## 10.1 Principle
