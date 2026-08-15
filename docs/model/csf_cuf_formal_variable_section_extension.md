@@ -96,7 +96,11 @@ Let
 
 - $F_\tau(y,z)$ be the CUF approximation function associated with index $\tau$;
 - $F_s(y,z)$ be the CUF approximation function associated with index $s$;
-- $\phi$ and $\xi$ denote transverse differentiation directions, with $$\phi,\xi \in \{\varnothing,y,z\},$$.
+- $\phi$ and $\xi$ denote transverse differentiation directions. The admissible derivative labels are
+
+$$ \phi,\xi \in \{\varnothing,y,z\}. $$
+
+Here $\varnothing$ denotes the absence of a transverse derivative.
 
 The displacement field retains the CUF form
 
@@ -141,7 +145,7 @@ No polynomial, exponential, or other analytical approximation of $J_\bullet^k(x)
 
 
 
-## 5.1 Generalized sectional coefficient family
+### 5.1 Generalized sectional coefficient family
 
 The four sectional coefficient families introduced above can be embedded into a single generalized definition.
 
@@ -240,9 +244,6 @@ Therefore the complete coefficient family remains generated directly from the CS
 $$ \mathcal{S}(x) \longrightarrow \{ \Omega^k(x), \mathbf{C}^{k}(x,y,z) \} \longrightarrow J_{\tau,\phi s,\xi}^{mn,k}(x) \longrightarrow J_{\tau,\phi s,\xi}^{mn}(x). $$
 
 No analytical longitudinal expression for these coefficients is required.
-
----
-
 
 
 ---
@@ -360,29 +361,36 @@ As for the sectional stiffness coefficients, the required geometric quantities a
 
 The Principle of Virtual Displacements remains
 
-$$ { \delta L_i = \delta L_p+\delta L_l. } $$
+$$ \delta L_i = \delta L_p + \delta L_l. $$
 
-After the sectional integrations have been represented through $J_\bullet(x)$, the governing equations retain the CUF nuclear structure but acquire longitudinally varying sectional coefficients.
+After the sectional integrations have been represented through the global coefficients $J_\bullet(x)$, the governing equations retain the CUF nuclear structure but acquire longitudinally varying sectional coefficients.
 
 Formally,
 
-$$ { \mathbf{K}_{\tau s} [ \mathcal{S}(x),\partial_x ] \mathbf{u}_s(x) = \mathbf{f}_\tau(x), } $$
+$$ \mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x] \, \mathbf{u}_s(x) = \mathbf{f}_\tau(x), $$
 
 where
 
 - $\mathbf{u}_s(x)$ contains the longitudinal unknown amplitudes associated with CUF index $s$;
 - $\mathbf{f}_\tau(x)$ contains the generalized load terms associated with index $\tau$;
-- $\mathbf{K}_{\tau s}$ is the CUF fundamental nuclear operator;
-- the dependence of $\mathbf{K}_{\tau s}$ on the section is mediated by the fields $J_\bullet(x)$.
+- $\mathbf{K}_{\tau s}$ is the CUF fundamental nuclear operator assembled over the complete cross-section;
+- the dependence of $\mathbf{K}_{\tau s}$ on the section is mediated by the global sectional fields $J_\bullet(x)$.
 
 The nuclear matrix retains the $3\times3$ structure
 
-$$ { \mathbf{K}_{\tau s} = \begin{bmatrix} K_{xx}^{\tau s} & K_{xy}^{\tau s} & K_{xz}^{\tau s} \\ K_{yx}^{\tau s} & K_{yy}^{\tau s} & K_{yz}^{\tau s} \\ K_{zx}^{\tau s} & K_{zy}^{\tau s} & K_{zz}^{\tau s} \end{bmatrix}. } $$
+$$ \mathbf{K}_{\tau s} = \begin{bmatrix} K_{xx}^{\tau s} & K_{xy}^{\tau s} & K_{xz}^{\tau s} \\ K_{yx}^{\tau s} & K_{yy}^{\tau s} & K_{yz}^{\tau s} \\ K_{zx}^{\tau s} & K_{zy}^{\tau s} & K_{zz}^{\tau s} \end{bmatrix}. $$
 
-The entries are built from the same CUF sectional coefficient families, now evaluated as functions of $x$.
+The distinction between sub-domain and global quantities is essential. A coefficient carrying the index $k$,
+
+$$ J_{\tau,\phi s,\xi}^{mn,k}(x), $$
+
+is the contribution associated with sub-domain $k$. The coefficient entering the assembled operator $\mathbf{K}_{\tau s}$ is instead
+
+$$ J_{\tau,\phi s,\xi}^{mn}(x) = \sum_{k=1}^{N_\Omega} J_{\tau,\phi s,\xi}^{mn,k}(x). $$
+
+Therefore, from this point onward, formulas representing the assembled CSF-CUF nuclear operator use global coefficients without the index $k$. When the corresponding reference-paper expressions are reported, the sub-domain index is retained explicitly and the subsequent global assembly is shown separately.
 
 ---
-
 
 ## 10. Longitudinally varying coefficients inside the nuclear operator
 
@@ -390,10 +398,9 @@ The entries are built from the same CUF sectional coefficient families, now eval
 > [`csf_cuf_sectional_constitutive_interface.md`](csf_cuf_sectional_constitutive_interface.md),
 > where the CSF-CUF coupling and the role of the dedicated software bridge are introduced.
 
-
 ### 10.1 Principle
 
-When a sectional coefficient multiplying an x-derivative depends on x, the coefficient must remain inside the longitudinal differential operator.
+When a sectional coefficient multiplying an $x$-derivative depends on $x$, the coefficient must remain inside the longitudinal differential operator.
 
 For a constant coefficient:
 
@@ -401,9 +408,9 @@ $$ -J\,\partial_x^2 u(x) $$
 
 For a longitudinally varying coefficient:
 
-$$ -\partial_x \left( J(x)\,\partial_x u(x) \right) $$
+$$ -\partial_x\left[J(x)\,\partial_x u(x)\right] $$
 
-The expression should be retained in this form rather than expanded through the product rule. This avoids introducing an unnecessary classical differentiability assumption on $J(x)$.
+The expression is retained in divergence form rather than expanded through the product rule. This avoids introducing an unnecessary explicit classical derivative of $J(x)$ into the formulation.
 
 This generalization is directly justified when a nuclear term contains a single sectional coefficient multiplying a pure second derivative with respect to $x$.
 
@@ -413,9 +420,9 @@ This generalization is directly justified when a nuclear term contains a single 
 
 The complete nuclear structure can be obtained directly from the Principle of Virtual Displacements before introducing any strong-form longitudinal differential operator.
 
-Let the CUF displacement expansion associated with source index `s` be
+Let the CUF displacement expansion associated with source index $s$ be
 
-$$ u_i(x,y,z) = F_s(y,z) u_{is}(x), \qquad i\in\{x,y,z\}. $$
+$$ u_i(x,y,z) = F_s(y,z)\,u_{is}(x), \qquad i\in\{x,y,z\}. $$
 
 For compactness, define the three source amplitudes as
 
@@ -427,7 +434,7 @@ and
 
 $$ c(x)=u_{zs}(x). $$
 
-Let the corresponding virtual amplitudes associated with test index `tau` be
+Let the corresponding virtual amplitudes associated with test index $\tau$ be
 
 $$ \delta a(x)=\delta u_{x\tau}(x), $$
 
@@ -447,29 +454,21 @@ $$ B(y,z)=F_\tau(y,z). $$
 
 The source strain components are
 
-$$ \varepsilon_{xx} = A a_{,x}, $$
+$$ \varepsilon_{xx}=A\,a_{,x}, $$
 
-$$ \varepsilon_{yy} = A_{,y} b, $$
+$$ \varepsilon_{yy}=A_{,y}\,b, $$
 
-$$ \varepsilon_{zz} = A_{,z} c, $$
+$$ \varepsilon_{zz}=A_{,z}\,c, $$
 
-$$ \gamma_{yz} = A_{,z} b + A_{,y} c, $$
+$$ \gamma_{yz}=A_{,z}\,b+A_{,y}\,c, $$
 
-$$ \gamma_{xz} = A_{,z} a + A c_{,x}, $$
+$$ \gamma_{xz}=A_{,z}\,a+A\,c_{,x}, $$
 
 and
 
-$$ \gamma_{xy} = A_{,y} a + A b_{,x}. $$
+$$ \gamma_{xy}=A_{,y}\,a+A\,b_{,x}. $$
 
-The corresponding virtual strains are obtained by replacing
-
-$$ A $$
-
-with
-
-$$ B $$
-
-and replacing the source amplitudes with the corresponding virtual amplitudes.
+The corresponding virtual strains are obtained by replacing $A$ with $B$ and replacing the source amplitudes with the corresponding virtual amplitudes.
 
 For an isotropic constitutive specialization in Voigt order
 
@@ -477,7 +476,7 @@ $$ (xx,yy,zz,yz,xz,xy), $$
 
 the non-zero constitutive entries involved in the present derivation are
 
-$$ C_{11}, \quad C_{22}, \quad C_{33}, \quad C_{44}, \quad C_{55}, \quad C_{66}, $$
+$$ C_{11},\quad C_{22},\quad C_{33},\quad C_{44},\quad C_{55},\quad C_{66}, $$
 
 together with
 
@@ -485,200 +484,205 @@ $$ C_{12}=C_{21}, \qquad C_{13}=C_{31}, \qquad C_{23}=C_{32}. $$
 
 The internal virtual work is
 
-$$ \delta L_i = \int_0^l \sum_{k=1}^{N_\Omega} \int_{\Omega^k(x)} \delta\boldsymbol{\varepsilon}^{T} \mathbf{C}^{k} \boldsymbol{\varepsilon} d\Omega dx. $$
+$$ \delta L_i = \int_0^l \sum_{k=1}^{N_\Omega} \int_{\Omega^k(x)} \delta\boldsymbol{\varepsilon}^{T} \mathbf{C}^{k}(x,y,z) \boldsymbol{\varepsilon} \,d\Omega\,dx. $$
 
-After expanding the strain product and performing only the transverse integrations, the nine blocks of the fundamental nucleus are obtained directly in bilinear form.
+At fixed $x$, the transverse integrations are first evaluated over the individual sub-domains and then summed. Consequently, the nine blocks below are written directly in terms of the global sectional coefficients defined in §5.1 and §6. No index $k$ appears in these assembled bilinear forms.
 
-### Axial block
+#### Axial block
 
-$$ K_{xx}^{\tau s}: \quad J_{\tau,\varnothing s,\varnothing}^{11} \delta a_{,x} a_{,x} + ( J_{\tau,z s,z}^{55} + J_{\tau,y s,y}^{66} ) \delta a a $$
+$$ K_{xx}^{\tau s}: \quad J_{\tau,\varnothing s,\varnothing}^{11}\,\delta a_{,x}a_{,x} + \left( J_{\tau,z s,z}^{55} + J_{\tau,y s,y}^{66} \right)\delta a\,a $$
 
-### Transverse `y` block
+#### Transverse `y` block
 
-$$ K_{yy}^{\tau s}: \quad ( J_{\tau,y s,y}^{22} + J_{\tau,z s,z}^{44} ) \delta b b + J_{\tau,\varnothing s,\varnothing}^{66} \delta b_{,x} b_{,x} $$
+$$ K_{yy}^{\tau s}: \quad \left( J_{\tau,y s,y}^{22} + J_{\tau,z s,z}^{44} \right)\delta b\,b + J_{\tau,\varnothing s,\varnothing}^{66}\,\delta b_{,x}b_{,x} $$
 
-### Transverse `z` block
+#### Transverse `z` block
 
-$$ K_{zz}^{\tau s}: \quad ( J_{\tau,z s,z}^{33} + J_{\tau,y s,y}^{44} ) \delta c c + J_{\tau,\varnothing s,\varnothing}^{55} \delta c_{,x} c_{,x} $$
+$$ K_{zz}^{\tau s}: \quad \left( J_{\tau,z s,z}^{33} + J_{\tau,y s,y}^{44} \right)\delta c\,c + J_{\tau,\varnothing s,\varnothing}^{55}\,\delta c_{,x}c_{,x} $$
 
-### Coupling block `xy`
+#### Coupling block `xy`
 
-$$
-K_{xy}^{\tau s}:
-\quad
-J_{\tau,\varnothing\,s,y}^{12}
-\,\delta a_{,x}\,b
-+
-J_{\tau,y\,s,\varnothing}^{66}
-\,\delta a\,b_{,x}
-$$
+$$ K_{xy}^{\tau s}: \quad J_{\tau,\varnothing s,y}^{12}\,\delta a_{,x}b + J_{\tau,y s,\varnothing}^{66}\,\delta a\,b_{,x} $$
 
-### Coupling block `yx`
+#### Coupling block `yx`
 
-$$
-K_{yx}^{\tau s}:
-\quad
-J_{\tau,y\,s,\varnothing}^{12}
-\,\delta b\,a_{,x}
-+
-J_{\tau,\varnothing\,s,y}^{66}
-\,\delta b_{,x}\,a
-$$
+$$ K_{yx}^{\tau s}: \quad J_{\tau,y s,\varnothing}^{12}\,\delta b\,a_{,x} + J_{\tau,\varnothing s,y}^{66}\,\delta b_{,x}a $$
 
-### Coupling block `xz`
+#### Coupling block `xz`
 
-$$ K_{xz}^{\tau s}: \quad J_{\tau,\varnothing s,z}^{13} \delta a_{,x} c + J_{\tau,z s,\varnothing}^{55} \delta a c_{,x} $$
+$$ K_{xz}^{\tau s}: \quad J_{\tau,\varnothing s,z}^{13}\,\delta a_{,x}c + J_{\tau,z s,\varnothing}^{55}\,\delta a\,c_{,x} $$
 
-### Coupling block `zx`
+#### Coupling block `zx`
 
-$$
-K_{zx}^{\tau s}:
-\quad
-J_{\tau,z\,s,\varnothing}^{13}
-\,\delta c\,a_{,x}
-+
-J_{\tau,\varnothing\,s,z}^{55}
-\,\delta c_{,x}\,a
-$$
+$$ K_{zx}^{\tau s}: \quad J_{\tau,z s,\varnothing}^{13}\,\delta c\,a_{,x} + J_{\tau,\varnothing s,z}^{55}\,\delta c_{,x}a $$
 
-### Coupling block `yz`
+#### Coupling block `yz`
 
-$$ K_{yz}^{\tau s}: \quad ( J_{\tau,y s,z}^{23} + J_{\tau,z s,y}^{44} ) \delta b c $$
+$$ K_{yz}^{\tau s}: \quad \left( J_{\tau,y s,z}^{23} + J_{\tau,z s,y}^{44} \right)\delta b\,c $$
 
-### Coupling block `zy`
+#### Coupling block `zy`
 
-$$
-K_{zy}^{\tau s}:
-\quad
-\left(
-J_{\tau,z\,s,y}^{23}
-+
-J_{\tau,y\,s,z}^{44}
-\right)
-\delta c\,b
-$$
+$$ K_{zy}^{\tau s}: \quad \left( J_{\tau,z s,y}^{23} + J_{\tau,y s,z}^{44} \right)\delta c\,b $$
 
-These expressions constitute the complete fundamental nucleus before longitudinal integration by parts.
+These expressions constitute the complete fundamental nucleus before longitudinal integration by parts, already in global form.
 
-The diagonal terms containing derivatives on both longitudinal amplitudes lead directly to divergence-form operators.
+The diagonal terms containing derivatives on both longitudinal amplitudes lead directly to divergence-form operators. For example, the axial contribution
 
-For example, the axial contribution
-
-$$ \int_0^l J_{\tau,\varnothing s,\varnothing}^{11}(x) \delta a_{,x}(x) a_{,x}(x) dx $$
+$$ \int_0^l J_{\tau,\varnothing s,\varnothing}^{11}(x) \,\delta a_{,x}(x)\,a_{,x}(x) \,dx $$
 
 gives, after longitudinal integration by parts,
 
-$$ -\int_0^l \delta a(x) \partial_x [ J_{\tau,\varnothing s,\varnothing}^{11}(x) a_{,x}(x) ] dx $$
+$$ -\int_0^l \delta a(x)\, \partial_x\left[ J_{\tau,\varnothing s,\varnothing}^{11}(x) a_{,x}(x) \right] \,dx $$
 
-plus the corresponding boundary term.
+plus the corresponding boundary term. Therefore the associated strong-form contribution is
 
-Therefore the associated strong-form contribution is
+$$ -\partial_x\left[ J_{\tau,\varnothing s,\varnothing}^{11}(x)\,\partial_x \right]. $$
 
-$$ -\partial_x [ J_{\tau,\varnothing s,\varnothing}^{11}(x) \partial_x ]. $$
+For the mixed first-order blocks, the two contributions must remain distinct. For example, the weak-form contribution associated with `xy` is
 
-The same argument gives the variable-coefficient diagonal operators already introduced in the current formulation.
-
-For the mixed first-order blocks, the two contributions must remain distinct.
-
-For example, the weak-form contribution associated with `xy` is
-
-$$ \int_0^l [ J_{\tau,\varnothing s,y}^{12}(x) \delta a_{,x}(x) b(x) + J_{\tau,y s,\varnothing}^{66}(x) \delta a(x) b_{,x}(x) ] dx. $$
+$$ \int_0^l \left[ J_{\tau,\varnothing s,y}^{12}(x)\,\delta a_{,x}(x)b(x) + J_{\tau,y s,\varnothing}^{66}(x)\,\delta a(x)b_{,x}(x) \right] \,dx. $$
 
 Integrating only the first term by parts gives
 
-$$ \int_0^l \delta a(x) [ - \partial_x ( J_{\tau,\varnothing s,y}^{12}(x) b(x) ) + J_{\tau,y s,\varnothing}^{66}(x) b_{,x}(x) ] dx $$
+$$ \int_0^l \delta a(x) \left[ -\partial_x\left( J_{\tau,\varnothing s,y}^{12}(x)b(x) \right) + J_{\tau,y s,\varnothing}^{66}(x)b_{,x}(x) \right] \,dx $$
 
-plus the corresponding boundary term.
+plus the corresponding boundary term. Hence
 
-Hence
-
-$$ K_{xy}^{\tau s}(x)[b] = - \partial_x [ J_{\tau,\varnothing s,y}^{12}(x)b(x) ] + J_{\tau,y s,\varnothing}^{66}(x) \partial_x b(x) $$
-
-which is exactly the variable-coefficient operator structure required by the current formulation.
+$$ K_{xy}^{\tau s}(x)[b] = -\partial_x\left[ J_{\tau,\varnothing s,y}^{12}(x)b(x) \right] + J_{\tau,y s,\varnothing}^{66}(x)\,\partial_x b(x). $$
 
 Similarly, the `zx` block gives
 
-$$ K_{zx}^{\tau s}(x)[a] = J_{\tau,z s,\varnothing}^{13}(x) \partial_x a(x) - \partial_x [ J_{\tau,\varnothing s,z}^{55}(x)a(x) ] $$
-
-showing directly why the second contribution carries a minus sign after longitudinal integration by parts.
+$$ K_{zx}^{\tau s}(x)[a] = J_{\tau,z s,\varnothing}^{13}(x)\,\partial_x a(x) - \partial_x\left[ J_{\tau,\varnothing s,z}^{55}(x)a(x) \right]. $$
 
 The zero-order coupling blocks require no longitudinal integration by parts:
 
-$$ K_{yz}^{\tau s}(x) = J_{\tau,y s,z}^{23}(x) + J_{\tau,z s,y}^{44}(x) $$
+$$ K_{yz}^{\tau s}(x) = J_{\tau,y s,z}^{23}(x) + J_{\tau,z s,y}^{44}(x), $$
 
 and
 
 $$ K_{zy}^{\tau s}(x) = J_{\tau,z s,y}^{23}(x) + J_{\tau,y s,z}^{44}(x). $$
 
-The weak formulation therefore provides a direct derivation of all nine entries of the fundamental nucleus and simultaneously establishes the variable-coefficient longitudinal operator structure already used in the CSF-CUF extension.
-
 The resulting chain is
 
-$$ \mathcal{S}(x) \longrightarrow \{ \Omega^k(x), \mathbf{C}^{k}(x,y,z) \} \longrightarrow J_{\tau,\phi s,\xi}^{mn,k}(x) \longrightarrow J_{\tau,\phi s,\xi}^{mn}(x) \longrightarrow \delta L_i \longrightarrow \mathbf{K}_{\tau s}. $$
+$$ \mathcal{S}(x) \longrightarrow \{\Omega^k(x),\mathbf{C}^{k}(x,y,z)\} \longrightarrow J_{\tau,\phi s,\xi}^{mn,k}(x) \longrightarrow J_{\tau,\phi s,\xi}^{mn}(x) \longrightarrow \delta L_i \longrightarrow \mathbf{K}_{\tau s}. $$
 
 No closed-form longitudinal expression for the sectional coefficients is required, and no Navier-type longitudinal solution is introduced at this stage.
 
+---
+
+#### 10.2.1 Sub-domain and global coefficients
+
+For any fixed choice of CUF indices, derivative labels, and constitutive indices, abbreviate the corresponding sub-domain coefficient as $J^{mn,k}(x)$ and the associated global coefficient as $J^{mn}(x)$. Let $v(x)$ denote any longitudinal displacement amplitude or test function entering the nuclear operator. Then
+
+$$ J^{mn}(x) = \sum_{k=1}^{N_\Omega}J^{mn,k}(x). $$
+
+Because the sub-domain sum is finite and the longitudinal differential operator is linear, assembly and longitudinal differentiation commute. For the second-order divergence structure,
+
+$$ \sum_{k=1}^{N_\Omega} \partial_x\left[ J^{mn,k}(x)\,\partial_x v(x) \right] = \partial_x\left[ J^{mn}(x)\,\partial_x v(x) \right]. $$
+
+For a first-order divergence term,
+
+$$ \sum_{k=1}^{N_\Omega} \partial_x\left[ J^{mn,k}(x)\,v(x) \right] = \partial_x\left[ J^{mn}(x)\,v(x) \right]. $$
+
+For a coefficient multiplying a longitudinal derivative without being differentiated itself,
+
+$$ \sum_{k=1}^{N_\Omega} J^{mn,k}(x)\,\partial_x v(x) = J^{mn}(x)\,\partial_x v(x). $$
+
+These identities show that the global forms below are obtained exactly by summing the sub-domain contributions. They are the same global operators obtained directly from the weak formulation in §10.2.
+
+---
+
 ### 10.3 Diagonal terms - verified
 
-The reference paper gives the three diagonal nuclear terms in Eq. (23) as:
+The reference-paper form of the three diagonal nuclear terms is
 
-$$ K_{xx}^{\tau s} = J_{\tau,y\,s,y}^{66k} + J_{\tau,z\,s,z}^{55k} - J_{\tau s}^{11k}\,\partial_x^2 $$
+$$ K_{xx}^{\tau s} = J_{\tau,y s,y}^{66k} + J_{\tau,z s,z}^{55k} - J_{\tau s}^{11k}\,\partial_x^2, $$
 
-$$ K_{yy}^{\tau s} = J_{\tau,y\,s,y}^{22k} + J_{\tau,z\,s,z}^{44k} - J_{\tau s}^{66k}\,\partial_x^2 $$
+$$ K_{yy}^{\tau s} = J_{\tau,y s,y}^{22k} + J_{\tau,z s,z}^{44k} - J_{\tau s}^{66k}\,\partial_x^2, $$
 
-$$ K_{zz}^{\tau s} = J_{\tau,y\,s,y}^{44k} + J_{\tau,z\,s,z}^{33k} - J_{\tau s}^{55k}\,\partial_x^2 $$
+and
 
-Each term contains one sectional coefficient multiplying a pure second derivative with respect to $x$.
+$$ K_{zz}^{\tau s} = J_{\tau,y s,y}^{44k} + J_{\tau,z s,z}^{33k} - J_{\tau s}^{55k}\,\partial_x^2. $$
 
-The longitudinally varying form is therefore:
+Here the coefficients carrying $k$ are sub-domain contributions. To make the assembly explicit, let $K_{ii}^{\tau s,k}$ denote the contribution associated with sub-domain $k$.
 
-$$ K_{xx}^{\tau s}(x) = J_{\tau,y\,s,y}^{66k}(x) + J_{\tau,z\,s,z}^{55k}(x) - \partial_x \left( J_{\tau s}^{11k}(x)\,\partial_x \right) $$
+For longitudinally varying coefficients, the corresponding sub-domain forms are
 
-$$ K_{yy}^{\tau s}(x) = J_{\tau,y\,s,y}^{22k}(x) + J_{\tau,z\,s,z}^{44k}(x) - \partial_x \left( J_{\tau s}^{66k}(x)\,\partial_x \right) $$
+$$ K_{xx}^{\tau s,k}(x) = J_{\tau,y s,y}^{66k}(x) + J_{\tau,z s,z}^{55k}(x) - \partial_x\left[ J_{\tau s}^{11k}(x)\,\partial_x \right], $$
 
-$$ K_{zz}^{\tau s}(x) = J_{\tau,y\,s,y}^{44k}(x) + J_{\tau,z\,s,z}^{33k}(x) - \partial_x \left( J_{\tau s}^{55k}(x)\,\partial_x \right) $$
+$$ K_{yy}^{\tau s,k}(x) = J_{\tau,y s,y}^{22k}(x) + J_{\tau,z s,z}^{44k}(x) - \partial_x\left[ J_{\tau s}^{66k}(x)\,\partial_x \right], $$
 
-These three terms are therefore established in divergence form.
+and
+
+$$ K_{zz}^{\tau s,k}(x) = J_{\tau,y s,y}^{44k}(x) + J_{\tau,z s,z}^{33k}(x) - \partial_x\left[ J_{\tau s}^{55k}(x)\,\partial_x \right]. $$
+
+After summing over the sub-domains, the assembled CSF-CUF forms are
+
+$$ K_{xx}^{\tau s}(x) = J_{\tau,y s,y}^{66}(x) + J_{\tau,z s,z}^{55}(x) - \partial_x\left[ J_{\tau s}^{11}(x)\,\partial_x \right], $$
+
+$$ K_{yy}^{\tau s}(x) = J_{\tau,y s,y}^{22}(x) + J_{\tau,z s,z}^{44}(x) - \partial_x\left[ J_{\tau s}^{66}(x)\,\partial_x \right], $$
+
+and
+
+$$ K_{zz}^{\tau s}(x) = J_{\tau,y s,y}^{44}(x) + J_{\tau,z s,z}^{33}(x) - \partial_x\left[ J_{\tau s}^{55}(x)\,\partial_x \right]. $$
+
+These global forms match the diagonal terms obtained directly from §10.2.
 
 ---
 
 ### 10.4 Mixed first-order terms - verified variable-coefficient form
 
-The reference paper gives the following first-order mixed terms:
+The reference-paper form of the mixed first-order terms is
 
-$$ K_{xy}^{\tau s} = \left( -J_{\tau s,y}^{12k} + J_{\tau,y\,s}^{66k} \right)\partial_x $$
+$$ K_{xy}^{\tau s} = \left( -J_{\tau s,y}^{12k} + J_{\tau,y s}^{66k} \right)\partial_x, $$
 
-$$ K_{yx}^{\tau s} = \left( J_{\tau,y\,s}^{12k} - J_{\tau s,y}^{66k} \right)\partial_x $$
+$$ K_{yx}^{\tau s} = \left( J_{\tau,y s}^{12k} - J_{\tau s,y}^{66k} \right)\partial_x, $$
 
-$$ K_{xz}^{\tau s} = \left( -J_{\tau s,z}^{13k} + J_{\tau,z\,s}^{55k} \right)\partial_x $$
-
-$$ K_{zx}^{\tau s} = \left( J_{\tau,z\,s}^{13k} - J_{\tau s,z}^{55k} \right)\partial_x $$
-
-For longitudinally varying sectional coefficients, the two contributions entering each mixed operator must remain distinct because they originate from different terms of the virtual internal work.
-
-The verified variable-coefficient forms are:
-
-$$ K_{xy}^{\tau s}(x)[u_{ys}] = -\partial_x\left( J_{\tau s,y}^{12k}(x)u_{ys}(x) \right) + J_{\tau,y\,s}^{66k}(x)\partial_x u_{ys}(x). $$
-
-$$ K_{yx}^{\tau s}(x)[u_{xs}] = J_{\tau,y\,s}^{12k}(x)\partial_x u_{xs}(x) - \partial_x\left( J_{\tau s,y}^{66k}(x)u_{xs}(x) \right). $$
-
-$$ K_{xz}^{\tau s}(x)[u_{zs}] = -\partial_x\left( J_{\tau s,z}^{13k}(x)u_{zs}(x) \right) + J_{\tau,z\,s}^{55k}(x)\partial_x u_{zs}(x). $$
-
-$$ K_{zx}^{\tau s}(x)[u_{xs}] = J_{\tau,z\,s}^{13k}(x)\partial_x u_{xs}(x) - \partial_x\left( J_{\tau s,z}^{55k}(x)u_{xs}(x) \right). $$
-
-The distinction between
-
-$$ J(x)\partial_x u(x) $$
+$$ K_{xz}^{\tau s} = \left( -J_{\tau s,z}^{13k} + J_{\tau,z s}^{55k} \right)\partial_x, $$
 
 and
 
-$$ \partial_x\left( J(x)u(x) \right) $$
+$$ K_{zx}^{\tau s} = \left( J_{\tau,z s}^{13k} - J_{\tau s,z}^{55k} \right)\partial_x. $$
 
-is therefore retained explicitly.
+For longitudinally varying sectional coefficients, the two contributions entering each mixed operator must remain distinct because they originate from different terms of the virtual internal work.
+
+The corresponding sub-domain forms are
+
+$$ K_{xy}^{\tau s,k}(x)[u_{ys}] = -\partial_x\left[ J_{\tau s,y}^{12k}(x)u_{ys}(x) \right] + J_{\tau,y s}^{66k}(x)\,\partial_x u_{ys}(x), $$
+
+$$ K_{yx}^{\tau s,k}(x)[u_{xs}] = J_{\tau,y s}^{12k}(x)\,\partial_x u_{xs}(x) - \partial_x\left[ J_{\tau s,y}^{66k}(x)u_{xs}(x) \right], $$
+
+$$ K_{xz}^{\tau s,k}(x)[u_{zs}] = -\partial_x\left[ J_{\tau s,z}^{13k}(x)u_{zs}(x) \right] + J_{\tau,z s}^{55k}(x)\,\partial_x u_{zs}(x), $$
+
+and
+
+$$ K_{zx}^{\tau s,k}(x)[u_{xs}] = J_{\tau,z s}^{13k}(x)\,\partial_x u_{xs}(x) - \partial_x\left[ J_{\tau s,z}^{55k}(x)u_{xs}(x) \right]. $$
+
+After summing over the sub-domains, the assembled CSF-CUF forms are
+
+$$ K_{xy}^{\tau s}(x)[u_{ys}] = -\partial_x\left[ J_{\tau s,y}^{12}(x)u_{ys}(x) \right] + J_{\tau,y s}^{66}(x)\,\partial_x u_{ys}(x), $$
+
+$$ K_{yx}^{\tau s}(x)[u_{xs}] = J_{\tau,y s}^{12}(x)\,\partial_x u_{xs}(x) - \partial_x\left[ J_{\tau s,y}^{66}(x)u_{xs}(x) \right], $$
+
+$$ K_{xz}^{\tau s}(x)[u_{zs}] = -\partial_x\left[ J_{\tau s,z}^{13}(x)u_{zs}(x) \right] + J_{\tau,z s}^{55}(x)\,\partial_x u_{zs}(x), $$
+
+and
+
+$$ K_{zx}^{\tau s}(x)[u_{xs}] = J_{\tau,z s}^{13}(x)\,\partial_x u_{xs}(x) - \partial_x\left[ J_{\tau s,z}^{55}(x)u_{xs}(x) \right]. $$
+
+The distinction between
+
+$$ J(x)\,\partial_x u(x) $$
+
+and
+
+$$ \partial_x\left[J(x)u(x)\right] $$
+
+is therefore retained explicitly at both the sub-domain and global levels.
 
 For constant sectional coefficients, these expressions reduce to the corresponding first-order terms of the reference formulation.
 
-> **Note on $K_{zx}^{\tau s}$.** Eq. (23) of Giunta, Belouettar, and Carrera (2010) reports a plus sign in the term involving $J_{\tau s,z}^{55k}$. However, the corresponding expressions in Eqs. (33) and (39) use a minus sign. The re-derivation from the virtual internal work is consistent with the minus sign; therefore the minus sign is adopted in the variable-section formulation.
+> **Note on $K_{zx}^{\tau s}$.** Eq. (23) of Giunta, Belouettar, and Carrera (2010) reports a plus sign in the term involving $J_{\tau s,z}^{55k}$. However, the corresponding expressions in Eqs. (33) and (39) use a minus sign. The re-derivation from the virtual internal work in §10.2 is consistent with the minus sign; therefore the minus sign is adopted in the variable-section formulation.
 
 ---
 
@@ -686,13 +690,11 @@ For constant sectional coefficients, these expressions reduce to the correspondi
 
 The variable-coefficient form cannot be obtained by grouping the two sectional coefficients into a single coefficient before the longitudinal differentiation.
 
-For example,
+For example, the global `xy` term is
 
-$$ K_{xy}^{\tau s}(x)[u_{ys}] = -\partial_x\left( J_{\tau s,y}^{12k}(x)u_{ys}(x) \right) + J_{\tau,y\,s}^{66k}(x)\partial_x u_{ys}(x) $$
+$$ K_{xy}^{\tau s}(x)[u_{ys}] = -\partial_x\left[ J_{\tau s,y}^{12}(x)u_{ys}(x) \right] + J_{\tau,y s}^{66}(x)\,\partial_x u_{ys}(x). $$
 
-contains two contributions with different longitudinal operator structures.
-
-If expanded formally, the first term generates a longitudinal derivative of $J_{\tau s,y}^{12k}(x)$, while the coefficient $J_{\tau,y\,s}^{66k}(x)$ remains outside the longitudinal derivative.
+It contains two contributions with different longitudinal operator structures. If expanded formally, the first term generates a longitudinal derivative of $J_{\tau s,y}^{12}(x)$, while $J_{\tau,y s}^{66}(x)$ remains outside the longitudinal derivative.
 
 The divergence form is retained so that no explicit longitudinal derivative of the sectional coefficients needs to be introduced in the formulation.
 
@@ -702,7 +704,7 @@ The divergence form is retained so that no explicit longitudinal derivative of t
 
 The diagonal second-order terms, the mixed first-order terms, and the zero-order off-diagonal terms are all defined for longitudinally varying sectional coefficients.
 
-The dependence on the evolving CSF representation enters through the known sectional fields
+At the sub-domain level, the corresponding quantities carry the index $k$. In the assembled nuclear operator, the dependence on the evolving CSF representation enters through the global sectional fields
 
 $$ J_\bullet(x), $$
 
@@ -712,36 +714,46 @@ while the longitudinal differential structure of each nuclear term is retained i
 
 ### 10.7 Off-diagonal zero-order terms - direct generalization
 
-The remaining two off-diagonal terms in Eq. (23) do not contain longitudinal derivatives:
+The remaining two off-diagonal terms in the reference formulation do not contain longitudinal derivatives:
 
-$$ K_{yz}^{\tau s} = J_{\tau,y\,s,z}^{23k} + J_{\tau,z\,s,y}^{44k} $$
+$$ K_{yz}^{\tau s} = J_{\tau,y s,z}^{23k} + J_{\tau,z s,y}^{44k}, $$
 
-$$ K_{zy}^{\tau s} = J_{\tau,z\,s,y}^{23k} + J_{\tau,y\,s,z}^{44k} $$
+and
 
-Since no derivative with respect to $x$ acts on the displacement amplitudes in these terms, no additional longitudinal integration-by-parts issue is introduced by the dependence of the sectional coefficients on $x$.
+$$ K_{zy}^{\tau s} = J_{\tau,z s,y}^{23k} + J_{\tau,y s,z}^{44k}. $$
 
-Their variable-section form is therefore obtained directly as:
+Let $K_{yz}^{\tau s,k}$ and $K_{zy}^{\tau s,k}$ denote the corresponding sub-domain contributions. Their variable-section forms are
 
-$$ K_{yz}^{\tau s}(x) = J_{\tau,y\,s,z}^{23k}(x) + J_{\tau,z\,s,y}^{44k}(x) $$
+$$ K_{yz}^{\tau s,k}(x) = J_{\tau,y s,z}^{23k}(x) + J_{\tau,z s,y}^{44k}(x), $$
 
-$$ K_{zy}^{\tau s}(x) = J_{\tau,z\,s,y}^{23k}(x) + J_{\tau,y\,s,z}^{44k}(x) $$
+and
 
-These terms require only the numerical evaluation of the corresponding sectional coefficients at the requested longitudinal coordinate.
+$$ K_{zy}^{\tau s,k}(x) = J_{\tau,z s,y}^{23k}(x) + J_{\tau,y s,z}^{44k}(x). $$
+
+Since no longitudinal derivative acts on these terms, the global assembly is obtained directly by summing the coefficients:
+
+$$ K_{yz}^{\tau s}(x) = J_{\tau,y s,z}^{23}(x) + J_{\tau,z s,y}^{44}(x), $$
+
+and
+
+$$ K_{zy}^{\tau s}(x) = J_{\tau,z s,y}^{23}(x) + J_{\tau,y s,z}^{44}(x). $$
+
+These global expressions coincide with the zero-order blocks obtained directly from §10.2.
 
 ---
 
 ### 10.8 Status summary
 
-| Nuclear terms | Longitudinal structure | Status |
-|---|---|---|
-| $K_{xx}^{\tau s}(x)$ | one coefficient × second derivative | Verified - divergence form |
-| $K_{yy}^{\tau s}(x)$ | one coefficient × second derivative | Verified - divergence form |
-| $K_{zz}^{\tau s}(x)$ | one coefficient × second derivative | Verified - divergence form |
-| $K_{xy}^{\tau s}(x)$, $K_{yx}^{\tau s}(x)$ | two coefficients × first derivative | Verified - variable-coefficient form |
-| $K_{xz}^{\tau s}(x)$, $K_{zx}^{\tau s}(x)$ | two coefficients × first derivative | Verified - variable-coefficient form |
-| $K_{yz}^{\tau s}(x)$, $K_{zy}^{\tau s}(x)$ | zero-order in $x$ | Direct generalization |
+| Nuclear terms | Longitudinal structure | Sub-domain contribution | Global CSF-CUF operator |
+|---|---|---|---|
+| $K_{xx}^{\tau s}(x)$ | one coefficient × second derivative | §10.3 | §10.3; matches §10.2 |
+| $K_{yy}^{\tau s}(x)$ | one coefficient × second derivative | §10.3 | §10.3; matches §10.2 |
+| $K_{zz}^{\tau s}(x)$ | one coefficient × second derivative | §10.3 | §10.3; matches §10.2 |
+| $K_{xy}^{\tau s}(x)$, $K_{yx}^{\tau s}(x)$ | two coefficients × first derivative | §10.4 | §10.4; matches §10.2 |
+| $K_{xz}^{\tau s}(x)$, $K_{zx}^{\tau s}(x)$ | two coefficients × first derivative | §10.4 | §10.4; matches §10.2 |
+| $K_{yz}^{\tau s}(x)$, $K_{zy}^{\tau s}(x)$ | zero-order in $x$ | §10.7 | §10.7; matches §10.2 |
 
-The variable-section structure of the complete nuclear operator is therefore established at the formal level. The sectional coefficients remain known functions of the longitudinal coordinate generated from the CSF representation.
+The variable-section structure of the complete nuclear operator is therefore established at the formal level. The distinction between the sub-domain coefficients $J^{mn,k}_{\tau,\phi s,\xi}(x)$ and the global coefficients $J^{mn}_{\tau,\phi s,\xi}(x)$ entering the assembled operator $\mathbf{K}_{\tau s}$ is explicit throughout the formulation.
 
 ---
 
