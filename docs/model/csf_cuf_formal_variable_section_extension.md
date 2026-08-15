@@ -5,7 +5,9 @@
 
 ## 1. Scope
 
-This note formulates the coupling between a Continuous Section Field (CSF) and the CUF beam framework for the case of longitudinally varying sectional geometry and constitutive properties. The CSF representation $\mathcal{S}(x)$ supplies the sectional data required by the CUF formulation, while the CUF kinematic and variational structure is retained.
+## 1. Scope
+
+This note formulates the coupling between a Continuous Section Field (CSF) and the CUF beam framework. The need for this coupling follows directly from the CSF representation $\mathcal{S}(x)$: since sectional geometry and constitutive properties may vary continuously along the beam axis, the sectional coefficients entering the CUF formulation must themselves become functions of $x$. The CSF representation $\mathcal{S}(x)$ supplies the sectional data required to evaluate these coefficients, while the CUF kinematic and variational structure is retained.
 
 $$ \mathcal{S}(x). $$
 
