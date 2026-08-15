@@ -320,6 +320,8 @@ $$ K_{xy},\quad K_{yx},\quad K_{xz},\quad K_{zx} $$
 
 must therefore be re-derived from the virtual internal work before the longitudinal integration by parts used to obtain the reference nuclear form.
 
+> **Note on $K_{zx}^{\tau s}$.** Eq. (23) of Giunta, Belouettar, and Carrera (2010) reports a plus sign in the term involving $J_{\tau s,z}^{55k}$. However, the corresponding expressions in Eqs. (33) and (39) use a minus sign. The re-derivation from the virtual internal work is consistent with the minus sign; therefore the minus sign is adopted in the variable-section formulation.
+
 ---
 
 ## 10.4 Why direct substitution is not sufficient for the first-order mixed terms
