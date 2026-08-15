@@ -139,6 +139,112 @@ $$ \mathcal{S}(x) \longrightarrow \lbrace \Omega^k(x), \mathbf{C}^k(x,y,z) \rbra
 
 No polynomial, exponential, or other analytical approximation of $J_\bullet^k(x)$ is required.
 
+
+
+## 5.1 Generalized sectional coefficient family
+
+The four sectional coefficient families introduced above can be embedded into a single generalized definition.
+
+Let:
+
+- `k` identify the transverse sub-domain;
+- `m,n` identify constitutive-matrix components in Voigt notation;
+- `tau` and `s` identify the CUF approximation functions;
+- `phi` denote the transverse derivative applied to the test-side approximation function;
+- `xi` denote the transverse derivative applied to the source-side approximation function.
+
+The derivative labels are taken from
+
+$$ \phi,\xi \in \{\varnothing,y,z\}, $$
+
+where the symbol
+
+$$ \varnothing $$
+
+denotes the absence of a transverse derivative.
+
+Therefore,
+
+$$ F_{\tau,\varnothing}(y,z) \equiv F_\tau(y,z), $$
+
+and
+
+$$ F_{s,\varnothing}(y,z) \equiv F_s(y,z). $$
+
+For sub-domain `k`, define the generalized sectional coefficient as
+
+$$ J_{\tau,\phi s,\xi}^{mn,k}(x) = \int_{\Omega^k(x)} C_{mn}^{k}(x,y,z) F_{\tau,\phi}(y,z) F_{s,\xi}(y,z) d\Omega $$
+
+where:
+
+- the domain
+
+$$ \Omega^k(x) $$
+
+is supplied by the CSF sectional representation at longitudinal coordinate `x`;
+
+- the constitutive component
+
+$$ C_{mn}^{k}(x,y,z) $$
+
+is the corresponding entry of the constitutive matrix over sub-domain `k`;
+
+- the functions
+
+$$ F_\tau(y,z) $$
+
+and
+
+$$ F_s(y,z) $$
+
+are supplied by the CUF transverse approximation.
+
+The previously introduced coefficient families are recovered as special cases.
+
+For two transverse derivatives,
+
+$$ J_{\tau,\phi s,\xi}^{mn,k}(x) = \int_{\Omega^k(x)} C_{mn}^{k}(x,y,z) F_{\tau,\phi}(y,z) F_{s,\xi}(y,z) d\Omega. $$
+
+For no transverse derivatives,
+
+$$ J_{\tau,\varnothing s,\varnothing}^{mn,k}(x) = \int_{\Omega^k(x)} C_{mn}^{k}(x,y,z) F_{\tau}(y,z) F_{s}(y,z) d\Omega. $$
+
+For a transverse derivative only on the test-side approximation function,
+
+$$ J_{\tau,\phi s,\varnothing}^{mn,k}(x) = \int_{\Omega^k(x)} C_{mn}^{k}(x,y,z) F_{\tau,\phi}(y,z) F_{s}(y,z) d\Omega. $$
+
+For a transverse derivative only on the source-side approximation function,
+
+$$ J_{\tau,\varnothing s,\xi}^{mn,k}(x) = \int_{\Omega^k(x)} C_{mn}^{k}(x,y,z) F_{\tau}(y,z) F_{s,\xi}(y,z) d\Omega. $$
+
+This generalized definition is required by the complete fundamental nucleus because the variational expansion produces all four derivative patterns.
+
+In particular, terms of the form
+
+$$ J_{\tau,y s,\varnothing}^{66,k}(x), $$
+
+$$ J_{\tau,\varnothing s,y}^{66,k}(x), $$
+
+and
+
+$$ J_{\tau,y s,z}^{23,k}(x) $$
+
+occur directly in the complete nucleus.
+
+The corresponding global sectional coefficient is obtained by summing the sub-domain contributions:
+
+$$ J_{\tau,\phi s,\xi}^{mn}(x) = \sum_{k=1}^{N_\Omega} J_{\tau,\phi s,\xi}^{mn,k}(x) $$
+
+Therefore the complete coefficient family remains generated directly from the CSF representation:
+
+$$ \mathcal{S}(x) \longrightarrow \{ \Omega^k(x), \mathbf{C}^{k}(x,y,z) \} \longrightarrow J_{\tau,\phi s,\xi}^{mn,k}(x) \longrightarrow J_{\tau,\phi s,\xi}^{mn}(x). $$
+
+No analytical longitudinal expression for these coefficients is required.
+
+---
+
+
+
 ---
 
 ## 6. Global sectional coefficients
@@ -303,7 +409,183 @@ This generalization is directly justified when a nuclear term contains a single 
 
 ---
 
-### 10.2 Diagonal terms - verified
+## 10.2 Complete fundamental nucleus in weak form
+
+The complete nuclear structure can be obtained directly from the Principle of Virtual Displacements before introducing any strong-form longitudinal differential operator.
+
+Let the CUF displacement expansion associated with source index `s` be
+
+$$ u_i(x,y,z) = F_s(y,z) u_{is}(x), \qquad i\in\{x,y,z\}. $$
+
+For compactness, define the three source amplitudes as
+
+$$ a(x)=u_{xs}(x), $$
+
+$$ b(x)=u_{ys}(x), $$
+
+and
+
+$$ c(x)=u_{zs}(x). $$
+
+Let the corresponding virtual amplitudes associated with test index `tau` be
+
+$$ \delta a(x)=\delta u_{x\tau}(x), $$
+
+$$ \delta b(x)=\delta u_{y\tau}(x), $$
+
+and
+
+$$ \delta c(x)=\delta u_{z\tau}(x). $$
+
+Define
+
+$$ A(y,z)=F_s(y,z) $$
+
+and
+
+$$ B(y,z)=F_\tau(y,z). $$
+
+The source strain components are
+
+$$ \varepsilon_{xx} = A a_{,x}, $$
+
+$$ \varepsilon_{yy} = A_{,y} b, $$
+
+$$ \varepsilon_{zz} = A_{,z} c, $$
+
+$$ \gamma_{yz} = A_{,z} b + A_{,y} c, $$
+
+$$ \gamma_{xz} = A_{,z} a + A c_{,x}, $$
+
+and
+
+$$ \gamma_{xy} = A_{,y} a + A b_{,x}. $$
+
+The corresponding virtual strains are obtained by replacing
+
+$$ A $$
+
+with
+
+$$ B $$
+
+and replacing the source amplitudes with the corresponding virtual amplitudes.
+
+For an isotropic constitutive specialization in Voigt order
+
+$$ (xx,yy,zz,yz,xz,xy), $$
+
+the non-zero constitutive entries involved in the present derivation are
+
+$$ C_{11}, \quad C_{22}, \quad C_{33}, \quad C_{44}, \quad C_{55}, \quad C_{66}, $$
+
+together with
+
+$$ C_{12}=C_{21}, \qquad C_{13}=C_{31}, \qquad C_{23}=C_{32}. $$
+
+The internal virtual work is
+
+$$ \delta L_i = \int_0^l \sum_{k=1}^{N_\Omega} \int_{\Omega^k(x)} \delta\boldsymbol{\varepsilon}^{T} \mathbf{C}^{k} \boldsymbol{\varepsilon} d\Omega dx. $$
+
+After expanding the strain product and performing only the transverse integrations, the nine blocks of the fundamental nucleus are obtained directly in bilinear form.
+
+### Axial block
+
+$$ K_{xx}^{\tau s}: \quad J_{\tau,\varnothing s,\varnothing}^{11} \delta a_{,x} a_{,x} + ( J_{\tau,z s,z}^{55} + J_{\tau,y s,y}^{66} ) \delta a a $$
+
+### Transverse `y` block
+
+$$ K_{yy}^{\tau s}: \quad ( J_{\tau,y s,y}^{22} + J_{\tau,z s,z}^{44} ) \delta b b + J_{\tau,\varnothing s,\varnothing}^{66} \delta b_{,x} b_{,x} $$
+
+### Transverse `z` block
+
+$$ K_{zz}^{\tau s}: \quad ( J_{\tau,z s,z}^{33} + J_{\tau,y s,y}^{44} ) \delta c c + J_{\tau,\varnothing s,\varnothing}^{55} \delta c_{,x} c_{,x} $$
+
+### Coupling block `xy`
+
+$$ K_{xy}^{\tau s}: \quad J_{\tau,\varnothing s,y}^{12} \delta a_{,x} b + J_{\tau,y s,\varnothing}^{66} \delta a b_{,x} $$
+
+### Coupling block `yx`
+
+$$ K_{yx}^{\tau s}: \quad J_{\tau,y s,\varnothing}^{21} \delta b a_{,x} + J_{\tau,\varnothing s,y}^{66} \delta b_{,x} a $$
+
+### Coupling block `xz`
+
+$$ K_{xz}^{\tau s}: \quad J_{\tau,\varnothing s,z}^{13} \delta a_{,x} c + J_{\tau,z s,\varnothing}^{55} \delta a c_{,x} $$
+
+### Coupling block `zx`
+
+$$ K_{zx}^{\tau s}: \quad J_{\tau,z s,\varnothing}^{31} \delta c a_{,x} + J_{\tau,\varnothing s,z}^{55} \delta c_{,x} a $$
+
+### Coupling block `yz`
+
+$$ K_{yz}^{\tau s}: \quad ( J_{\tau,y s,z}^{23} + J_{\tau,z s,y}^{44} ) \delta b c $$
+
+### Coupling block `zy`
+
+$$ K_{zy}^{\tau s}: \quad ( J_{\tau,z s,y}^{32} + J_{\tau,y s,z}^{44} ) \delta c b $$
+
+These expressions constitute the complete fundamental nucleus before longitudinal integration by parts.
+
+The diagonal terms containing derivatives on both longitudinal amplitudes lead directly to divergence-form operators.
+
+For example, the axial contribution
+
+$$ \int_0^l J_{\tau,\varnothing s,\varnothing}^{11}(x) \delta a_{,x}(x) a_{,x}(x) dx $$
+
+gives, after longitudinal integration by parts,
+
+$$ -\int_0^l \delta a(x) \partial_x [ J_{\tau,\varnothing s,\varnothing}^{11}(x) a_{,x}(x) ] dx $$
+
+plus the corresponding boundary term.
+
+Therefore the associated strong-form contribution is
+
+$$ -\partial_x [ J_{\tau,\varnothing s,\varnothing}^{11}(x) \partial_x ]. $$
+
+The same argument gives the variable-coefficient diagonal operators already introduced in the current formulation.
+
+For the mixed first-order blocks, the two contributions must remain distinct.
+
+For example, the weak-form contribution associated with `xy` is
+
+$$ \int_0^l [ J_{\tau,\varnothing s,y}^{12}(x) \delta a_{,x}(x) b(x) + J_{\tau,y s,\varnothing}^{66}(x) \delta a(x) b_{,x}(x) ] dx. $$
+
+Integrating only the first term by parts gives
+
+$$ \int_0^l \delta a(x) [ - \partial_x ( J_{\tau,\varnothing s,y}^{12}(x) b(x) ) + J_{\tau,y s,\varnothing}^{66}(x) b_{,x}(x) ] dx $$
+
+plus the corresponding boundary term.
+
+Hence
+
+$$ K_{xy}^{\tau s}(x)[b] = - \partial_x [ J_{\tau,\varnothing s,y}^{12}(x)b(x) ] + J_{\tau,y s,\varnothing}^{66}(x) \partial_x b(x) $$
+
+which is exactly the variable-coefficient operator structure required by the current formulation.
+
+Similarly, the `zx` block gives
+
+$$ K_{zx}^{\tau s}(x)[a] = J_{\tau,z s,\varnothing}^{31}(x) \partial_x a(x) - \partial_x [ J_{\tau,\varnothing s,z}^{55}(x)a(x) ] $$
+
+showing directly why the second contribution carries a minus sign after longitudinal integration by parts.
+
+The zero-order coupling blocks require no longitudinal integration by parts:
+
+$$ K_{yz}^{\tau s}(x) = J_{\tau,y s,z}^{23}(x) + J_{\tau,z s,y}^{44}(x) $$
+
+and
+
+$$ K_{zy}^{\tau s}(x) = J_{\tau,z s,y}^{32}(x) + J_{\tau,y s,z}^{44}(x). $$
+
+The weak formulation therefore provides a direct derivation of all nine entries of the fundamental nucleus and simultaneously establishes the variable-coefficient longitudinal operator structure already used in the CSF-CUF extension.
+
+The resulting chain is
+
+$$ \mathcal{S}(x) \longrightarrow \{ \Omega^k(x), \mathbf{C}^{k}(x,y,z) \} \longrightarrow J_{\tau,\phi s,\xi}^{mn,k}(x) \longrightarrow J_{\tau,\phi s,\xi}^{mn}(x) \longrightarrow \delta L_i \longrightarrow \mathbf{K}_{\tau s}. $$
+
+No closed-form longitudinal expression for the sectional coefficients is required, and no Navier-type longitudinal solution is introduced at this stage.
+
+### 10.3 Diagonal terms - verified
 
 The reference paper gives the three diagonal nuclear terms in Eq. (23) as:
 
@@ -327,7 +609,7 @@ These three terms are therefore established in divergence form.
 
 ---
 
-### 10.3 Mixed first-order terms - verified variable-coefficient form
+### 10.4 Mixed first-order terms - verified variable-coefficient form
 
 The reference paper gives the following first-order mixed terms:
 
@@ -367,7 +649,7 @@ For constant sectional coefficients, these expressions reduce to the correspondi
 
 ---
 
-### 10.4 Interpretation of the mixed first-order terms
+### 10.5 Interpretation of the mixed first-order terms
 
 The variable-coefficient form cannot be obtained by grouping the two sectional coefficients into a single coefficient before the longitudinal differentiation.
 
@@ -383,7 +665,7 @@ The divergence form is retained so that no explicit longitudinal derivative of t
 
 ---
 
-### 10.5 Established variable-coefficient structure
+### 10.6 Established variable-coefficient structure
 
 The diagonal second-order terms, the mixed first-order terms, and the zero-order off-diagonal terms are all defined for longitudinally varying sectional coefficients.
 
@@ -395,7 +677,7 @@ while the longitudinal differential structure of each nuclear term is retained i
 
 ---
 
-### 10.6 Off-diagonal zero-order terms - direct generalization
+### 10.7 Off-diagonal zero-order terms - direct generalization
 
 The remaining two off-diagonal terms in Eq. (23) do not contain longitudinal derivatives:
 
@@ -415,7 +697,7 @@ These terms require only the numerical evaluation of the corresponding sectional
 
 ---
 
-### 10.7 Status summary
+### 10.8 Status summary
 
 | Nuclear terms | Longitudinal structure | Status |
 |---|---|---|
