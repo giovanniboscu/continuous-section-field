@@ -112,6 +112,15 @@ For every domain $k$, define the CSF constitutive matrix
 ```
 as the local constitutive building block associated with $\Omega^k(x)$.
 
+Under the small-strain linear-elastic assumption, let $\boldsymbol{\varepsilon}_k(x,y,z)$ denote the strain vector and $\boldsymbol{\sigma}_k(x,y,z)$ the corresponding stress vector within domain $k$.
+
+The local constitutive relation is
+
+$$ \boldsymbol{\sigma}_k(x,y,z) = \mathbf{C}_k^{\mathrm{CSF}}(x) \boldsymbol{\varepsilon}_k(x,y,z), \qquad (y,z)\in\Omega^k(x). $$
+
+Thus, $\mathbf{C}_k^{\mathrm{CSF}}(x)$ is the constitutive matrix defining the linear-elastic relation within domain $k$.
+
+
 A closed two-field specialization can be written in terms of $E_k(x)$ and $G_k(x)$.
 
 First define
