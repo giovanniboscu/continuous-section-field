@@ -6,9 +6,9 @@
 
 ## Scope
 
-This note isolates the part of the beam description that, in Giunta, Belouettar, and Carrera (2010), Analysis of FGM Beams by Means of Classical and Advanced Theories, can be associated with the sectional geometry and constitutive representation, separately from the kinematic approximation introduced within the Carrera Unified Formulation.
+This note isolates, from the formulation presented by Giunta, Belouettar, and Carrera (2010), the sectional geometry and constitutive description required for the CSF–CUF coupling, keeping them distinct from the kinematic approximation introduced by the Carrera Unified Formulation.
 
-The reference paper describes a cross-section as a union of transverse sub-domains and introduces a material stiffness matrix over the cross-section. It then introduces the CUF displacement approximation separately.
+The reference paper describes the cross-section as a union of transverse sub-domains and assigns a constitutive stiffness matrix over the sectional domain. The CUF displacement approximation is introduced independently through the transverse approximation functions and the longitudinal displacement amplitudes.
 
 For the CSF–CUF interface considered here, the CSF contribution is therefore restricted to:
 
