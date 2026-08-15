@@ -19,6 +19,20 @@ $$ { \mathcal{S}(x) \longrightarrow \{ \Omega^k(x),\, \mathbf{C}^k(x,y,z) \} \lo
 
 No analytical expression for the sectional integrals and no Navier-type solution are required at this stage.
 
+### 1.1 Correspondence with the reference formulation
+
+| Reference paper | Present formulation | Treatment |
+|---|---|---|
+| Refined Beam Theories | CUF approximation functions | Retained in generic form; no specific approximation family or order is imposed |
+| Governing Differential Equations | Governing equations | Retained and generalized to longitudinally varying sectional coefficients |
+| Variation of the Strain Energy | Variation of the strain energy | Retained with sectional quantities evaluated from $\mathcal{S}(x)$ |
+| Virtual Work of the External Loadings | Virtual work of the external loads | Retained with geometry-dependent quantities evaluated from $\mathcal{S}(x)$ |
+| The Fundamental Nucleo | Longitudinally varying nuclear operator | Retained and generalized to coefficients depending on $x$ |
+| Closed Form Analytical Solution | - | Not adopted; the resulting variable-coefficient problem is left for numerical solution |
+
+---
+
+## 2. Coordinates and sectional representation
 ---
 
 ## 2. Coordinates and sectional representation
