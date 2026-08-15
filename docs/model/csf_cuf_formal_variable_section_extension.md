@@ -503,7 +503,15 @@ $$ K_{zz}^{\tau s}: \quad ( J_{\tau,z s,z}^{33} + J_{\tau,y s,y}^{44} ) \delta c
 
 ### Coupling block `xy`
 
-$$ K_{xy}^{\tau s}: \quad J_{\tau,\varnothing s,y}^{12} \delta a_{,x} b + J_{\tau,y s,\varnothing}^{66} \delta a b_{,x} $$
+$$
+K_{yx}^{\tau s}:
+\quad
+J_{\tau,y\,s,\varnothing}^{12}
+\,\delta b\,a_{,x}
++
+J_{\tau,\varnothing\,s,y}^{66}
+\,\delta b_{,x}\,a
+$$
 
 ### Coupling block `yx`
 
@@ -515,7 +523,15 @@ $$ K_{xz}^{\tau s}: \quad J_{\tau,\varnothing s,z}^{13} \delta a_{,x} c + J_{\ta
 
 ### Coupling block `zx`
 
-$$ K_{zx}^{\tau s}: \quad J_{\tau,z s,\varnothing}^{31} \delta c a_{,x} + J_{\tau,\varnothing s,z}^{55} \delta c_{,x} a $$
+
+K_{zx}^{\tau s}:
+\quad
+J_{\tau,z\,s,\varnothing}^{13}
+\,\delta c\,a_{,x}
++
+J_{\tau,\varnothing\,s,z}^{55}
+\,\delta c_{,x}\,a
+$$
 
 ### Coupling block `yz`
 
@@ -523,7 +539,16 @@ $$ K_{yz}^{\tau s}: \quad ( J_{\tau,y s,z}^{23} + J_{\tau,z s,y}^{44} ) \delta b
 
 ### Coupling block `zy`
 
-$$ K_{zy}^{\tau s}: \quad ( J_{\tau,z s,y}^{32} + J_{\tau,y s,z}^{44} ) \delta c b $$
+$$
+K_{zy}^{\tau s}:
+\quad
+\left(
+J_{\tau,z\,s,y}^{23}
++
+J_{\tau,y\,s,z}^{44}
+\right)
+\delta c\,b
+$$
 
 These expressions constitute the complete fundamental nucleus before longitudinal integration by parts.
 
