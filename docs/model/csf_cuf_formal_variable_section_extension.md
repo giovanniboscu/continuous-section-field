@@ -1,9 +1,7 @@
 #  DRAFT
->The following material presents the current conceptual definition of the CSF–CUF sectional interface. The coupling is still under development and is intended to be implemented through a dedicated software bridge able to provide the sectional data required by the CUF formulation from the CSF representation $\mathcal{S}(x)$.
+>The following material presents the current conceptual definition of the CSF-CUF sectional interface. The coupling is still under development and is intended to be implemented through a dedicated software bridge able to provide the sectional data required by the CUF formulation from the CSF representation $\mathcal{S}(x)$.
 
-# Formal CSF–CUF extension for a longitudinally varying section field
-
-## 1. Scope
+# Formal CSF-CUF extension for a longitudinally varying section field
 
 ## 1. Scope
 
@@ -52,7 +50,7 @@ The CSF representation is denoted by
 
 $$ { \mathcal{S}(x). } $$
 
-At every longitudinal coordinate, $\mathcal{S}(x)$ provied by the mechanical formulation.
+At every longitudinal coordinate $x$, the CSF representation provides the corresponding sectional geometry and constitutive information.
 
 Formally,
 
@@ -192,19 +190,19 @@ $$ F_\tau = F_\tau(y,z), \qquad F_s = F_s(y,z). $$
 
 The longitudinal coordinate $x$ determines instead the physical sectional state supplied by CSF. For every requested value of $x$, the CSF representation provides the corresponding sectional geometry and constitutive information:
 
-$$ x \longrightarrow \mathcal{S}_{\mathrm{CSF}}(x) \longrightarrow \lbrace \Omega^k(x), \mathbf{C}_k^{\mathrm{CSF}}(x) \rbrace_{k=1}^{N_\Omega}. $$
+$$ x \longrightarrow \mathcal{S}(x) \longrightarrow \lbrace \Omega^k(x), \mathbf{C}^k(x,y,z) \rbrace_{k=1}^{N_\Omega}. $$
 
-Thus, changing $x$ changes the domains $\Omega^k(x)$ and the associated constitutive matrices $\mathbf{C}_k^{\mathrm{CSF}}(x)$, while the transverse CUF approximation functions remain functions of $y$ and $z$.
+Thus, changing $x$ changes the domains $\Omega^k(x)$ and the associated constitutive fields $\mathbf{C}^k(x,y,z)$, while the transverse CUF approximation functions remain functions of $y$ and $z$.
 
 The sectional coefficients are consequently functions of $x$ because their integration domains and constitutive data are supplied by the sectional state at that coordinate:
 
-$$ J_\bullet(x) = \mathcal{J}_\bullet^{}[\mathcal{S}_{\mathrm{CSF}}(x), F_\tau, F_s]. $$
+$$ J_\bullet(x) = \mathcal{J}_\bullet[\mathcal{S}(x), F_\tau, F_s]. $$
 
 For example, a sectional coefficient may have the form
 
-$$ J_{\tau s}^{ggk}(x) = \int_{\Omega^k(x)} C_{gg}^{k,\mathrm{CSF}}(x) F_\tau(y,z) F_s(y,z) d\Omega. $$
+$$ J_{\tau s}^{ggk}(x) = \int_{\Omega^k(x)} C_{gg}^{k}(x,y,z) F_\tau(y,z) F_s(y,z) d\Omega. $$
 
-At each longitudinal coordinate $x$, the quantities $\Omega^k(x)$ and $\mathbf{C}_k^{\mathrm{CSF}}(x)$ are known data provided by CSF. Their longitudinal variation therefore does not introduce additional kinematic unknowns.
+At each longitudinal coordinate $x$, the quantities $\Omega^k(x)$ and $\mathbf{C}^k(x,y,z)$ are known data provided by CSF. Their longitudinal variation therefore does not introduce additional kinematic unknowns.
 
 The CUF displacement expansion retains the form
 
@@ -214,7 +212,7 @@ The unknown quantities remain the longitudinal displacement amplitudes $\mathbf{
 
 The specific role of CSF in this coupling is therefore to make the longitudinal coordinate a deterministic query of the physical sectional state:
 
-$$ x \longrightarrow \mathcal{S}_{\mathrm{CSF}}(x). $$
+$$ x \longrightarrow \mathcal{S}(x). $$
 
 As $x$ varies, CSF determines the section on which the CUF sectional quantities are evaluated, while the transverse expansion remains defined in the physical coordinates $y$ and $z$.
 
@@ -280,15 +278,14 @@ The entries are built from the same CUF sectional coefficient families, now eval
 ---
 
 
-# Longitudinally varying coefficients inside the nuclear operator
-# 10 Longitudinally varying coefficients inside the nuclear operator
+## 10. Longitudinally varying coefficients inside the nuclear operator
 
 > This section builds on the sectional interface defined in
 > [`csf_cuf_sectional_constitutive_interface.md`](csf_cuf_sectional_constitutive_interface.md),
-> where the CSF–CUF coupling and the role of the dedicated software bridge are introduced.
+> where the CSF-CUF coupling and the role of the dedicated software bridge are introduced.
 
 
-## 10.1 Principle
+### 10.1 Principle
 
 When a sectional coefficient multiplying an x-derivative depends on x, the coefficient must remain inside the longitudinal differential operator.
 
@@ -306,7 +303,7 @@ This generalization is directly justified when a nuclear term contains a single 
 
 ---
 
-## 10.2 Diagonal terms - verified
+### 10.2 Diagonal terms - verified
 
 The reference paper gives the three diagonal nuclear terms in Eq. (23) as:
 
@@ -330,113 +327,75 @@ These three terms are therefore established in divergence form.
 
 ---
 
-## 10.3 Mixed first-order terms - variable-coefficient form
+### 10.3 Mixed first-order terms - verified variable-coefficient form
 
 The reference paper gives the following first-order mixed terms:
 
-$$ K_{xy}^{\tau s} = \left( -J_{\tau s,y}^{12k} + J_{\tau,y\,s}^{66k} \right)\,\partial_x $$
+$$ K_{xy}^{\tau s} = \left( -J_{\tau s,y}^{12k} + J_{\tau,y\,s}^{66k} \right)\partial_x $$
 
-$$ K_{yx}^{\tau s} = \left( J_{\tau,y\,s}^{12k} - J_{\tau s,y}^{66k} \right)\,\partial_x $$
+$$ K_{yx}^{\tau s} = \left( J_{\tau,y\,s}^{12k} - J_{\tau s,y}^{66k} \right)\partial_x $$
 
-$$ K_{xz}^{\tau s} = \left( -J_{\tau s,z}^{13k} + J_{\tau,z\,s}^{55k} \right)\,\partial_x $$
+$$ K_{xz}^{\tau s} = \left( -J_{\tau s,z}^{13k} + J_{\tau,z\,s}^{55k} \right)\partial_x $$
 
-$$ K_{zx}^{\tau s} = \left( J_{\tau,z\,s}^{13k} - J_{\tau s,z}^{55k} \right)\,\partial_x $$
+$$ K_{zx}^{\tau s} = \left( J_{\tau,z\,s}^{13k} - J_{\tau s,z}^{55k} \right)\partial_x $$
 
-These terms differ from the diagonal terms in two important respects.
+For longitudinally varying sectional coefficients, the two contributions entering each mixed operator must remain distinct because they originate from different terms of the virtual internal work.
 
-First, they contain a first derivative rather than a second derivative.
+The verified variable-coefficient forms are:
 
-Second, each operator contains a combination of two distinct sectional coefficients.
+$$ K_{xy}^{\tau s}(x)[u_{ys}] = -\partial_x\left( J_{\tau s,y}^{12k}(x)u_{ys}(x) \right) + J_{\tau,y\,s}^{66k}(x)\partial_x u_{ys}(x). $$
 
-For variable coefficients, the operators
+$$ K_{yx}^{\tau s}(x)[u_{xs}] = J_{\tau,y\,s}^{12k}(x)\partial_x u_{xs}(x) - \partial_x\left( J_{\tau s,y}^{66k}(x)u_{xs}(x) \right). $$
 
-$$ J(x)\,\partial_x u(x) $$
+$$ K_{xz}^{\tau s}(x)[u_{zs}] = -\partial_x\left( J_{\tau s,z}^{13k}(x)u_{zs}(x) \right) + J_{\tau,z\,s}^{55k}(x)\partial_x u_{zs}(x). $$
+
+$$ K_{zx}^{\tau s}(x)[u_{xs}] = J_{\tau,z\,s}^{13k}(x)\partial_x u_{xs}(x) - \partial_x\left( J_{\tau s,z}^{55k}(x)u_{xs}(x) \right). $$
+
+The distinction between
+
+$$ J(x)\partial_x u(x) $$
 
 and
 
-$$ \partial_x \left( J(x)\,u(x) \right) $$
+$$ \partial_x\left( J(x)u(x) \right) $$
 
-are not equivalent.
+is therefore retained explicitly.
 
-Consequently, the substitution
-
-$$ J \longrightarrow J(x) $$
-
-inside the already reduced constant-coefficient form is not sufficient to establish the correct variable-section operator.
-
-The four terms
-
-$$ K_{xy},\quad K_{yx},\quad K_{xz},\quad K_{zx} $$
-
-must therefore be re-derived from the virtual internal work before the longitudinal integration by parts used to obtain the reference nuclear form.
+For constant sectional coefficients, these expressions reduce to the corresponding first-order terms of the reference formulation.
 
 > **Note on $K_{zx}^{\tau s}$.** Eq. (23) of Giunta, Belouettar, and Carrera (2010) reports a plus sign in the term involving $J_{\tau s,z}^{55k}$. However, the corresponding expressions in Eqs. (33) and (39) use a minus sign. The re-derivation from the virtual internal work is consistent with the minus sign; therefore the minus sign is adopted in the variable-section formulation.
 
 ---
 
-## 10.4 Why direct substitution is not sufficient for the first-order mixed terms
+### 10.4 Interpretation of the mixed first-order terms
 
-Consider the generic constant-coefficient expression
+The variable-coefficient form cannot be obtained by grouping the two sectional coefficients into a single coefficient before the longitudinal differentiation.
 
-$$ \int_0^l v(x)\,J\,u'(x)\,dx $$
+For example,
 
-with $J$ constant.
+$$ K_{xy}^{\tau s}(x)[u_{ys}] = -\partial_x\left( J_{\tau s,y}^{12k}(x)u_{ys}(x) \right) + J_{\tau,y\,s}^{66k}(x)\partial_x u_{ys}(x) $$
 
-Integration by parts gives
+contains two contributions with different longitudinal operator structures.
 
-$$ \int_0^l v\,J\,u'\,dx = \left[ v\,J\,u \right]_0^l - \int_0^l v'\,J\,u\,dx $$
+If expanded formally, the first term generates a longitudinal derivative of $J_{\tau s,y}^{12k}(x)$, while the coefficient $J_{\tau,y\,s}^{66k}(x)$ remains outside the longitudinal derivative.
 
-If the coefficient becomes $J(x)$, the corresponding weak expression is instead
-
-$$ \int_0^l v(x)\,J(x)\,u'(x)\,dx $$
-
-and the coefficient can no longer be treated as a constant during the longitudinal integration by parts.
-
-The correct mixed operator must therefore be obtained from the variational expression with $J(x)$ retained inside the longitudinal integral.
-
-No assumption about cancellation or survival of coefficient-derivative terms should be made before that derivation is carried out.
+The divergence form is retained so that no explicit longitudinal derivative of the sectional coefficients needs to be introduced in the formulation.
 
 ---
 
-## 10.5 Required derivation protocol for the mixed first-order terms
+### 10.5 Established variable-coefficient structure
 
-The four first-order mixed terms must be re-derived from the virtual internal work before the final longitudinal integration by parts.
+The diagonal second-order terms, the mixed first-order terms, and the zero-order off-diagonal terms are all defined for longitudinally varying sectional coefficients.
 
-The procedure is:
+The dependence on the evolving CSF representation enters through the known sectional fields
 
-1. Start from the virtual internal work before the along-$x$ integration by parts that produces the nuclear operator.
+$$ J_\bullet(x), $$
 
-2. Retain the constitutive coefficients as functions of the longitudinal coordinate:
-
-$$ \mathbf{C}^k = \mathbf{C}^k(x,y,z) $$
-
-3. Substitute the CUF displacement expansion and the strain-displacement relations.
-
-4. Perform the transverse integration over the current sub-domain:
-
-$$ \Omega^k(x) $$
-
-so that the corresponding sectional coefficients are obtained as functions of $x$:
-
-$$ J_\bullet^k(x) $$
-
-5. Keep these coefficients inside the longitudinal variational integral.
-
-6. Perform the longitudinal integration by parts only at this stage, without assuming that the sectional coefficients are constant.
-
-7. Record the resulting bilinear form and only then identify the corresponding nuclear operator.
-
-A complete derivation should first be carried out for one representative pair, for example
-
-$$ K_{xy}^{\tau s}(x),\qquad K_{yx}^{\tau s}(x) $$
-
-and the verified result can then be used as the basis for the structurally analogous pair
-
-$$ K_{xz}^{\tau s}(x),\qquad K_{zx}^{\tau s}(x). $$
+while the longitudinal differential structure of each nuclear term is retained in the appropriate divergence or first-order form.
 
 ---
 
-## 10.6 Off-diagonal zero-order terms - direct generalization
+### 10.6 Off-diagonal zero-order terms - direct generalization
 
 The remaining two off-diagonal terms in Eq. (23) do not contain longitudinal derivatives:
 
@@ -456,7 +415,7 @@ These terms require only the numerical evaluation of the corresponding sectional
 
 ---
 
-## 10.7 Status summary
+### 10.7 Status summary
 
 | Nuclear terms | Longitudinal structure | Status |
 |---|---|---|
@@ -467,13 +426,7 @@ These terms require only the numerical evaluation of the corresponding sectional
 | $K_{xz}^{\tau s}(x)$, $K_{zx}^{\tau s}(x)$ | two coefficients × first derivative | Verified - variable-coefficient form |
 | $K_{yz}^{\tau s}(x)$, $K_{zy}^{\tau s}(x)$ | zero-order in $x$ | Direct generalization |
 
-Until the four first-order mixed terms are re-derived, the operator
-
-$$ \mathbf{K}_{\tau s}\left[\mathcal{S}(x),\partial_x\right] $$
-
-should be regarded as only partially established in its variable-section form.
-
-The diagonal second-order terms and the off-diagonal zero-order terms are defined, while the four first-order mixed terms remain an explicit open derivation item.
+The variable-section structure of the complete nuclear operator is therefore established at the formal level. The sectional coefficients remain known functions of the longitudinal coordinate generated from the CSF representation.
 
 ---
 
@@ -481,7 +434,7 @@ The diagonal second-order terms and the off-diagonal zero-order terms are define
 
 The reference paper proceeds further and adopts a Navier-type solution along $x$.
 
-That step is not required for the present CSF–CUF formulation.
+That step is not required for the present CSF-CUF formulation.
 
 The formal development may stop at
 
@@ -502,7 +455,7 @@ It requires only the capability to evaluate $\mathcal{S}(x)$ and the correspondi
 
 ---
 
-## 12. Formal CSF–CUF chain
+## 12. Formal CSF-CUF chain
 
 The complete formal chain is
 
@@ -569,6 +522,6 @@ Within this coupling, CSF provides the longitudinally evolving sectional represe
 
 ### References
 
-- G. Giunta, S. Belouettar, E. Carrera, **“Analysis of FGM Beams by Means of Classical and Advanced Theories”**, *Mechanics of Advanced Materials and Structures*, 17 (2010), 622–635.
+- G. Giunta, S. Belouettar, E. Carrera, **“Analysis of FGM Beams by Means of Classical and Advanced Theories”**, *Mechanics of Advanced Materials and Structures*, 17 (2010), 622-635.
 
 - S. O. Ojo, P. M. Weaver, **“Efficient strong Unified Formulation for stress analysis of non-prismatic beam structures”**, 2021.
