@@ -38,6 +38,7 @@ At each longitudinal coordinate $x$, let the cross-section be denoted by
 ```math
 \Omega(x).
 ```
+
 The cross-section is composed of $N_\Omega$ distinct transverse domains:
 
 ```math
@@ -48,6 +49,7 @@ The cross-section is composed of $N_\Omega$ distinct transverse domains:
 \Omega^k(x)
 }
 ```
+
 where:
 
 - $N_\Omega$ is the number of transverse domains;
@@ -61,6 +63,7 @@ In the reference paper, the cross-section is constant along the beam axis. In th
 \Omega^k=\Omega^k(x)
 }
 ```
+
 so that geometry is represented as a longitudinal field rather than as a single fixed cross-section.
 
 ---
@@ -76,6 +79,7 @@ For the present CSF representation, define two independent stiffness fields for 
 E_k=E_k(x)
 }
 ```
+
 and
 
 ```math
@@ -83,6 +87,7 @@ and
 G_k=G_k(x)
 }
 ```
+
 where:
 
 - $E_k(x)$ is the longitudinal/normal stiffness field associated with domain $k$;
@@ -97,29 +102,30 @@ When the closed $6\times6$ matrix below is adopted, the pair $E_k(x),G_k(x)$ imp
 =
 \frac{E_k(x)}{2G_k(x)}-1.
 ```
+
 Thus the two CSF stiffness laws remain independent inputs, while the chosen closure retains the corresponding isotropic algebraic structure locally. This closure is a constitutive specialization, not a fully general anisotropic law.
 
 ---
 
 ## 4. Domain constitutive matrix as a CSF building block
 
-For every domain $k$, define the CSF constitutive matrix
+For every domain $k$, define the constitutive matrix
 
 ```math
 \boxed{
-\mathbf C_k^{\mathrm{CSF}}(x)
+\mathbf C^k(x,y,z)
 }
 ```
+
 as the local constitutive building block associated with $\Omega^k(x)$.
 
 Under the small-strain linear-elastic assumption, let $\boldsymbol{\varepsilon}_k(x,y,z)$ denote the strain vector and $\boldsymbol{\sigma}_k(x,y,z)$ the corresponding stress vector within domain $k$.
 
 The local constitutive relation is
 
-$$ \boldsymbol{\sigma}_k(x,y,z) = \mathbf{C}_k^{\mathrm{CSF}}(x) \boldsymbol{\varepsilon}_k(x,y,z), \qquad (y,z)\in\Omega^k(x). $$
+$$ \boldsymbol{\sigma}_k(x,y,z) = \mathbf{C}^k(x,y,z) \boldsymbol{\varepsilon}_k(x,y,z), \qquad (y,z)\in\Omega^k(x). $$
 
-Thus, $\mathbf{C}_k^{\mathrm{CSF}}(x)$ is the constitutive matrix defining the linear-elastic relation within domain $k$.
-
+Thus, $\mathbf{C}^k(x,y,z)$ is the constitutive matrix defining the linear-elastic relation within domain $k$.
 
 A closed two-field specialization can be written in terms of $E_k(x)$ and $G_k(x)$.
 
@@ -137,11 +143,14 @@ E_k(x)-2G_k(x)
 }
 }
 ```
+
 and then
 
 ```math
 \boxed{
-\mathbf C_k^{\mathrm{CSF}}(x)
+\mathbf C^k(x,y,z)
+=
+\mathbf C^k(x)
 =
 \begin{bmatrix}
 \lambda_k(x)+2G_k(x) & \lambda_k(x) & \lambda_k(x) & 0 & 0 & 0 \\
@@ -153,15 +162,16 @@ and then
 \end{bmatrix}
 }
 ```
+
 Equivalent component form:
 
 ```math
 \boxed{
-C_{11}^{k,\mathrm{CSF}}(x)
+C_{11}^{k}(x)
 =
-C_{22}^{k,\mathrm{CSF}}(x)
+C_{22}^{k}(x)
 =
-C_{33}^{k,\mathrm{CSF}}(x)
+C_{33}^{k}(x)
 =
 G_k(x)
 \frac{
@@ -171,13 +181,14 @@ G_k(x)
 }
 }
 ```
+
 ```math
 \boxed{
-C_{12}^{k,\mathrm{CSF}}(x)
+C_{12}^{k}(x)
 =
-C_{13}^{k,\mathrm{CSF}}(x)
+C_{13}^{k}(x)
 =
-C_{23}^{k,\mathrm{CSF}}(x)
+C_{23}^{k}(x)
 =
 G_k(x)
 \frac{
@@ -187,19 +198,21 @@ E_k(x)-2G_k(x)
 }
 }
 ```
+
 and
 
 ```math
 \boxed{
-C_{44}^{k,\mathrm{CSF}}(x)
+C_{44}^{k}(x)
 =
-C_{55}^{k,\mathrm{CSF}}(x)
+C_{55}^{k}(x)
 =
-C_{66}^{k,\mathrm{CSF}}(x)
+C_{66}^{k}(x)
 =
 G_k(x).
 }
 ```
+
 Thus, for each transverse domain,
 
 ```math
@@ -210,9 +223,10 @@ E_k(x),
 G_k(x)
 \right\}
 \longrightarrow
-\mathbf C_k^{\mathrm{CSF}}(x)
+\mathbf C^k(x,y,z)
 }
 ```
+
 This is the constitutive building block supplied by CSF.
 
 > **Important:** this is a two-field constitutive closure. It is not a fully general anisotropic constitutive law. A fully general anisotropic material would require additional independent constitutive coefficients.
@@ -227,27 +241,29 @@ For a point $(y,z)$ belonging to domain $\Omega^k(x)$,
 
 ```math
 \boxed{
-\mathbf C^{\mathrm{CSF}}(x,y,z)
+\mathbf C(x,y,z)
 =
-\mathbf C_k^{\mathrm{CSF}}(x),
+\mathbf C^k(x,y,z),
 \qquad
 (y,z)\in\Omega^k(x)
 }
 ```
-Hence the complete CSF material field is piecewise-defined over the cross-section:
+
+Hence the complete material field is piecewise-defined over the cross-section:
 
 ```math
 \boxed{
-\mathbf C^{\mathrm{CSF}}(x,y,z)
+\mathbf C(x,y,z)
 =
 \begin{cases}
-\mathbf C_1^{\mathrm{CSF}}(x), & (y,z)\in\Omega^1(x),\\
-\mathbf C_2^{\mathrm{CSF}}(x), & (y,z)\in\Omega^2(x),\\
+\mathbf C^1(x,y,z), & (y,z)\in\Omega^1(x),\\
+\mathbf C^2(x,y,z), & (y,z)\in\Omega^2(x),\\
 \vdots & \\
-\mathbf C_{N_\Omega}^{\mathrm{CSF}}(x), & (y,z)\in\Omega^{N_\Omega}(x).
+\mathbf C^{N_\Omega}(x,y,z), & (y,z)\in\Omega^{N_\Omega}(x).
 \end{cases}
 }
 ```
+
 This representation naturally allows discontinuities of material properties across domain boundaries.
 
 ---
@@ -258,26 +274,28 @@ The complete sectional information that CSF can provide at any longitudinal coor
 
 ```math
 \boxed{
-\mathcal S_{\mathrm{CSF}}(x)
+\mathcal S(x)
 =
 \left\{
 \Omega^k(x),
-\mathbf C_k^{\mathrm{CSF}}(x)
+\mathbf C^k(x,y,z)
 \right\}_{k=1}^{N_\Omega}
 }
 ```
+
 or, equivalently, as two fields:
 
 ```math
 \boxed{
-\mathcal S_{\mathrm{CSF}}(x)
+\mathcal S(x)
 \equiv
 \left\{
 \Omega(x),
-\mathbf C^{\mathrm{CSF}}(x,y,z)
+\mathbf C(x,y,z)
 \right\}.
 }
 ```
+
 This is the general geometry-and-material representation supplied by CSF.
 
 The two longitudinal evolutions are distinct:
@@ -287,13 +305,15 @@ The two longitudinal evolutions are distinct:
 \Omega^k(x)
 }
 ```
+
 describes the evolution of the geometry, while
 
 ```math
 \boxed{
-\mathbf C_k^{\mathrm{CSF}}(x)
+\mathbf C^k(x,y,z)
 }
 ```
+
 describes the evolution of the constitutive properties.
 
 ---
@@ -307,6 +327,7 @@ F_\tau(y,z),
 \qquad
 F_s(y,z),
 ```
+
 their transverse derivatives, the approximation order, and the displacement amplitudes.
 
 These quantities do not belong to the CSF geometry or material representation.
@@ -319,11 +340,12 @@ A typical CUF coefficient has the structure
 J
 \sim
 \int_{\Omega^k}
-C_{ij}
+C_{ij}^{k}
 \,F_\tau
 \,F_s
 \,d\Omega,
 ```
+
 or analogous expressions involving derivatives of $F_\tau$ and $F_s$.
 
 Consequently, its evaluation requires both:
@@ -333,7 +355,7 @@ Consequently, its evaluation requires both:
 \underbrace{
 \left\{
 \Omega^k(x),
-\mathbf C_k^{\mathrm{CSF}}(x)
+\mathbf C^k(x,y,z)
 \right\}
 }_{\text{provided by CSF}}
 +
@@ -344,6 +366,7 @@ F_\tau,F_s,\ldots
 }_{\text{defined by CUF}}
 }
 ```
+
 Only after these two parts are combined can the CUF sectional coefficients be evaluated.
 
 The interface can therefore be summarized as
@@ -354,12 +377,13 @@ The interface can therefore be summarized as
 \longrightarrow
 \left\{
 \Omega^k(x),
-\mathbf C_k^{\mathrm{CSF}}(x)
+\mathbf C^k(x,y,z)
 \right\}_{k=1}^{N_\Omega}
 \longrightarrow
 \text{CUF formulation}
 }
 ```
+
 The CUF approximation remains entirely outside the CSF representation.
 
 ---
