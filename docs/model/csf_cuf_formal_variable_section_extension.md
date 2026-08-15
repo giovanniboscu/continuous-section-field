@@ -50,11 +50,11 @@ The CSF representation is denoted by
 
 $$ { \mathcal{S}(x). } $$
 
-At every longitudinal coordinate, $\mathcal{S}(x)$ provides the sectional geometry and the constitutive information required by the mechanical formulation.
+At every longitudinal coordinate, $\mathcal{S}(x)$ provied by the mechanical formulation.
 
 Formally,
 
-$$ { \mathcal{S}(x) \longrightarrow \{ \Omega^k(x),\, \mathbf{C}^k(x,y,z) \}_{k=1}^{N_\Omega}. } $$
+$$ \mathcal{S}(x) \longrightarrow \lbrace (\Omega^k(x),\mathbf{C}^k(x,y,z)) \rbrace_{k=1}^{N_\Omega} $$
 
 Here $\mathbf{C}^k(x,y,z)$ denotes the constitutive matrix over sub-domain $k$.
 
