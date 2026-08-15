@@ -33,9 +33,6 @@ No analytical expression for the sectional integrals and no Navier-type solution
 ---
 
 ## 2. Coordinates and sectional representation
----
-
-## 2. Coordinates and sectional representation
 
 The CUF notation is retained.
 
