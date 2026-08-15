@@ -481,7 +481,7 @@ $$ C_{11}, \quad C_{22}, \quad C_{33}, \quad C_{44}, \quad C_{55}, \quad C_{66},
 
 together with
 
-$$ C_{12}=C_{21}, \qquad C_{13}=C_{31}, \qquad C_{23}=C_{32}. $$
+$$ C_{12}=C_{21}, \qquad C_{13}=C_{13}, \qquad C_{23}=C_{23}. $$
 
 The internal virtual work is
 
