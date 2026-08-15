@@ -280,7 +280,7 @@ These three terms are therefore established in divergence form.
 
 ---
 
-## 10.3 Mixed first-order terms - not yet verified
+## 10.3 Mixed first-order terms - variable-coefficient form
 
 The reference paper gives the following first-order mixed terms:
 
@@ -517,20 +517,8 @@ Within this coupling, CSF provides the longitudinally evolving sectional represe
 
 ---
 
-## Reference
+### References
 
-G. Giunta, S. Belouettar, E. Carrera,  
-**“Analysis of FGM Beams by Means of Classical and Advanced Theories”**,  
-*Mechanics of Advanced Materials and Structures*, 17 (2010), 622–635.
+- G. Giunta, S. Belouettar, E. Carrera, **“Analysis of FGM Beams by Means of Classical and Advanced Theories”**, *Mechanics of Advanced Materials and Structures*, 17 (2010), 622–635.
 
-The present note uses, as its formal basis, the paper's:
-
-- cross-section decomposition;
-- constitutive representation;
-- CUF displacement expansion;
-- Principle of Virtual Displacements;
-- sectional coefficient families of Eq. (24);
-- fundamental nuclear structure;
-- surface- and line-load treatment.
-
-The closed-form analytical evaluation used in the paper is not retained as a requirement of the CSF extension.
+- S. O. Ojo, P. M. Weaver, **“Efficient strong Unified Formulation for stress analysis of non-prismatic beam structures”**, 2021.
