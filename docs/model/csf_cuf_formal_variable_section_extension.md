@@ -257,6 +257,10 @@ For this worked example, consider the specific coefficient
 
 $$ J_{2,y\,2,y}^{66,1}(x). $$
 
+> 
+>  (6,6) it is taken from the constitutive matrix defined in 
+> [CSF sectional constitutive representation for CUF coupling](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_sectional_constitutive_interface.md).
+
 The objective is to determine this coefficient completely and obtain an explicit numerical function of the longitudinal coordinate `x`.
 
 ### Origin of all indices and quantities
