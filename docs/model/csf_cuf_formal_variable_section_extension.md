@@ -282,7 +282,7 @@ $$ J_{\tau,\phi s,\xi}^{mn,k}(x) = \int_{\Omega^k(x)} C_{mn}^{k}(x,y,z) F_{\tau,
 >
 > The derivative selectors are
 >
-> $$ \phi,\xi \in \{\varnothing,y,z\}. $$
+> $$ \phi,\xi \in \lbrace \varnothing,y,z \rbrace. $$
 >
 > The symbol
 >
