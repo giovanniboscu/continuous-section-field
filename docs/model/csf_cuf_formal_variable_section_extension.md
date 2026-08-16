@@ -245,6 +245,121 @@ $$ \mathcal{S}(x) \longrightarrow \{ \Omega^k(x), \mathbf{C}^{k}(x,y,z) \} \long
 
 No analytical longitudinal expression for these coefficients is required.
 
+---
+
+### 5.X Worked example: evaluation of one sectional coefficient
+
+To make the meaning of the sectional coefficients explicit, consider the coefficient
+
+$$ J_{\tau,y s,\varnothing}^{66,k}(x) = \int_{\Omega^k(x)} C_{66}^{k}(x,y,z) F_{\tau,y}(y,z) F_s(y,z) \, \mathrm{d}\Omega. $$
+
+This coefficient contains:
+
+- the sub-domain $k$ supplied by CSF;
+- the physical domain $\Omega^k(x)$ of that sub-domain;
+- the constitutive component $C_{66}^{k}(x,y,z)$;
+- the CUF approximation function $F_\tau(y,z)$;
+- the derivative of $F_\tau(y,z)$ with respect to $y$;
+- the CUF approximation function $F_s(y,z)$ without transverse differentiation.
+
+Consider a requested longitudinal coordinate
+
+$$ x = x_q. $$
+
+At this coordinate, the CSF representation provides the physical sub-domain
+
+$$ \Omega^k(x_q) $$
+
+and its constitutive field
+
+$$ C_{66}^{k}(x_q,y,z). $$
+
+For a simple illustrative case, assume that the sub-domain at $x_q$ is rectangular and is defined by
+
+$$ 0 \le y \le b_k(x_q), $$
+
+and
+
+$$ 0 \le z \le h_k(x_q), $$
+
+where $b_k(x_q)$ and $h_k(x_q)$ are respectively the dimensions of the sub-domain along the transverse coordinates $y$ and $z$.
+
+Assume also that the constitutive component is uniform inside this sub-domain:
+
+$$ C_{66}^{k}(x_q,y,z) = G_k(x_q), $$
+
+where $G_k(x_q)$ denotes the corresponding shear stiffness component at the requested longitudinal coordinate.
+
+Now choose the CUF approximation functions
+
+$$ F_\tau(y,z) = y, $$
+
+and
+
+$$ F_s(y,z) = 1. $$
+
+The required transverse derivative is therefore
+
+$$ F_{\tau,y}(y,z) = \frac{\partial F_\tau(y,z)}{\partial y} = 1. $$
+
+Substituting these quantities into the definition gives
+
+$$ J_{\tau,y s,\varnothing}^{66,k}(x_q) = \int_{\Omega^k(x_q)} G_k(x_q) \cdot 1 \cdot 1 \, \mathrm{d}\Omega. $$
+
+Therefore,
+
+$$ J_{\tau,y s,\varnothing}^{66,k}(x_q) = G_k(x_q) \int_{\Omega^k(x_q)} \mathrm{d}\Omega. $$
+
+The remaining integral is the area of sub-domain $k$ at $x_q$:
+
+$$ A_k(x_q) = \int_{\Omega^k(x_q)} \mathrm{d}\Omega. $$
+
+For the rectangular domain considered here,
+
+$$ A_k(x_q) = b_k(x_q) h_k(x_q). $$
+
+Hence,
+
+$$ J_{\tau,y s,\varnothing}^{66,k}(x_q) = G_k(x_q) A_k(x_q). $$
+
+Equivalently,
+
+$$ J_{\tau,y s,\varnothing}^{66,k}(x_q) = G_k(x_q) b_k(x_q) h_k(x_q). $$
+
+This simple example shows explicitly how the coefficient is constructed.
+
+The CSF representation determines
+
+$$ x_q \longrightarrow \mathcal{S}(x_q) \longrightarrow \left\{ \Omega^k(x_q), C_{66}^{k}(x_q,y,z) \right\}. $$
+
+The CUF formulation determines
+
+$$ F_\tau(y,z), \qquad F_s(y,z), \qquad F_{\tau,y}(y,z). $$
+
+The sectional integration combines these quantities:
+
+$$ \left\{ \Omega^k(x_q), C_{66}^{k}(x_q,y,z) \right\} + \left\{ F_{\tau,y}(y,z), F_s(y,z) \right\} \longrightarrow J_{\tau,y s,\varnothing}^{66,k}(x_q). $$
+
+For a general CSF sub-domain, the same procedure is retained.
+
+The domain does not need to be rectangular, the constitutive component does not need to be uniform, and the CUF approximation functions do not need to be linear.
+
+The coefficient is then evaluated over the actual physical domain supplied by the CSF representation:
+
+$$ J_{\tau,y s,\varnothing}^{66,k}(x_q) = \int_{\Omega^k(x_q)} C_{66}^{k}(x_q,y,z) F_{\tau,y}(y,z) F_s(y,z) \, \mathrm{d}\Omega. $$
+
+In numerical form, the evaluation follows the sequence
+
+$$ x_q \longrightarrow \mathcal{S}(x_q) \longrightarrow \left\{ \Omega^k(x_q), \mathbf{C}^{k}(x_q,y,z) \right\} \longrightarrow \text{sectional integration} \longrightarrow J_{\tau,y s,\varnothing}^{66,k}(x_q). $$
+
+Thus, evaluating one sectional coefficient at a given longitudinal coordinate consists of four operations:
+
+1. query $\mathcal{S}(x_q)$ to obtain the current physical sub-domain and constitutive data;
+2. evaluate the required CUF approximation functions and their transverse derivatives;
+3. construct the integrand over the physical sub-domain;
+4. integrate that quantity over $\Omega^k(x_q)$.
+
+Repeating this operation for the required coefficient families and for all transverse sub-domains generates the sectional coefficients entering the CUF fundamental nucleus.
 
 ---
 
