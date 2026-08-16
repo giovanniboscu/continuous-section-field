@@ -339,7 +339,6 @@ $$ J_{\tau,\phi s,\xi}^{mn,k}(x) = \int_{\Omega^k(x)} C_{mn}^{k}(x,y,z) F_{\tau,
 > 7. integrate the resulting quantity over Ωᵏ(x) to obtain Jτ,φs,ξᵐⁿ,ᵏ(x).
 
 
-
 For this worked example, consider the specific coefficient
 
 $$ J_{2,y\,2,y}^{66,1}(x). $$
@@ -574,6 +573,181 @@ For any coefficient family,
 $$ { J_\bullet(x) = \sum_{k=1}^{N_\Omega} J_\bullet^k(x). } $$
 
 Therefore the global CUF sectional coefficients become longitudinal fields generated from $\mathcal{S}(x)$.
+
+---
+
+ ## Worked example: assembly of the global sectional coefficient
+
+ The global sectional coefficient is defined as
+
+ $$ J_{\tau,\phi s,\xi}^{mn}(x) = \sum_{k=1}^{N_\Omega} J_{\tau,\phi s,\xi}^{mn,k}(x). $$
+
+ This example continues the sub-domain evaluation of §5.1, where the contribution of sub-domain `k = 1` was fully resolved as
+
+ $$ J_{2,y\,2,y}^{66,1}(x)=130000000-3900000x+26000x^2\ \mathrm{N}, \qquad x \text{ in metres.} $$
+
+ To assemble the global coefficient, a second transverse sub-domain is introduced. Therefore,
+
+ $$ N_\Omega=2. $$
+
+ The same CUF term is retained:
+
+ $$ m=6,\qquad n=6,\qquad \tau=2,\qquad s=2,\qquad \phi=y,\qquad \xi=y. $$
+
+ The same transverse CUF factors therefore apply in both sub-domains, because they depend on the selected CUF basis and not on the sub-domain index.
+
+ On the virtual/test side,
+
+ $$ F_{2,y}(y,z)=1. $$
+
+ On the displacement/trial side,
+
+ $$ F_{2,y}(y,z)=1. $$
+
+ For sub-domain `k = 2`, the corresponding sectional contribution is therefore
+
+ $$ J_{2,y\,2,y}^{66,2}(x) = \int_{\Omega^2(x)} C_{66}^{2}(x,y,z)\,\mathrm{d}\Omega. $$
+
+ ### Sub-domain 2 data
+
+ | Quantity | Value used in the example | Role |
+ |---|---:|---|
+ | k | 2 | Selects the second transverse sub-domain |
+ | G₂(x) | 15 × 10⁹ (1 + 0.05 x/L) Pa | Shear stiffness field associated with sub-domain 2 |
+ | C₆₆²(x,y,z) | C₆₆²(x) = G₂(x) | Entry at row 6 and column 6 of the constitutive matrix of sub-domain 2 |
+ | y extent | -0.03 ≤ y ≤ 0.03 m | Constant transverse extent along y |
+ | z extent | 0.025 ≤ z ≤ 0.045 m | Constant transverse extent along z; sub-domain 2 is located above sub-domain 1 |
+ | L | 10 m | Same beam length used in §5.1 |
+
+ The constitutive field assigned to sub-domain 2 is
+
+ $$ G_2(x)=15\times10^9(1+0.05\frac{x}{L})\ \mathrm{Pa}. $$
+
+ From the constitutive matrix associated with sub-domain `k = 2`,
+
+ $$ C_{66}^{2}(x,y,z)=C_{66}^{2}(x)=G_2(x). $$
+
+ Therefore,
+
+ $$ C_{66}^{2}(x)=15\times10^9(1+0.05\frac{x}{L})\ \mathrm{Pa}. $$
+
+ Sub-domain 2 represents a second material region attached above sub-domain 1. Its cross-sectional extent is constant, while its shear stiffness increases along `x`. This provides a longitudinal trend opposite to sub-domain 1, whose corresponding constitutive contribution decreases along `x`.
+
+ ### Evaluation of the sub-domain 2 coefficient
+
+ The coefficient is
+
+ $$ J_{2,y\,2,y}^{66,2}(x) = \int_{\Omega^2(x)} C_{66}^{2}(x)\,\mathrm{d}\Omega. $$
+
+ Using the physical limits of sub-domain 2,
+
+ $$ J_{2,y\,2,y}^{66,2}(x) = \int_{0.025}^{0.045}\int_{-0.03}^{0.03} C_{66}^{2}(x)\,\mathrm{d}y\,\mathrm{d}z. $$
+
+ Since the constitutive component is uniform over the transverse coordinates `y` and `z`, it can be taken outside the sectional integrals:
+
+ $$ J_{2,y\,2,y}^{66,2}(x) = C_{66}^{2}(x)\int_{0.025}^{0.045}\int_{-0.03}^{0.03}\mathrm{d}y\,\mathrm{d}z. $$
+
+ The integration with respect to `y` gives
+
+ $$ \int_{-0.03}^{0.03}\mathrm{d}y=0.06\ \mathrm{m}. $$
+
+ The integration with respect to `z` gives
+
+ $$ \int_{0.025}^{0.045}\mathrm{d}z=0.02\ \mathrm{m}. $$
+
+ Therefore, the area of sub-domain 2 is
+
+ $$ 0.06\times0.02=0.0012\ \mathrm{m}^2. $$
+
+ Hence,
+
+ $$ J_{2,y\,2,y}^{66,2}(x) = C_{66}^{2}(x)(0.0012\ \mathrm{m}^2). $$
+
+ Substituting the constitutive law,
+
+ $$ J_{2,y\,2,y}^{66,2}(x) = 15\times10^9(1+0.05\frac{x}{L})(0.0012). $$
+
+ Therefore,
+
+ $$ J_{2,y\,2,y}^{66,2}(x) = 18000000(1+0.05\frac{x}{L})\ \mathrm{N}. $$
+
+ Using
+
+ $$ L=10\ \mathrm{m}, $$
+
+ the resolved contribution of sub-domain 2 is
+
+ $$ \boxed{J_{2,y\,2,y}^{66,2}(x)=18000000+90000x\ \mathrm{N}.} $$
+
+ ### Global assembly
+
+ Because
+
+ $$ N_\Omega=2, $$
+
+ the global coefficient is obtained by summing the two sub-domain contributions:
+
+ $$ J_{2,y\,2,y}^{66}(x) = J_{2,y\,2,y}^{66,1}(x) + J_{2,y\,2,y}^{66,2}(x). $$
+
+ Substituting the two resolved expressions gives
+
+ $$ J_{2,y\,2,y}^{66}(x) = (130000000-3900000x+26000x^2) + (18000000+90000x). $$
+
+ Collecting equal powers of `x`,
+
+ $$ \boxed{J_{2,y\,2,y}^{66}(x)=148000000-3810000x+26000x^2\ \mathrm{N}.} $$
+
+ ### Numerical checks
+
+ | x (m) | J⁶⁶,¹(x) (N) | J⁶⁶,²(x) (N) | J⁶⁶(x) (N) |
+ |---:|---:|---:|---:|
+ | 0 | 130 000 000 | 18 000 000 | **148 000 000** |
+ | 5 | 111 150 000 | 18 450 000 | **129 600 000** |
+ | 10 | 93 600 000 | 18 900 000 | **112 500 000** |
+
+ At
+
+ $$ x=10\ \mathrm{m}, $$
+
+ the contribution of sub-domain 1 is
+
+ $$ J_{2,y\,2,y}^{66,1}(10)=130000000-3900000(10)+26000(10)^2=93600000\ \mathrm{N}. $$
+
+ The contribution of sub-domain 2 is
+
+ $$ J_{2,y\,2,y}^{66,2}(10)=18000000+90000(10)=18900000\ \mathrm{N}. $$
+
+ Their sum is
+
+ $$ 93600000+18900000=112500000\ \mathrm{N}. $$
+
+ The global expression gives the same value:
+
+ $$ J_{2,y\,2,y}^{66}(10)=148000000-3810000(10)+26000(10)^2=112500000\ \mathrm{N}. $$
+
+ ### Interpretation
+
+ The assembled coefficient is a longitudinal field obtained by summing the contributions of all transverse sub-domains:
+
+ $$ J_{2,y\,2,y}^{66}(x)=\sum_{k=1}^{2}J_{2,y\,2,y}^{66,k}(x). $$
+
+ In this example, the constitutive contribution of sub-domain 1 decreases along `x`, while the constitutive contribution of sub-domain 2 increases along `x`.
+
+ Nevertheless, the global coefficient decreases over the interval
+
+ $$ 0\le x\le L. $$
+
+ For the resolved global polynomial,
+
+ $$ \frac{\mathrm{d}J_{2,y\,2,y}^{66}}{\mathrm{d}x}=-3810000+52000x. $$
+
+ Over
+
+ $$ 0\le x\le10\ \mathrm{m}, $$
+
+ this derivative remains negative, so the global coefficient decreases monotonically over the complete beam length.
+
+ This example admits a closed-form expression because the sectional geometry and constitutive laws were deliberately chosen as simple analytical functions. In the general CSF-CUF formulation, a closed-form longitudinal expression for the sectional coefficients is not required: the global coefficient can instead be assembled numerically from the sub-domain contributions evaluated at the longitudinal coordinates requested by the solver.
 
 ---
 
