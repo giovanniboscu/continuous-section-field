@@ -47,7 +47,41 @@ The displacement field is defined at every point $(y,z)$ belonging to the curren
 
 ---
 
-## 3. CUF transverse approximation
+## 3. Geometrical premise of the CUF beam expansion
+
+The CUF beam formulation is introduced for a structural body characterized by one predominant dimension. Let $x$ denote the coordinate along this predominant longitudinal direction, while $y$ and $z$ denote the coordinates in the transverse plane orthogonal to it.
+
+Under this geometrical premise, the three-dimensional displacement field is approximated by expanding its dependence over the transverse coordinates through the CUF functions $F_\tau(y,z)$, while the corresponding unknown amplitudes depend on the longitudinal coordinate $x$.
+
+No additional requirement that the cross-section be invariant along $x$ is introduced here as a premise of the CUF displacement expansion. In particular, constancy of the sectional geometry, sectional shape, or constitutive properties along the longitudinal coordinate is not imposed by the kinematic statement itself.
+
+Accordingly, the transverse domain may be written in the more general form
+
+$$ \Omega=\Omega(x). $$
+
+provided that, at every longitudinal coordinate $x$, $\Omega(x)$ remains the transverse section associated with the predominant beam direction.
+
+The CUF displacement expansion can therefore retain the form
+
+$$ \mathbf{u}(x,y,z)=\sum_{\tau=1}^{M}F_\tau(y,z)\,\mathbf{u}_\tau(x), \qquad (y,z)\in\Omega(x). $$
+
+Here, $M$ is the number of retained transverse approximation terms, $F_\tau(y,z)$ is the CUF transverse approximation function associated with index $\tau$, and $\mathbf{u}_\tau(x)$ is the corresponding vector of unknown longitudinal displacement amplitudes.
+
+The dependence of $\Omega(x)$ on $x$ does not introduce an additional kinematic unknown. At a prescribed longitudinal coordinate $x$, the current transverse domain is known from the sectional representation and defines the physical region over which the CUF transverse approximation is evaluated.
+
+In the CSF-CUF coupling, this distinction is fundamental. The CUF kinematic premise is retained, while CSF supplies the longitudinally evolving sectional state. Consequently, a constant cross-section is recovered as the particular case
+
+$$ \Omega(x)=\Omega. $$
+
+whereas the general CSF representation permits
+
+$$ x\longmapsto\mathcal{S}(x)\longmapsto\Omega(x). $$
+
+The longitudinal variation of the section therefore affects the sectional integrations and the resulting sectional coefficients, rather than constituting an additional restriction on the CUF displacement expansion.
+
+---
+
+## 4. CUF transverse approximation
 
 Let $M$ denote the number of transverse approximation terms retained in the CUF expansion.
 
@@ -81,7 +115,7 @@ $$ u_z(x,y,z) = \sum_{\tau=1}^{M} F_\tau(y,z)\,u_{z\tau}(x). $$
 
 ---
 
-## 4. Separation between transverse and longitudinal dependence
+## 5. Separation between transverse and longitudinal dependence
 
 The CUF expansion separates the transverse dependence from the longitudinal unknowns.
 
@@ -103,7 +137,7 @@ The approximation order and the specific family of functions $F_\tau$ are CUF ch
 
 ---
 
-## 5. Relation with the longitudinally varying CSF section
+## 6. Relation with the longitudinally varying CSF section
 
 The CSF representation determines the physical sectional state at each longitudinal coordinate:
 
@@ -127,7 +161,7 @@ Hence the evolving section enters through the domain on which the CUF approximat
 
 ---
 
-## 6. Source and test approximation indices
+## 7. Source and test approximation indices
 
 For the variational formulation, it is useful to distinguish the approximation index associated with the displacement field from the index associated with the virtual displacement field.
 
@@ -155,7 +189,7 @@ This distinction between $s$ and $\tau$ is subsequently used in the construction
 
 ---
 
-## 7. Transverse derivatives of the approximation functions
+## 8. Transverse derivatives of the approximation functions
 
 The strain field requires transverse derivatives of the CUF approximation functions.
 
@@ -181,7 +215,7 @@ These functions and their transverse derivatives are supplied by the CUF kinemat
 
 ---
 
-## 8. Boundary between CSF and CUF
+## 9. Boundary between CSF and CUF
 
 The two descriptions remain distinct.
 
@@ -199,7 +233,7 @@ CSF does not determine the CUF approximation functions, and CUF does not replace
 
 ---
 
-## 9. Coupling chain
+## 10. Coupling chain
 
 At the kinematic level, the coupling can be summarized as
 
