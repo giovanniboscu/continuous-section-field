@@ -253,6 +253,86 @@ The generalized sectional coefficient is defined as
 
 $$ J_{\tau,\phi s,\xi}^{mn,k}(x) = \int_{\Omega^k(x)} C_{mn}^{k}(x,y,z) F_{\tau,\phi}(y,z) F_{s,\xi}(y,z) \, \mathrm{d}\Omega. $$
 
+
+>The notation can be read by separating the coefficient into three parts:
+>
+>$$ J_{\tau,\phi s,\xi}^{mn,k}(x) \quad \longrightarrow \quad \text{constitutive indices and domain} + \text{CUF transverse functions} + \text{sectional integration}. $$
+>
+>| Symbol | Interpretation | Role in the coefficient |
+>|---|---|---|
+>| x | Longitudinal coordinate along the beam axis | Selects the current sectional state. The value of the coefficient changes with x because the domain and constitutive data may change with x. |
+>| y, z | Transverse coordinates on the cross-section | Coordinates used to describe the physical sectional domain and to evaluate the CUF transverse approximation functions. |
+>| k | Transverse sub-domain index | Selects the particular sectional domain Ωᵏ(x) and its associated constitutive matrix Cᵏ(x,y,z). |
+>| Ωᵏ(x) | Physical transverse domain identified by k at coordinate x | Defines the region of the cross-section over which the integral is evaluated. |
+>| m | Row index of the constitutive matrix | Together with n, selects one specific entry of Cᵏ(x,y,z). |
+>| n | Column index of the constitutive matrix | Together with m, selects one specific entry of Cᵏ(x,y,z). |
+>| Cₘₙᵏ(x,y,z) | Constitutive-matrix component at row m and column n for sub-domain k | Supplies the local material stiffness contribution used by this particular sectional coefficient. |
+>| τ | Index of the first CUF transverse approximation function | Selects the function Fτ(y,z) from the chosen CUF transverse basis. |
+>| φ | Transverse derivative selector applied to the function selected by τ | Specifies whether Fτ is used directly or differentiated with respect to y or z. |
+>| Fτ,φ(y,z) | First CUF transverse factor after applying the derivative selector φ | Forms the first kinematic factor in the sectional integrand. |
+>| s | Index of the second CUF transverse approximation function | Selects the function Fs(y,z) from the chosen CUF transverse basis. |
+>| ξ | Transverse derivative selector applied to the function selected by s | Specifies whether Fs is used directly or differentiated with respect to y or z. |
+>| Fs,ξ(y,z) | Second CUF transverse factor after applying the derivative selector ξ | Forms the second kinematic factor in the sectional integrand. |
+>| dΩ | Differential sectional area | Represents integration over the physical cross-sectional domain. In Cartesian transverse coordinates, dΩ = dy dz. |
+>| Jτ,φs,ξᵐⁿ,ᵏ(x) | Resulting sectional coefficient | Scalar coefficient obtained after integrating the constitutive and CUF transverse contributions over Ωᵏ(x). |>
+>
+>The derivative selectors are
+>
+>$$ \phi,\xi \in \{\varnothing,y,z\}. $$
+>
+>The symbol
+>
+>$$ \varnothing $$
+>
+>means that no transverse derivative is applied.
+>Therefore,
+>
+>$$ F_{\tau,\varnothing}(y,z)=F_\tau(y,z). $$
+>
+>$$ F_{s,\varnothing}(y,z)=F_s(y,z). $$
+>
+>If the selector is y,
+>
+>$$ F_{\tau,y}(y,z)=\frac{\partial F_\tau(y,z)}{\partial y}. $$
+>
+>and
+>
+>$$ F_{s,y}(y,z)=\frac{\partial F_s(y,z)}{\partial y}. $$
+>
+>If the selector is z,
+>
+>$$ F_{\tau,z}(y,z)=\frac{\partial F_\tau(y,z)}{\partial z}. $$
+>
+>and
+>
+>$$ F_{s,z}(y,z)=\frac{\partial F_s(y,z)}{\partial z}. $$
+>
+>The subscript of J is therefore read as two ordered pairs:
+>
+>$$ (\tau,\phi) \qquad (s,\xi). $$
+>
+>The first pair determines
+>
+>$$ (\tau,\phi) \longrightarrow F_{\tau,\phi}(y,z). $$
+>
+>The second pair determines
+>
+>$$ (s,\xi) \longrightarrow F_{s,\xi}(y,z). $$
+>
+>The superscript identifies the constitutive contribution and the transverse sub-domain:
+>
+>$$ (m,n,k) \longrightarrow C_{mn}^{k}(x,y,z) \quad \text{over} \quad \Omega^k(x). $$
+>
+>Thus the complete coefficient can be read operationally as follows:
+>
+>1. use k to select the current physical sub-domain Ωᵏ(x);
+>2. use m and n to select the required entry Cₘₙᵏ(x,y,z) of the constitutive matrix;
+>3. use τ and φ to construct the first CUF transverse factor;
+>4. use s and ξ to construct the second CUF transverse factor;
+>5. multiply the three contributions over the section;
+>6. integrate the resulting quantity over Ωᵏ(x).
+
+
 For this worked example, consider the specific coefficient
 
 $$ J_{2,y\,2,y}^{66,1}(x). $$
@@ -260,6 +340,7 @@ $$ J_{2,y\,2,y}^{66,1}(x). $$
 > 
 >  (6,6) it is taken from the constitutive matrix defined in 
 > [CSF sectional constitutive representation for CUF coupling](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_sectional_constitutive_interface.md).
+
 
 The objective is to determine this coefficient completely and obtain an explicit numerical function of the longitudinal coordinate `x`.
 
