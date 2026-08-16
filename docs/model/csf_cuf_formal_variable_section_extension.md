@@ -247,6 +247,215 @@ No analytical longitudinal expression for these coefficients is required.
 
 ---
 
+### Worked example: complete numerical evaluation of one sectional coefficient
+
+The generalized sectional coefficient is defined as
+
+$$ J_{\tau,\phi s,\xi}^{mn,k}(x) = \int_{\Omega^k(x)} C_{mn}^{k}(x,y,z) F_{\tau,\phi}(y,z) F_{s,\xi}(y,z) \, \mathrm{d}\Omega. $$
+
+For this worked example, consider the specific coefficient
+
+$$ J_{2,y\,2,y}^{66,1}(x). $$
+
+The objective is to determine this coefficient completely and obtain an explicit numerical function of the longitudinal coordinate `x`.
+
+### Origin of all indices and quantities
+
+| Quantity | Value used in the example | Origin | What it determines |
+|---|---:|---|---|
+| m | 6 | Term appearing in the CUF fundamental nucleus | First constitutive index of C₆₆ |
+| n | 6 | Term appearing in the CUF fundamental nucleus | Second constitutive index of C₆₆ |
+| φ | y | Term appearing in the CUF fundamental nucleus | Derivative with respect to y of the function on the τ side |
+| ξ | y | Term appearing in the CUF fundamental nucleus | Derivative with respect to y of the function on the s side |
+| τ | 2 | Choice within the first-order CUF transverse basis | Selects F₂ |
+| s | 2 | Choice within the first-order CUF transverse basis | Selects F₂ |
+| k | 1 | Selected transverse sub-domain | Selects Ω¹(x) and C₆₆¹(x,y,z) |
+| x | variable | Longitudinal beam coordinate | Determines the current sectional state |
+| y, z | variables | Transverse coordinates | Coordinates of sectional integration |
+| L | 10 m | Geometrical datum of the example | Beam length |
+| C₆₆¹(x,y,z) | assigned below | Constitutive description of sub-domain 1 | Constitutive component required by the selected nucleus term |
+| Ω¹(x) | assigned below | Sectional geometry | Physical integration domain |
+
+The selected term of the fundamental nucleus has the form
+
+$$ J_{\tau,y\,s,y}^{66,k}(x). $$
+
+Therefore,
+
+$$ m=6,\qquad n=6,\qquad \phi=y,\qquad \xi=y. $$
+
+For this example, the first transverse sub-domain is selected:
+
+$$ k=1. $$
+
+A first-order CUF transverse expansion is used. Its basis functions are
+
+$$ F_1(y,z)=1,\qquad F_2(y,z)=y,\qquad F_3(y,z)=z. $$
+
+The selected CUF indices are
+
+$$ \tau=2,\qquad s=2. $$
+
+Therefore,
+
+$$ F_\tau(y,z)=F_2(y,z)=y. $$
+
+and
+
+$$ F_s(y,z)=F_2(y,z)=y. $$
+
+Because
+
+$$ \phi=y,\qquad \xi=y, $$
+
+the required transverse derivatives are
+
+$$ F_{\tau,\phi}(y,z)=F_{2,y}(y,z)=\frac{\partial y}{\partial y}=1. $$
+
+and
+
+$$ F_{s,\xi}(y,z)=F_{2,y}(y,z)=\frac{\partial y}{\partial y}=1. $$
+
+The generalized definition therefore becomes
+
+$$ J_{2,y\,2,y}^{66,1}(x) = \int_{\Omega^1(x)} C_{66}^{1}(x,y,z) F_{2,y}(y,z) F_{2,y}(y,z) \, \mathrm{d}\Omega. $$
+
+Since both derivatives are equal to one,
+
+$$ J_{2,y\,2,y}^{66,1}(x) = \int_{\Omega^1(x)} C_{66}^{1}(x,y,z) \, \mathrm{d}\Omega. $$
+
+### Constitutive component
+
+The fundamental nucleus determines that the required constitutive component is
+
+$$ C_{66}^{1}(x,y,z). $$
+
+For the worked example, assign directly
+
+$$ C_{66}^{1}(x,y,z)=26\times10^9(1-0.10\frac{x}{L})\ \mathrm{Pa}. $$
+
+The beam length is
+
+$$ L=10\ \mathrm{m}. $$
+
+The constitutive component is uniform over the transverse coordinates `y` and `z`, but varies along the longitudinal coordinate `x`.
+
+At the beam origin,
+
+$$ C_{66}^{1}(0,y,z)=26\times10^9\ \mathrm{Pa}. $$
+
+At the beam end,
+
+$$ C_{66}^{1}(L,y,z)=23.4\times10^9\ \mathrm{Pa}. $$
+
+### Sectional domain
+
+The first transverse sub-domain is defined directly through its integration limits.
+
+Along the transverse coordinate `y`,
+
+$$ -0.05+0.01\frac{x}{L} \le y \le 0.05-0.01\frac{x}{L}. $$
+
+Along the transverse coordinate `z`,
+
+$$ -0.025 \le z \le 0.025. $$
+
+All geometrical quantities are expressed in metres.
+
+At the beam origin, the dimension of the sub-domain along `y` is
+
+$$ 0.10\ \mathrm{m}. $$
+
+At the beam end, the dimension along `y` is
+
+$$ 0.08\ \mathrm{m}. $$
+
+The dimension along `z` remains constant:
+
+$$ 0.05\ \mathrm{m}. $$
+
+The physical integration domain is therefore completely defined by these limits.
+
+### Complete substitution into the sectional coefficient
+
+The coefficient to be evaluated is
+
+$$ J_{2,y\,2,y}^{66,1}(x) = \int_{\Omega^1(x)} C_{66}^{1}(x,y,z) \, \mathrm{d}\Omega. $$
+
+The sectional differential area is
+
+$$ \mathrm{d}\Omega=\mathrm{d}y\,\mathrm{d}z. $$
+
+Substituting the constitutive component and the actual integration limits gives
+
+$$ J_{2,y\,2,y}^{66,1}(x) = \int_{-0.025}^{0.025}\int_{-0.05+0.01x/L}^{0.05-0.01x/L}26\times10^9(1-0.10\frac{x}{L})\,\mathrm{d}y\,\mathrm{d}z. $$
+
+At this point every quantity in the integral is known.
+
+### Integration with respect to y
+
+The constitutive component does not depend on `y`, so the inner geometrical integral is
+
+$$ \int_{-0.05+0.01x/L}^{0.05-0.01x/L}\mathrm{d}y. $$
+
+Evaluating the limits gives
+
+$$ \int_{-0.05+0.01x/L}^{0.05-0.01x/L}\mathrm{d}y = (0.05-0.01\frac{x}{L})-(-0.05+0.01\frac{x}{L}). $$
+
+Therefore,
+
+$$ \int_{-0.05+0.01x/L}^{0.05-0.01x/L}\mathrm{d}y = 0.10-0.02\frac{x}{L}. $$
+
+The sectional coefficient becomes
+
+$$ J_{2,y\,2,y}^{66,1}(x) = 26\times10^9(1-0.10\frac{x}{L})(0.10-0.02\frac{x}{L})\int_{-0.025}^{0.025}\mathrm{d}z. $$
+
+### Integration with respect to z
+
+The remaining integral is
+
+$$ \int_{-0.025}^{0.025}\mathrm{d}z=0.05. $$
+
+Therefore,
+
+$$ J_{2,y\,2,y}^{66,1}(x) = 26\times10^9(1-0.10\frac{x}{L})(0.10-0.02\frac{x}{L})(0.05). $$
+
+Multiplying the geometrical terms gives
+
+$$ J_{2,y\,2,y}^{66,1}(x) = 26\times10^9(1-0.10\frac{x}{L})(0.005-0.001\frac{x}{L}). $$
+
+Expanding the product,
+
+$$ (1-0.10\frac{x}{L})(0.005-0.001\frac{x}{L})=0.005-0.0015\frac{x}{L}+0.0001(\frac{x}{L})^2. $$
+
+Hence,
+
+$$ J_{2,y\,2,y}^{66,1}(x)=130000000-39000000\frac{x}{L}+2600000(\frac{x}{L})^2\ \mathrm{N}. $$
+
+Using
+
+$$ L=10\ \mathrm{m}, $$
+
+the resolved coefficient can be written directly as a function of `x`, with `x` expressed in metres:
+
+$$ \boxed{J_{2,y\,2,y}^{66,1}(x)=130000000-3900000x+26000x^2\ \mathrm{N}.} $$
+
+### Numerical checks
+
+At the beam origin,
+
+$$ J_{2,y\,2,y}^{66,1}(0)=130000000\ \mathrm{N}. $$
+
+At mid-span,
+
+$$ J_{2,y\,2,y}^{66,1}(5)=111150000\ \mathrm{N}. $$
+
+At the beam end,
+
+$$ J_{2,y\,2,y}^{66,1}(10)=93600000\ \mathrm{N}. $$
+
+---
+
 ## 6. Global sectional coefficients
 
 The reference paper subsequently uses coefficients summed over the transverse sub-domains.
