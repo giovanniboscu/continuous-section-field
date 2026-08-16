@@ -108,6 +108,24 @@ $$ { \mathbf{u}(x,y,z) = F_\tau(y,z)\, \mathbf{u}_\tau(x). } $$
 
 CSF supplies the sectional domain and constitutive fields. CUF supplies the approximation functions and the displacement unknowns.
 
+### CUF displacement-expansion premise
+
+The present variable-section extension retains the CUF displacement expansion described in [`csf_cuf_displacement_expansionf_coupling.md`](./csf_cuf_displacement_expansionf_coupling.md).
+
+In that kinematic statement, the CUF transverse approximation functions remain functions of the transverse coordinates only,
+
+$$ F_\tau = F_\tau(y,z). $$
+
+The longitudinal variation introduced here does not replace them with functions of the form $F_\tau(x,y,z)$.
+
+Instead, the CSF representation supplies the current transverse domain and constitutive state at each longitudinal coordinate,
+
+$$ x \longmapsto \mathcal{S}(x) \longmapsto \lbrace \Omega^k(x), \mathbf{C}^k(x,y,z) \rbrace. $$
+
+Therefore the CUF kinematic approximation is retained, while the sectional integrations are evaluated over the longitudinally evolving domains $\Omega^k(x)$ and produce sectional coefficients that depend on $x$.
+
+
+
 ---
 
 ## 5. Sectional coefficients as functions of $\mathcal{S}(x)$
