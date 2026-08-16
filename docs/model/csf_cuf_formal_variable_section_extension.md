@@ -415,7 +415,7 @@ For the worked example, assign directly
 
 $$ C_{66}^{1}(x,y,z)=26\times10^9(1-0.10\frac{x}{L})\ \mathrm{Pa}. $$
 
->  (6,6) it is taken from the constitutive matrix defined in 
+>  C(6,6) it is taken from the constitutive matrix defined in 
 > [CSF sectional constitutive representation for CUF coupling](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_sectional_constitutive_interface.md).
 
 
