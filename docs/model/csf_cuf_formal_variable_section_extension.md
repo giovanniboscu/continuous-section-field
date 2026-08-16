@@ -415,10 +415,24 @@ For the worked example, assign directly
 
 $$ C_{66}^{1}(x,y,z)=26\times10^9(1-0.10\frac{x}{L})\ \mathrm{Pa}. $$
 
->  C(6,6) it is taken from the constitutive matrix defined in 
-> [CSF sectional constitutive representation for CUF coupling](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_sectional_constitutive_interface.md).
-
-
+> **Origin of the constitutive component.**  
+> The term `C(6,6)` is the entry at row 6 and column 6 of the constitutive matrix associated with the selected transverse domain, as defined in [CSF sectional constitutive representation for CUF coupling](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_sectional_constitutive_interface.md).
+>
+> For the selected domain
+>
+> $$ k=1, $$
+>
+> the corresponding constitutive component is
+>
+> $$ C_{66}^{1}(x). $$
+>
+> In the two-field constitutive specialization adopted in the referenced document,
+>
+> $$ C_{66}^{1}(x)=G_1(x). $$
+>
+> Therefore, the constitutive component used in the worked example is specific to domain `1`: if a different domain `k` were selected, the corresponding term would be `C(6,6)` of that domain, namely
+>
+> $$ C_{66}^{k}(x)=G_k(x). $$
 
 The beam length is
 
