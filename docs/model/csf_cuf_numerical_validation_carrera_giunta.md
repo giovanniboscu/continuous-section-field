@@ -1326,9 +1326,6 @@ and
 
 $$ F_{z\tau}=0. $$
 
-
-$$ F_{z\tau}=0. $$
-
 For each pair $(\tau,s)$, denote by $\mathbf{A}_{\tau s}$ the corresponding $3\times3$ algebraic fundamental-nucleus block.
 
 Collecting the three right-hand-side components in the present CSF-CUF notation as $\mathbf{F}_\tau$, for every test index $\tau$ the algebraic governing equation is
