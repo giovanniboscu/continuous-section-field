@@ -17,7 +17,6 @@ The sequence is
 
 $$ { \mathcal{S}(x) \longrightarrow \{ \Omega^k(x),\, \mathbf{C}^k(x,y,z) \} \longrightarrow J_\bullet^k(x) \longrightarrow \delta L_i \longrightarrow \delta L_{\mathrm{ext}} \longrightarrow \mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x]. } $$
 
-No analytical expression for the sectional integrals and no Navier-type solution are required at this stage.
 
 ### 1.1 Correspondence with the reference formulation
 
