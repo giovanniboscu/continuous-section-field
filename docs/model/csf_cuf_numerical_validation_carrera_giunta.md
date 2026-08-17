@@ -1966,7 +1966,7 @@ The implementation must generate, rather than hard-code:
 - the sectional momenta;
 - the constitutive sectional coefficients;
 - the 225 algebraic blocks;
-- the complete $45\times45$ matrix;
+- the complete 45-by-45 algebraic matrix;
 - the generalized load vector;
 - the 45 Navier amplitudes;
 - the dimensional stresses;
