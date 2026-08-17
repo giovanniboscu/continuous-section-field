@@ -1151,6 +1151,9 @@ After Sections 9.1 and 9.2, the benchmark is fully defined by:
 - the nondimensionalization formulas;
 - the six Table 2 target values.
 
-No additional geometric, constitutive, loading, or output datum is required before assembly of the numerical CUF system.
+No additional geometric, constitutive, loading, boundary-condition, or output datum is required.
 
-The next step is therefore the term-by-term specialization of the constant-coefficient fundamental nucleus and the assembly of the complete $45\times45$ algebraic system for the $N=4$ validation model.
+The benchmark is therefore physically and numerically specified. What remains is the deterministic evaluation of the complete set of sectional coefficients required by the fixed $N=4$ basis, followed by assembly of the corresponding algebraic CUF system.
+
+The next step is therefore to specialize the constant-coefficient fundamental nucleus term by term, identify the sectional coefficient families required by each block, and generate their complete numerical values before assembling the final $45\times45$ algebraic system.
+
