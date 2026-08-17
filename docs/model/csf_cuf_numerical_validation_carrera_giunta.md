@@ -1,4 +1,4 @@
-## 1. Scope
+**## 1. Scope
 
 This document applies the completed CSF-CUF formulation to the reference problem presented by Carrera and Giunta in *Refined Beam Theories Based on a Unified Formulation*. The objective is not to introduce a new formulation, but to specialize the general model developed previously to the same kinematic assumptions, sectional description, constitutive data, loading conditions, boundary conditions, and longitudinal solution strategy adopted in the reference work. The resulting CUF system is then compared with the corresponding reference equations and numerical results in order to verify that the generalized formulation recovers the established CUF model when reduced to the same assumptions.
 
@@ -7,7 +7,7 @@ This document applies the completed CSF-CUF formulation to the reference problem
 The first validation case is the rectangular beam under bending considered by Carrera and Giunta.
 
 The purpose of this section is only to define the reference problem to which the completed CSF-CUF formulation will be specialized. No sectional coefficient, fundamental nucleus, or algebraic system is evaluated yet.
-
+a
 The beam is prismatic and its cross-section is constant along the longitudinal coordinate. A rectangular cross-section is considered.
 
 The material is the aluminium alloy adopted in the reference work, with
@@ -459,115 +459,6 @@ $$
 
 At this stage, the sectional geometry, material field, longitudinal scale, CUF approximation order, and Navier wave parameter are all numerically fixed.
 
-
-## 7. Sectional momenta and correspondence with the generalized coefficients
-
-The next step in the Carrera-Giunta reference formulation is the evaluation of the cross-section quantities entering the differential matrix.
-
-In the reference paper these quantities are introduced in Eq. (4.6) as the cross-section inertial momenta. For the present validation, it is useful to separate the purely geometrical CUF integrals from the constitutive coefficients.
-
-Define, in the present coordinate convention,
-
-$$
-M_{\tau,\phi s,\xi}
-=
-\int_{\Omega^1}
-F_{\tau,\phi}(y,z)\,
-F_{s,\xi}(y,z)\,
-\mathrm{d}\Omega
-$$
-
-with
-
-$$
-\phi,\xi\in\{\varnothing,y,z\}.
-$$
-
-The symbol $\varnothing$ denotes the absence of transverse differentiation.
-
-Because the present benchmark has one homogeneous isotropic sub-domain and a constant constitutive field, the generalized sectional coefficients reduce to
-
-$$
-J_{\tau,\phi s,\xi}^{mn}
-=
-C_{mn}\,
-M_{\tau,\phi s,\xi}.
-$$
-
-This is the direct correspondence between the generalized CSF-CUF sectional coefficient family and the cross-section momenta of Eq. (4.6) in the reference paper.
-
-Under the coordinate correspondence
-
-$$
-x_{\mathrm{ref}}=y
-$$
-
-and
-
-$$
-y_{\mathrm{ref}}=z,
-$$
-
-the reference quantities map to the present notation as follows:
-
-$$
-E_{\tau s}^{\mathrm{ref}}
-\longleftrightarrow
-M_{\tau,\varnothing s,\varnothing},
-$$
-
-$$
-E_{\tau,x s,x}^{\mathrm{ref}}
-\longleftrightarrow
-M_{\tau,y s,y},
-$$
-
-$$
-E_{\tau,y s,y}^{\mathrm{ref}}
-\longleftrightarrow
-M_{\tau,z s,z},
-$$
-
-$$
-E_{\tau,x s,y}^{\mathrm{ref}}
-\longleftrightarrow
-M_{\tau,y s,z},
-$$
-
-$$
-E_{\tau,y s,x}^{\mathrm{ref}}
-\longleftrightarrow
-M_{\tau,z s,y},
-$$
-
-$$
-E_{\tau,x s}^{\mathrm{ref}}
-\longleftrightarrow
-M_{\tau,y s,\varnothing},
-$$
-
-$$
-E_{\tau s,x}^{\mathrm{ref}}
-\longleftrightarrow
-M_{\tau,\varnothing s,y},
-$$
-
-$$
-E_{\tau,y s}^{\mathrm{ref}}
-\longleftrightarrow
-M_{\tau,z s,\varnothing},
-$$
-
-and
-
-$$
-E_{\tau s,y}^{\mathrm{ref}}
-\longleftrightarrow
-M_{\tau,\varnothing s,z}.
-$$
-
-No new mechanical quantity is introduced by this notation. The symbol $M$ is used here only to distinguish the geometrical cross-section integral from Young's modulus $E$.
-
 ## 7. Sectional momenta and correspondence with the generalized coefficients
 
 The next step in the Carrera-Giunta reference formulation is the evaluation of the cross-section quantities entering the differential matrix.
@@ -744,4 +635,4 @@ $$ J_{2,y\,2,y}^{66}=2.75769231\times10^6\ \mathrm{N}. $$
 
 These checks establish the numerical bridge between the generalized sectional coefficients and the cross-section momenta used by Carrera and Giunta.
 
-The next step is to generate the complete set of non-zero sectional coefficients required by the $N=4$ fundamental nucleus before applying the Navier specialization.
+The next step is to generate the complete set of non-zero sectional coefficients required by the $N=4$ fundamental nucleus before applying the Navier specialization.**
