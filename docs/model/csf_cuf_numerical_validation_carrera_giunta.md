@@ -1581,13 +1581,20 @@ These are exactly the two zero-order terms obtained in Section 10.4.
 
 The selected Carrera-Giunta benchmark applies only the normal surface loading amplitude $P_{xx}^{1+}$.
 
-Under the established coordinate and component mapping, this load acts only in the CSF $y$ equation on the positive $y$ face.
+Under the established coordinate and component mapping, this load contributes only to the CSF $y$ equation on the positive $y$ face.
 
-Therefore the algebraic generalized load vector is
+Accordingly, for the selected benchmark, the three generalized algebraic right-hand-side components reduce to
 
-$$ \mathbf{F}_\tau=\begin{bmatrix}0\\P B_\tau\\0\end{bmatrix}, $$
+$$ F_{x\tau}=0, $$
 
-which is the vector used in Section 10.1.
+$$ F_{y\tau}=P B_\tau, $$
+
+and
+
+$$ F_{z\tau}=0. $$
+
+This is the CSF-coordinate representation of the non-zero $P_{xx}^{1+}$ contribution appearing in the corresponding Carrera-Giunta algebraic equation.
+
 
 #### Verification result
 
