@@ -1157,3 +1157,145 @@ The benchmark is therefore physically and numerically specified. What remains is
 
 The next step is therefore to specialize the constant-coefficient fundamental nucleus term by term, identify the sectional coefficient families required by each block, and generate their complete numerical values before assembling the final $45\times45$ algebraic system.
 
+### 9.3 Navier displacement specialization and end-condition correspondence
+
+Before assembling the algebraic CUF system, the longitudinal dependence of the displacement amplitudes must be specialized exactly as in the Carrera-Giunta closed-form solution.
+
+This step introduces no additional kinematic assumption beyond the reference model. It applies the Navier representation of the paper to the coordinate and displacement-component correspondence already established in Section 8.
+
+#### Reference Navier displacement field
+
+Carrera and Giunta adopt, for every CUF approximation index $\tau$,
+
+$$ u_{x\tau}^{\mathrm{ref}}(z_{\mathrm{ref}})=U_{x\tau}^{\mathrm{ref}}\sin(\alpha z_{\mathrm{ref}}) $$
+
+$$ u_{y\tau}^{\mathrm{ref}}(z_{\mathrm{ref}})=U_{y\tau}^{\mathrm{ref}}\sin(\alpha z_{\mathrm{ref}}) $$
+
+and
+
+$$ u_{z\tau}^{\mathrm{ref}}(z_{\mathrm{ref}})=U_{z\tau}^{\mathrm{ref}}\cos(\alpha z_{\mathrm{ref}}). $$
+
+The longitudinal wave parameter is
+
+$$ \alpha=\frac{m\pi}{l}. $$
+
+For the present benchmark,
+
+$$ m=1 $$
+
+and therefore
+
+$$ \alpha=\frac{\pi}{l}. $$
+
+#### Mapping to the CSF-CUF displacement components
+
+The previously established component correspondence is
+
+$$ u_x^{\mathrm{CSF}}=u_z^{\mathrm{ref}} $$
+
+$$ u_y^{\mathrm{CSF}}=u_x^{\mathrm{ref}} $$
+
+$$ u_z^{\mathrm{CSF}}=u_y^{\mathrm{ref}} $$
+
+together with
+
+$$ x_{\mathrm{CSF}}=z_{\mathrm{ref}}. $$
+
+Therefore, for every $\tau$,
+
+$$ u_{x\tau}^{\mathrm{CSF}}(x)=U_{x\tau}^{\mathrm{CSF}}\cos(\alpha x) $$
+
+$$ u_{y\tau}^{\mathrm{CSF}}(x)=U_{y\tau}^{\mathrm{CSF}}\sin(\alpha x) $$
+
+and
+
+$$ u_{z\tau}^{\mathrm{CSF}}(x)=U_{z\tau}^{\mathrm{CSF}}\sin(\alpha x). $$
+
+The corresponding amplitude mapping is
+
+$$ U_{x\tau}^{\mathrm{CSF}}=U_{z\tau}^{\mathrm{ref}} $$
+
+$$ U_{y\tau}^{\mathrm{CSF}}=U_{x\tau}^{\mathrm{ref}} $$
+
+$$ U_{z\tau}^{\mathrm{CSF}}=U_{y\tau}^{\mathrm{ref}}. $$
+
+Using the $N=4$ transverse basis, the full displacement field becomes
+
+$$ u_x(x,y,z)=\sum_{\tau=1}^{15}F_\tau(y,z)U_{x\tau}\cos(\alpha x) $$
+
+$$ u_y(x,y,z)=\sum_{\tau=1}^{15}F_\tau(y,z)U_{y\tau}\sin(\alpha x) $$
+
+and
+
+$$ u_z(x,y,z)=\sum_{\tau=1}^{15}F_\tau(y,z)U_{z\tau}\sin(\alpha x). $$
+
+The $45$ longitudinal unknown functions of the differential CUF model are therefore reduced to the $45$ constant Navier amplitudes
+
+$$ \{U_{x\tau},U_{y\tau},U_{z\tau}\}_{\tau=1}^{15}. $$
+
+#### Longitudinal derivatives
+
+The longitudinal derivatives required by the fundamental nucleus follow directly.
+
+For the longitudinal displacement component,
+
+$$ \frac{\mathrm{d}u_{x\tau}}{\mathrm{d}x}=-\alpha U_{x\tau}\sin(\alpha x) $$
+
+and
+
+$$ \frac{\mathrm{d}^2u_{x\tau}}{\mathrm{d}x^2}=-\alpha^2U_{x\tau}\cos(\alpha x). $$
+
+For the two transverse displacement components,
+
+$$ \frac{\mathrm{d}u_{y\tau}}{\mathrm{d}x}=\alpha U_{y\tau}\cos(\alpha x) $$
+
+$$ \frac{\mathrm{d}^2u_{y\tau}}{\mathrm{d}x^2}=-\alpha^2U_{y\tau}\sin(\alpha x) $$
+
+$$ \frac{\mathrm{d}u_{z\tau}}{\mathrm{d}x}=\alpha U_{z\tau}\cos(\alpha x) $$
+
+and
+
+$$ \frac{\mathrm{d}^2u_{z\tau}}{\mathrm{d}x^2}=-\alpha^2U_{z\tau}\sin(\alpha x). $$
+
+These substitutions are the CSF-CUF counterpart of the reference passage from the differential fundamental nucleus to the algebraic fundamental nucleus.
+
+#### End-condition correspondence
+
+The reference Navier field satisfies the longitudinal end conditions
+
+$$ u_{x\tau}^{\mathrm{ref}}(0)=u_{x\tau}^{\mathrm{ref}}(l)=0 $$
+
+$$ u_{y\tau}^{\mathrm{ref}}(0)=u_{y\tau}^{\mathrm{ref}}(l)=0 $$
+
+and
+
+$$ \frac{\mathrm{d}u_{z\tau}^{\mathrm{ref}}}{\mathrm{d}z_{\mathrm{ref}}}(0)=\frac{\mathrm{d}u_{z\tau}^{\mathrm{ref}}}{\mathrm{d}z_{\mathrm{ref}}}(l)=0. $$
+
+After coordinate and component mapping, the corresponding CSF-CUF conditions are
+
+$$ u_{y\tau}^{\mathrm{CSF}}(0)=u_{y\tau}^{\mathrm{CSF}}(l)=0 $$
+
+$$ u_{z\tau}^{\mathrm{CSF}}(0)=u_{z\tau}^{\mathrm{CSF}}(l)=0 $$
+
+and
+
+$$ \frac{\mathrm{d}u_{x\tau}^{\mathrm{CSF}}}{\mathrm{d}x}(0)=\frac{\mathrm{d}u_{x\tau}^{\mathrm{CSF}}}{\mathrm{d}x}(l)=0. $$
+
+These conditions are satisfied identically by the mapped sine-cosine representation above.
+
+#### Closure before algebraic assembly
+
+At this point, no longitudinal function remains to be determined.
+
+The benchmark is now completely specialized in the same sense as the Carrera-Giunta model immediately before construction of the algebraic fundamental nucleus.
+
+The remaining steps are deterministic:
+
+1. substitute the Navier field into the constant-coefficient CSF-CUF fundamental nucleus;
+2. identify the resulting algebraic $3\times3$ block associated with each pair $(\tau,s)$;
+3. evaluate the required sectional coefficients for all $\tau,s=1,\ldots,15$;
+4. assemble the complete $45\times45$ algebraic system;
+5. solve for the $45$ amplitudes $U_{x\tau}$, $U_{y\tau}$, and $U_{z\tau}$;
+6. recover the stress components and compare the nondimensional values with Table 2.
+
+No additional physical assumption is introduced by these steps.
