@@ -732,3 +732,22 @@ The validation can now distinguish three operations that must not be conflated:
 The first two operations construct the mechanical coefficients. The third operation changes only their representation.
 
 The next step is therefore to apply this correspondence to the constant-coefficient fundamental nucleus and verify its term-by-term equivalence with the corresponding Carrera-Giunta differential nucleus before generating the complete numerical system for the $N=4$ model.
+
+## 9. Closure requirements for the numerical benchmark
+
+Before assembling the $N=4$ algebraic system, the reference benchmark must be completely specified in the coordinate convention adopted in the present formulation.
+
+The remaining required data are:
+
+- the numerical load amplitude used for the computational realization;
+- the loaded face and the physical direction of the applied traction after coordinate mapping;
+- the longitudinal Navier dependence associated with the selected half-wave number;
+- the stress components to be recovered from the CSF-CUF solution;
+- the exact longitudinal and transverse coordinates at which those stresses must be evaluated;
+- the corresponding nondimensional reference values reported in Table 2 of Carrera and Giunta.
+
+These quantities do not introduce a new mechanical model. They complete the specialization of the already defined CUF model to the specific validation problem.
+
+Once these data are fixed, the benchmark is numerically closed: the sectional coefficients, load vector, algebraic system, displacement amplitudes, recovered strains and stresses, and final nondimensional comparison are all uniquely determined.
+
+Only after this closure step is it appropriate to assemble and solve the complete $N=4$ CUF algebraic system.
