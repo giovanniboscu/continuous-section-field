@@ -638,3 +638,97 @@ $$ J_{2,y\,2,y}^{66}=2.75769231\times10^6\ \mathrm{N}. $$
 These checks establish the numerical bridge between the generalized sectional coefficients and the cross-section momenta used by Carrera and Giunta.
 
 The next step is to generate the complete set of non-zero sectional coefficients required by the $N=4$ fundamental nucleus before applying the Navier specialization.**
+
+## 8. Coordinate and displacement-component correspondence
+
+Before assembling the numerical CUF system, one additional correspondence must be made explicit.
+
+This step is necessary because the generalized CSF-CUF formulation and the Carrera-Giunta reference formulation use different labels for the longitudinal and transverse coordinates. The coordinate relabelling introduced in Section 3 must therefore be applied consistently not only to the spatial coordinates and transverse basis functions, but also to the displacement components and, consequently, to the component labels of the fundamental nucleus.
+
+No new kinematic or mechanical assumption is introduced in this section. The purpose is exclusively to establish the one-to-one correspondence required for a term-by-term comparison with the reference formulation.
+
+### 8.1 Coordinate correspondence
+
+The coordinate mapping already established in Section 3 is
+
+$$ x_{\mathrm{CSF}}=z_{\mathrm{ref}} $$
+
+$$ y_{\mathrm{CSF}}=x_{\mathrm{ref}} $$
+
+$$ z_{\mathrm{CSF}}=y_{\mathrm{ref}}. $$
+
+Thus the longitudinal direction of the reference formulation, $z_{\mathrm{ref}}$, corresponds to the longitudinal direction $x_{\mathrm{CSF}}$ of the generalized formulation.
+
+### 8.2 Displacement-component correspondence
+
+The displacement components must follow the same physical-direction mapping.
+
+Therefore,
+
+$$ u_x^{\mathrm{CSF}}=u_z^{\mathrm{ref}} $$
+
+$$ u_y^{\mathrm{CSF}}=u_x^{\mathrm{ref}} $$
+
+$$ u_z^{\mathrm{CSF}}=u_y^{\mathrm{ref}}. $$
+
+For every CUF expansion index $\tau$, the corresponding amplitude mapping is
+
+$$ u_{x\tau}^{\mathrm{CSF}}=u_{z\tau}^{\mathrm{ref}} $$
+
+$$ u_{y\tau}^{\mathrm{CSF}}=u_{x\tau}^{\mathrm{ref}} $$
+
+$$ u_{z\tau}^{\mathrm{CSF}}=u_{y\tau}^{\mathrm{ref}}. $$
+
+Equivalently, the reference displacement-amplitude vector
+
+$$ \mathbf{u}_{\tau}^{\mathrm{ref}}=\{u_{x\tau}^{\mathrm{ref}},u_{y\tau}^{\mathrm{ref}},u_{z\tau}^{\mathrm{ref}}\}^{T} $$
+
+corresponds to the generalized-formulation vector
+
+$$ \mathbf{u}_{\tau}^{\mathrm{CSF}}=\{u_{x\tau}^{\mathrm{CSF}},u_{y\tau}^{\mathrm{CSF}},u_{z\tau}^{\mathrm{CSF}}\}^{T} $$
+
+through the component ordering
+
+$$ \{u_{x\tau}^{\mathrm{CSF}},u_{y\tau}^{\mathrm{CSF}},u_{z\tau}^{\mathrm{CSF}}\}^{T}=\{u_{z\tau}^{\mathrm{ref}},u_{x\tau}^{\mathrm{ref}},u_{y\tau}^{\mathrm{ref}}\}^{T}. $$
+
+### 8.3 Consequence for the fundamental nucleus
+
+The same permutation must be applied when the component blocks of the two fundamental nuclei are compared.
+
+For example,
+
+$$ K_{xx}^{\mathrm{CSF}}\longleftrightarrow K_{zz}^{\mathrm{ref}} $$
+
+$$ K_{yy}^{\mathrm{CSF}}\longleftrightarrow K_{xx}^{\mathrm{ref}} $$
+
+$$ K_{zz}^{\mathrm{CSF}}\longleftrightarrow K_{yy}^{\mathrm{ref}}. $$
+
+For the off-diagonal blocks,
+
+$$ K_{xy}^{\mathrm{CSF}}\longleftrightarrow K_{zx}^{\mathrm{ref}} $$
+
+$$ K_{xz}^{\mathrm{CSF}}\longleftrightarrow K_{zy}^{\mathrm{ref}} $$
+
+$$ K_{yx}^{\mathrm{CSF}}\longleftrightarrow K_{xz}^{\mathrm{ref}} $$
+
+$$ K_{yz}^{\mathrm{CSF}}\longleftrightarrow K_{xy}^{\mathrm{ref}} $$
+
+$$ K_{zx}^{\mathrm{CSF}}\longleftrightarrow K_{yz}^{\mathrm{ref}} $$
+
+$$ K_{zy}^{\mathrm{CSF}}\longleftrightarrow K_{yx}^{\mathrm{ref}}. $$
+
+This permutation does not alter the operator. It only expresses the same physical component coupling in the two coordinate conventions.
+
+Accordingly, a direct comparison of identically named matrix blocks would be incorrect unless this mapping were first applied.
+
+### 8.4 Role of this correspondence in the validation
+
+The validation can now distinguish three operations that must not be conflated:
+
+1. evaluation of the transverse sectional momenta;
+2. multiplication by the constitutive coefficients to obtain the generalized sectional coefficients;
+3. permutation of coordinate and displacement-component labels when comparing the resulting CSF-CUF nucleus with the Carrera-Giunta nucleus.
+
+The first two operations construct the mechanical coefficients. The third operation changes only their representation.
+
+The next step is therefore to apply this correspondence to the constant-coefficient fundamental nucleus and verify its term-by-term equivalence with the corresponding Carrera-Giunta differential nucleus before generating the complete numerical system for the $N=4$ model.
