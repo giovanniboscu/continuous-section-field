@@ -1272,6 +1272,230 @@ Therefore, from this point onward, formulas representing the assembled CSF-CUF n
 
 ---
 
+###  Worked example: complete numerical evaluation of one governing-equation component
+
+This worked example takes one controlled step beyond the general governing equation introduced in Section 9.
+
+The objective is to obtain a completely determined numerical governing-equation contribution without introducing a longitudinal solver and without leaving an unknown differential equation to be solved.
+
+To achieve this, the longitudinal CUF amplitude is prescribed as verification data. Once the sectional coefficient and the longitudinal field are fixed, the corresponding generalized load is determined uniquely by the governing equation.
+
+No attempt is made here to reconstruct a physical traction distribution from that generalized load.
+
+### Selected governing-equation component
+
+The assembled CUF governing equations are
+
+$$ \mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x]\,\mathbf{u}_s(x)=\mathbf{f}_\tau(x). $$
+
+Select the transverse $y$ component and choose
+
+$$ \tau=1,\qquad s=1. $$
+
+For the $yy$ block, the variable-coefficient CUF operator is
+
+$$ K_{yy}^{\tau s}(x)=J_{\tau,y\,s,y}^{22}(x)+J_{\tau,z\,s,z}^{44}(x)-\partial_x\left[J_{\tau s}^{66}(x)\,\partial_x\right]. $$
+
+The first-order CUF transverse basis is retained:
+
+$$ F_1(y,z)=1,\qquad F_2(y,z)=y,\qquad F_3(y,z)=z. $$
+
+For
+
+$$ \tau=s=1, $$
+
+the transverse derivatives are
+
+$$ F_{1,y}(y,z)=0,\qquad F_{1,z}(y,z)=0. $$
+
+Therefore,
+
+$$ J_{1,y\,1,y}^{22}(x)=0, $$
+
+and
+
+$$ J_{1,z\,1,z}^{44}(x)=0. $$
+
+The selected governing-equation component consequently reduces to
+
+$$ \boxed{-\partial_x\left[J_{11}^{66}(x)\,\partial_x b(x)\right]=f_{y1}(x)}. $$
+
+Here
+
+$$ b(x)=u_{y1}(x) $$
+
+is the longitudinal CUF amplitude associated with the $y$ displacement and transverse basis function $F_1$.
+
+### Evaluation of the required sectional coefficient
+
+By definition,
+
+$$ J_{11}^{66,k}(x)=\int_{\Omega^k(x)}C_{66}^{k}(x,y,z)\,F_1(y,z)\,F_1(y,z)\,\mathrm{d}\Omega. $$
+
+Since
+
+$$ F_1(y,z)=1, $$
+
+this becomes
+
+$$ J_{11}^{66,k}(x)=\int_{\Omega^k(x)}C_{66}^{k}(x,y,z)\,\mathrm{d}\Omega. $$
+
+The preceding sectional worked examples evaluated
+
+$$ J_{2,y\,2,y}^{66,k}(x)=\int_{\Omega^k(x)}C_{66}^{k}(x,y,z)\,F_{2,y}(y,z)\,F_{2,y}(y,z)\,\mathrm{d}\Omega. $$
+
+Because
+
+$$ F_{2,y}(y,z)=1, $$
+
+the two sectional integrals are identical:
+
+$$ J_{11}^{66,k}(x)=J_{2,y\,2,y}^{66,k}(x). $$
+
+After assembly over the transverse sub-domains,
+
+$$ J_{11}^{66}(x)=J_{2,y\,2,y}^{66}(x). $$
+
+The previously resolved global coefficient can therefore be used directly:
+
+$$ \boxed{J_{11}^{66}(x)=148000000-3810000x+26000x^2\ \mathrm{N}}. $$
+
+The longitudinal interval is
+
+$$ 0\le x\le L,\qquad L=10\ \mathrm{m}. $$
+
+### Prescribed longitudinal verification field
+
+To obtain a fully determined worked example, prescribe the longitudinal CUF amplitude
+
+$$ b(x)=b_L\frac{x}{L}, $$
+
+with
+
+$$ b_L=0.01\ \mathrm{m}. $$
+
+Since
+
+$$ L=10\ \mathrm{m}, $$
+
+the prescribed field is
+
+$$ \boxed{b(x)=0.001x}. $$
+
+Its longitudinal derivative is constant:
+
+$$ \boxed{\frac{\mathrm{d}b}{\mathrm{d}x}=0.001}. $$
+
+The selected governing-equation operator becomes
+
+$$ -\partial_x\left[J_{11}^{66}(x)\,\partial_x b(x)\right]=-\partial_x\left[0.001\,J_{11}^{66}(x)\right]. $$
+
+The derivative of the sectional coefficient is
+
+$$ \frac{\mathrm{d}J_{11}^{66}}{\mathrm{d}x}=-3810000+52000x\ \mathrm{N/m}. $$
+
+Therefore,
+
+$$ -\partial_x\left[J_{11}^{66}(x)\,\partial_x b(x)\right]=-0.001\left(-3810000+52000x\right). $$
+
+Hence the generalized load required by the governing equation is uniquely determined as
+
+$$ \boxed{f_{y1}(x)=3810-52x\ \mathrm{N/m}}. $$
+
+No unknown quantity remains in this selected governing-equation component.
+
+### Numerical values
+
+At the beam origin,
+
+$$ f_{y1}(0)=3810\ \mathrm{N/m}. $$
+
+At mid-span,
+
+$$ f_{y1}(5)=3550\ \mathrm{N/m}. $$
+
+At the beam end,
+
+$$ f_{y1}(10)=3290\ \mathrm{N/m}. $$
+
+The prescribed displacement field is correspondingly
+
+$$ b(0)=0, $$
+
+$$ b(5)=0.005\ \mathrm{m}, $$
+
+and
+
+$$ b(10)=0.01\ \mathrm{m}. $$
+
+### Direct governing-equation checks
+
+At
+
+$$ x=0, $$
+
+the governing operator gives
+
+$$ -\partial_x\left[J_{11}^{66}(x)\,\partial_x b(x)\right]_{x=0}=3810\ \mathrm{N/m}, $$
+
+which is exactly
+
+$$ f_{y1}(0)=3810\ \mathrm{N/m}. $$
+
+At
+
+$$ x=5\ \mathrm{m}, $$
+
+the governing operator gives
+
+$$ -\partial_x\left[J_{11}^{66}(x)\,\partial_x b(x)\right]_{x=5}=3550\ \mathrm{N/m}, $$
+
+which is exactly
+
+$$ f_{y1}(5)=3550\ \mathrm{N/m}. $$
+
+At
+
+$$ x=10\ \mathrm{m}, $$
+
+the governing operator gives
+
+$$ -\partial_x\left[J_{11}^{66}(x)\,\partial_x b(x)\right]_{x=10}=3290\ \mathrm{N/m}, $$
+
+which is exactly
+
+$$ f_{y1}(10)=3290\ \mathrm{N/m}. $$
+
+Thus the selected governing-equation component is satisfied exactly by construction.
+
+### Operational interpretation
+
+The chain represented by this example is
+
+$$ \mathcal{S}(x)\longrightarrow J_{11}^{66}(x)\longrightarrow b(x)\longrightarrow f_{y1}(x) $$
+
+The roles remain separated:
+
+- the CUF formulation determines the governing differential operator;
+- the sectional representation supplies the coefficient $J_{11}^{66}(x)$;
+- the longitudinal field $b(x)$ is prescribed only for this verification example;
+- once $J_{11}^{66}(x)$ and $b(x)$ are fixed, the generalized load $f_{y1}(x)$ is determined uniquely by the governing equation.
+
+No additional sectional, constitutive, or loading specialization is required.
+
+### Scope of the example
+
+This is a manufactured equilibrium check for one scalar component of the CUF governing equations.
+
+It does not solve the general CUF boundary-value problem.
+
+It does not introduce a longitudinal numerical solver, impose a complete set of structural boundary conditions, reconstruct a physical traction distribution, or determine an unknown displacement field from prescribed loads.
+
+The example ends with finite numerical quantities because the longitudinal field is prescribed as verification data and the corresponding generalized load is evaluated uniquely from the already established CUF operator.
+
+
+---
+
 ## 10. Longitudinally varying coefficients inside the nuclear operator
 
 > This section builds on the sectional interface defined in
