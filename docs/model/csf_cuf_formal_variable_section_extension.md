@@ -1860,19 +1860,382 @@ These global expressions coincide with the zero-order blocks obtained directly f
 The variable-section structure of the complete nuclear operator is therefore established at the formal level. The distinction between the sub-domain coefficients $J^{mn,k}_{\tau,\phi s,\xi}(x)$ and the global coefficients $J^{mn}_{\tau,\phi s,\xi}(x)$ entering the assembled operator $\mathbf{K}_{\tau s}$ is explicit throughout the formulation.
 
 ---
+### 10.9 Worked example: numerical verification of one variable-coefficient diagonal nuclear term
 
+This worked example uses only quantities already established in the preceding numerical examples.
+
+Its purpose is limited to one point: verify numerically that the diagonal variable-coefficient term must remain in divergence form, and verify that evaluation at sub-domain level gives exactly the same result as evaluation after global sectional assembly.
+
+No new geometry, constitutive law, CUF basis, longitudinal field, or load is introduced.
+
+#### Selected term
+
+For the diagonal $yy$ block, choose $\tau=1$ and $s=1$.
+
+For the first-order transverse basis, $F_1=1$. Therefore its transverse derivatives vanish:
+
+```math
+F_{1,y}=0
+```
+
+```math
+F_{1,z}=0
+```
+
+Hence the two zero-order terms of the selected $yy$ block vanish.
+
+The remaining contribution is written as
+
+```math
+K_{yy}^{11}(x)=-\partial_x[J_{11}^{66}(x)\partial_x b(x)]
+```
+
+where
+
+```math
+b(x)=u_{y1}(x)
+```
+
+#### Previously established sectional coefficients
+
+For sub-domain $k=1$,
+
+```math
+J_{11}^{66,1}(x)=130000000-3900000x+26000x^2
+```
+
+with units N.
+
+For sub-domain $k=2$,
+
+```math
+J_{11}^{66,2}(x)=18000000+90000x
+```
+
+with units N.
+
+The global coefficient is
+
+```math
+J_{11}^{66}(x)=J_{11}^{66,1}(x)+J_{11}^{66,2}(x)
+```
+
+Therefore,
+
+```math
+J_{11}^{66}(x)=148000000-3810000x+26000x^2
+```
+
+with units N.
+
+The longitudinal interval is
+
+```math
+0\le x\le10
+```
+
+with $x$ expressed in metres.
+
+#### Previously prescribed longitudinal field
+
+The governing-equation worked example prescribed
+
+```math
+b(x)=0.001x
+```
+
+Therefore,
+
+```math
+\partial_x b(x)=0.001
+```
+
+and
+
+```math
+\partial_x^2 b(x)=0
+```
+
+No longitudinal unknown remains in this example.
+
+#### Route A: global sectional coefficient first
+
+Define
+
+```math
+Q^{66}(x)=J_{11}^{66}(x)\partial_x b(x)
+```
+
+Using the known quantities,
+
+```math
+Q^{66}(x)=0.001(148000000-3810000x+26000x^2)
+```
+
+Thus,
+
+```math
+Q^{66}(x)=148000-3810x+26x^2
+```
+
+with units N.
+
+The selected nuclear contribution is
+
+```math
+K_{yy}^{11}(x)=-\partial_x Q^{66}(x)
+```
+
+Since
+
+```math
+\partial_x Q^{66}(x)=-3810+52x
+```
+
+with units N/m, we obtain
+
+```math
+K_{yy}^{11}(x)=3810-52x
+```
+
+with units N/m.
+
+At the three verification coordinates,
+
+```math
+K_{yy}^{11}(0)=3810
+```
+
+```math
+K_{yy}^{11}(5)=3550
+```
+
+```math
+K_{yy}^{11}(10)=3290
+```
+
+with units N/m.
+
+#### Route B: sub-domain evaluation first
+
+For sub-domain $k=1$,
+
+```math
+Q^{66,1}(x)=J_{11}^{66,1}(x)\partial_x b(x)
+```
+
+Therefore,
+
+```math
+Q^{66,1}(x)=130000-3900x+26x^2
+```
+
+with units N.
+
+The corresponding nuclear contribution is
+
+```math
+K_{yy}^{11,1}(x)=-\partial_x Q^{66,1}(x)
+```
+
+Hence,
+
+```math
+K_{yy}^{11,1}(x)=3900-52x
+```
+
+with units N/m.
+
+For sub-domain $k=2$,
+
+```math
+Q^{66,2}(x)=J_{11}^{66,2}(x)\partial_x b(x)
+```
+
+Therefore,
+
+```math
+Q^{66,2}(x)=18000+90x
+```
+
+with units N.
+
+The corresponding nuclear contribution is
+
+```math
+K_{yy}^{11,2}(x)=-\partial_x Q^{66,2}(x)
+```
+
+Hence,
+
+```math
+K_{yy}^{11,2}(x)=-90
+```
+
+with units N/m.
+
+#### Exact assembly verification
+
+The two sub-domain quantities satisfy
+
+```math
+Q^{66,1}(x)+Q^{66,2}(x)=148000-3810x+26x^2
+```
+
+Therefore,
+
+```math
+Q^{66,1}(x)+Q^{66,2}(x)=Q^{66}(x)
+```
+
+For the nuclear contributions,
+
+```math
+K_{yy}^{11,1}(x)+K_{yy}^{11,2}(x)=3900-52x-90
+```
+
+Thus,
+
+```math
+K_{yy}^{11,1}(x)+K_{yy}^{11,2}(x)=3810-52x
+```
+
+with units N/m.
+
+This is exactly the global result:
+
+```math
+K_{yy}^{11,1}(x)+K_{yy}^{11,2}(x)=K_{yy}^{11}(x)
+```
+
+The numerical example therefore verifies the sub-domain assembly rule without leaving any equation to solve.
+
+#### Why the divergence form is necessary
+
+For a constant coefficient, the corresponding second-order term can be written as
+
+```math
+-J\partial_x^2 b(x)
+```
+
+That expression cannot be used unchanged when the coefficient depends on $x$.
+
+In the present example,
+
+```math
+\partial_x^2 b(x)=0
+```
+
+so the constant-coefficient expression would incorrectly give
+
+```math
+-J_{11}^{66}(x)\partial_x^2 b(x)=0
+```
+
+The correct variable-coefficient term is
+
+```math
+-\partial_x[J_{11}^{66}(x)\partial_x b(x)]
+```
+
+and its evaluated value is
+
+```math
+3810-52x
+```
+
+with units N/m.
+
+For this numerical verification only, the same term can be expanded as
+
+```math
+-\partial_x[J_{11}^{66}(x)\partial_x b(x)]=-[\partial_x J_{11}^{66}(x)]\partial_x b(x)-J_{11}^{66}(x)\partial_x^2 b(x)
+```
+
+The required quantities are
+
+```math
+\partial_x J_{11}^{66}(x)=-3810000+52000x
+```
+
+with units N/m,
+
+```math
+\partial_x b(x)=0.001
+```
+
+and
+
+```math
+\partial_x^2 b(x)=0
+```
+
+Therefore,
+
+```math
+-[\partial_x J_{11}^{66}(x)]\partial_x b(x)=3810-52x
+```
+
+with units N/m.
+
+This expansion is used only to verify the numerical result. The general formulation remains in divergence form.
+
+#### Closed numerical result
+
+The numerical sequence is
+
+```math
+J_{11}^{66}(x)\longrightarrow Q^{66}(x)\longrightarrow K_{yy}^{11}(x)
+```
+
+with
+
+```math
+J_{11}^{66}(x)=148000000-3810000x+26000x^2
+```
+
+with units N,
+
+```math
+b(x)=0.001x
+```
+
+```math
+Q^{66}(x)=148000-3810x+26x^2
+```
+
+with units N,
+
+and
+
+```math
+K_{yy}^{11}(x)=3810-52x
+```
+
+with units N/m.
+
+No equation remains to be solved.
+
+#### Scope of the example
+
+This example verifies one diagonal second-order term of the longitudinally varying CUF nuclear operator.
+
+It does not numerically specialize the mixed first-order blocks or the zero-order off-diagonal blocks. Those terms have different operator structures and should be treated separately.
+
+No new physical assumption is introduced. All sectional coefficients and the longitudinal verification field are inherited from the preceding worked examples.
 
 ---
-
 ## 11. No closed-form longitudinal solution is required
 
-The reference paper proceeds further and adopts a Navier-type solution along $x$.
+The reference paper proceeds further and adopts a Navier-type solution along the longitudinal coordinate x.
 
 That step is not required for the present CSF-CUF formulation.
 
 The formal development may stop at
 
-$$ { \mathbf{K}_{\tau s} [ \mathcal{S}(x),\partial_x ] \mathbf{u}_s(x) = \mathbf{f}_\tau(x). } $$
+```math
+\mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x]\mathbf{u}_s(x)=\mathbf{f}_\tau(x)
+```
 
 The problem is then a system of differential equations with variable coefficients.
 
@@ -1880,48 +2243,81 @@ The numerical method used to solve that system is a subsequent and separate choi
 
 Therefore the formulation does not require:
 
-- an analytical law for $\mathcal{S}(x)$;
-- an analytical law for $J_\bullet(x)$;
+- an analytical law for the CSF representation S(x);
+- an analytical law for the sectional fields J(x);
 - closed-form evaluation of the sectional integrals;
 - a Navier-type analytical solution.
 
-It requires only the capability to evaluate $\mathcal{S}(x)$ and the corresponding sectional integrals at the longitudinal coordinates requested by the numerical solver.
+It requires only the capability to evaluate the current CSF sectional state and the corresponding sectional integrals at the longitudinal coordinates requested by the numerical solver.
 
 ---
 
 ## 12. Formal CSF-CUF chain
 
-The complete formal chain is
+The complete formal chain begins from the CSF sectional representation:
 
-$$ { \mathcal{S}(x) } $$
+```math
+\mathcal{S}(x)
+```
+The corresponding sectional state contains, for each transverse sub-domain k,
 
-$$ \Downarrow $$
+```math
+\Omega^k(x)
+```
 
-$$ { \{ \Omega^k(x), \mathbf{C}^k(x,y,z) \}_{k=1}^{N_\Omega} } $$
+and
 
-$$ \Downarrow $$
+```math
+\mathbf{C}^k(x,y,z)
+```
 
-$$ { J_\bullet^k(x) = \mathcal{J}_\bullet^k [ \mathcal{S}(x),F_\tau,F_s ] } $$
+with
 
-$$ \Downarrow $$
+```math
+k=1,\ldots,N_\Omega
+```
 
-$$ { J_\bullet(x) = \sum_k J_\bullet^k(x) } $$
+From that state, the corresponding sub-domain sectional coefficient is generated:
 
-$$ \Downarrow $$
+```math
+J_\bullet^k(x)
+```
 
-$$ { \delta L_i \quad\text{and}\quad \delta L_{\mathrm{ext}} } $$
+Its dependence is
 
-$$ \Downarrow $$
+```math
+J_\bullet^k(x)=\mathcal{J}_\bullet^k[\mathcal{S}(x),F_\tau,F_s]
+```
 
-$$ { \mathbf{K}_{\tau s} [ \mathcal{S}(x),\partial_x ] \mathbf{u}_s(x) = \mathbf{f}_\tau(x) } $$
+The global sectional coefficient is obtained by assembly:
 
-$$ \Downarrow $$
+```math
+J_\bullet(x)=\sum_{k=1}^{N_\Omega}J_\bullet^k(x)
+```
 
-$$ { \text{numerical solution in }x. } $$
+These sectional quantities enter the internal virtual work:
+
+```math
+\delta L_i
+```
+
+and the external virtual work:
+
+```math
+\delta L_{\mathrm{ext}}
+```
+
+The resulting assembled governing system is
+
+```math
+\mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x]\mathbf{u}_s(x)=\mathbf{f}_\tau(x)
+```
+
+The subsequent step is the numerical solution along the longitudinal coordinate x.
 
 The key point is that the CSF representation remains primary throughout the construction.
 
-The CUF sectional coefficients are not required as predefined analytical functions of $x$. They are generated from the section field whenever they are needed.
+The CUF sectional coefficients are not required as predefined analytical functions of x. They are generated from the sectional state whenever they are needed.
 
 ---
 
@@ -1931,26 +2327,48 @@ The responsibilities of the two formulations remain distinct.
 
 ### CSF supplies
 
-$$ { \mathcal{S}(x) \longrightarrow \{ \Omega^k(x), \mathbf{C}^k(x,y,z) \}. } $$
+```math
+\mathcal{S}(x)\longrightarrow\{\Omega^k(x),\mathbf{C}^k(x,y,z)\}
+```
 
 ### CUF supplies
 
-- the approximation functions $F_\tau$ and $F_s$;
+- the transverse approximation functions;
 - their transverse derivatives;
 - the approximation order;
 - the displacement unknowns;
 - the variational formulation;
 - the fundamental nuclear structure.
 
+For reference, the CUF transverse approximation functions used throughout the formulation are denoted by
+
+```math
+F_\tau(y,z)
+```
+
+and
+
+```math
+F_s(y,z)
+```
+
 ### The coupling produces
 
-$$ { J_\bullet(x) } $$
+The sectional interface produces the global sectional fields
 
-and therefore
+```math
+J_\bullet(x)
+```
 
-$$ { \mathbf{K}_{\tau s} [ \mathcal{S}(x),\partial_x ]. } $$
+and therefore the assembled CUF nuclear operator
 
-Within this coupling, CSF provides the longitudinally evolving sectional representation required by the CUF mechanical formulation. It provides the longitudinally evolving sectional geometry and constitutive information from which the CUF sectional coefficients can be evaluated.
+```math
+\mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x]
+```
+
+Within this coupling, CSF provides the longitudinally evolving sectional representation required by the CUF mechanical formulation.
+
+It provides the sectional geometry and constitutive information from which the CUF sectional coefficients are evaluated at each requested longitudinal coordinate.
 
 ---
 
