@@ -1323,7 +1323,17 @@ The second vector follows from the mapped bending load established in Section 9.
 
 The algebraic fundamental nucleus associated with the pair $(\tau,s)$ is the $3\times3$ matrix
 
-$$ \mathbf{A}_{\tau s}= \begin{bmatrix} A_{xx}^{\tau s} & A_{xy}^{\tau s} & A_{xz}^{\tau s}\\ A_{yx}^{\tau s} & A_{yy}^{\tau s} & A_{yz}^{\tau s}\\ A_{zx}^{\tau s} & A_{zy}^{\tau s} & A_{zz}^{\tau s} \end{bmatrix}. $$
+
+The mapped bending load established in Section 9.1 gives the generalized algebraic right-hand-side components
+
+$$ F_{x\tau}=0, $$
+
+$$ F_{y\tau}=P B_\tau, $$
+
+and
+
+$$ F_{z\tau}=0. $$
+
 
 For every test index $\tau$, the algebraic governing equation is
 
@@ -1518,7 +1528,7 @@ The transverse derivative correspondence is
 $$ \partial_{x_{\mathrm{ref}}}\longleftrightarrow\partial_{y_{\mathrm{CSF}}},\qquad \partial_{y_{\mathrm{ref}}}\longleftrightarrow\partial_{z_{\mathrm{CSF}}}. $$
 
 The constitutive-component correspondence induced by the same permutation is
-a
+
 $$ C_{33}^{\mathrm{ref}}\longleftrightarrow C_{11}^{\mathrm{CSF}},\qquad C_{11}^{\mathrm{ref}}\longleftrightarrow C_{22}^{\mathrm{CSF}},\qquad C_{22}^{\mathrm{ref}}\longleftrightarrow C_{33}^{\mathrm{CSF}}, $$
 
 $$ C_{44}^{\mathrm{ref}}\longleftrightarrow C_{55}^{\mathrm{CSF}},\qquad C_{55}^{\mathrm{ref}}\longleftrightarrow C_{66}^{\mathrm{CSF}},\qquad C_{66}^{\mathrm{ref}}\longleftrightarrow C_{44}^{\mathrm{CSF}}, $$
