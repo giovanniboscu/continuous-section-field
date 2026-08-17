@@ -330,3 +330,133 @@ This reproduces the fourth-order Maclaurin CUF approximation used among the rect
 
 The next step is to evaluate the sectional coefficient families required by the fundamental nucleus for this fixed $N=4$ basis and for the constant rectangular sectional state established in Section 4.
 
+
+## 6. Computational normalization of the reference geometry
+
+The Carrera-Giunta rectangular bending benchmark is defined by geometric ratios rather than by an absolute dimensional scale.
+
+For the first validation case, the reference work specifies
+
+$$
+\frac{l}{a}=100
+$$
+
+and
+
+$$
+\frac{a}{b}=100.
+$$
+
+To evaluate the sectional coefficients numerically in the present CSF-CUF formulation, an explicit dimensional section must be supplied to the sectional integrals.
+
+A computational reference scale is therefore introduced by setting
+
+$$
+a=100\ \mathrm{mm}.
+$$
+
+The remaining dimensions then follow directly from the reference ratios:
+
+$$
+b=\frac{a}{100}=1\ \mathrm{mm}
+$$
+
+and
+
+$$
+l=100a=10000\ \mathrm{mm}.
+$$
+
+This dimensional choice is a computational normalization introduced in the present validation document. It is not an additional geometric datum taken from the Carrera-Giunta paper.
+
+It preserves exactly the reference ratios
+
+$$
+\frac{l}{a}=100
+$$
+
+and
+
+$$
+\frac{a}{b}=100.
+$$
+
+With the coordinate correspondence introduced in Section 3, the numerical transverse domain used by the CSF sectional provider is therefore
+
+$$
+\Omega^1=\{(y,z):-50\le y\le50,\;-0.5\le z\le0.5\}
+$$
+
+with transverse coordinates expressed in millimetres.
+
+The longitudinal interval is
+
+$$
+0\le x\le10000
+$$
+
+with $x$ expressed in millimetres.
+
+The material parameters remain those specified in the reference work:
+
+$$
+E=71700\ \mathrm{MPa}
+$$
+
+and
+
+$$
+\nu=0.30.
+$$
+
+For the isotropic three-dimensional constitutive law used in the present numerical specialization,
+
+$$
+G=\frac{E}{2(1+\nu)}=27576.9231\ \mathrm{MPa}
+$$
+
+and
+
+$$
+\lambda=\frac{E\nu}{(1+\nu)(1-2\nu)}=41365.3846\ \mathrm{MPa}.
+$$
+
+Therefore,
+
+$$
+C_{11}=C_{22}=C_{33}=96519.2308\ \mathrm{MPa},
+$$
+
+$$
+C_{12}=C_{13}=C_{23}=41365.3846\ \mathrm{MPa},
+$$
+
+and
+
+$$
+C_{44}=C_{55}=C_{66}=27576.9231\ \mathrm{MPa}.
+$$
+
+The constant constitutive field supplied by the sectional provider is thus numerically determined.
+
+For the Navier half-wave number selected in the reference case,
+
+$$
+m=1,
+$$
+
+the longitudinal wave parameter becomes
+
+$$
+\alpha=\frac{\pi}{l}
+$$
+
+and numerically
+
+$$
+\alpha=3.14159265\times10^{-4}\ \mathrm{mm}^{-1}.
+$$
+
+At this stage, the sectional geometry, material field, longitudinal scale, CUF approximation order, and Navier wave parameter are all numerically fixed.
+
+The next step is to evaluate the generalized sectional coefficients required by the $N=4$ CUF fundamental nucleus over this explicitly defined rectangular domain.
