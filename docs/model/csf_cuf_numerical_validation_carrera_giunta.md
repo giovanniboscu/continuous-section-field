@@ -320,7 +320,7 @@ $$
 
 Equivalently, each displacement component contains the same 15 transverse monomials, with its own longitudinal amplitudes.
 
-No Navier specialization has yet been applied in this section. The quantities
+No  has yet been applied in this section. The quantities
 
 $$
 \mathbf{u}_\tau(x)
@@ -637,7 +637,7 @@ $$ J_{2,y\,2,y}^{66}=2.75769231\times10^6\ \mathrm{N}. $$
 
 These checks establish the numerical bridge between the generalized sectional coefficients and the cross-section momenta used by Carrera and Giunta.
 
-The next step is to generate the complete set of non-zero sectional coefficients required by the $N=4$ fundamental nucleus before applying the Navier specialization.**
+The next step is to generate the complete set of non-zero sectional coefficients required by the $N=4$ fundamental nucleus before applying the Navier specialization.
 
 ## 8. Coordinate and displacement-component correspondence
 
