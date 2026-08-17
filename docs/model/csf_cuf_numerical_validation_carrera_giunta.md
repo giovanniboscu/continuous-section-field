@@ -751,3 +751,164 @@ These quantities do not introduce a new mechanical model. They complete the spec
 Once these data are fixed, the benchmark is numerically closed: the sectional coefficients, load vector, algebraic system, displacement amplitudes, recovered strains and stresses, and final nondimensional comparison are all uniquely determined.
 
 Only after this closure step is it appropriate to assemble and solve the complete $N=4$ CUF algebraic system.
+
+
+### 9.1 Reference bending load and its CSF-CUF specialization
+
+The loading must be specialized before the algebraic system is assembled.
+
+This step does not modify the generalized CSF-CUF formulation. It identifies, within the general external-work representation, the particular surface traction used in the Carrera-Giunta rectangular bending benchmark.
+
+#### Reference loading
+
+Carrera and Giunta define the external virtual work as the sum of surface- and line-loading contributions. For the rectangular bending benchmark, the beam is subjected to a surface loading of maximum amplitude
+
+$$ P_{xx}^{1+}. $$
+
+The superscript $1+$ identifies the positive $x_{\mathrm{ref}}$ lateral surface of the single rectangular sub-domain, while the subscripts $xx$ identify a traction component directed along $x_{\mathrm{ref}}$ on that surface.
+
+All other surface- and line-loading amplitudes are zero for this selected benchmark.
+
+For the Navier solution, the reference paper assumes that the normal surface-loading components vary along the beam axis as
+
+$$ p_{xx}^{1+}(z_{\mathrm{ref}})=P_{xx}^{1+}\sin(\alpha z_{\mathrm{ref}}) $$
+
+with
+
+$$ \alpha=\frac{m\pi}{l}. $$
+
+For the selected benchmark,
+
+$$ m=1 $$
+
+and therefore
+
+$$ \alpha=\frac{\pi}{l}. $$
+
+#### Mapping to the generalized CSF-CUF coordinates
+
+The coordinate correspondence established previously is
+
+$$ x_{\mathrm{CSF}}=z_{\mathrm{ref}} $$
+
+$$ y_{\mathrm{CSF}}=x_{\mathrm{ref}} $$
+
+$$ z_{\mathrm{CSF}}=y_{\mathrm{ref}}. $$
+
+Consequently, the reference positive surface
+
+$$ x_{\mathrm{ref}}=+\frac{a}{2} $$
+
+corresponds to the CSF-CUF surface
+
+$$ y_{\mathrm{CSF}}=+\frac{a}{2}. $$
+
+The reference traction direction $x_{\mathrm{ref}}$ corresponds to the CSF-CUF displacement and traction direction $y_{\mathrm{CSF}}$.
+
+The benchmark loading in the present coordinate convention is therefore a normal surface traction applied only on
+
+$$ \Gamma_p=\{(y,z):y=a/2,\;-b/2\le z\le b/2\}. $$
+
+Its non-zero component is
+
+$$ p_y(x,z)=P\sin(\alpha x) $$
+
+on $\Gamma_p$, where $P$ denotes the mapped amplitude of $P_{xx}^{1+}$.
+
+The traction is uniform over the transverse coordinate $z$ of the loaded face.
+
+All other traction components are zero.
+
+#### Computational load normalization
+
+The stress results in the reference paper are finally compared in nondimensional form with respect to the loading amplitude $P_{xx}^{1+}$.
+
+A numerical amplitude may therefore be selected without altering the nondimensional benchmark.
+
+For the present computational realization, set
+
+$$ P=1\ \mathrm{MPa}=1\ \mathrm{N/mm^2}. $$
+
+This is a computational normalization introduced for the numerical validation. It is not an additional loading datum supplied by the reference paper.
+
+With
+
+$$ l=10000\ \mathrm{mm}, $$
+
+the longitudinal wave parameter is
+
+$$ \alpha=\frac{\pi}{10000}=3.14159265\times10^{-4}\ \mathrm{mm}^{-1}. $$
+
+Hence the applied traction is completely determined:
+
+$$ p_y(x,z)=\sin(3.14159265\times10^{-4}x)\ \mathrm{MPa} $$
+
+for
+
+$$ y=50\ \mathrm{mm},\qquad -0.5\le z\le0.5\ \mathrm{mm}. $$
+
+#### Entry into the CUF external virtual work
+
+The generalized CSF-CUF formulation evaluates external work on the current sectional boundary. In the present prismatic benchmark, the loaded boundary is constant along the longitudinal coordinate.
+
+For the selected traction, only the virtual displacement component $\delta u_y$ contributes.
+
+Using the $N=4$ CUF expansion,
+
+$$ \delta u_y(x,y,z)=\sum_{\tau=1}^{15}F_\tau(y,z)\delta u_{y\tau}(x), $$
+
+the surface-loading contribution becomes
+
+$$ \delta L_p=\int_0^l\sum_{\tau=1}^{15}\delta u_{y\tau}(x)\,P\sin(\alpha x)\,B_\tau\,\mathrm{d}x $$
+
+where the loaded-face sectional factors are
+
+$$ B_\tau=\int_{-b/2}^{b/2}F_\tau(a/2,z)\,\mathrm{d}z. $$
+
+These factors are the direct counterparts, after coordinate mapping, of the boundary integrals denoted by $E_\tau^{ky+}$ in the Carrera-Giunta external-work expression.
+
+For the numerical dimensions
+
+$$ a=100\ \mathrm{mm},\qquad b=1\ \mathrm{mm}, $$
+
+the non-zero loaded-face factors for the basis of Section 5 are
+
+$$ B_1=1\ \mathrm{mm} $$
+
+$$ B_2=50\ \mathrm{mm^2} $$
+
+$$ B_4=2500\ \mathrm{mm^3} $$
+
+$$ B_6=8.33333333\times10^{-2}\ \mathrm{mm^3} $$
+
+$$ B_7=125000\ \mathrm{mm^4} $$
+
+$$ B_9=4.16666667\ \mathrm{mm^4} $$
+
+$$ B_{11}=6250000\ \mathrm{mm^5} $$
+
+$$ B_{13}=208.333333\ \mathrm{mm^5} $$
+
+$$ B_{15}=1.25\times10^{-2}\ \mathrm{mm^5}. $$
+
+The remaining loaded-face factors vanish by symmetry:
+
+$$ B_3=B_5=B_8=B_{10}=B_{12}=B_{14}=0. $$
+
+Therefore the load contribution is numerically determined for every CUF test function before assembly of the algebraic system.
+
+#### Chain consistency
+
+For this benchmark, the complete loading chain is
+
+$$ \mathcal{S}_{\mathrm{ref}}\longrightarrow\Gamma_p\longrightarrow p_y(x,z)\longrightarrow B_\tau\longrightarrow f_{y\tau}(x). $$
+
+The generalized load amplitude associated with test function $\tau$ is
+
+$$ f_{y\tau}(x)=P\,B_\tau\sin(\alpha x). $$
+
+No load acts in the $x_{\mathrm{CSF}}$ or $z_{\mathrm{CSF}}$ displacement equations.
+
+This is exactly the reference surface-loading mechanism expressed in the coordinate convention and sectional-provider structure of the generalized CSF-CUF formulation.
+
+No algebraic matrix has yet been assembled in this step.
