@@ -202,4 +202,3 @@ No CUF approximation order has yet been fixed in this step. The sectional state 
 
 The next step is therefore to introduce the Maclaurin CUF approximation used by Carrera and Giunta and to identify the basis functions associated with a chosen approximation order.
 
-At this point the reference geometry, material, coordinate correspondence, and target numerical case are fully specified. The next step is to specialize the generalized CSF sectional state to this constant prismatic reference configuration.
