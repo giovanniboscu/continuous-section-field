@@ -202,3 +202,131 @@ No CUF approximation order has yet been fixed in this step. The sectional state 
 
 The next step is therefore to introduce the Maclaurin CUF approximation used by Carrera and Giunta and to identify the basis functions associated with a chosen approximation order.
 
+## 5. CUF Maclaurin approximation for the first validation model
+
+The reference formulation introduces the generic CUF kinematic field
+
+$$
+\mathbf{u}=F_\tau\,\mathbf{u}_\tau
+$$
+
+with the approximation order $N$ treated as a free parameter.
+
+Carrera and Giunta then specialize the transverse approximation functions to Maclaurin polynomials. For a polynomial order $N$, the number of transverse functions is
+
+$$
+N_u=\frac{(N+1)(N+2)}{2}.
+$$
+
+The first rectangular bending benchmark selected in Section 3 is compared in Table 2 of the reference paper for the approximation orders $N=1$, $N=2$, $N=3$, and $N=4$.
+
+For the present first validation, select
+
+$$
+N=4.
+$$
+
+This choice identifies one specific CUF model among those reported in the reference table and avoids introducing the first-order constitutive correction used in the reference work for classical and first-order models.
+
+For $N=4$,
+
+$$
+N_u=15.
+$$
+
+In the reference coordinates, the Maclaurin basis contains all monomials in the two transverse coordinates up to total degree four.
+
+Using the coordinate correspondence established in Section 3,
+
+$$
+x_{\mathrm{ref}}=y
+$$
+
+and
+
+$$
+y_{\mathrm{ref}}=z,
+$$
+
+the CUF transverse basis used in the present notation is
+
+$$
+F_1=1
+$$
+
+$$
+F_2=y
+$$
+
+$$
+F_3=z
+$$
+
+$$
+F_4=y^2
+$$
+
+$$
+F_5=yz
+$$
+
+$$
+F_6=z^2
+$$
+
+$$
+F_7=y^3
+$$
+
+$$
+F_8=y^2z
+$$
+
+$$
+F_9=yz^2
+$$
+
+$$
+F_{10}=z^3
+$$
+
+$$
+F_{11}=y^4
+$$
+
+$$
+F_{12}=y^3z
+$$
+
+$$
+F_{13}=y^2z^2
+$$
+
+$$
+F_{14}=yz^3
+$$
+
+$$
+F_{15}=z^4.
+$$
+
+The displacement field for this validation model is therefore
+
+$$
+\mathbf{u}(x,y,z)=\sum_{\tau=1}^{15}F_\tau(y,z)\mathbf{u}_\tau(x).
+$$
+
+Equivalently, each displacement component contains the same 15 transverse monomials, with its own longitudinal amplitudes.
+
+No Navier specialization has yet been applied in this section. The quantities
+
+$$
+\mathbf{u}_\tau(x)
+$$
+
+remain the longitudinal unknown functions of the completed CUF differential model.
+
+This reproduces the fourth-order Maclaurin CUF approximation used among the rectangular bending results reported by Carrera and Giunta, expressed only in the coordinate convention of the generalized CSF-CUF formulation.
+
+The next step is to evaluate the sectional coefficient families required by the fundamental nucleus for this fixed $N=4$ basis and for the constant rectangular sectional state established in Section 4.
+
