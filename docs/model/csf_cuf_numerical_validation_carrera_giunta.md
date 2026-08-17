@@ -320,7 +320,7 @@ $$
 
 Equivalently, each displacement component contains the same 15 transverse monomials, with its own longitudinal amplitudes.
 
-No  has yet been applied in this section. The quantities
+No Navier specialization has yet been applied in this section. The quantities
 
 $$
 \mathbf{u}_\tau(x)
