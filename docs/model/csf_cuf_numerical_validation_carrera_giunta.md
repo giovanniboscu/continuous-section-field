@@ -1311,15 +1311,10 @@ For each pair of transverse approximation indices
 
 $$ (\tau,s), $$
 
-define the Navier amplitude vectors
+
+define the Navier amplitude vector
 
 $$ \mathbf{U}_s= \begin{bmatrix} U_{xs}\\ U_{ys}\\ U_{zs} \end{bmatrix} $$
-
-and
-
-$$ \mathbf{F}_\tau= \begin{bmatrix} 0\\ P B_\tau\\ 0 \end{bmatrix}. $$
-
-
 
 The mapped bending load established in Section 9.1 gives the generalized algebraic right-hand-side components
 
