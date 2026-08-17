@@ -2251,124 +2251,21 @@ Therefore the formulation does not require:
 It requires only the capability to evaluate the current CSF sectional state and the corresponding sectional integrals at the longitudinal coordinates requested by the numerical solver.
 
 ---
+## 12. Closure of the formal development
 
-## 12. Formal CSF-CUF chain
+The formal CSF-CUF development presented in this document ends with the governing differential system established in Section 11.
 
-The complete formal chain begins from the CSF sectional representation:
+At this stage, the CUF kinematic and variational formulation has been completed, the required sectional quantities have been identified through the generalized sectional coefficients, and the complete variable-coefficient fundamental nucleus has been established.
 
-```math
-\mathcal{S}(x)
-```
-The corresponding sectional state contains, for each transverse sub-domain k,
+No longitudinal solution method is imposed by the present formulation.
 
-```math
-\Omega^k(x)
-```
+The subsequent step is therefore no longer part of the formal development itself. It consists of applying the completed formulation to a fully specified structural problem by selecting the sectional state, CUF approximation order, loading and boundary conditions, and a suitable longitudinal solution procedure.
 
-and
+This application is developed separately in:
 
-```math
-\mathbf{C}^k(x,y,z)
-```
+**Numerical validation example based on Carrera and Giunta, “Refined Beam Theories Based on a Unified Formulation”.**
 
-with
-
-```math
-k=1,\ldots,N_\Omega
-```
-
-From that state, the corresponding sub-domain sectional coefficient is generated:
-
-```math
-J_\bullet^k(x)
-```
-
-Its dependence is
-
-```math
-J_\bullet^k(x)=\mathcal{J}_\bullet^k[\mathcal{S}(x),F_\tau,F_s]
-```
-
-The global sectional coefficient is obtained by assembly:
-
-```math
-J_\bullet(x)=\sum_{k=1}^{N_\Omega}J_\bullet^k(x)
-```
-
-These sectional quantities enter the internal virtual work:
-
-```math
-\delta L_i
-```
-
-and the external virtual work:
-
-```math
-\delta L_{\mathrm{ext}}
-```
-
-The resulting assembled governing system is
-
-```math
-\mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x]\mathbf{u}_s(x)=\mathbf{f}_\tau(x)
-```
-
-The subsequent step is the numerical solution along the longitudinal coordinate x.
-
-The key point is that the CSF representation remains primary throughout the construction.
-
-The CUF sectional coefficients are not required as predefined analytical functions of x. They are generated from the sectional state whenever they are needed.
-
----
-
-## 13. Boundary between CSF and CUF
-
-The responsibilities of the two formulations remain distinct.
-
-### CSF supplies
-
-```math
-\mathcal{S}(x)\longrightarrow\{\Omega^k(x),\mathbf{C}^k(x,y,z)\}
-```
-
-### CUF supplies
-
-- the transverse approximation functions;
-- their transverse derivatives;
-- the approximation order;
-- the displacement unknowns;
-- the variational formulation;
-- the fundamental nuclear structure.
-
-For reference, the CUF transverse approximation functions used throughout the formulation are denoted by
-
-```math
-F_\tau(y,z)
-```
-
-and
-
-```math
-F_s(y,z)
-```
-
-### The coupling produces
-
-The sectional interface produces the global sectional fields
-
-```math
-J_\bullet(x)
-```
-
-and therefore the assembled CUF nuclear operator
-
-```math
-\mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x]
-```
-
-Within this coupling, CSF provides the longitudinally evolving sectional representation required by the CUF mechanical formulation.
-
-It provides the sectional geometry and constitutive information from which the CUF sectional coefficients are evaluated at each requested longitudinal coordinate.
+The objective of that document is to specialize the present general formulation to the reference problem considered by Carrera and Giunta and verify that, under the same assumptions and solution strategy, the corresponding CUF algebraic system and numerical results are recovered.
 
 ---
 
