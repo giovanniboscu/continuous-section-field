@@ -9,7 +9,7 @@ This document applies the completed CSF-CUF formulation to the reference problem
 The first validation case is the rectangular beam under bending considered by Carrera and Giunta.
 
 The purpose of this section is only to define the reference problem to which the completed CSF-CUF formulation will be specialized. No sectional coefficient, fundamental nucleus, or algebraic system is evaluated yet.
-a
+
 The beam is prismatic and its cross-section is constant along the longitudinal coordinate. A rectangular cross-section is considered.
 
 The material is the aluminium alloy adopted in the reference work, with
