@@ -1861,6 +1861,274 @@ The variable-section structure of the complete nuclear operator is therefore est
 
 ---
 
+### Worked example: numerical evaluation of a longitudinally varying diagonal nuclear operator
+
+This worked example verifies, with the numerical quantities already established in the preceding examples, the central variable-coefficient operation introduced in Section 10.
+
+The objective is deliberately narrow: evaluate one diagonal nuclear contribution in divergence form, first at sub-domain level and then after global assembly, and verify that both routes give exactly the same finite result.
+
+No new sectional geometry, constitutive law, CUF basis, longitudinal field, or load is introduced.
+
+The example reuses:
+
+- the two sectional sub-domains already defined in the sectional worked examples;
+- the previously evaluated coefficients $J_{11}^{66,1}(x)$, $J_{11}^{66,2}(x)$, and $J_{11}^{66}(x)$;
+- the prescribed verification field $b(x)$ introduced in the governing-equation worked example.
+
+### Selected nuclear contribution
+
+For the $yy$ diagonal block, the assembled variable-coefficient CUF operator contains
+
+$$ -\partial_x\left[J_{\tau s}^{66}(x)\,\partial_x\right]. $$
+
+Choose
+
+$$ \tau=1,\qquad s=1. $$
+
+The selected operator acting on the longitudinal amplitude $b(x)=u_{y1}(x)$ is therefore
+
+$$ \mathcal{K}_{yy}^{(11,66)}[b](x)=-\partial_x\left[J_{11}^{66}(x)\,\partial_x b(x)\right]. $$
+
+The purpose of this example is to evaluate this quantity completely.
+
+### Previously established sectional coefficients
+
+For sub-domain $k=1$,
+
+$$ J_{11}^{66,1}(x)=130000000-3900000x+26000x^2\ \mathrm{N}. $$
+
+For sub-domain $k=2$,
+
+$$ J_{11}^{66,2}(x)=18000000+90000x\ \mathrm{N}. $$
+
+Their global assembly is
+
+$$ J_{11}^{66}(x)=J_{11}^{66,1}(x)+J_{11}^{66,2}(x). $$
+
+Hence,
+
+$$ \boxed{J_{11}^{66}(x)=148000000-3810000x+26000x^2\ \mathrm{N}}. $$
+
+The longitudinal interval is
+
+$$ 0\le x\le10\ \mathrm{m}. $$
+
+### Previously prescribed longitudinal verification field
+
+The governing-equation worked example prescribed
+
+$$ b(x)=0.001x. $$
+
+Therefore,
+
+$$ \boxed{\partial_x b(x)=0.001}, $$
+
+and
+
+$$ \partial_x^2 b(x)=0. $$
+
+The vanishing second derivative is useful here because it makes the effect of the longitudinally varying sectional coefficient completely explicit.
+
+### Evaluation through the globally assembled coefficient
+
+Define the longitudinal internal flux associated with the selected nuclear term as
+
+$$ Q^{66}(x)=J_{11}^{66}(x)\,\partial_x b(x). $$
+
+Substituting the known quantities,
+
+$$ Q^{66}(x)=0.001\left(148000000-3810000x+26000x^2\right). $$
+
+Therefore,
+
+$$ \boxed{Q^{66}(x)=148000-3810x+26x^2\ \mathrm{N}}. $$
+
+The variable-coefficient nuclear contribution is
+
+$$ \mathcal{K}_{yy}^{(11,66)}[b](x)=-\partial_x Q^{66}(x). $$
+
+Since
+
+$$ \partial_x Q^{66}(x)=-3810+52x\ \mathrm{N/m}, $$
+
+the completely evaluated operator is
+
+$$ \boxed{\mathcal{K}_{yy}^{(11,66)}[b](x)=3810-52x\ \mathrm{N/m}}. $$
+
+This is the same generalized-load field obtained independently in the governing-equation worked example.
+
+### Numerical values from the global operator
+
+At the beam origin,
+
+$$ Q^{66}(0)=148000\ \mathrm{N}, $$
+
+and
+
+$$ \mathcal{K}_{yy}^{(11,66)}[b](0)=3810\ \mathrm{N/m}. $$
+
+At mid-span,
+
+$$ Q^{66}(5)=129600\ \mathrm{N}, $$
+
+and
+
+$$ \mathcal{K}_{yy}^{(11,66)}[b](5)=3550\ \mathrm{N/m}. $$
+
+At the beam end,
+
+$$ Q^{66}(10)=112500\ \mathrm{N}, $$
+
+and
+
+$$ \mathcal{K}_{yy}^{(11,66)}[b](10)=3290\ \mathrm{N/m}. $$
+
+### Independent evaluation at sub-domain level
+
+The same operation can be performed before global assembly.
+
+For sub-domain $k=1$, define
+
+$$ Q^{66,1}(x)=J_{11}^{66,1}(x)\,\partial_x b(x). $$
+
+Thus,
+
+$$ Q^{66,1}(x)=0.001\left(130000000-3900000x+26000x^2\right), $$
+
+and therefore
+
+$$ \boxed{Q^{66,1}(x)=130000-3900x+26x^2\ \mathrm{N}}. $$
+
+The corresponding sub-domain nuclear contribution is
+
+$$ \mathcal{K}_{yy}^{(11,66),1}[b](x)=-\partial_x Q^{66,1}(x). $$
+
+Hence,
+
+$$ \boxed{\mathcal{K}_{yy}^{(11,66),1}[b](x)=3900-52x\ \mathrm{N/m}}. $$
+
+For sub-domain $k=2$,
+
+$$ Q^{66,2}(x)=J_{11}^{66,2}(x)\,\partial_x b(x). $$
+
+Therefore,
+
+$$ Q^{66,2}(x)=0.001\left(18000000+90000x\right), $$
+
+so that
+
+$$ \boxed{Q^{66,2}(x)=18000+90x\ \mathrm{N}}. $$
+
+The corresponding sub-domain nuclear contribution is
+
+$$ \mathcal{K}_{yy}^{(11,66),2}[b](x)=-\partial_x Q^{66,2}(x), $$
+
+which gives
+
+$$ \boxed{\mathcal{K}_{yy}^{(11,66),2}[b](x)=-90\ \mathrm{N/m}}. $$
+
+### Verification of assembly and longitudinal differentiation
+
+The two sub-domain fluxes sum to
+
+$$ Q^{66,1}(x)+Q^{66,2}(x)=\left(130000-3900x+26x^2\right)+\left(18000+90x\right). $$
+
+Therefore,
+
+$$ Q^{66,1}(x)+Q^{66,2}(x)=148000-3810x+26x^2. $$
+
+Hence,
+
+$$ \boxed{Q^{66,1}(x)+Q^{66,2}(x)=Q^{66}(x)}. $$
+
+Likewise, the two sub-domain nuclear contributions sum to
+
+$$ \mathcal{K}_{yy}^{(11,66),1}[b](x)+\mathcal{K}_{yy}^{(11,66),2}[b](x)=\left(3900-52x\right)-90. $$
+
+Thus,
+
+$$ \boxed{\mathcal{K}_{yy}^{(11,66),1}[b](x)+\mathcal{K}_{yy}^{(11,66),2}[b](x)=3810-52x\ \mathrm{N/m}}. $$
+
+This is exactly the result obtained by first assembling the sectional coefficient and then applying the longitudinal differential operator:
+
+$$ \boxed{\sum_{k=1}^{2}-\partial_x\left[J_{11}^{66,k}(x)\,\partial_x b(x)\right]=-\partial_x\left[J_{11}^{66}(x)\,\partial_x b(x)\right]}. $$
+
+The numerical example therefore verifies directly the commutation between finite sub-domain assembly and the linear longitudinal differential operation used in Section 10.2.1.
+
+### Why the divergence form matters
+
+For a constant sectional coefficient, one may write the corresponding second-order contribution as
+
+$$ -J\,\partial_x^2 b(x). $$
+
+If that constant-coefficient expression were used incorrectly with the present variable coefficient, one would obtain
+
+$$ -J_{11}^{66}(x)\,\partial_x^2 b(x)=0, $$
+
+because
+
+$$ \partial_x^2 b(x)=0. $$
+
+That result is not the variable-coefficient CUF operator.
+
+The correct expression is
+
+$$ -\partial_x\left[J_{11}^{66}(x)\,\partial_x b(x)\right], $$
+
+which gives
+
+$$ \boxed{3810-52x\ \mathrm{N/m}}. $$
+
+For verification only, the divergence expression may be expanded by the product rule:
+
+$$ -\partial_x\left[J_{11}^{66}(x)\,\partial_x b(x)\right]=-\frac{\mathrm{d}J_{11}^{66}}{\mathrm{d}x}\,\frac{\mathrm{d}b}{\mathrm{d}x}-J_{11}^{66}(x)\,\frac{\mathrm{d}^2b}{\mathrm{d}x^2}. $$
+
+Since
+
+$$ \frac{\mathrm{d}b}{\mathrm{d}x}=0.001, $$
+
+and
+
+$$ \frac{\mathrm{d}^2b}{\mathrm{d}x^2}=0, $$
+
+the result is entirely generated by the longitudinal variation of the sectional coefficient:
+
+$$ -\frac{\mathrm{d}J_{11}^{66}}{\mathrm{d}x}\,\frac{\mathrm{d}b}{\mathrm{d}x}=3810-52x\ \mathrm{N/m}. $$
+
+This product-rule expansion is used only as a numerical verification. The general formulation remains in divergence form and does not require an explicit classical derivative of $J_{11}^{66}(x)$.
+
+### Closed numerical check
+
+The complete numerical chain is
+
+$$ \mathcal{S}(x)\longrightarrow\{J_{11}^{66,1}(x),J_{11}^{66,2}(x)\}\longrightarrow J_{11}^{66}(x)\longrightarrow Q^{66}(x)\longrightarrow\mathcal{K}_{yy}^{(11,66)}[b](x) $$
+
+with
+
+$$ J_{11}^{66}(x)=148000000-3810000x+26000x^2\ \mathrm{N}, $$
+
+$$ b(x)=0.001x, $$
+
+$$ Q^{66}(x)=148000-3810x+26x^2\ \mathrm{N}, $$
+
+and
+
+$$ \boxed{\mathcal{K}_{yy}^{(11,66)}[b](x)=3810-52x\ \mathrm{N/m}}. $$
+
+No equation remains to be solved.
+
+### Scope of the example
+
+This example verifies one diagonal second-order term of the longitudinally varying CUF nuclear operator.
+
+It does not yet numerically specialize a mixed first-order block or a zero-order off-diagonal block.
+
+Those terms have different operator structures and should be treated separately if numerical worked examples are required for them.
+
+No new physical assumption has been introduced: all sectional coefficients and the longitudinal verification field are inherited from the preceding worked examples.
+
+---
+
 ## 11. No closed-form longitudinal solution is required
 
 The reference paper proceeds further and adopts a Navier-type solution along $x$.
