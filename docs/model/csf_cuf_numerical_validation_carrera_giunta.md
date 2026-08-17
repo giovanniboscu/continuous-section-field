@@ -1498,3 +1498,107 @@ $$ \mathbf{A}\in\mathbb{R}^{45\times45}. $$
 At this point the remaining work is numerical rather than formulational: generate the required sectional momenta for the fixed $N=4$ basis, multiply them by the already specified constitutive coefficients, populate the $225$ algebraic blocks, and assemble the complete matrix and load vector.
 
 No additional physical assumption is required.
+
+### 10.8 Direct term-by-term verification against Carrera-Giunta Eq. (5.5)
+
+Before generating any numerical matrix entry, the algebraic nucleus obtained above is compared directly with Eq. (5.5) of Carrera and Giunta.
+
+No numerical datum and no additional assumption are introduced in this verification.
+
+The comparison uses only the coordinate and component correspondence already established:
+
+$$ x_{\mathrm{CSF}}=z_{\mathrm{ref}},\qquad y_{\mathrm{CSF}}=x_{\mathrm{ref}},\qquad z_{\mathrm{CSF}}=y_{\mathrm{ref}}. $$
+
+Therefore the displacement-component ordering is
+
+$$ (u_x,u_y,u_z)_{\mathrm{CSF}}=(u_z,u_x,u_y)_{\mathrm{ref}}. $$
+
+The transverse derivative correspondence is
+
+$$ \partial_{x_{\mathrm{ref}}}\longleftrightarrow\partial_{y_{\mathrm{CSF}}},\qquad \partial_{y_{\mathrm{ref}}}\longleftrightarrow\partial_{z_{\mathrm{CSF}}}. $$
+
+The constitutive-component correspondence induced by the same permutation is
+a
+$$ C_{33}^{\mathrm{ref}}\longleftrightarrow C_{11}^{\mathrm{CSF}},\qquad C_{11}^{\mathrm{ref}}\longleftrightarrow C_{22}^{\mathrm{CSF}},\qquad C_{22}^{\mathrm{ref}}\longleftrightarrow C_{33}^{\mathrm{CSF}}, $$
+
+$$ C_{44}^{\mathrm{ref}}\longleftrightarrow C_{55}^{\mathrm{CSF}},\qquad C_{55}^{\mathrm{ref}}\longleftrightarrow C_{66}^{\mathrm{CSF}},\qquad C_{66}^{\mathrm{ref}}\longleftrightarrow C_{44}^{\mathrm{CSF}}, $$
+
+and
+
+$$ C_{13}^{\mathrm{ref}}\longleftrightarrow C_{12}^{\mathrm{CSF}},\qquad C_{23}^{\mathrm{ref}}\longleftrightarrow C_{13}^{\mathrm{CSF}},\qquad C_{12}^{\mathrm{ref}}\longleftrightarrow C_{23}^{\mathrm{CSF}}. $$
+
+For the present isotropic benchmark these permutations do not change the numerical constitutive values, but they are retained here because they are necessary for a literal term-by-term comparison.
+
+#### Diagonal blocks
+
+The reference $zz$ equation becomes the CSF $xx$ equation. Its diagonal term maps to
+
+$$ A_{xx}^{\tau s}=J_{\tau,y s,y}^{66}+J_{\tau,z s,z}^{55}+\alpha^2J_{\tau,0s,0}^{11}. $$
+
+The reference $xx$ equation becomes the CSF $yy$ equation. Its diagonal term maps to
+
+$$ A_{yy}^{\tau s}=J_{\tau,y s,y}^{22}+J_{\tau,z s,z}^{44}+\alpha^2J_{\tau,0s,0}^{66}. $$
+
+The reference $yy$ equation becomes the CSF $zz$ equation. Its diagonal term maps to
+
+$$ A_{zz}^{\tau s}=J_{\tau,y s,y}^{44}+J_{\tau,z s,z}^{33}+\alpha^2J_{\tau,0s,0}^{55}. $$
+
+These are exactly the three diagonal terms obtained in Section 10.2.
+
+#### First-order coupling blocks
+
+The reference $zx$ block becomes the CSF $xy$ block:
+
+$$ A_{xy}^{\tau s}=\alpha\left(-J_{\tau,0s,y}^{12}+J_{\tau,y s,0}^{66}\right). $$
+
+The reference $xz$ block becomes the CSF $yx$ block:
+
+$$ A_{yx}^{\tau s}=\alpha\left(J_{\tau,0s,y}^{66}-J_{\tau,y s,0}^{12}\right). $$
+
+The reference $zy$ block becomes the CSF $xz$ block:
+
+$$ A_{xz}^{\tau s}=\alpha\left(-J_{\tau,0s,z}^{13}+J_{\tau,z s,0}^{55}\right). $$
+
+The reference $yz$ block becomes the CSF $zx$ block:
+
+$$ A_{zx}^{\tau s}=\alpha\left(J_{\tau,0s,z}^{55}-J_{\tau,z s,0}^{13}\right). $$
+
+These are exactly the four first-order terms obtained in Section 10.3.
+
+#### Zero-order transverse coupling blocks
+
+The reference $xy$ block becomes the CSF $yz$ block:
+
+$$ A_{yz}^{\tau s}=J_{\tau,y s,z}^{23}+J_{\tau,z s,y}^{44}. $$
+
+The reference $yx$ block becomes the CSF $zy$ block:
+
+$$ A_{zy}^{\tau s}=J_{\tau,z s,y}^{23}+J_{\tau,y s,z}^{44}. $$
+
+These are exactly the two zero-order terms obtained in Section 10.4.
+
+#### Load-vector correspondence
+
+The selected Carrera-Giunta benchmark applies only the normal surface loading amplitude $P_{xx}^{1+}$.
+
+Under the established coordinate and component mapping, this load acts only in the CSF $y$ equation on the positive $y$ face.
+
+Therefore the algebraic generalized load vector is
+
+$$ \mathbf{F}_\tau=\begin{bmatrix}0\\P B_\tau\\0\end{bmatrix}, $$
+
+which is the vector used in Section 10.1.
+
+#### Verification result
+
+All nine entries of the $3\times3$ algebraic fundamental nucleus and the non-zero load-vector component are obtained by direct permutation of Eq. (5.5) of Carrera and Giunta.
+
+Therefore,
+
+$$ \boxed{\mathbf{A}_{\tau s}^{\mathrm{CSF}}\equiv\mathbf{A}_{\tau s}^{\mathrm{Carrera-Giunta}}} $$
+
+after the coordinate, displacement-component, derivative, and constitutive-index correspondences stated above.
+
+This equivalence is established before any complete numerical coefficient table or $45\times45$ matrix is generated.
+
+The next step may therefore evaluate the required sectional momenta for the already fixed $N=4$ basis and populate the algebraic blocks without introducing any new physical datum.
