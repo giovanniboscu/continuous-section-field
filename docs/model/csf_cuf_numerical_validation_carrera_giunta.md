@@ -177,12 +177,7 @@ $$
 Therefore the generalized sectional provider reduces, for this benchmark, to the constant response
 
 $$
-\mathcal{S}_{\mathrm{ref}}
-\longrightarrow
-\left\{
-\Omega^1,
-\mathbf{C}_{\mathrm{Al}}
-\right\}.
+\mathcal{S}_{\mathrm{ref}}\longrightarrow\{\Omega^1,\mathbf{C}_{\mathrm{Al}}\}.
 $$
 
 Equivalently,
