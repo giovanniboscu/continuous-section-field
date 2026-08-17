@@ -2252,6 +2252,7 @@ It requires only the capability to evaluate the current CSF sectional state and 
 
 ---
 
+
 ## 12. Closure of the formal development
 
 The formal CSF-CUF development presented in this document is complete at the end of Section 11.
@@ -2266,13 +2267,21 @@ The subsequent stage is no longer a further derivation of the formulation. It is
 
 That application requires the selection of the CUF approximation order to be used, together with the specification of the sectional state, material data, loading conditions, boundary conditions, and a suitable longitudinal solution procedure.
 
-A separate reference validation document is used for this purpose:
+The reference validation is developed separately in:
 
-**Numerical validation based on Carrera and Giunta, “Refined Beam Theories Based on a Unified Formulation”.**
+[`csf_cuf_numerical_validation_carrera_giunta.md`](./csf_cuf_numerical_validation_carrera_giunta.md)
 
-The objective of that document is to apply the present general formulation to the same assumptions adopted in the reference work and verify that the corresponding CUF algebraic system and reference results are recovered.
+This document applies the present general formulation to the reference problem considered by Carrera and Giunta in *Refined Beam Theories Based on a Unified Formulation*. Its objective is to verify that, under the same assumptions and solution strategy adopted in the reference work, the corresponding CUF algebraic system and reference results are recovered.
 
-The distinction is therefore explicit: the present document develops the formulation; the subsequent document uses the completed formulation.
+The distinction is therefore explicit: the present document develops the generalized formulation; `csf_cuf_numerical_validation_carrera_giunta.md` applies and validates the completed formulation on a fully specified reference case.
+
+### Implementation note
+
+The present formal development assumes that the sectional domains and constitutive fields required by CUF can be supplied at every requested longitudinal coordinate.
+
+The concrete CSF-side realization of this sectional provider, including the geometry and constitutive representation and the operational boundary between CSF and CUF, is discussed separately in [`csf_cuf_sectional_constitutive_interface.md`](./csf_cuf_sectional_constitutive_interface.md).
+
+That document concerns the implementation of the sectional interface and is not part of the CUF formal derivation.
 
 
 ---
