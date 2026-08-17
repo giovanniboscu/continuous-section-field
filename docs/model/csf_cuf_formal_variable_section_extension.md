@@ -2251,21 +2251,29 @@ Therefore the formulation does not require:
 It requires only the capability to evaluate the current CSF sectional state and the corresponding sectional integrals at the longitudinal coordinates requested by the numerical solver.
 
 ---
+
 ## 12. Closure of the formal development
 
-The formal CSF-CUF development presented in this document ends with the governing differential system established in Section 11.
+The formal CSF-CUF development presented in this document is complete at the end of Section 11.
 
-At this stage, the CUF kinematic and variational formulation has been completed, the required sectional quantities have been identified through the generalized sectional coefficients, and the complete variable-coefficient fundamental nucleus has been established.
+At that point, the CUF kinematic and variational structure has been retained, the sectional quantities required by the formulation have been identified through the generalized sectional coefficients, and the complete variable-coefficient fundamental nucleus has been established.
 
-No longitudinal solution method is imposed by the present formulation.
+The resulting governing differential system is therefore the final object of the present formal development.
 
-The subsequent step is therefore no longer part of the formal development itself. It consists of applying the completed formulation to a fully specified structural problem by selecting the sectional state, CUF approximation order, loading and boundary conditions, and a suitable longitudinal solution procedure.
+No longitudinal solution method is imposed here.
 
-This application is developed separately in:
+The subsequent stage is no longer a further derivation of the formulation. It is the application of the completed model to a fully specified structural problem.
 
-**Numerical validation example based on Carrera and Giunta, “Refined Beam Theories Based on a Unified Formulation”.**
+That application requires the selection of the CUF approximation order to be used, together with the specification of the sectional state, material data, loading conditions, boundary conditions, and a suitable longitudinal solution procedure.
 
-The objective of that document is to specialize the present general formulation to the reference problem considered by Carrera and Giunta and verify that, under the same assumptions and solution strategy, the corresponding CUF algebraic system and numerical results are recovered.
+A separate reference validation document is used for this purpose:
+
+**Numerical validation based on Carrera and Giunta, “Refined Beam Theories Based on a Unified Formulation”.**
+
+The objective of that document is to apply the present general formulation to the same assumptions adopted in the reference work and verify that the corresponding CUF algebraic system and reference results are recovered.
+
+The distinction is therefore explicit: the present document develops the formulation; the subsequent document uses the completed formulation.
+
 
 ---
 
