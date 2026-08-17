@@ -459,4 +459,289 @@ $$
 
 At this stage, the sectional geometry, material field, longitudinal scale, CUF approximation order, and Navier wave parameter are all numerically fixed.
 
-The next step is to evaluate the generalized sectional coefficients required by the $N=4$ CUF fundamental nucleus over this explicitly defined rectangular domain.
+
+## 7. Sectional momenta and correspondence with the generalized coefficients
+
+The next step in the Carrera-Giunta reference formulation is the evaluation of the cross-section quantities entering the differential matrix.
+
+In the reference paper these quantities are introduced in Eq. (4.6) as the cross-section inertial momenta. For the present validation, it is useful to separate the purely geometrical CUF integrals from the constitutive coefficients.
+
+Define, in the present coordinate convention,
+
+$$
+M_{\tau,\phi s,\xi}
+=
+\int_{\Omega^1}
+F_{\tau,\phi}(y,z)\,
+F_{s,\xi}(y,z)\,
+\mathrm{d}\Omega
+$$
+
+with
+
+$$
+\phi,\xi\in\{\varnothing,y,z\}.
+$$
+
+The symbol $\varnothing$ denotes the absence of transverse differentiation.
+
+Because the present benchmark has one homogeneous isotropic sub-domain and a constant constitutive field, the generalized sectional coefficients reduce to
+
+$$
+J_{\tau,\phi s,\xi}^{mn}
+=
+C_{mn}\,
+M_{\tau,\phi s,\xi}.
+$$
+
+This is the direct correspondence between the generalized CSF-CUF sectional coefficient family and the cross-section momenta of Eq. (4.6) in the reference paper.
+
+Under the coordinate correspondence
+
+$$
+x_{\mathrm{ref}}=y
+$$
+
+and
+
+$$
+y_{\mathrm{ref}}=z,
+$$
+
+the reference quantities map to the present notation as follows:
+
+$$
+E_{\tau s}^{\mathrm{ref}}
+\longleftrightarrow
+M_{\tau,\varnothing s,\varnothing},
+$$
+
+$$
+E_{\tau,x s,x}^{\mathrm{ref}}
+\longleftrightarrow
+M_{\tau,y s,y},
+$$
+
+$$
+E_{\tau,y s,y}^{\mathrm{ref}}
+\longleftrightarrow
+M_{\tau,z s,z},
+$$
+
+$$
+E_{\tau,x s,y}^{\mathrm{ref}}
+\longleftrightarrow
+M_{\tau,y s,z},
+$$
+
+$$
+E_{\tau,y s,x}^{\mathrm{ref}}
+\longleftrightarrow
+M_{\tau,z s,y},
+$$
+
+$$
+E_{\tau,x s}^{\mathrm{ref}}
+\longleftrightarrow
+M_{\tau,y s,\varnothing},
+$$
+
+$$
+E_{\tau s,x}^{\mathrm{ref}}
+\longleftrightarrow
+M_{\tau,\varnothing s,y},
+$$
+
+$$
+E_{\tau,y s}^{\mathrm{ref}}
+\longleftrightarrow
+M_{\tau,z s,\varnothing},
+$$
+
+and
+
+$$
+E_{\tau s,y}^{\mathrm{ref}}
+\longleftrightarrow
+M_{\tau,\varnothing s,z}.
+$$
+
+No new mechanical quantity is introduced by this notation. The symbol $M$ is used here only to distinguish the geometrical cross-section integral from Young's modulus $E$.
+
+## 7. Sectional momenta and correspondence with the generalized coefficients
+
+The next step in the Carrera-Giunta reference formulation is the evaluation of the cross-section quantities entering the differential matrix.
+
+In the reference paper these quantities are introduced in Eq. (4.6) as the cross-section inertial momenta. For the present validation, it is useful to separate the purely geometrical CUF integrals from the constitutive coefficients.
+
+To keep the notation compact and robust in the present document, the index $0$ denotes absence of transverse differentiation.
+
+Define, in the present coordinate convention,
+
+$$ M_{\tau,\phi s,\xi}=\int_{\Omega^1}F_{\tau,\phi}(y,z)F_{s,\xi}(y,z)\,\mathrm{d}\Omega $$
+
+with
+
+$$ \phi,\xi\in\{0,y,z\}. $$
+
+When $\phi=0$ or $\xi=0$, the corresponding basis function is not differentiated.
+
+Because the present benchmark has one homogeneous isotropic sub-domain and a constant constitutive field, the generalized sectional coefficients reduce to
+
+$$ J_{\tau,\phi s,\xi}^{mn}=C_{mn}M_{\tau,\phi s,\xi}. $$
+
+This is the direct correspondence between the generalized CSF-CUF sectional coefficient family and the cross-section momenta of Eq. (4.6) in the reference paper.
+
+Under the coordinate correspondence
+
+$$ x_{\mathrm{ref}}=y $$
+
+and
+
+$$ y_{\mathrm{ref}}=z, $$
+
+the reference quantities map to the present notation as follows:
+
+$$ E_{\tau s}^{\mathrm{ref}}\longleftrightarrow M_{\tau,0s,0} $$
+
+$$ E_{\tau,xs,x}^{\mathrm{ref}}\longleftrightarrow M_{\tau,ys,y} $$
+
+$$ E_{\tau,ys,y}^{\mathrm{ref}}\longleftrightarrow M_{\tau,zs,z} $$
+
+$$ E_{\tau,xs,y}^{\mathrm{ref}}\longleftrightarrow M_{\tau,ys,z} $$
+
+$$ E_{\tau,ys,x}^{\mathrm{ref}}\longleftrightarrow M_{\tau,zs,y} $$
+
+$$ E_{\tau,xs}^{\mathrm{ref}}\longleftrightarrow M_{\tau,ys,0} $$
+
+$$ E_{\tau s,x}^{\mathrm{ref}}\longleftrightarrow M_{\tau,0s,y} $$
+
+$$ E_{\tau,ys}^{\mathrm{ref}}\longleftrightarrow M_{\tau,zs,0} $$
+
+$$ E_{\tau s,y}^{\mathrm{ref}}\longleftrightarrow M_{\tau,0s,z}. $$
+
+No new mechanical quantity is introduced by the symbol $M$. It is used only to distinguish the geometrical cross-section integral from Young's modulus $E$.
+
+### 7.1 Exact integration for the rectangular benchmark
+
+For the fourth-order Maclaurin basis, every transverse approximation function can be written as
+
+$$ F_\tau(y,z)=y^i z^j $$
+
+and
+
+$$ F_s(y,z)=y^\eta z^\theta, $$
+
+with non-negative integer exponents satisfying
+
+$$ i+j\le4 $$
+
+and
+
+$$ \eta+\theta\le4. $$
+
+The reference paper evaluates these integrals analytically in Appendix B for rectangular sub-domains.
+
+For the symmetric rectangle used here,
+
+$$ -a/2\le y\le a/2,\qquad -b/2\le z\le b/2, $$
+
+define the one-dimensional symmetric moment
+
+$$ I_p(h)=\int_{-h/2}^{h/2}q^p\,\mathrm{d}q. $$
+
+Its exact value is
+
+$$ I_p(h)=0 $$
+
+for odd $p$, while for even $p$,
+
+$$ I_p(h)=\frac{h^{p+1}}{2^p(p+1)}. $$
+
+Therefore the undifferentiated sectional momentum is
+
+$$ M_{\tau,0s,0}=I_{i+\eta}(a)I_{j+\theta}(b). $$
+
+The two same-direction derivative momenta are
+
+$$ M_{\tau,ys,y}=i\eta\,I_{i+\eta-2}(a)I_{j+\theta}(b) $$
+
+and
+
+$$ M_{\tau,zs,z}=j\theta\,I_{i+\eta}(a)I_{j+\theta-2}(b). $$
+
+The mixed derivative momenta are
+
+$$ M_{\tau,ys,z}=i\theta\,I_{i+\eta-1}(a)I_{j+\theta-1}(b) $$
+
+and
+
+$$ M_{\tau,zs,y}=j\eta\,I_{i+\eta-1}(a)I_{j+\theta-1}(b). $$
+
+The one-sided derivative momenta are
+
+$$ M_{\tau,ys,0}=i\,I_{i+\eta-1}(a)I_{j+\theta}(b) $$
+
+$$ M_{\tau,0s,y}=\eta\,I_{i+\eta-1}(a)I_{j+\theta}(b) $$
+
+$$ M_{\tau,zs,0}=j\,I_{i+\eta}(a)I_{j+\theta-1}(b) $$
+
+and
+
+$$ M_{\tau,0s,z}=\theta\,I_{i+\eta}(a)I_{j+\theta-1}(b). $$
+
+If a derivative coefficient such as $i$, $j$, $\eta$, or $\theta$ is zero, the corresponding momentum is zero and no negative-order integral is evaluated.
+
+### 7.2 First numerical checks
+
+With
+
+$$ a=100\ \mathrm{mm} $$
+
+and
+
+$$ b=1\ \mathrm{mm}, $$
+
+the area of the section is
+
+$$ M_{1,0\,1,0}=ab=100\ \mathrm{mm}^2. $$
+
+Since
+
+$$ F_2=y, $$
+
+the corresponding second moment is
+
+$$ M_{2,0\,2,0}=\int_{\Omega^1}y^2\,\mathrm{d}\Omega=\frac{ba^3}{12}=83333.3333\ \mathrm{mm}^4. $$
+
+Since
+
+$$ F_3=z, $$
+
+the other transverse second moment is
+
+$$ M_{3,0\,3,0}=\int_{\Omega^1}z^2\,\mathrm{d}\Omega=\frac{ab^3}{12}=8.33333333\ \mathrm{mm}^4. $$
+
+For a derivative example,
+
+$$ F_{2,y}=1, $$
+
+and therefore
+
+$$ M_{2,y\,2,y}=\int_{\Omega^1}1\,\mathrm{d}\Omega=100\ \mathrm{mm}^2. $$
+
+The corresponding constitutive sectional coefficient for the $66$ component is
+
+$$ J_{2,y\,2,y}^{66}=C_{66}M_{2,y\,2,y}. $$
+
+Using
+
+$$ C_{66}=27576.9231\ \mathrm{MPa}, $$
+
+one obtains
+
+$$ J_{2,y\,2,y}^{66}=2.75769231\times10^6\ \mathrm{N}. $$
+
+These checks establish the numerical bridge between the generalized sectional coefficients and the cross-section momenta used by Carrera and Giunta.
+
+The next step is to generate the complete set of non-zero sectional coefficients required by the $N=4$ fundamental nucleus before applying the Navier specialization.
