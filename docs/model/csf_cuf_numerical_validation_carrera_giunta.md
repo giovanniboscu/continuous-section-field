@@ -912,3 +912,245 @@ No load acts in the $x_{\mathrm{CSF}}$ or $z_{\mathrm{CSF}}$ displacement equati
 This is exactly the reference surface-loading mechanism expressed in the coordinate convention and sectional-provider structure of the generalized CSF-CUF formulation.
 
 No algebraic matrix has yet been assembled in this step.
+
+
+### 9.2 Reference output quantities and Table 2 validation targets
+
+The numerical benchmark is not completely specified by the load alone. The output quantities must also be identified exactly as they are defined in the Carrera-Giunta reference problem.
+
+This step fixes the physical stress components, the evaluation coordinates, the nondimensionalization formulas, and the numerical target values to be recovered by the present CSF-CUF model.
+
+No new mechanical assumption is introduced.
+
+#### Reference stress components
+
+For the rectangular bending benchmark, Carrera and Giunta report the three stress components
+
+$$ \sigma_{zz}^{\mathrm{ref}} $$
+
+$$ \sigma_{xx}^{\mathrm{ref}} $$
+
+and
+
+$$ \sigma_{xz}^{\mathrm{ref}}. $$
+
+Under the coordinate and component correspondence introduced in Section 8,
+
+$$ x_{\mathrm{CSF}}=z_{\mathrm{ref}} $$
+
+$$ y_{\mathrm{CSF}}=x_{\mathrm{ref}} $$
+
+$$ z_{\mathrm{CSF}}=y_{\mathrm{ref}}, $$
+
+the corresponding CSF-CUF stress components are
+
+$$ \sigma_{xx}^{\mathrm{CSF}}\longleftrightarrow\sigma_{zz}^{\mathrm{ref}} $$
+
+$$ \sigma_{yy}^{\mathrm{CSF}}\longleftrightarrow\sigma_{xx}^{\mathrm{ref}} $$
+
+and
+
+$$ \sigma_{xy}^{\mathrm{CSF}}\longleftrightarrow\sigma_{xz}^{\mathrm{ref}}. $$
+
+Therefore the validation must compare physically corresponding stress components, not identically named tensor entries.
+
+#### Reference evaluation coordinates
+
+The reference paper evaluates all three reported stresses at
+
+$$ y_{\mathrm{ref}}=0. $$
+
+In the CSF-CUF coordinate convention this condition becomes
+
+$$ z_{\mathrm{CSF}}=0. $$
+
+For the normal stress components $\sigma_{zz}^{\mathrm{ref}}$ and $\sigma_{xx}^{\mathrm{ref}}$, the longitudinal coordinate is
+
+$$ z_{\mathrm{ref}}=\frac{l}{2}. $$
+
+Hence, in the present notation,
+
+$$ x_{\mathrm{CSF}}=\frac{l}{2}=5000\ \mathrm{mm}. $$
+
+For the shear stress component $\sigma_{xz}^{\mathrm{ref}}$, the reference longitudinal coordinate is
+
+$$ z_{\mathrm{ref}}=0, $$
+
+which becomes
+
+$$ x_{\mathrm{CSF}}=0. $$
+
+The transverse coordinate $x_{\mathrm{ref}}$ is varied across the section. In the present coordinate convention,
+
+$$ x_{\mathrm{ref}}=y_{\mathrm{CSF}}. $$
+
+The Table 2 values are evaluated at the three reference positions
+
+$$ x_{\mathrm{ref}}=\frac{a}{2} $$
+
+$$ x_{\mathrm{ref}}=-\frac{a}{2} $$
+
+and
+
+$$ x_{\mathrm{ref}}=0. $$
+
+With the numerical normalization $a=100\ \mathrm{mm}$, these become
+
+$$ y_{\mathrm{CSF}}=50\ \mathrm{mm} $$
+
+$$ y_{\mathrm{CSF}}=-50\ \mathrm{mm} $$
+
+and
+
+$$ y_{\mathrm{CSF}}=0. $$
+
+#### Nondimensional stress definitions
+
+Carrera and Giunta define the nondimensional normal bending stress as
+
+$$ \sigma_{zz}^{*}=\frac{\pi^2}{6}\frac{a^2}{l^2}\frac{\sigma_{zz}^{\mathrm{ref}}}{P}. $$
+
+Using the CSF-CUF component mapping, the same validation quantity is evaluated from
+
+$$ \sigma_{xx}^{\mathrm{CSF}}. $$
+
+Therefore,
+
+$$ \sigma_{zz}^{*}=\frac{\pi^2}{6}\frac{a^2}{l^2}\frac{\sigma_{xx}^{\mathrm{CSF}}}{P}. $$
+
+The reference transverse normal stress is nondimensionalized as
+
+$$ \sigma_{xx}^{*}=\frac{\sigma_{xx}^{\mathrm{ref}}}{P}. $$
+
+In the present notation,
+
+$$ \sigma_{xx}^{*}=\frac{\sigma_{yy}^{\mathrm{CSF}}}{P}. $$
+
+The reference shear stress is nondimensionalized as
+
+$$ \sigma_{xz}^{*}=\frac{2\pi}{3}\frac{a}{l}\frac{\sigma_{xz}^{\mathrm{ref}}}{P}. $$
+
+In the present notation,
+
+$$ \sigma_{xz}^{*}=\frac{2\pi}{3}\frac{a}{l}\frac{\sigma_{xy}^{\mathrm{CSF}}}{P}. $$
+
+For the computational normalization
+
+$$ a=100\ \mathrm{mm},\qquad l=10000\ \mathrm{mm},\qquad P=1\ \mathrm{MPa}, $$
+
+the dimensional scaling factors are
+
+$$ \frac{6l^2}{\pi^2a^2}=6079.27102 $$
+
+and
+
+$$ \frac{3l}{2\pi a}=47.7464829. $$
+
+Therefore the dimensional stress values corresponding to unit nondimensional values are
+
+$$ \sigma_{xx}^{\mathrm{CSF}}=6079.27102\ \mathrm{MPa} $$
+
+for
+
+$$ \sigma_{zz}^{*}=1, $$
+
+$$ \sigma_{yy}^{\mathrm{CSF}}=1\ \mathrm{MPa} $$
+
+for
+
+$$ \sigma_{xx}^{*}=1, $$
+
+and
+
+$$ \sigma_{xy}^{\mathrm{CSF}}=47.7464829\ \mathrm{MPa} $$
+
+for
+
+$$ \sigma_{xz}^{*}=1. $$
+
+These dimensional values are only consequences of the selected computational normalization. The actual validation remains nondimensional.
+
+#### Table 2 target values for the N=4 model
+
+For the selected benchmark with
+
+$$ \frac{l}{a}=100 $$
+
+and
+
+$$ N=4, $$
+
+Carrera and Giunta report the following nondimensional stress values.
+
+For the longitudinal bending stress,
+
+$$ \sigma_{zz}^{*}\bigl(x_{\mathrm{ref}}=a/2\bigr)=1.0000 $$
+
+and
+
+$$ \sigma_{zz}^{*}\bigl(x_{\mathrm{ref}}=-a/2\bigr)=-1.0000. $$
+
+In the present coordinates, these correspond to
+
+$$ \sigma_{xx}^{\mathrm{CSF}}(x=5000,y=50,z=0) $$
+
+and
+
+$$ \sigma_{xx}^{\mathrm{CSF}}(x=5000,y=-50,z=0). $$
+
+For the transverse normal stress,
+
+$$ \sigma_{xx}^{*}\bigl(x_{\mathrm{ref}}=0\bigr)=0.5000 $$
+
+and
+
+$$ \sigma_{xx}^{*}\bigl(x_{\mathrm{ref}}=a/2\bigr)=1.0000. $$
+
+In the present coordinates, these correspond to
+
+$$ \sigma_{yy}^{\mathrm{CSF}}(x=5000,y=0,z=0) $$
+
+and
+
+$$ \sigma_{yy}^{\mathrm{CSF}}(x=5000,y=50,z=0). $$
+
+For the transverse shear stress,
+
+$$ \sigma_{xz}^{*}\bigl(x_{\mathrm{ref}}=0\bigr)=1.0000 $$
+
+and
+
+$$ \sigma_{xz}^{*}\bigl(x_{\mathrm{ref}}=a/2\bigr)=0.0000. $$
+
+In the present coordinates, these correspond to
+
+$$ \sigma_{xy}^{\mathrm{CSF}}(x=0,y=0,z=0) $$
+
+and
+
+$$ \sigma_{xy}^{\mathrm{CSF}}(x=0,y=50,z=0). $$
+
+The six numerical validation targets are therefore
+
+$$ 1.0000,\;-1.0000,\;0.5000,\;1.0000,\;1.0000,\;0.0000. $$
+
+#### Numerical closure of the benchmark
+
+After Sections 9.1 and 9.2, the benchmark is fully defined by:
+
+- the constant CSF sectional state;
+- the numerical rectangular geometry;
+- the isotropic constitutive field;
+- the $N=4$ Maclaurin CUF basis;
+- the sectional momenta and generalized sectional coefficients;
+- the coordinate and displacement-component correspondence;
+- the mapped bending surface load and its numerical amplitude;
+- the Navier half-wave parameter;
+- the exact stress components to recover;
+- the exact evaluation coordinates;
+- the nondimensionalization formulas;
+- the six Table 2 target values.
+
+No additional geometric, constitutive, loading, or output datum is required before assembly of the numerical CUF system.
+
+The next step is therefore the term-by-term specialization of the constant-coefficient fundamental nucleus and the assembly of the complete $45\times45$ algebraic system for the $N=4$ validation model.
