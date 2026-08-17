@@ -1617,57 +1617,215 @@ The next step may therefore evaluate the required sectional momenta for the alre
 
 The formal correspondence between the generalized CSF-CUF formulation and the Carrera-Giunta reference model has already been established at the algebraic-nucleus level.
 
-The present section performs the first complete numerical realization of that correspondence.
+The present section performs the first complete numerical realization of that correspondence and makes the reference traceability explicit.
 
-No new physical datum is introduced. The computation uses only the benchmark quantities already fixed in the preceding sections:
+No new physical datum is introduced. Every quantity used below is either:
 
-$$ N=4, $$
+- taken directly from Carrera and Giunta;
+- inherited from the generalized CSF-CUF formulation developed previously;
+- or explicitly declared as a computational normalization that preserves the nondimensional reference problem.
 
-$$ N_u=15, $$
+### 11.1 Exact reference locations in Carrera-Giunta
 
-$$ a=100\ \mathrm{mm}, $$
+The numerical validation is tied to the following locations in *Refined Beam Theories Based on a Unified Formulation*.
 
-$$ b=1\ \mathrm{mm}, $$
+The reference beam geometry, material data, half-wave number, and rectangular bending benchmark are given in Section 6, page 130 of the paper.
 
-$$ l=10000\ \mathrm{mm}, $$
+The material parameters are
 
-$$ E=71700\ \mathrm{MPa}, $$
-
-$$ \nu=0.30, $$
-
-$$ P=1\ \mathrm{MPa}, $$
+$$ E=71700\ \mathrm{MPa} $$
 
 and
 
+$$ \nu=0.30. $$
+
+The half-wave number is
+
+$$ m=1. $$
+
+The rectangular bending benchmark uses
+
+$$ \frac{l}{a}=100 $$
+
+and
+
+$$ \frac{a}{b}=100. $$
+
+**Reference location:** Carrera-Giunta, Section 6 and Section 6.1, page 130.
+
+The nondimensional stress definitions are given by Eq. (6.1):
+
+$$ \sigma_{zz}^{*}=\frac{\pi^2}{6}\frac{a^2}{l^2}\frac{\sigma_{zz}}{P_{xx}^{1+}}, $$
+
+$$ \sigma_{xx}^{*}=\frac{\sigma_{xx}}{P_{xx}^{1+}}, $$
+
+and
+
+$$ \sigma_{xz}^{*}=\frac{2\pi}{3}\frac{a}{l}\frac{\sigma_{xz}}{P_{xx}^{1+}}. $$
+
+The paper specifies that all three quantities are evaluated at
+
+$$ y_{\mathrm{ref}}=0. $$
+
+For
+
+$$ \sigma_{zz}^{*} $$
+
+and
+
+$$ \sigma_{xx}^{*}, $$
+
+the longitudinal coordinate is
+
+$$ z_{\mathrm{ref}}=\frac{l}{2}, $$
+
+while for
+
+$$ \sigma_{xz}^{*} $$
+
+the longitudinal coordinate is
+
+$$ z_{\mathrm{ref}}=0. $$
+
+**Reference location:** Carrera-Giunta, Eq. (6.1), page 130.
+
+The exact comparison values used here are taken from the row
+
+$$ N=4 $$
+
+of Table 2.
+
+For
+
+$$ \frac{l}{a}=100, $$
+
+Table 2 reports
+
+$$ 1.0000,\quad -1.0000,\quad 0.5000,\quad 1.0000,\quad 1.0000,\quad 0.0000. $$
+
+The table footnotes identify the transverse evaluation coordinates as:
+
+$$ x_{\mathrm{ref}}=\frac{a}{2} $$
+
+for superscript `a`,
+
+$$ x_{\mathrm{ref}}=-\frac{a}{2} $$
+
+for superscript `b`,
+
+and
+
+$$ x_{\mathrm{ref}}=0 $$
+
+for superscript `c`.
+
+**Reference location:** Carrera-Giunta, Table 2, page 130.
+
+The algebraic CUF system used before numerical solution is the Navier-specialized fundamental nucleus of Eq. (5.5).
+
+**Reference location:** Carrera-Giunta, Eq. (5.5), page 129.
+
+The displacement representation producing that algebraic system is Eq. (5.1), with
+
+$$ \alpha=\frac{m\pi}{l} $$
+
+from Eq. (5.3).
+
+**Reference location:** Carrera-Giunta, Eqs. (5.1)-(5.5), pages 128-129.
+
+### 11.2 Numerical specialization used in the CSF-CUF realization
+
+The present validation uses
+
+$$ N=4 $$
+
+and therefore
+
+$$ N_u=15. $$
+
+The fourth-order Maclaurin basis is the one already defined in Section 5.
+
+The dimensional normalization introduced previously is
+
+$$ a=100\ \mathrm{mm}, $$
+
+which, from the exact reference ratios, gives
+
+$$ b=1\ \mathrm{mm} $$
+
+and
+
+$$ l=10000\ \mathrm{mm}. $$
+
+The loading normalization is
+
+$$ P=1\ \mathrm{MPa}. $$
+
+These two dimensional choices are computational normalizations only.
+
+They do not alter
+
+$$ \frac{l}{a}=100, $$
+
+$$ \frac{a}{b}=100, $$
+
+or any of the nondimensional stress quantities of Eq. (6.1).
+
+With
+
+$$ m=1, $$
+
+the longitudinal wave parameter is
+
 $$ \alpha=\frac{\pi}{l}. $$
 
-The transverse approximation basis is the fourth-order Maclaurin basis defined in Section 5.
+### 11.3 Sectional coefficients
 
-For every ordered pair
+For every ordered CUF pair
 
 $$ (\tau,s),\qquad \tau,s=1,\ldots,15, $$
 
-the required sectional momenta are evaluated from the exact rectangular-section formulas introduced in Section 7.
+the sectional momenta are evaluated from the exact rectangular-section expressions introduced in Section 7.
 
-The corresponding generalized sectional coefficients are then obtained from
+The generalized sectional coefficients are obtained directly from the CSF-CUF definition
 
 $$ J_{\tau,\phi s,\xi}^{mn}=C_{mn}M_{\tau,\phi s,\xi}. $$
 
-Each ordered pair generates one algebraic fundamental-nucleus block
+No coefficient is fitted to the Carrera-Giunta numerical results.
 
-$$ \mathbf{A}_{\tau s}\in\mathbb{R}^{3\times3}, $$
+The Table 2 values are not used during sectional integration or matrix construction.
+
+### 11.4 Assembly of the algebraic system
+
+Each ordered pair
+
+$$ (\tau,s) $$
+
+generates one algebraic block
+
+$$ \mathbf{A}_{\tau s}\in\mathbb{R}^{3\times3} $$
 
 using the expressions established in Section 10.
 
-The complete algebraic matrix is assembled as
+Since
+
+$$ N_u=15, $$
+
+there are
+
+$$ 15\times15=225 $$
+
+ordered CUF pairs.
+
+The complete matrix is therefore
 
 $$ \mathbf{A}\in\mathbb{R}^{45\times45}. $$
 
-The unknown vector contains the Navier amplitudes
+The unknown amplitude vector is ordered as
 
 $$ \mathbf{U}=\{U_{x1},U_{y1},U_{z1},\ldots,U_{x15},U_{y15},U_{z15}\}^{T}. $$
 
-The generalized load components are those already established in Section 10.1:
+The generalized loading components are
 
 $$ F_{x\tau}=0, $$
 
@@ -1677,31 +1835,39 @@ and
 
 $$ F_{z\tau}=0. $$
 
-The assembled system is therefore
+The resulting system is
 
 $$ \mathbf{A}\mathbf{U}=\mathbf{F}. $$
 
-### 11.1 Numerical conditioning
+This is the CSF-CUF realization of the algebraic system obtained from Carrera-Giunta Eq. (5.5) after the coordinate and component mapping established previously.
 
-Because the Maclaurin basis is used in dimensional physical coordinates,
+### 11.5 Numerical solution
 
-$$ 1,\ y,\ z,\ y^2,\ yz,\ z^2,\ldots,y^4,\ldots,z^4, $$
+The assembled system is solved directly for the 45 Navier amplitudes.
 
-the matrix entries span several orders of magnitude for the selected normalization
+Because the dimensional Maclaurin basis
 
-$$ a=100\ \mathrm{mm}. $$
+$$ 1,\ y,\ z,\ y^2,\ yz,\ z^2,\ldots,y^4,\ldots,z^4 $$
 
-This produces a strongly ill-conditioned algebraic matrix in standard double-precision arithmetic.
+contains terms with strongly different numerical scales for
 
-This is a numerical conditioning issue only. It does not modify the CUF model, the CSF-CUF specialization, the basis functions, or the sectional coefficients.
+$$ a=100\ \mathrm{mm}, $$
 
-For this first validation, the linear system is therefore solved with increased arithmetic precision while retaining exactly the same assembled matrix and load vector.
+the matrix is strongly ill-conditioned in standard double precision.
 
-No scaling or alteration of the governing equations is introduced in the validation result reported below.
+The solution is therefore evaluated using increased arithmetic precision.
 
-### 11.2 Stress recovery
+This changes only the numerical arithmetic used to solve
 
-After solving for the 45 Navier amplitudes, the displacement field is reconstructed from
+$$ \mathbf{A}\mathbf{U}=\mathbf{F}. $$
+
+It does not modify the matrix entries, the basis, the constitutive law, the loading, or any physical parameter.
+
+No least-squares fitting, optimization, target correction, or adjustment using Table 2 is performed.
+
+### 11.6 Stress recovery
+
+Once the 45 amplitudes have been obtained, the displacement field is reconstructed from
 
 $$ u_x(x,y,z)=\sum_{\tau=1}^{15}F_\tau(y,z)U_{x\tau}\cos(\alpha x), $$
 
@@ -1711,62 +1877,100 @@ and
 
 $$ u_z(x,y,z)=\sum_{\tau=1}^{15}F_\tau(y,z)U_{z\tau}\sin(\alpha x). $$
 
-The strain components are evaluated from the same CUF kinematic relations used in the generalized CSF-CUF formulation.
+The strain components are recovered from the same CUF strain-displacement relations used in the generalized formulation.
 
-The corresponding stresses are then obtained from the isotropic constitutive matrix already fixed in Section 6.
+The dimensional stresses are then obtained from the isotropic constitutive law.
 
-The validation quantities are recovered at the coordinates specified in Section 9.2 and converted to the Carrera-Giunta nondimensional form.
+Finally, the coordinate correspondence
 
-### 11.3 First numerical correspondence with Table 2
+$$ x_{\mathrm{CSF}}=z_{\mathrm{ref}},\qquad y_{\mathrm{CSF}}=x_{\mathrm{ref}},\qquad z_{\mathrm{CSF}}=y_{\mathrm{ref}} $$
 
-For the selected case
+is used to evaluate the same physical points specified by Eq. (6.1) and Table 2 of the reference paper.
 
-$$ \frac{l}{a}=100 $$
+### 11.7 Direct correspondence with Carrera-Giunta Table 2
 
-with
+The first complete numerical comparison is the row
 
-$$ N=4, $$
+$$ N=4 $$
 
-the first complete CSF-CUF numerical realization gives the following nondimensional values.
+of Carrera-Giunta Table 2 for
 
-For the longitudinal bending stress,
+$$ \frac{l}{a}=100. $$
 
-$$ \sigma_{zz}^{*}(x_{\mathrm{ref}}=a/2)=1.00003291, $$
+The correspondence is:
 
-and
+| Quantity | Reference evaluation point | Carrera-Giunta Table 2 | CSF-CUF result | Absolute difference |
+|---|---|---:|---:|---:|
+| $\sigma_{zz}^{*}$ | $x_{\mathrm{ref}}=a/2,\ y_{\mathrm{ref}}=0,\ z_{\mathrm{ref}}=l/2$ | 1.0000 | 1.00003291 | $3.291\times10^{-5}$ |
+| $\sigma_{zz}^{*}$ | $x_{\mathrm{ref}}=-a/2,\ y_{\mathrm{ref}}=0,\ z_{\mathrm{ref}}=l/2$ | -1.0000 | -1.00003289 | $3.289\times10^{-5}$ |
+| $\sigma_{xx}^{*}$ | $x_{\mathrm{ref}}=0,\ y_{\mathrm{ref}}=0,\ z_{\mathrm{ref}}=l/2$ | 0.5000 | 0.499999999 | approximately $1\times10^{-9}$ |
+| $\sigma_{xx}^{*}$ | $x_{\mathrm{ref}}=a/2,\ y_{\mathrm{ref}}=0,\ z_{\mathrm{ref}}=l/2$ | 1.0000 | 0.999994473 | $5.527\times10^{-6}$ |
+| $\sigma_{xz}^{*}$ | $x_{\mathrm{ref}}=0,\ y_{\mathrm{ref}}=0,\ z_{\mathrm{ref}}=0$ | 1.0000 | 0.999986523 | $1.3477\times10^{-5}$ |
+| $\sigma_{xz}^{*}$ | $x_{\mathrm{ref}}=a/2,\ y_{\mathrm{ref}}=0,\ z_{\mathrm{ref}}=0$ | 0.0000 | $-1.19\times10^{-6}$ | $1.19\times10^{-6}$ |
 
-$$ \sigma_{zz}^{*}(x_{\mathrm{ref}}=-a/2)=-1.00003289. $$
+The six reference numbers in the third column are taken directly from the $N=4$ row of Table 2.
 
-For the transverse normal stress,
+The fourth column is produced by the CSF-CUF numerical chain.
 
-$$ \sigma_{xx}^{*}(x_{\mathrm{ref}}=0)=0.499999999, $$
+The reference values are used only after the complete numerical solution has been obtained.
 
-and
+The largest absolute discrepancy in this first comparison is
 
-$$ \sigma_{xx}^{*}(x_{\mathrm{ref}}=a/2)=0.999994473. $$
+$$ 3.291\times10^{-5}, $$
 
-For the transverse shear stress,
+corresponding to the first bending-stress value.
 
-$$ \sigma_{xz}^{*}(x_{\mathrm{ref}}=0)=0.999986523, $$
+### 11.8 Meaning of the first numerical validation
 
-and
+The complete path verified numerically is now
 
-$$ \sigma_{xz}^{*}(x_{\mathrm{ref}}=a/2)=-1.19\times10^{-6}. $$
+$$ \mathcal{S}_{\mathrm{ref}}
+\longrightarrow
+\{\Omega^1,\mathbf{C}_{\mathrm{Al}}\}
+\longrightarrow
+F_\tau
+\longrightarrow
+M_{\tau,\phi s,\xi}
+\longrightarrow
+J_{\tau,\phi s,\xi}^{mn}
+\longrightarrow
+\mathbf{A}_{\tau s}
+\longrightarrow
+\mathbf{A}
+\longrightarrow
+\mathbf{U}
+\longrightarrow
+\boldsymbol{\sigma}
+\longrightarrow
+\boldsymbol{\sigma}^{*}. $$
 
-The corresponding Carrera-Giunta Table 2 targets are
+The final nondimensional stresses reproduce the $N=4$ values reported by Carrera and Giunta in Table 2.
 
-$$ 1.0000,\;-1.0000,\;0.5000,\;1.0000,\;1.0000,\;0.0000. $$
+The correspondence can therefore be checked independently at three distinct levels:
 
-The maximum absolute deviation among the six validation quantities is approximately
+1. **kinematic and algebraic reference:** Eqs. (5.1)-(5.5), pages 128-129;
+2. **nondimensionalization and benchmark definition:** Eq. (6.1), page 130;
+3. **numerical target values:** Table 2, page 130, row $N=4$.
 
-$$ 3.3\times10^{-5}. $$
+Thus the first numerical validation is not based on a qualitative comparison.
 
-The first complete numerical chain therefore gives
+It is a directly traceable correspondence between the generalized CSF-CUF chain and a specific published CUF benchmark.
 
-$$ \boxed{\text{CSF}\longrightarrow\text{CUF}\longrightarrow\text{Carrera-Giunta Table 2}} $$
+### 11.9 Reproducibility requirement
 
-with direct numerical agreement for the selected fourth-order rectangular bending benchmark.
+The next step is to provide a reference implementation in which every operation above can be reproduced independently.
 
-This result is the first numerical validation that the generalized CSF-CUF formulation, when reduced to the constant prismatic sectional state and specialized with the same CUF approximation and Navier solution adopted by Carrera and Giunta, recovers the corresponding reference solution.
+The implementation must generate, rather than hard-code:
 
-The next step is to document the numerical assembly procedure in a reproducible implementation and verify the matrix construction, solution, and stress recovery independently from the reported target values.
+- the fourth-order Maclaurin basis;
+- the sectional momenta;
+- the constitutive sectional coefficients;
+- the 225 algebraic blocks;
+- the complete $45\times45$ matrix;
+- the generalized load vector;
+- the 45 Navier amplitudes;
+- the dimensional stresses;
+- the nondimensional stresses of Eq. (6.1);
+- and the final comparison with Table 2.
+
+The values from Table 2 must appear only in the final validation test and must never enter the construction or solution of the CSF-CUF system.
