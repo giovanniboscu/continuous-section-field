@@ -637,7 +637,7 @@ $$ J_{2,y\,2,y}^{66}=2.75769231\times10^6\ \mathrm{N}. $$
 
 These checks establish the numerical bridge between the generalized sectional coefficients and the cross-section momenta used by Carrera and Giunta.
 
-The next step is to generate the complete set of non-zero sectional coefficients required by the $N=4$ fundamental nucleus before applying the Navier specialization.
+Before generating the complete coefficient set, the coordinate-component correspondence and the remaining benchmark specialization must be fixed explicitly.
 
 ## 8. Coordinate and displacement-component correspondence
 
@@ -1134,28 +1134,14 @@ The six numerical validation targets are therefore
 
 $$ 1.0000,\;-1.0000,\;0.5000,\;1.0000,\;1.0000,\;0.0000. $$
 
-#### Numerical closure of the benchmark
+#### Completion of the benchmark output specification
 
-After Sections 9.1 and 9.2, the benchmark is fully defined by:
+After Sections 9.1 and 9.2, the loading and the validation outputs are fully specified.
 
-- the constant CSF sectional state;
-- the numerical rectangular geometry;
-- the isotropic constitutive field;
-- the $N=4$ Maclaurin CUF basis;
-- the sectional momenta and generalized sectional coefficients;
-- the coordinate and displacement-component correspondence;
-- the mapped bending surface load and its numerical amplitude;
-- the Navier half-wave parameter;
-- the exact stress components to recover;
-- the exact evaluation coordinates;
-- the nondimensionalization formulas;
-- the six Table 2 target values.
+The remaining specialization required before algebraic assembly is the Navier longitudinal representation of the displacement amplitudes and its corresponding end-condition mapping.
 
-No additional geometric, constitutive, loading, boundary-condition, or output datum is required.
+This is introduced in the following section directly from the Carrera-Giunta closed-form solution.
 
-The benchmark is therefore physically and numerically specified. What remains is the deterministic evaluation of the complete set of sectional coefficients required by the fixed $N=4$ basis, followed by assembly of the corresponding algebraic CUF system.
-
-The next step is therefore to specialize the constant-coefficient fundamental nucleus term by term, identify the sectional coefficient families required by each block, and generate their complete numerical values before assembling the final $45\times45$ algebraic system.
 
 ### 9.3 Navier displacement specialization and end-condition correspondence
 
