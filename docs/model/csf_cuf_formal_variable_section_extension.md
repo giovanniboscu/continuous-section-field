@@ -952,7 +952,17 @@ The reason is structural rather than computational: $a(x)$ is a longitudinal CUF
 
 The complete chain represented by this example is
 
-$$ \mathcal{S}(x) \longrightarrow \left\{ \Omega^k(x), \mathbf{C}^{k}(x,y,z) \right\} \longrightarrow J_{2,y\,2,y}^{66,k}(x) \longrightarrow J_{2,y\,2,y}^{66}(x) \longrightarrow \delta L_i^{(66,aa)}. $$
+$$
+\mathcal{S}(x)
+\longrightarrow
+\{\Omega^k(x),\mathbf{C}^k(x,y,z)\}
+\longrightarrow
+J_{2,y\,2,y}^{66,k}(x)
+\longrightarrow
+J_{2,y\,2,y}^{66}(x)
+\longrightarrow
+\delta L_i^{(66,aa)}
+$$
 
 The roles remain separated:
 
