@@ -1319,9 +1319,6 @@ and
 
 $$ \mathbf{F}_\tau= \begin{bmatrix} 0\\ P B_\tau\\ 0 \end{bmatrix}. $$
 
-The second vector follows from the mapped bending load established in Section 9.1.
-
-The algebraic fundamental nucleus associated with the pair $(\tau,s)$ is the $3\times3$ matrix
 
 
 The mapped bending load established in Section 9.1 gives the generalized algebraic right-hand-side components
@@ -1335,7 +1332,8 @@ and
 $$ F_{z\tau}=0. $$
 
 
-For every test index $\tau$, the algebraic governing equation is
+Collecting these three components in the present CSF-CUF notation as $\mathbf{F}_\tau$, for every test index $\tau$ the algebraic governing equation is
+
 
 $$ \sum_{s=1}^{15}\mathbf{A}_{\tau s}\mathbf{U}_s=\mathbf{F}_\tau. $$
 
