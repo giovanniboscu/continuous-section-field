@@ -836,7 +836,7 @@ As $x$ varies, CSF determines the section on which the CUF sectional quantities 
 
 This worked example continues the construction developed in the preceding sections.
 
-The objective is deliberately limited: to show, without introducing any additional sectional assumption, how one previously evaluated global sectional coefficient enters one specific contribution of the CUF internal virtual work.
+The objective is deliberately limited: to show, without introducing any additional sectional assumption, how a previously evaluated global sectional coefficient enters one specific contribution of the CUF internal virtual work.
 
 No complete solution of the longitudinal problem is attempted here, and no additional constitutive, geometrical, or kinematic specialization is introduced by this example.
 
