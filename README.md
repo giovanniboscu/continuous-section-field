@@ -154,7 +154,7 @@ then run
 **linux / Mac**
 ```
 python3 -m venv venv
-source venv/bin/activate
+source venv/bin/Activate.ps1
 pip install csfpy
 csf-actions geometry.yaml actions.yaml
 ```
@@ -162,7 +162,7 @@ csf-actions geometry.yaml actions.yaml
 ```
 py install 3.12
 py -V:3.12 -m venv venv
-.\venv\Scripts\activate
+.\venv\Scripts\Activate.ps1
 pip install csfpy
 csf-actions geometry.yaml actions.yaml
 
@@ -230,7 +230,7 @@ Linux / Mac
 
 ```bash
 python3 -m venv venv
-source venv/bin/activate
+source venv/bin/Activate.ps1
 pip install csfpy
 
  # you need both geometry.yaml and actions.yaml files
@@ -242,7 +242,7 @@ csf-actions geometry.yaml actions.yaml
 
 ```bash
 python3 -m venv venv
-source venv/bin/activate
+source venv/bin/Activate.ps1
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 pip install -e .
@@ -267,7 +267,7 @@ py install 3.12
 ```bash
 py install 3.12
 py -3.12 -m venv venv
-.\venv\Scripts\activate
+.\venv\Scripts\Activate.ps1
 pip install csfpy
 
  # you need both geometry.yaml and actions.yaml files
@@ -281,7 +281,7 @@ csf-actions geometry.yaml actions.yaml
 
 py install 3.12
 py -3.12 -m venv venv
-.\venv\Scripts\activate
+.\venv\Scripts\Activate.ps1
 git clone https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 pip install -e .
