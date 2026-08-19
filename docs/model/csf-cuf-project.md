@@ -2,7 +2,7 @@
 
 # CSF-CUF: a reproducible experimentation platform for CUF beam models
 
-## 1. Why CUF is interesting
+## 1. Making CUF more accessible 
 
 The Carrera Unified Formulation (CUF) provides a general framework for constructing refined structural theories without committing in advance to a single beam kinematics.
 
