@@ -15,7 +15,7 @@ from typing import Callable, Tuple
 import numpy as np
 from scipy.integrate import quad, quad_vec
 
-from .csf_cuf_section import PolygonDomain
+from .section import PolygonDomain
 
 
 # =============================================================================

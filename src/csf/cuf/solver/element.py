@@ -27,12 +27,12 @@ from typing import Tuple
 
 import numpy as np
 
-from csf.utils.csf_cuf import (
+from csf.cuf.core.nucleus import (
     FundamentalNucleusProvider,
     JSignature,
     NucleusTermDefinition,
 )
-from csf_cuf_longitudinal import (
+from csf.cuf.solver.longitudinal import (
     LongitudinalElement1D,
     LongitudinalIntegrator,
 )

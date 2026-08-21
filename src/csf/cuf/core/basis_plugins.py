@@ -8,7 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Dict, Tuple
 
-from csf_cuf_numerics import ScaledMaclaurinBasis, transverse_scales
+from csf.cuf.numerics import ScaledMaclaurinBasis, transverse_scales
 
 
 BasisBuilder = Callable[..., object]

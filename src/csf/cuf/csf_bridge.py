@@ -7,7 +7,8 @@ import numpy as np
 
 from csf.io.csf_issues import CSFIssues
 from csf.io.csf_reader import CSFReader
-from csf.utils.csf_cuf import CSFSectionProvider, IsotropicEGConstitutive
+from csf.cuf.core.section import CSFSectionProvider
+from csf.cuf.core.material import IsotropicEGConstitutive
 
 
 @dataclass(frozen=True)

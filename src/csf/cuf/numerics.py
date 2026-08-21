@@ -4,7 +4,8 @@ from __future__ import annotations
 import math
 import numpy as np
 
-from csf.utils.csf_cuf import CUFBasis, SectionIntegrator
+from csf.cuf.core.basis import CUFBasis
+from csf.cuf.core.integration import SectionIntegrator
 
 
 class _ScaledMaclaurinFactorPlan:

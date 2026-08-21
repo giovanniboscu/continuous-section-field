@@ -1,0 +1,6 @@
+model:
+  csf_yaml: ../models/carrera_double_t_taper80_csf_deg.yaml
+
+problem:
+  type: carrera_torsion_halfwave
+  amplitude: 1.0

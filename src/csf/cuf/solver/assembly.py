@@ -34,11 +34,11 @@ from typing import Iterable, Tuple
 import numpy as np
 from scipy.sparse import coo_matrix, csr_matrix
 
-from csf_cuf_longitudinal import (
+from csf.cuf.solver.longitudinal import (
     LongitudinalIntegrator,
     LongitudinalMesh1D,
 )
-from csf_cuf_problem import GeneralizedLongitudinalLoad
+from csf.cuf.problem.problem import GeneralizedLongitudinalLoad
 
 
 # A sparse coefficient below this many floating-point ulps of the global

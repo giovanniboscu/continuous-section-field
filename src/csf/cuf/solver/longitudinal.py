@@ -27,8 +27,8 @@ from typing import Tuple
 
 import numpy as np
 
-from csf.utils.csf_cuf import SectionProvider
-from csf_cuf_problem import LongitudinalDiscretization
+from csf.cuf.core.section import SectionProvider
+from csf.cuf.problem.problem import LongitudinalDiscretization
 
 
 @dataclass(frozen=True)

@@ -18,13 +18,13 @@ from typing import Tuple
 
 import numpy as np
 
-from .csf_cuf_basis import CUFBasis
-from .csf_cuf_integration import (
+from .basis import CUFBasis
+from .integration import (
     AdaptivePolygonIntegrator,
     SectionIntegrator,
 )
-from .csf_cuf_material import ConstitutiveProvider
-from .csf_cuf_section import SectionProvider
+from .material import ConstitutiveProvider
+from .section import SectionProvider
 
 
 # =============================================================================

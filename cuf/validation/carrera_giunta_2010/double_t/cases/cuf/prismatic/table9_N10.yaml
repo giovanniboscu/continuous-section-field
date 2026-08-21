@@ -1,12 +1,9 @@
 case:
   name: cuf_prismatic_table9_N10
 
-model:
-  csf_yaml: ../models/carrera_double_t_prismatic_csf.yaml
-
 problem:
-  type: carrera_bending_bottom_surface_halfwave
-  amplitude: 1.0
+  yaml: ../../../problems/prismatic_table9.yaml
+  adapter: ../../../cuf/carrera_problem.py
 
 cuf:
   basis: scaled_maclaurin
@@ -33,4 +30,5 @@ sampling:
   stress_grid: 31
 
 output:
-  directory: ../output/cuf_prismatic_table9_N10
+  adapter: ../../../cuf/carrera_post.py
+  directory: ../../../../../../output/cuf_prismatic_table9_N10

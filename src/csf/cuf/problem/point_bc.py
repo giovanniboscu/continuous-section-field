@@ -26,8 +26,8 @@ from typing import Iterable, Tuple
 
 import numpy as np
 
-from csf.utils.csf_cuf import CUFBasis
-from csf_cuf_assembly import GlobalDOFLayout
+from csf.cuf.core.basis import CUFBasis
+from csf.cuf.solver.assembly import GlobalDOFLayout
 
 
 _COMPONENT_INDEX = {

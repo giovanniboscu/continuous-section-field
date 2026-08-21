@@ -29,9 +29,9 @@ from typing import Tuple
 
 import numpy as np
 
-from csf.utils.csf_cuf import CUFBasis
-from csf_cuf_assembly import GlobalDOFLayout
-from csf_cuf_longitudinal import (
+from csf.cuf.core.basis import CUFBasis
+from csf.cuf.solver.assembly import GlobalDOFLayout
+from csf.cuf.solver.longitudinal import (
     LongitudinalElement1D,
     LongitudinalMesh1D,
 )
@@ -329,7 +329,7 @@ class CSFCUFDisplacementRecovery:
 
 from typing import Hashable
 
-from csf.utils.csf_cuf import ConstitutiveProvider
+from csf.cuf.core.material import ConstitutiveProvider
 
 
 @dataclass(frozen=True)

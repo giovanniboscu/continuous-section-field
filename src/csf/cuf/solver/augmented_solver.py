@@ -37,7 +37,7 @@ from scipy.linalg import LinAlgError, LinAlgWarning, solve as dense_solve
 from scipy.sparse import save_npz
 from scipy.sparse.linalg import MatrixRankWarning, spsolve
 
-from csf_cuf_linear_constraint import (
+from csf.cuf.solver.linear_constraint import (
     AugmentedLinearConstraintSystem,
 )
 

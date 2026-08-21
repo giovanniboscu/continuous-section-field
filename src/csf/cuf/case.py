@@ -38,9 +38,9 @@ class SamplingSettings:
 class CaseDefinition:
     path: Path
     name: str
-    model_path: Path
-    problem_type: str
-    problem_options: dict[str, Any]
+    problem_path: Path
+    problem_adapter_path: Path
+    output_adapter_path: Path
     cuf: CUFSettings
     longitudinal: LongitudinalSettings
     section_integration: SectionIntegrationSettings
@@ -67,7 +67,6 @@ def load_case(path: str | Path) -> CaseDefinition:
     root = _mapping(raw, "case file")
 
     case = _mapping(root.get("case", {}), "case")
-    model = _mapping(root.get("model"), "model")
     problem = _mapping(root.get("problem"), "problem")
     cuf = _mapping(root.get("cuf"), "cuf")
     longitudinal = _mapping(root.get("longitudinal"), "longitudinal")
@@ -101,9 +100,9 @@ def load_case(path: str | Path) -> CaseDefinition:
     return CaseDefinition(
         path=path,
         name=str(case.get("name", path.stem)),
-        model_path=_relative(path.parent, model["csf_yaml"]),
-        problem_type=str(problem["type"]),
-        problem_options={k: v for k, v in problem.items() if k != "type"},
+        problem_path=_relative(path.parent, problem["yaml"]),
+        problem_adapter_path=_relative(path.parent, problem["adapter"]),
+        output_adapter_path=_relative(path.parent, output["adapter"]),
         cuf=CUFSettings(
             basis=str(cuf.get("basis", "scaled_maclaurin")),
             order=cuf_order,

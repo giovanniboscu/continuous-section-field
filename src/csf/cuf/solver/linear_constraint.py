@@ -29,8 +29,8 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.sparse import bmat, csr_matrix, issparse
 
-from csf_cuf_assembly import AssembledCSFCUFSystem
-from csf_cuf_point_bc import LinearConstraintSystem
+from csf.cuf.solver.assembly import AssembledCSFCUFSystem
+from csf.cuf.problem.point_bc import LinearConstraintSystem
 
 
 @dataclass(frozen=True)

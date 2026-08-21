@@ -3,9 +3,9 @@ from __future__ import annotations
 import math
 import numpy as np
 
-from csf_cuf_point_bc import LinearConstraintSystem
-from csf_cuf_problem import GeneralizedLongitudinalLoad, ScalarLoadField
-from csf_cuf_numerics import all_vertices, transverse_bounds
+from csf.cuf.problem.point_bc import LinearConstraintSystem
+from csf.cuf.problem.problem import GeneralizedLongitudinalLoad, ScalarLoadField
+from csf.cuf.numerics import all_vertices, transverse_bounds
 
 
 def _has_vertex(section_provider, x: float, point) -> bool:

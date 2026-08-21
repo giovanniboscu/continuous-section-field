@@ -380,7 +380,7 @@ def _double_t_reference_data(model_bridge, x: float):
     }
 
 
-def _report_spec(case, model_bridge, u):
+def _report_spec(case, problem_definition, model_bridge, u):
     x0 = float(u.x_start)
     x1 = float(u.x_end)
     length = x1 - x0
@@ -393,12 +393,12 @@ def _report_spec(case, model_bridge, u):
     b = ref["b"]
     E_ref = ref["E_ref"]
 
-    amplitude = float(case.problem_options.get("amplitude", 1.0))
+    amplitude = float(problem_definition.problem_options.get("amplitude", 1.0))
     if amplitude == 0.0:
         raise ValueError("paper-style normalization requires non-zero amplitude")
 
     l_over_a = length / a
-    problem_type = str(case.problem_type)
+    problem_type = str(problem_definition.problem_type)
 
     if problem_type in (
         "carrera_bending_halfwave",
@@ -610,7 +610,7 @@ def _format_report_text(*, u, model_bridge, case, spec):
     return "\n".join(lines) + "\n"
 
 
-def write_outputs(u, model_bridge, case):
+def write_outputs(u, model_bridge, case, problem_definition):
     """
     Post-process a solved CUF displacement field.
 
@@ -629,7 +629,7 @@ def write_outputs(u, model_bridge, case):
     output_dir = Path(case.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    spec = _report_spec(case, model_bridge, u)
+    spec = _report_spec(case, problem_definition, model_bridge, u)
     text = _format_report_text(
         u=u,
         model_bridge=model_bridge,

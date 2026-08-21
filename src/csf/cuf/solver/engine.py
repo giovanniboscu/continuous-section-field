@@ -4,18 +4,18 @@ from __future__ import annotations
 import time
 import numpy as np
 
-from csf.utils.csf_cuf import FundamentalNucleusProvider
-from csf.utils.csf_cuf_sectional import SectionalCoefficientProvider
+from csf.cuf.core.nucleus import FundamentalNucleusProvider
+from csf.cuf.core.sectional import SectionalCoefficientProvider
 
-from csf_cuf_assembly import CSFCUFGlobalAssembler
-from csf_cuf_augmented_solver import AugmentedSparseLinearSolver
-from csf_cuf_element import CUFElementMatrixBuilder
-from csf_cuf_linear_constraint import LinearConstraintAugmenter
-from csf_cuf_longitudinal import GaussLegendreLongitudinalIntegrator, LongitudinalDiscretizer
-from csf_cuf_problem import LongitudinalDiscretization
-from csf_cuf_basis_plugins import get_cuf_basis_plugin
-from csf_cuf_numerics import FixedGaussPolygonIntegrator
-from csf_cuf_recovery import (
+from csf.cuf.solver.assembly import CSFCUFGlobalAssembler
+from csf.cuf.solver.augmented_solver import AugmentedSparseLinearSolver
+from csf.cuf.solver.element import CUFElementMatrixBuilder
+from csf.cuf.solver.linear_constraint import LinearConstraintAugmenter
+from csf.cuf.solver.longitudinal import GaussLegendreLongitudinalIntegrator, LongitudinalDiscretizer
+from csf.cuf.problem.problem import LongitudinalDiscretization
+from csf.cuf.core.basis_plugins import get_cuf_basis_plugin
+from csf.cuf.numerics import FixedGaussPolygonIntegrator
+from csf.cuf.solver.recovery import (
     CSFCUFDisplacementRecovery,
     CSFCUFStrainStressRecovery,
 )
