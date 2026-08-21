@@ -2,19 +2,21 @@
 
 ## Purpose
 
-After the augmented CSF-CUF linear system has been solved, the solver verifies
-how closely the computed numerical solution satisfies the **complete system of
-linear equations**.
+After the augmented CSF-CUF linear system has been solved, the solver reports a
+small set of descriptive quantities that allow the user to inspect the numerical
+quality of the computed algebraic solution.
 
-This verification is descriptive. It does **not** apply an acceptance tolerance,
-it does **not** produce a PASS/FAIL status, and it does **not** stop
-post-processing because a residual exceeds a prescribed threshold.
+The verification is deliberately simple:
+
+- no acceptance tolerance is applied;
+- no PASS/FAIL status is produced;
+- no residual value stops post-processing once a finite solution has been found.
 
 A calculation is stopped only when a usable numerical solution cannot be
-obtained, for example because the algebraic system is rank deficient or the
-solver returns non-finite values.
+obtained, for example because the system is rank deficient, dimensions are
+invalid, or non-finite values are present.
 
-## Complete algebraic system
+## Complete linear system
 
 Let the complete augmented system be
 
@@ -24,133 +26,110 @@ $$
 
 where:
 
-- $M$ is the complete augmented matrix, including the structural equations and
-  the linear constraints;
-- $x$ is the complete numerical solution vector, including the primal unknowns
-  and the Lagrange multipliers;
+- $M$ is the complete augmented matrix;
+- $x$ is the complete numerical solution vector;
 - $d$ is the complete right-hand-side vector.
 
-The verification is performed independently for every equation, i.e. for every
-row $i$ of the system.
+The verification uses the same complete matrix and right-hand side that were
+passed to the linear solver.
 
-## 1. Contribution of one unknown to one equation
+## Residual of each equation
 
-For equation $i$ and unknown $j$, define
+After solving the system, the solution $x$ is substituted back into every
+linear equation.
 
-$$
-t_{ij} = M_{ij} x_j,
-$$
-
-where:
-
-- $M_{ij}$ is the coefficient in row $i$, column $j$ of the complete matrix;
-- $x_j$ is the computed value of unknown $j$;
-- $t_{ij}$ is the contribution of unknown $j$ to equation $i$.
-
-## 2. Computed left-hand side of equation $i$
-
-All contributions belonging to row $i$ are summed:
+The residual vector is
 
 $$
-L_i = \sum_j t_{ij}.
+r = Mx-d.
 $$
 
-$L_i$ is therefore the left-hand side obtained by substituting the computed
-solution into equation $i$.
-
-## 3. Algebraic disequilibrium of equation $i$
-
-Let $d_i$ be the right-hand-side value of equation $i$.
-
-The algebraic disequilibrium of that equation is
+Therefore, for equation $i$,
 
 $$
-r_i = L_i - d_i.
+r_i=(Mx-d)_i.
 $$
 
-An exactly satisfied equation would have $r_i=0$. In floating-point arithmetic,
-a small nonzero value is generally expected.
+There is one residual $r_i$ for every equation of the complete augmented
+system. An exactly satisfied equation would have $r_i=0$. In floating-point
+arithmetic, small nonzero residuals are normally present.
 
-## 4. Magnitude of the contributions in equation $i$
+The residual signs are retained. No absolute value is applied.
 
-To measure the numerical size of the terms participating in the equation
-without allowing positive and negative terms to cancel each other, define
+## 1. Residual mean
 
-$$
-S_i = \sum_j |t_{ij}|.
-$$
-
-$S_i$ is the total magnitude of the left-hand-side contributions.
-
-## 5. Scale of equation $i$
-
-The scale of the complete equation is
+For $n$ equations, the arithmetic mean of the residuals is
 
 $$
-C_i = S_i + |d_i|.
+\bar r = \frac{1}{n}\sum_{i=1}^{n} r_i.
 $$
 
-This represents the magnitude of the quantities actually involved in that row
-before numerical cancellation is allowed to hide their size.
+This quantity describes the average signed residual of the complete system.
 
-## 6. Relative algebraic disequilibrium of equation $i$
+## 2. Residual standard deviation
 
-The relative algebraic disequilibrium is
-
-$$
-\eta_i = \frac{|r_i|}{C_i}.
-$$
-
-Equivalently,
+The population standard deviation of the residuals is
 
 $$
-\eta_i =
-\frac{
-\left|\sum_j M_{ij}x_j-d_i\right|
-}{
-\sum_j |M_{ij}x_j|+|d_i|
+\sigma_r =
+\sqrt{
+\frac{1}{n}
+\sum_{i=1}^{n}(r_i-\bar r)^2
 }.
 $$
 
-If $C_i=0$ and $r_i=0$, the equation is identically satisfied and the solver
-defines $\eta_i=0$.
+This quantity describes how widely the individual equation residuals are
+spread around their mean.
 
-No tolerance is applied to $\eta_i$. It is a numerical measure of how closely
-that specific equation is satisfied relative to the magnitude of the terms
-that form it.
+## 3. Equation-term scale
 
-## 7. Verification of the complete system
-
-The calculation above is repeated for every equation:
+For every active coefficient $M_{ij}$ of the assembled sparse matrix, the
+corresponding term appearing in an equation is
 
 $$
-\eta_1,\eta_2,\ldots,\eta_m,
+t_{ij}=M_{ij}x_j.
 $$
 
-where $m$ is the total number of equations in the augmented system.
-
-The concise quantity presented by the solver is the largest value:
+All active $t_{ij}$ values from the complete augmented system are collected.
+Their population standard deviation is
 
 $$
-\boxed{
-\eta_{\max} = \max_i \eta_i
-}
+\sigma_t = \operatorname{std}(t_{ij}).
 $$
 
-Thus $\eta_{\max}$ is the relative algebraic disequilibrium of the equation that
-closes worst in the complete solved system.
+The solver reports $\sigma_t$ as the **equation-term scale**.
 
-It is reported as a **verification quantity only**. The solver does not convert
-it into a PASS/FAIL decision and does not compare it with a built-in acceptance
-threshold.
+Only active coefficients of the assembled sparse matrix are included. Implicit
+zero matrix coefficients are not equation terms and are therefore not included
+in this statistic.
+
+No absolute value, maximum, minimum, normalization ratio, or acceptance
+threshold is used.
+
+## Interpretation
+
+The solver presents three descriptive values:
+
+1. residual mean $\bar r$;
+2. residual standard deviation $\sigma_r$;
+3. equation-term scale $\sigma_t$.
+
+The first two describe the residual population. The third gives the numerical
+scale of the individual terms that form the solved equations.
+
+The solver does not combine these quantities into another index and does not
+compare them with a prescribed limit. Their interpretation is left to the user.
 
 ## Runtime output
 
-The normal solver output reports the result in the form
+The normal solver output has the form
 
 ```text
 [3/4] solve complete
-[verification] maximum relative algebraic disequilibrium = 9.850000e-16
+[verification] residual mean = ...
+[verification] residual standard deviation = ...
+[verification] equation-term scale = ...
 ```
 
-The value shown above is only an example of the output format.
+The three quantities are descriptive verification data only. They do not
+constitute a convergence gate.
