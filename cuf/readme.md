@@ -20,6 +20,10 @@ From a user's point of view, the expected workflow is therefore simple: define t
 
 This guide focuses on how the implementation is organized, how data move through the framework, and what can be done with the available examples. The theoretical formulation, coupling strategy, constitutive interface, and numerical validation are documented separately.
 
+>Detailed description of the current CSF-CUF architecture, including how general geometry and material fields are supplied through queryable CSF providers and consumed by the CUF solver.
+>
+>[General Geometry and Materials](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cuf/GeneralGeometryMaterials.md)
+
 ---
 
 # CSF-CUF Validation Commands
@@ -38,6 +42,8 @@ time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prisma
 ```
 
 ---
+
+
 ## Theoretical formulation and validation
 
 The theoretical basis of the implementation can be found in the following documents:
