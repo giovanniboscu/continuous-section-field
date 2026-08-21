@@ -32,6 +32,7 @@ Run all commands from:
 
 ## Prismatic double-T -Table 9 bending
 
+```
 time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table9_N10.yaml
 
 ```
