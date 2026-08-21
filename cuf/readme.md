@@ -1,17 +1,24 @@
+# DRAFT
+
 # CSF-CUF Framework
 
 This repository provides a framework for building and running models based on the Carrera Unified Formulation (CUF).
 
-It is not a theoretical treatment, but a parametric and reusable implementation. The model is described through YAML files defining geometry, materials, loads, boundary conditions, and the expansion law; the framework then automatically builds and executes the corresponding CUF model.
+It is not intended as a theoretical introduction to CUF. Its purpose is to provide a parametric and reusable implementation that can be used directly from external model definitions.
 
-The solver core is independent of the cross-section geometry. Geometric and constitutive information is supplied by an external provider based on CSF, which the solver queries during model construction. This keeps the problem description separate from the computational algorithm and allows the same solver core to operate on different configurations.
+The model is described through YAML files containing the geometry, material distribution, loads, boundary conditions, and the transverse expansion rule. From these inputs, the framework builds and runs the corresponding CUF model.
 
-The repository includes two complete workflows:
+The solver core is independent of the specific cross-section geometry. Geometric and constitutive information is supplied by an external CSF-based section provider, which is queried by the CUF implementation during model construction and evaluation. This keeps the description of the physical problem separate from the numerical formulation and allows the same solver core to operate on different section configurations without embedding section-specific assumptions in the solver.
 
-- a **prismatic model**, used to reproduce the reference benchmark cases;
-- a **variable-section model**, showing how the same architecture can be applied to beams whose geometry and materials evolve along the longitudinal axis.
+The repository includes two complete workflows.
 
-This guide describes the project organization, the data flow, and the available examples. Theoretical details are introduced only where needed and are referred to the dedicated documentation.
+The first is a **prismatic model**, derived from the 2010 Carrera and Giunta reference case. It is organized to reproduce the final benchmark tables for the more complex cross-section, providing a direct and repeatable reference case.
+
+The second is a **tapered model**, in which both geometry and material properties vary along the beam axis. It uses the same CUF core and the same CSF-based interface, showing how the framework can move from a classical prismatic benchmark to a genuinely variable-section problem without changing the solver architecture.
+
+From a user's point of view, the expected workflow is therefore simple: define the physical model and the analysis parameters in YAML, run the corresponding model, and inspect the resulting displacement and stress outputs. The CUF machinery remains inside the framework, while the model definition stays external, explicit, and replaceable.
+
+This guide focuses on how the implementation is organized, how data move through the framework, and what can be done with the available examples. The theoretical formulation, coupling strategy, constitutive interface, and numerical validation are documented separately.
 
 ## Theoretical formulation and validation
 
