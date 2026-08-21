@@ -1,4 +1,4 @@
-# DRAFT
+# DRAFT 1
 
 ## 1. Scope
 
@@ -1786,6 +1786,9 @@ $$ \boxed{\sigma_{zz,\mathrm{reference}}^{*}=1.0000}. $$
 
 The absolute difference is therefore
 
+
+
+
 $$ \left|1.00003290768-1.0000\right|=3.290768\times10^{-5}. $$
 
 The relative difference with respect to the tabulated reference value is approximately
@@ -1801,3 +1804,701 @@ This is a direct output comparison.
 The Table 2 value is used only as the final reference target and does not enter the construction of the displacement field, the strain field, the stress field, or the algebraic solution.
 
 **Reference check in the paper:** Carrera and Giunta, *Refined Beam Theories Based on a Unified Formulation*, Eq. (6.1) and Table 2, page 130, row `N = 4`.
+
+---
+
+## 12. Relation between the analytical validation and the current runtime solver
+
+The preceding sections validate the generalized CSF-CUF formulation by reducing it to the same prismatic, constant-coefficient and Navier-specialized setting used by Carrera and Giunta. That validation remains useful because it establishes a direct term-by-term correspondence with the published CUF formulation.
+
+The current operational solver retains the same underlying three-dimensional CUF kinematics and the same generalized sectional coefficient family, but its longitudinal computational treatment is formulated directly in weak form.
+
+### 12.1 Generalized sectional coefficient used by the runtime
+
+For a transverse sub-domain indexed by $k$, let:
+
+- $x$ be the longitudinal coordinate;
+- $(y,z)$ be the transverse coordinates;
+- $\Omega^k(x)$ be the current transverse domain supplied by CSF;
+- $C_{mn}^k(x,y,z)$ be one constitutive-matrix component;
+- $F_\tau(y,z)$ and $F_s(y,z)$ be CUF transverse approximation functions;
+- $\phi,\xi\in\{\varnothing,y,z\}$ identify the transverse derivatives applied to the test and trial functions.
+
+The runtime sectional coefficient is the same generalized quantity introduced in the formal derivation:
+
+$$J_{\tau,\phi s,\xi}^{mn,k}(x) = \int_{\Omega^k(x)} C_{mn}^{k}(x,y,z) F_{\tau,\phi}(y,z) F_{s,\xi}(y,z) \,\mathrm d\Omega.$$
+
+The global coefficient is
+
+$$J_{\tau,\phi s,\xi}^{mn}(x) = \sum_{k=1}^{N_\Omega} J_{\tau,\phi s,\xi}^{mn,k}(x).$$
+
+The runtime evaluates this quantity at the physical longitudinal coordinate requested by the longitudinal integration procedure. The coordinate $x$ is therefore part of the complete physical request: geometry and constitutive properties may change between two integration coordinates.
+
+### 12.2 Weak-form fundamental nucleus
+
+The runtime fundamental nucleus is generated from the complete three-dimensional small-strain kinematics in the Voigt order
+
+$$(\varepsilon_{xx},\varepsilon_{yy},\varepsilon_{zz}, \gamma_{yz},\gamma_{xz},\gamma_{xy}).$$
+
+For one generic term, define:
+
+- $r\in\{0,1\}$ as the longitudinal derivative order acting on the test amplitude;
+- $q\in\{0,1\}$ as the longitudinal derivative order acting on the trial amplitude;
+- $N_a(x)$ and $N_b(x)$ as longitudinal finite-element shape functions;
+- $J(x)$ as the corresponding generalized sectional coefficient selected by the CUF kinematics.
+
+The elemental weak-form contribution has the structure
+
+$$K_{ab}^{(e)} = \int_{x_e^-}^{x_e^+} D_x^rN_a(x)\, J(x)\, D_x^qN_b(x) \,\mathrm dx.$$
+
+The coefficient $J(x)$ remains inside the longitudinal integral. For a variable section, the solver therefore evaluates the current sectional state at each longitudinal quadrature coordinate and obtains the required value of $J(x)$ from that state.
+
+This runtime representation is the computational counterpart of the variable-coefficient divergence-form operators derived in the formal formulation. The analytical strong-form expressions remain useful for interpretation, while the weak form is the implemented solution path.
+
+### 12.3 Longitudinal finite-element representation
+
+Let:
+
+- $n_e$ be the number of longitudinal finite elements;
+- $p$ be the polynomial order of each one-dimensional Lagrange element.
+
+For a conforming mesh with equal polynomial order, the number of longitudinal nodes is
+
+$$n_{\mathrm{node}} = n_e\,p + 1.$$
+
+The current double-T validation cases use
+
+$$n_e=1, \; p=6.$$
+
+and therefore
+
+$$n_{\mathrm{node}}=7.$$
+
+The longitudinal integrals are evaluated by Gauss-Legendre quadrature. The current double-T cases use nine longitudinal Gauss points per element.
+
+This choice is independent of the CUF transverse order $N$: the longitudinal finite-element interpolation and the transverse CUF approximation are two distinct approximation levels.
+
+---
+
+## 13. Current transverse CUF basis implementation
+
+### 13.1 Pluggable transverse basis
+
+The runtime selects the transverse approximation through a basis-plugin registry.
+
+The currently validated runtime basis is identified by
+
+```yaml
+cuf:
+  basis: scaled_maclaurin
+```
+
+The symbolic name selects the registered implementation and its numerical integration requirements. The solver engine therefore depends on the generic CUF basis interface rather than on a hard-coded Maclaurin implementation.
+
+### 13.2 Scaled complete Maclaurin basis
+
+For the current validated plugin, define the transverse scales
+
+$$y_{\mathrm{scale}}>0, \; z_{\mathrm{scale}}>0.$$
+
+obtained from the CSF geometry, and the scaled coordinates
+
+$$Y=\frac{y}{y_{\mathrm{scale}}}, \; Z=\frac{z}{z_{\mathrm{scale}}}.$$
+
+For CUF order $N$, the basis contains every monomial
+
+$$Y^pZ^q$$
+
+with
+
+$$p+q\le N.$$
+
+The number $M$ of transverse basis functions is therefore
+
+$$M=\frac{(N+1)(N+2)}{2}.$$
+
+For example, at
+
+$$N=20,$$
+
+the transverse basis contains
+
+$$M=\frac{21\cdot22}{2}=231$$
+
+functions.
+
+The scaling changes the numerical representation of the polynomial basis but preserves the complete polynomial approximation space for a fixed order $N$, because $y_{\mathrm{scale}}$ and $z_{\mathrm{scale}}$ are non-zero constants for the analysis.
+
+### 13.3 Primary displacement DOFs for the current N=20 cases
+
+With:
+
+- $M=231$ transverse functions;
+- three displacement components per transverse function;
+- seven longitudinal nodes;
+
+the number of primary displacement DOFs is
+
+$$n_{\mathrm{dof}} = 231\cdot3\cdot7 = 4851.$$
+
+Constraint equations are applied separately by the problem layer.
+
+### 13.4 Order-aware section quadrature
+
+The scaled complete Maclaurin plugin declares the minimum section Gauss order required by its approximation space.
+
+For order $N$,
+
+$$n_{\mathrm{Gauss,section}}^{\min}=N+1.$$
+
+If the case requests a section Gauss order $n_{\mathrm{req}}$, the runtime uses
+
+$$n_{\mathrm{eff}}=\max(n_{\mathrm{req}},N+1).$$
+
+For the current $N=20$ double-T cases,
+
+$$n_{\mathrm{req}}=6, \; N+1=21.$$
+
+so that
+
+$$n_{\mathrm{eff}}=21.$$
+
+This rule is associated with the selected basis plugin and is evaluated by the runtime when the case is built.
+
+---
+
+## 14. Completed prismatic validation program
+
+The analytical reconstruction in Sections 2-11 established the first direct Carrera-Giunta validation. The subsequent implementation program extended the verification to the reusable runtime components.
+
+### 14.1 Constitutive and reduced-coefficient verification
+
+The constitutive layer was verified independently from geometry, loads and longitudinal discretization.
+
+For the Carrera-Giunta aluminium parameters
+
+$$E=71700\,\mathrm{MPa}, \; \nu=0.30.$$
+
+the shear modulus is
+
+$$G = \frac{E}{2(1+\nu)} = 27576.9231\,\mathrm{MPa}.$$
+
+The full isotropic three-dimensional constitutive matrix gives
+
+$$C_{11}=C_{22}=C_{33}=96519.2308\,\mathrm{MPa},$$
+
+$$C_{12}=C_{13}=C_{23}=41365.3846\,\mathrm{MPa},$$
+
+and
+
+$$C_{44}=C_{55}=C_{66}=27576.9231\,\mathrm{MPa}.$$
+
+The explicit Schur-complement reduction used by the first-order benchmark gives the reduced axial coefficient
+
+$$Q=E=71700\,\mathrm{MPa}.$$
+
+The reduction was checked both as a direct algebraic operation and through the generic constitutive-provider transformation layer. The stiffness and stress-recovery constitutive roles remain distinct, so a theory-specific reduction can be selected explicitly without changing the generic sectional integration or the CUF nucleus.
+
+### 14.2 Carrera-Giunta Table 2 bending validation
+
+The detailed $N=4$ reconstruction above gives
+
+$$\sigma_{zz}^{*}(a/2) = 1.00003290768$$
+
+against the tabulated target
+
+$$1.0000.$$
+
+The absolute difference is
+
+$$3.290768\times10^{-5}.$$
+
+The extended numerical gate also verified the additional Table 2 quantities required by the benchmark. Representative $N=4$ results include
+
+$$\sigma_{xx}^{*}(0)\approx0.5000000$$
+
+and
+
+$$\sigma_{xx}^{*}(a/2)\approx0.9999945.$$
+
+The Table 2 tests were subsequently repeated for higher CUF orders so that the generalized coefficient generation, basis evaluation and algebraic assembly were exercised beyond the single $N=4$ reconstruction.
+
+### 14.3 Carrera-Giunta Table 7 torsion validation
+
+The torsional rectangular benchmark was used as an independent verification of the complete CUF nucleus.
+
+For the long-beam case $l/a\ge50$, a high-order calculation with
+
+$$N=12$$
+
+gave the nondimensional shear-stress quantity
+
+$$4.806593298$$
+
+against the reference value
+
+$$4.807.$$
+
+For the short case
+
+$$l/a=2,$$
+
+the corresponding calculation gave
+
+$$4.699770286$$
+
+against the reference value
+
+$$4.700.$$
+
+These tests exercise a different coupling pattern from the bending benchmark and provide an independent check of the transverse derivatives and off-diagonal nucleus terms.
+
+### 14.4 Prismatic double-T bending: Table 9
+
+The prismatic double-T geometry from the Carrera-Giunta reference problem was then solved with the runtime CSF-CUF architecture.
+
+For
+
+$$l/a=10$$
+
+and transverse order
+
+$$N=10,$$
+
+the current runtime produced
+
+| Quantity | CSF-CUF $N=10$ | Carrera-Giunta |
+|---|---:|---:|
+| $10|u_x^*|$ | 4.037848 | 4.038 |
+| $10^3|u_y^*|$ | 2.972402 | 2.973 |
+| $10^2u_z^*$ | 8.741618 | 8.742 |
+
+The relative differences are approximately
+
+$$-0.00376\%, \; -0.02011\%, \; -0.00437\%.$$
+
+This benchmark is important because the runtime result is obtained through the generic CSF section provider, generic sectional coefficient provider, weak-form CUF nucleus and longitudinal finite-element solver rather than through the Navier algebraic system used in the analytical reconstruction.
+
+### 14.5 Prismatic double-T torsion: Table 10
+
+For the corresponding prismatic torsional benchmark with
+
+$$N=10,$$
+
+the runtime produced
+
+| Quantity | CSF-CUF $N=10$ | Carrera-Giunta |
+|---|---:|---:|
+| $10|u_x^*|$ | 2.031073 | 2.031 |
+| $10|u_y^*|$ | 4.411842 | 4.412 |
+| $10^2u_z^*$ | 4.112417 | 4.112 |
+
+The relative differences are approximately
+
+$$+0.00359\%, \; -0.00358\%, \; +0.01014\%.$$
+
+The agreement of both Table 9 and Table 10 establishes that the weak-form longitudinal runtime reproduces the prismatic double-T reference response for both bending and torsion.
+
+---
+
+## 15. Variable-section and variable-material extension
+
+### 15.1 Purpose of the extended test
+
+After the prismatic benchmark recovery, the same double-T model was extended longitudinally while retaining the same generic solver architecture.
+
+The purpose of this test is to exercise the dependency
+
+$$x \longrightarrow \mathcal S(x) \longrightarrow (\Omega^k(x),\mathbf C^k(x,y,z)) \longrightarrow J_{\tau,\phi s,\xi}^{mn}(x).$$
+
+inside the longitudinal numerical integration.
+
+The three-dimensional FEM model is used here as the numerical baseline for the extended variable case. Carrera-Giunta remains the source of the original prismatic benchmark geometry and normalization, while the longitudinally varying geometry/material configuration is the CSF-CUF extension.
+
+### 15.2 Geometry of the tapered test
+
+The reference section at the initial end is retained.
+
+Using the dimensional normalization adopted for the double-T $l/a=10$ benchmark:
+
+$$a=100\,\mathrm{mm},$$
+
+$$b=66.6667\,\mathrm{mm},$$
+
+$$s_1=25\,\mathrm{mm}.$$
+
+$$s_2=25\,\mathrm{mm}.$$
+
+and
+
+$$l=1000\,\mathrm{mm}.$$
+
+At the final section, the clear web height is reduced to
+
+$$20\,\mathrm{mm},$$
+
+corresponding to an $80\%$ reduction from the initial clear web height. The flange thickness remains
+
+$$25\,\mathrm{mm},$$
+
+so the final total outer height is
+
+$$20+25+25=70\,\mathrm{mm}.$$
+
+The CSF representation supplies the intermediate sections continuously along the longitudinal coordinate.
+
+### 15.3 Material evolution
+
+The material carriers are attached to the CSF polygonal domains and vary longitudinally according to the model definition.
+
+The CSF-CUF bridge reads the evaluated normal-stiffness carrier as $E$ and the evaluated shear-stiffness carrier as $G$. The constitutive provider then constructs the local $6\times6$ matrix used by the sectional coefficient integration.
+
+Geometry and constitutive variation therefore enter through the same requested longitudinal coordinate $x$, while the CUF nucleus remains independent of the specific double-T shape.
+
+### 15.4 Common baseline strategy
+
+The same CSF model definition is used to generate the sectional state supplied to the CUF solver and the corresponding geometry/material distribution used for the three-dimensional FEM baseline.
+
+The comparison therefore targets the numerical response of two distinct solution paths applied to the same intended physical configuration:
+
+$$\text{CSF model} \longrightarrow (\text{CSF-CUF weak-form beam solver},\;\text{3D FEM baseline}).$$
+
+The comparison is made using the same Carrera-style nondimensional displacement report used for the prismatic Table 9 and Table 10 cases.
+
+---
+
+## 16. Variable-case Table 9 bending results
+
+### 16.1 CSF-CUF order N=15
+
+For the tapered and variable-material Table 9 case, the $N=15$ calculation gives the global maxima
+
+$$10|u_x^*|=11.121168,$$
+
+$$10^3|u_y^*|=6.075601,$$
+
+and
+
+$$10^2u_z^*=20.508320.$$
+
+The corresponding longitudinal locations are
+
+$$x_{u_x}=565\,\mathrm{mm},$$
+
+$$x_{u_y}=650\,\mathrm{mm},$$
+
+and
+
+$$x_{u_z}=0\,\mathrm{mm}.$$
+
+### 16.2 CSF-CUF order N=20
+
+Increasing the transverse CUF order to
+
+$$N=20$$
+
+gives
+
+$$10|u_x^*|=11.129124,$$
+
+$$10^3|u_y^*|=6.089971,$$
+
+and
+
+$$10^2u_z^*=20.494914.$$
+
+The longitudinal locations of the global maxima remain
+
+$$x_{u_x}=565\,\mathrm{mm}, \; x_{u_y}=650\,\mathrm{mm}, \; x_{u_z}=0\,\mathrm{mm}.$$
+
+### 16.3 Three-dimensional FEM baseline
+
+The corresponding three-dimensional FEM baseline gives
+
+$$10u_x^*=11.129717,$$
+
+$$10^3|u_y^*|=6.135546,$$
+
+and
+
+$$10^2u_z^*=20.549984.$$
+
+The FEM longitudinal locations of the global maxima are approximately
+
+$$x_{u_x}=566.667\,\mathrm{mm},$$
+
+$$x_{u_y}=650\,\mathrm{mm},$$
+
+and
+
+$$x_{u_z}=0\,\mathrm{mm}.$$
+
+### 16.4 Comparison
+
+The global displacement comparison is
+
+| Quantity | CSF-CUF $N=15$ | CSF-CUF $N=20$ | FEM3D baseline |
+|---|---:|---:|---:|
+| $10|u_x^*|$ | 11.121168 | 11.129124 | 11.129717 |
+| $10^3|u_y^*|$ | 6.075601 | 6.089971 | 6.135546 |
+| $10^2u_z^*$ | 20.508320 | 20.494914 | 20.549984 |
+
+Relative to FEM3D, the $N=20$ differences are approximately
+
+$$-0.00533\%,$$
+
+$$-0.74280\%,$$
+
+and
+
+$$-0.26798\%.$$
+
+The change from $N=15$ to $N=20$ is already small:
+
+$$+0.0715\%$$
+
+for $10|u_x^*|$,
+
+$$+0.2365\%$$
+
+for $10^3|u_y^*|$, and
+
+$$-0.0654\%$$
+
+for $10^2u_z^*$.
+
+The bending response is therefore already close to its high-order transverse approximation regime by $N=15$-$20$ for this test.
+
+---
+
+## 17. Variable-case Table 10 torsion results
+
+The torsional case is more demanding with respect to the transverse CUF order and therefore provides a useful convergence test.
+
+### 17.1 Earlier N=10 result
+
+The $N=10$ CSF-CUF result gives
+
+$$10|u_x^*|=2.719152,$$
+
+$$10|u_y^*|=4.380481,$$
+
+and
+
+$$10^2u_z^*=4.506256.$$
+
+### 17.2 N=20 result
+
+For
+
+$$N=20,$$
+
+the global maxima become
+
+$$10|u_x^*|=3.094646,$$
+
+$$10|u_y^*|=4.954810,$$
+
+and
+
+$$10^2u_z^*=5.094652.$$
+
+Their longitudinal locations are
+
+$$x_{u_x}=545\,\mathrm{mm},$$
+
+$$x_{u_y}=475\,\mathrm{mm},$$
+
+and
+
+$$x_{u_z}=35\,\mathrm{mm}.$$
+
+### 17.3 Three-dimensional FEM baseline
+
+The FEM3D baseline gives
+
+$$10|u_x^*|=3.257099,$$
+
+$$10|u_y^*|=5.204712,$$
+
+and
+
+$$10^2u_z^*=5.220727.$$
+
+The corresponding FEM longitudinal locations are approximately
+
+$$x_{u_x}=550\,\mathrm{mm},$$
+
+$$x_{u_y}=475\,\mathrm{mm},$$
+
+and
+
+$$x_{u_z}=41.667\,\mathrm{mm}.$$
+
+### 17.4 Convergence toward the FEM3D baseline
+
+The global displacement comparison is
+
+| Quantity | CSF-CUF $N=10$ | CSF-CUF $N=20$ | FEM3D baseline |
+|---|---:|---:|---:|
+| $10|u_x^*|$ | 2.719152 | 3.094646 | 3.257099 |
+| $10|u_y^*|$ | 4.380481 | 4.954810 | 5.204712 |
+| $10^2u_z^*$ | 4.506256 | 5.094652 | 5.220727 |
+
+For $N=10$, the relative differences with respect to FEM3D are approximately
+
+$$-16.52\%, \; -15.84\%, \; -13.69\%.$$
+
+For $N=20$, they reduce to approximately
+
+$$-4.99\%, \; -4.80\%, \; -2.41\%.$$
+
+All three global displacement quantities move systematically toward the FEM3D baseline when the transverse order is increased from $N=10$ to $N=20$.
+
+The location of the $u_y$ maximum coincides with the FEM3D baseline at
+
+$$x=475\,\mathrm{mm},$$
+
+while the $u_x$ and $u_z$ maxima are also close in longitudinal position.
+
+---
+
+## 18. Current case organization used by the runtime validation
+
+The operational validation separates the physical model, the physical problem and the numerical solver case.
+
+### 18.1 Model
+
+The model YAML contains the CSF geometry and constitutive carriers.
+
+For the variable double-T case, it defines the longitudinally evolving polygonal geometry and material state.
+
+### 18.2 Problem
+
+The problem YAML selects the physical loading family and references the CSF model.
+
+For the bending case, the problem type is
+
+```yaml
+problem:
+  type: carrera_bending_bottom_surface_halfwave
+  amplitude: 1.0
+```
+
+For the torsional case, the problem type is
+
+```yaml
+problem:
+  type: carrera_torsion_halfwave
+  amplitude: 1.0
+```
+
+The problem adapter converts these physical problem definitions into the generic load and constraint interface used by the solver.
+
+### 18.3 Numerical case
+
+The case YAML selects the CUF and numerical approximation settings.
+
+A current $N=20$ configuration uses
+
+```yaml
+cuf:
+  basis: scaled_maclaurin
+  order: 20
+
+longitudinal:
+  method: finite_element
+  elements: 1
+  order: 6
+  gauss_order: 9
+
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 6
+```
+
+For this case, the scaled-Maclaurin plugin raises the effective section integration order to
+
+$$21.$$
+
+### 18.4 Post-processing
+
+The solved runtime object exposes the continuous displacement field
+
+$$\mathbf u(x,y,z).$$
+
+The Carrera-Giunta post-processing adapter receives this continuous field and produces the Table 9 or Table 10 normalized displacement report.
+
+The post-processing stage therefore performs:
+
+1. component mapping to the Carrera-Giunta convention;
+2. nondimensionalization;
+3. section extrema search;
+4. longitudinal global-extrema search;
+5. report generation.
+
+The mechanical solution is already complete when this post-processing begins.
+
+---
+
+## 19. Validation status and demonstrated scope
+
+The combined validation chain now establishes the following sequence.
+
+### 19.1 Formulation-level correspondence
+
+The generalized sectional coefficient family
+
+$$J_{\tau,\phi s,\xi}^{mn}(x)$$
+
+reduces to the Carrera-Giunta sectional momenta and constitutive coefficients for the prismatic homogeneous reference beam.
+
+The complete algebraic nucleus obtained after Navier specialization is mapped term by term to the reference Carrera-Giunta nucleus.
+
+### 19.2 Direct reference-result recovery
+
+The explicit $N=4$ Table 2 displacement/stress reconstruction reproduces the first published nondimensional stress target with an absolute difference of approximately
+
+$$3.29\times10^{-5}.$$
+
+Additional Table 2 and Table 7 gates extend the verification to other stress components, transverse orders and torsional coupling terms.
+
+### 19.3 Independent runtime recovery of prismatic double-T benchmarks
+
+The weak-form longitudinal finite-element runtime reproduces the Carrera-Giunta prismatic double-T Table 9 and Table 10 displacement results at $N=10$ with differences of order $10^{-2}\%$ or smaller for the reported global quantities.
+
+This establishes the connection between the analytical reference validation and the reusable runtime solver.
+
+### 19.4 Longitudinally varying geometry and material
+
+The same runtime architecture is then applied to a double-T member with continuously varying geometry and longitudinally varying constitutive carriers.
+
+The solver obtains the current section and material state through CSF at the longitudinal coordinates requested by the numerical integration. No section-specific stiffness formula is introduced into the generic CUF nucleus.
+
+### 19.5 High-order behavior
+
+For the variable bending case, the $N=15$ and $N=20$ results are already close to each other and to the FEM3D baseline.
+
+For the variable torsion case, the transition from $N=10$ to $N=20$ produces a clear systematic movement toward the FEM3D baseline in all three reported global displacement components.
+
+The demonstrated validation scope therefore includes:
+
+- rectangular prismatic bending;
+- rectangular prismatic torsion;
+- prismatic double-T bending;
+- prismatic double-T torsion;
+- longitudinally varying double-T geometry;
+- longitudinally varying material stiffness;
+- high-order complete Maclaurin transverse expansions;
+- generic weak-form longitudinal finite-element solution;
+- comparison with both published CUF reference results and an independent three-dimensional FEM baseline.
+
+---
+
+## 20. Reference
+
+The primary CUF benchmark reference used throughout this document is:
+
+E. Carrera and G. Giunta, **"Refined Beam Theories Based on a Unified Formulation"**, *International Journal of Applied Mechanics*, Vol. 2, No. 1 (2010), pp. 117-143.
+
+The analytical validation sections retain the notation and benchmark structure required for direct comparison with that work, while the later runtime sections document the current implemented CSF-CUF architecture and its numerical validation state.
