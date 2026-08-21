@@ -653,35 +653,6 @@ def _polygon_inputs_from_field(field, z: float) -> Dict[int, PolygonInput]:
     return out
 
 
-def _apply_poisson_override(
-    polygon_inputs: Dict[int, PolygonInput],
-    nu_sp: Optional[float],
-) -> Dict[int, PolygonInput]:
-    """
-    Override Poisson ratio for sectionproperties material creation when requested.
-
-    Default policy:
-    - ``nu_sp is None`` preserves the current CSF/SP bridge behaviour exactly;
-    - passing ``nu_sp`` replaces the sampled CSF Poisson value for all SP
-      materials built by this bridge call.
-    """
-    if nu_sp is None:
-        return polygon_inputs
-
-    try:
-        poisson = float(nu_sp)
-    except Exception as exc:
-        raise SystemExit(f"Invalid nu_sp={nu_sp!r}: expected a numeric value.") from exc
-
-    if math.isnan(poisson) or not math.isfinite(poisson):
-        raise SystemExit(f"Invalid nu_sp={nu_sp!r}: expected a finite numeric value.")
-
-    return {
-        pid: replace(poly, poisson=poisson)
-        for pid, poly in polygon_inputs.items()
-    }
-
-
 # -----------------------------------------------------------------------------
 # sectionproperties backend
 # -----------------------------------------------------------------------------
@@ -1281,7 +1252,6 @@ def _analyse_one_geometry(
     mesh: float,
     plot: bool,
     warping: bool = True,
-    nu_sp: Optional[float] = None,
 ) -> None:
     """
     Mesh, analyse, and print one station.
@@ -1298,7 +1268,6 @@ def _analyse_one_geometry(
        the CSF torsion-carrier result obtained by the dedicated ``E_SP := G_i``
        run
     """
-    polygon_inputs = _apply_poisson_override(polygon_inputs, nu_sp)
     geom, _local_domains = _build_meshed_geometry(polygon_inputs, mesh)
 
     sec = Section(geometry=geom)
@@ -1364,12 +1333,6 @@ def main() -> None:
         help="Explicit z station. In YAML mode this overrides station_sets. In legacy text mode it selects one export block.",
     )
     ap.add_argument("--mesh", type=float, default=1.0, help="Max mesh element area.")
-    ap.add_argument(
-        "--nu-sp",
-        type=float,
-        default=None,
-        help="Optional Poisson ratio override for sectionproperties materials. Default preserves sampled CSF values.",
-    )
     ap.add_argument("--plot", action="store_true", help="Plot geometry and mesh.")
     
     
@@ -1410,14 +1373,7 @@ def main() -> None:
             if i > 0:
                 print("\n" + "-" * 80)
             polygon_inputs = _polygon_inputs_from_field(field, z)
-            _analyse_one_geometry(
-                z,
-                polygon_inputs,
-                args.mesh,
-                args.plot,
-                warping=not args.no_warping,
-                nu_sp=args.nu_sp,
-            )
+            _analyse_one_geometry(z, polygon_inputs, args.mesh, args.plot, warping=not args.no_warping)
         return
 
     if args.path is None:
@@ -1427,14 +1383,7 @@ def main() -> None:
     blocks = _read_geometry_export_blocks(text)
     z, rows = _select_z_block(blocks, args.z)
     polygon_inputs = _rows_to_polygon_inputs(rows)
-    _analyse_one_geometry(
-                z,
-                polygon_inputs,
-                args.mesh,
-                args.plot,
-                warping=not args.no_warping,
-                nu_sp=args.nu_sp,
-            )
+    _analyse_one_geometry(z, polygon_inputs, args.mesh, args.plot, warping=not args.no_warping)
 
 
 # =============================================================================
@@ -1477,13 +1426,7 @@ def load_yaml(path: "str | Path") -> Any:
     return _load_field_from_yaml(Path(path))
 
 
-def analyse(
-    field: Any,
-    z: float,
-    mesh: float = 1.0,
-    warping: bool = True,
-    nu_sp: Optional[float] = None,
-) -> "Section":
+def analyse(field: Any, z: float, mesh: float = 1.0, warping: bool = True) -> "Section":
     """Analyse a CSF field at a given longitudinal position.
 
     Samples the CSF field at ``z``, builds the sectionproperties geometry,
@@ -1522,10 +1465,6 @@ def analyse(
         If ``True`` (default), warping properties (native ``e.j``, shear centre,
         etc.) are computed when the geometry is connected. Set to ``False`` to
         skip the warping FEM.
-    nu_sp:
-        Optional Poisson ratio override for the sectionproperties materials.
-        If ``None`` (default), the bridge preserves the sampled CSF Poisson
-        values and therefore keeps the previous behaviour unchanged.
 
     Returns
     -------
@@ -1535,7 +1474,6 @@ def analyse(
         and the geometry is connected.
     """
     polygon_inputs = _polygon_inputs_from_field(field, float(z))
-    polygon_inputs = _apply_poisson_override(polygon_inputs, nu_sp)
 
     geom, _local_domains = _build_meshed_geometry(polygon_inputs, float(mesh))
 
@@ -1553,12 +1491,7 @@ def analyse(
     return sec
 
 
-def analyse_torsion_carrier(
-    field: Any,
-    z: float,
-    mesh: float = 1.0,
-    nu_sp: Optional[float] = None,
-) -> float:
+def analyse_torsion_carrier(field: Any, z: float, mesh: float = 1.0) -> float:
     """Return the CSF torsion-carrier result at a station.
 
     This performs a dedicated sectionproperties torsion-only run after replacing
@@ -1578,9 +1511,6 @@ def analyse_torsion_carrier(
         Longitudinal coordinate at which to sample the section.
     mesh:
         Maximum triangular element area for the sectionproperties mesh.
-    nu_sp:
-        Optional Poisson ratio override for the sectionproperties materials.
-        If ``None`` (default), the previous bridge behaviour is preserved.
 
     Returns
     -------
@@ -1594,7 +1524,6 @@ def analyse_torsion_carrier(
         or if the active carrier geometry is disconnected.
     """
     polygon_inputs = _polygon_inputs_from_field(field, float(z))
-    polygon_inputs = _apply_poisson_override(polygon_inputs, nu_sp)
     return _compute_torsion_carrier_result(polygon_inputs, float(mesh))
 
 
