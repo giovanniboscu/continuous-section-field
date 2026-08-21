@@ -32,46 +32,7 @@ Run all commands from:
 
 ## Prismatic double-T -Table 9 bending
 
-```bash
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table9_N05.yaml
 time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table9_N10.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table9_N18.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table9_N21_OR06.yaml
-```
-
-## Prismatic double-T -Table 10 torsion
-
-```bash
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table10_N05.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table10_N10.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table10_N10_E01.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table10_N10_E01_OR06.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table10_N10_E02.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table10_N11_E01_OR06.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table10_N11_E02.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table10_N19_E01_OR06.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table10_N21_E01_OR06.yaml
-```
-
-## Tapered double-T with variable material -Table 9 bending
-
-```bash
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/taper80_degraded/table9_N05.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/taper80_degraded/table9_N10.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/taper80_degraded/table9_N18.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/taper80_degraded/table9_N21.yaml
-```
-
-## Tapered double-T with variable material -Table 10 torsion
-
-```bash
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/taper80_degraded/table10_N05.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/taper80_degraded/table10_N10.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/taper80_degraded/table10_N21.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/taper80_degraded/table10_N21_E01.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/taper80_degraded/table10_N21_E02.yaml
-time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/taper80_degraded/table10_N30_E01.yaml
-```
 
 ```
 
