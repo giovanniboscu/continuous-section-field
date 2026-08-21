@@ -94,7 +94,7 @@ All active $t_{ij}$ values from the complete augmented system are collected.
 Their population standard deviation is
 
 $$
-\sigma_t = \operatorname{std}(t_{ij}).
+\sigma_t = \text{std}\left(t_{ij}\right)
 $$
 
 The solver reports $\sigma_t$ as the **equation-term scale**.
