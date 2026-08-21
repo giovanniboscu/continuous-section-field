@@ -14,15 +14,20 @@ The repository includes two complete workflows.
 
 The first is a **prismatic model**, derived from the 2010 Carrera and Giunta reference case. It is organized to reproduce the final benchmark tables for the more complex cross-section, providing a direct and repeatable reference case.
 
+> **Original reference:**  
+> E. Carrera and G. Giunta, *Refined Beam Theories Based on a Unified Formulation*,  
+> International Journal of Applied Mechanics, Vol. 2, No. 1 (2010), pp. 117-143.  
+> DOI: [10.1142/S1758825110000500](https://doi.org/10.1142/S1758825110000500)
+
 The second is a **tapered model**, in which both geometry and material properties vary along the beam axis. It uses the same CUF core and the same CSF-based interface, showing how the framework can move from a classical prismatic benchmark to a genuinely variable-section problem without changing the solver architecture.
 
 From a user's point of view, the expected workflow is therefore simple: define the physical model and the analysis parameters in YAML, run the corresponding model, and inspect the resulting displacement and stress outputs. The CUF machinery remains inside the framework, while the model definition stays external, explicit, and replaceable.
 
 This guide focuses on how the implementation is organized, how data move through the framework, and what can be done with the available examples. The theoretical formulation, coupling strategy, constitutive interface, and numerical validation are documented separately.
 
->Detailed description of the current CSF-CUF architecture, including how general geometry and material fields are supplied through queryable CSF providers and consumed by the CUF solver.
+> Detailed description of the current CSF-CUF architecture, including how general geometry and material fields are supplied through queryable CSF providers and consumed by the CUF solver.
 >
->[General Geometry and Materials](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cuf/GeneralGeometryMaterials.md)
+> [General Geometry and Materials](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cuf/GeneralGeometryMaterials.md)
 
 ---
 
@@ -34,21 +39,19 @@ Run all commands from:
 /home/giarrettu/github/continuous-section-field/cuf
 ```
 
-## Prismatic double-T -Table 9 bending
+## Prismatic double-T - Table 9 bending
 
-```
+```bash
 time python3 -m csf.cuf validation/carrera_giunta_2010/double_t/cases/cuf/prismatic/table9_N10.yaml
-
 ```
 
 ---
-
 
 ## Theoretical formulation and validation
 
 The theoretical basis of the implementation can be found in the following documents:
 
 - [Formal variable-section extension](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md)
-- [Displacement expansion and CSF–CUF coupling](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_displacement_expansionf_coupling.md)
+- [Displacement expansion and CSF-CUF coupling](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_displacement_expansionf_coupling.md)
 - [Sectional constitutive interface](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_sectional_constitutive_interface.md)
 - [Numerical validation against Carrera and Giunta](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_numerical_validation_carrera_giunta.md)
