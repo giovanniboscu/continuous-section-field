@@ -1,0 +1,34 @@
+case:
+  name: cuf_taper80_deg_table10_N05
+
+problem:
+  yaml: ../../../problems/taper80_deg_table10.yaml
+  adapter: ../../../cuf/carrera_problem.py
+
+cuf:
+  basis: scaled_maclaurin
+  order: 10
+
+longitudinal:
+  method: finite_element
+  elements: 1
+  order: 6
+  gauss_order: 9
+
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 6
+
+sampling:
+  stations:
+    - 0.00
+    - 0.25
+    - 0.50
+    - 0.75
+    - 1.00
+  displacement_samples: 201
+  stress_grid: 31
+
+output:
+  adapter: ../../../cuf/carrera_post.py
+  directory: ../../../../../../output/cuf_taper80_deg_table10_N05

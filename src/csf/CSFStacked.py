@@ -848,7 +848,7 @@ class CSFStacked:
         all_z: list[float] = []
 
         # ------------------------------------------------------------------
-        # Geometry helpers (pure accumulation — no Axes calls here)
+        # Geometry helpers (pure accumulation - no Axes calls here)
         # ------------------------------------------------------------------
         def _add_edge(x0, y0, z0, x1, y1, z1, lw: float, color: tuple) -> None:
             """Append one segment (with NaN separator) to the edge batch."""

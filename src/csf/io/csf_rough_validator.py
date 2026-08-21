@@ -367,7 +367,7 @@ def _validate_csf_structure(doc: Dict[str, Any], weight_law_item_lines: Optional
                     f"Did you mean '{matches[0]}'?\n"
                     f"Fix: rename '{uk}:' to '{matches[0]}:'"
                 )
-            # Only warn for keys with no suggestion — could be a future extension
+            # Only warn for keys with no suggestion - could be a future extension
             raise ValidationError(f"{TOP_KEY} contains unknown key '{uk}'.")
 
     if "sections" not in csf:
@@ -515,7 +515,7 @@ def _validate_csf_structure(doc: Dict[str, Any], weight_law_item_lines: Optional
                         f"Fix:   '{parts[0]},{parts[1]}: {rhs.strip()}'"
                     )
 
-            # Compile-check the formula (Python syntax only — no execution).
+            # Compile-check the formula (Python syntax only - no execution).
             # This catches unbalanced parentheses, typos in operators, etc.
             formula = rhs.strip()
             if formula:
