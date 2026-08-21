@@ -12,3 +12,12 @@ The repository includes two complete workflows:
 - a **variable-section model**, showing how the same architecture can be applied to beams whose geometry and materials evolve along the longitudinal axis.
 
 This guide describes the project organization, the data flow, and the available examples. Theoretical details are introduced only where needed and are referred to the dedicated documentation.
+
+## Theoretical formulation and validation
+
+The theoretical basis of the implementation can be found in the following documents:
+
+- [Formal variable-section extension](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md)
+- [Displacement expansion and CSF–CUF coupling](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_displacement_expansionf_coupling.md)
+- [Sectional constitutive interface](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_sectional_constitutive_interface.md)
+- [Numerical validation against Carrera and Giunta](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_numerical_validation_carrera_giunta.md)
