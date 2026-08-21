@@ -25,7 +25,7 @@ The document starts from the architecture and the working directory, then descri
 - status: runtime, support, diagnostics, benchmark/legacy;
 - recommended logical placement in a future reorganization.
 
-## Important note on terminology
+## Note on terminology
 
 Here, **CSF** and **CUF** denote two layers with distinct roles within the same computational chain.
 
