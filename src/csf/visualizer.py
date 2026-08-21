@@ -1078,7 +1078,7 @@ class Visualizer:
         equalize_z : bool, default False
             If True, the visual box is proportional to the real data ranges
             (1 unit along Z = 1 unit along X/Y).  Achieved by passing the
-            actual data ranges to ``set_box_aspect`` — no coordinates or
+            actual data ranges to ``set_box_aspect`` - no coordinates or
             axis limits are modified.  When False the plot is identical to
             the original.
         """
@@ -1277,7 +1277,7 @@ class Visualizer:
         )
 
         def _add_edge(x0, y0, z0_, x1, y1, z1_, lw: float, color) -> None:
-            # Color can be a hex string or an RGB/RGBA tuple — both are hashable.
+            # Color can be a hex string or an RGB/RGBA tuple - both are hashable.
             key = (lw, color)
             buf = edges_by_style[key]
             buf["x"].extend((x0, x1, float("nan")))
@@ -1617,7 +1617,7 @@ class Visualizer:
                             segment_color,
                         )
         # ------------------------------------------------------------------
-        # Render phase — one ax.plot per (lw, color) bucket
+        # Render phase - one ax.plot per (lw, color) bucket
         # ------------------------------------------------------------------
         for (lw, color), buf in edges_by_style.items():
             if buf["x"]:

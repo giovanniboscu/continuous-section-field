@@ -423,7 +423,7 @@ def _report_spec(case, problem_definition, model_bridge, u):
 
         return {
             "table": 9,
-            "title": "TABLE 9 — CSF-CUF",
+            "title": "TABLE 9 - CSF-CUF",
             "factor": factor,
             "scales": scales,
             "headers": headers,
@@ -443,7 +443,7 @@ def _report_spec(case, problem_definition, model_bridge, u):
 
         return {
             "table": 10,
-            "title": "TABLE 10 — CSF-CUF",
+            "title": "TABLE 10 - CSF-CUF",
             "factor": factor,
             "scales": {
                 "ux": 10.0,
@@ -540,7 +540,7 @@ def _format_report_text(*, u, model_bridge, case, spec):
     lines.append(spec["title"])
     lines.append("=" * len(spec["title"]))
     lines.append("")
-    lines.append("GLOBAL MAXIMUM DISPLACEMENTS — PAPER FORMAT")
+    lines.append("GLOBAL MAXIMUM DISPLACEMENTS - PAPER FORMAT")
     lines.append("-------------------------------------------")
     lines.append(
         f"{'model':<12}"
