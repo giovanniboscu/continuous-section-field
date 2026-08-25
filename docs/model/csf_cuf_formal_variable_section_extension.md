@@ -17,6 +17,52 @@ The sequence is
 
 $$ { \mathcal{S}(x) \longrightarrow \{ \Omega^k(x),\, \mathbf{C}^k(x,y,z) \} \longrightarrow J_\bullet^k(x) \longrightarrow \delta L_i \longrightarrow \delta L_{\mathrm{ext}} \longrightarrow \mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x]. } $$
 
+---
+
+## 1. Scope
+
+This note formulates the coupling between a Continuous Section Field (CSF) and the CUF beam framework. The coupling follows directly from the CSF representation
+
+$$
+\mathcal{S}(x),
+$$
+
+in which the physical cross-section is defined directly as a function of the beam-axis coordinate. In particular, the sectional domains and constitutive properties may vary continuously along the beam axis,
+
+$$
+\Omega^k = \Omega^k(x),
+\qquad
+\mathbf{C}^k = \mathbf{C}^k(x,y,z).
+$$
+
+Accordingly, the sectional coefficients entering the CUF formulation are no longer constant sectional quantities, but functions of the longitudinal coordinate,
+
+$$
+J_\bullet^k = J_\bullet^k(x).
+$$
+
+A defining choice of the present formulation is that the longitudinal variation of the physical cross-section is introduced **directly through the sectional domains and constitutive fields**, rather than through a longitudinally dependent mapping of the transverse coordinates. Consequently, no reference-to-physical cross-section transformation, and therefore no associated mapping Jacobian, is required to represent the variation of the section along the beam axis.
+
+This choice does **not** imply that the longitudinal variation of the section is neglected. The dependence on $x$ enters explicitly through $\Omega^k(x)$ and $\mathbf{C}^k(x,y,z)$ and is therefore inherited by every sectional coefficient $J_\bullet^k(x)$ obtained by integration over the physical section.
+
+The transverse CUF expansion may therefore retain the form
+
+$$
+\mathbf{u}(x,y,z) = \sum_{\tau} F_\tau(y,z)\,\mathbf{u}_\tau(x),
+$$
+
+without requiring the expansion functions $F_\tau$ themselves to acquire an explicit $x$-dependence merely because the physical section varies with $x$. A varying sectional domain and an $x$-dependent transverse expansion are distinct modelling choices; the former does not mathematically require the latter.
+
+The CSF representation $\mathcal{S}(x)$ supplies the physical sectional data required to evaluate these $x$-dependent coefficients, while the CUF kinematic and variational structure is retained. Thus, the longitudinal variability is carried by the sectional operators rather than by a remapping of the CUF transverse expansion.
+
+The objective is **not** to derive a closed-form analytical solution along the beam axis. The objective is to define, at a formal level, how the sectional quantities entering the CUF formulation become functions of the longitudinal coordinate through the CSF representation.
+
+The sequence is
+
+$$
+\mathcal{S}(x) \longrightarrow \left\{ \Omega^k(x),\,\mathbf{C}^k(x,y,z) \right\} \longrightarrow J_\bullet^k(x) \longrightarrow \delta L_i \longrightarrow \delta L_{\mathrm{ext}} \longrightarrow \mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x].
+$$
+
 
 ### 1.1 Correspondence with the reference formulation
 
