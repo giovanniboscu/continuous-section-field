@@ -3,21 +3,6 @@
 
 # Formal CSF-CUF coupling for a continuous longitudinal section model
 
-## 1. Scope
-
-This note formulates the coupling between a Continuous Section Field (CSF) and the CUF beam framework. The need for this coupling follows directly from the CSF representation $\mathcal{S}(x)$: since sectional geometry and constitutive properties may vary continuously along the beam axis, the sectional coefficients entering the CUF formulation must themselves become functions of $x$. The CSF representation $\mathcal{S}(x)$ supplies the sectional data required to evaluate these coefficients, while the CUF kinematic and variational structure is retained.
-
-$$ \mathcal{S}(x). $$
-
-The objective is **not** to derive a closed-form analytical solution along the beam axis.
-
-The objective is to define, at a formal level, how the sectional quantities entering the CUF formulation become functions of the longitudinal coordinate through the CSF representation.
-
-The sequence is
-
-$$ { \mathcal{S}(x) \longrightarrow \{ \Omega^k(x),\, \mathbf{C}^k(x,y,z) \} \longrightarrow J_\bullet^k(x) \longrightarrow \delta L_i \longrightarrow \delta L_{\mathrm{ext}} \longrightarrow \mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x]. } $$
-
----
 
 ## 1. Scope
 
@@ -59,10 +44,7 @@ The objective is **not** to derive a closed-form analytical solution along the b
 
 The sequence is
 
-$$
-\mathcal{S}(x) \longrightarrow \left\{ \Omega^k(x),\,\mathbf{C}^k(x,y,z) \right\} \longrightarrow J_\bullet^k(x) \longrightarrow \delta L_i \longrightarrow \delta L_{\mathrm{ext}} \longrightarrow \mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x].
-$$
-
+$$ { \mathcal{S}(x) \longrightarrow \{ \Omega^k(x),\, \mathbf{C}^k(x,y,z) \} \longrightarrow J_\bullet^k(x) \longrightarrow \delta L_i \longrightarrow \delta L_{\mathrm{ext}} \longrightarrow \mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x]. } $$
 
 ### 1.1 Correspondence with the reference formulation
 
