@@ -6,7 +6,7 @@
 
 ## 1. Scope
 
-This note formulates the coupling between a Continuous Section Field (CSF) and the CUF beam framework. The coupling follows directly from the CSF representation
+This note formulates the coupling between a Continuous Section Field (CSF) and the beam formulation based on the Carrera Unified Formulation (CUF). The coupling follows directly from the CSF representation
 
 $$
 \mathcal{S}(x),
