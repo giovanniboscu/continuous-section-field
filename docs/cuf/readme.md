@@ -145,6 +145,5 @@ Classical beam theories can be interpreted as restricted choices within this fra
 
 The same formulation remains valid when the polynomial order or the family of transverse functions is changed. This is the unifying principle of CUF.
 
-The assumption that $\Omega$ is independent of $x$ will provide the reference point for introducing a cross-section that evolves continuously along the beam axis.
-
+---
 
