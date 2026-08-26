@@ -55,7 +55,9 @@ where $L$ is the beam length and $\Omega$ denotes the cross-sectional domain. At
 
 The unknown physical quantity is the three-dimensional displacement vector
 
-$$\mathbf{u}(x,y,z)=\begin{Bmatrix}u_x(x,y,z)\u_y(x,y,z)\u_z(x,y,z)\end{Bmatrix}$$
+$$\mathbf{u}(x,y,z)=\left(u_x(x,y,z),u_y(x,y,z),u_z(x,y,z)\right)^T$$
+
+
 
 CUF introduces an approximation of its dependence on the transverse coordinates:
 
