@@ -45,7 +45,7 @@ The structural theory is therefore determined by the selected approximation spac
 ---
 
 
-## From the expansion to a structural theory
+## From the displacement expansion to the structural equations
 
 A beam remains a three-dimensional body. What distinguishes a beam model is that one spatial direction is identified as longitudinal, while the other two describe the cross-section.
 
@@ -53,29 +53,31 @@ Using $x$ as the longitudinal coordinate and $y,z$ as the transverse coordinates
 
 $$\mathcal{B}=[0,L]\times\Omega$$
 
-where $L$ is the beam length and $\Omega$ denotes the cross-sectional domain. At this conceptual stage, the particular shape of $\Omega$ is not important.
+where $L$ is the beam length and $\Omega$ denotes the cross-sectional domain. At this stage, the particular shape of $\Omega$ is not important.
 
 The unknown physical quantity is the three-dimensional displacement vector
 
 $$\mathbf{u}(x,y,z)=\left(u_x(x,y,z),u_y(x,y,z),u_z(x,y,z)\right)^T$$
 
-
-
-CUF introduces an approximation of its dependence on the transverse coordinates:
+CUF approximates the dependence of this field on the transverse coordinates through the expansion
 
 $$\mathbf{u}(x,y,z)\simeq\sum_{\tau=1}^{M}F_\tau(y,z)\mathbf{u}_\tau(x)$$
 
-The functions $\mathbf{u}_\tau(x)$ are initially unknown. They are not obtained by expanding an already known displacement field. They become the generalized unknowns of the structural problem and must be determined by imposing the governing mechanical equations.
+The functions $F_\tau(y,z)$ describe the variation over the cross-section. The vector functions $\mathbf{u}_\tau(x)$ are the corresponding longitudinal coefficients:
 
-For a complete two-dimensional polynomial expansion of order $N$, all monomials satisfying
+$$\mathbf{u}*\tau(x)=\left(u*{x\tau}(x),u_{y\tau}(x),u_{z\tau}(x)\right)^T$$
 
-$$i+j\leq N$$
+These longitudinal functions are initially unknown. They are not obtained by expanding an already known displacement field. They become the generalized unknowns of the structural problem and must be determined through the governing mechanical equations.
 
-are included:
+For a complete two-dimensional polynomial expansion of order $N$, the basis contains all monomials of the form
 
 $$F_\tau(y,z)=y^iz^j$$
 
-The number of transverse functions is therefore
+whose exponents satisfy
+
+$$i+j\leq N$$
+
+The number of transverse functions is
 
 $$M=\frac{(N+1)(N+2)}{2}$$
 
@@ -87,40 +89,39 @@ $$N=1:\qquad 1,\quad y,\quad z$$
 
 $$N=2:\qquad 1,\quad y,\quad z,\quad y^2,\quad yz,\quad z^2$$
 
-Each order contains all the terms of the previous order. The approximation spaces are therefore hierarchical: increasing $N$ does not replace the previous model but enlarges its kinematic space.
+Each order contains all the functions of the preceding orders. Increasing $N$ therefore enlarges the kinematic approximation space without changing the general structure of the formulation.
 
-The selected expansion determines the kinematics, but it does not by itself determine the solution. The displacement field must still satisfy the ordinary laws of continuum mechanics.
+Once the displacement expansion has been defined, its spatial derivatives can be calculated. This step connects the selected kinematics to the strain field.
 
-Under the assumption of small displacements and small strains, the strain vector is obtained from spatial derivatives of the displacement field:
+Because the transverse and longitudinal variables are separated, derivatives with respect to $y$ and $z$ act on the functions $F_\tau(y,z)$:
+
+$$\frac{\partial\mathbf{u}}{\partial y}=\sum_{\tau=1}^{M}\frac{\partial F_\tau}{\partial y}\mathbf{u}_\tau(x)$$
+
+$$\frac{\partial\mathbf{u}}{\partial z}=\sum_{\tau=1}^{M}\frac{\partial F_\tau}{\partial z}\mathbf{u}_\tau(x)$$
+
+The derivative with respect to the longitudinal coordinate $x$ acts instead on the generalized displacement functions:
+
+$$\frac{\partial\mathbf{u}}{\partial x}=\sum_{\tau=1}^{M}F_\tau(y,z)\frac{d\mathbf{u}_\tau}{dx}$$
+
+This separation is one of the essential ideas of CUF. The derivatives of a three-dimensional displacement field are expressed through derivatives of transverse basis functions and derivatives of one-dimensional generalized unknowns.
+
+Under the assumption of small displacements and small strains, the strain vector is obtained from the displacement derivatives:
 
 $$\boldsymbol{\varepsilon}=\mathbf{D}\mathbf{u}$$
 
-where $\mathbf{D}$ is the differential operator that contains derivatives with respect to $x$, $y$, and $z$.
+where $\mathbf{D}$ is the differential operator containing the required derivatives with respect to $x$, $y$, and $z$.
 
-The stresses are related to the strains through the constitutive law
+The selected expansion therefore determines which strain distributions the model can represent. A low-order expansion produces a restricted strain field. A higher-order expansion permits more complex transverse deformation, shear, warping, and coupling effects.
+
+For a linear elastic material, the stress field follows from the constitutive law
 
 $$\boldsymbol{\sigma}=\mathbf{C}\boldsymbol{\varepsilon}$$
 
 where $\mathbf{C}$ is the material stiffness matrix.
 
-CUF does not replace either of these relations. It provides a systematic representation of the displacement field that is substituted into them.
+CUF does not replace the strain-displacement relations or the constitutive law. It supplies a systematic representation of the displacement field that is substituted into these standard equations of continuum mechanics.
 
-Because the expansion separates the transverse and longitudinal variables, spatial differentiation acts in two different ways:
-
-* derivatives with respect to $y$ and $z$ act on the transverse functions $F_\tau(y,z)$;
-* derivatives with respect to $x$ act on the generalized displacement functions $\mathbf{u}_\tau(x)$.
-
-Schematically,
-
-$$\frac{\partial\mathbf{u}}{\partial y}=\sum_{\tau=1}^{M}\frac{\partial F_\tau}{\partial y}\mathbf{u}_\tau(x)$$
-
-while
-
-$$\frac{\partial\mathbf{u}}{\partial x}=\sum_{\tau=1}^{M}F_\tau(y,z)\frac{d\mathbf{u}_\tau}{dx}$$
-
-This separation is one of the essential structural ideas of CUF. The three-dimensional strain field can be expressed through transverse basis functions and one-dimensional generalized unknowns.
-
-The governing equations are obtained by introducing these expressions into a variational statement, usually the Principle of Virtual Displacements:
+The unknown functions $\mathbf{u}_\tau(x)$ are determined by imposing equilibrium. In CUF, the governing equations are commonly obtained through the Principle of Virtual Displacements:
 
 $$\delta W_{\mathrm{int}}=\delta W_{\mathrm{ext}}$$
 
@@ -128,15 +129,15 @@ The internal virtual work is evaluated over the complete beam volume:
 
 $$\delta W_{\mathrm{int}}=\int_0^L\int_\Omega\delta\boldsymbol{\varepsilon}^{T}\boldsymbol{\sigma},d\Omega,dx$$
 
-After substituting the CUF expansion, the integration over the cross-section produces coefficients that couple every pair of transverse functions $F_\tau$ and $F_s$. The remaining equations govern the longitudinal unknowns $\mathbf{u}_\tau(x)$.
+After substituting the CUF displacement expansion, the cross-sectional integration produces coefficients that couple every pair of transverse functions $F_\tau$ and $F_s$. The remaining equations govern the longitudinal functions $\mathbf{u}_\tau(x)$.
 
-The construction can therefore be summarized as
+The complete logical sequence is therefore
 
-$$\text{displacement expansion}\rightarrow\text{strain field}\rightarrow\text{constitutive law}\rightarrow\text{virtual work}\rightarrow\text{governing equations}$$
+$$\text{displacement expansion}\rightarrow\text{spatial derivatives}\rightarrow\text{strains}\rightarrow\text{stresses}\rightarrow\text{virtual work}\rightarrow\text{governing equations}$$
 
-The approximation order $N$ controls the richness of the kinematic space, while the laws of mechanics determine the values of the corresponding generalized displacement functions.
+The approximation order determines the richness of the kinematic space, while the mechanical equations determine the values of the corresponding generalized displacement functions.
 
-Classical beam theories can be interpreted as restricted choices within this larger kinematic framework. Higher-order models retain more transverse terms and can consequently represent effects that simpler theories exclude, such as cross-sectional deformation, warping, Poisson coupling, and more complex shear distributions.
+Classical beam theories can be interpreted as restricted choices within this general framework. Higher-order theories retain additional transverse terms and can represent deformation modes excluded by simpler models.
 
-The unifying contribution of CUF is that this increase in kinematic richness does not require deriving an entirely new formulation for every order. The same general procedure remains valid while the set of transverse functions is changed or enlarged.
+The unifying contribution of CUF is that the same formulation remains valid when the polynomial order or the transverse basis is changed. A new approximation space does not require the derivation of an entirely new structural formulation.
 
