@@ -275,15 +275,24 @@ This file defines the CSF geometry and material field.
 
 Modify it when changing:
 
-- outer or inner section dimensions;
-- wall thickness or topology;
-- beam length if it is part of the CSF longitudinal definition;
-- Young's modulus, Poisson's ratio or material weights;
-- prismatic, tapered or otherwise variable geometry/material laws.
+* outer or inner section dimensions;
+* wall thickness or topology;
+* beam length if it is part of the CSF longitudinal definition;
+* Young's modulus, Poisson's ratio or material weights;
+* prismatic, tapered or otherwise variable geometry/material laws.
+
+The CSF model can also be visualized directly with:
+
+```bash
+csf-actions models/hollow_rectangle_prismatic_csf.yaml action.yaml
+```
+
+This provides a direct graphical check of the section geometry and of the model definition before running the CUF analysis.
 
 If the geometry changes, recompute all analytical section properties used by
 the baseline scripts. A void must remain a zero-weight subdomain and must not be
 counted as solid material.
+
 
 ### `problems/bending/hollow_rectangle_bending_halfwave.yaml`
 
