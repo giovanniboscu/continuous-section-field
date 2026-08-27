@@ -38,8 +38,8 @@ This guide focuses on how the implementation is organized, how data move through
 The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
 
 ---
-<br>
-<br>
+
+<!--
 
 # DRAFT
 # CSF-CUF Validation Commands
@@ -66,3 +66,5 @@ The theoretical basis of the implementation can be found in the following docume
 - [Displacement expansion and CSF-CUF coupling](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_displacement_expansionf_coupling.md)
 - [Sectional constitutive interface](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_sectional_constitutive_interface.md)
 - [Numerical validation against Carrera and Giunta](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_numerical_validation_carrera_giunta.md)
+
+-->
