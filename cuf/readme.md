@@ -32,7 +32,7 @@ The second is a **tapered model**, in which both geometry and material propertie
 From a user's point of view, the expected workflow is therefore simple: define the physical model and the analysis parameters in YAML, run the corresponding model, and inspect the resulting displacement and stress outputs. The CUF machinery remains inside the framework, while the model definition stays external, explicit, and replaceable.
 -->
 
-### CSF–CUF Documentation
+### Mathematical Formulation of the CSF–CUF Coupling
 
 * [CUF displacement expansion for CSF coupling](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_displacement_expansionf_coupling.md)
 * [Formal extension of CUF to variable sections through CSF](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md)
