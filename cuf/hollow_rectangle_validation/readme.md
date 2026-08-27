@@ -152,8 +152,7 @@ Bredt–Batho script may be retained as an additional engineering comparison.
 
 ## 4. Quantities to be verified
 
-The validation must not be reduced to checking whether a run terminates. The
-following physical and numerical checks are required.
+The following physical and numerical checks are required.
 
 ### 4.1 Bending checks
 
