@@ -1,3 +1,4 @@
+# Version: CSF-CUF net homogeneous domain slicer v19 - 2026-08-27
 """
 Generic transverse section integration for the CSF-CUF bridge.
 
@@ -80,12 +81,16 @@ class AdaptivePolygonIntegrator(SectionIntegrator):
         domain: PolygonDomain,
         integrand: Callable[[float, float], float],
     ) -> float:
+        if domain.weightabs is not None and float(domain.weightabs) == 0.0:
+            return 0.0
+
         vertices = domain.vertices
 
         if len(vertices) < 3:
             raise ValueError("polygon must contain at least three vertices")
 
-        y_values = [point[0] for point in vertices]
+        rings = (vertices, *domain.excluded_vertices)
+        y_values = [point[0] for ring in rings for point in ring]
         y_min = min(y_values)
         y_max = max(y_values)
 
@@ -102,7 +107,7 @@ class AdaptivePolygonIntegrator(SectionIntegrator):
         def integrate_at_y(y: float) -> float:
             subtotal = 0.0
 
-            for z0, z1 in self._z_intervals_at_y(vertices, y):
+            for z0, z1 in self._net_z_intervals_at_y(domain, y):
                 value = self._quad_interval(
                     lambda z: integrand(y, z),
                     z0,
@@ -152,13 +157,16 @@ class AdaptivePolygonIntegrator(SectionIntegrator):
 
         if not isinstance(size, int) or size < 1:
             raise ValueError("size must be a positive integer")
+        if domain.weightabs is not None and float(domain.weightabs) == 0.0:
+            return np.zeros(size, dtype=float)
 
         vertices = domain.vertices
 
         if len(vertices) < 3:
             raise ValueError("polygon must contain at least three vertices")
 
-        y_values = [point[0] for point in vertices]
+        rings = (vertices, *domain.excluded_vertices)
+        y_values = [point[0] for ring in rings for point in ring]
         y_min = min(y_values)
         y_max = max(y_values)
 
@@ -177,7 +185,7 @@ class AdaptivePolygonIntegrator(SectionIntegrator):
         def integrate_at_y(y: float) -> np.ndarray:
             subtotal = zero.copy()
 
-            for z0, z1 in self._z_intervals_at_y(vertices, y):
+            for z0, z1 in self._net_z_intervals_at_y(domain, y):
                 value, _ = quad_vec(
                     lambda z: np.asarray(
                         integrand(float(y), float(z)),
@@ -359,4 +367,54 @@ class AdaptivePolygonIntegrator(SectionIntegrator):
 
         return tuple(intervals)
 
+    @staticmethod
+    def _merge_intervals(intervals):
+        ordered = sorted(
+            (float(start), float(end))
+            for start, end in intervals
+            if end > start
+        )
+        if not ordered:
+            return ()
+        merged = [ordered[0]]
+        for start, end in ordered[1:]:
+            previous_start, previous_end = merged[-1]
+            if start <= previous_end:
+                merged[-1] = (previous_start, max(previous_end, end))
+            else:
+                merged.append((start, end))
+        return tuple(merged)
+
+    @classmethod
+    def _net_z_intervals_at_y(cls, domain, y: float):
+        """Return outer slice intervals after direct-child subtraction."""
+        occupied = cls._merge_intervals(
+            cls._z_intervals_at_y(domain.vertices, y)
+        )
+        excluded = cls._merge_intervals(
+            interval
+            for child_vertices in domain.excluded_vertices
+            for interval in cls._z_intervals_at_y(child_vertices, y)
+        )
+        if not excluded:
+            return occupied
+
+        net = []
+        for occupied_start, occupied_end in occupied:
+            fragments = [(occupied_start, occupied_end)]
+            for excluded_start, excluded_end in excluded:
+                next_fragments = []
+                for fragment_start, fragment_end in fragments:
+                    if excluded_end <= fragment_start or excluded_start >= fragment_end:
+                        next_fragments.append((fragment_start, fragment_end))
+                        continue
+                    if excluded_start > fragment_start:
+                        next_fragments.append((fragment_start, excluded_start))
+                    if excluded_end < fragment_end:
+                        next_fragments.append((excluded_end, fragment_end))
+                fragments = next_fragments
+                if not fragments:
+                    break
+            net.extend(fragments)
+        return tuple((start, end) for start, end in net if end > start)
 

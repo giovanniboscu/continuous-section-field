@@ -1,4 +1,4 @@
-# OPT-10 MACHINE-PRECISION SPARSE CLEANUP
+# Version: CSF-CUF RAM-optimized numerically pure assembly - no magnitude cleanup - 2026-08-23
 """
 Generic global assembly for the longitudinal CSF-CUF finite-element solver.
 
@@ -27,6 +27,7 @@ the three displacement components (x, y, z).
 """
 
 from __future__ import annotations
+from array import array
 import time
 from dataclasses import dataclass
 from typing import Iterable, Tuple
@@ -39,59 +40,6 @@ from csf.cuf.solver.longitudinal import (
     LongitudinalMesh1D,
 )
 from csf.cuf.problem.problem import GeneralizedLongitudinalLoad
-
-
-# A sparse coefficient below this many floating-point ulps of the global
-# stiffness scale is treated as numerical zero after duplicate summation.
-_NUMERICAL_ZERO_EPS_FACTOR = 8.0
-
-
-def _eliminate_machine_precision_zeros(
-    stiffness: csr_matrix,
-) -> tuple[float, int]:
-    """Remove coefficients that are indistinguishable from roundoff.
-
-    The threshold is scale-aware: it is proportional to machine epsilon and
-    to the largest assembled stiffness coefficient. No benchmark-dependent
-    absolute cutoff is used. The cleanup is intentionally applied only after
-    COO duplicates have been summed into the CSR matrix.
-
-    Returns
-    -------
-    threshold:
-        Absolute coefficient threshold used for this assembled matrix.
-    removed:
-        Number of stored coefficients removed from the CSR matrix.
-    """
-    if stiffness.nnz == 0:
-        return 0.0, 0
-
-    max_abs = float(np.max(np.abs(stiffness.data)))
-    if not np.isfinite(max_abs):
-        raise ValueError(
-            "global stiffness contains non-finite values after assembly"
-        )
-
-    if max_abs == 0.0:
-        removed = int(stiffness.nnz)
-        stiffness.data[:] = 0.0
-        stiffness.eliminate_zeros()
-        return 0.0, removed
-
-    threshold = (
-        _NUMERICAL_ZERO_EPS_FACTOR
-        * np.finfo(float).eps
-        * max_abs
-    )
-
-    mask = np.abs(stiffness.data) < threshold
-    removed = int(np.count_nonzero(mask))
-
-    if removed:
-        stiffness.data[mask] = 0.0
-        stiffness.eliminate_zeros()
-
-    return float(threshold), removed
 
 
 # =============================================================================
@@ -292,9 +240,24 @@ class CSFCUFGlobalAssembler:
             basis_size=basis_size,
         )
 
-        rows = []
-        cols = []
-        values = []
+        # MEM-01: keep assembly triplets in compact typed buffers instead of
+        # Python lists.  The append order and every numerical value are
+        # unchanged, but each entry now occupies its native scalar width rather
+        # than a Python object plus a list pointer.
+        #
+        # Use 32-bit indices whenever the global numbering permits it, matching
+        # the compact index representation normally selected by SciPy for
+        # matrices of this size.  Fall back to 64-bit indices generically.
+        if layout.total_dofs <= np.iinfo(np.int32).max:
+            index_typecode = "i"
+            index_dtype = np.int32
+        else:
+            index_typecode = "q"
+            index_dtype = np.int64
+
+        rows = array(index_typecode)
+        cols = array(index_typecode)
+        values = array("d")
 
         # ---------------------------------------------------------------------
         # Minimal assembly instrumentation.
@@ -450,12 +413,18 @@ class CSFCUFGlobalAssembler:
 
         sparse_started = time.perf_counter()
 
+        # Zero-copy NumPy views over the compact triplet buffers.  COO -> CSR
+        # receives entries in exactly the same sequence as before.
+        row_data = np.frombuffer(rows, dtype=index_dtype)
+        col_data = np.frombuffer(cols, dtype=index_dtype)
+        value_data = np.frombuffer(values, dtype=np.float64)
+
         stiffness = coo_matrix(
             (
-                np.asarray(values, dtype=float),
+                value_data,
                 (
-                    np.asarray(rows, dtype=int),
-                    np.asarray(cols, dtype=int),
+                    row_data,
+                    col_data,
                 ),
             ),
             shape=(
@@ -464,21 +433,16 @@ class CSFCUFGlobalAssembler:
             ),
         ).tocsr()
 
+        # The CSR matrix owns the assembled sparse data.  Release the much
+        # larger triplet representation immediately instead of retaining it
+        # until assemble() returns.
+        del row_data, col_data, value_data
+        del rows, cols, values
+
         # Duplicate COO entries are summed during conversion to CSR.
+        # No magnitude-based filtering, thresholding, regularization, or
+        # coefficient modification is applied after assembly.
         stiffness.sum_duplicates()
-
-        raw_nnz = int(stiffness.nnz)
-        cleanup_threshold, cleanup_removed = (
-            _eliminate_machine_precision_zeros(stiffness)
-        )
-
-        print(
-            f"[assembly] numerical-zero cleanup "
-            f"threshold={cleanup_threshold:.6e} "
-            f"removed={cleanup_removed} "
-            f"nnz={stiffness.nnz}/{raw_nnz}",
-            flush=True,
-        )
 
         print(
             f"[assembly] COO->CSR complete "

@@ -1,40 +1,41 @@
-# OPT-08 KKT DIAGNOSTICS AND CHECKPOINT
+# Version: CSF-CUF YAML-configurable equilibration iterations v15 - 2026-08-25
 """
-Generic solver for an augmented linear-constraint system.
+Generic direct solver for an augmented linear-constraint system.
 
-The system is assumed to have the form
+The complete system is assumed to have the form
 
     [ K   A^T ] [ q      ] = [ f ]
     [ A    0  ] [ lambda ]   [ b ]
 
 as produced by ``LinearConstraintAugmenter``.
 
-The validated sparse direct solve remains the primary numerical path.  If that
-solution does not satisfy the requested residual tolerances and the augmented
-matrix is already sufficiently dense, the same algebraic system is also solved
-with dense LAPACK factorizations suitable for high-order KKT systems.
+After the numerical solution has been obtained, the solver performs a purely
+descriptive algebraic verification.  No residual tolerance is used as an
+acceptance threshold and no PASS/FAIL status is assigned to a finite solution.
 
-Every candidate solution is verified against the original, unmodified system.
-If all numerical paths fail the residual checks, the exact assembled KKT system,
-right-hand side, candidate solutions, residual vectors, scale diagnostics, and
-solver warnings are checkpointed under ``diagnostics/`` for offline analysis.
-No geometry, material, load, CUF basis, benchmark, tolerance, or structural
-specialization is introduced here.
+The verification reports three quantities for the complete augmented system:
+
+1. the arithmetic mean of the equation residuals;
+2. the population standard deviation of the equation residuals;
+3. the population standard deviation of the individual active equation terms
+   M_ij * x_j, used as the numerical scale of the terms forming the equations.
+
+A calculation is stopped only when a usable numerical solution cannot be
+obtained, for example because the system is rank deficient, dimensions are
+invalid, or non-finite values are present.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
-import json
-import os
 from pathlib import Path
-import re
+import hashlib
+import os
 import warnings
 
 import numpy as np
-from scipy.linalg import LinAlgError, LinAlgWarning, solve as dense_solve
-from scipy.sparse import save_npz
+from scipy.linalg import LinAlgWarning
+from scipy.sparse import diags, save_npz
 from scipy.sparse.linalg import MatrixRankWarning, spsolve
 
 from csf.cuf.solver.linear_constraint import (
@@ -44,68 +45,370 @@ from csf.cuf.solver.linear_constraint import (
 
 @dataclass(frozen=True)
 class AugmentedConstraintSolution:
-    """
-    Solution of a Lagrange-multiplier constrained system.
-    """
+    """Solution and descriptive verification of an augmented linear system."""
 
     primal: np.ndarray
     lagrange: np.ndarray
     augmented: np.ndarray
 
-    augmented_residual_norm: float
-    augmented_relative_residual: float
+    # One residual for every equation of the complete augmented system.
+    residuals: np.ndarray
 
-    equilibrium_residual_norm: float
-    equilibrium_relative_residual: float
+    # Descriptive statistics of the residual vector.
+    residual_mean: float
+    residual_standard_deviation: float
 
-    constraint_residual_norm: float
-
-    converged: bool
+    # Standard deviation of the individual active terms M_ij * x_j.
+    equation_term_scale: float
 
 
 class AugmentedSparseLinearSolver:
     """
-    Direct solution of a generic augmented constraint system.
+    Direct sparse solution of a generic augmented constraint system.
 
-    ``spsolve`` is retained unchanged as the primary path.  A dense secondary
-    path is used only when the sparse solution fails the residual checks and
-    the augmented matrix is already sufficiently dense for dense storage to be
-    reasonable.
+    ``spsolve`` is the numerical solution path.  Once a finite solution exists,
+    it is returned regardless of the magnitude of its residuals.  Residuals are
+    measured and reported descriptively; they are not compared with acceptance
+    tolerances.
+
+    Diagnostic v3 writes the exact CSR matrix and RHS presented to ``spsolve``
+    immediately before the solve.  The checkpoint does not modify either object.
     """
 
-    # A high-order CUF matrix can become nearly full.  Below this density the
-    # sparse representation remains the appropriate default numerical path.
-    _DENSE_MIN_DENSITY = 0.50
-
-    # Estimated peak for one persistent dense matrix plus one LAPACK work copy.
-    # This is a numerical-memory guard, not a model-order or benchmark limit.
-    _DENSE_MAX_ESTIMATED_BYTES = 2 * 1024**3
-
-    def __init__(
-        self,
-        *,
-        relative_tolerance: float = 1.0e-9,
-        absolute_tolerance: float = 1.0e-8,
-        constraint_tolerance: float = 1.0e-8,
-    ) -> None:
-        for name, value in (
-            ("relative_tolerance", relative_tolerance),
-            ("absolute_tolerance", absolute_tolerance),
-            ("constraint_tolerance", constraint_tolerance),
-        ):
-            value = float(value)
-
-            if not np.isfinite(value) or value <= 0.0:
-                raise ValueError(
-                    f"{name} must be finite and positive"
-                )
-
-        self.relative_tolerance = float(relative_tolerance)
-        self.absolute_tolerance = float(absolute_tolerance)
-        self.constraint_tolerance = float(constraint_tolerance)
+    def __init__(self, *, equilibration_iterations: int = 8):
+        equilibration_iterations = int(equilibration_iterations)
+        if equilibration_iterations < 1:
+            raise ValueError("equilibration_iterations must be >= 1")
+        self.equilibration_iterations = equilibration_iterations
 
     @staticmethod
-    def _direct_sparse_solve(matrix, rhs: np.ndarray) -> np.ndarray:
+    def _sha256_array(array) -> str:
+        """Return SHA256 of the exact contiguous bytes of a NumPy array."""
+        values = np.ascontiguousarray(array)
+        return hashlib.sha256(values.view(np.uint8)).hexdigest()
+
+    @staticmethod
+    def _positive_min_max(values) -> tuple[float, float, int]:
+        values = np.asarray(values, dtype=float).ravel()
+        positive = values[values > 0.0]
+        if positive.size == 0:
+            return 0.0, 0.0, int(values.size)
+        return (
+            float(np.min(positive)),
+            float(np.max(positive)),
+            int(values.size - positive.size),
+        )
+
+    @staticmethod
+    def _sparse_abs_min_max(matrix) -> tuple[float, float]:
+        """Return nonzero absolute extrema without copying all matrix data."""
+        data = np.asarray(matrix.data, dtype=float)
+        if data.size == 0:
+            return 0.0, 0.0
+
+        minimum = np.inf
+        maximum = 0.0
+        chunk_size = 1_000_000
+        for start in range(0, data.size, chunk_size):
+            chunk = np.abs(data[start:start + chunk_size])
+            active = chunk[chunk > 0.0]
+            if active.size:
+                minimum = min(minimum, float(np.min(active)))
+                maximum = max(maximum, float(np.max(active)))
+
+        if not np.isfinite(minimum):
+            return 0.0, 0.0
+        return float(minimum), float(maximum)
+
+    @staticmethod
+    def _sparse_axis_l2(matrix, *, axis: int) -> np.ndarray:
+        matrix = matrix.tocsr()
+        data = np.asarray(matrix.data, dtype=float)
+
+        if axis == 1:
+            result = np.zeros(matrix.shape[0], dtype=float)
+            for row in range(matrix.shape[0]):
+                start = int(matrix.indptr[row])
+                stop = int(matrix.indptr[row + 1])
+                result[row] = np.linalg.norm(data[start:stop])
+            return result
+
+        if axis == 0:
+            squared_sums = np.zeros(matrix.shape[1], dtype=float)
+            chunk_size = 1_000_000
+            for start in range(0, data.size, chunk_size):
+                stop = min(start + chunk_size, data.size)
+                squared_sums += np.bincount(
+                    matrix.indices[start:stop],
+                    weights=data[start:stop] ** 2,
+                    minlength=matrix.shape[1],
+                )
+            return np.sqrt(squared_sums)
+
+        raise ValueError("axis must be 0 or 1")
+
+    @staticmethod
+    def _summary(values) -> tuple[float, float, float]:
+        values = np.asarray(values, dtype=float).ravel()
+        if values.size == 0:
+            return 0.0, 0.0, 0.0
+        return (
+            float(np.min(values)),
+            float(np.median(values)),
+            float(np.max(values)),
+        )
+
+    @staticmethod
+    def _matrix_value_profile(matrix) -> dict:
+        """Return an algebra-agnostic profile of stored matrix magnitudes."""
+        matrix = matrix.tocsr()
+        data = np.asarray(matrix.data)
+        decade_counts: dict[int, int] = {}
+        exact_zero_count = 0
+        nonfinite_count = 0
+        nonzero_count = 0
+        absolute_minimum = np.inf
+        absolute_maximum = 0.0
+
+        chunk_size = 1_000_000
+        for start in range(0, data.size, chunk_size):
+            values = np.asarray(data[start:start + chunk_size])
+            finite = np.isfinite(values)
+            nonfinite_count += int(values.size - np.count_nonzero(finite))
+            finite_absolute = np.abs(values[finite])
+            exact_zero_count += int(np.count_nonzero(finite_absolute == 0.0))
+            active = finite_absolute[finite_absolute > 0.0]
+            if active.size == 0:
+                continue
+
+            nonzero_count += int(active.size)
+            absolute_minimum = min(absolute_minimum, float(np.min(active)))
+            absolute_maximum = max(absolute_maximum, float(np.max(active)))
+            decades = np.floor(np.log10(active)).astype(np.int64)
+            unique, counts = np.unique(decades, return_counts=True)
+            for decade, count in zip(unique, counts):
+                key = int(decade)
+                decade_counts[key] = decade_counts.get(key, 0) + int(count)
+
+        if not np.isfinite(absolute_minimum):
+            absolute_minimum = 0.0
+
+        total_entries = int(matrix.shape[0]) * int(matrix.shape[1])
+        return {
+            "decade_counts": decade_counts,
+            "stored_count": int(matrix.nnz),
+            "nonzero_count": nonzero_count,
+            "exact_zero_count": exact_zero_count,
+            "implicit_zero_count": total_entries - int(matrix.nnz),
+            "nonfinite_count": nonfinite_count,
+            "absolute_minimum": absolute_minimum,
+            "absolute_maximum": absolute_maximum,
+        }
+
+    @staticmethod
+    def _print_matrix_value_distribution(
+        matrix,
+        *,
+        label: str,
+        profile: dict | None = None,
+    ) -> None:
+        """Describe stored values of one matrix without changing the matrix.
+
+        The analysis is deliberately algebra-agnostic: it uses neither block
+        boundaries nor physical meanings.  Absolute nonzero values are counted
+        by decimal decade.  No threshold is selected and no entry is removed.
+        """
+        matrix = matrix.tocsr()
+        if profile is None:
+            profile = AugmentedSparseLinearSolver._matrix_value_profile(matrix)
+        decade_counts = profile["decade_counts"]
+        nonzero_count = int(profile["nonzero_count"])
+        print(
+            "[matrix-values] "
+            f"label={label} shape={matrix.shape} "
+            f"stored={profile['stored_count']} "
+            f"nonzero={nonzero_count} "
+            f"explicit_zeros={profile['exact_zero_count']} "
+            f"implicit_zeros={profile['implicit_zero_count']} "
+            f"nonfinite={profile['nonfinite_count']} "
+            f"abs_nonzero_min={profile['absolute_minimum']:.12e} "
+            f"abs_nonzero_max={profile['absolute_maximum']:.12e}",
+            flush=True,
+        )
+
+        if not decade_counts:
+            print(
+                f"[matrix-values] label={label} decades=none",
+                flush=True,
+            )
+            return
+
+        minimum_decade = min(decade_counts)
+        maximum_decade = max(decade_counts)
+        for decade in range(minimum_decade, maximum_decade + 1):
+            count = decade_counts.get(decade, 0)
+            fraction = (
+                float(count) / float(nonzero_count)
+                if nonzero_count > 0
+                else 0.0
+            )
+            print(
+                "[matrix-values] "
+                f"label={label} decade=1e{decade:+d} "
+                f"count={count} fraction_nonzero={fraction:.12e}",
+                flush=True,
+            )
+
+    @staticmethod
+    def _print_structural_matrix_diagnostic(system) -> None:
+        """Report scale and independence indicators for K, A, and KKT."""
+        K = system.original_system.stiffness.tocsr()
+        A = np.asarray(system.constraints.matrix, dtype=float)
+        M = system.matrix.tocsr()
+
+        k_abs_min, k_abs_max = AugmentedSparseLinearSolver._sparse_abs_min_max(K)
+        k_row = AugmentedSparseLinearSolver._sparse_axis_l2(K, axis=1)
+        k_col = AugmentedSparseLinearSolver._sparse_axis_l2(K, axis=0)
+        k_diag = np.abs(np.asarray(K.diagonal(), dtype=float))
+        k_diag_min, k_diag_max, k_diag_zeros = (
+            AugmentedSparseLinearSolver._positive_min_max(k_diag)
+        )
+        k_fro = float(np.linalg.norm(np.asarray(K.data, dtype=float)))
+
+        print(
+            "[matrix-diagnostic] K "
+            f"shape={K.shape} nnz={K.nnz} "
+            f"abs_nonzero_min={k_abs_min:.12e} "
+            f"abs_nonzero_max={k_abs_max:.12e} "
+            f"frobenius={k_fro:.12e} "
+            f"diag_abs_positive_min={k_diag_min:.12e} "
+            f"diag_abs_max={k_diag_max:.12e} "
+            f"diag_zeros={k_diag_zeros}",
+            flush=True,
+        )
+        print(
+            "[matrix-diagnostic] K norms "
+            "row_l2_min_median_max="
+            f"{AugmentedSparseLinearSolver._summary(k_row)} "
+            "col_l2_min_median_max="
+            f"{AugmentedSparseLinearSolver._summary(k_col)}",
+            flush=True,
+        )
+
+        a_abs = np.abs(A)
+        a_nonzero = a_abs[a_abs > 0.0]
+        a_abs_min = float(np.min(a_nonzero)) if a_nonzero.size else 0.0
+        a_abs_max = float(np.max(a_nonzero)) if a_nonzero.size else 0.0
+        a_row = np.linalg.norm(A, axis=1)
+        a_col = np.linalg.norm(A, axis=0)
+        a_fro = float(np.linalg.norm(A))
+
+        gram = np.asarray(A @ A.T, dtype=float)
+        gram = 0.5 * (gram + gram.T)
+        eigenvalues = np.linalg.eigvalsh(gram)
+        eigenvalues[eigenvalues < 0.0] = 0.0
+        singular_values = np.sqrt(eigenvalues)
+        sigma_max = float(singular_values[-1]) if singular_values.size else 0.0
+        rank_tolerance = (
+            max(A.shape) * np.finfo(float).eps * sigma_max
+        )
+        numerical_rank = int(np.count_nonzero(singular_values > rank_tolerance))
+        positive_sigma = singular_values[singular_values > rank_tolerance]
+        sigma_min = float(positive_sigma[0]) if positive_sigma.size else 0.0
+        condition = (
+            float(sigma_max / sigma_min)
+            if sigma_min > 0.0
+            else float("inf")
+        )
+
+        print(
+            "[matrix-diagnostic] A "
+            f"shape={A.shape} nnz={int(np.count_nonzero(A))} "
+            f"abs_nonzero_min={a_abs_min:.12e} "
+            f"abs_nonzero_max={a_abs_max:.12e} "
+            f"frobenius={a_fro:.12e} "
+            f"row_l2_min_median_max={AugmentedSparseLinearSolver._summary(a_row)} "
+            f"col_l2_min_median_max={AugmentedSparseLinearSolver._summary(a_col)}",
+            flush=True,
+        )
+        print(
+            "[matrix-diagnostic] A spectrum "
+            f"numerical_rank={numerical_rank}/{A.shape[0]} "
+            f"rank_tolerance={rank_tolerance:.12e} "
+            f"sigma_min={sigma_min:.12e} "
+            f"sigma_max={sigma_max:.12e} "
+            f"condition={condition:.12e}",
+            flush=True,
+        )
+
+        m_abs_min, m_abs_max = AugmentedSparseLinearSolver._sparse_abs_min_max(M)
+        m_row = AugmentedSparseLinearSolver._sparse_axis_l2(M, axis=1)
+        m_fro = float(np.linalg.norm(np.asarray(M.data, dtype=float)))
+        block_ratio = float(k_fro / a_fro) if a_fro > 0.0 else float("inf")
+        print(
+            "[matrix-diagnostic] KKT "
+            f"shape={M.shape} nnz={M.nnz} "
+            f"abs_nonzero_min={m_abs_min:.12e} "
+            f"abs_nonzero_max={m_abs_max:.12e} "
+            f"frobenius={m_fro:.12e} "
+            f"row_l2_min_median_max={AugmentedSparseLinearSolver._summary(m_row)} "
+            f"K_to_A_frobenius_ratio={block_ratio:.12e}",
+            flush=True,
+        )
+
+    @staticmethod
+    def _write_pre_spsolve_checkpoint(matrix, rhs: np.ndarray) -> None:
+        """Persist the exact matrix and RHS immediately before ``spsolve``."""
+        root_text = os.environ.get("CSF_CUF_KKT_CHECKPOINT_DIR")
+        root = (
+            Path(root_text).expanduser()
+            if root_text
+            else Path.cwd() / "diagnostics" / "kkt_checkpoint"
+        )
+        root.mkdir(parents=True, exist_ok=True)
+
+        matrix_path = root / "kkt_matrix.npz"
+        rhs_path = root / "rhs.npy"
+
+        save_npz(
+            matrix_path,
+            matrix,
+            compressed=False,
+        )
+        np.save(
+            rhs_path,
+            rhs,
+            allow_pickle=False,
+        )
+
+        print(
+            "[diagnostic-v3] pre-spsolve checkpoint saved: "
+            f"matrix={matrix_path} rhs={rhs_path} "
+            f"shape={matrix.shape} nnz={matrix.nnz} "
+            f"data_dtype={matrix.data.dtype} "
+            f"indices_dtype={matrix.indices.dtype} "
+            f"indptr_dtype={matrix.indptr.dtype} "
+            f"rhs_dtype={rhs.dtype} "
+            f"has_sorted_indices={matrix.has_sorted_indices} "
+            f"has_canonical_format={matrix.has_canonical_format}"
+        )
+
+        print(
+            "[diagnostic-v3] SHA256 "
+            f"indptr={AugmentedSparseLinearSolver._sha256_array(matrix.indptr)} "
+            f"indices={AugmentedSparseLinearSolver._sha256_array(matrix.indices)} "
+            f"data={AugmentedSparseLinearSolver._sha256_array(matrix.data)} "
+            f"rhs={AugmentedSparseLinearSolver._sha256_array(rhs)}"
+        )
+
+    @staticmethod
+    def _direct_sparse_solve(
+        matrix,
+        rhs: np.ndarray,
+        *,
+        primal_size: int,
+        equilibration_iterations: int,
+    ) -> np.ndarray:
         """Solve one sparse linear system and promote rank warnings to errors."""
         with warnings.catch_warnings():
             warnings.simplefilter(
@@ -114,13 +417,155 @@ class AugmentedSparseLinearSolver:
             )
 
             try:
-                solution = np.asarray(
-                    spsolve(
-                        matrix,
-                        rhs,
-                    ),
+                AugmentedSparseLinearSolver._write_pre_spsolve_checkpoint(
+                    matrix,
+                    rhs,
+                )
+                from scipy.linalg import norm
+                from scipy.linalg.lapack import get_lapack_funcs
+
+                matrix_dense = np.asarray(matrix.toarray(), dtype=float)
+
+                getrf, getrs, gecon = get_lapack_funcs(
+                    ("getrf", "getrs", "gecon"),
+                    (matrix_dense,),
+                )
+
+                original_norm = float(norm(matrix_dense, 1))
+                original_lu, original_piv, original_info = getrf(
+                    matrix_dense.copy(),
+                    overwrite_a=True,
+                )
+                if original_info != 0:
+                    raise RuntimeError(
+                        f"original KKT LU factorization failed with info={original_info}"
+                    )
+                original_rcond, original_info = gecon(
+                    original_lu,
+                    original_norm,
+                    norm="1",
+                )
+                if original_info != 0:
+                    raise RuntimeError(
+                        f"original KKT condition estimate failed with info={original_info}"
+                    )
+
+                if float(original_rcond) < np.finfo(float).eps:
+                    warnings.warn(
+                        "Original KKT matrix is ill-conditioned "
+                        f"(rcond={float(original_rcond):.5e}): "
+                        "equilibration will be applied before the solve.",
+                        LinAlgWarning,
+                        stacklevel=2,
+                    )
+                del original_lu, original_piv, matrix_dense
+
+                equilibrated = matrix.copy().tocsr()
+                equilibrated_rhs = np.asarray(rhs, dtype=float).copy()
+                accumulated_scale = np.ones(matrix.shape[0], dtype=float)
+
+                for _ in range(equilibration_iterations):
+                    row_max = np.asarray(
+                        abs(equilibrated).max(axis=1).toarray(),
+                        dtype=float,
+                    ).ravel()
+                    step = np.ones_like(row_max)
+                    active = row_max > 0.0
+                    step[active] = 1.0 / np.sqrt(row_max[active])
+                    D = diags(step, offsets=0, format="csr")
+                    equilibrated = (D @ equilibrated @ D).tocsr()
+                    equilibrated_rhs *= step
+                    accumulated_scale *= step
+
+                distribution_enabled = os.environ.get(
+                    "CSF_CUF_MATRIX_VALUE_DISTRIBUTION",
+                    "",
+                ).strip().lower() in {"1", "true", "yes", "on"}
+                value_profile = None
+                if distribution_enabled:
+                    value_profile = (
+                        AugmentedSparseLinearSolver._matrix_value_profile(
+                            equilibrated
+                        )
+                    )
+
+                if distribution_enabled:
+                    AugmentedSparseLinearSolver._print_matrix_value_distribution(
+                        equilibrated,
+                        label="final-equilibrated-matrix",
+                        profile=value_profile,
+                    )
+
+                equilibrated_dense = np.asarray(
+                    equilibrated.toarray(),
                     dtype=float,
                 )
+                equilibrated_norm = float(norm(equilibrated_dense, 1))
+                equilibrated_lu, equilibrated_piv, equilibrated_info = getrf(
+                    equilibrated_dense,
+                    overwrite_a=True,
+                )
+                if equilibrated_info != 0:
+                    raise RuntimeError(
+                        "equilibrated KKT LU factorization failed "
+                        f"with info={equilibrated_info}"
+                    )
+                equilibrated_rcond, equilibrated_info = gecon(
+                    equilibrated_lu,
+                    equilibrated_norm,
+                    norm="1",
+                )
+                if equilibrated_info != 0:
+                    raise RuntimeError(
+                        "equilibrated KKT condition estimate failed "
+                        f"with info={equilibrated_info}"
+                    )
+
+                scaled_solution, solve_info = getrs(
+                    equilibrated_lu,
+                    equilibrated_piv,
+                    equilibrated_rhs,
+                    trans=0,
+                    overwrite_b=False,
+                )
+                if solve_info != 0:
+                    raise RuntimeError(
+                        f"equilibrated KKT solve failed with info={solve_info}"
+                    )
+
+                solution = np.asarray(
+                    accumulated_scale * scaled_solution,
+                    dtype=float,
+                )
+
+                print(
+                    "[kkt-equilibration] "
+                    f"iterations={equilibration_iterations} "
+                    f"iterations_requested={equilibration_iterations} "
+                    f"iterations_performed={equilibration_iterations} "
+                    f"original_rcond={float(original_rcond):.12e} "
+                    f"equilibrated_rcond={float(equilibrated_rcond):.12e} "
+                    f"scale_min={float(np.min(accumulated_scale)):.12e} "
+                    f"scale_max={float(np.max(accumulated_scale)):.12e}",
+                    flush=True,
+                )
+                primal_scale = accumulated_scale[:primal_size]
+                multiplier_scale = accumulated_scale[primal_size:]
+                print(
+                    "[matrix-diagnostic] equilibration-scales "
+                    "primal_min_median_max="
+                    f"{AugmentedSparseLinearSolver._summary(primal_scale)} "
+                    "multiplier_min_median_max="
+                    f"{AugmentedSparseLinearSolver._summary(multiplier_scale)}",
+                    flush=True,
+                )
+                #solution = np.asarray(
+                #    spsolve(
+                #        matrix,
+                #        rhs,
+                #    ),
+                #    dtype=float,
+                #)
             except MatrixRankWarning as exc:
                 raise RuntimeError(
                     "augmented linear system is rank deficient"
@@ -139,497 +584,98 @@ class AugmentedSparseLinearSolver:
         return solution
 
     @staticmethod
-    def _direct_dense_solve(
-        dense_matrix: np.ndarray,
+    def _verification(
+        matrix,
+        solution: np.ndarray,
         rhs: np.ndarray,
-        *,
-        assume_a: str,
-    ) -> tuple[np.ndarray, list[str]]:
-        """Solve a dense system and retain LAPACK ill-conditioning warnings."""
-        work_matrix = np.array(
-            dense_matrix,
+    ) -> tuple[np.ndarray, float, float, float]:
+        """
+        Verify the solved complete linear system without acceptance thresholds.
+
+        For the complete system M x = d, one residual is retained for every
+        equation:
+
+            r = M x - d
+
+        The residual population is summarized by its arithmetic mean and its
+        population standard deviation.
+
+        For each active sparse coefficient M_ij, the corresponding equation
+        term is
+
+            t_ij = M_ij * x_j
+
+        The population standard deviation of all active t_ij values is reported
+        as the equation-term scale.  Implicit zero coefficients are not counted:
+        they are not terms participating in the assembled sparse equations.
+        """
+        residuals = np.asarray(
+            matrix @ solution - rhs,
             dtype=float,
-            order="F",
-            copy=True,
         )
-        work_rhs = np.asarray(
-            rhs,
-            dtype=float,
-        ).copy()
 
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always", LinAlgWarning)
-
-            try:
-                solution = np.asarray(
-                    dense_solve(
-                        work_matrix,
-                        work_rhs,
-                        assume_a=assume_a,
-                        overwrite_a=True,
-                        overwrite_b=True,
-                        check_finite=False,
-                    ),
-                    dtype=float,
-                )
-            except LinAlgError as exc:
-                raise RuntimeError(
-                    f"dense LAPACK solve failed for assume_a={assume_a!r}"
-                ) from exc
-
-        warning_messages = [
-            str(item.message)
-            for item in caught
-            if issubclass(item.category, LinAlgWarning)
-        ]
-
-        if solution.shape != rhs.shape:
+        if residuals.shape != rhs.shape:
             raise RuntimeError(
-                "dense augmented solver returned an unexpected solution shape"
+                "algebraic verification returned an unexpected residual shape"
             )
 
-        if not np.all(np.isfinite(solution)):
+        if not np.all(np.isfinite(residuals)):
             raise RuntimeError(
-                "dense augmented solver returned non-finite values"
+                "algebraic verification produced non-finite residuals"
             )
 
-        return solution, warning_messages
-
-    @classmethod
-    def _dense_path_status(cls, matrix) -> tuple[bool, float, int]:
-        """Return whether dense storage is appropriate for this matrix."""
-        n = int(matrix.shape[0])
-        total_entries = n * n
-        density = (
-            float(matrix.nnz) / float(total_entries)
-            if total_entries > 0
+        residual_mean = (
+            float(np.mean(residuals))
+            if residuals.size
+            else 0.0
+        )
+        residual_standard_deviation = (
+            float(np.std(residuals, ddof=0))
+            if residuals.size
             else 0.0
         )
 
-        # One retained dense matrix plus one factorization work copy.
-        estimated_bytes = 2 * total_entries * np.dtype(float).itemsize
-
-        allowed = (
-            density >= cls._DENSE_MIN_DENSITY
-            and estimated_bytes <= cls._DENSE_MAX_ESTIMATED_BYTES
-        )
-
-        return allowed, density, estimated_bytes
-
-    @staticmethod
-    def _safe_key(name: str) -> str:
-        """Return a stable NumPy-archive key from a solver-candidate label."""
-        key = re.sub(r"[^0-9A-Za-z]+", "_", str(name)).strip("_").lower()
-        return key or "candidate"
-
-    @staticmethod
-    def _positive_range(values: np.ndarray) -> dict:
-        """Return min/max/dynamic-range statistics for nonzero finite magnitudes."""
-        magnitude = np.abs(np.asarray(values, dtype=float).ravel())
-        valid = magnitude[np.isfinite(magnitude) & (magnitude > 0.0)]
-
-        if valid.size == 0:
-            return {
-                "min_abs_nonzero": None,
-                "max_abs": 0.0,
-                "dynamic_range": None,
-            }
-
-        minimum = float(np.min(valid))
-        maximum = float(np.max(valid))
-        return {
-            "min_abs_nonzero": minimum,
-            "max_abs": maximum,
-            "dynamic_range": (
-                maximum / minimum
-                if minimum > 0.0
-                else None
-            ),
-        }
-
-    @staticmethod
-    def _top_indices(values: np.ndarray, count: int = 20) -> list[int]:
-        """Indices of the largest absolute entries, ordered descending."""
-        values = np.asarray(values, dtype=float).ravel()
-        if values.size == 0:
-            return []
-
-        count = min(int(count), int(values.size))
-        absolute = np.abs(values)
-
-        if count == values.size:
-            indices = np.arange(values.size)
+        # In CSR format, matrix.data[k] belongs to column matrix.indices[k].
+        # Therefore every stored coefficient contributes exactly one active
+        # equation term M_ij * x_j.
+        if matrix.nnz:
+            equation_terms = (
+                np.asarray(matrix.data, dtype=float)
+                * solution[np.asarray(matrix.indices, dtype=int)]
+            )
+            equation_term_scale = float(
+                np.std(equation_terms, ddof=0)
+            )
         else:
-            indices = np.argpartition(absolute, -count)[-count:]
+            equation_term_scale = 0.0
 
-        order = np.argsort(absolute[indices])[::-1]
-        return [int(index) for index in indices[order]]
+        if not np.isfinite(residual_mean):
+            raise RuntimeError(
+                "algebraic verification produced a non-finite residual mean"
+            )
+        if not np.isfinite(residual_standard_deviation):
+            raise RuntimeError(
+                "algebraic verification produced a non-finite residual standard deviation"
+            )
+        if not np.isfinite(equation_term_scale):
+            raise RuntimeError(
+                "algebraic verification produced a non-finite equation-term scale"
+            )
 
-    @staticmethod
-    def _symmetry_metrics_dense(
-        dense_matrix: np.ndarray | None,
-        *,
-        chunk_rows: int = 128,
-    ) -> dict:
-        """Measure symmetry without allocating a second full dense matrix."""
-        if dense_matrix is None:
-            return {
-                "available": False,
-                "max_abs_defect": None,
-                "relative_frobenius_defect": None,
-            }
+        residuals.setflags(write=False)
 
-        n = int(dense_matrix.shape[0])
-        defect_sq = 0.0
-        reference_sq = float(
-            np.dot(dense_matrix.ravel(order="K"), dense_matrix.ravel(order="K"))
+        return (
+            residuals,
+            residual_mean,
+            residual_standard_deviation,
+            equation_term_scale,
         )
-        max_abs_defect = 0.0
-
-        for start in range(0, n, int(chunk_rows)):
-            stop = min(start + int(chunk_rows), n)
-            difference = (
-                dense_matrix[start:stop, :]
-                - dense_matrix[:, start:stop].T
-            )
-            if difference.size:
-                max_abs_defect = max(
-                    max_abs_defect,
-                    float(np.max(np.abs(difference))),
-                )
-                defect_sq += float(
-                    np.dot(difference.ravel(), difference.ravel())
-                )
-
-        return {
-            "available": True,
-            "max_abs_defect": max_abs_defect,
-            "relative_frobenius_defect": (
-                float(np.sqrt(defect_sq / reference_sq))
-                if reference_sq > 0.0
-                else 0.0
-            ),
-        }
-
-    def _write_failure_diagnostics(
-        self,
-        *,
-        matrix,
-        rhs: np.ndarray,
-        K,
-        f: np.ndarray,
-        A: np.ndarray,
-        b: np.ndarray,
-        candidates: list[tuple],
-        dense_warnings: dict[str, list[str]],
-        dense_errors: list[str],
-        reason: str,
-        dense_matrix: np.ndarray | None,
-        best_name: str | None,
-    ) -> Path | None:
-        """Persist the failed KKT system and detailed residual diagnostics."""
-        try:
-            timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
-            primal_size = int(K.shape[0])
-            constraint_count = int(A.shape[0])
-            augmented_size = int(matrix.shape[0])
-
-            root_text = os.environ.get("CSF_CUF_DIAGNOSTICS_DIR")
-            root = (
-                Path(root_text).expanduser()
-                if root_text
-                else Path.cwd() / "diagnostics"
-            )
-            folder = root / (
-                f"kkt_failure_q{primal_size}_c{constraint_count}_{timestamp}"
-            )
-            folder.mkdir(parents=True, exist_ok=False)
-
-            # The sparse checkpoint is the authoritative system to reuse in all
-            # later solver experiments.  No re-assembly is required.
-            save_npz(
-                folder / "kkt_matrix.npz",
-                matrix.tocsr(),
-                compressed=True,
-            )
-            np.save(folder / "rhs.npy", np.asarray(rhs, dtype=float))
-
-            # Work from one absolute-value data vector instead of copying the
-            # whole sparse matrix; this keeps the diagnostic memory overhead
-            # bounded even when the KKT matrix is already very dense.
-            abs_data = np.abs(matrix.data)
-            row_abs_sum = np.zeros(augmented_size, dtype=float)
-            row_max_abs = np.zeros(augmented_size, dtype=float)
-            for row in range(augmented_size):
-                start = int(matrix.indptr[row])
-                stop = int(matrix.indptr[row + 1])
-                if stop > start:
-                    row_values = abs_data[start:stop]
-                    row_abs_sum[row] = float(np.sum(row_values))
-                    row_max_abs[row] = float(np.max(row_values))
-
-            if matrix.nnz:
-                col_abs_sum = np.bincount(
-                    matrix.indices,
-                    weights=abs_data,
-                    minlength=augmented_size,
-                ).astype(float, copy=False)
-                col_max_abs = np.zeros(augmented_size, dtype=float)
-                np.maximum.at(
-                    col_max_abs,
-                    matrix.indices,
-                    abs_data,
-                )
-            else:
-                col_abs_sum = np.zeros(augmented_size, dtype=float)
-                col_max_abs = np.zeros(augmented_size, dtype=float)
-
-            del abs_data
-
-            np.savez_compressed(
-                folder / "row_col_scales.npz",
-                row_max_abs=row_max_abs,
-                col_max_abs=col_max_abs,
-                row_abs_sum=row_abs_sum,
-                col_abs_sum=col_abs_sum,
-            )
-
-            symmetry = self._symmetry_metrics_dense(dense_matrix)
-            matrix_range = self._positive_range(matrix.data)
-            stiffness_range = self._positive_range(K.data)
-            constraint_range = self._positive_range(A)
-            rhs_range = self._positive_range(rhs)
-
-            candidate_arrays = {}
-            candidate_metadata = []
-            report_lines = [
-                "OPT-08 KKT FAILURE DIAGNOSTICS",
-                "================================",
-                "",
-                f"reason: {reason}",
-                f"timestamp_utc: {timestamp}",
-                f"augmented_size: {augmented_size}",
-                f"primal_size: {primal_size}",
-                f"constraint_count: {constraint_count}",
-                f"nnz: {int(matrix.nnz)}",
-                f"density: {float(matrix.nnz) / max(augmented_size * augmented_size, 1):.12g}",
-                f"relative_tolerance: {self.relative_tolerance:.16e}",
-                f"absolute_tolerance: {self.absolute_tolerance:.16e}",
-                f"constraint_tolerance: {self.constraint_tolerance:.16e}",
-                f"best_candidate: {best_name or 'none'}",
-                "",
-                "MATRIX / BLOCK SCALES",
-                "---------------------",
-                f"||KKT||_1: {float(np.max(col_abs_sum)) if col_abs_sum.size else 0.0:.16e}",
-                f"||KKT||_inf: {float(np.max(row_abs_sum)) if row_abs_sum.size else 0.0:.16e}",
-                f"||KKT||_F: {float(np.linalg.norm(matrix.data)):.16e}",
-                f"||rhs||_2: {float(np.linalg.norm(rhs)):.16e}",
-                f"||f||_2: {float(np.linalg.norm(f)):.16e}",
-                f"||b||_2: {float(np.linalg.norm(b)):.16e}",
-                f"KKT min|a_ij| nonzero: {matrix_range['min_abs_nonzero']}",
-                f"KKT max|a_ij|: {matrix_range['max_abs']}",
-                f"KKT coefficient dynamic range: {matrix_range['dynamic_range']}",
-                f"K min|k_ij| nonzero: {stiffness_range['min_abs_nonzero']}",
-                f"K max|k_ij|: {stiffness_range['max_abs']}",
-                f"K coefficient dynamic range: {stiffness_range['dynamic_range']}",
-                f"C min|c_ij| nonzero: {constraint_range['min_abs_nonzero']}",
-                f"C max|c_ij|: {constraint_range['max_abs']}",
-                f"C coefficient dynamic range: {constraint_range['dynamic_range']}",
-                f"symmetry available: {symmetry['available']}",
-                f"max|KKT-KKT^T|: {symmetry['max_abs_defect']}",
-                f"||KKT-KKT^T||_F / ||KKT||_F: {symmetry['relative_frobenius_defect']}",
-                "",
-                "ROW SCALE EXTREMES",
-                "------------------",
-            ]
-
-            largest_rows = self._top_indices(row_max_abs, 20)
-            positive_rows = np.flatnonzero(row_max_abs > 0.0)
-            smallest_rows = (
-                positive_rows[np.argsort(row_max_abs[positive_rows])[:20]].tolist()
-                if positive_rows.size
-                else []
-            )
-
-            report_lines.append("largest max-abs row coefficients:")
-            for index in largest_rows:
-                block = "equilibrium" if index < primal_size else "constraint"
-                local = index if index < primal_size else index - primal_size
-                report_lines.append(
-                    f"  row={index:6d} block={block:11s} local={local:6d} "
-                    f"max_abs={row_max_abs[index]:.16e} "
-                    f"abs_sum={row_abs_sum[index]:.16e}"
-                )
-
-            report_lines.append("smallest nonzero max-abs row coefficients:")
-            for index in smallest_rows:
-                index = int(index)
-                block = "equilibrium" if index < primal_size else "constraint"
-                local = index if index < primal_size else index - primal_size
-                report_lines.append(
-                    f"  row={index:6d} block={block:11s} local={local:6d} "
-                    f"max_abs={row_max_abs[index]:.16e} "
-                    f"abs_sum={row_abs_sum[index]:.16e}"
-                )
-
-            report_lines.extend([
-                "",
-                "SOLVER CANDIDATES",
-                "-----------------",
-            ])
-
-            for name, solution, metrics in candidates:
-                key = self._safe_key(name)
-                q_local, lagrange_local = metrics[0], metrics[1]
-                augmented_residual = matrix @ solution - rhs
-                equilibrium_residual = K @ q_local + A.T @ lagrange_local - f
-                constraint_residual = A @ q_local - b
-
-                candidate_arrays[f"{key}_solution"] = np.asarray(solution, dtype=float)
-                candidate_arrays[f"{key}_augmented_residual"] = np.asarray(
-                    augmented_residual,
-                    dtype=float,
-                )
-                candidate_arrays[f"{key}_equilibrium_residual"] = np.asarray(
-                    equilibrium_residual,
-                    dtype=float,
-                )
-                candidate_arrays[f"{key}_constraint_residual"] = np.asarray(
-                    constraint_residual,
-                    dtype=float,
-                )
-
-                warnings_for_candidate = list(dense_warnings.get(name, []))
-                candidate_metadata.append({
-                    "name": name,
-                    "augmented_residual_norm": float(metrics[2]),
-                    "augmented_relative_residual": float(metrics[3]),
-                    "equilibrium_residual_norm": float(metrics[4]),
-                    "equilibrium_relative_residual": float(metrics[5]),
-                    "constraint_residual_norm": float(metrics[6]),
-                    "converged": bool(metrics[7]),
-                    "solution_norm_2": float(np.linalg.norm(solution)),
-                    "primal_norm_2": float(np.linalg.norm(q_local)),
-                    "lagrange_norm_2": float(np.linalg.norm(lagrange_local)),
-                    "warnings": warnings_for_candidate,
-                })
-
-                report_lines.extend([
-                    "",
-                    f"[{name}]",
-                    f"  augmented_norm: {metrics[2]:.16e}",
-                    f"  augmented_rel: {metrics[3]:.16e}",
-                    f"  equilibrium_norm: {metrics[4]:.16e}",
-                    f"  equilibrium_rel: {metrics[5]:.16e}",
-                    f"  constraint_norm: {metrics[6]:.16e}",
-                    f"  ||solution||_2: {float(np.linalg.norm(solution)):.16e}",
-                    f"  ||q||_2: {float(np.linalg.norm(q_local)):.16e}",
-                    f"  ||lambda||_2: {float(np.linalg.norm(lagrange_local)):.16e}",
-                ])
-
-                for warning_message in warnings_for_candidate:
-                    report_lines.append(f"  warning: {warning_message}")
-
-                report_lines.append("  largest augmented residual equations:")
-                for index in self._top_indices(augmented_residual, 20):
-                    block = "equilibrium" if index < primal_size else "constraint"
-                    local = index if index < primal_size else index - primal_size
-                    report_lines.append(
-                        f"    row={index:6d} block={block:11s} local={local:6d} "
-                        f"residual={augmented_residual[index]: .16e} "
-                        f"abs={abs(augmented_residual[index]):.16e}"
-                    )
-
-                report_lines.append("  largest equilibrium residual DOFs:")
-                for index in self._top_indices(equilibrium_residual, 20):
-                    report_lines.append(
-                        f"    dof={index:6d} residual={equilibrium_residual[index]: .16e} "
-                        f"abs={abs(equilibrium_residual[index]):.16e}"
-                    )
-
-                report_lines.append("  largest constraint residual equations:")
-                for index in self._top_indices(constraint_residual, 20):
-                    report_lines.append(
-                        f"    constraint={index:6d} residual={constraint_residual[index]: .16e} "
-                        f"abs={abs(constraint_residual[index]):.16e}"
-                    )
-
-            np.savez_compressed(
-                folder / "candidate_solutions_and_residuals.npz",
-                **candidate_arrays,
-            )
-
-            metadata = {
-                "version": "OPT-08 KKT DIAGNOSTICS AND CHECKPOINT",
-                "timestamp_utc": timestamp,
-                "reason": reason,
-                "best_candidate": best_name,
-                "sizes": {
-                    "augmented": augmented_size,
-                    "primal": primal_size,
-                    "constraints": constraint_count,
-                },
-                "sparsity": {
-                    "nnz": int(matrix.nnz),
-                    "density": float(matrix.nnz) / max(augmented_size * augmented_size, 1),
-                },
-                "tolerances": {
-                    "relative": self.relative_tolerance,
-                    "absolute": self.absolute_tolerance,
-                    "constraint": self.constraint_tolerance,
-                },
-                "norms": {
-                    "kkt_1": float(np.max(col_abs_sum)) if col_abs_sum.size else 0.0,
-                    "kkt_inf": float(np.max(row_abs_sum)) if row_abs_sum.size else 0.0,
-                    "kkt_fro": float(np.linalg.norm(matrix.data)),
-                    "rhs_2": float(np.linalg.norm(rhs)),
-                    "load_2": float(np.linalg.norm(f)),
-                    "constraint_rhs_2": float(np.linalg.norm(b)),
-                },
-                "ranges": {
-                    "kkt": matrix_range,
-                    "stiffness": stiffness_range,
-                    "constraint_matrix": constraint_range,
-                    "rhs": rhs_range,
-                },
-                "symmetry": symmetry,
-                "dense_warnings": dense_warnings,
-                "dense_errors": list(dense_errors),
-                "candidates": candidate_metadata,
-                "files": {
-                    "kkt_matrix": "kkt_matrix.npz",
-                    "rhs": "rhs.npy",
-                    "row_col_scales": "row_col_scales.npz",
-                    "candidate_data": "candidate_solutions_and_residuals.npz",
-                    "report": "residual_report.txt",
-                },
-            }
-
-            (folder / "metadata.json").write_text(
-                json.dumps(metadata, indent=2, sort_keys=True),
-                encoding="utf-8",
-            )
-            (folder / "residual_report.txt").write_text(
-                "\n".join(report_lines) + "\n",
-                encoding="utf-8",
-            )
-
-            print(f"[solver] diagnostic checkpoint saved: {folder}")
-            return folder
-
-        except Exception as exc:  # Diagnostics must never mask the solver failure.
-            print(
-                "[solver] WARNING: failed to write diagnostic checkpoint: "
-                f"{type(exc).__name__}: {exc}"
-            )
-            return None
 
     def solve(
         self,
         system: AugmentedLinearConstraintSystem,
     ) -> AugmentedConstraintSolution:
         matrix = system.matrix.tocsr()
-
         rhs = np.asarray(
             system.rhs,
             dtype=float,
@@ -655,316 +701,36 @@ class AugmentedSparseLinearSolver:
                 "augmented rhs contains non-finite values"
             )
 
-        original = system.original_system
-        constraints = system.constraints
+        self._print_structural_matrix_diagnostic(system)
 
-        K = original.stiffness.tocsr()
-        f = np.asarray(
-            original.load,
-            dtype=float,
-        )
-
-        A = np.asarray(
-            constraints.matrix,
-            dtype=float,
-        )
-
-        b = np.asarray(
-            constraints.rhs,
-            dtype=float,
-        )
-
-        def residual_metrics(solution: np.ndarray) -> tuple:
-            q_local, lagrange_local = system.split_solution(
-                solution
-            )
-
-            augmented_residual = (
-                matrix @ solution
-                - rhs
-            )
-            augmented_residual_norm = float(
-                np.linalg.norm(
-                    augmented_residual
-                )
-            )
-            augmented_relative_residual = (
-                augmented_residual_norm
-                / max(
-                    float(np.linalg.norm(rhs)),
-                    1.0,
-                )
-            )
-
-            equilibrium_residual = (
-                K @ q_local
-                + A.T @ lagrange_local
-                - f
-            )
-            constraint_residual = (
-                A @ q_local
-                - b
-            )
-
-            equilibrium_residual_norm = float(
-                np.linalg.norm(
-                    equilibrium_residual
-                )
-            )
-            equilibrium_relative_residual = (
-                equilibrium_residual_norm
-                / max(
-                    float(np.linalg.norm(f)),
-                    1.0,
-                )
-            )
-            constraint_residual_norm = float(
-                np.linalg.norm(
-                    constraint_residual
-                )
-            )
-
-            algebraic_ok = (
-                augmented_residual_norm <= self.absolute_tolerance
-                or augmented_relative_residual <= self.relative_tolerance
-            )
-            equilibrium_ok = (
-                equilibrium_residual_norm <= self.absolute_tolerance
-                or equilibrium_relative_residual <= self.relative_tolerance
-            )
-            constraint_ok = (
-                constraint_residual_norm <= self.constraint_tolerance
-            )
-            converged = (
-                algebraic_ok
-                and equilibrium_ok
-                and constraint_ok
-            )
-
-            return (
-                q_local,
-                lagrange_local,
-                augmented_residual_norm,
-                augmented_relative_residual,
-                equilibrium_residual_norm,
-                equilibrium_relative_residual,
-                constraint_residual_norm,
-                converged,
-            )
-
-        def score(metrics: tuple) -> float:
-            return max(
-                metrics[3],
-                metrics[5],
-                metrics[6] / max(self.constraint_tolerance, 1.0e-300),
-            )
-
-        # Preserve the validated sparse direct solve exactly.  Cases that
-        # already satisfy the tolerances never enter the dense path.
-        sparse_solution = self._direct_sparse_solve(
+        solution = self._direct_sparse_solve(
             matrix,
             rhs,
+            primal_size=system.primal_size,
+            equilibration_iterations=self.equilibration_iterations,
         )
-        sparse_metrics = residual_metrics(
-            sparse_solution
+
+        q, lagrange = system.split_solution(
+            solution
         )
-
-        candidates = [
-            ("sparse direct", sparse_solution, sparse_metrics),
-        ]
-        dense_errors: list[str] = []
-        dense_warnings: dict[str, list[str]] = {}
-        dense_matrix = None
-
-        if sparse_metrics[7]:
-            selected_solution = sparse_solution
-            selected_metrics = sparse_metrics
-        else:
-            dense_allowed, density, estimated_bytes = self._dense_path_status(
-                matrix
-            )
-
-            print(
-                "[solver] sparse direct failed residual check: "
-                f"augmented_rel={sparse_metrics[3]:.6e}, "
-                f"equilibrium_rel={sparse_metrics[5]:.6e}, "
-                f"constraint={sparse_metrics[6]:.6e}"
-            )
-
-            if not dense_allowed:
-                reason = (
-                    "sparse direct failed residual checks and dense path was "
-                    "not enabled by the density/memory guard"
-                )
-                diagnostic_path = self._write_failure_diagnostics(
-                    matrix=matrix,
-                    rhs=rhs,
-                    K=K,
-                    f=f,
-                    A=A,
-                    b=b,
-                    candidates=candidates,
-                    dense_warnings=dense_warnings,
-                    dense_errors=dense_errors,
-                    reason=reason,
-                    dense_matrix=dense_matrix,
-                    best_name="sparse direct",
-                )
-                raise RuntimeError(
-                    "augmented sparse solution did not satisfy tolerances and "
-                    "dense high-order solve was not enabled for this matrix: "
-                    f"density={density:.6f}, "
-                    f"estimated_dense_peak_mib={estimated_bytes / 1024**2:.1f}, "
-                    f"augmented_rel={sparse_metrics[3]:.6e}, "
-                    f"equilibrium_rel={sparse_metrics[5]:.6e}, "
-                    f"constraint={sparse_metrics[6]:.6e}, "
-                    f"diagnostics={diagnostic_path}"
-                )
-
-            print(
-                "[solver] dense high-order path: "
-                f"density={density:.4f}, "
-                f"estimated_peak={estimated_bytes / 1024**2:.1f} MiB"
-            )
-
-            dense_matrix = matrix.toarray(order="F")
-
-            try:
-                symmetric_solution, symmetric_warning_messages = (
-                    self._direct_dense_solve(
-                        dense_matrix,
-                        rhs,
-                        assume_a="sym",
-                    )
-                )
-                dense_warnings["dense symmetric"] = symmetric_warning_messages
-                symmetric_metrics = residual_metrics(
-                    symmetric_solution
-                )
-                candidates.append(
-                    ("dense symmetric", symmetric_solution, symmetric_metrics)
-                )
-                print(
-                    "[solver] dense symmetric: "
-                    f"augmented_rel={symmetric_metrics[3]:.6e}, "
-                    f"equilibrium_rel={symmetric_metrics[5]:.6e}, "
-                    f"constraint={symmetric_metrics[6]:.6e}"
-                )
-            except RuntimeError as exc:
-                symmetric_metrics = None
-                dense_errors.append(f"dense symmetric: {exc}")
-                print(f"[solver] dense symmetric failed: {exc}")
-
-            if symmetric_metrics is not None and symmetric_metrics[7]:
-                selected_solution = symmetric_solution
-                selected_metrics = symmetric_metrics
-                print("[solver] selected = dense symmetric")
-            else:
-                try:
-                    general_solution, general_warning_messages = (
-                        self._direct_dense_solve(
-                            dense_matrix,
-                            rhs,
-                            assume_a="gen",
-                        )
-                    )
-                    dense_warnings["dense general LU"] = general_warning_messages
-                    general_metrics = residual_metrics(
-                        general_solution
-                    )
-                    candidates.append(
-                        ("dense general LU", general_solution, general_metrics)
-                    )
-                    print(
-                        "[solver] dense general LU: "
-                        f"augmented_rel={general_metrics[3]:.6e}, "
-                        f"equilibrium_rel={general_metrics[5]:.6e}, "
-                        f"constraint={general_metrics[6]:.6e}"
-                    )
-                except RuntimeError as exc:
-                    general_metrics = None
-                    dense_errors.append(f"dense general LU: {exc}")
-                    print(f"[solver] dense general LU failed: {exc}")
-
-                converged_candidates = [
-                    item
-                    for item in candidates
-                    if item[2][7]
-                ]
-
-                if converged_candidates:
-                    best = min(
-                        converged_candidates,
-                        key=lambda item: score(item[2]),
-                    )
-                    _, selected_solution, selected_metrics = best
-                    print(f"[solver] selected = {best[0]}")
-                else:
-                    best = min(
-                        candidates,
-                        key=lambda item: score(item[2]),
-                    )
-                    dense_error_text = (
-                        "; ".join(dense_errors)
-                        if dense_errors
-                        else "none"
-                    )
-
-                    detail_parts = []
-                    for name, _, metrics in candidates:
-                        detail_parts.append(
-                            f"{name}: augmented_rel={metrics[3]:.6e}, "
-                            f"equilibrium_rel={metrics[5]:.6e}, "
-                            f"constraint={metrics[6]:.6e}"
-                        )
-
-                    reason = (
-                        "no sparse or dense high-order KKT candidate satisfied "
-                        "the original residual tolerances"
-                    )
-                    diagnostic_path = self._write_failure_diagnostics(
-                        matrix=matrix,
-                        rhs=rhs,
-                        K=K,
-                        f=f,
-                        A=A,
-                        b=b,
-                        candidates=candidates,
-                        dense_warnings=dense_warnings,
-                        dense_errors=dense_errors,
-                        reason=reason,
-                        dense_matrix=dense_matrix,
-                        best_name=best[0],
-                    )
-
-                    raise RuntimeError(
-                        "augmented solution did not satisfy tolerances after "
-                        "high-order dense KKT solves: "
-                        + " | ".join(detail_parts)
-                        + f" | best={best[0]}"
-                        + f" | dense_errors={dense_error_text}"
-                        + f" | diagnostics={diagnostic_path}"
-                    )
 
         (
-            q,
-            lagrange,
-            augmented_residual_norm,
-            augmented_relative_residual,
-            equilibrium_residual_norm,
-            equilibrium_relative_residual,
-            constraint_residual_norm,
-            converged,
-        ) = selected_metrics
+            residuals,
+            residual_mean,
+            residual_standard_deviation,
+            equation_term_scale,
+        ) = self._verification(
+            matrix,
+            solution,
+            rhs,
+        )
 
         return AugmentedConstraintSolution(
             primal=q,
             lagrange=lagrange,
-            augmented=selected_solution,
-            augmented_residual_norm=augmented_residual_norm,
-            augmented_relative_residual=augmented_relative_residual,
-            equilibrium_residual_norm=equilibrium_residual_norm,
-            equilibrium_relative_residual=equilibrium_relative_residual,
-            constraint_residual_norm=constraint_residual_norm,
-            converged=converged,
+            augmented=solution,
+            residuals=residuals,
+            residual_mean=residual_mean,
+            residual_standard_deviation=residual_standard_deviation,
+            equation_term_scale=equation_term_scale,
         )

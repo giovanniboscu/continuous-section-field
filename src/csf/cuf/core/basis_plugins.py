@@ -1,14 +1,16 @@
+# Version: CSF-CUF scaled Legendre transverse basis v1 - 2026-08-24
 """Pluggable transverse-basis selection for the CSF-CUF runtime.
 
 The solver engine depends only on this registry, not on a concrete CUF basis.
-The current validated basis remains ``scaled_maclaurin`` and is unchanged.
+The current validated basis ``scaled_maclaurin`` remains unchanged.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Callable, Dict, Tuple
 
-from csf.cuf.numerics import ScaledMaclaurinBasis, transverse_scales
+from csf.cuf.maclaurin_tensor import ScaledMaclaurinTensorBasis
+from csf.cuf.numerics import ScaledLegendreBasis, ScaledMaclaurinBasis, transverse_scales
 
 
 BasisBuilder = Callable[..., object]
@@ -48,12 +50,33 @@ def _build_scaled_maclaurin(*, order: int, section_provider):
     )
 
 
+def _build_scaled_maclaurin_tensor(*, order: int, section_provider):
+    y_scale, z_scale = transverse_scales(section_provider)
+    return ScaledMaclaurinTensorBasis(
+        int(order),
+        y_scale=y_scale,
+        z_scale=z_scale,
+    )
+
+
+def _build_scaled_legendre(*, order: int, section_provider):
+    y_scale, z_scale = transverse_scales(section_provider)
+    return ScaledLegendreBasis(int(order), y_scale=y_scale, z_scale=z_scale)
+
+
 def _scaled_maclaurin_section_gauss_minimum(basis) -> int:
-    # OPT-09 requirement for the current scaled complete Maclaurin basis.
+    # Validated complete-total-degree Maclaurin basis:
     # F_tau * F_s can reach total degree 2N. With polygon slicing, the
-    # resulting outer polynomial can reach degree 2N+1, so an n-point
-    # Gauss-Legendre rule requires n >= N+1.
+    # resulting outer polynomial can reach degree 2N+1, hence n >= N+1.
     return int(basis.order) + 1
+
+
+def _scaled_maclaurin_tensor_section_gauss_minimum(basis) -> int:
+    # Tensor-product Maclaurin contains Y^N Z^N.
+    # Products can reach Y^(2N) Z^(2N). Under polygon slicing, the inner
+    # integration can raise the outer polynomial degree to 4N+1.
+    # Gauss-Legendre integrates degree 2n-1 exactly, hence n >= 2N+1.
+    return 2 * int(basis.order) + 1
 
 
 _PLUGINS: Dict[str, CUFBasisPlugin] = {}
@@ -95,6 +118,22 @@ register_cuf_basis_plugin(
     CUFBasisPlugin(
         name="scaled_maclaurin",
         builder=_build_scaled_maclaurin,
+        section_gauss_minimum=_scaled_maclaurin_section_gauss_minimum,
+    )
+)
+
+register_cuf_basis_plugin(
+    CUFBasisPlugin(
+        name="scaled_maclaurin_tensor",
+        builder=_build_scaled_maclaurin_tensor,
+        section_gauss_minimum=_scaled_maclaurin_tensor_section_gauss_minimum,
+    )
+)
+
+register_cuf_basis_plugin(
+    CUFBasisPlugin(
+        name="scaled_legendre",
+        builder=_build_scaled_legendre,
         section_gauss_minimum=_scaled_maclaurin_section_gauss_minimum,
     )
 )

@@ -1,4 +1,4 @@
-# Version: CSF-CUF configurable material polynomial degree v17 - 2026-08-27
+# Version: CSF-CUF transparent sectional split v16.1 - 2026-08-27
 # OPT-09 CUF-ORDER-AWARE SECTION QUADRATURE
 from __future__ import annotations
 
@@ -410,9 +410,6 @@ def _longitudinal_gauss_requirement(
         varies_y = varies_y or (not close(v0[:, 0], v1[:, 0]))
         varies_z = varies_z or (not close(v0[:, 1], v1[:, 1]))
 
-    configured_material_degree = (
-        case.longitudinal.material_polynomial_degree
-    )
     material_varies = False
 
     for domain_id, (d0, dm, d1) in enumerate(
@@ -446,15 +443,10 @@ def _longitudinal_gauss_requirement(
             dtype=float,
         )
 
-        if (
-            configured_material_degree is None
-            and not close(Cm, 0.5 * (C0 + C1))
-        ):
+        if not close(Cm, 0.5 * (C0 + C1)):
             raise ValueError(
                 "cannot estimate longitudinal Gauss order: constitutive "
-                f"variation is not affine in x for domain {domain_id}; "
-                "set longitudinal.material_polynomial_degree in the case "
-                "YAML to the maximum material-law degree across all polygons"
+                f"variation is not affine in x for domain {domain_id}"
             )
 
         material_varies = material_varies or (not close(C0, C1))
@@ -511,16 +503,10 @@ def _longitudinal_gauss_requirement(
     # conservative upper bound.
     geometry_jacobian_degree = 2
     
-    # When omitted, preserve the historical automatic behavior:
-    # constant material -> degree 0; affine material -> degree 1.
-    # For custom/non-affine laws the user supplies the maximum polynomial
-    # degree across all CSF polygons in the case YAML.
-    if configured_material_degree is None:
-        material_degree = 1 if material_varies else 0
-        material_degree_source = "automatic"
-    else:
-        material_degree = int(configured_material_degree)
-        material_degree_source = "configured"
+    # Current constitutive variation is assumed affine in x.
+    # A future user-defined/custom constitutive law must provide its own
+    # longitudinal polynomial degree explicitly.
+    material_degree = 1 if material_varies else 0
     
     # Product of the two longitudinal interpolation functions.
     longitudinal_shape_degree = 2 * r
@@ -584,16 +570,16 @@ def _longitudinal_gauss_requirement(
     if varies_y:
         axes.append("y")
     if varies_z:
-        axes.append("z")      
-      
+        axes.append("z")
+        
+        
+    print(f"DEBUG transverse_x_degree {transverse_x_degree} polynomial_degree {polynomial_degree} longitudinal_shape_degree {longitudinal_shape_degree}  minimum_gauss_order {minimum_gauss_order}")
 
     return {
         "polynomial_degree": int(polynomial_degree),
         "minimum_gauss_order": int(minimum_gauss_order),
         "varying_axes": tuple(axes),
         "material_varies": bool(material_varies),
-        "material_polynomial_degree": int(material_degree),
-        "material_degree_source": material_degree_source,
     }
 
 def solve_case(case, model_bridge, problem, *, progress: bool = True) -> CSFCUFSolution:
@@ -698,12 +684,6 @@ def solve_case(case, model_bridge, problem, *, progress: bool = True) -> CSFCUFS
         print(
             f"[quadrature] longitudinal material varies = "
             f"{str(longitudinal_requirement['material_varies']).lower()}",
-            flush=True,
-        )
-        print(
-            f"[quadrature] longitudinal material degree = "
-            f"{longitudinal_requirement['material_polynomial_degree']} "
-            f"({longitudinal_requirement['material_degree_source']})",
             flush=True,
         )
         print(

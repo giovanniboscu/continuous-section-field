@@ -1,3 +1,4 @@
+# Version: CSF-CUF absolute constitutive carriers v17 - 2026-08-27
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -30,8 +31,8 @@ class CSFCUFModelBridge:
     is hard-coded in the solver.
 
     Contract used by this startup project:
-        polygon.weight       -> E-like absolute normal-stiffness carrier
-        polygon.shear_weight -> G-like absolute shear-stiffness carrier
+        polygon.weightabs       -> E-like absolute normal-stiffness carrier
+        polygon.shear_weightabs -> G-like absolute shear-stiffness carrier
 
     The CSF shear law ``iso(nu)`` is one valid way to create shear_weight, but
     the bridge does not impose that relation: E and G are read independently
@@ -86,18 +87,38 @@ class CSFCUFModelBridge:
             return self._state_cache[key]
 
         polygon = self._raw_polygon(*key)
-        E = float(polygon.weight)
-        G = float(polygon.shear_weight)
+
+        weightabs = getattr(polygon, "weightabs", None)
+        shear_weightabs = getattr(polygon, "shear_weightabs", None)
+        if weightabs is None:
+            raise ValueError(
+                f"CSF domain {domain_id} at x={x} has no absolute weightabs"
+            )
+        if shear_weightabs is None:
+            raise ValueError(
+                f"CSF domain {domain_id} at x={x} has no absolute "
+                "shear_weightabs"
+            )
+
+        E = float(weightabs)
+        G = float(shear_weightabs)
         poisson_raw = getattr(polygon, "poisson", None)
         poisson = None if poisson_raw is None else float(poisson_raw)
 
-        if not (np.isfinite(E) and E > 0.0):
+        if not (np.isfinite(E) and E >= 0.0):
             raise ValueError(
-                f"CSF domain {domain_id} at x={x} has invalid E-like weight {E}"
+                f"CSF domain {domain_id} at x={x} has invalid E-like "
+                f"weightabs {E}"
             )
-        if not (np.isfinite(G) and G > 0.0):
+        if not (np.isfinite(G) and G >= 0.0):
             raise ValueError(
-                f"CSF domain {domain_id} at x={x} has invalid G-like shear_weight {G}"
+                f"CSF domain {domain_id} at x={x} has invalid G-like "
+                f"shear_weightabs {G}"
+            )
+        if (E == 0.0) != (G == 0.0):
+            raise ValueError(
+                f"CSF domain {domain_id} at x={x} must have both absolute "
+                f"carriers zero for a void; got E={E}, G={G}"
             )
         if poisson is not None and not np.isfinite(poisson):
             poisson = None

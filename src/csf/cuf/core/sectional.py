@@ -1,20 +1,25 @@
+# Version: CSF-CUF sectional geometry/integration separation v16 - 2026-08-27
 # OPT-02 MATRIX SECTIONAL INTEGRATION
 """
 Generalized sectional coefficients J(x) for the CSF-CUF bridge.
 
-This module is the sectional coupling layer:
+This module is the public transverse-integration layer:
 
     Omega^k(x), C^k(x,y,z), F_tau(y,z)
         -> J^{mn,k}_{tau,phi s,xi}(x)
         -> J^{mn}_{tau,phi s,xi}(x)
 
-It contains only SectionalCoefficientProvider.  Geometry, constitutive law,
-CUF basis and numerical integration are injected dependencies; no
-longitudinal discretization, load, boundary condition or benchmark-specific
-assumption is introduced here.
+It contains only SectionalCoefficientProvider.  Real CSF geometry and the
+constitutive lookup are hidden behind SectionalGeometryProvider; this module
+receives only quadrature-ready numerical data.  No longitudinal
+discretization, load, boundary condition or benchmark-specific assumption is
+introduced here.
 """
 
 from typing import Tuple
+from pathlib import Path
+from datetime import datetime, timezone
+import os
 
 import numpy as np
 
@@ -23,8 +28,7 @@ from .integration import (
     AdaptivePolygonIntegrator,
     SectionIntegrator,
 )
-from .material import ConstitutiveProvider
-from .section import SectionProvider
+from .sectional_geometry import SectionalGeometryProvider
 
 
 # =============================================================================
@@ -67,22 +71,24 @@ class SectionalCoefficientProvider:
     remain fully supported.
 
     Providers are treated as immutable dependencies during one analysis. If a
-    caller deliberately mutates the section, constitutive law, basis, or
+    caller deliberately mutates the sectional geometry provider, basis, or
     integration backend after construction, ``clear_cache()`` must be called
     before requesting new coefficients.
     """
 
     def __init__(
         self,
-        section_provider: SectionProvider,
-        constitutive_provider: ConstitutiveProvider,
+        geometry_provider: SectionalGeometryProvider,
         basis: CUFBasis,
         *,
         integrator: SectionIntegrator | None = None,
         cache_enabled: bool = True,
     ) -> None:
-        self.section_provider = section_provider
-        self.constitutive_provider = constitutive_provider
+        if not isinstance(geometry_provider, SectionalGeometryProvider):
+            raise TypeError(
+                "geometry_provider must be a SectionalGeometryProvider"
+            )
+        self.geometry = geometry_provider
         self.basis = basis
         self.integrator = integrator or AdaptivePolygonIntegrator()
 
@@ -111,6 +117,477 @@ class SectionalCoefficientProvider:
         self._J_matrix_family_hits = 0
         self._J_matrix_family_misses = 0
         self._J_matrix_family_integrations = 0
+
+        # Diagnostic v3: optional Gauss-order stability check for the actual
+        # sectional J families used by the CUF core.  The diagnostic is purely
+        # observational: it never replaces, rescales, filters or otherwise
+        # modifies the coefficient matrices used by the normal analysis.
+        self._gauss_diagnostic_enabled = self._env_flag(
+            "CSF_CUF_J_GAUSS_DIAGNOSTIC"
+        )
+        self._gauss_diagnostic_orders = self._parse_gauss_diagnostic_orders()
+        self._gauss_diagnostic_report_path = self._gauss_diagnostic_report()
+        self._gauss_diagnostic_header_written = False
+
+        # Upstream diagnostic: inspect the transverse basis on the actual CSF
+        # integration domains before any constitutive nucleus, element matrix,
+        # global assembly, constraint, or KKT operation is performed.
+        self._basis_diagnostic_enabled = self._env_flag(
+            "CSF_CUF_UPSTREAM_BASIS_DIAGNOSTIC"
+        )
+        self._basis_diagnostic_seen_x = set()
+        self._basis_diagnostic_report_path = Path(
+            os.environ.get(
+                "CSF_CUF_UPSTREAM_BASIS_REPORT",
+                str(
+                    Path.cwd()
+                    / "diagnostics"
+                    / "upstream_basis_quality_v2.tsv"
+                ),
+            )
+        ).expanduser()
+
+        if self._basis_diagnostic_enabled:
+            print(
+                "[upstream-basis] enabled - analysis occurs before "
+                "the CUF nucleus and element assembly; "
+                f"report={self._basis_diagnostic_report_path}",
+                flush=True,
+            )
+
+        if self._gauss_diagnostic_enabled:
+            if not hasattr(self.integrator, "quadrature_points"):
+                raise TypeError(
+                    "J Gauss diagnostic requires an integrator exposing "
+                    "quadrature_points(domain)"
+                )
+            if not hasattr(self.integrator, "order"):
+                raise TypeError(
+                    "J Gauss diagnostic requires an integrator exposing "
+                    "its quadrature order"
+                )
+
+            print(
+                "[J-diagnostic] sectional Gauss stability enabled: "
+                f"base_order={int(self.integrator.order)} "
+                f"test_orders={self._gauss_diagnostic_orders} "
+                f"report={self._gauss_diagnostic_report_path}",
+                flush=True,
+            )
+
+    @staticmethod
+    def _env_flag(name: str) -> bool:
+        value = os.environ.get(name, "").strip().lower()
+        return value in {"1", "true", "yes", "on"}
+
+    def _parse_gauss_diagnostic_orders(self) -> tuple[int, ...]:
+        if not self._gauss_diagnostic_enabled:
+            return tuple()
+
+        raw = os.environ.get(
+            "CSF_CUF_J_GAUSS_ORDERS",
+            "36,48",
+        )
+
+        orders = []
+        for item in raw.split(","):
+            item = item.strip()
+            if not item:
+                continue
+            order = int(item)
+            if order < 2:
+                raise ValueError(
+                    "CSF_CUF_J_GAUSS_ORDERS values must be integers >= 2"
+                )
+            if order not in orders:
+                orders.append(order)
+
+        if not orders:
+            raise ValueError(
+                "CSF_CUF_J_GAUSS_ORDERS must contain at least one order"
+            )
+
+        return tuple(orders)
+
+    def _basis_exponents_text(self, tau_indices) -> str:
+        items = []
+        for tau_index in tau_indices:
+            tau = int(tau_index) + 1
+            if hasattr(self.basis, "exponents"):
+                try:
+                    exponent = tuple(
+                        int(value)
+                        for value in self.basis.exponents(tau)
+                    )
+                    items.append(f"tau{tau}:{exponent}")
+                    continue
+                except (TypeError, ValueError, IndexError):
+                    pass
+            items.append(f"tau{tau}")
+        return ",".join(items)
+
+    def _analyse_basis_samples(self, *, x: float, label: str, blocks) -> None:
+        """Inspect weighted basis samples directly, without forming ``B.T @ W @ B``.
+
+        Forming a Gram matrix squares the condition number and can create an
+        artificial numerical rank loss.  The diagnostic instead stacks
+        ``sqrt(W) @ B`` from every active CSF domain, normalizes its columns,
+        and computes singular values directly.
+        """
+        if not blocks:
+            samples = np.empty((0, int(self.basis.size)), dtype=float)
+        else:
+            samples = np.vstack(blocks)
+
+        column_norms = np.linalg.norm(samples, axis=0)
+        # Derivative families contain exact zero columns (for example d/dy of
+        # a function independent of y).  Exclude exact zeros only; do not use
+        # a tolerance expressed in the unrelated scale of a Gram matrix.
+        active = np.flatnonzero(column_norms > 0.0)
+
+        if active.size == 0:
+            rank = 0
+            condition = float("inf")
+            sigma_min = 0.0
+            sigma_max = 0.0
+            dominant_text = "none"
+        else:
+            normalized = (
+                samples[:, active]
+                / column_norms[active][None, :]
+            )
+            _, singular_values, right_vectors = np.linalg.svd(
+                normalized,
+                full_matrices=False,
+            )
+            sigma_max = (
+                float(singular_values[0])
+                if singular_values.size
+                else 0.0
+            )
+            sigma_min = (
+                float(singular_values[-1])
+                if singular_values.size
+                else 0.0
+            )
+            rank_tolerance = (
+                max(1, *normalized.shape)
+                * np.finfo(float).eps
+                * sigma_max
+            )
+            rank = int(np.count_nonzero(singular_values > rank_tolerance))
+            condition = (
+                float(sigma_max / sigma_min)
+                if sigma_min > 0.0
+                else float("inf")
+            )
+
+            smallest_vector = np.abs(right_vectors[-1, :])
+            dominant_local = np.argsort(smallest_vector)[-5:][::-1]
+            dominant_text = self._basis_exponents_text(
+                active[dominant_local]
+            )
+
+        independent = rank == int(active.size)
+        print(
+            "[upstream-basis] "
+            f"x={float(x):.12g} matrix={label} "
+            f"active={active.size} rank={rank} "
+            f"status={'FULL-RANK' if independent else 'RANK-LOSS'} "
+            f"normalized_condition={condition:.6e} "
+            f"sigma_min={sigma_min:.6e} sigma_max={sigma_max:.6e} "
+            f"weakest_direction={dominant_text}",
+            flush=True,
+        )
+
+        path = self._basis_diagnostic_report_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_header = not path.exists() or path.stat().st_size == 0
+        with path.open("a", encoding="utf-8") as stream:
+            if write_header:
+                stream.write(
+                    "timestamp_utc\tbasis\torder\tx\tmatrix\tactive\trank\t"
+                    "full_rank\tnormalized_condition\tsigma_min\t"
+                    "sigma_max\tweakest_direction\n"
+                )
+            stream.write(
+                f"{datetime.now(timezone.utc).isoformat()}\t"
+                f"{type(self.basis).__name__}\t"
+                f"{int(self.basis.order)}\t{float(x):.17g}\t{label}\t"
+                f"{int(active.size)}\t{rank}\t{str(independent).lower()}\t"
+                f"{condition:.17g}\t{sigma_min:.17g}\t{sigma_max:.17g}\t"
+                f"{dominant_text}\n"
+            )
+
+    def _run_upstream_basis_diagnostic(self, *, x: float, samples) -> None:
+        x = float(x)
+        if not self._basis_diagnostic_enabled or x in self._basis_diagnostic_seen_x:
+            return
+        self._basis_diagnostic_seen_x.add(x)
+
+        for derivative, label in ((None, "G00"), ("y", "Gyy"), ("z", "Gzz")):
+            self._analyse_basis_samples(
+                x=x,
+                label=label,
+                blocks=samples[derivative],
+            )
+
+    def _gauss_diagnostic_report(self) -> Path:
+        raw = os.environ.get("CSF_CUF_J_GAUSS_REPORT")
+        if raw:
+            return Path(raw).expanduser()
+        return Path.cwd() / "diagnostics" / "j_gauss_stability.tsv"
+
+    @staticmethod
+    def _matrix_or_zeros(matrix, *, size: int) -> np.ndarray:
+        if matrix is None:
+            return np.zeros((size, size), dtype=float)
+        values = np.asarray(matrix, dtype=float)
+        if values.shape != (size, size):
+            raise RuntimeError(
+                "diagnostic J matrix family has an invalid shape"
+            )
+        return values
+
+    def _diagnostic_J_matrix_families_with_integrator(
+        self,
+        *,
+        x: float,
+        family_keys,
+        integrator,
+    ):
+        """Recompute J families with another quadrature order for diagnostics only."""
+        x = float(x)
+        family_keys = tuple(dict.fromkeys(family_keys))
+        basis_size = int(self.basis.size)
+
+        totals = {family_key: None for family_key in family_keys}
+
+        required_derivatives = set()
+        for family_key in family_keys:
+            _, test_derivative, trial_derivative, _, _ = family_key
+            required_derivatives.add(test_derivative)
+            required_derivatives.add(trial_derivative)
+
+        domain_count = self.geometry.number_of_domains(x)
+
+        for domain_id in range(1, domain_count + 1):
+            quadrature = self.geometry.quadrature_data(
+                x=x,
+                domain_id=domain_id,
+                integrator=integrator,
+            )
+            y_points = quadrature.y_points
+            z_points = quadrature.z_points
+            quadrature_weights = quadrature.weights
+
+            basis_by_derivative = {
+                derivative: self._basis_matrix_at_points(
+                    derivative=derivative,
+                    y_points=y_points,
+                    z_points=z_points,
+                )
+                for derivative in required_derivatives
+            }
+
+            constitutive_values = quadrature.constitutive_matrices
+
+            for family_key in family_keys:
+                (
+                    _,
+                    test_derivative,
+                    trial_derivative,
+                    m,
+                    n,
+                ) = family_key
+
+                weighted_coefficient = (
+                    quadrature_weights
+                    * constitutive_values[:, int(m) - 1, int(n) - 1]
+                )
+
+                if not np.any(weighted_coefficient != 0.0):
+                    continue
+
+                B_test = basis_by_derivative[test_derivative]
+                B_trial = basis_by_derivative[trial_derivative]
+
+                contribution = (
+                    B_test.T
+                    @ (weighted_coefficient[:, None] * B_trial)
+                )
+
+                if contribution.shape != (basis_size, basis_size):
+                    raise RuntimeError(
+                        "diagnostic matrix sectional integration produced "
+                        "an invalid shape"
+                    )
+
+                if totals[family_key] is None:
+                    totals[family_key] = contribution
+                else:
+                    totals[family_key] += contribution
+
+        return totals
+
+    def _append_gauss_diagnostic_rows(
+        self,
+        *,
+        x: float,
+        reference_order: int,
+        test_order: int,
+        family_keys,
+        reference_totals,
+        test_totals,
+    ) -> None:
+        path = self._gauss_diagnostic_report_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        header = (
+            "x\ttest_derivative\ttrial_derivative\tm\tn\t"
+            "basis_size\tbase_gauss\ttest_gauss\t"
+            "reference_fro\ttest_fro\tdiff_fro\trelative_fro\t"
+            "reference_max_abs\ttest_max_abs\t"
+            "max_abs_diff\tmax_abs_diff_over_family_scale\t"
+            "max_abs_tau\tmax_abs_s\t"
+            "reference_at_max_abs\ttest_at_max_abs\n"
+        )
+
+        mode = "a"
+        if not self._gauss_diagnostic_header_written:
+            mode = "w"
+
+        basis_size = int(self.basis.size)
+
+        with path.open(mode, encoding="utf-8") as handle:
+            if not self._gauss_diagnostic_header_written:
+                handle.write(header)
+                self._gauss_diagnostic_header_written = True
+
+            for family_key in family_keys:
+                (
+                    _,
+                    test_derivative,
+                    trial_derivative,
+                    m,
+                    n,
+                ) = family_key
+
+                reference = self._matrix_or_zeros(
+                    reference_totals[family_key],
+                    size=basis_size,
+                )
+                test = self._matrix_or_zeros(
+                    test_totals[family_key],
+                    size=basis_size,
+                )
+
+                difference = test - reference
+                abs_difference = np.abs(difference)
+
+                reference_fro = float(np.linalg.norm(reference))
+                test_fro = float(np.linalg.norm(test))
+                diff_fro = float(np.linalg.norm(difference))
+                family_scale = max(reference_fro, test_fro)
+                relative_fro = (
+                    diff_fro / family_scale
+                    if family_scale > 0.0
+                    else 0.0
+                )
+
+                flat_abs = int(np.argmax(abs_difference))
+                abs_tau0, abs_s0 = np.unravel_index(
+                    flat_abs,
+                    abs_difference.shape,
+                )
+
+                reference_max_abs = float(np.max(np.abs(reference)))
+                test_max_abs = float(np.max(np.abs(test)))
+                coefficient_family_scale = max(
+                    reference_max_abs,
+                    test_max_abs,
+                )
+                max_abs_diff = float(abs_difference[abs_tau0, abs_s0])
+                max_abs_diff_over_family_scale = (
+                    max_abs_diff / coefficient_family_scale
+                    if coefficient_family_scale > 0.0
+                    else 0.0
+                )
+
+                handle.write(
+                    "\t".join(
+                        (
+                            f"{float(x):.17e}",
+                            str(test_derivative),
+                            str(trial_derivative),
+                            str(int(m)),
+                            str(int(n)),
+                            str(basis_size),
+                            str(int(reference_order)),
+                            str(int(test_order)),
+                            f"{reference_fro:.17e}",
+                            f"{test_fro:.17e}",
+                            f"{diff_fro:.17e}",
+                            f"{relative_fro:.17e}",
+                            f"{reference_max_abs:.17e}",
+                            f"{test_max_abs:.17e}",
+                            f"{max_abs_diff:.17e}",
+                            f"{max_abs_diff_over_family_scale:.17e}",
+                            str(abs_tau0 + 1),
+                            str(abs_s0 + 1),
+                            f"{reference[abs_tau0, abs_s0]:.17e}",
+                            f"{test[abs_tau0, abs_s0]:.17e}",
+                        )
+                    )
+                    + "\n"
+                )
+
+    def _run_gauss_stability_diagnostic(
+        self,
+        *,
+        x: float,
+        family_keys,
+        reference_totals,
+    ) -> None:
+        if not self._gauss_diagnostic_enabled:
+            return
+
+        reference_order = int(self.integrator.order)
+        integrator_type = type(self.integrator)
+
+        for test_order in self._gauss_diagnostic_orders:
+            if int(test_order) == reference_order:
+                continue
+
+            try:
+                diagnostic_integrator = integrator_type(order=int(test_order))
+            except TypeError as exc:
+                raise TypeError(
+                    "J Gauss diagnostic requires the active integrator type "
+                    "to be constructible with order=<integer>"
+                ) from exc
+
+            test_totals = self._diagnostic_J_matrix_families_with_integrator(
+                x=float(x),
+                family_keys=family_keys,
+                integrator=diagnostic_integrator,
+            )
+
+            self._append_gauss_diagnostic_rows(
+                x=float(x),
+                reference_order=reference_order,
+                test_order=int(test_order),
+                family_keys=family_keys,
+                reference_totals=reference_totals,
+                test_totals=test_totals,
+            )
+
+            print(
+                "[J-diagnostic] "
+                f"x={float(x):.9g} base={reference_order} "
+                f"test={int(test_order)} families={len(tuple(family_keys))}",
+                flush=True,
+            )
 
     @staticmethod
     def _validate_derivative(
@@ -257,21 +734,7 @@ class SectionalCoefficientProvider:
 
         self._J_domain_misses += 1
 
-        domain = self.section_provider.domain(
-            x=float(x),
-            domain_id=int(domain_id),
-        )
-
-        def integrand(y: float, z: float) -> float:
-            Cmn = self.constitutive_provider.coefficient(
-                x=float(x),
-                domain_id=int(domain_id),
-                m=int(m),
-                n=int(n),
-                y=y,
-                z=z,
-            )
-
+        def integrand(y: float, z: float, Cmn: float) -> float:
             Ftau = self._basis_factor(
                 tau=int(tau),
                 derivative=test_derivative,
@@ -289,9 +752,13 @@ class SectionalCoefficientProvider:
             return Cmn * Ftau * Fs
 
         value = float(
-            self.integrator.integrate(
-                domain,
-                integrand,
+            self.geometry.integrate_scalar(
+                x=float(x),
+                domain_id=int(domain_id),
+                integrator=self.integrator,
+                integrand=integrand,
+                m=int(m),
+                n=int(n),
             )
         )
 
@@ -333,7 +800,7 @@ class SectionalCoefficientProvider:
 
         for domain_id in range(
             1,
-            self.section_provider.number_of_domains(float(x)) + 1,
+            self.geometry.number_of_domains(float(x)) + 1,
         ):
             total += self.J_domain(
                 x=float(x),
@@ -561,34 +1028,30 @@ class SectionalCoefficientProvider:
             required_derivatives.add(test_derivative)
             required_derivatives.add(trial_derivative)
 
-        domain_count = self.section_provider.number_of_domains(x)
+        if self._basis_diagnostic_enabled:
+            required_derivatives.update((None, "y", "z"))
+
+        basis_samples = (
+            {
+                derivative: []
+                for derivative in (None, "y", "z")
+            }
+            if self._basis_diagnostic_enabled
+            and x not in self._basis_diagnostic_seen_x
+            else None
+        )
+
+        domain_count = self.geometry.number_of_domains(x)
 
         for domain_id in range(1, domain_count + 1):
-            domain = self.section_provider.domain(
+            quadrature = self.geometry.quadrature_data(
                 x=x,
                 domain_id=domain_id,
+                integrator=self.integrator,
             )
-
-            y_points, z_points, quadrature_weights = (
-                self.integrator.quadrature_points(domain)
-            )
-
-            y_points = np.asarray(y_points, dtype=float)
-            z_points = np.asarray(z_points, dtype=float)
-            quadrature_weights = np.asarray(
-                quadrature_weights,
-                dtype=float,
-            )
-
-            if (
-                y_points.ndim != 1
-                or z_points.shape != y_points.shape
-                or quadrature_weights.shape != y_points.shape
-            ):
-                raise ValueError(
-                    "quadrature_points(domain) must return equal-sized "
-                    "one-dimensional y, z and weight arrays"
-                )
+            y_points = quadrature.y_points
+            z_points = quadrature.z_points
+            quadrature_weights = quadrature.weights
 
             basis_by_derivative = {
                 derivative: self._basis_matrix_at_points(
@@ -599,30 +1062,26 @@ class SectionalCoefficientProvider:
                 for derivative in required_derivatives
             }
 
-            constitutive_values = np.empty(
-                (y_points.size, 6, 6),
-                dtype=float,
+            # Zero-weight CSF polygons carry no structural material and are
+            # excluded from the upstream basis space diagnostic.
+            domain_is_active = (
+                quadrature.material_weight is None
+                or quadrature.material_weight != 0.0
             )
-
-            for point_index, (y, z) in enumerate(
-                zip(y_points, z_points)
-            ):
-                C = np.asarray(
-                    self.constitutive_provider.matrix(
-                        x=x,
-                        domain_id=domain_id,
-                        y=float(y),
-                        z=float(z),
-                    ),
-                    dtype=float,
-                )
-
-                if C.shape != (6, 6):
+            if basis_samples is not None and domain_is_active:
+                if np.any(quadrature_weights < 0.0):
                     raise ValueError(
-                        "constitutive provider must return a 6-by-6 matrix"
+                        "upstream SVD diagnostic requires non-negative "
+                        "quadrature weights"
+                    )
+                sqrt_weights = np.sqrt(quadrature_weights)[:, None]
+                for derivative in (None, "y", "z"):
+                    B = basis_by_derivative[derivative]
+                    basis_samples[derivative].append(
+                        sqrt_weights * B
                     )
 
-                constitutive_values[point_index, :, :] = C
+            constitutive_values = quadrature.constitutive_matrices
 
             self._J_matrix_family_integrations += 1
 
@@ -663,6 +1122,21 @@ class SectionalCoefficientProvider:
                     totals[family_key] = contribution
                 else:
                     totals[family_key] += contribution
+
+        if basis_samples is not None:
+            self._run_upstream_basis_diagnostic(
+                x=x,
+                samples=basis_samples,
+            )
+
+        # Diagnostic v3 re-integrates the same J families with explicitly
+        # requested higher Gauss orders.  The normal ``totals`` above remain
+        # untouched and are the only values stored in the physical cache.
+        self._run_gauss_stability_diagnostic(
+            x=x,
+            family_keys=family_keys,
+            reference_totals=totals,
+        )
 
         for family_key, matrix in totals.items():
             self._J_matrix_family_cache[family_key] = matrix
@@ -809,9 +1283,7 @@ class SectionalCoefficientProvider:
             unique_key_to_position[key] = len(unique_missing)
             unique_missing.append(index)
 
-        domain_count = self.section_provider.number_of_domains(
-            float(x)
-        )
+        domain_count = self.geometry.number_of_domains(float(x))
 
         totals = np.zeros(
             len(unique_missing),
@@ -917,27 +1389,11 @@ class SectionalCoefficientProvider:
         factor_count = len(factor_keys)
 
         for domain_id in range(1, domain_count + 1):
-            domain = self.section_provider.domain(
-                x=float(x),
-                domain_id=domain_id,
-            )
-
-            def vector_integrand(y: float, z: float) -> np.ndarray:
-                C = np.asarray(
-                    self.constitutive_provider.matrix(
-                        x=float(x),
-                        domain_id=domain_id,
-                        y=float(y),
-                        z=float(z),
-                    ),
-                    dtype=float,
-                )
-
-                if C.shape != (6, 6):
-                    raise ValueError(
-                        "constitutive provider must return a 6-by-6 matrix"
-                    )
-
+            def vector_integrand(
+                y: float,
+                z: float,
+                C: np.ndarray,
+            ) -> np.ndarray:
                 if compiled_basis_factors is not None:
                     factor_values = np.asarray(
                         compiled_basis_factors(float(y), float(z)),
@@ -997,9 +1453,11 @@ class SectionalCoefficientProvider:
 
             self._J_batch_integrations += 1
 
-            totals += self.integrator.integrate_vector(
-                domain,
-                vector_integrand,
+            totals += self.geometry.integrate_vector(
+                x=float(x),
+                domain_id=domain_id,
+                integrator=self.integrator,
+                integrand=vector_integrand,
                 size=len(unique_missing),
             )
 
@@ -1038,5 +1496,3 @@ class SectionalCoefficientProvider:
         raise ValueError(
             "derivative selector must be None, 'y', or 'z'"
         )
-
-

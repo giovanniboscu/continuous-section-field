@@ -1,3 +1,4 @@
+# Version: CSF-CUF absolute constitutive carriers v17 - 2026-08-27
 """
 Generic constitutive layer for the CSF-CUF bridge.
 
@@ -546,6 +547,9 @@ class IsotropicEGConstitutive(ConstitutiveProvider):
 
         self._validate_fields(E, G)
 
+        if E == 0.0 and G == 0.0:
+            return np.zeros((6, 6), dtype=float)
+
         denominator = 3.0 * G - E
         lam = G * (E - 2.0 * G) / denominator
         normal = lam + 2.0 * G
@@ -579,13 +583,15 @@ class IsotropicEGConstitutive(ConstitutiveProvider):
             raise ValueError(
                 "G must be finite"
             )
+        if E == 0.0 and G == 0.0:
+            return
         if E <= 0.0:
             raise ValueError(
-                f"E must be positive, got {E}"
+                f"E must be positive for material or zero for void, got {E}"
             )
         if G <= 0.0:
             raise ValueError(
-                f"G must be positive, got {G}"
+                f"G must be positive for material or zero for void, got {G}"
             )
 
         denominator = 3.0 * G - E

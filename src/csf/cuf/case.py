@@ -1,3 +1,4 @@
+# Version: CSF-CUF configurable material polynomial degree v17 - 2026-08-27
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -19,12 +20,23 @@ class LongitudinalSettings:
     elements: int
     order: int
     gauss_order: int
+    material_polynomial_degree: int | None
 
 
 @dataclass(frozen=True)
 class SectionIntegrationSettings:
     method: str
     gauss_order: int
+
+
+@dataclass(frozen=True)
+class EquilibrationSettings:
+    iterations: int
+
+
+@dataclass(frozen=True)
+class SolverSettings:
+    equilibration: EquilibrationSettings
 
 
 @dataclass(frozen=True)
@@ -44,6 +56,7 @@ class CaseDefinition:
     cuf: CUFSettings
     longitudinal: LongitudinalSettings
     section_integration: SectionIntegrationSettings
+    solver: SolverSettings
     sampling: SamplingSettings
     output_dir: Path
 
@@ -71,6 +84,11 @@ def load_case(path: str | Path) -> CaseDefinition:
     cuf = _mapping(root.get("cuf"), "cuf")
     longitudinal = _mapping(root.get("longitudinal"), "longitudinal")
     section = _mapping(root.get("section_integration"), "section_integration")
+    solver = _mapping(root.get("solver", {}), "solver")
+    equilibration = _mapping(
+        solver.get("equilibration", {}),
+        "solver.equilibration",
+    )
     sampling = _mapping(root.get("sampling", {}), "sampling")
     output = _mapping(root.get("output"), "output")
 
@@ -85,6 +103,15 @@ def load_case(path: str | Path) -> CaseDefinition:
     longitudinal_gauss = int(
         longitudinal.get("gauss_order", cuf_order + longitudinal_order + 1)
     )
+    material_polynomial_degree_raw = longitudinal.get(
+        "material_polynomial_degree"
+    )
+    material_polynomial_degree = (
+        None
+        if material_polynomial_degree_raw is None
+        else int(material_polynomial_degree_raw)
+    )
+    equilibration_iterations = int(equilibration.get("iterations", 8))
 
     if cuf_order < 1:
         raise ValueError("cuf.order must be >= 1")
@@ -96,6 +123,15 @@ def load_case(path: str | Path) -> CaseDefinition:
         raise ValueError("section_integration.gauss_order must be >= 2")
     if longitudinal_gauss < 1:
         raise ValueError("longitudinal.gauss_order must be >= 1")
+    if (
+        material_polynomial_degree is not None
+        and material_polynomial_degree < 0
+    ):
+        raise ValueError(
+            "longitudinal.material_polynomial_degree must be >= 0"
+        )
+    if equilibration_iterations < 1:
+        raise ValueError("solver.equilibration.iterations must be >= 1")
 
     return CaseDefinition(
         path=path,
@@ -112,10 +148,16 @@ def load_case(path: str | Path) -> CaseDefinition:
             elements=elements,
             order=longitudinal_order,
             gauss_order=longitudinal_gauss,
+            material_polynomial_degree=material_polynomial_degree,
         ),
         section_integration=SectionIntegrationSettings(
             method=str(section.get("method", "fixed_gauss_polygon")),
             gauss_order=section_order,
+        ),
+        solver=SolverSettings(
+            equilibration=EquilibrationSettings(
+                iterations=equilibration_iterations,
+            ),
         ),
         sampling=SamplingSettings(
             stations=stations,
