@@ -591,7 +591,7 @@ plt.show()
 
 ### Development and AI Assistance
 
-This project was developed with substantial assistance from generative
+This project was developed with assistance from generative
 artificial intelligence tools, including the generation and revision of
 source code.
 
