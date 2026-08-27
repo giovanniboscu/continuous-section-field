@@ -1,4 +1,3 @@
-# DRAFT
 # Hollow rectangular section - complete bending and torsion validation
 
 This package validates a complete beam solver based on the Carrera Unified
