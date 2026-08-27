@@ -1,0 +1,21 @@
+# Version: hollow-rectangle Bredt-Batho baseline report v5 - 2026-08-27
+HOLLOW RECTANGLE - TORSION BASELINE
+===================================
+outer B x H [mm]          = 100 x 100
+void  b x h [mm]          = 80 x 80
+uniform thickness t [mm]  = 10
+mean-line area A_m [mm^2] = 8100
+Bredt J_t [mm^4]          = 7290000
+Young modulus E [MPa]     = 71700
+Poisson ratio nu          = 0.3
+shear modulus G [MPa]     = 27576.9230769
+torque amplitude m0 [N]   = 1.000000000000e-01
+midspan theta [rad]       = 5.039958014936e-06
+NOTE: Bredt-Batho is a thin-wall closed-section approximation.
+
+       x/L           x [mm]          theta [rad]        u_z(y=B/2) [mm]
+  0.000000         0.000000   0.000000000000e+00     0.000000000000e+00
+  0.250000      2500.000000   3.563788489257e-06     1.781894244628e-04
+  0.500000      5000.000000   5.039958014936e-06     2.519979007468e-04
+  0.750000      7500.000000   3.563788489257e-06     1.781894244628e-04
+  1.000000     10000.000000   6.172168450828e-22     3.086084225414e-20

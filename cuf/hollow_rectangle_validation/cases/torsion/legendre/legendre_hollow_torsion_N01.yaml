@@ -1,0 +1,29 @@
+# Version: CSF-CUF hollow-rectangle complete validation case v5 - 2026-08-27
+case:
+  name: cuf_scaled_legendre_hollow_rectangle_torsion_N01
+
+problem:
+  yaml: ../../../problems/torsion/hollow_rectangle_torsion_halfwave.yaml
+  adapter: ../../../adapters/torsion/problem.py
+
+cuf:
+  basis: scaled_legendre
+  order: 1
+
+longitudinal:
+  method: finite_element
+  elements: 1
+  order: 6
+
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 6
+
+sampling:
+  stations: [0.00, 0.25, 0.50, 0.75, 1.00]
+  displacement_samples: 201
+  stress_grid: 31
+
+output:
+  adapter: ../../../adapters/torsion/post.py
+  directory: ../../../output/torsion/legendre/N01

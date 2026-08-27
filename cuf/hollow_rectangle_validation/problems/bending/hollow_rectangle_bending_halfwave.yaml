@@ -1,0 +1,9 @@
+# Version: CSF-CUF hollow-rectangle analytical validation problem v5 - 2026-08-27
+model:
+  csf_yaml: ../../models/hollow_rectangle_prismatic_csf.yaml
+
+problem:
+  type: hollow_rectangle_bending_bottom_surface_halfwave
+  # Surface pressure p0 [N/mm^2]. The equivalent line-load amplitude is
+  # q0 = p0 * B = 1.0e-3 N/mm.
+  amplitude: 1.0e-5

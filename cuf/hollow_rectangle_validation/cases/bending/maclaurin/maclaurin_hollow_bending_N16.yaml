@@ -1,0 +1,29 @@
+# Version: CSF-CUF hollow-rectangle complete validation case v5 - 2026-08-27
+case:
+  name: cuf_scaled_maclaurin_hollow_rectangle_bending_N16
+
+problem:
+  yaml: ../../../problems/bending/hollow_rectangle_bending_halfwave.yaml
+  adapter: ../../../adapters/bending/problem.py
+
+cuf:
+  basis: scaled_maclaurin
+  order: 16
+
+longitudinal:
+  method: finite_element
+  elements: 1
+  order: 6
+
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 6
+
+sampling:
+  stations: [0.00, 0.25, 0.50, 0.75, 1.00]
+  displacement_samples: 201
+  stress_grid: 31
+
+output:
+  adapter: ../../../adapters/bending/post.py
+  directory: ../../../output/bending/maclaurin/N16

@@ -1,0 +1,48 @@
+# Version: CSF hollow-rectangle analytical validation model v5 - 2026-08-27
+# Units: mm, N, MPa.
+# Outer rectangle: B = 100 mm, H = 100 mm.
+# Concentric void: b = 80 mm, h = 80 mm.
+# Member length: L = 10000 mm.
+
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        - name: outer_rectangle
+          weight: 71700.0
+          vertices:
+            - [-50.0, -50.0]
+            - [ 50.0, -50.0]
+            - [ 50.0,  50.0]
+            - [-50.0,  50.0]
+
+        - name: central_void
+          weight: 0.0
+          vertices:
+            - [-40.0, -40.0]
+            - [ 40.0, -40.0]
+            - [ 40.0,  40.0]
+            - [-40.0,  40.0]
+
+    S1:
+      z: 10000.0
+      polygons:
+        - name: outer_rectangle
+          weight: 71700.0
+          vertices:
+            - [-50.0, -50.0]
+            - [ 50.0, -50.0]
+            - [ 50.0,  50.0]
+            - [-50.0,  50.0]
+
+        - name: central_void
+          weight: 0.0
+          vertices:
+            - [-40.0, -40.0]
+            - [ 40.0, -40.0]
+            - [ 40.0,  40.0]
+            - [-40.0,  40.0]
+
+  shear_weight_laws:
+    - 'iso(0.3)'
