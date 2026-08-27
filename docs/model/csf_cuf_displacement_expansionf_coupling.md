@@ -1,7 +1,3 @@
-# DRAFT
-
-> The following material presents the displacement expansion adopted for the CSF–CUF coupling. The CSF sectional representation and the CUF kinematic approximation are kept explicitly distinct: CSF supplies the longitudinally evolving sectional state, while CUF supplies the transverse approximation functions and the associated longitudinal displacement amplitudes.
-
 # CUF displacement expansion for CSF coupling
 
 ## Scope
