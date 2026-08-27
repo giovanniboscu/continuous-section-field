@@ -89,6 +89,8 @@ component constraints used by the solver are defined in the corresponding
 problem YAML files; those files are the authoritative executable definition of
 each static scheme.
 
+![Hollow rectangle validation](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/hollow_rectangle_validation/img/hollow_rectangle.png?raw=true)
+
 ## 3. Independent analytical solutions
 
 The analytical calculations do not call the CSF-CUF solver. They provide
