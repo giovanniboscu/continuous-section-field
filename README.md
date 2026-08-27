@@ -589,7 +589,7 @@ plt.show()
 ```
 </details>
 
-### Development and AI Assistance
+### Development and Validation
 
 This project was developed with assistance from generative
 artificial intelligence tools, including the generation and revision of
