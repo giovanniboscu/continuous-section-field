@@ -1,6 +1,4 @@
 # DRAFT
-# Version: CSF-CUF hollow-rectangle complete validation package v6 - 2026-08-27
-
 # Hollow rectangular section — complete bending and torsion validation
 
 This package validates a complete beam solver based on the Carrera Unified
