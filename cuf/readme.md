@@ -31,11 +31,11 @@ This guide focuses on how the implementation is organized, how data move through
 
 ---
 
-## A CUF-based solver is available at the following link:
+## A CUF Solver 
 
 https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/readme.md
 
-The solver uses an implementation of the Carrera Unified Formulation (CUF), with CSF providing the continuous field description of the cross-section geometry and material properties along the structural member.
+The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
 
 ---
 
