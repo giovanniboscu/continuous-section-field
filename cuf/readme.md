@@ -29,16 +29,15 @@ The second is a **tapered model**, in which both geometry and material propertie
 
 From a user's point of view, the expected workflow is therefore simple: define the physical model and the analysis parameters in YAML, run the corresponding model, and inspect the resulting displacement and stress outputs. The CUF machinery remains inside the framework, while the model definition stays external, explicit, and replaceable.
 
-This guide focuses on how the implementation is organized, how data move through the framework, and what can be done with the available examples. The theoretical formulation, coupling strategy, constitutive interface, and numerical validation are documented separately.
 
-> Detailed description of the current CSF-CUF architecture, including how general geometry and material fields are supplied through queryable CSF providers and consumed by the CUF solver.
->
-> [General Geometry and Materials](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cuf/GeneralGeometryMaterials.md)
+### CSF–CUF Documentation
 
----
+* [CUF displacement expansion for CSF coupling](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_displacement_expansionf_coupling.md)
+* [Formal extension of CUF to variable sections through CSF](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md)
+* [Numerical validation against Carrera & Giunta](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_numerical_validation_carrera_giunta.md)
+* [CSF–CUF sectional constitutive interface](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_sectional_constitutive_interface.md)
 
 
----
 
 <!--
 
