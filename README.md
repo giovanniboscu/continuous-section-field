@@ -589,6 +589,25 @@ plt.show()
 ```
 </details>
 
+### Development and AI Assistance
+
+This project was developed with substantial assistance from generative
+artificial intelligence tools, including the generation and revision of
+source code.
+
+The author defined the conceptual framework, mathematical formulation,
+software requirements, validation strategy, and test cases, and reviewed
+the resulting implementation through analytical benchmarks, numerical
+comparisons, and independent reference solutions.
+
+AI tools were also used to propose implementation details, numerical
+methods, and software structures. These components were accepted, modified,
+or rejected based on their consistency with the intended formulation and
+the results of the validation process.
+
+Responsibility for the methodology, validation, released software, and
+scientific conclusions remains with the author.
+
 ---
 ## License
 This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
