@@ -38,6 +38,8 @@ https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/readme.m
 The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
 
 ---
+<br>
+<br>
 
 # DRAFT
 # CSF-CUF Validation Commands
