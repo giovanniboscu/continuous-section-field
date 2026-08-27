@@ -1,5 +1,5 @@
 # DRAFT
-# Hollow rectangular section — complete bending and torsion validation
+# Hollow rectangular section - complete bending and torsion validation
 
 This package validates a complete beam solver based on the Carrera Unified
 Formulation (CUF), implemented within the Continuous Section Field (CSF)
@@ -386,7 +386,7 @@ When adapting the package to a new section or test:
 The following is the operational content present in the previous README,
 retained here without changing its meaning.
 
-### Hollow rectangular section — bending and torsion
+### Hollow rectangular section - bending and torsion
 
 Clean, complete package for the prismatic 100×100 mm hollow square section
 with an 80×80 mm concentric void and 10 mm wall thickness.
