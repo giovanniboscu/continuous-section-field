@@ -1,4 +1,4 @@
-# DRAFT
+
 
 # CSF-CUF Framework
 
@@ -31,6 +31,7 @@ This guide focuses on how the implementation is organized, how data move through
 
 ---
 
+# DRAFT
 # CSF-CUF Validation Commands
 
 Run all commands from:
