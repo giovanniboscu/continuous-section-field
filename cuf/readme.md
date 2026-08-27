@@ -1,6 +1,12 @@
 
+# A CUF Solver 
 
-# CSF-CUF Framework
+
+>[https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/readme.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/hollow_rectangle_validation/readme.md)
+>
+>The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
+
+
 
 This repository provides a framework for building and running models based on the Carrera Unified Formulation (CUF).
 
@@ -31,11 +37,6 @@ This guide focuses on how the implementation is organized, how data move through
 
 ---
 
-## A CUF Solver 
-
-[https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/readme.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/hollow_rectangle_validation/readme.md)
-
-The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
 
 ---
 
