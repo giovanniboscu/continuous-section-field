@@ -435,8 +435,29 @@ Examples of filtered execution:
 ./run_discovered_cases.sh torsion maclaurin
 ```
 
-Successful cases receive a `.done` marker under `logs/completed/`. A later run
-skips those cases. Set `FORCE=1` only when completed cases must be repeated.
+### Execute a single case
+
+A single YAML case can also be executed directly, without running the discovery
+loop. For example, from the `hollow_rectangle_validation/` directory:
+
+```bash
+csf-cuf cases/bending/legendre/legendre_hollow_bending_N10.yaml
+```
+
+For a torsion case, for example:
+
+```bash
+csf-cuf cases/torsion/legendre/legendre_hollow_torsion_N21.yaml
+```
+
+This runs only the selected case. Unlike `run_discovered_cases.sh`, the direct
+`csf-cuf` invocation does not create the runner's `.done` marker or its managed
+log file automatically; redirect or pipe the output explicitly if a persistent
+execution log is required.
+
+Successful cases executed through `run_discovered_cases.sh` receive a `.done`
+marker under `logs/completed/`. A later runner invocation skips those cases. Set
+`FORCE=1` only when completed cases must be repeated.
 
 ### Output tree
 
