@@ -47,6 +47,13 @@ constitutive field are supplied to CUF through the actual net section.
 
 defines the prismatic hollow rectangular section and its material field used in the CSF–CUF validation model. [`hollow_rectangle_prismatic_csf.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/hollow_rectangle_validation/models/hollow_rectangle_prismatic_csf.yaml) 
 
+The YAML files dedicated to the CUF analyses can be viewed here:
+
+- [Bending – scaled Legendre case files](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/hollow_rectangle_validation/cases/bending/legendre)
+- [Bending – scaled Maclaurin case files](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/hollow_rectangle_validation/cases/bending/maclaurin)
+- [Torsion – scaled Legendre case files](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/hollow_rectangle_validation/cases/torsion/legendre)
+- [Torsion – scaled Maclaurin case files](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/hollow_rectangle_validation/cases/torsion/maclaurin)
+
 ## 2. Static schemes, constraints and loads
 
 Two separate static problems are included. Both use a single half-wave along
