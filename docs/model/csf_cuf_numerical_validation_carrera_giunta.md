@@ -2493,10 +2493,12 @@ The demonstrated validation scope therefore includes:
 
 ---
 
-## 20. Reference
+### References
 
-The primary CUF benchmark reference used throughout this document is:
+* E. Carrera, G. Giunta, **“Refined Beam Theories Based on a Unified Formulation”**, *International Journal of Applied Mechanics*, 2(1) (2010), 117–143. [DOI](https://doi.org/10.1142/S1758825110000500).
 
-E. Carrera and G. Giunta, **"Refined Beam Theories Based on a Unified Formulation"**, *International Journal of Applied Mechanics*, Vol. 2, No. 1 (2010), pp. 117-143.
 
-The analytical validation sections retain the notation and benchmark structure required for direct comparison with that work, while the later runtime sections document the current implemented CSF-CUF architecture and its numerical validation state.
+- G. Giunta, S. Belouettar, E. Carrera, **“Analysis of FGM Beams by Means of Classical and Advanced Theories”**, *Mechanics of Advanced Materials and Structures*, 17 (2010), 622-635.
+
+- S. O. Ojo, P. M. Weaver, **“Efficient strong Unified Formulation for stress analysis of non-prismatic beam structures”**, 2021.
+
