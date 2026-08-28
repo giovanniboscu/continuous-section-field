@@ -1,9 +1,9 @@
-# Formal CSF-CUF coupling for a continuous longitudinal section model
+# CSF-Defined Variable-Section Extension of CUF
 
 
 ## 1. Scope
 
-This note formulates the coupling between a Continuous Section Field (CSF) and the beam formulation based on the Carrera Unified Formulation (CUF). The coupling follows directly from the CSF representation
+In the literature examined, variable-section CUF elements are formulated through three-dimensional geometric mappings and Jacobian transformations. The present formulation instead represents the cross-sectional domain directly as
 
 $$
 \mathcal{S}(x),
