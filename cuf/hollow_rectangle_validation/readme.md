@@ -55,10 +55,6 @@ The YAML files dedicated to the CUF analyses can be viewed here:
 - [Torsion – scaled Maclaurin case files](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/hollow_rectangle_validation/cases/torsion/maclaurin)
 
 
-> **Important note - coordinate convention**
->
-> In the CSF–CUF formulation, the longitudinal coordinate is \(x\), directed along the beam axis, while \(y\) and \(z\) describe the cross-section. In the native CSF model, however, the longitudinal axis is \(z\). Therefore, the coordinate symbols must always be interpreted according to the formulation being considered: the beam-axis coordinate \(x\) in CSF–CUF corresponds to the beam-axis coordinate \(z\) in the CSF model.
-
 ## 2. Static schemes, constraints and loads
 
 Two separate static problems are included. Both use a single half-wave along
@@ -109,6 +105,12 @@ problem YAML files; those files are the authoritative executable definition of
 each static scheme.
 
 ![Hollow rectangle validation](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/hollow_rectangle_validation/img/hollow_rectangle.png?raw=true)
+
+
+> **Important note - coordinate convention**
+>
+> In the CSF–CUF formulation, the longitudinal coordinate is \(x\), directed along the beam axis, while \(y\) and \(z\) describe the cross-section. In the native CSF model, however, the longitudinal axis is \(z\). Therefore, the coordinate symbols must always be interpreted according to the formulation being considered: the beam-axis coordinate \(x\) in CSF–CUF corresponds to the beam-axis coordinate \(z\) in the CSF model.
+
 
 ## 3. Independent analytical solutions
 
