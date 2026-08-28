@@ -40,6 +40,13 @@ The section is represented directly by CSF as an outer domain containing a
 concentric zero-material subdomain. Therefore, both the geometry and the
 constitutive field are supplied to CUF through the actual net section.
 
+
+**Here, the CSF model of the structural element, represented in YAML format, can be viewed**
+
+
+
+defines the prismatic hollow rectangular section and its material field used in the CSF–CUF validation model. [`hollow_rectangle_prismatic_csf.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/hollow_rectangle_validation/models/hollow_rectangle_prismatic_csf.yaml) 
+
 ## 2. Static schemes, constraints and loads
 
 Two separate static problems are included. Both use a single half-wave along
