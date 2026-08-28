@@ -126,6 +126,14 @@ $$
 u_z^{EB}(L/2)=-2.910155870408\times10^{-1}\ \mathrm{mm}.
 $$
 
+The same Euler–Bernoulli solution is also implemented in `post.py`. After each
+CUF solution, the post-processing code reconstructs the analytical reference
+from the CSF model and problem definition, compares it with the numerical CUF
+displacement, and writes both values and their relative difference to
+`hollow_rectangle_analytical.txt`. The standalone baseline script and
+`post.py` therefore use the same analytical expression, while the baseline can
+be executed independently of the CSF-CUF solver.
+
 ### 3.2 Torsion reference solutions
 
 The package currently contains the Bredt–Batho thin-wall reference. For the
