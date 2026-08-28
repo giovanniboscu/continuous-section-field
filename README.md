@@ -592,8 +592,7 @@ plt.show()
 ### Development and Validation
 
 This project was developed with assistance from generative
-artificial intelligence tools, including the generation and revision of
-source code.
+artificial intelligence tools.
 
 The author defined the conceptual framework, mathematical formulation,
 software requirements, validation strategy, and test cases, and reviewed
