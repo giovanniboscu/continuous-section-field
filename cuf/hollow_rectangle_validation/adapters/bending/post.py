@@ -1,4 +1,4 @@
-# Version: CSF-CUF hollow-rectangle Euler-Bernoulli post-processing v5 - 2026-08-27
+# Version: CSF-CUF hollow-rectangle Euler-Bernoulli post-processing v6 - 2026-08-28
 from __future__ import annotations
 
 import math
@@ -155,11 +155,48 @@ def _require_prismatic(reference_start, reference_end):
             raise ValueError("Euler-Bernoulli comparison requires a prismatic beam")
 
 
-def _solver_uz(u, x: float, y: float, z: float) -> float:
-    value = np.asarray(u(float(x), float(y), float(z)), dtype=float)
+def _solver_displacement(u, x: float, y: float, z: float, u_at_x=None) -> np.ndarray:
+    if u_at_x is None:
+        value = np.asarray(u(float(x), float(y), float(z)), dtype=float)
+    else:
+        value = np.asarray(u_at_x(float(y), float(z)), dtype=float)
     if value.shape != (3,):
         raise ValueError("u(x,y,z) must return a 3-component vector")
-    return float(value[2])
+    if not np.all(np.isfinite(value)):
+        raise ValueError(
+            f"u(x,y,z) returned a non-finite value at "
+            f"(x,y,z)=({float(x):.12g},{float(y):.12g},{float(z):.12g})"
+        )
+    return value
+
+
+def _section_evaluator(u, x: float):
+    if hasattr(u, "section_evaluator"):
+        return u.section_evaluator(float(x))
+    return None
+
+
+def _solver_uz(u, x: float, y: float, z: float, u_at_x=None) -> float:
+    return float(_solver_displacement(u, x, y, z, u_at_x=u_at_x)[2])
+
+
+def _bottom_wall_check(u, x: float, reference, sample_count: int = 9):
+    """Sample solved u_z along the complete outer bottom wall."""
+    sample_count = max(3, int(sample_count))
+    outer = reference["outer"]
+    ys = np.linspace(outer["y_min"], outer["y_max"], sample_count)
+    z = float(outer["z_min"])
+    u_at_x = _section_evaluator(u, x)
+    values = np.asarray(
+        [_solver_uz(u, x, float(y), z, u_at_x=u_at_x) for y in ys],
+        dtype=float,
+    )
+    return {
+        "minimum": float(np.min(values)),
+        "maximum": float(np.max(values)),
+        "mean": float(np.mean(values)),
+        "spread": float(np.max(values) - np.min(values)),
+    }
 
 
 def _exact_uz(*, fraction: float, maximum: float) -> float:
@@ -203,7 +240,15 @@ def write_outputs(u, model_bridge, case, problem_definition):
     y_sample = float(reference["outer"]["y_center"])
     z_sample = float(reference["outer"]["z_min"])
     x_mid = 0.5 * (x0 + x1)
-    numerical_mid = _solver_uz(u, x_mid, y_sample, z_sample)
+    u_mid = _section_evaluator(u, x_mid)
+    numerical_mid = _solver_uz(
+        u,
+        x_mid,
+        y_sample,
+        z_sample,
+        u_at_x=u_mid,
+    )
+    bottom_mid = _bottom_wall_check(u, x_mid, reference)
     relative_mid = (
         abs(abs(numerical_mid) - abs(maximum_exact))
         / abs(maximum_exact)
@@ -211,7 +256,7 @@ def write_outputs(u, model_bridge, case, problem_definition):
     )
 
     lines = [
-        "# Version: CSF-CUF hollow-rectangle analytical report v1 - 2026-08-27",
+        "# Version: CSF-CUF hollow-rectangle analytical report v2 - 2026-08-28",
         "HOLLOW RECTANGLE - SINUSOIDAL BENDING",
         "=======================================",
         "",
@@ -237,6 +282,14 @@ def write_outputs(u, model_bridge, case, problem_definition):
         f"Euler-Bernoulli u_z [mm]   = {maximum_exact:.12e}",
         f"relative magnitude error [%] = {relative_mid:.12e}",
         "",
+        "BOTTOM-WALL FIELD CHECK AT MIDSPAN",
+        "----------------------------------",
+        "u_z is sampled at 9 points over the complete outer bottom wall.",
+        f"minimum u_z [mm]            = {bottom_mid['minimum']:.12e}",
+        f"maximum u_z [mm]            = {bottom_mid['maximum']:.12e}",
+        f"mean u_z [mm]               = {bottom_mid['mean']:.12e}",
+        f"max-min spread [mm]         = {bottom_mid['spread']:.12e}",
+        "",
         "STATIONS",
         "--------",
         f"{'x/L':>10} {'x [mm]':>16} {'CUF u_z [mm]':>20} {'EB u_z [mm]':>20} {'error [%]':>16}",
@@ -247,7 +300,14 @@ def write_outputs(u, model_bridge, case, problem_definition):
             raise ValueError("sampling.stations values must lie in [0,1]")
 
         x = x0 + fraction * length
-        numerical = _solver_uz(u, x, y_sample, z_sample)
+        u_at_x = _section_evaluator(u, x)
+        numerical = _solver_uz(
+            u,
+            x,
+            y_sample,
+            z_sample,
+            u_at_x=u_at_x,
+        )
         exact = _exact_uz(fraction=fraction, maximum=maximum_exact)
 
         if abs(exact) <= 1.0e-14 * max(1.0, abs(maximum_exact)):
