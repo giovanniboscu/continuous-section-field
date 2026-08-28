@@ -3,7 +3,7 @@
 
 ## 1. Scope
 
-In the literature examined, variable-section CUF elements are formulated through three-dimensional geometric mappings and Jacobian transformations. The present formulation instead represents the cross-sectional domain directly as
+The present formulation represents the cross-sectional domain directly as
 
 $$
 \mathcal{S}(x),
