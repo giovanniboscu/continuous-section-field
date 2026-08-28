@@ -106,9 +106,23 @@ each static scheme.
 
 ![Hollow rectangle validation](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/hollow_rectangle_validation/img/hollow_rectangle.png?raw=true)
 
-> **Important note - coordinate convention in YAML files**
+> **Important note - coordinate mapping in YAML files**
 >
-> The coordinate convention is particularly important when defining and interpreting the YAML input files. In the CSF model YAML, the structural element is represented using \(z\) as the longitudinal beam axis. In the CSF–CUF formulation and in the YAML definitions associated with the CUF analysis, the longitudinal beam coordinate is instead \(x\), while \(y\) and \(z\) are the cross-sectional coordinates. Therefore, the longitudinal coordinate \(z\) of the CSF representation corresponds to \(x\) in the CSF–CUF formulation. This distinction must be respected when defining geometry variations, material laws, loads, constraints and sampling positions.
+> CSF and CSF-CUF use different coordinate conventions. In the native CSF representation, `z` is the longitudinal coordinate, while `x` and `y` are the cross-sectional coordinates. In the CSF-CUF formulation, `x` is the longitudinal coordinate, while `y` and `z` describe the cross-section.
+>
+> The CSF-CUF adapter applies the following correspondence:
+>
+> | CSF coordinate | CSF-CUF coordinate | Role |
+> |---|---|---|
+> | `z` | `x` | longitudinal beam coordinate |
+> | `x` | `y` | first cross-sectional coordinate |
+> | `y` | `z` | second cross-sectional coordinate |
+>
+> In compact form:
+>
+> `CSF-CUF (x, y, z) = CSF (z, x, y)`
+>
+> No sign inversion is applied. This distinction must be respected when defining or interpreting YAML files. CSF model YAML files use the native CSF convention, particularly `z` for longitudinal stations and longitudinal geometry or material laws. CUF problem and case definitions, as well as solver results `u(x,y,z)`, use the CSF-CUF convention, with `x` directed along the beam.
 
 ## 3. Independent analytical solutions
 
