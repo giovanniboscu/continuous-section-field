@@ -106,11 +106,9 @@ each static scheme.
 
 ![Hollow rectangle validation](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/hollow_rectangle_validation/img/hollow_rectangle.png?raw=true)
 
-
-> **Important note - coordinate convention**
+> **Important note — coordinate convention in YAML files**
 >
-> In the CSF–CUF formulation, the longitudinal coordinate is \(x\), directed along the beam axis, while \(y\) and \(z\) describe the cross-section. In the native CSF model, however, the longitudinal axis is \(z\). Therefore, the coordinate symbols must always be interpreted according to the formulation being considered: the beam-axis coordinate \(x\) in CSF–CUF corresponds to the beam-axis coordinate \(z\) in the CSF model.
-
+> The coordinate convention is particularly important when defining and interpreting the YAML input files. In the CSF model YAML, the structural element is represented using \(z\) as the longitudinal beam axis. In the CSF–CUF formulation and in the YAML definitions associated with the CUF analysis, the longitudinal beam coordinate is instead \(x\), while \(y\) and \(z\) are the cross-sectional coordinates. Therefore, the longitudinal coordinate \(z\) of the CSF representation corresponds to \(x\) in the CSF–CUF formulation. This distinction must be respected when defining geometry variations, material laws, loads, constraints and sampling positions.
 
 ## 3. Independent analytical solutions
 
