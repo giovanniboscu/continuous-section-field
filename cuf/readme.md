@@ -10,7 +10,7 @@
 
 This repository provides a framework for building and running models based on the Carrera Unified Formulation (CUF).
 
-It is not intended as a theoretical introduction to CUF. Its purpose is to provide a parametric and reusable implementation that can be used directly from external model definitions.
+Its purpose is to provide a parametric and reusable implementation that can be used directly from external model definitions.
 
 The model is described through YAML files containing the geometry, material distribution, loads, boundary conditions, and the transverse expansion rule. From these inputs, the framework builds and runs the corresponding CUF model.
 
