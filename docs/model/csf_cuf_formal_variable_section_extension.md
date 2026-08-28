@@ -1,4 +1,4 @@
-# CSF-Defined Variable-Section Extension of CUF
+# CSF–CUF Formulation for Directly Prescribed Variable Sections
 
 
 ## 1. Scope
