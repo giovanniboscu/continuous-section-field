@@ -431,10 +431,7 @@ When adapting the package to a new section or test:
 8. inspect convergence, residuals and conditioning;
 9. compare the final CUF sequence with the independent references.
 
-## 8. Original README content
-
-The following is the operational content present in the previous README,
-retained here without changing its meaning.
+## 8.  README content
 
 ### Hollow rectangular section - bending and torsion
 
