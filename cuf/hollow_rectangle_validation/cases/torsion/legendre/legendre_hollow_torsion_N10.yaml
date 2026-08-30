@@ -25,5 +25,5 @@ sampling:
   stress_grid: 31
 
 output:
-  adapter: ../../../adapters/torsion/post.py
+  adapter: ../../../adapters/torsion/post-torsion.py
   directory: ../../../output/torsion/legendre/N10

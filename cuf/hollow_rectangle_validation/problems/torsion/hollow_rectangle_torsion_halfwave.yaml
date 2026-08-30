@@ -7,7 +7,7 @@ problem:
   # Opposite solver-z tractions on y=+/-B/2 [N/mm^2].
   # Their transverse resultant is zero and their torque per unit length is
   # m0 = amplitude * B * H = 0.1 N for B=H=100 mm.
-  amplitude: 1.0e-5
+  amplitude: 1.0e-6
   # Explicitly repeated for the independent Bredt-Batho baseline. The solver
   # obtains the same value from models/... shear_weight_laws: iso(0.3).
   poisson_ratio: 0.3

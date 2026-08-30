@@ -1,14 +1,63 @@
-# Version: CSF-CUF hollow-rectangle complete validation case v5 - 2026-08-27
+# ======================================================================
+# CSF-CUF CASE CONFIGURATION
+#
+# The generic CUF solver and its core are not modified for this case.
+# The user defines the analysis through the configuration points below.
+# ======================================================================
+
 case:
   name: cuf_scaled_legendre_hollow_rectangle_bending_N01
 
+
+# ======================================================================
+# USER CONTROL 1 — PHYSICAL MODEL
+# ======================================================================
+#
+# CHANGE THIS FILE to use a different geometry or material distribution.
+#
+# The referenced CSF model provides the continuous section field S(x).
+# Geometry and material therefore remain external to the CUF solver.
+
 problem:
   yaml: ../../../problems/bending/hollow_rectangle_bending_halfwave.yaml
+
+
+# ======================================================================
+# USER CONTROL 2 — STRUCTURAL PROBLEM
+# ======================================================================
+#
+# CHANGE THIS ADAPTER to define a different structural problem.
+#
+# The adapter provides the problem-specific interface to the generic
+# solver: loads, boundary conditions and the information required to
+# formulate the structural problem.
+#
+# It does NOT contain a dedicated CUF solver. The generic solver uses
+# the common CUF core.
+
   adapter: ../../../adapters/bending/problem.py
+
+
+# ======================================================================
+# USER CONTROL 3 — CUF TRANSVERSE EXPANSION
+# ======================================================================
+#
+# SELECT the transverse expansion family and its order.
+#
+# The expansion law is external to the CUF core. Changing the basis
+# does not require modifying the solver.
 
 cuf:
   basis: scaled_legendre
   order: 1
+
+
+# ======================================================================
+# USER CONTROL 4 — LONGITUDINAL DISCRETIZATION
+# ======================================================================
+#
+# DEFINE the approximation along the beam axis independently of the
+# transverse CUF expansion and of the continuous section field S(x).
 
 longitudinal:
   method: finite_element
@@ -16,14 +65,41 @@ longitudinal:
   order: 6
   material_polynomial_degree: 1
 
+
+# ======================================================================
+# USER CONTROL 5 — SECTION INTEGRATION
+# ======================================================================
+#
+# CONFIGURE how the sectional quantities requested by CUF are
+# numerically integrated.
+
 section_integration:
   method: fixed_gauss_polygon
   gauss_order: 6
+
+
+# ======================================================================
+# USER CONTROL 6 — SOLUTION SAMPLING
+# ======================================================================
+#
+# DEFINE where and how densely the already computed solution is
+# evaluated. These settings do not change the mechanical formulation.
 
 sampling:
   stations: [0.00, 0.25, 0.50, 0.75, 1.00]
   displacement_samples: 201
   stress_grid: 31
+
+
+# ======================================================================
+# USER CONTROL 7 — POST-PROCESSING AND OUTPUT
+# ======================================================================
+#
+# CHANGE the post-processing adapter to interpret the generic CUF
+# solution for a different application or validation procedure.
+#
+# Problem-specific result extraction therefore remains outside
+# the CUF solver core.
 
 output:
   adapter: ../../../adapters/bending/post.py
