@@ -1,23 +1,28 @@
 # Hollow rectangular section - complete bending and torsion validation
 
-This package validates a complete beam solver based on the Carrera Unified
-Formulation (CUF), implemented within the Continuous Section Field (CSF)
-framework. The validation is performed on a prismatic hollow square beam under
-sinusoidally distributed bending and torsional loads.
+This package validates a complete beam solver based on the Carrera
+Unified Formulation (CUF), implemented within the Continuous Section
+Field (CSF) framework. The current solver operates at the level of a
+single CUF beam model; the assembly and coupling of multiple independent
+CUF beam models into a global structural system are outside its present
+scope.
 
-The package is not only a collection of prescribed displacement fields or
-post-processing examples. The CSF-CUF implementation constructs the CUF
-kinematic approximation, evaluates the sectional and longitudinal integrals,
-assembles the global finite-element equations, applies loads and constraints,
-solves the resulting system, and exposes the continuous three-dimensional
-displacement field
+The package is not only a collection of prescribed displacement fields
+or post-processing examples. The CSF-CUF implementation constructs the
+CUF kinematic approximation, evaluates the sectional and longitudinal
+integrals, assembles the global finite-element equations, applies loads
+and constraints, solves the resulting system, and exposes the continuous
+three-dimensional displacement field
 
 $$
 \mathbf{u}(x,y,z)=\{u_x,u_y,u_z\}^{T}.
 $$
 
-The analytical solutions described below are independent references used to
-check the results produced by this solver.
+The analytical solutions described below are independent references used
+to check the results produced by this solver.
+
+
+
 
 ---
 
