@@ -1,3 +1,5 @@
+# DRAFT
+
 # How to Implement a Custom Transverse Expansion in CSF–CUF
 
 ## Purpose
@@ -12,12 +14,16 @@ the common basis interface.
 
 The displacement field retains the unified form
 
-$$ \mathbf{u}(x,y,z) = \sum_{\tau=1}^{M} F_\tau(x,y,z)\,\mathbf{u}_\tau(x). $$
+```math
+\mathbf{u}(x,y,z) = \sum_{\tau=1}^{M} F_\tau(x,y,z)\,\mathbf{u}_\tau(x).
+```
 
 For every requested term $\tau$ and physical point $(x,y,z)$, the
 expansion supplies
 
-$$ F_\tau, \qquad F_{\tau,y}, \qquad F_{\tau,z}. $$
+```math
+F_\tau, \qquad F_{\tau,y}, \qquad F_{\tau,z}.
+```
 
 The core remains responsible for sectional integration, fundamental nuclei,
 longitudinal finite elements, global assembly, loads, constraints, the KKT
@@ -37,16 +43,27 @@ expansion registry
     v
 selected expansion plugin
     |
+    |-- section_provider
+    |-- continuous_section_field
+    |
     |  builds one CUFBasis implementation
     v
-F_tau, F_tau,y, F_tau,z
+basis evaluation at (x,y,z)
     |
+    |  F_tau, F_tau,y, F_tau,z
     v
 CUF core
 ```
 
 A custom expansion must not require a new solver or changes to the CUF
 fundamental nuclei.
+
+The expansion interface deliberately separates approximation logic from physical
+model ownership. The plugin receives the parsed expansion options together with
+two read-only model views. It may remain completely geometry-independent, use the
+normalized `section_provider`, or inspect the complete `continuous_section_field`
+when its mathematical definition requires richer section context. No
+basis-specific interpretation is added to the solver core.
 
 ## Relevant Files
 
@@ -81,7 +98,9 @@ this guide is called `my_expansion`.
 
 It is a total-degree monomial basis in the physical transverse coordinates:
 
-$$ F_{p,q}(y,z)=y^p z^q, \qquad p\ge0, \qquad q\ge0, \qquad p+q\le N. $$
+```math
+F_{p,q}(y,z)=y^p z^q, \qquad p\ge0, \qquad q\ge0, \qquad p+q\le N.
+```
 
 The terms are ordered first by total degree and then by descending power of
 `y`. For `order: 2`, the ordering is therefore:
@@ -194,7 +213,9 @@ class MyExpansionBasis(CUFBasis):
 
 For `order = N`, this construction gives
 
-$$ M=\frac{(N+1)(N+2)}{2}. $$
+```math
+M=\frac{(N+1)(N+2)}{2}.
+```
 
 The optional argument `x` is accepted because it belongs to the common
 interface, but this particular example does not use it: its functions are
@@ -208,7 +229,9 @@ For each longitudinal generalized node, the solver creates three displacement
 unknowns for every transverse term. Therefore the expansion must define a
 deterministic ordering
 
-$$ \tau=1,2,\ldots,M. $$
+```math
+\tau=1,2,\ldots,M.
+```
 
 The following must remain stable throughout a single analysis:
 
@@ -246,23 +269,34 @@ The same interface is used during:
 
 ### Use of `x`
 
-`x` is optional for backward compatibility with expansions that depend only
-on $(y,z)$. A new expansion may require it:
+`x` is optional in the common evaluation signature because many expansions
+depend only on the transverse coordinates `(y,z)`. A section-aware expansion
+may require the longitudinal coordinate explicitly:
 
 ```python
 if x is None:
     raise ValueError("section_dependent_expansion requires the longitudinal coordinate x")
 ```
 
-An expansion that depends on the current CSF section may use the
-`section_provider` stored by its constructor:
+A section-aware expansion may retain either model interface supplied by its
+plugin builder. For normalized sectional information it may use:
 
 ```python
-section_state = self._section_provider.domains(float(x))
+domains = self._section_provider.domains(float(x))
 ```
 
-The expansion, not the CUF core, is responsible for interpreting that section
-state and constructing any internal points, mappings, topology, or cached
+When it needs the complete CSF model, it may instead use:
+
+```python
+section = self._continuous_section_field.section(float(x))
+```
+
+These are complementary interfaces. The expansion decides which level of model
+information it requires. Geometry and material definitions remain owned by the
+CSF model; the expansion only reads and interprets them for its own approximation.
+
+The expansion, not the CUF core, is responsible for interpreting the current
+section state and constructing any internal points, mappings, topology, or cached
 metadata that it requires.
 
 ## Step 3 — Validate `basis_options`
@@ -294,20 +328,39 @@ Do not duplicate CSF geometry or material definitions inside
 ## Step 4 — Implement the Plugin Builder
 
 The builder connects the generic plugin interface to the specific basis class.
-The plugin contract always provides `section_provider`, even though this
-particular basis does not need it:
+Every expansion builder receives both `section_provider` and
+`continuous_section_field`. They provide two complementary levels of access
+to the physical model:
+
+- `section_provider` exposes the normalized sectional interface used by the CUF solver;
+- `continuous_section_field` exposes the complete Continuous Section Field model.
+
+A simple expansion may use neither of them. A section-aware expansion may retain
+either or both in its basis object and query them when evaluating at a given `x`.
+The example below is geometry-independent, so it deliberately ignores both:
 
 ```python
-def _build(*, order, section_provider, options):
+def _build(
+    *,
+    order,
+    section_provider,
+    continuous_section_field,
+    options,
+):
     _reject_options(options)
+    del section_provider
+    del continuous_section_field
     return MyExpansionBasis(order=order)
 ```
 
 `MyExpansionBasis` performs the order validation itself. The builder therefore
 only validates plugin-specific options and constructs the ready-to-use basis.
 
-A different expansion may pass `section_provider` to its basis constructor if
-its functions depend on the current CSF section. The builder must not modify
+A different expansion may pass `section_provider`, `continuous_section_field`,
+or both to its basis constructor. This allows the expansion to inspect the
+current physical section or other information carried by the complete CSF model
+without adding expansion-specific logic to the CUF core. The builder and the
+basis must treat the supplied model context as read-only and must not modify
 the CSF model or global solver state.
 
 ## Step 5 — Declare the Section Quadrature Requirement
@@ -335,7 +388,9 @@ The correct rule depends on the approximation space and on the sectional
 integration method. Derive it from the highest degree or complexity of the
 products used by the CUF nuclei, including combinations such as
 
-$$ F_\tau F_s, \quad F_{\tau,y}F_s, \quad F_{\tau,z}F_{s,y}, \quad F_{\tau,y}F_{s,y}, \quad F_{\tau,z}F_{s,z}. $$
+```math
+F_\tau F_s, \quad F_{\tau,y}F_s, \quad F_{\tau,z}F_{s,y}, \quad F_{\tau,y}F_{s,y}, \quad F_{\tau,z}F_{s,z}.
+```
 
 If no exact polynomial rule is available, return a documented conservative
 minimum and verify it numerically by increasing the Gauss order.
@@ -477,8 +532,16 @@ def _reject_options(options):
         )
 
 
-def _build(*, order, section_provider, options):
+def _build(
+    *,
+    order,
+    section_provider,
+    continuous_section_field,
+    options,
+):
     _reject_options(options)
+    del section_provider
+    del continuous_section_field
     return MyExpansionBasis(order=order)
 
 
@@ -507,8 +570,9 @@ register_cuf_basis_plugin(
 ```
 
 The complete implementation required by this worked example is therefore in a
-single file. `section_provider` appears in `_build()` because it is part of the
-common plugin contract; this basis intentionally does not use it.
+single file. Both `section_provider` and `continuous_section_field` appear in
+`_build()` because they are part of the common plugin contract. This basis is
+geometry-independent and intentionally uses neither.
 
 Modules under `csf.cuf.expansions` are discovered automatically. No edit to
 the central registry is required.
@@ -631,10 +695,11 @@ A valid expansion can operate fully without closed-form diagnostic support.
 
 ## Rules for a Section-Dependent Expansion
 
-If the expansion derives internal data from `Section(x)`, it owns all of the
-following responsibilities:
+If the expansion derives internal data from the physical model at `x`, it owns
+all of the following responsibilities:
 
-- obtaining the current section state from `section_provider`;
+- obtaining the required current state from `section_provider` and/or
+  `continuous_section_field`;
 - constructing or retrieving its internal points and topology;
 - evaluating the correct term at the solver's physical point;
 - evaluating exact or consistently derived $y$- and $z$-derivatives;
@@ -678,7 +743,9 @@ evaluates or integrates the load.
 
 A physical end constraint has the form
 
-$$ u_i(x_{\mathrm{end}},y,z) = \sum_\tau F_\tau(x_{\mathrm{end}},y,z) q_{\tau i}^{\mathrm{end}}. $$
+```math
+u_i(x_{\mathrm{end}},y,z) = \sum_\tau F_\tau(x_{\mathrm{end}},y,z) q_{\tau i}^{\mathrm{end}}.
+```
 
 An expansion requiring $x$ must therefore also be evaluable at both
 longitudinal ends. When constructing `PointwiseBoundaryConstraintMapper`, an
@@ -854,70 +921,3 @@ A custom expansion is ready for use only when:
 
 Once these conditions are satisfied, the expansion is a self-contained CSF–CUF
 component and can evolve independently of the solver core.
----
-
-
-CSF-CUF v21 - Isolated transverse expansion plugins
-Date: 2026-08-29
-
-Scope
------
-This version changes only the software isolation and registration of the
-existing transverse expansions. It does not change the CUF formulation.
-
-Main changes
-------------
-1. Added optional cuf.basis_options parsing. Existing YAML files remain valid.
-2. Made core/basis_plugins.py a concrete-basis-independent registry.
-3. Added lazy automatic discovery of modules below csf.cuf.expansions.
-4. Moved registration, construction, and numerical requirements of the three
-   existing bases into their own expansion modules:
-   - scaled_maclaurin
-   - scaled_maclaurin_tensor
-   - scaled_legendre
-5. Moved the transverse contribution to the longitudinal polynomial-degree
-   estimate out of solver/engine.py and into each expansion plugin.
-6. Kept section Gauss minimum selection inside each expansion plugin.
-7. Added optional longitudinal evaluation context x to CUFBasis value and
-   derivative calls. Existing calls without x remain valid. Current Maclaurin
-   and Legendre implementations intentionally ignore x and are numerically
-   unchanged.
-8. Added optional x_start and x_end context to the pointwise boundary mapper
-   without breaking existing adapters.
-9. Kept values() and compile_factors() as optional performance paths; the
-   scalar CUFBasis fallback remains authoritative.
-
-YAML contract
--------------
-Existing configuration remains valid:
-
-  cuf:
-    basis: scaled_legendre
-    order: 21
-
-Expansion-specific parameters may be placed in the optional mapping:
-
-  cuf:
-    basis: some_registered_expansion
-    order: 4
-    basis_options:
-      parameter_name: value
-
-The general parser stores this mapping without interpreting its contents.
-The selected expansion plugin is responsible for validation. Existing bases
-reject non-empty basis_options because they currently define no extra options.
-
-Compatibility verification
---------------------------
-- Python compilation: passed.
-- Registry discovery: passed.
-- Scalar values and y/z derivatives, old versus new: exact equality for all
-  terms of scaled Maclaurin, scaled Legendre, and tensor Maclaurin test bases.
-- Hollow rectangular torsion N=2, scaled Legendre:
-  identical effective section and longitudinal Gauss orders, KKT shape/nnz,
-  KKT data hashes, RHS hash, and residual.
-- Hollow rectangular torsion N=2, scaled Maclaurin:
-  identical effective section and longitudinal Gauss orders, KKT shape/nnz,
-  KKT data hashes, RHS hash, and residual.
-
-No Lagrange implementation was added to the registry in this version.
