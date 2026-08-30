@@ -1,6 +1,27 @@
 # Hollow rectangular section - complete bending and torsion validation
 
+This package validates a complete beam solver based on the Carrera Unified
+Formulation (CUF), implemented within the Continuous Section Field (CSF)
+framework. The validation is performed on a prismatic hollow square beam under
+sinusoidally distributed bending and torsional loads.
 
+The package is not only a collection of prescribed displacement fields or
+post-processing examples. The CSF-CUF implementation constructs the CUF
+kinematic approximation, evaluates the sectional and longitudinal integrals,
+assembles the global finite-element equations, applies loads and constraints,
+solves the resulting system, and exposes the continuous three-dimensional
+displacement field
+
+$$
+\mathbf{u}(x,y,z)=\{u_x,u_y,u_z\}^{T}.
+$$
+
+The analytical solutions described below are independent references used to
+check the results produced by this solver.
+
+---
+
+Global architecture 
    
 ```
                                                  hollow_rectangle_bending_halfwave.yaml                                        
@@ -25,26 +46,177 @@
 ```
 
 
+
+
+
+
+
+
+---
+
+
+## User-facing configuration
+
+A complete CSF-CUF analysis is defined through a small set of user-facing
+control points. The CUF core itself is not specialized for the individual
+case.
+
+The case configuration acts as the control panel of the analysis: the user
+selects the physical model, structural problem, CUF transverse expansion,
+longitudinal discretization, sectional integration, solution sampling, and
+post-processing without modifying the generic CUF core.
+
+| User control | Role | What the user changes |
+|---|---|---|
+| `problem.yaml` | **CSF / \(\mathcal{S}(x)\)** | Geometry and material distribution |
+| `problem.adapter` | **Structural problem** | Loads, boundary conditions, and interface to the solver |
+| `cuf.basis`, `cuf.order` | **CUF transverse expansion** | Expansion family and approximation order |
+| `longitudinal` | **Longitudinal direction** | Finite-element discretization along the beam axis |
+| `section_integration` | **Cross-section integration** | Numerical integration rule and order |
+| `sampling` | **Solution evaluation** | Stations and sampling resolution |
+| `output.adapter` | **Post-processing** | Problem-specific interpretation and extraction of results |
+
+The corresponding user controls are directly visible in the case YAML.
+
+### 1. Geometry and material - Continuous Section Field
+
+The physical section is supplied externally through the CSF model:
+
+```yaml
+problem:
+  yaml: ../../../problems/bending/hollow_rectangle_bending_halfwave.yaml
+```
+
+This is the primary description of the continuous section field
+\(\mathcal{S}(x)\). Changing this model changes the geometry and/or material
+distribution without embedding either of them in the CUF solver.
+
+### 2. Structural problem
+
+Loads, boundary conditions, and the problem-specific interface to the generic
+solver are supplied by the problem adapter:
+
+```yaml
+problem:
+  adapter: ../../../adapters/bending/problem.py
+```
+
+The adapter is not a dedicated CUF solver. It connects the particular
+structural problem to the generic solver, which uses the common CUF core.
+
+### 3. CUF transverse expansion
+
+The transverse expansion is selected independently:
+
+```yaml
+cuf:
+  basis: scaled_legendre
+  order: 1
+```
+
+The expansion family and its order are therefore configuration choices rather
+than properties hard-coded into the solver. A different supported expansion
+can be selected without modifying the CUF core.
+
+### 4. Longitudinal discretization
+
+The approximation along the beam axis is configured separately:
+
+```yaml
+longitudinal:
+  method: finite_element
+  elements: 1
+  order: 6
+  material_polynomial_degree: 1
+```
+
+This defines the longitudinal finite-element discretization independently of
+both the continuous section field \(\mathcal{S}(x)\) and the transverse CUF
+expansion.
+
+### 5. Section integration
+
+The numerical integration over the cross-section is another independent
+configuration:
+
+```yaml
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 6
+```
+
+The sectional integration strategy can therefore be configured without
+changing the longitudinal discretization or the CUF solver core.
+
+### 6. Solution sampling
+
+The locations and resolution used to evaluate the computed solution are
+controlled separately:
+
+```yaml
+sampling:
+  stations: [0.00, 0.25, 0.50, 0.75, 1.00]
+  displacement_samples: 201
+  stress_grid: 31
+```
+
+These parameters control the evaluation of the solution and do not alter the
+underlying mechanical formulation.
+
+### 7. Post-processing and output
+
+Finally, problem-specific result extraction is kept outside the CUF core:
+
+```yaml
+output:
+  adapter: ../../../adapters/bending/post.py
+  directory: ../../../output/bending/legendre/N01
+```
+
+The output adapter interprets the generic CUF solution for the particular
+application or validation problem.
+
+The resulting separation can be summarized as:
+
+```text
+Continuous Section Field S(x)
+geometry + material
+        |
+        v
+structural problem adapter
+loads + boundary conditions
+        |
+        v
+generic solver
+        |
+        v
+CUF core
+        |
+        +-- transverse expansion
+        |
+        +-- longitudinal discretization
+        |
+        +-- sectional integration
+        |
+        v
+generic solution
+        |
+        v
+post-processing adapter
+```
+
+A new analysis is therefore constructed by configuring or replacing these
+independent components rather than by specializing the CUF core for a
+particular geometry, structural problem, or transverse expansion.
+
+
+---
+
+
+
+
  
 
-This package validates a complete beam solver based on the Carrera Unified
-Formulation (CUF), implemented within the Continuous Section Field (CSF)
-framework. The validation is performed on a prismatic hollow square beam under
-sinusoidally distributed bending and torsional loads.
-
-The package is not only a collection of prescribed displacement fields or
-post-processing examples. The CSF-CUF implementation constructs the CUF
-kinematic approximation, evaluates the sectional and longitudinal integrals,
-assembles the global finite-element equations, applies loads and constraints,
-solves the resulting system, and exposes the continuous three-dimensional
-displacement field
-
-$$
-\mathbf{u}(x,y,z)=\{u_x,u_y,u_z\}^{T}.
-$$
-
-The analytical solutions described below are independent references used to
-check the results produced by this solver.
 
 ## 1. Geometry, material and beam axis
 
