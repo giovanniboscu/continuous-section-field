@@ -91,7 +91,7 @@ csf/cuf/expansions/
 Do not add an `if/elif` branch to `solver/engine.py` or
 `core/basis_plugins.py`.
 
-## Step 1 — Choose the YAML Name
+## Step 1 - Choose the YAML Name
 
 Choose a unique, stable identifier. The self-contained example used throughout
 this guide is called `my_expansion`.
@@ -128,7 +128,7 @@ This example requires no expansion-specific parameters, so `basis_options` is
 omitted. The plugin will reject a non-empty `basis_options` mapping rather than
 silently ignoring it.
 
-## Step 2 — Implement `CUFBasis`
+## Step 2 - Implement `CUFBasis`
 
 The mandatory interface is defined by `CUFBasis` in `core/basis.py`.
 
@@ -299,7 +299,7 @@ The expansion, not the CUF core, is responsible for interpreting the current
 section state and constructing any internal points, mappings, topology, or cached
 metadata that it requires.
 
-## Step 3 — Validate `basis_options`
+## Step 3 - Validate `basis_options`
 
 The plugin receives `basis_options` as a normal Python dictionary. The example
 basis needs no additional configuration, so every non-empty mapping is
@@ -325,7 +325,7 @@ mapping to the selected plugin.
 Do not duplicate CSF geometry or material definitions inside
 `basis_options`. Geometry and material remain in the CSF model.
 
-## Step 4 — Implement the Plugin Builder
+## Step 4 - Implement the Plugin Builder
 
 The builder connects the generic plugin interface to the specific basis class.
 Every expansion builder receives both `section_provider` and
@@ -363,7 +363,7 @@ without adding expansion-specific logic to the CUF core. The builder and the
 basis must treat the supplied model context as read-only and must not modify
 the CSF model or global solver state.
 
-## Step 5 — Declare the Section Quadrature Requirement
+## Step 5 - Declare the Section Quadrature Requirement
 
 Each expansion must declare a conservative minimum number of transverse Gauss
 points. For this polynomial example, use:
@@ -397,7 +397,7 @@ minimum and verify it numerically by increasing the Gauss order.
 
 Do not put a basis-name condition in the solver engine.
 
-## Step 6 — Declare the Longitudinal Degree Contribution
+## Step 6 - Declare the Longitudinal Degree Contribution
 
 The solver estimates a safe longitudinal quadrature order. The expansion owns
 the contribution caused by its transverse basis when the CSF section varies
@@ -430,7 +430,7 @@ If the expansion is not polynomial in the relevant variables, define and
 document a safe integration requirement appropriate to its formulation. Do
 not hide under-integration by returning zero without justification.
 
-## Step 7 — Register the Expansion
+## Step 7 - Register the Expansion
 
 Create exactly one new file:
 
@@ -615,7 +615,7 @@ print("my_expansion self-contained smoke test: PASSED")
 The test uses only the class defined in the new expansion module and checks the
 same `tau` ordering documented in Step 1.
 
-## Step 8 — Optional Vectorized Evaluation
+## Step 8 - Optional Vectorized Evaluation
 
 The scalar methods are sufficient for correctness. An expansion may optionally
 provide
@@ -648,7 +648,7 @@ np.asarray([
 
 Implement this only after the scalar path is correct and tested.
 
-## Step 9 — Optional Compiled Factor Evaluation
+## Step 9 - Optional Compiled Factor Evaluation
 
 For repeated sectional integration, an expansion may optionally implement
 `compile_factors(factors)`.
@@ -675,7 +675,7 @@ expansion depends on $x$ or on section-specific state and the compiled path
 cannot reproduce that dependence exactly, do not implement it. The core will
 use the generic scalar fallback.
 
-## Step 10 — Optional Closed-Form Diagnostic Support
+## Step 10 - Optional Closed-Form Diagnostic Support
 
 The normal CUF solution uses numerical sectional integration and requires only
 `value()` and `derivative()`.
