@@ -1,3 +1,4 @@
+# Version: CSF-CUF isolated transverse expansion plugins v21 - 2026-08-29
 """
 Generic displacement recovery for the longitudinal CSF-CUF finite-element
 solution.
@@ -257,6 +258,7 @@ class CSFCUFDisplacementRecovery:
                     tau,
                     float(y),
                     float(z),
+                    x=float(x),
                 )
             )
 
@@ -473,6 +475,7 @@ class CSFCUFStrainStressRecovery:
                     tau,
                     float(y),
                     float(z),
+                    x=float(x),
                 )
             )
 
@@ -482,6 +485,7 @@ class CSFCUFStrainStressRecovery:
                     "y",
                     float(y),
                     float(z),
+                    x=float(x),
                 )
             )
 
@@ -491,6 +495,7 @@ class CSFCUFStrainStressRecovery:
                     "z",
                     float(y),
                     float(z),
+                    x=float(x),
                 )
             )
 

@@ -1,4 +1,4 @@
-# Version: CSF-CUF sectional geometry/integration separation v16 - 2026-08-27
+# Version: CSF-CUF isolated transverse expansion plugins v21 - 2026-08-29
 # OPT-02 MATRIX SECTIONAL INTEGRATION
 """
 Generalized sectional coefficients J(x) for the CSF-CUF bridge.
@@ -383,6 +383,7 @@ class SectionalCoefficientProvider:
 
             basis_by_derivative = {
                 derivative: self._basis_matrix_at_points(
+                    x=x,
                     derivative=derivative,
                     y_points=y_points,
                     z_points=z_points,
@@ -736,6 +737,7 @@ class SectionalCoefficientProvider:
 
         def integrand(y: float, z: float, Cmn: float) -> float:
             Ftau = self._basis_factor(
+                x=x,
                 tau=int(tau),
                 derivative=test_derivative,
                 y=y,
@@ -743,6 +745,7 @@ class SectionalCoefficientProvider:
             )
 
             Fs = self._basis_factor(
+                x=x,
                 tau=int(s),
                 derivative=trial_derivative,
                 y=y,
@@ -900,6 +903,7 @@ class SectionalCoefficientProvider:
     def _basis_matrix_at_points(
         self,
         *,
+        x: float,
         derivative: str | None,
         y_points: np.ndarray,
         z_points: np.ndarray,
@@ -973,6 +977,7 @@ class SectionalCoefficientProvider:
         ):
             for tau in range(1, basis_size + 1):
                 values[point_index, tau - 1] = self._basis_factor(
+                    x=x,
                     tau=tau,
                     derivative=derivative,
                     y=float(y),
@@ -1055,6 +1060,7 @@ class SectionalCoefficientProvider:
 
             basis_by_derivative = {
                 derivative: self._basis_matrix_at_points(
+                    x=x,
                     derivative=derivative,
                     y_points=y_points,
                     z_points=z_points,
@@ -1403,6 +1409,7 @@ class SectionalCoefficientProvider:
                     factor_values = np.fromiter(
                         (
                             self._basis_factor(
+                                x=x,
                                 tau=tau_value,
                                 derivative=derivative,
                                 y=float(y),
@@ -1477,13 +1484,14 @@ class SectionalCoefficientProvider:
     def _basis_factor(
         self,
         *,
+        x: float,
         tau: int,
         derivative: str | None,
         y: float,
         z: float,
     ) -> float:
         if derivative is None:
-            return self.basis.value(tau, y, z)
+            return self.basis.value(tau, y, z, x=x)
 
         if derivative in ("y", "z"):
             return self.basis.derivative(
@@ -1491,6 +1499,7 @@ class SectionalCoefficientProvider:
                 direction=derivative,
                 y=y,
                 z=z,
+                x=x,
             )
 
         raise ValueError(

@@ -1,20 +1,21 @@
-# Version: CSF-CUF scaled Legendre transverse basis v1 - 2026-08-24
-"""Pluggable transverse-basis selection for the CSF-CUF runtime.
+# Version: CSF-CUF expansion ContinuousSectionField context v25.1 - 2026-08-30
+"""Registry and runtime contract for isolated transverse CUF expansions.
 
-The solver engine depends only on this registry, not on a concrete CUF basis.
-The current validated basis ``scaled_maclaurin`` remains unchanged.
+Concrete expansion implementations live outside this module and register
+themselves through :func:`register_cuf_basis_plugin`.  Discovery is lazy so
+importing the registry never creates a dependency on a concrete basis class.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
+import importlib
+import pkgutil
 from typing import Callable, Dict, Tuple
-
-from csf.cuf.maclaurin_tensor import ScaledMaclaurinTensorBasis
-from csf.cuf.numerics import ScaledLegendreBasis, ScaledMaclaurinBasis, transverse_scales
 
 
 BasisBuilder = Callable[..., object]
 SectionGaussMinimum = Callable[[object], int]
+LongitudinalTransverseDegree = Callable[[object], int]
 
 
 @dataclass(frozen=True)
@@ -24,11 +25,30 @@ class CUFBasisPlugin:
     name: str
     builder: BasisBuilder
     section_gauss_minimum: SectionGaussMinimum
+    longitudinal_transverse_degree: LongitudinalTransverseDegree
 
-    def build(self, *, order: int, section_provider):
+    def build(
+        self,
+        *,
+        order: int,
+        section_provider,
+        continuous_section_field,
+        options=None,
+    ):
+        """Build a basis with access to the complete CSF field context.
+
+        Simple expansions may ignore ``continuous_section_field``.
+        Section-aware expansions can retain it and query the complete
+        ContinuousSectionField at the longitudinal coordinate passed to
+        their runtime basis evaluation.
+        """
+        if continuous_section_field is None:
+            raise ValueError("continuous_section_field must not be None")
         return self.builder(
             order=order,
             section_provider=section_provider,
+            continuous_section_field=continuous_section_field,
+            options={} if options is None else dict(options),
         )
 
     def minimum_section_gauss_order(self, basis) -> int:
@@ -40,46 +60,39 @@ class CUFBasisPlugin:
             )
         return value
 
-
-def _build_scaled_maclaurin(*, order: int, section_provider):
-    y_scale, z_scale = transverse_scales(section_provider)
-    return ScaledMaclaurinBasis(
-        int(order),
-        y_scale=y_scale,
-        z_scale=z_scale,
-    )
-
-
-def _build_scaled_maclaurin_tensor(*, order: int, section_provider):
-    y_scale, z_scale = transverse_scales(section_provider)
-    return ScaledMaclaurinTensorBasis(
-        int(order),
-        y_scale=y_scale,
-        z_scale=z_scale,
-    )
-
-
-def _build_scaled_legendre(*, order: int, section_provider):
-    y_scale, z_scale = transverse_scales(section_provider)
-    return ScaledLegendreBasis(int(order), y_scale=y_scale, z_scale=z_scale)
-
-
-def _scaled_maclaurin_section_gauss_minimum(basis) -> int:
-    # Validated complete-total-degree Maclaurin basis:
-    # F_tau * F_s can reach total degree 2N. With polygon slicing, the
-    # resulting outer polynomial can reach degree 2N+1, hence n >= N+1.
-    return int(basis.order) + 1
-
-
-def _scaled_maclaurin_tensor_section_gauss_minimum(basis) -> int:
-    # Tensor-product Maclaurin contains Y^N Z^N.
-    # Products can reach Y^(2N) Z^(2N). Under polygon slicing, the inner
-    # integration can raise the outer polynomial degree to 4N+1.
-    # Gauss-Legendre integrates degree 2n-1 exactly, hence n >= 2N+1.
-    return 2 * int(basis.order) + 1
+    def transverse_x_polynomial_degree(self, basis) -> int:
+        value = int(self.longitudinal_transverse_degree(basis))
+        if value < 0:
+            raise ValueError(
+                f"CUF basis plugin {self.name!r} returned an invalid "
+                f"longitudinal transverse degree {value}"
+            )
+        return value
 
 
 _PLUGINS: Dict[str, CUFBasisPlugin] = {}
+_DISCOVERY_COMPLETE = False
+
+
+def discover_cuf_basis_plugins() -> None:
+    """Import every built-in expansion module exactly once.
+
+    Each module owns its builder, numerical requirements, and registration.
+    Adding a new module below :mod:`csf.cuf.expansions` therefore requires no
+    change to this registry or to the solver engine.
+    """
+    global _DISCOVERY_COMPLETE
+    if _DISCOVERY_COMPLETE:
+        return
+
+    package = importlib.import_module("csf.cuf.expansions")
+    for module_info in pkgutil.iter_modules(
+        package.__path__,
+        package.__name__ + ".",
+    ):
+        importlib.import_module(module_info.name)
+
+    _DISCOVERY_COMPLETE = True
 
 
 def register_cuf_basis_plugin(plugin: CUFBasisPlugin, *, replace: bool = False) -> None:
@@ -99,6 +112,7 @@ def register_cuf_basis_plugin(plugin: CUFBasisPlugin, *, replace: bool = False) 
 
 def get_cuf_basis_plugin(name: str) -> CUFBasisPlugin:
     """Return the registered plugin for ``name``."""
+    discover_cuf_basis_plugins()
     key = str(name).strip()
     try:
         return _PLUGINS[key]
@@ -111,29 +125,5 @@ def get_cuf_basis_plugin(name: str) -> CUFBasisPlugin:
 
 def available_cuf_basis_plugins() -> Tuple[str, ...]:
     """Return registered basis names in deterministic order."""
+    discover_cuf_basis_plugins()
     return tuple(sorted(_PLUGINS))
-
-
-register_cuf_basis_plugin(
-    CUFBasisPlugin(
-        name="scaled_maclaurin",
-        builder=_build_scaled_maclaurin,
-        section_gauss_minimum=_scaled_maclaurin_section_gauss_minimum,
-    )
-)
-
-register_cuf_basis_plugin(
-    CUFBasisPlugin(
-        name="scaled_maclaurin_tensor",
-        builder=_build_scaled_maclaurin_tensor,
-        section_gauss_minimum=_scaled_maclaurin_tensor_section_gauss_minimum,
-    )
-)
-
-register_cuf_basis_plugin(
-    CUFBasisPlugin(
-        name="scaled_legendre",
-        builder=_build_scaled_legendre,
-        section_gauss_minimum=_scaled_maclaurin_section_gauss_minimum,
-    )
-)

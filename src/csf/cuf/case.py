@@ -1,4 +1,4 @@
-# Version: CSF-CUF configurable material polynomial degree v17 - 2026-08-27
+# Version: CSF-CUF isolated transverse expansion plugins v21 - 2026-08-29
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,6 +12,7 @@ import yaml
 class CUFSettings:
     basis: str
     order: int
+    basis_options: dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -97,6 +98,10 @@ def load_case(path: str | Path) -> CaseDefinition:
         raise ValueError("sampling.stations must contain values in [0,1]")
 
     cuf_order = int(cuf.get("order", 5))
+    basis_options = _mapping(
+        cuf.get("basis_options", {}),
+        "cuf.basis_options",
+    ).copy()
     longitudinal_order = int(longitudinal.get("order", 3))
     elements = int(longitudinal.get("elements", 4))
     section_order = int(section.get("gauss_order", cuf_order + 1))
@@ -142,6 +147,7 @@ def load_case(path: str | Path) -> CaseDefinition:
         cuf=CUFSettings(
             basis=str(cuf.get("basis", "scaled_maclaurin")),
             order=cuf_order,
+            basis_options=basis_options,
         ),
         longitudinal=LongitudinalSettings(
             method=str(longitudinal.get("method", "finite_element")),

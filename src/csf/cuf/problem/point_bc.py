@@ -1,3 +1,4 @@
+# Version: CSF-CUF isolated transverse expansion plugins v21 - 2026-08-29
 """
 Generic mapping of physical pointwise displacement constraints to linear
 constraints on generalized CSF-CUF end DOFs.
@@ -91,6 +92,8 @@ class PointwiseBoundaryConstraintMapper:
         *,
         basis: CUFBasis,
         dof_layout: GlobalDOFLayout,
+        x_start: float | None = None,
+        x_end: float | None = None,
     ) -> None:
         if not isinstance(basis, CUFBasis):
             raise TypeError("basis must implement CUFBasis")
@@ -107,6 +110,8 @@ class PointwiseBoundaryConstraintMapper:
 
         self.basis = basis
         self.dof_layout = dof_layout
+        self.x_start = None if x_start is None else float(x_start)
+        self.x_end = None if x_end is None else float(x_end)
 
     def map(
         self,
@@ -129,6 +134,7 @@ class PointwiseBoundaryConstraintMapper:
 
         for row, constraint in enumerate(constraints):
             node = self._end_node(constraint.end)
+            evaluation_x = self._end_coordinate(constraint.end)
 
             if constraint.component not in _COMPONENT_INDEX:
                 raise ValueError(
@@ -159,6 +165,7 @@ class PointwiseBoundaryConstraintMapper:
                         tau,
                         float(constraint.y),
                         float(constraint.z),
+                        x=evaluation_x,
                     )
                 )
 
@@ -191,3 +198,10 @@ class PointwiseBoundaryConstraintMapper:
         raise ValueError(
             "end must be 'start' or 'end'"
         )
+
+    def _end_coordinate(self, end: str) -> float | None:
+        if end == "start":
+            return self.x_start
+        if end == "end":
+            return self.x_end
+        raise ValueError("end must be 'start' or 'end'")

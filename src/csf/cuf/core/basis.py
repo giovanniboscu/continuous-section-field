@@ -1,3 +1,4 @@
+# Version: CSF-CUF isolated transverse expansion plugins v21 - 2026-08-29
 """CUF transverse basis definitions extracted from :mod:`csf.utils.csf_cuf`.
 
 This module contains only basis-related classes. The implementations are
@@ -20,7 +21,14 @@ class CUFBasis(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def value(self, tau: int, y: float, z: float) -> float:
+    def value(
+        self,
+        tau: int,
+        y: float,
+        z: float,
+        *,
+        x: float | None = None,
+    ) -> float:
         raise NotImplementedError
 
     @abstractmethod
@@ -30,6 +38,8 @@ class CUFBasis(ABC):
         direction: str,
         y: float,
         z: float,
+        *,
+        x: float | None = None,
     ) -> float:
         raise NotImplementedError
 
@@ -73,7 +83,9 @@ class MaclaurinCUFBasis(CUFBasis):
         self._validate_tau(tau)
         return self._exponents[tau - 1]
 
-    def value(self, tau: int, y: float, z: float) -> float:
+    def value(
+        self, tau: int, y: float, z: float, *, x: float | None = None
+    ) -> float:
         p_y, p_z = self.exponents(tau)
         return float((y ** p_y) * (z ** p_z))
 
@@ -83,6 +95,8 @@ class MaclaurinCUFBasis(CUFBasis):
         direction: str,
         y: float,
         z: float,
+        *,
+        x: float | None = None,
     ) -> float:
         p_y, p_z = self.exponents(tau)
 
@@ -254,6 +268,8 @@ class SerendipityLagrangeReferenceBasis(CUFBasis):
         tau: int,
         y: float,
         z: float,
+        *,
+        x: float | None = None,
     ) -> float:
         xi = float(y)
         eta = float(z)
@@ -272,6 +288,8 @@ class SerendipityLagrangeReferenceBasis(CUFBasis):
         direction: str,
         y: float,
         z: float,
+        *,
+        x: float | None = None,
     ) -> float:
         xi = float(y)
         eta = float(z)
@@ -691,6 +709,8 @@ class QuadrilateralSerendipityCUFBasis(CUFBasis):
         tau: int,
         y: float,
         z: float,
+        *,
+        x: float | None = None,
     ) -> float:
         xi, eta = self.inverse_map(
             y=y,
@@ -701,6 +721,7 @@ class QuadrilateralSerendipityCUFBasis(CUFBasis):
             tau,
             xi,
             eta,
+            x=x,
         )
 
     def derivative(
@@ -709,6 +730,8 @@ class QuadrilateralSerendipityCUFBasis(CUFBasis):
         direction: str,
         y: float,
         z: float,
+        *,
+        x: float | None = None,
     ) -> float:
         if direction not in ("y", "z"):
             raise ValueError(

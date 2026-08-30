@@ -1,3 +1,4 @@
+# Version: CSF-CUF isolated transverse expansion plugins v21 - 2026-08-29
 # SOURCE VERSION: CSF-CUF-MACLAURIN-TENSOR-v1.0.0
 """Tensor-product scaled Maclaurin transverse basis for CSF-CUF.
 

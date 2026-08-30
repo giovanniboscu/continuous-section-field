@@ -1,4 +1,4 @@
-# Version: CSF-CUF net homogeneous domain slicer v19 - 2026-08-27
+# Version: CSF-CUF isolated transverse expansion plugins v21 - 2026-08-29
 from __future__ import annotations
 
 import math
@@ -116,7 +116,9 @@ class ScaledMaclaurinBasis(CUFBasis):
             raise IndexError(f"tau must be in 1..{self._size}")
         return self._exponents[tau - 1]
 
-    def value(self, tau: int, y: float, z: float) -> float:
+    def value(
+        self, tau: int, y: float, z: float, *, x: float | None = None
+    ) -> float:
         tau = int(tau)
         if not 1 <= tau <= self._size:
             raise IndexError(f"tau must be in 1..{self._size}")
@@ -125,7 +127,9 @@ class ScaledMaclaurinBasis(CUFBasis):
         Z = float(z) / self._z_scale
         return float((Y ** p_y) * (Z ** p_z))
 
-    def values(self, y: float, z: float) -> np.ndarray:
+    def values(
+        self, y: float, z: float, *, x: float | None = None
+    ) -> np.ndarray:
         """Evaluate all scaled Maclaurin basis functions at one point.
 
         This is algebraically identical to calling ``value(tau, y, z)`` for
@@ -151,7 +155,15 @@ class ScaledMaclaurinBasis(CUFBasis):
             dtype=float,
         )
 
-    def derivative(self, tau: int, direction: str, y: float, z: float) -> float:
+    def derivative(
+        self,
+        tau: int,
+        direction: str,
+        y: float,
+        z: float,
+        *,
+        x: float | None = None,
+    ) -> float:
         tau = int(tau)
         if not 1 <= tau <= self._size:
             raise IndexError(f"tau must be in 1..{self._size}")
@@ -311,16 +323,28 @@ class ScaledLegendreBasis(CUFBasis):
         pz, dpz = _legendre_values_and_derivatives(self._order, Z)
         return py, dpy, pz, dpz
 
-    def value(self, tau: int, y: float, z: float) -> float:
+    def value(
+        self, tau: int, y: float, z: float, *, x: float | None = None
+    ) -> float:
         p_y, p_z = self.exponents(tau)
         py, _, pz, _ = self._all(y, z)
         return float(py[p_y] * pz[p_z])
 
-    def values(self, y: float, z: float) -> np.ndarray:
+    def values(
+        self, y: float, z: float, *, x: float | None = None
+    ) -> np.ndarray:
         py, _, pz, _ = self._all(y, z)
         return np.asarray([py[a] * pz[b] for a, b in self._exponents], dtype=float)
 
-    def derivative(self, tau: int, direction: str, y: float, z: float) -> float:
+    def derivative(
+        self,
+        tau: int,
+        direction: str,
+        y: float,
+        z: float,
+        *,
+        x: float | None = None,
+    ) -> float:
         p_y, p_z = self.exponents(tau)
         py, dpy, pz, dpz = self._all(y, z)
         if direction == "y":

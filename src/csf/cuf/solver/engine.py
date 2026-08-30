@@ -1,9 +1,10 @@
-# Version: CSF-CUF configurable material polynomial degree v17 - 2026-08-27
+# Version: CSF-CUF expansion ContinuousSectionField context v25.1 - 2026-08-30
 # OPT-09 CUF-ORDER-AWARE SECTION QUADRATURE
 from __future__ import annotations
 
 import gc
 import time
+from pathlib import Path
 import numpy as np
 
 from csf.cuf.core.nucleus import FundamentalNucleusProvider
@@ -22,6 +23,7 @@ from csf.cuf.solver.recovery import (
     CSFCUFDisplacementRecovery,
     CSFCUFStrainStressRecovery,
 )
+from csf.cuf.solver.compiled_field import CompiledDisplacementField
 
 
 class CSFCUFSolution:
@@ -58,6 +60,7 @@ class CSFCUFSolution:
         solved_dofs,
         basis,
         constitutive_provider,
+        compiled_displacement=None,
     ) -> None:
         solved_dofs = np.asarray(solved_dofs, dtype=float)
 
@@ -73,6 +76,7 @@ class CSFCUFSolution:
             raise ValueError("continuous solution requires at least one element")
 
         self._basis = basis
+        self._compiled_displacement = compiled_displacement
         self._elements = tuple(mesh.elements)
         self._x_start = float(mesh.x_start)
         self._x_end = float(mesh.x_end)
@@ -81,7 +85,11 @@ class CSFCUFSolution:
             dtype=float,
         )
 
-        # Compile the solved generalized coefficients once.
+        # Compile the solved generalized coefficients once when no persisted
+        # compiled displacement representation is available.  Supported
+        # polynomial expansions already store the same element-local tensor
+        # inside CompiledDisplacementField, so retaining a duplicate here
+        # would waste memory after the solve.
         #
         # For each longitudinal element:
         #     local_coefficients[a, tau-1, i] = q(node_a, tau, i)
@@ -89,32 +97,33 @@ class CSFCUFSolution:
         # No global DOF lookup is needed during subsequent u(x,y,z) queries.
         element_coefficients = []
 
-        for element in self._elements:
-            coefficients = np.empty(
-                (
-                    len(element.node_ids),
-                    dof_layout.basis_size,
-                    3,
-                ),
-                dtype=float,
-            )
+        if compiled_displacement is None:
+            for element in self._elements:
+                coefficients = np.empty(
+                    (
+                        len(element.node_ids),
+                        dof_layout.basis_size,
+                        3,
+                    ),
+                    dtype=float,
+                )
 
-            for local_node, global_node in enumerate(element.node_ids):
-                for tau in range(1, dof_layout.basis_size + 1):
-                    for component in range(3):
-                        dof = dof_layout.index(
-                            node=global_node,
-                            tau=tau,
-                            component=component,
-                        )
-                        coefficients[
-                            local_node,
-                            tau - 1,
-                            component,
-                        ] = solved_dofs[dof]
+                for local_node, global_node in enumerate(element.node_ids):
+                    for tau in range(1, dof_layout.basis_size + 1):
+                        for component in range(3):
+                            dof = dof_layout.index(
+                                node=global_node,
+                                tau=tau,
+                                component=component,
+                            )
+                            coefficients[
+                                local_node,
+                                tau - 1,
+                                component,
+                            ] = solved_dofs[dof]
 
-            coefficients.setflags(write=False)
-            element_coefficients.append(coefficients)
+                coefficients.setflags(write=False)
+                element_coefficients.append(coefficients)
 
         self._element_coefficients = tuple(element_coefficients)
 
@@ -192,6 +201,9 @@ class CSFCUFSolution:
         is intended for dense section post-processing where many transverse
         points share the same x.
         """
+        if self._compiled_displacement is not None:
+            return self._compiled_displacement.section_evaluator(x)
+
         generalized_amplitudes = self._generalized_amplitudes_at_x(x)
         generalized_amplitudes.setflags(write=False)
         basis = self._basis
@@ -208,13 +220,13 @@ class CSFCUFSolution:
             # with CUF basis implementations that expose only scalar value().
             if hasattr(basis, "values"):
                 transverse_values = np.asarray(
-                    basis.values(y, z),
+                    basis.values(y, z, x=x),
                     dtype=float,
                 )
             else:
                 transverse_values = np.fromiter(
                     (
-                        float(basis.value(tau, y, z))
+                        float(basis.value(tau, y, z, x=x))
                         for tau in range(1, basis_size + 1)
                     ),
                     dtype=float,
@@ -332,6 +344,8 @@ class CSFCUFSolution:
 def _longitudinal_gauss_requirement(
     *,
     case,
+    basis,
+    basis_plugin,
     section_provider,
     constitutive_provider,
 ):
@@ -464,39 +478,10 @@ def _longitudinal_gauss_requirement(
     # contribution of the interaction to the degree of the polynomial 
     #################################################################      
     varying_axes = int(varies_y) + int(varies_z)
-    N = int(case.cuf.order)
     r = int(case.longitudinal.order)
-    
-    if case.cuf.basis == "scaled_maclaurin_tensor":
-        # Conservative CSF-CUF variable-section estimate.
-        #
-        # Each basis function may contain y^N z^N. Therefore the product
-        # F_tau * F_s may reach degree 2N in y and 2N in z.
-        #
-        # For a generally varying cross-section, both transverse coordinates
-        # may vary along x. Their combined longitudinal contribution is
-        # therefore bounded by 4N.
-        #
-        # A constant section is treated as the degenerate case and is
-        # intentionally over-integrated.
-        transverse_x_degree = 4 * N
-    
-    elif case.cuf.basis in ("scaled_maclaurin", "scaled_legendre"):
-        # Conservative CSF-CUF variable-section estimate.
-        #
-        # For the complete-total-degree basis, F_tau * F_s has total
-        # transverse degree <= 2N. When the cross-section varies along x,
-        # this transverse polynomial acquires a longitudinal dependence.
-        #
-        # A constant section is treated as the degenerate case and is
-        # intentionally over-integrated.
-        transverse_x_degree = 2 * N
-    
-    else:
-        raise ValueError(
-            "automatic longitudinal Gauss-order estimation is not defined "
-            f"for CUF basis {case.cuf.basis!r}"
-        )
+    transverse_x_degree = (
+        basis_plugin.transverse_x_polynomial_degree(basis)
+    )
     
     # Independent contribution of the varying cross-sectional measure dOmega.
     # For the general affine CSF polygon mapping, the area Jacobian may carry
@@ -620,6 +605,8 @@ def solve_case(case, model_bridge, problem, *, progress: bool = True) -> CSFCUFS
     basis = basis_plugin.build(
         order=case.cuf.order,
         section_provider=section_provider,
+        continuous_section_field=model_bridge.field,
+        options=case.cuf.basis_options,
     )
 
     # OPT-09: each basis plugin declares the minimum section quadrature
@@ -671,6 +658,8 @@ def solve_case(case, model_bridge, problem, *, progress: bool = True) -> CSFCUFS
 
     longitudinal_requirement = _longitudinal_gauss_requirement(
         case=case,
+        basis=basis,
+        basis_plugin=basis_plugin,
         section_provider=section_provider,
         constitutive_provider=constitutive_provider,
     )
@@ -824,13 +813,57 @@ def solve_case(case, model_bridge, problem, *, progress: bool = True) -> CSFCUFS
     # Compile the solved field once.  Displacement remains directly callable,
     # while strain/stress are exposed through the existing generic recovery
     # layer without changing the solved mechanics.
+    compiled_displacement = CompiledDisplacementField.from_solution_data(
+        mesh=mesh,
+        dof_layout=assembled.dof_layout,
+        solved_dofs=algebraic.primal,
+        basis=basis,
+        metadata={
+            "case_name": str(case.name),
+            "basis_name": str(case.cuf.basis),
+        },
+    )
+
+    if compiled_displacement is not None:
+        case_name = str(case.name).strip()
+        if not case_name or case_name != Path(case_name).name:
+            raise ValueError(
+                "case.name must be a non-empty filename-safe value "
+                "for automatic displacement checkpoints"
+            )
+        checkpoint_path, checkpoint_hash = (
+            compiled_displacement.save_atomic(
+                case.output_dir / f"{case_name}.cuf.npz"
+            )
+        )
+        if progress:
+            print(
+                "[solution-checkpoint] "
+                f"saved={checkpoint_path} sha256={checkpoint_hash}",
+                flush=True,
+            )
+    elif progress:
+        print(
+            "[solution-checkpoint] skipped: selected expansion does not "
+            "export physical power coefficients",
+            flush=True,
+        )
+
     solution = CSFCUFSolution(
         mesh=mesh,
         dof_layout=assembled.dof_layout,
         solved_dofs=algebraic.primal,
         basis=basis,
         constitutive_provider=constitutive_provider,
+        compiled_displacement=compiled_displacement,
     )
+
+    # The returned solution retains only the solved coefficients and the
+    # recovery data required by its public displacement/strain/stress API.
+    # Assembly, constraints, KKT containers, and solver diagnostics are no
+    # longer needed after the self-contained displacement field is saved.
+    del constraints, augmented, assembled, algebraic
+    gc.collect()
 
     elapsed = time.perf_counter() - started
 
