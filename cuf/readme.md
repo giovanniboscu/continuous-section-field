@@ -7,14 +7,18 @@
 >The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
 
 
+This repository provides a general-purpose framework for building and running beam models based on the Carrera Unified Formulation (CUF).
 
-This repository provides a framework for building and running models based on the Carrera Unified Formulation (CUF).
+The implementation is designed around a clear separation between the physical description of the problem and the CUF numerical formulation. Models are defined externally through YAML files specifying geometry, material distribution, loads, boundary conditions, longitudinal discretization, and the transverse expansion rule.
 
-Its purpose is to provide a parametric and reusable implementation that can be used directly from external model definitions.
+Geometry and material properties are supplied by a Continuous Section Field (CSF), which acts as a general section provider along the beam axis. The CUF solver queries this continuous description during assembly, rather than embedding assumptions about a particular cross-section or longitudinal variation into the solver itself.
 
-The model is described through YAML files containing the geometry, material distribution, loads, boundary conditions, and the transverse expansion rule. From these inputs, the framework builds and runs the corresponding CUF model.
+The CUF core is therefore independent of the specific section geometry and material distribution. Likewise, transverse expansion laws are treated as interchangeable components through a common interface, allowing different CUF approximation families to be used without modifying the solver core.
 
-The solver core is independent of the specific cross-section geometry. Geometric and constitutive information is supplied by an external CSF-based section provider, which is queried by the CUF implementation during model construction and evaluation. This keeps the description of the physical problem separate from the numerical formulation and allows the same solver core to operate on different section configurations without embedding section-specific assumptions in the solver.
+The resulting architecture keeps section and material description, CUF formulation, longitudinal finite-element discretization, and transverse expansion law as distinct components. The objective is not to implement a CUF model tailored to a particular benchmark, geometry, or expansion family, but to provide a reusable solver in which these components can be varied independently.
+
+
+In practice, users can define and modify the physical model and select the transverse expansion law without having to interact with or modify the CUF solver core.
 
 <!--
 The repository includes two complete workflows.
