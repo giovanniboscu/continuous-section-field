@@ -1,5 +1,32 @@
 # Hollow rectangular section - complete bending and torsion validation
 
+
+   
+```
+                                   hollow_rectangle_bending_halfwave.yaml                                        
+                                               │                                                                 
+                                               │  physical model                                                 
+                                               │  S(x), geometry, materials                                      
+                                               ▼                                                                 
+                                         bending/problem.py                                                      
+                                               │                                                                 
+                                               │  problem adapter                                                
+                                               │  loads, BC, problem interface                                   
+                                               ▼                                                                 
+                                         GENERIC SOLVER                                                          
+                                               │                                                                 
+                                               ▼                                                                 
+                                            CUF CORE                                                             
+                                               │                                                                 
+                                      ┌────────┼─────────┐                                                       
+                                      │        │         │                                                       
+                                   transverse longitudinal section                                               
+                                   expansion      FE     integration                                             
+```
+
+
+ 
+
 This package validates a complete beam solver based on the Carrera Unified
 Formulation (CUF), implemented within the Continuous Section Field (CSF)
 framework. The validation is performed on a prismatic hollow square beam under
