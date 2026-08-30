@@ -1,11 +1,11 @@
 # DRAFT
 
-# Implementing the `scaled_lagrange` Expansion in CSF-CUF v21
+# Implementing the `scaled_lagrange` Expansion in CSF-CUF
 
 ## 1. Purpose
 
-This guide shows, step by step, how to add the hierarchical
-`scaled_lagrange` transverse expansion to CSF-CUF v21.
+This guide shows, step by step, how to implement the hierarchical
+`scaled_lagrange` transverse expansion in CSF-CUF.
 
 The implementation uses the Serendipity-Lagrange hierarchy already provided by
 `core/basis.py` and adds one new expansion module,
@@ -177,6 +177,15 @@ The plugin also imports the following existing objects:
 These are infrastructure dependencies; they are not part of the Lagrange
 hierarchy itself.
 
+
+The common expansion-plugin builder contract also provides the complete
+`continuous_section_field`. `scaled_lagrange` does not need it because its
+present definition is based on fixed global transverse scales obtained through
+`section_provider`. The availability of the complete CSF object is nevertheless
+part of the general interface so that a different, section-aware expansion can
+inspect the current physical model without adding expansion-specific logic to
+the CUF core.
+
 ### Verify STEP 1 before creating the plugin
 
 Run this check from the repository environment:
@@ -267,7 +276,7 @@ export, the quadrature declarations, the builder, and the plugin registration
 are all contained in this single file.
 
 ```python
-# Version: CSF-CUF scaled hierarchical Lagrange expansion v1 - 2026-08-29
+# Version: CSF-CUF scaled hierarchical Lagrange expansion v2 - 2026-08-30
 """Scaled hierarchical Serendipity-Lagrange transverse expansion."""
 
 import math
@@ -581,12 +590,18 @@ def _reject_options(options):
 # Build the basis selected by the YAML file
 # =============================================================================
 
-def _build(*, order, section_provider, options):
+def _build(*, order, section_provider, continuous_section_field, options):
     """
     Construct a complete ScaledLagrangeBasis instance.
 
-    This builder is called by the generic plugin registry.
+    The generic plugin contract provides both ``section_provider`` and
+    ``continuous_section_field``. This expansion uses the normalized
+    ``section_provider`` only to obtain fixed transverse scales and does not
+    otherwise depend on the current section state. The complete
+    ``continuous_section_field`` is therefore intentionally unused here.
     """
+
+    del continuous_section_field  # Available by contract; unused here.
 
     # No expansion-specific YAML options are currently supported.
     _reject_options(options)
@@ -602,7 +617,7 @@ def _build(*, order, section_provider, options):
             "scaled_lagrange order must be >= 1"
         )
 
-    # Obtain fixed scales from the complete CSF geometry.
+    # Obtain fixed global scales through the normalized CSF section interface.
     y_scale, z_scale = transverse_scales(
         section_provider
     )
@@ -714,7 +729,7 @@ operations:
 |---|---|
 | `STEP 2` | Wraps the reference Lagrange hierarchy in physical scaled coordinates and implements `CUFBasis` |
 | `STEP 3` | Rejects unsupported `cuf.basis_options` |
-| `STEP 4` | Builds the basis selected by the YAML file and obtains `y_scale` and `z_scale` from CSF |
+| `STEP 4` | Builds the basis selected by the YAML file, receives the common CSF model context, and obtains `y_scale` and `z_scale` from `section_provider` |
 | `STEP 5` | Declares the minimum sectional Gauss order |
 | `STEP 6` | Declares the transverse contribution to the longitudinal polynomial degree |
 | `STEP 7` | Registers the plugin under the YAML name `scaled_lagrange` |
@@ -726,7 +741,11 @@ additional code needs to be added later.
 
 The basis uses fixed global transverse scales. The optional `x` argument is
 kept because it belongs to the common `CUFBasis` calling convention, but this
-expansion does not use it explicitly.
+particular expansion does not use it explicitly. Likewise, the plugin receives
+the complete `continuous_section_field` through the common expansion contract
+but intentionally ignores it. Other transverse expansions may retain and query
+that object when their mathematical definition depends on the current physical
+section.
 
 ## 6. Verify syntax and plugin registration
 
@@ -748,8 +767,8 @@ The output must include:
 scaled_lagrange
 ```
 
-No import is required in `expansions/__init__.py` if the v21 registry is using
-its automatic discovery of modules below `csf.cuf.expansions`.
+No import is required in `expansions/__init__.py` when the registry uses its
+automatic discovery of modules below `csf.cuf.expansions`.
 
 ## 7. YAML case
 
