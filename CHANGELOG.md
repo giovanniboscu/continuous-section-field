@@ -1,5 +1,11 @@
 # Changelog
 
+# v0.2.0
+
+* implemented the Carrera Unified Formulation (CUF) model
+* added `container_idx` to polygon class
+
+
 ## v0.1.9.7
 * added container_idx on polygon class
 
