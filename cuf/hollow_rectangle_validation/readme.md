@@ -3,25 +3,25 @@
 
    
 ```
-                                   hollow_rectangle_bending_halfwave.yaml                                        
-                                               │                                                                 
-                                               │  physical model                                                 
-                                               │  S(x), geometry, materials                                      
-                                               ▼                                                                 
-                                         bending/problem.py                                                      
-                                               │                                                                 
-                                               │  problem adapter                                                
-                                               │  loads, BC, problem interface                                   
-                                               ▼                                                                 
-                                         GENERIC SOLVER                                                          
-                                               │                                                                 
-                                               ▼                                                                 
-                                            CUF CORE                                                             
-                                               │                                                                 
-                                      ┌────────┼─────────┐                                                       
-                                      │        │         │                                                       
-                                   transverse longitudinal section                                               
-                                   expansion      FE     integration                                             
+                                                 hollow_rectangle_bending_halfwave.yaml                                        
+                                                             │                                                                 
+                                                             │  physical model                                                 
+                                                             │  S(x), geometry, materials                                      
+                                                             ▼                                                                 
+                                                       bending/problem.py                                                      
+                                                             │                                                                 
+                                                             │  problem adapter                                                
+                                                             │  loads, BC, problem interface                                   
+                                                             ▼                                                                 
+                                                       GENERIC SOLVER                                                          
+                                                             │                                                                 
+                                                             ▼                                                                 
+                                                          CUF CORE                                                             
+                                                             │                                                                 
+                                                    ┌────────┼─────────┐                                                       
+                                                    │        │         │                                                       
+                                                 transverse longitudinal section                                               
+                                                 expansion      FE     integration                                                                                       
 ```
 
 
