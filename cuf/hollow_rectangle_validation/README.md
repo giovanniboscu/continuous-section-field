@@ -1,6 +1,6 @@
 # Version: CSF-CUF hollow-rectangle complete validation package v5 - 2026-08-27
 
-# Hollow rectangular section — bending and torsion
+# Hollow rectangular section - bending and torsion
 
 Clean, complete package for the prismatic 100×100 mm hollow square section
 with an 80×80 mm concentric void and 10 mm wall thickness.
