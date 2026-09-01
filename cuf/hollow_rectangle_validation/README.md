@@ -308,7 +308,7 @@ component constraints used by the solver are defined in the corresponding
 problem YAML files; those files are the authoritative executable definition of
 each static scheme.
 
-![Hollow rectangle validation](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/hollow_rectangle_validation/img/hollow_rectangle.png?raw=true)
+![Hollow rectangle validation](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/hollow_rectangle_validation/image/hollow_rectangle_validation_scheme.png)
 
 > **Important note - coordinate mapping in YAML files**
 >
