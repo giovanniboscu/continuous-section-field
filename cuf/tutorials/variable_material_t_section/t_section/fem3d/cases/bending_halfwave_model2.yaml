@@ -1,0 +1,28 @@
+# FEM3D reference for the CUF physical-surface half-wave bending case.
+# Mesh, constraints, solver and sampling match the existing uniform bending
+# reference; only the physical traction law is sinusoidal along x.
+case:
+  name: bending_halfwave_model2
+
+problem:
+  yaml: ../problems/bending_halfwave.yaml
+
+mesh:
+  longitudinal_divisions: 100
+  web_width_divisions: 10
+  web_height_divisions: 30
+  flange_overhang_divisions: 10
+  flange_thickness_divisions: 8
+  load_gauss_order: 4
+
+analysis:
+  element: stdBrick
+  system: SparseGeneral
+
+sampling:
+  stations: [0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30,
+             0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65,
+             0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00]
+
+output:
+  directory: ../output/bending_halfwave_model2

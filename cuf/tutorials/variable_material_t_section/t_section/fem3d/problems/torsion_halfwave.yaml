@@ -1,0 +1,7 @@
+# FEM3D / CUF shared torsional line-pair half-wave definition.
+model:
+  csf_yaml: ../../models/t_noprismatic_csf.yaml
+
+problem:
+  type: torsion_halfwave
+  amplitude: 10.0
