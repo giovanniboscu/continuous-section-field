@@ -1,3 +1,5 @@
+# DRAFT
+
 ## Programmable post-processing adapter
 
 The post-processing stage is kept outside the generic CUF solver.
