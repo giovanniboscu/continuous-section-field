@@ -17,7 +17,7 @@ The example is organized in three directories:
 
 The files are separated according to their role in the analysis.
 
-### Step 1 — Build and inspect the physical model
+### Step 1 - Build and inspect the physical model
 
 The physical model is defined in:
 
@@ -55,13 +55,17 @@ This is an important step because the CUF solver will subsequently use this CSF 
 
 <img width="1289" height="484" alt="immagine" src="https://github.com/user-attachments/assets/69cfbfc3-9dee-44de-a18a-1421f67865c6" />
 
+*Figure - 1 cross-sections of the non-prismatic T-shaped model at `z = 0` and `z = 1000`. The section is composed of two physical polygons: the upper flange (`top_flange`, ID=0) and the web (`web`, ID=1). The change in their dimensions between the two locations shows the non-prismatic variation of the geometry along the beam. The vertex and edge identifiers shown in the plots will later be used to identify the physical surface on which the CUF load is applied.*
+
 <img width="1294" height="476" alt="immagine" src="https://github.com/user-attachments/assets/483c2407-c174-463e-8833-3fdac0a32561" />
+
+Figure - 2 Three-dimensional view of the non-prismatic T-shaped CSF model and its material fields. The section geometry varies along the longitudinal coordinate `Z`. In this example, the CSF `weight` field shown on the left represents the elastic modulus \(E\), while the `shear weight` field shown on the right represents the shear modulus \(G\). The color variation shows how the material stiffness changes along the member and provides a direct visual check of the material distribution defined in the CSF model.*****
 
 <img width="1000" height="480" alt="immagine" src="https://github.com/user-attachments/assets/27c3d474-3ef1-49bf-bc82-66f437e9577c" />
 
 <img width="994" height="879" alt="immagine" src="https://github.com/user-attachments/assets/a2610114-38a6-4d9a-9c5a-7a4ff4b150b0" />
-
-### Step 2 — Define the structural problems
+*Figure - Longitudinal distribution of the elastic modulus assigned to each CSF polygon. The `top_flange` keeps a constant elastic modulus of `71700` along the entire beam, while the `web` varies continuously from `71700` at `z = 0` to `57360` at `z = 1000`. This plot provides a direct verification that the material stiffness is not uniform over the whole T section and that the prescribed longitudinal variation is correctly associated with the intended polygon.*
+### Step 2 - Define the structural problems
 
 Once the physical model has been inspected and verified, we can define what loading condition will be applied to it.
 
@@ -80,7 +84,7 @@ At this stage, the purpose of these files is to describe the physical problem: w
 
 The geometry and material are not defined again here. They remain those of the CSF model created in Step 1.
 
-### Step 3 — Define the CUF analyses
+### Step 3 - Define the CUF analyses
 
 The final input files are the CUF cases:
 
