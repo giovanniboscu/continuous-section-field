@@ -71,7 +71,10 @@ Figure - 2 Three-dimensional view of the non-prismatic T-shaped CSF model and it
 *Figure 4 - Variation of the main geometric properties of the non-prismatic T section along the longitudinal coordinate `Z`. The plots show the cross-sectional area \(A\), the second moments of area \(I_x\) and \(I_y\), and the polar second moment of area \(I_p\). All four quantities decrease from `z = 0` to `z = 1000` as a consequence of the progressive reduction of the T-section dimensions. This provides a direct check that the non-prismatic geometry defined in the CSF model is reflected consistently in the section properties used by the structural analysis.*
 
 
+### Step 2 - Define the structural problems
+
 Once the physical model has been inspected and verified, we can define what loading condition will be applied to it.
+
 
 Two problem files are provided:
 
