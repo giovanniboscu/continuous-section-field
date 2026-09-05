@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-# Version: T-section non-prismatic FEM3D validation v5 - 2026-09-03
-# H8/SSPbrick reference driven by the same CSF geometry and problem YAML
-# definitions used by the CUF bending and torsion validation cases.
+# Version: T-section non-prismatic FEM3D validation v6 - 2026-09-05
+# H8/SSPbrick reference driven by the public CSF geometry/material API.
+# Case/problem YAML remains FEM3D configuration; the CSF model itself is loaded
+# by CSFReader and queried through ContinuousSectionField operations.
 
 from __future__ import annotations
 
@@ -9,7 +10,7 @@ import csv
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 import numpy as np
 import yaml
@@ -25,39 +26,112 @@ def _resolve(base: Path, rel: str) -> Path:
     return path if path.is_absolute() else (base / path).resolve()
 
 
-def _parse_nu(csf: dict) -> float:
-    laws = csf.get("shear_weight_laws", [])
-    if not laws:
-        raise ValueError("missing CSF shear_weight_laws")
-    token = str(laws[0]).strip()
-    if not (token.startswith("iso(") and token.endswith(")")):
-        raise ValueError("expected CSF shear_weight_laws: ['iso(nu)']")
-    return float(token[4:-1])
+def _load_csf_field(model_path: str | Path):
+    """Load the physical model through the same public CSF reader used by CUF.
+
+    FEM3D intentionally does not parse the CSF model YAML.  CSF owns model
+    parsing, validation, geometric interpolation and material-law evaluation.
+    """
+    try:
+        from csf.io.csf_issues import CSFIssues
+        from csf.io.csf_reader import CSFReader
+    except ModuleNotFoundError as exc:
+        raise RuntimeError(
+            "the CSF Python package is required to build the FEM3D reference; "
+            "install the repository/package before running this script"
+        ) from exc
+
+    result = CSFReader().read_file(str(Path(model_path)))
+    if not result.ok or result.field is None:
+        raise RuntimeError(CSFIssues.format_report(result.issues))
+
+    field = result.field
+    if not hasattr(field, "section") or not callable(field.section):
+        raise TypeError("CSF model must expose section(z)")
+    if not hasattr(field, "inspect_section_entities") or not callable(
+        field.inspect_section_entities
+    ):
+        raise TypeError("CSF model must expose inspect_section_entities(z)")
+    if not hasattr(field, "s0") or not hasattr(field, "s1"):
+        raise TypeError("CSF model must expose s0 and s1 end sections")
+    if not hasattr(field.s0, "z") or not hasattr(field.s1, "z"):
+        raise TypeError("CSF end sections s0 and s1 must expose z coordinates")
+    return field
 
 
-def _polygon_data(poly: dict) -> dict:
-    name = str(poly.get("name", "")).strip()
-    if not name:
-        raise ValueError("every CSF polygon must have a non-empty name")
-    vertices = np.asarray(poly["vertices"], dtype=float)
-    if vertices.ndim != 2 or vertices.shape[0] < 3 or vertices.shape[1] != 2:
-        raise ValueError(f"invalid vertices for polygon {name!r}")
+def _csf_vertices(polygon: Any) -> tuple[tuple[float, float], ...]:
+    """Return physical section-plane vertices from one evaluated CSF polygon."""
+    if not hasattr(polygon, "vertices"):
+        raise TypeError("CSF polygon has no vertices attribute")
 
-    # The structured T-section mesh must represent the CSF polygon exactly,
-    # never replace a more general polygon by its bounding box.  Collinear
-    # intermediate vertices are allowed (the supplied top flange uses them).
+    vertices: list[tuple[float, float]] = []
+    for vertex in polygon.vertices:
+        if hasattr(vertex, "x") and hasattr(vertex, "y"):
+            vertices.append((float(vertex.x), float(vertex.y)))
+        elif isinstance(vertex, (tuple, list)) and len(vertex) == 2:
+            vertices.append((float(vertex[0]), float(vertex[1])))
+        else:
+            raise TypeError("unsupported CSF vertex representation")
+
+    if len(vertices) < 3:
+        raise ValueError("CSF polygon must contain at least three vertices")
+    return tuple(vertices)
+
+
+def _polygon_state(
+    polygon: Any,
+    *,
+    name: str,
+    x: float,
+    E: float,
+    G: float,
+) -> dict:
+    """Build mesher data from one polygon already evaluated by CSF at x.
+
+    Geometry comes from ``polygon.vertices``.  The two constitutive carriers are
+    supplied by ``inspect_section_entities(x)`` as ``weight_abs_z`` and
+    ``shear_weight_abs_at_z``.  No CSF law is interpreted here.
+    """
+    vertices = np.asarray(_csf_vertices(polygon), dtype=float)
+    if vertices.ndim != 2 or vertices.shape[1] != 2:
+        raise ValueError(f"invalid CSF vertices for polygon {name!r} at x={x}")
+
     shifted = np.roll(vertices, -1, axis=0)
-    polygon_area = 0.5 * abs(float(np.sum(vertices[:, 0] * shifted[:, 1] - shifted[:, 0] * vertices[:, 1])))
+    polygon_area = 0.5 * abs(
+        float(
+            np.sum(
+                vertices[:, 0] * shifted[:, 1]
+                - shifted[:, 0] * vertices[:, 1]
+            )
+        )
+    )
     ymin = float(vertices[:, 0].min())
     ymax = float(vertices[:, 0].max())
     zmin = float(vertices[:, 1].min())
     zmax = float(vertices[:, 1].max())
     box_area = (ymax - ymin) * (zmax - zmin)
-    area_tol = 1.0e-10 * max(1.0, box_area)
+    area_tol = 1.0e-10 * max(1.0, abs(box_area))
     if not math.isclose(polygon_area, box_area, rel_tol=0.0, abs_tol=area_tol):
         raise ValueError(
-            f"CSF polygon {name!r} is not the exact rectangle required by the structured T-section mesher; "
-            "refusing to approximate or reshape the geometry"
+            f"CSF polygon {name!r} at x={x} is not the exact rectangle "
+            "required by the structured T-section mesher; refusing to "
+            "approximate or reshape the CSF geometry"
+        )
+
+    E = float(E)
+    G = float(G)
+    if not (np.isfinite(E) and E >= 0.0):
+        raise ValueError(
+            f"CSF polygon {name!r} at x={x} has invalid weightabs {E}"
+        )
+    if not (np.isfinite(G) and G >= 0.0):
+        raise ValueError(
+            f"CSF polygon {name!r} at x={x} has invalid shear_weightabs {G}"
+        )
+    if (E == 0.0) != (G == 0.0):
+        raise ValueError(
+            f"CSF polygon {name!r} at x={x} must have both absolute "
+            f"constitutive carriers zero for a void; got E={E}, G={G}"
         )
 
     return {
@@ -67,43 +141,140 @@ def _polygon_data(poly: dict) -> dict:
         "ymax": ymax,
         "zmin": zmin,
         "zmax": zmax,
-        "E": float(poly["weight"]),
+        "E": E,
+        "G": G,
     }
 
 
-def _section_data(section: dict) -> dict:
-    polygons = {}
-    for raw in section.get("polygons", []):
-        poly = _polygon_data(raw)
-        if poly["name"] in polygons:
-            raise ValueError(f"duplicate CSF polygon name {poly['name']!r}")
-        polygons[poly["name"]] = poly
+def _polygon_indices_from_csf(field: Any, x: float) -> dict[str, int]:
+    """Resolve user-facing S0 polygon names through the public CSF entity API."""
+    entities = field.inspect_section_entities(float(x))
+    indices: dict[str, int] = {}
+    for entity in entities:
+        name_raw = entity.get("s0_name")
+        if name_raw is None:
+            continue
+        name = str(name_raw)
+        if name in indices:
+            raise ValueError(f"duplicate CSF S0 polygon name {name!r}")
+        indices[name] = int(entity["idx"])
 
-    # The structured reference mesh is the existing T-section mesher.  Its
-    # dimensions are always read from the CSF polygons; no geometry values are
-    # duplicated in the FEM adapter.
-    try:
-        top = polygons["top_flange"]
-        web = polygons["web"]
-    except KeyError as exc:
-        raise ValueError("this FEM3D T-section mesher requires CSF polygons 'top_flange' and 'web'") from exc
+    if not indices:
+        raise ValueError("CSF inspect_section_entities() returned no named polygons")
+    return indices
 
+
+def _csf_model_data(model_path: str | Path) -> dict:
+    """Return the CSF field and stable topology needed by the FEM3D mesher."""
+    field = _load_csf_field(model_path)
+    x0 = float(field.s0.z)
+    x1 = float(field.s1.z)
+    if not (np.isfinite(x0) and np.isfinite(x1)):
+        raise ValueError("CSF longitudinal endpoints must be finite")
+    if x1 <= x0:
+        raise ValueError(
+            f"CSF longitudinal domain must satisfy x_end > x_start; got ({x0}, {x1})"
+        )
+
+    polygon_indices = _polygon_indices_from_csf(field, x0)
+    missing = [name for name in ("top_flange", "web") if name not in polygon_indices]
+    if missing:
+        raise ValueError(
+            "this FEM3D T-section mesher requires CSF S0 polygons "
+            "'top_flange' and 'web'; missing: " + ", ".join(missing)
+        )
+
+    return {
+        "csf_field": field,
+        "polygon_indices": polygon_indices,
+        "x0": x0,
+        "x1": x1,
+        "L": x1 - x0,
+    }
+
+
+def _validate_t_section_state(state: dict) -> None:
+    """Validate only the geometric capability of this structured T mesher."""
+    top = state["top_flange"]
+    web = state["web"]
     scale = max(
         1.0,
-        abs(top["zmin"]), abs(top["zmax"]),
-        abs(web["zmin"]), abs(web["zmax"]),
+        abs(top["zmin"]),
+        abs(top["zmax"]),
+        abs(web["zmin"]),
+        abs(web["zmax"]),
     )
     tol = 1.0e-10 * scale
     if not math.isclose(web["zmax"], top["zmin"], rel_tol=0.0, abs_tol=tol):
         raise ValueError("top_flange must start at the web top surface")
     if not (top["ymin"] < web["ymin"] < web["ymax"] < top["ymax"]):
         raise ValueError("top_flange must overhang both sides of the web")
+
+
+def _base_case_data(
+    *,
+    case_path: Path,
+    case: dict,
+    model_path: Path,
+    problem_path: Path | None,
+    problem_type: str,
+) -> dict:
+    """Build FEM-only case controls around one CSF API-backed physical model."""
+    model_data = _csf_model_data(model_path)
+
+    mesh = case["mesh"]
+    if not isinstance(mesh, dict):
+        raise TypeError("case.mesh must be a YAML mapping")
+    analysis = case.get("analysis", {})
+    output = case.get("output", {})
+    element_type = str(analysis.get("element", "stdBrick"))
+    if element_type not in SUPPORTED_ELEMENTS:
+        raise ValueError(f"element must be one of {sorted(SUPPORTED_ELEMENTS)}")
+
     return {
-        "x": float(section["z"]),
-        "polygons": polygons,
-        "top_flange": top,
-        "web": web,
+        "case_path": case_path,
+        "model_path": model_path,
+        "problem_path": problem_path,
+        "case_name": str(case.get("case", {}).get("name", case_path.stem)),
+        "problem_type": str(problem_type),
+        **model_data,
+        "nx": int(mesh["longitudinal_divisions"]),
+        "web_ny": int(mesh["web_width_divisions"]),
+        "web_nz": int(mesh["web_height_divisions"]),
+        "overhang_ny": int(mesh["flange_overhang_divisions"]),
+        "flange_nz": int(mesh["flange_thickness_divisions"]),
+        "load_gauss_order": int(mesh.get("load_gauss_order", 4)),
+        "element_type": element_type,
+        "system": str(analysis.get("system", "SparseGeneral")),
+        "output_dir": _resolve(
+            case_path.parent,
+            output.get("directory", f"../output/{case_path.stem}"),
+        ),
+        "stations": tuple(
+            float(value)
+            for value in case.get("sampling", {}).get(
+                "stations", [0.0, 0.25, 0.5, 0.75, 1.0]
+            )
+        ),
     }
+
+
+def _finish_case_data(result: dict, problem_data: dict) -> dict:
+    """Attach problem controls and validate geometry/material through CSF queries."""
+    result.update(problem_data)
+
+    if result.get("surface_polygon_name") is not None:
+        name = result["surface_polygon_name"]
+        if name not in result["polygon_indices"]:
+            available = ", ".join(sorted(result["polygon_indices"]))
+            raise ValueError(
+                f"problem.surface.polygon_name {name!r} does not identify an "
+                f"S0 CSF polygon; available: {available}"
+            )
+
+    for x in (result["x0"], 0.5 * (result["x0"] + result["x1"]), result["x1"]):
+        state_at(result, x)
+    return result
 
 
 def _problem_from_case(
@@ -204,21 +375,6 @@ def read_case(case_path: str | Path) -> dict:
     case_path = Path(case_path).resolve()
     case = yaml.safe_load(case_path.read_text(encoding="utf-8"))
     problem, problem_path, model_path = _problem_from_case(case_path, case)
-    model = yaml.safe_load(model_path.read_text(encoding="utf-8"))
-    csf = model["CSF"]
-    sections = sorted(csf["sections"].items(), key=lambda kv: float(kv[1]["z"]))
-    if len(sections) != 2:
-        raise ValueError("this FEM3D reference expects exactly two CSF sections S0/S1")
-    s0 = _section_data(sections[0][1])
-    s1 = _section_data(sections[1][1])
-    if not s1["x"] > s0["x"]:
-        raise ValueError("S1 must lie after S0 along the beam axis")
-
-    if set(s0["polygons"]) != set(s1["polygons"]):
-        raise ValueError("S0/S1 must contain the same named CSF polygons")
-    for name in s0["polygons"]:
-        if len(s0["polygons"][name]["vertices"]) != len(s1["polygons"][name]["vertices"]):
-            raise ValueError(f"polygon {name!r} must preserve its CSF vertex topology between S0/S1")
 
     problem_type = str(problem.get("type", ""))
     if problem_type == BENDING_TYPE:
@@ -228,63 +384,85 @@ def read_case(case_path: str | Path) -> dict:
     else:
         raise ValueError(f"unsupported problem.type {problem_type!r}")
 
-    mesh = case["mesh"]
-    analysis = case.get("analysis", {})
-    output = case.get("output", {})
-    element_type = str(analysis.get("element", "stdBrick"))
-    if element_type not in SUPPORTED_ELEMENTS:
-        raise ValueError(f"element must be one of {sorted(SUPPORTED_ELEMENTS)}")
-
-    result = {
-        "case_path": case_path,
-        "model_path": model_path,
-        "problem_path": problem_path,
-        "case_name": str(case.get("case", {}).get("name", case_path.stem)),
-        "problem_type": problem_type,
-        "s0": s0,
-        "s1": s1,
-        "x0": s0["x"],
-        "x1": s1["x"],
-        "L": s1["x"] - s0["x"],
-        "nu": _parse_nu(csf),
-        "nx": int(mesh["longitudinal_divisions"]),
-        "web_ny": int(mesh["web_width_divisions"]),
-        "web_nz": int(mesh["web_height_divisions"]),
-        "overhang_ny": int(mesh["flange_overhang_divisions"]),
-        "flange_nz": int(mesh["flange_thickness_divisions"]),
-        "load_gauss_order": int(mesh.get("load_gauss_order", 4)),
-        "element_type": element_type,
-        "system": str(analysis.get("system", "SparseGeneral")),
-        "output_dir": _resolve(case_path.parent, output.get("directory", f"../output/{case_path.stem}")),
-        "stations": tuple(float(v) for v in case.get("sampling", {}).get("stations", [0.0, 0.25, 0.5, 0.75, 1.0])),
-    }
-    result.update(problem_data)
-    return result
-
-
-def _lerp(a: float, b: float, t: float) -> float:
-    return float(a + (b - a) * t)
+    result = _base_case_data(
+        case_path=case_path,
+        case=case,
+        model_path=model_path,
+        problem_path=problem_path,
+        problem_type=problem_type,
+    )
+    return _finish_case_data(result, problem_data)
 
 
 def state_at(d: dict, x: float) -> dict:
-    t = (float(x) - d["x0"]) / d["L"]
-    state = {"x": float(x), "polygons": {}}
-    for name in d["s0"]["polygons"]:
-        r0 = d["s0"]["polygons"][name]
-        r1 = d["s1"]["polygons"][name]
-        v0 = np.asarray(r0["vertices"], dtype=float)
-        v1 = np.asarray(r1["vertices"], dtype=float)
-        vertices = v0 + (v1 - v0) * t
-        poly = {
-            key: _lerp(r0[key], r1[key], t)
-            for key in ("ymin", "ymax", "zmin", "zmax", "E")
-        }
-        poly["name"] = name
-        poly["vertices"] = tuple((float(y), float(z)) for y, z in vertices)
-        state["polygons"][name] = poly
+    """Query the complete current section state from CSF at coordinate x.
 
-    state["top_flange"] = state["polygons"]["top_flange"]
-    state["web"] = state["polygons"]["web"]
+    Geometry is obtained from ``section(x)`` and material carriers from the
+    public ``inspect_section_entities(x)`` operation.  FEM3D does not
+    interpolate geometry, ``weight`` or ``shear_weight``.
+    """
+    x = float(x)
+    if not np.isfinite(x):
+        raise ValueError("longitudinal coordinate x must be finite")
+
+    cache = d.setdefault("_csf_state_cache", {})
+    if x in cache:
+        return cache[x]
+
+    field = d["csf_field"]
+    section = field.section(x)
+    if section is None or not hasattr(section, "polygons"):
+        raise ValueError(f"CSF returned no polygonal section at x={x}")
+    polygons_raw = tuple(section.polygons)
+
+    entities = field.inspect_section_entities(x)
+    entity_by_index: dict[int, dict] = {}
+    for entity in entities:
+        index = int(entity["idx"])
+        if index in entity_by_index:
+            raise ValueError(
+                f"CSF inspect_section_entities({x}) returned duplicate idx={index}"
+            )
+        entity_by_index[index] = entity
+
+    polygons: dict[str, dict] = {}
+    for name, index in d["polygon_indices"].items():
+        index = int(index)
+        if index < 0 or index >= len(polygons_raw):
+            raise ValueError(
+                f"CSF sampled section at x={x} changed polygon topology: "
+                f"stable index {index} for {name!r} is unavailable"
+            )
+        if index not in entity_by_index:
+            raise ValueError(
+                f"CSF inspect_section_entities({x}) omitted stable polygon idx={index}"
+            )
+        entity = entity_by_index[index]
+        try:
+            E = float(entity["weight_abs_z"])
+            G = float(entity["shear_weight_abs_at_z"])
+        except KeyError as exc:
+            raise ValueError(
+                "CSF inspect_section_entities(x) must expose weight_abs_z and "
+                "shear_weight_abs_at_z"
+            ) from exc
+
+        polygons[name] = _polygon_state(
+            polygons_raw[index],
+            name=name,
+            x=x,
+            E=E,
+            G=G,
+        )
+
+    state = {
+        "x": x,
+        "polygons": polygons,
+        "top_flange": polygons["top_flange"],
+        "web": polygons["web"],
+    }
+    _validate_t_section_state(state)
+    cache[x] = state
     return state
 
 
@@ -605,22 +783,84 @@ def resultants(nodes: dict[int, tuple[float, float, float]], forces: dict[int, n
     return force, moment
 
 
-def material_table(d: dict) -> tuple[dict[tuple[str, int], int], dict[int, float]]:
+@dataclass(frozen=True)
+class ElasticMaterialState:
+    """OpenSees isotropic parameters corresponding to one CSF E-G state."""
+
+    E: float
+    G: float
+    nu: float
+
+
+def _elastic_material_state(E: float, G: float, *, region: str, x: float) -> ElasticMaterialState:
+    """Convert the independent CSF E/G carriers to OpenSees E/nu.
+
+    CUF closes the 3D isotropic constitutive law directly from E and G.
+    ``ElasticIsotropic`` requires E and nu, so nu is determined algebraically
+    from the same two CSF carriers; no ``shear_weight_laws`` text is parsed.
+    """
+    E = float(E)
+    G = float(G)
+    if not (np.isfinite(E) and np.isfinite(G)):
+        raise ValueError(
+            f"non-finite CSF constitutive state for {region!r} at x={x}: "
+            f"E={E}, G={G}"
+        )
+    if E == 0.0 and G == 0.0:
+        raise ValueError(
+            f"CSF region {region!r} at x={x} is a void (E=G=0); the current "
+            "structured solid FEM3D reference does not mesh void domains"
+        )
+    if E <= 0.0 or G <= 0.0:
+        raise ValueError(
+            f"CSF material region {region!r} at x={x} requires E>0 and G>0; "
+            f"got E={E}, G={G}"
+        )
+
+    denominator = 3.0 * G - E
+    scale = max(1.0, abs(E), abs(G))
+    tolerance = np.finfo(float).eps * scale
+    if abs(denominator) <= tolerance:
+        raise ValueError(
+            f"invalid CSF E-G constitutive closure for {region!r} at x={x}: "
+            "3*G - E is zero"
+        )
+
+    nu = E / (2.0 * G) - 1.0
+    if not np.isfinite(nu):
+        raise ValueError(
+            f"non-finite Poisson ratio derived from CSF E/G for {region!r} "
+            f"at x={x}: E={E}, G={G}"
+        )
+    return ElasticMaterialState(E=E, G=G, nu=float(nu))
+
+
+def material_table(
+    d: dict,
+) -> tuple[dict[tuple[str, int], int], dict[int, ElasticMaterialState]]:
+    """Sample material from CSF at each longitudinal FEM slice midpoint."""
     key_to_tag: dict[tuple[str, int], int] = {}
-    tag_to_E: dict[int, float] = {}
-    unique: dict[float, int] = {}
+    tag_to_material: dict[int, ElasticMaterialState] = {}
+    unique: dict[tuple[float, float], int] = {}
+
     for ix in range(d["nx"]):
         xmid = d["x0"] + d["L"] * (ix + 0.5) / d["nx"]
         state = state_at(d, xmid)
         for region in ("web", "top_flange"):
             E = float(state[region]["E"])
-            ek = round(E, 10)
-            if ek not in unique:
+            G = float(state[region]["G"])
+            material = _elastic_material_state(E, G, region=region, x=xmid)
+
+            # Preserve independent CSF fields: two states are shared only when
+            # both absolute carriers are exactly equal.
+            material_key = (material.E, material.G)
+            if material_key not in unique:
                 tag = len(unique) + 1
-                unique[ek] = tag
-                tag_to_E[tag] = E
-            key_to_tag[(region, ix)] = unique[ek]
-    return key_to_tag, tag_to_E
+                unique[material_key] = tag
+                tag_to_material[tag] = material
+            key_to_tag[(region, ix)] = unique[material_key]
+
+    return key_to_tag, tag_to_material
 
 
 def end_constraints(d: dict, mesh: TSectionMesh, ops) -> tuple[list[int], list[int], int]:
@@ -659,9 +899,14 @@ def solve(d: dict, mesh: TSectionMesh, loads: dict[int, np.ndarray]):
     for tag, (x, y, z) in mesh.nodes.items():
         ops.node(tag, x, y, z)
 
-    element_material, tag_to_E = material_table(d)
-    for mat_tag, E in sorted(tag_to_E.items()):
-        ops.nDMaterial("ElasticIsotropic", mat_tag, float(E), float(d["nu"]))
+    element_material, tag_to_material = material_table(d)
+    for mat_tag, material in sorted(tag_to_material.items()):
+        ops.nDMaterial(
+            "ElasticIsotropic",
+            mat_tag,
+            float(material.E),
+            float(material.nu),
+        )
 
     for rec in mesh.elements:
         mat_tag = element_material[(rec.region, rec.ix)]
@@ -768,17 +1013,32 @@ def write_outputs(d: dict, mesh: TSectionMesh, loads: dict[int, np.ndarray], dis
 
 def print_diagnostics(d: dict, mesh: TSectionMesh, loads: dict[int, np.ndarray]) -> None:
     af, am = resultants(mesh.nodes, loads)
-    s0, s1 = d["s0"], d["s1"]
+    s0 = state_at(d, d["x0"])
+    s1 = state_at(d, d["x1"])
     print(f"case      : {d['case_name']}")
     print(f"problem   : {d['problem_type']}")
     print(f"model     : {d['model_path']}")
+    print("CSF data  : API section(x) + inspect_section_entities(x)")
     if d.get("problem_path") is not None:
         print(f"problem-yaml: {d['problem_path']}")
     print(f"element   : {d['element_type']}")
-    print(f"mesh      : nx={d['nx']} web_ny={d['web_ny']} web_nz={d['web_nz']} overhang_ny={d['overhang_ny']} flange_nz={d['flange_nz']}")
+    print(
+        f"mesh      : nx={d['nx']} web_ny={d['web_ny']} "
+        f"web_nz={d['web_nz']} overhang_ny={d['overhang_ny']} "
+        f"flange_nz={d['flange_nz']}"
+    )
     print(f"nodes     : {len(mesh.nodes)}")
     print(f"elements  : {len(mesh.elements)}")
-    print(f"S0 E      : flange={s0['top_flange']['E']:.6g} web={s0['web']['E']:.6g}")
-    print(f"S1 E      : flange={s1['top_flange']['E']:.6g} web={s1['web']['E']:.6g}")
+    print(
+        "S0 E,G    : "
+        f"flange=({s0['top_flange']['E']:.6g}, {s0['top_flange']['G']:.6g}) "
+        f"web=({s0['web']['E']:.6g}, {s0['web']['G']:.6g})"
+    )
+    print(
+        "S1 E,G    : "
+        f"flange=({s1['top_flange']['E']:.6g}, {s1['top_flange']['G']:.6g}) "
+        f"web=({s1['web']['E']:.6g}, {s1['web']['G']:.6g})"
+    )
     print(f"load F    : {af}")
     print(f"load M@O  : {am}")
+

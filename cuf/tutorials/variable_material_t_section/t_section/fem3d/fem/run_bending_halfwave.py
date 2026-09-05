@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Version: T-section non-prismatic FEM3D physical-surface half-wave bending v1 - 2026-09-04
+# Version: T-section non-prismatic FEM3D physical-surface half-wave bending v2 - 2026-09-05
 """
 FEM3D reference for the CSF-CUF ``surface_halfwave`` problem.
 
@@ -9,7 +9,7 @@ This wrapper is the sinusoidal counterpart of the existing FEM3D
 - CSF geometry and physical surface selector;
 - structured 3D mesh;
 - real isoparametric surface Jacobian;
-- material interpolation;
+- material state queried from the CSF API;
 - end constraints;
 - pointwise axial anchor u_x(x_start, 0, 0) = 0;
 - solver and output routines.
@@ -101,7 +101,7 @@ def _parse_surface_halfwave_problem(problem: dict) -> dict:
 
 
 def read_case(case_path: str | Path) -> dict:
-    """Read one FEM3D half-wave case using the existing reference infrastructure."""
+    """Read one FEM3D bending half-wave case using the CSF API-backed reference."""
 
     case_path = Path(case_path).resolve()
     case = yaml.safe_load(case_path.read_text(encoding="utf-8"))
@@ -114,69 +114,14 @@ def read_case(case_path: str | Path) -> dict:
         )
     problem_data = _parse_surface_halfwave_problem(problem)
 
-    model = yaml.safe_load(model_path.read_text(encoding="utf-8"))
-    csf = model["CSF"]
-    sections = sorted(csf["sections"].items(), key=lambda kv: float(kv[1]["z"]))
-    if len(sections) != 2:
-        raise ValueError("this FEM3D reference expects exactly two CSF sections S0/S1")
-
-    s0 = common._section_data(sections[0][1])
-    s1 = common._section_data(sections[1][1])
-    if not s1["x"] > s0["x"]:
-        raise ValueError("S1 must lie after S0 along the beam axis")
-
-    if set(s0["polygons"]) != set(s1["polygons"]):
-        raise ValueError("S0/S1 must contain the same named CSF polygons")
-    for name in s0["polygons"]:
-        if len(s0["polygons"][name]["vertices"]) != len(
-            s1["polygons"][name]["vertices"]
-        ):
-            raise ValueError(
-                f"polygon {name!r} must preserve its CSF vertex topology between S0/S1"
-            )
-
-    mesh = case["mesh"]
-    analysis = case.get("analysis", {})
-    output = case.get("output", {})
-    element_type = str(analysis.get("element", "stdBrick"))
-    if element_type not in common.SUPPORTED_ELEMENTS:
-        raise ValueError(
-            f"element must be one of {sorted(common.SUPPORTED_ELEMENTS)}"
-        )
-
-    result = {
-        "case_path": case_path,
-        "model_path": model_path,
-        "problem_path": problem_path,
-        "case_name": str(case.get("case", {}).get("name", case_path.stem)),
-        "problem_type": problem_type,
-        "s0": s0,
-        "s1": s1,
-        "x0": s0["x"],
-        "x1": s1["x"],
-        "L": s1["x"] - s0["x"],
-        "nu": common._parse_nu(csf),
-        "nx": int(mesh["longitudinal_divisions"]),
-        "web_ny": int(mesh["web_width_divisions"]),
-        "web_nz": int(mesh["web_height_divisions"]),
-        "overhang_ny": int(mesh["flange_overhang_divisions"]),
-        "flange_nz": int(mesh["flange_thickness_divisions"]),
-        "load_gauss_order": int(mesh.get("load_gauss_order", 4)),
-        "element_type": element_type,
-        "system": str(analysis.get("system", "SparseGeneral")),
-        "output_dir": common._resolve(
-            case_path.parent,
-            output.get("directory", f"../output/{case_path.stem}"),
-        ),
-        "stations": tuple(
-            float(value)
-            for value in case.get("sampling", {}).get(
-                "stations", [0.0, 0.25, 0.5, 0.75, 1.0]
-            )
-        ),
-    }
-    result.update(problem_data)
-    return result
+    result = common._base_case_data(
+        case_path=case_path,
+        case=case,
+        model_path=model_path,
+        problem_path=problem_path,
+        problem_type=problem_type,
+    )
+    return common._finish_case_data(result, problem_data)
 
 
 def bending_halfwave_loads(
