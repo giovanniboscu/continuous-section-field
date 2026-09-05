@@ -1,8 +1,10 @@
-# Version: CSF-CUF isolated transverse expansion plugins v21 - 2026-08-29
+# Version: CSF-CUF isolated transverse expansion plugins v21.1 - 2026-09-05
 """CUF transverse basis definitions extracted from :mod:`csf.utils.csf_cuf`.
 
-This module contains only basis-related classes. The implementations are
-unchanged; ``csf_cuf.py`` re-exports the public names for compatibility.
+This module contains only basis-related classes. ``csf_cuf.py`` re-exports
+the public names for compatibility.  The Serendipity-Lagrange polynomial
+evaluator uses its root-product form directly to avoid an unnecessary
+monomial-coefficient conversion in the solver path.
 """
 
 from abc import ABC, abstractmethod
@@ -170,8 +172,11 @@ class SerendipityLagrangeReferenceBasis(CUFBasis):
 
         self._order = order
         self._definitions = self._build_definitions(order)
-        self._poly_coefficients = {
-            r: self._build_p_coefficients(r)
+        # Keep the roots themselves and evaluate p_r directly as a product.
+        # This preserves exactly the same mathematical basis while avoiding
+        # conversion to monomial coefficients (np.poly) in the solver path.
+        self._poly_roots = {
+            r: self._build_p_roots(r)
             for r in range(2, order + 1)
         }
 
@@ -241,13 +246,16 @@ class SerendipityLagrangeReferenceBasis(CUFBasis):
         return tuple(definitions)
 
     @staticmethod
-    def _build_p_coefficients(order: int) -> np.ndarray:
-        """
-        Coefficients of
+    def _build_p_roots(order: int) -> np.ndarray:
+        """Return the roots of p_r(mu) in reference coordinates.
+
+        The mathematical definition is unchanged:
 
             p_r(mu) = product_i (mu - mu_i),
 
-        where the r equally spaced roots include -1 and +1.
+        with r equally spaced roots including -1 and +1.  Keeping the roots
+        avoids the numerically fragile conversion to monomial coefficients
+        in the solver evaluation path.
         """
 
         roots = np.linspace(
@@ -256,8 +264,8 @@ class SerendipityLagrangeReferenceBasis(CUFBasis):
             order,
             dtype=float,
         )
-
-        return np.poly(roots)
+        roots.setflags(write=False)
+        return roots
 
     def definition(self, tau: int):
         self._validate_tau(tau)
@@ -325,13 +333,29 @@ class SerendipityLagrangeReferenceBasis(CUFBasis):
         order: int,
         mu: float,
     ):
-        coefficients = self._poly_coefficients[order]
-        derivative_coefficients = np.polyder(coefficients)
+        """Evaluate p_r and dp_r/dmu without monomial coefficients.
 
-        return (
-            float(np.polyval(coefficients, mu)),
-            float(np.polyval(derivative_coefficients, mu)),
-        )
+        For each factor f_k = mu - mu_k, update
+
+            p_new  = p * f_k
+            dp_new = dp * f_k + p
+
+        which is the product rule applied incrementally.  This is
+        mathematically identical to evaluating the polynomial defined by the
+        roots, but it avoids np.poly/np.polyval and preserves exact zeros when
+        ``mu`` coincides with one of the stored roots (notably +/-1).
+        """
+
+        roots = self._poly_roots[order]
+        value = 1.0
+        derivative = 0.0
+
+        for root in roots:
+            factor = float(mu) - float(root)
+            derivative = derivative * factor + value
+            value = value * factor
+
+        return float(value), float(derivative)
 
     def _evaluate_reference(
         self,

@@ -1,4 +1,5 @@
-# Version: CSF-CUF net homogeneous domain slicer v19 - 2026-08-27
+# Version: CSF-CUF section provider v20 - 2026-09-03
+# Changelog: v20 delegates the public CSF entity-inspection API; v19 introduced net homogeneous domain slicing.
 """Section representation and CSF adapter for the CSF-CUF bridge.
 
 This module is an architectural extraction from ``csf_cuf.py``.
@@ -203,6 +204,8 @@ class CSFSectionProvider(SectionProvider):
             raise ValueError("field must not be None")
         if not hasattr(field, "section"):
             raise TypeError("field must expose section(z)")
+        if not hasattr(field, "inspect_section_entities"):
+            raise TypeError("field must expose inspect_section_entities(z)")
         self._field = field
         self._domain_slicer = SectionDomainSlicer(field)
 
@@ -251,3 +254,17 @@ class CSFSectionProvider(SectionProvider):
             raise TypeError("CSF section has no polygons attribute")
 
         return self._domain_slicer.domains(section)
+
+    def inspect_section_entities(self, x: float):
+        """Delegate stable polygon metadata to the public CSF inspection API.
+
+        ``ContinuousSectionField.inspect_section_entities`` is authoritative
+        for the zero-based polygon ``idx`` and the declared ``s0_name`` and
+        ``s1_name`` labels.  Exposing the same operation through the section
+        provider lets load adapters resolve a user-facing S0 name without
+        accessing ``_field`` or interpreting interpolated runtime labels.
+        """
+
+        if not np.isfinite(x):
+            raise ValueError("longitudinal coordinate x must be finite")
+        return self._field.inspect_section_entities(float(x))

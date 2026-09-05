@@ -8,6 +8,9 @@ from typing import Any
 import yaml
 
 
+AdapterReference = Path | str
+
+
 @dataclass(frozen=True)
 class CUFSettings:
     basis: str
@@ -52,8 +55,8 @@ class CaseDefinition:
     path: Path
     name: str
     problem_path: Path
-    problem_adapter_path: Path
-    output_adapter_path: Path
+    problem_adapter_path: AdapterReference
+    output_adapter_path: AdapterReference
     cuf: CUFSettings
     longitudinal: LongitudinalSettings
     section_integration: SectionIntegrationSettings
@@ -73,6 +76,34 @@ def _relative(base: Path, value: Any) -> Path:
     if path.is_absolute():
         return path
     return (base / path).resolve()
+
+
+def _adapter_reference(base: Path, value: Any) -> AdapterReference:
+    """
+    Resolve one adapter reference without changing the YAML key.
+
+    Filesystem adapters keep the existing path-based behavior. Importable
+    package adapters remain dotted module names, for example:
+
+        csf.cuf.adapter.surface_load_problem
+    """
+
+    text = str(value).strip()
+    if not text:
+        raise ValueError("adapter reference must not be empty")
+
+    candidate = Path(text)
+    path_like = (
+        candidate.is_absolute()
+        or candidate.suffix == ".py"
+        or "/" in text
+        or "\\" in text
+    )
+
+    if path_like:
+        return _relative(base, text)
+
+    return text
 
 
 def load_case(path: str | Path) -> CaseDefinition:
@@ -142,8 +173,14 @@ def load_case(path: str | Path) -> CaseDefinition:
         path=path,
         name=str(case.get("name", path.stem)),
         problem_path=_relative(path.parent, problem["yaml"]),
-        problem_adapter_path=_relative(path.parent, problem["adapter"]),
-        output_adapter_path=_relative(path.parent, output["adapter"]),
+        problem_adapter_path=_adapter_reference(
+            path.parent,
+            problem["adapter"],
+        ),
+        output_adapter_path=_adapter_reference(
+            path.parent,
+            output["adapter"],
+        ),
         cuf=CUFSettings(
             basis=str(cuf.get("basis", "scaled_maclaurin")),
             order=cuf_order,

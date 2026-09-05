@@ -96,31 +96,59 @@ def load_problem(path: str | Path) -> ProblemDefinition:
     )
 
 
-def load_problem_adapter(path: str | Path):
-    """Load a problem adapter module from an explicit filesystem path."""
+def _adapter_is_path(reference: str | Path) -> bool:
+    if isinstance(reference, Path):
+        return True
 
+    text = str(reference)
+    path = Path(text)
+    return (
+        path.is_absolute()
+        or path.suffix == ".py"
+        or "/" in text
+        or "\\" in text
+    )
+
+
+def load_problem_adapter(reference: str | Path):
+    """
+    Load a problem adapter from a filesystem path or importable module name.
+
+    Examples:
+        ../adapters/carrera_problem.py
+        csf.cuf.adapter.surface_load_problem
+    """
+
+    import importlib
     import importlib.util
 
-    path = Path(path).resolve()
+    if _adapter_is_path(reference):
+        path = Path(reference).resolve()
 
-    if not path.is_file():
-        raise FileNotFoundError(f"problem adapter not found: {path}")
+        if not path.is_file():
+            raise FileNotFoundError(f"problem adapter not found: {path}")
 
-    module_name = f"_csf_cuf_problem_adapter_{path.stem}"
+        module_name = f"_csf_cuf_problem_adapter_{path.stem}"
+        spec = importlib.util.spec_from_file_location(module_name, path)
 
-    spec = importlib.util.spec_from_file_location(module_name, path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"cannot load problem adapter: {path}")
 
-    if spec is None or spec.loader is None:
-        raise ImportError(f"cannot load problem adapter: {path}")
-
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        source = str(path)
+    else:
+        module_name = str(reference).strip()
+        if not module_name:
+            raise ValueError("problem adapter module name must not be empty")
+        module = importlib.import_module(module_name)
+        source = module_name
 
     build_problem = getattr(module, "build_problem", None)
 
     if not callable(build_problem):
         raise TypeError(
-            f"problem adapter {path} must define callable build_problem()"
+            f"problem adapter {source} must define callable build_problem()"
         )
 
     return module

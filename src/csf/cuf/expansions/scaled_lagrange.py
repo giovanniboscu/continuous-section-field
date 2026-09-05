@@ -1,4 +1,4 @@
-# Version: CSF-CUF scaled hierarchical Lagrange ContinuousSectionField-ready v25.1 - 2026-08-30
+# Version: CSF-CUF scaled hierarchical Lagrange ContinuousSectionField-ready v25.2 - 2026-09-05
 """Scaled hierarchical Serendipity-Lagrange transverse expansion."""
 
 import math
@@ -124,15 +124,34 @@ class ScaledLagrangeBasis(CUFBasis):
 
     @staticmethod
     def _reference_polynomial(order: int, *, reverse: bool = False):
-        """Return p_order(mu) or p_order(-mu) in ascending powers."""
+        """Return p_order(mu) or p_order(-mu) in ascending powers.
 
-        roots = np.linspace(-1.0, 1.0, int(order), dtype=float)
-        coefficients = np.poly(roots)[::-1]
+        This representation is needed only by the optional physical-power
+        checkpoint export.  The solver itself evaluates the reference
+        polynomial directly from its roots in ``core.basis``.
+
+        Coefficients are accumulated in extended precision before the final
+        float64 cast.  The checkpoint must ultimately contain monomial
+        coefficients, but coefficient construction should not add avoidable
+        float64 roundoff.
+        """
+
+        roots = np.linspace(-1.0, 1.0, int(order), dtype=np.longdouble)
+        coefficients = np.asarray((1.0,), dtype=np.longdouble)
+
+        # Ascending powers: multiply successively by (mu - root).
+        for root in roots:
+            coefficients = np.convolve(
+                coefficients,
+                np.asarray((-root, 1.0), dtype=np.longdouble),
+            )
+
         if reverse:
             coefficients = coefficients * np.power(
-                -1.0,
+                np.longdouble(-1.0),
                 np.arange(coefficients.size),
             )
+
         return np.asarray(coefficients, dtype=float)
 
     def _build_power_coefficients(self) -> np.ndarray:

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import importlib.util
 from pathlib import Path
 
@@ -14,29 +15,50 @@ from csf.cuf.problem.problem_api import (
 from csf.cuf.solver.engine import solve_case
 
 
-def _load_output_adapter(path: str | Path):
-    """Load an output adapter from an explicit filesystem path."""
+def _adapter_is_path(reference: str | Path) -> bool:
+    if isinstance(reference, Path):
+        return True
 
-    path = Path(path).resolve()
+    text = str(reference)
+    path = Path(text)
+    return (
+        path.is_absolute()
+        or path.suffix == ".py"
+        or "/" in text
+        or "\\" in text
+    )
 
-    if not path.is_file():
-        raise FileNotFoundError(f"output adapter not found: {path}")
 
-    module_name = f"_csf_cuf_output_adapter_{path.stem}"
+def _load_output_adapter(reference: str | Path):
+    """Load an output adapter from a filesystem path or module name."""
 
-    spec = importlib.util.spec_from_file_location(module_name, path)
+    if _adapter_is_path(reference):
+        path = Path(reference).resolve()
 
-    if spec is None or spec.loader is None:
-        raise ImportError(f"cannot load output adapter: {path}")
+        if not path.is_file():
+            raise FileNotFoundError(f"output adapter not found: {path}")
 
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+        module_name = f"_csf_cuf_output_adapter_{path.stem}"
+        spec = importlib.util.spec_from_file_location(module_name, path)
+
+        if spec is None or spec.loader is None:
+            raise ImportError(f"cannot load output adapter: {path}")
+
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        source = str(path)
+    else:
+        module_name = str(reference).strip()
+        if not module_name:
+            raise ValueError("output adapter module name must not be empty")
+        module = importlib.import_module(module_name)
+        source = module_name
 
     write_outputs = getattr(module, "write_outputs", None)
 
     if not callable(write_outputs):
         raise TypeError(
-            f"output adapter {path} must define callable write_outputs()"
+            f"output adapter {source} must define callable write_outputs()"
         )
 
     return module
