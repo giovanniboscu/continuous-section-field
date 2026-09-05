@@ -53,6 +53,12 @@ Before proceeding to the structural analysis, we will use these tools to check t
 
 This is an important step because the CUF solver will subsequently use this CSF model as its physical description of the structure.
 
+<img width="1289" height="484" alt="immagine" src="https://github.com/user-attachments/assets/69cfbfc3-9dee-44de-a18a-1421f67865c6" />
+
+<img width="1294" height="476" alt="immagine" src="https://github.com/user-attachments/assets/483c2407-c174-463e-8833-3fdac0a32561" />
+
+
+
 ### Step 2 — Define the structural problems
 
 Once the physical model has been inspected and verified, we can define what loading condition will be applied to it.
