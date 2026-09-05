@@ -254,6 +254,62 @@ output:
 
 The `output` block selects the standard CUF post-processing adapter and specifies the directory in which the results of this case will be written.
 
+### Output adapter
+
+```yaml
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../output/bending_halfwave_legendre_N08
+```
+
+The `output` block specifies how the solved CUF field is post-processed.
+
+```yaml
+adapter: csf.cuf.adapters.output.post
+```
+
+selects the standard CSF-CUF output adapter. The structural solution has already been computed at this stage: the adapter does not modify the model or solve the problem again. Its role is to query the solved physical displacement field and convert the requested results into a readable output.
+
+The results are written in the directory specified by:
+
+```yaml
+directory: ../output/bending_halfwave_legendre_N08
+```
+
+For this example, the standard adapter produces a `response.txt` file containing the displacement response at the longitudinal stations requested in the `sampling` block.
+
+A shortened extract is:
+
+```text
+CSF-CUF RESPONSE
+======================
+problem.type = surface_halfwave
+
+STATION RESPONSES
+-----------------
+x/L    x [mm]    y [mm]    z [mm]    point       ux [mm]      uy [mm]      uz [mm]
+
+0.00     0.0       0.0       0.0      center      ...
+0.00     0.0     -33.0      75.0      plus        ...
+0.00     0.0      12.5     -50.0      minus       ...
+0.00     0.0       0.0     -50.0      bottom_mid  ...
+
+0.05    50.0     -32.525    73.875    plus        ...
+```
+
+Each row identifies both the longitudinal position and the actual physical point at which the solved field is evaluated.
+
+`x/L` is the normalized longitudinal coordinate, `x` is the corresponding physical coordinate, `y` and `z` locate the point on the current CSF section, and `ux`, `uy`, `uz` are the three displacement components.
+
+The physical coordinates are reported explicitly because the section may change along the member. For example, the point labelled `plus` moves as the T section tapers; the post-processor therefore evaluates the solution on the actual CSF geometry at each requested station rather than assuming a fixed transverse position.
+
+The names such as `center`, `plus`, `minus`, and `bottom_mid` identify the reference points used for this response and make it possible to follow the same physical locations along the member.
+
+Keeping the output procedure in a separate adapter also preserves the modular structure of CSF-CUF: the solver produces the structural solution, while the output adapter determines how that solution is inspected and reported.
+
+
+
+
 ---
 
 
