@@ -241,7 +241,7 @@ def main() -> None:
     parser.add_argument(
         "case",
         nargs="?",
-        default="cases/torsion_halfwave_model2.yaml",
+        default="../cases/torsion_halfwave_model2.yaml",
     )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
