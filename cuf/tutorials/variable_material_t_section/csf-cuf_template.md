@@ -496,23 +496,24 @@ Therefore, this problem definition contains the torsional load, the automatic lo
 
 These two problems are examples of the loading schemes already available in the current CSF-CUF implementation. Other predefined load types are also provided, and new problem or loading adapters can be added without modifying the CUF solver core.
 
-The structural problem files therefore define **what is applied to the physical CSF model and how it is constrained**, while the CUF case defined in Step 2 specifies **how that problem is approximated and solved**.
 
 ### Step 3 - Run the CUF case
 
-Once the CSF model, structural problem, and CUF case have been defined, the analysis can be launched directly from the case file:
+Once the physical CSF model, the structural problem, and the CUF case have been defined, the analysis can be launched from the tutorial directory with:
 
 ```bash
 csf-cuf cases/bending_halfwave_legendre_N08.yaml
 ```
 
-The solver prints a detailed execution report. The output is useful not only for checking that the analysis completed successfully, but also for understanding the numerical model that was actually assembled and solved.
+The solver prints a detailed execution report. This report is useful because it shows not only whether the analysis completed successfully, but also the numerical model that was actually assembled and solved.
 
-The main parts of the output are described below.
+The main parts of the output are explained below.
 
-#### Analysis identification
+---
 
-The first block summarizes the input selected by the case:
+#### 1. Analysis identification
+
+The first block summarizes the selected case:
 
 ```text
 CSF-CUF solver
@@ -525,39 +526,31 @@ CUF order           = 8
 longitudinal FE     = 1 x order 6
 ```
 
-The solver confirms the case name, the structural problem file, and the CSF physical model that has been loaded.
+The solver confirms:
 
-```text
-CUF order = 8
-```
-
-confirms that the selected transverse expansion is being used with order \(N=8\).
+- the case that is being executed;
+- the structural problem file;
+- the CSF physical model;
+- the CUF transverse order;
+- the selected longitudinal representation.
 
 The line
 
 ```text
-solver public output = u(x,y,z)
+solver public output= u(x,y,z)
 ```
 
-is particularly important. The final result exposed by the solver is the continuous physical displacement field
+is especially important. The final public result of the solver is the continuous physical displacement field:
 
-\[
-\mathbf{u}(x,y,z)
-=
-\left(
-u_x(x,y,z),
-u_y(x,y,z),
-u_z(x,y,z)
-\right).
-\]
+$$ \mathbf{u}(x,y,z)=\left(u_x(x,y,z),u_y(x,y,z),u_z(x,y,z)\right) $$
 
-The internal generalized CUF degrees of freedom are therefore not the final public result: after the algebraic system has been solved, they are recovered into a field that can be evaluated at physical points of the beam.
+The generalized CUF unknowns are therefore an internal representation of the solution. After the algebraic system has been solved, the solver reconstructs the physical displacement field that can be evaluated at points of the CSF member.
 
 ---
 
-#### Automatic quadrature checks
+#### 2. Section quadrature
 
-Before assembling the system, the solver checks whether the integration orders requested in the case are sufficient.
+The first numerical check concerns integration over the cross-section:
 
 ```text
 [quadrature] section Gauss requested = 6
@@ -565,15 +558,30 @@ Before assembling the system, the solver checks whether the integration orders r
 [quadrature] CUF basis minimum     = 9
 ```
 
-The case requested section Gauss order `6`, but the `scaled_legendre` expansion at \(N=8\) requires at least `9`. The solver therefore uses:
+The case file requested:
 
-```text
-effective = max(requested, basis minimum) = 9
+```yaml
+section_integration:
+  gauss_order: 6
 ```
 
-This automatic increase prevents the selected CUF expansion from being integrated with an insufficient sectional quadrature order.
+but the active CUF basis requires at least `9` Gauss points for this analysis.
 
-The longitudinal check is reported separately:
+The solver therefore automatically increases the sectional quadrature:
+
+```text
+requested = 6
+basis minimum = 9
+effective = 9
+```
+
+The important value is the **effective** order, because this is the order actually used during assembly.
+
+---
+
+#### 3. Longitudinal quadrature
+
+The solver performs a separate check for integration along the beam:
 
 ```text
 [quadrature] longitudinal degree estimate = 31
@@ -585,28 +593,60 @@ The longitudinal check is reported separately:
 [quadrature] longitudinal Gauss effective = 16
 ```
 
-`longitudinal degree estimate = 31` is the solver's estimate of the polynomial complexity that must be integrated along the beam after the contributions of the longitudinal approximation, the changing transverse geometry, the CUF basis, and the material variation have been combined.
+The line
+
+```text
+longitudinal degree estimate = 31
+```
+
+is a conservative estimate of the polynomial complexity that must be integrated along the member. It includes the contributions associated with the longitudinal approximation and with quantities that vary along the beam, including the transverse CUF basis, the section geometry, and the material field.
+
+It is **not** the same quantity as:
+
+```text
+CUF order = 8
+```
+
+or the longitudinal polynomial order shown earlier.
 
 ```text
 longitudinal variation axes = y,z
 ```
 
-means that the CSF section changes along the member in both transverse directions relevant to the CUF basis.
+indicates that the changing CSF geometry introduces longitudinal variation through both transverse coordinates.
+
+The next two lines:
 
 ```text
 longitudinal material varies = true
 longitudinal material degree = 1 (automatic)
 ```
 
-confirms that the solver has detected a longitudinal material variation. In this example its polynomial contribution is automatically recognized as degree `1`, consistent with the linear material variation introduced in the CSF model.
+show that the solver has detected a varying material field and has automatically identified its longitudinal polynomial contribution as degree `1`.
 
-The initially requested longitudinal Gauss order is `15`, but the estimated degree requires at least `16`. The effective value is therefore increased to `16`.
+In this case no explicit longitudinal Gauss order was written in the YAML. The solver generates its baseline quadrature request automatically:
 
-The important distinction is that these values are **integration orders**. They must not be confused with `cuf.order` or `longitudinal.order`.
+```text
+longitudinal Gauss requested = 15
+```
+
+It then compares this value with the minimum required by the estimated longitudinal degree:
+
+```text
+longitudinal Gauss minimum = 16
+```
+
+and finally uses:
+
+```text
+longitudinal Gauss effective = 16
+```
+
+Again, the **effective** value is the one actually used by the solver.
 
 ---
 
-#### CUF basis size
+#### 4. CUF basis ready
 
 The first main solver stage ends with:
 
@@ -614,104 +654,117 @@ The first main solver stage ends with:
 [1/4] model/basis ready: domains from CSF, M=45
 ```
 
-`domains from CSF` confirms that the physical cross-sectional domains used by CUF come directly from the CSF model.
+`domains from CSF` confirms that the physical cross-sectional domains are obtained directly from the CSF model.
 
-`M=45` is the number of active transverse CUF expansion functions for the selected `scaled_legendre` basis at \(N=8\).
+`M=45` is the number of active transverse functions generated by the selected `scaled_legendre` expansion at order \(N=8\).
 
-The transverse functions are indexed by
+These functions are indexed by:
 
-\[
-\tau = 1,\ldots,M.
-\]
+```text
+tau = 1, ..., 45
+```
 
-Each one contributes generalized displacement amplitudes to the global problem.
+and are used to represent the displacement field over the physical cross-section.
 
 ---
 
-#### Assembly of the CUF system
+#### 5. CUF matrix assembly
 
-The next stage builds the global structural equations:
+The next stage assembles the global system:
 
 ```text
 [assembly] element 1/1 started: 2025 CUF pairs
 ```
 
-Since \(M=45\), the assembly must evaluate all ordered pairs of transverse functions:
+With `M=45`, the solver must evaluate all combinations of transverse functions:
 
-\[
-M^2 = 45^2 = 2025.
-\]
+$$ 45 \times 45 = 2025 $$
 
-These are the \((\tau,s)\) combinations required to construct the CUF stiffness contributions.
+These are the CUF function pairs involved in the stiffness assembly.
 
 The progress lines:
 
 ```text
-[assembly] element 1/1 tau=1/45  pairs=45/2025   ...
-[assembly] element 1/1 tau=10/45 pairs=450/2025  ...
+[assembly] element 1/1 tau=1/45 pairs=45/2025 ...
+[assembly] element 1/1 tau=10/45 pairs=450/2025 ...
+[assembly] element 1/1 tau=20/45 pairs=900/2025 ...
 ...
 [assembly] element 1/1 tau=45/45 pairs=2025/2025 ...
 ```
 
-show the progress of this calculation.
+show how far the assembly has progressed.
 
-`entries` is the number of sparse matrix contributions accumulated during assembly. The timing fields distinguish the time spent building each CUF pair from the time spent scattering those contributions into the global sparse representation.
+For each line:
 
-At the end:
+- `tau` identifies the current transverse function;
+- `pairs` reports how many CUF pairs have been processed;
+- `entries` reports how many sparse matrix contributions have been accumulated;
+- `elapsed` is the total elapsed assembly time;
+- `build_pair` is the time spent computing the CUF pair contributions;
+- `scatter` is the time spent inserting those contributions into the global sparse structure.
+
+The completed assembly is summarized by:
 
 ```text
+[assembly] element 1/1 complete elapsed=16.6s ...
 [assembly] triplets complete elapsed=16.6s entries=855883
 [assembly] COO->CSR complete elapsed=0.0s nnz=855883
 [assembly] loads complete elapsed=0.0s total=16.7s
 ```
 
-the stiffness contributions have been collected and converted into the sparse matrix format used by the solver.
+The matrix is first accumulated as sparse triplets and then converted from COO to CSR format for the subsequent numerical operations.
 
-`nnz` means **number of non-zero matrix entries**.
+`nnz` means **number of stored non-zero entries**.
 
-The external load vector is then assembled using the structural problem defined in `bending_halfwave.yaml`.
+The load vector defined by the structural problem is assembled immediately afterward.
 
 ---
 
-#### Global degrees of freedom
+#### 6. Global degrees of freedom
 
-The completed assembly reports:
+The next solver milestone is:
 
 ```text
 [2/4] global assembly complete: DOFs=945
 ```
 
-The unconstrained CUF system contains `945` generalized displacement degrees of freedom.
+The assembled displacement problem contains `945` generalized CUF degrees of freedom.
 
-This number is determined by the longitudinal representation, the `45` transverse CUF functions, and the three displacement components associated with every active generalized position.
+This number results from combining:
 
-The important point is that `DOFs=945` is the size of the unknown displacement vector before the constraint equations are added.
+- the longitudinal representation;
+- the `45` transverse CUF functions;
+- the three displacement components.
+
+These are the unknown displacement quantities before the constraint equations are added to the augmented system.
 
 ---
 
-#### Stiffness matrix \(K\)
+#### 7. Stiffness matrix `K`
 
-The solver then prints numerical diagnostics for the assembled stiffness matrix:
+The solver then reports diagnostics for the global stiffness matrix:
 
 ```text
 [matrix-diagnostic] K shape=(945, 945) nnz=855883 ...
 ```
 
-`K` is the global CUF stiffness matrix.
+`K` is the assembled CUF stiffness matrix.
 
 ```text
 shape=(945, 945)
 ```
 
-matches the `945` generalized displacement unknowns.
+is consistent with the `945` generalized displacement unknowns.
 
-The remaining values are numerical diagnostics:
+The additional quantities are numerical diagnostics:
 
-- `nnz` is the number of non-zero entries;
-- `abs_nonzero_min` and `abs_nonzero_max` give the smallest and largest absolute non-zero matrix entries;
-- `frobenius` is the Frobenius norm of the matrix;
-- `diag_abs_positive_min` and `diag_abs_max` describe the magnitude range of its non-zero diagonal entries;
-- `diag_zeros=0` confirms that no exactly zero diagonal entries are present.
+- `nnz`: number of stored non-zero entries;
+- `abs_nonzero_min`: smallest absolute non-zero coefficient;
+- `abs_nonzero_max`: largest absolute non-zero coefficient;
+- `frobenius`: Frobenius norm of the matrix;
+- `diag_abs_positive_min`: smallest positive absolute diagonal coefficient;
+- `diag_abs_max`: largest absolute diagonal coefficient;
+- `diag_zeros`: number of exactly zero diagonal terms.
 
 The following line:
 
@@ -719,27 +772,27 @@ The following line:
 [matrix-diagnostic] K norms row_l2_min_median_max=(...)
 ```
 
-reports the minimum, median, and maximum Euclidean norms of the rows and columns. These values are diagnostic information used to reveal large differences in numerical scale inside the assembled system.
+reports the minimum, median, and maximum Euclidean norms of the matrix rows and columns.
 
-They should not be interpreted as physical response quantities.
+These quantities are numerical diagnostics. They are not physical displacements, stresses, or forces.
 
 ---
 
-#### Constraint matrix \(A\)
+#### 8. Constraint matrix `A`
 
-The boundary conditions defined by the structural problem are represented separately:
+The structural constraints are represented by a separate matrix:
 
 ```text
 [matrix-diagnostic] A shape=(181, 945) nnz=195 ...
 ```
 
-`A` is the constraint matrix.
+`A` has `945` columns because the constraints act on the same `945` generalized displacement unknowns.
 
-It has `945` columns because the constraints act on the same `945` generalized displacement unknowns.
+For this problem it contains `181` constraint equations.
 
-It has `181` rows because this bending problem generates `181` independent constraint equations. With \(M=45\), these are the transverse end constraints together with the additional axial rigid-body anchor described in the problem definition.
+With `M=45`, the implemented bending problem imposes the transverse end constraints together with one additional condition that removes the remaining rigid global-`x` translation.
 
-The next diagnostic is especially useful:
+The solver also checks the numerical rank of the constraint matrix:
 
 ```text
 [matrix-diagnostic] A spectrum numerical_rank=181/181
@@ -747,91 +800,106 @@ The next diagnostic is especially useful:
 condition=1.525619431063e+00
 ```
 
-The reported numerical rank is equal to the number of rows:
+The result:
 
 ```text
-181 / 181
+numerical_rank = 181/181
 ```
 
-so no linear dependence is detected among the imposed constraints at the reported numerical tolerance.
+shows that all `181` constraint equations are numerically independent at the reported tolerance.
 
 ---
 
-#### KKT system
+#### 9. Augmented KKT system
 
-The displacement equations and the constraint equations are combined into the augmented KKT system:
+The stiffness equations and the constraint equations are combined into one augmented system.
 
+The system has the compact form:
 
-`[K  A^T; A  0] [q; λ] = [f; b]`
+$$ \begin{bmatrix} K & A^T \\ A & 0 \end{bmatrix}\begin{bmatrix} q \\ \lambda \end{bmatrix}=\begin{bmatrix} f \\ b \end{bmatrix} $$
 
 where:
 
-- \(q\) contains the generalized CUF displacement unknowns;
-- \(\lambda\) contains the Lagrange multipliers associated with the constraints;
-- \(f\) is the assembled load vector;
-- \(b\) is the constraint right-hand side.
+- `K` is the CUF stiffness matrix;
+- `A` is the constraint matrix;
+- `q` contains the generalized displacement unknowns;
+- `lambda` contains the Lagrange multipliers associated with the constraints;
+- `f` is the structural load vector;
+- `b` is the right-hand side of the constraint equations.
 
-The log reports:
+The solver reports:
 
 ```text
 [matrix-diagnostic] KKT shape=(1126, 1126) nnz=856273 ...
 ```
 
-The size follows directly from:
+The matrix size follows directly from the displacement unknowns and the constraint equations:
 
-\[
-1126 = 945 + 181.
-\]
+$$ 1126 = 945 + 181 $$
 
-The diagnostic
+The line:
 
 ```text
 K_to_A_frobenius_ratio=3.997018928538e+08
 ```
 
-shows that the stiffness and constraint blocks have very different numerical scales. This is one of the quantities useful when examining the conditioning of the augmented system.
+compares the numerical scale of the stiffness block with the constraint block. The very large ratio indicates that the two parts of the KKT system operate at very different numerical scales.
 
 ---
 
-#### Diagnostic KKT checkpoint
+#### 10. KKT diagnostic checkpoint
 
-Immediately before solving, the complete sparse KKT system is saved:
+Before the linear solve, the complete algebraic system is saved:
 
 ```text
 [diagnostic-v3] pre-spsolve checkpoint saved:
 matrix=.../diagnostics/kkt_checkpoint/kkt_matrix.npz
 rhs=.../diagnostics/kkt_checkpoint/rhs.npy
+shape=(1126, 1126)
+nnz=856273
 ```
 
-The two files contain:
+The files are:
 
 ```text
-kkt_matrix.npz
-rhs.npy
+diagnostics/kkt_checkpoint/kkt_matrix.npz
+diagnostics/kkt_checkpoint/rhs.npy
 ```
 
-and allow the exact algebraic system sent to the linear solver to be inspected or reproduced independently.
+They contain the exact sparse KKT matrix and right-hand side immediately before the solve.
 
-The log also records the matrix shape, sparse format information, data types, and whether the sparse indices are sorted and canonical.
+This checkpoint is useful for:
 
-The SHA256 values:
+- inspecting the numerical system independently;
+- reproducing the linear solve;
+- comparing different solver versions;
+- performing strict regression tests.
+
+The following hashes:
 
 ```text
-SHA256 indptr=...
-       indices=...
-       data=...
-       rhs=...
+[diagnostic-v3] SHA256 indptr=...
+                         indices=...
+                         data=...
+                         rhs=...
 ```
 
-are fingerprints of the sparse matrix structure, its numerical coefficients, and the right-hand side. They are useful for strict regression tests: two runs that produce the same hashes have produced exactly the same stored KKT data and right-hand side.
+are fingerprints of:
 
-These diagnostic checkpoint files are not the physical displacement result; they are a snapshot of the algebraic system before the solve.
+- the sparse matrix row structure (`indptr`);
+- the column indices (`indices`);
+- the numerical coefficients (`data`);
+- the right-hand side (`rhs`).
+
+If all four hashes are identical between two runs, the stored KKT system and its right-hand side are identical.
+
+These files are numerical diagnostics; they are not the final physical displacement field.
 
 ---
 
-#### Ill-conditioning and automatic equilibration
+#### 11. Ill-conditioning warning and equilibration
 
-For this case the solver detects that the original KKT matrix is poorly conditioned:
+For this case the solver detects a poorly conditioned original KKT matrix:
 
 ```text
 LinAlgWarning: Original KKT matrix is ill-conditioned
@@ -839,22 +907,48 @@ LinAlgWarning: Original KKT matrix is ill-conditioned
 equilibration will be applied before the solve.
 ```
 
-`rcond` is a reciprocal condition estimate. A very small value indicates a numerically ill-conditioned or strongly unbalanced matrix.
+`rcond` is a reciprocal condition estimate. A very small value indicates that the algebraic system is numerically difficult to solve in its original scaling.
 
-This warning does **not** mean that the analysis has failed. The solver responds by applying numerical equilibration before solving:
+This message does **not** mean that the analysis has failed.
+
+The solver automatically applies equilibration:
 
 ```text
 [kkt-equilibration]
 iterations=8
+iterations_requested=8
+iterations_performed=8
 original_rcond=8.030567733991e-19
 equilibrated_rcond=5.239671863586e-09
+scale_min=3.963236039126e-05
+scale_max=1.102447621678e+04
 ```
 
-Equilibration rescales the equations and unknown blocks to reduce their numerical imbalance. It does not change the physical model, the CUF formulation, the load, or the boundary conditions.
+Equilibration rescales the algebraic equations to reduce their numerical imbalance before the direct solve.
 
-The improvement from the original to the equilibrated `rcond` shows that the rescaling has substantially improved the numerical conditioning of the system used for the direct solve.
+It does not change:
 
-The following line:
+- the CSF geometry;
+- the material field;
+- the CUF formulation;
+- the applied load;
+- the physical boundary conditions.
+
+The improvement from:
+
+```text
+8.03e-19
+```
+
+to approximately:
+
+```text
+5.24e-09
+```
+
+shows that the scaling substantially improves the numerical conditioning of the system used for the solve.
+
+The next line:
 
 ```text
 [matrix-diagnostic] equilibration-scales
@@ -862,19 +956,19 @@ primal_min_median_max=(...)
 multiplier_min_median_max=(...)
 ```
 
-reports the scaling factors applied to the displacement unknowns (`primal`) and to the constraint multipliers (`multiplier`). These are purely numerical scaling quantities.
+reports the scaling ranges applied respectively to the displacement unknowns and to the constraint multipliers.
 
 ---
 
-#### Solution and residual verification
+#### 12. Linear solution and residual check
 
-After the linear system is solved:
+After solving the KKT system:
 
 ```text
 [3/4] solve complete
 ```
 
-the solver checks the recovered solution against the assembled equations:
+the solver verifies the result:
 
 ```text
 [verification] residual mean = -1.554559e-10
@@ -882,60 +976,63 @@ the solver checks the recovered solution against the assembled equations:
 [verification] equation-term scale = 3.025907e+05
 ```
 
-The residual measures how closely the computed solution satisfies the original algebraic equations.
+The residual measures how closely the computed solution satisfies the assembled equations.
 
-Here the residual fluctuations are extremely small compared with the characteristic equation-term scale, providing a numerical check that the solved system is being satisfied to high precision.
+Here the residual is extremely small compared with the characteristic equation-term scale.
 
-This verification is particularly important after equilibration: the solver does not rely only on the fact that the linear solver returned a solution, but checks the resulting equations numerically.
+This provides an important numerical verification of the solved system, especially because the KKT matrix required equilibration before the direct solve.
 
 ---
 
-#### Optional solution checkpoint
+#### 13. Optional solution checkpoint
 
 The next message is:
 
 ```text
-[solution-checkpoint] skipped:
-selected expansion does not export physical power coefficients
+[solution-checkpoint] skipped: selected expansion does not export physical power coefficients
 ```
 
-This refers to the optional persistent compiled displacement checkpoint.
+This message concerns an optional persistent representation of the solved displacement field.
 
-For this `scaled_legendre` run, the selected expansion does not provide the physical power-coefficient representation required by that checkpoint format, so the persistent solution checkpoint is not written.
+For this run, the selected expansion does not provide the physical power coefficients required by that checkpoint mechanism, so this additional file is not written.
 
-This is **not an analysis error**. The solved displacement field is still constructed immediately afterward and the normal output is produced.
+This is **not an error** and it does not invalidate the analysis.
+
+The standard continuous displacement field is still reconstructed normally.
 
 ---
 
-#### Continuous physical displacement field
+#### 14. Continuous displacement field ready
 
-The final solver stage is:
+The final main solver stage is:
 
 ```text
 [4/4] u(x,y,z) ready: elapsed=17.093 s
 ```
 
-At this point the algebraic CUF solution has been transformed into the physical continuous field
+At this point the generalized CUF solution has been converted into the physical continuous displacement field:
 
-\[
-\mathbf u(x,y,z).
-\]
+$$ \mathbf{u}(x,y,z)=\left(u_x,u_y,u_z\right) $$
 
-This is the main public result of the solver. It can be queried at arbitrary valid physical points of the CSF beam rather than only at the internal generalized degrees of freedom.
+This is the principal public result of the solver.
 
-The reported `elapsed` time is the total solver time for this run. The detailed timing above shows that, in this particular case, most of that time is spent in CUF matrix assembly.
+The field can be evaluated at valid physical coordinates of the CSF member instead of being restricted to the internal generalized unknowns used during assembly.
+
+The total elapsed solver time is also reported.
+
+For this example, the detailed timing printed earlier shows that most of the computational cost is associated with the CUF pair assembly.
 
 ---
 
-#### Post-processing output
+#### 15. Output adapter
 
-After the displacement field is ready, the output adapter selected in the case is executed:
+Finally, the output adapter defined in the case is executed:
 
 ```text
 written: .../output/bending_halfwave_legendre_N08/response.txt
 ```
 
-The final confirmation is:
+and the solver ends with:
 
 ```text
 continuous displacement field = READY
@@ -943,18 +1040,24 @@ output directory              = .../output/bending_halfwave_legendre_N08
   response.txt
 ```
 
-A successful run therefore ends with two distinct results:
+A successful execution therefore produces two distinct results:
 
-1. the in-memory continuous displacement field `u(x,y,z)`, which is the public structural solution;
-2. the files generated by the selected output adapter, in this case `response.txt`.
+1. the continuous physical displacement field `u(x,y,z)`;
+2. the files generated by the selected output adapter.
 
-The content of `response.txt` can then be inspected using the sampling stations defined in the case.
+For this case, the standard output adapter writes:
+
+```text
+output/bending_halfwave_legendre_N08/response.txt
+```
+
+The content of `response.txt` can then be inspected to see the displacement response at the sampling stations defined in the case file.
 
 ---
 
-#### Reading the four solver stages at a glance
+#### The complete solver path
 
-The numbered messages summarize the complete analysis pipeline:
+The four numbered stages summarize the entire analysis:
 
 ```text
 [1/4] model/basis ready
@@ -963,27 +1066,38 @@ The numbered messages summarize the complete analysis pipeline:
 [4/4] u(x,y,z) ready
 ```
 
-They correspond to:
+In compact form:
 
 ```text
-CSF physical model + CUF basis
-              |
-              v
-      global CUF assembly
-              |
-              v
-    constrained KKT solution
-              |
-              v
- continuous physical field
-          u(x,y,z)
-              |
-              v
-       output adapter
-              |
-              v
-        response.txt
+CSF physical model
+        +
+CUF transverse basis
+        |
+        v
+global CUF assembly
+        |
+        v
+K + constraints
+        |
+        v
+augmented KKT system
+        |
+        v
+linear solution
+        |
+        v
+continuous displacement field
+u(x,y,z)
+        |
+        v
+output adapter
+        |
+        v
+response.txt
 ```
 
-This sequence is the central execution path of the CSF-CUF analysis.
+This is the complete execution path from the physical CSF description to the final CUF displacement response.
+
+
+The structural problem files therefore define **what is applied to the physical CSF model and how it is constrained**, while the CUF case defined in Step 2 specifies **how that problem is approximated and solved**.
 
