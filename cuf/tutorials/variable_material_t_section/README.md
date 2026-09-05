@@ -1,23 +1,69 @@
 # Introduction
 
-The CUF module provides a general and modular implementation of structural models based on the **Carrera Unified Formulation (CUF)**.
+The CSF-CUF module is a structural solver based on the **Carrera Unified Formulation (CUF)**.
 
-The main idea of the implementation is to keep the structural formulation independent from the particular geometry, material distribution, and transverse expansion adopted for a given problem. Rather than embedding a specific beam section or a predefined material model inside the solver, these ingredients are provided through separate components.
+Its purpose is to analyse a beam-like three-dimensional body starting from a physical description of its cross-section.
 
-In this architecture, the physical description of the cross-section is supplied by the **Continuous Section Field (CSF)** model. CSF defines the geometry of the section and the associated material field, while the CUF solver uses this information through generic section and constitutive interfaces. The solver therefore does not need to know whether the section is rectangular, T-shaped, hollow, multi-domain, or characterized by spatially varying material properties.
+The cross-section is provided by **CSF (Continuous Section Field)**. CSF describes:
 
-Conceptually, the interaction can be summarized as
+* the shape of the section;
+* how that shape may change along the beam;
+* the material occupying the section;
+* how the material properties may vary from point to point.
 
-**CSF physical model → CUF section/material interface → CUF structural formulation**
+The CUF solver does not contain a particular section geometry or a particular material distribution. Instead, it receives this information from the CSF model and uses it to construct the structural analysis.
 
-This separation is particularly useful for sections whose geometry or material properties vary continuously, because the structural formulation can operate directly on the section model without introducing a geometry-specific implementation inside the solver.
+In simple terms, the workflow is
 
-A second independent component of the formulation is the **transverse expansion law** used to approximate the three-dimensional displacement field over the cross-section. The CUF implementation does not impose a single expansion family. Expansion laws are implemented as independent plugins and can be selected or extended without modifying the structural solver itself.
+**CSF model → CUF structural model → solution**
 
-The current framework therefore separates three fundamental aspects of the model:
+This means that the same CUF solver can be used, for example, with a rectangular section, a T section, a hollow section, a non-prismatic section, or a section made of spatially varying material, without introducing a new solver for each geometry.
 
-* the **physical cross-section**, described by CSF;
-* the **transverse approximation**, described by a CUF expansion law;
-* the **structural solution procedure**, handled by the generic CUF solver.
+## What must be chosen for a CUF analysis?
 
-This tutorial will use this architecture to construct a simple example from the beginning: a **T-shaped section with spatially varying material properties**. The purpose of the example is not only to solve a particular structural problem, but also to show how geometry, material description, CUF expansion, and structural analysis remain distinct and interchangeable parts of the same model.
+To perform an analysis, four main ingredients are required:
+
+1. a **CSF model**, describing the geometry and material;
+2. a **structural problem**, describing how the member is constrained and loaded;
+3. a **CUF transverse expansion**, describing how the displacement field is represented over the cross-section;
+4. a **longitudinal discretization**, describing how the solution varies along the beam axis.
+
+The framework already provides a number of ready-to-use structural problems and CUF expansions. These are supplied for convenience: they are not intended to define the limits of the formulation. New problems, loading conditions, and expansion laws can be added to the same architecture.
+
+## Structural problems currently available
+
+At present, the package includes several predefined static problems. Each one combines a particular loading pattern with the boundary conditions required for that problem.
+
+The currently available implementations include:
+
+* **surface half-wave loading** — a load applied to a selected physical surface of the member, whose intensity varies sinusoidally along the beam axis;
+* **uniform surface loading** — a load applied to a selected physical surface with constant longitudinal intensity;
+* **torsional half-wave loading** — a torsional loading whose intensity varies sinusoidally along the beam axis;
+* **uniform torsional loading** — the corresponding torsional loading with constant longitudinal intensity;
+* a predefined **bending/torsion half-wave problem** used for the original CUF validation cases.
+
+These ready-to-use problems are implemented in the current problem-adapter library.
+
+## CUF transverse expansions currently available
+
+The displacement field over the cross-section can be represented using different families of transverse functions.
+
+The package currently provides:
+
+* `scaled_lagrange`
+* `scaled_lagrange_q1`
+* `scaled_legendre`
+* `scaled_maclaurin`
+* `scaled_maclaurin_tensor`
+
+These are the expansion families presently distributed with the solver. Additional expansion laws can be implemented and added without rewriting the CUF core.
+
+## Tutorial example
+
+In the following example, no new structural problem and no new CUF expansion will be implemented.
+
+Instead, the tutorial will use the components already available in the framework to analyse a **non-prismatic T-shaped section with spatially varying material properties**.
+
+The geometry and material distribution will be described by CSF. The structural problem will use the existing **surface half-wave loading**, and the CUF approximation will use the existing **scaled Lagrange expansion**.
+
+The objective is therefore first to show how an existing CSF physical model is used directly by the CUF solver, before discussing how custom problems or custom expansion laws can be introduced.
