@@ -385,40 +385,6 @@ The structural problem files therefore define **what is applied to the physical 
 
 
 
----
 
-### Step 4 - Define the CUF analyses
 
-The final input files are the CUF cases:
 
-```text
-cases/bending_halfwave_legendre_N08.yaml
-cases/torsion_halfwave_legendre_N08.yaml
-```
-
-Each case connects one of the previously defined structural problems to a particular CUF approximation.
-
-In this example, both analyses use the already available **scaled Legendre expansion** with transverse order \(N=8\).
-
-The case files also specify the remaining numerical choices required by the solver, such as:
-
-* the longitudinal approximation;
-* the numerical integration settings;
-* the sampling of the solution;
-* the output location.
-
-The physical model is therefore defined only once and can be reused by different structural problems and different CUF analyses.
-
-The complete organization of the example can be read as:
-
-```text
-t_noprismatic_csf.yaml
-        ↓
-inspect geometry and material
-        ↓
-bending_halfwave.yaml     torsion_halfwave.yaml
-        ↓                         ↓
-bending case               torsion case
-        ↓                         ↓
-      CUF solution              CUF solution
-```
