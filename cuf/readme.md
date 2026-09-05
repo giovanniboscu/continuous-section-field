@@ -2,7 +2,7 @@
 # A CUF Solver 
 
 
->[https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/readme.md](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/hollow_rectangle_validation)
+>[https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/readme.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/csf-cuf_template.md)
 >
 >The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
 
