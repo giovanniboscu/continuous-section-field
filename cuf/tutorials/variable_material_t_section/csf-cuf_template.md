@@ -81,7 +81,7 @@ For the bending example, the case file is:
 cases/bending_halfwave_legendre_N08.yaml
 ```
 
-This is the main input file passed to the CUF solver. It does not redefine the geometry or the material model. Instead, it connects the structural problem to the numerical choices used by CUF.
+This is the main input file passed to the CUF solver. It does not redefine the geometry or the material model. Instead, it connects the structural problem already defined on the CSF model with the numerical choices used by the CUF formulation.
 
 ```yaml
 # CSF-CUF bending half-wave v2 test: scaled_legendre, N=08.
@@ -117,7 +117,7 @@ output:
   directory: ../output/bending_halfwave_legendre_N08
 ```
 
-The file can be read from top to bottom as a description of how the analysis will be performed.
+The file can be read from top to bottom as a description of how the analysis is assembled.
 
 #### Case name
 
@@ -126,7 +126,7 @@ case:
   name: double_t_bending_halfwave_legendre_N08
 ```
 
-The `case` block gives the analysis a unique name. This name identifies this particular combination of physical problem and CUF approximation.
+The `case` block gives the analysis a unique name. It is useful for distinguishing this run from other analyses that may use a different problem, CUF expansion, expansion order, or output directory.
 
 #### Structural problem
 
@@ -144,11 +144,9 @@ Instead, it points to a separate problem file:
 problems/bending_halfwave.yaml
 ```
 
-This separation is useful because the same physical problem can be reused with different CUF approximations.
+The `adapter` tells the solver how that problem file must be interpreted. Here the already implemented `surface_halfwave` adapter is used. It describes a distributed load acting on a physical surface of the CSF model, with a half-wave variation along the longitudinal direction.
 
-The `adapter` tells CUF which already implemented problem formulation must be used to interpret that file. In this case, the selected formulation is `surface_halfwave`, which represents a distributed load applied to a physical surface of the CSF model with a half-wave variation along the beam.
-
-We will inspect `bending_halfwave.yaml` in the next step, where the loaded surface and the load amplitude will be identified explicitly.
+We will inspect `bending_halfwave.yaml` in the next step. At that point we will identify the loaded surface directly on the CSF geometry and explain the load amplitude and direction.
 
 #### CUF transverse expansion
 
@@ -158,13 +156,21 @@ cuf:
   order: 8
 ```
 
-This block specifies how the displacement field is approximated over the cross-section.
+This block defines the CUF approximation over the cross-section.
 
-Here the analysis uses the already implemented `scaled_legendre` expansion with order `8`.
+`basis: scaled_legendre` selects the already implemented scaled Legendre transverse expansion, while
 
-The CSF model still provides the actual geometry and material distribution. The CUF expansion defines the mathematical functions used to represent the displacement field over that physical section.
+```yaml
+order: 8
+```
 
-#### Longitudinal approximation
+sets its transverse order to \(N=8\).
+
+This order belongs to the CUF expansion over the section. It must not be confused with the longitudinal polynomial order defined later in the file.
+
+The CSF model continues to provide the actual section geometry and material distribution; the CUF basis provides the mathematical functions used to represent the displacement field over that physical section.
+
+#### Longitudinal representation
 
 ```yaml
 longitudinal:
@@ -173,16 +179,31 @@ longitudinal:
   order: 6
 ```
 
-The transverse expansion describes the solution over the cross-section, but the solution must also vary along the beam axis.
+The CUF expansion describes the variation of the solution over the cross-section. A separate approximation is required along the longitudinal coordinate.
 
-In this example, the longitudinal direction is approximated using the finite-element formulation provided by the solver, with one longitudinal element of order `6`.
+In this example, the longitudinal domain is represented by one interval:
 
-It is important to distinguish these two orders:
+```yaml
+elements: 1
+```
 
-- `cuf.order: 8` controls the transverse approximation over the cross-section;
-- `longitudinal.order: 6` controls the approximation along the beam axis.
+and the polynomial order used for the longitudinal approximation is:
 
-They describe two different directions of the same three-dimensional displacement field.
+```yaml
+order: 6
+```
+
+Thus, `longitudinal.order` controls the polynomial approximation along the beam axis, whereas `cuf.order` controls the transverse CUF expansion over the cross-section. They are independent parameters.
+
+It is also important not to confuse `longitudinal.order` with the order of numerical integration.
+
+The longitudinal integrals are evaluated with Gauss-Legendre quadrature. Since no explicit `longitudinal.gauss_order` is given in this case, the solver first generates a requested quadrature order automatically. It then estimates the minimum quadrature required by the complete longitudinal integrand, taking into account the longitudinal polynomial approximation, the variation of the CUF basis caused by the changing section geometry, the cross-sectional measure, and the material variation.
+
+The effective longitudinal Gauss order is therefore allowed to increase when the estimated minimum is higher than the initially requested value.
+
+For material laws that are constant or affine along the beam, the material contribution is detected automatically. If a custom non-affine polynomial variation of the material is introduced, its maximum polynomial degree can be supplied explicitly through `longitudinal.material_polynomial_degree`.
+
+This affects the longitudinal **integration order**, not `longitudinal.order` itself.
 
 #### Section integration
 
@@ -192,11 +213,13 @@ section_integration:
   gauss_order: 6
 ```
 
-CUF requires numerical integration over the physical cross-section.
+The CUF formulation also requires numerical integration over the physical cross-section.
 
-Here the integration is performed polygon by polygon on the CSF geometry using Gaussian quadrature.
+Here the section is integrated polygon by polygon on the CSF geometry using Gaussian quadrature.
 
-The requested Gauss order is `6`. The solver may increase it when the selected CUF expansion requires a higher integration order.
+`gauss_order: 6` is the requested section quadrature order. The selected CUF basis can declare a higher minimum requirement; when this happens, the solver automatically uses the larger value.
+
+The value written in the case should therefore be understood as the requested minimum, while the effective section quadrature can be higher.
 
 #### Sampling
 
@@ -207,17 +230,19 @@ sampling:
   stress_grid: 31
 ```
 
-These parameters control where and how densely the computed solution is inspected during post-processing.
+These parameters control how the solved field is inspected during post-processing.
 
-The `stations` values are normalized positions along the beam:
+The `stations` values are normalized longitudinal positions:
 
-- `0.00` corresponds to the beginning of the beam;
-- `0.50` corresponds to its midpoint;
-- `1.00` corresponds to the end.
+- `0.00` is the beginning of the beam;
+- `0.50` is the mid-span section;
+- `1.00` is the end of the beam.
 
-The remaining values control the sampling density used for displacement and stress evaluation.
+The intermediate values define the additional sections at which results are evaluated.
 
-They do not change the structural solution itself; they control how the results are evaluated and reported.
+`displacement_samples` controls the sampling used for displacement evaluation, while `stress_grid` controls the grid used for stress evaluation over the section.
+
+These settings do not change the structural solution itself. They control how densely the solved continuous field is queried and reported.
 
 #### Output
 
@@ -227,11 +252,7 @@ output:
   directory: ../output/bending_halfwave_legendre_N08
 ```
 
-Finally, the `output` block selects the standard CUF post-processing procedure and specifies where the results of this case will be written.
-
-
-
-
+The `output` block selects the standard CUF post-processing adapter and specifies the directory in which the results of this case will be written.
 
 
 ---
