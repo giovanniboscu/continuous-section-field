@@ -60,12 +60,6 @@ The package currently provides:
 
 These are the expansion families presently distributed with the solver. Additional expansion laws can be implemented and added without rewriting the CUF core.
 
-## Tutorial example
 
-In the following example, no new structural problem and no new CUF expansion will be implemented.
-
-Instead, the tutorial will use the components already available in the framework to analyse a **non-prismatic T-shaped section with spatially varying material properties**.
-
-The geometry and material distribution will be described by CSF. The structural problem will use the existing **surface half-wave loading**, and the CUF approximation will use the existing **scaled Lagrange expansion**.
 
 The objective is therefore first to show how an existing CSF physical model is used directly by the CUF solver, before discussing how custom problems or custom expansion laws can be introduced.
