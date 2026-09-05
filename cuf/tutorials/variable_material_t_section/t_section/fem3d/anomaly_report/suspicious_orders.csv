@@ -1,8 +1,0 @@
-case,N,severity,flagged_channels,channels,max_spike_score
-bending_lagrange,16,HIGH,3,uy@bottom_mid; uy@center; uy@minus,12.6900029918
-bending_lagrange,21,LOW,1,uy@plus,3.17926780595
-bending_legendre,16,LOW,1,uy@minus,2.90108189045
-bending_legendre,21,HIGH,4,uy@bottom_mid; uy@center; uy@minus; uy@plus,116.078800854
-torsion_lagrange,16,HIGH,4,ux@bottom_mid; ux@center; uz@bottom_mid; uz@center,13.714788957
-torsion_lagrange,22,LOW,1,uz@center,2.54317398037
-torsion_legendre,24,MEDIUM,5,ux@bottom_mid; ux@center; ux@plus; uz@bottom_mid; uz@center,7.03956700283
