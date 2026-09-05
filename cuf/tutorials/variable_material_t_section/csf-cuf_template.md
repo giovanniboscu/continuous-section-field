@@ -57,6 +57,7 @@ This is an important step because the CUF solver will subsequently use this CSF 
 
 <img width="1294" height="476" alt="immagine" src="https://github.com/user-attachments/assets/483c2407-c174-463e-8833-3fdac0a32561" />
 
+<img width="1000" height="480" alt="immagine" src="https://github.com/user-attachments/assets/27c3d474-3ef1-49bf-bc82-66f437e9577c" />
 
 
 ### Step 2 — Define the structural problems
