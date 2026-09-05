@@ -1,0 +1,11 @@
+model:
+  csf_yaml: ../models/t_noprismatic_csf.yaml
+
+problem:
+  type: surface_halfwave
+
+  surface:
+    polygon_name: web
+    edge_start_point_id: 0
+
+  amplitude: -10.0

@@ -1,0 +1,48 @@
+
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        - name: top_flange
+          weight: 71700.0
+          vertices:
+            - [-33, 50]
+            - [-12.5, 50]
+            - [12.5, 50]
+            - [33, 50]
+            - [33, 75]
+            - [-33, 75]
+
+        - name: web
+          weight: 71700.0
+          vertices:
+            - [-12.5, -50]
+            - [12.5, -50]
+            - [12.5, 50]
+            - [-12.5, 50]
+
+    S1:
+      z: 1000.0
+      polygons:
+        - name: top_flange
+          weight: 71700.0
+          vertices:
+            - [-23.5, 35]
+            - [-8.75, 35]
+            - [8.75, 35]
+            - [23.5, 35]
+            - [23.5, 52.5]
+            - [-23.5, 52.5]
+
+        - name: web
+          weight: 57360.0
+          vertices:
+            - [-8.75, -35]
+            - [8.75, -35]
+            - [8.75, 35]
+            - [-8.75, 35]
+
+  # Generates the per-polygon isotropic shear carrier and Poisson ratio.
+  shear_weight_laws:
+    - 'iso(0.3)'
