@@ -38,10 +38,10 @@ At present, the package includes several predefined static problems. Each one co
 
 The currently available implementations include:
 
-* **surface half-wave loading** — a load applied to a selected physical surface of the member, whose intensity varies sinusoidally along the beam axis;
-* **uniform surface loading** — a load applied to a selected physical surface with constant longitudinal intensity;
-* **torsional half-wave loading** — a torsional loading whose intensity varies sinusoidally along the beam axis;
-* **uniform torsional loading** — the corresponding torsional loading with constant longitudinal intensity;
+* **surface half-wave loading** - a load applied to a selected physical surface of the member, whose intensity varies sinusoidally along the beam axis;
+* **uniform surface loading** - a load applied to a selected physical surface with constant longitudinal intensity;
+* **torsional half-wave loading** - a torsional loading whose intensity varies sinusoidally along the beam axis;
+* **uniform torsional loading** - the corresponding torsional loading with constant longitudinal intensity;
 * a predefined **bending/torsion half-wave problem** used for the original CUF validation cases.
 
 These ready-to-use problems are implemented in the current problem-adapter library.
