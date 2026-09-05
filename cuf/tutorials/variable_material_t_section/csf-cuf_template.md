@@ -17,7 +17,7 @@ The example is organized in three directories:
 
 The files are separated according to their role in the analysis.
 
-### Step 1- Build and inspect the physical model
+### Step 1 — Build and inspect the physical model
 
 The physical model is defined in:
 
@@ -43,11 +43,17 @@ models/action.yaml
 
 This file will be used with the CSF tools to inspect the model defined in `t_noprismatic_csf.yaml`.
 
+To run the inspection, move into the `models` directory and execute:
+
+```bash
+csf-actions t_noprismatic_csf.yaml action.yaml
+```
+
 Before proceeding to the structural analysis, we will use these tools to check the model directly. In particular, we will verify the geometry of the T section, its variation along the beam, and the associated material field.
 
 This is an important step because the CUF solver will subsequently use this CSF model as its physical description of the structure.
 
-### Step 2- Define the structural problems
+### Step 2 — Define the structural problems
 
 Once the physical model has been inspected and verified, we can define what loading condition will be applied to it.
 
@@ -66,7 +72,7 @@ At this stage, the purpose of these files is to describe the physical problem: w
 
 The geometry and material are not defined again here. They remain those of the CSF model created in Step 1.
 
-### Step 3- Define the CUF analyses
+### Step 3 — Define the CUF analyses
 
 The final input files are the CUF cases:
 
