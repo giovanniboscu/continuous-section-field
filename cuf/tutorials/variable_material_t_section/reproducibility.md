@@ -8,7 +8,7 @@ Tested on Ubuntu 24, Python 3.12, clean environment.
 
 ---
 
-## 0. System prerequisites
+## 1. System prerequisites
 
 ```bash
 sudo apt-get update
@@ -17,7 +17,7 @@ sudo apt-get install -y python3 python3-venv python3-pip git
 
 ---
 
-## 1. Clone the repository
+## 2. Clone the repository
 
 ```bash
 git clone https://github.com/giovanniboscu/continuous-section-field.git
@@ -26,7 +26,7 @@ cd continuous-section-field
 
 ---
 
-## 2. Virtual environment and package installation
+## 3. Virtual environment and package installation
 
 ```bash
 python3 -m venv venv
@@ -55,7 +55,7 @@ export MPLBACKEND=Agg
 
 ---
 
-## 3. Step 1 — Inspect the physical CSF model
+## 4. Step 1 - Inspect the physical CSF model
 
 ```bash
 cd cuf/tutorials/variable_material_t_section/t_section/models
@@ -71,7 +71,7 @@ Expected output (excerpt): `A, Ix, Iy, Ip` report at `z=0` and `z=1000`,
 
 ---
 
-## 4. Steps 2-4 — Run the CUF cases
+## 4. Steps 2-4 - Run the CUF cases
 
 Move to the tutorial folder (one level above `models/`):
 
@@ -104,7 +104,7 @@ file written to `output/torsion_halfwave_legendre_N08/response.txt`.
 
 ---
 
-## 5. Step 5 — Inspect the generated results
+## 6. Step 5 - Inspect the generated results
 
 ```bash
 cat output/bending_halfwave_legendre_N08/response.txt
@@ -115,7 +115,7 @@ Columns: `x/L, x[mm], y[mm], z[mm], point, ux[mm], uy[mm], uz[mm]`.
 
 ---
 
-## 6. Step 6 — Verify against the FEM3D (OpenSees) reference
+## 7. Step 6 - Verify against the FEM3D (OpenSees) reference
 
 > Requires significantly more RAM than the previous steps: the 3D mesh has
 > **61,509 nodes / 54,000 `stdBrick` elements**. In low-RAM environments the
@@ -180,26 +180,3 @@ cd fem3d
 ```
 
 ---
-
-## Known bug note
-
-If you try to **omit** the `section_integration` block from the case file
-(as the documentation states is allowed), `csf-cuf` fails with:
-
-```
-TypeError: section_integration must be a YAML mapping
-```
-
-Cause: `src/csf/cuf/case.py`, line 118, is missing the `{}` default:
-
-```python
-# current (bug)
-section = _mapping(root.get("section_integration"), "section_integration")
-
-# fix
-section = _mapping(root.get("section_integration", {}), "section_integration")
-```
-
-With the fix, the default `gauss_order` becomes `cuf_order + 1`, which is
-still raised to the CUF-basis minimum requirement when needed — so it is a
-correct default, simply not reachable until the `{}` fallback is added.
