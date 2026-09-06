@@ -142,17 +142,22 @@ problem:
   adapter: csf.cuf.adapters.problem.surface_halfwave
 ```
 
-The CUF case does not define the load directly.
+The `problem` block connects the CUF case to the physical structural problem to be solved.
 
-Instead, it points to a separate problem file:
+The case file does not define the applied load or the associated boundary conditions directly. Instead, those are kept in a separate problem file:
 
 ```text
 problems/bending_halfwave.yaml
 ```
 
-The `adapter` tells the solver how that problem file must be interpreted. Here the already implemented `surface_halfwave` adapter is used. It describes a distributed load acting on a physical surface of the CSF model, with a half-wave variation along the longitudinal direction.
+This separation is deliberate. The problem file describes **what is applied to the physical CSF model and how the structure is constrained**, while the case file describes **how that problem is represented and solved with CUF**.
 
-We will inspect `bending_halfwave.yaml` in the next step. At that point we will identify the loaded surface directly on the CSF geometry and explain the load amplitude and direction.
+The `yaml` entry selects the problem definition, while the `adapter` selects the implementation that translates that problem into the corresponding CUF load and constraint contributions.
+
+In this example, the `surface_halfwave` adapter is used for a distributed load acting on a physical surface of the CSF model with a half-wave variation along the longitudinal direction.
+
+The complete contents of `bending_halfwave.yaml` are examined in **Step 3**, where the CSF model reference, loaded surface, load amplitude and direction, and boundary conditions are described explicitly.
+
 
 #### CUF transverse expansion
 
