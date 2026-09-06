@@ -85,14 +85,6 @@ Move to the tutorial folder (one level above `models/`):
 cd ../
 ```
 
-(you are now in `.../variable_material_t_section/t_section`)
-
-Re-verify the model is valid before running the CUF cases:
-
-```bash
-csf-actions models/t_noprismatic_csf.yaml models/action.yaml
-```
-
 ### Bending half-wave case
 
 ```bash
@@ -127,12 +119,18 @@ Columns: `x/L, x[mm], y[mm], z[mm], point, ux[mm], uy[mm], uz[mm]`.
 
 ---
 
-## 7. Step 6 - Verify against the FEM3D (OpenSees) reference
+## 7. Step 6 — Verify against the FEM3D (OpenSees) reference
 
 > Requires significantly more RAM than the previous steps: the 3D mesh has
 > **61,509 nodes / 54,000 `stdBrick` elements**. In low-RAM environments the
 > process may be terminated with `Killed` (OOM). This is a hardware
 > requirement, not a flaw in the tutorial.
+>
+> **This step can be skipped.** The FEM3D reference results are already
+> included in the repository (`fem3d/output/*/`), pre-computed. Regenerating
+> them is only needed to verify the OpenSees solve itself; the CUF vs FEM3D
+> comparison in the next section can be run directly against the files
+> already shipped in the repo.
 
 ```bash
 cd fem3d
@@ -146,6 +144,8 @@ Generates:
 output/bending_halfwave_model2/{fem3d_native_displacements.csv,station_extrema.csv,summary.txt,station_points.csv}
 output/torsion_halfwave_model2/{...}
 ```
+
+
 
 ### Graphical comparison CUF vs FEM3D
 
@@ -193,27 +193,3 @@ python3 fem/run_torsion_halfwave.py
 python3 plot_halfwave_outputs.py
 ```
 
----
-
-## Known bug note
-
-If you try to **omit** the `section_integration` block from the case file
-(as the documentation states is allowed), `csf-cuf` fails with:
-
-```
-TypeError: section_integration must be a YAML mapping
-```
-
-Cause: `src/csf/cuf/case.py`, line 118, is missing the `{}` default:
-
-```python
-# current (bug)
-section = _mapping(root.get("section_integration"), "section_integration")
-
-# fix
-section = _mapping(root.get("section_integration", {}), "section_integration")
-```
-
-With the fix, the default `gauss_order` becomes `cuf_order + 1`, which is
-still raised to the CUF-basis minimum requirement when needed - so it is a
-correct default, simply not reachable until the `{}` fallback is added.
