@@ -119,7 +119,7 @@ Columns: `x/L, x[mm], y[mm], z[mm], point, ux[mm], uy[mm], uz[mm]`.
 
 ---
 
-## 7. Step 6 — Verify against the FEM3D (OpenSees) reference
+## 7. Step 6 -Verify against the FEM3D (OpenSees) reference
 
 > Requires significantly more RAM than the previous steps: the 3D mesh has
 > **61,509 nodes / 54,000 `stdBrick` elements**. In low-RAM environments the
