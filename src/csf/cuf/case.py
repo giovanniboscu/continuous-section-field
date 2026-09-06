@@ -115,7 +115,8 @@ def load_case(path: str | Path) -> CaseDefinition:
     problem = _mapping(root.get("problem"), "problem")
     cuf = _mapping(root.get("cuf"), "cuf")
     longitudinal = _mapping(root.get("longitudinal"), "longitudinal")
-    section = _mapping(root.get("section_integration"), "section_integration")
+    
+    section = _mapping(root.get("section_integration", {}), "section_integration")
     solver = _mapping(root.get("solver", {}), "solver")
     equilibration = _mapping(
         solver.get("equilibration", {}),
