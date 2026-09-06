@@ -1269,7 +1269,7 @@ The files have different purposes:
 - `summary.txt` contains the main information and checks associated with the FEM3D analysis;
 - `station_points.csv` contains the displacement components evaluated at the same reference-point roles used by the CUF post-processing and is therefore the file used for the direct CUF/FEM3D comparison.
 
-For convenience, these FEM3D reference results are already included in the repository, so reproducing the OpenSees analyses is not required in order to generate the comparison plots.
+For convenience, these FEM3D reference results are already included in the repository. Since the full three-dimensional finite element analyses require substantially more computational resources than the corresponding CUF analyses, reproducing the OpenSees simulations is not required in order to generate the comparison plots.
 
 From the same `t_section/fem3d` directory, the graphical comparison between the CUF responses and the FEM3D reference solutions is produced with:
 
