@@ -25,7 +25,7 @@ $$
 
 A defining choice of the present formulation is that the longitudinal variation of the physical cross-section is introduced **directly through the sectional domains and constitutive fields**, rather than through a longitudinally dependent mapping of the transverse coordinates. Consequently, no reference-to-physical cross-section transformation, and therefore no associated mapping Jacobian, is required to represent the variation of the section along the beam axis.
 
-This choice does **not** imply that the longitudinal variation of the section is neglected. The dependence on $x$ enters explicitly through $\Omega^k(x)$ and $\mathbf{C}^k(x,y,z)$ and is therefore inherited by every sectional coefficient $J_\bullet^k(x)$ obtained by integration over the physical section.
+This choice does **not** imply that the longitudinal variation of the section is neglected. The dependence on x enters explicitly through $\Omega^k(x)$ and $\mathbf{C}^k(x,y,z)$ and is therefore inherited by every sectional coefficient $J_\bullet^k(x)$ obtained by integration over the physical section.
 
 The transverse CUF expansion may therefore retain the form
 
@@ -33,9 +33,9 @@ $$
 \mathbf{u}(x,y,z) = \sum_{\tau} F_\tau(y,z)\,\mathbf{u}_\tau(x),
 $$
 
-without requiring the expansion functions $F_\tau$ themselves to acquire an explicit $x$-dependence merely because the physical section varies with $x$. A varying sectional domain and an $x$-dependent transverse expansion are distinct modelling choices; the former does not mathematically require the latter.
+without requiring the expansion functions $F_\tau$ themselves to acquire an explicit x-dependence merely because the physical section varies with x. A varying sectional domain and an x-dependent transverse expansion are distinct modelling choices; the former does not mathematically require the latter.
 
-The CSF representation $\mathcal{S}(x)$ supplies the physical sectional data required to evaluate these $x$-dependent coefficients, while the CUF kinematic and variational structure is retained. Thus, the longitudinal variability is carried by the sectional operators rather than by a remapping of the CUF transverse expansion.
+The CSF representation $\mathcal{S}(x)$ supplies the physical sectional data required to evaluate these x-dependent coefficients, while the CUF kinematic and variational structure is retained. Thus, the longitudinal variability is carried by the sectional operators rather than by a remapping of the CUF transverse expansion.
 
 The objective is **not** to derive a closed-form analytical solution along the beam axis. The objective is to define, at a formal level, how the sectional quantities entering the CUF formulation become functions of the longitudinal coordinate through the CSF representation.
 
@@ -51,7 +51,7 @@ $$ { \mathcal{S}(x) \longrightarrow \{ \Omega^k(x),\, \mathbf{C}^k(x,y,z) \} \lo
 | Governing Differential Equations | Governing equations | Retained and generalized to longitudinally varying sectional coefficients |
 | Variation of the Strain Energy | Variation of the strain energy | Retained with sectional quantities evaluated from $\mathcal{S}(x)$ |
 | Virtual Work of the External Loadings | Virtual work of the external loads | Retained with geometry-dependent quantities evaluated from $\mathcal{S}(x)$ |
-| The Fundamental Nucleo | Longitudinally varying nuclear operator | Retained and generalized to coefficients depending on $x$ |
+| The Fundamental Nucleo | Longitudinally varying nuclear operator | Retained and generalized to coefficients depending on x |
 | Closed Form Analytical Solution | - | Not adopted; the resulting variable-coefficient problem is left for numerical solution |
 
 ---
@@ -60,13 +60,13 @@ $$ { \mathcal{S}(x) \longrightarrow \{ \Omega^k(x),\, \mathbf{C}^k(x,y,z) \} \lo
 
 The CUF notation is retained.
 
-- $x$ is the longitudinal coordinate along the beam axis.
-- $y$ and $z$ are the transverse coordinates on the cross-section.
-- $k$ identifies a transverse sub-domain.
-- $\Omega^k(x)$ is sub-domain $k$ at longitudinal coordinate $x$.
+- x is the longitudinal coordinate along the beam axis.
+- y and $z$ are the transverse coordinates on the cross-section.
+- k identifies a transverse sub-domain.
+- $\Omega^k(x)$ is sub-domain k at longitudinal coordinate x.
 - $N_\Omega$ is the number of transverse sub-domains.
 
-The complete cross-section at $x$ is
+The complete cross-section at x is
 
 $$ { \Omega(x) = \bigcup_{k=1}^{N_\Omega} \Omega^k(x). } $$
 
@@ -74,23 +74,23 @@ The CSF representation is denoted by
 
 $$ { \mathcal{S}(x). } $$
 
-At every longitudinal coordinate $x$, the CSF representation provides the corresponding sectional geometry and constitutive information.
+At every longitudinal coordinate x, the CSF representation provides the corresponding sectional geometry and constitutive information.
 
 Formally,
 
 $$ \mathcal{S}(x) \longrightarrow \lbrace (\Omega^k(x),\mathbf{C}^k(x,y,z)) \rbrace_{k=1}^{N_\Omega} $$
 
-Here $\mathbf{C}^k(x,y,z)$ denotes the constitutive matrix over sub-domain $k$.
+Here $\mathbf{C}^k(x,y,z)$ denotes the constitutive matrix over sub-domain k.
 
-The dependence on $y$ and $z$ is retained in the general notation. A constitutive law that is uniform inside each sub-domain is therefore only a particular case.
+The dependence on y and $z$ is retained in the general notation. A constitutive law that is uniform inside each sub-domain is therefore only a particular case.
 
 ---
 
 ## 3. Difference from the reference paper
 
-In the reference formulation, the beam cross-section is constant along $x$ and the material gradation is prescribed analytically over the transverse coordinates.
+In the reference formulation, the beam cross-section is constant along x and the material gradation is prescribed analytically over the transverse coordinates.
 
-For the FGM case considered in the paper, Young's modulus is written as an analytical function of $y$ and $z$.
+For the FGM case considered in the paper, Young's modulus is written as an analytical function of y and $z$.
 
 The resulting sectional coefficients can therefore be integrated analytically.
 
@@ -98,7 +98,7 @@ In the CSF extension, the primary object is instead
 
 $$ \mathcal{S}(x), $$
 
-and neither the geometry nor the resulting sectional coefficients need to possess a closed analytical expression along $x$.
+and neither the geometry nor the resulting sectional coefficients need to possess a closed analytical expression along x.
 
 The formal change is therefore
 
@@ -146,7 +146,7 @@ Instead, the CSF representation supplies the current transverse domain and const
 
 $$ x \longmapsto \mathcal{S}(x) \longmapsto \lbrace \Omega^k(x), \mathbf{C}^k(x,y,z) \rbrace. $$
 
-Therefore the CUF kinematic approximation is retained, while the sectional integrations are evaluated over the longitudinally evolving domains $\Omega^k(x)$ and produce sectional coefficients that depend on $x$.
+Therefore the CUF kinematic approximation is retained, while the sectional integrations are evaluated over the longitudinally evolving domains $\Omega^k(x)$ and produce sectional coefficients that depend on x.
 
 
 
@@ -157,7 +157,7 @@ Therefore the CUF kinematic approximation is retained, while the sectional integ
 
 The four families of sectional coefficients introduced in Eq. (24) of the reference paper are retained, but their integration domains and constitutive coefficients are evaluated at the current longitudinal coordinate.
 
-For sub-domain $k$:
+For sub-domain k:
 
 $$ { J_{\tau,\phi s,\xi}^{ggk}(x) = \int_{\Omega^k(x)} C_{gg}^{k}(x,y,z)\, F_{\tau,\phi}(y,z)\, F_{s,\xi}(y,z)\, d\Omega } $$
 
@@ -167,7 +167,7 @@ $$ { J_{\tau,\phi s}^{ghk}(x) = \int_{\Omega^k(x)} C_{gh}^{k}(x,y,z)\, F_{\tau,\
 
 $$ { J_{\tau s,\phi}^{ghk}(x) = \int_{\Omega^k(x)} C_{gh}^{k}(x,y,z)\, F_\tau(y,z)\, F_{s,\phi}(y,z)\, d\Omega. } $$
 
-The notation $C_{gg}^k$ and $C_{gh}^k$ denotes the appropriate components of the constitutive matrix of sub-domain $k$.
+The notation $C_{gg}^k$ and $C_{gh}^k$ denotes the appropriate components of the constitutive matrix of sub-domain k.
 
 These definitions can be written compactly as
 
@@ -179,7 +179,7 @@ The symbol $\bullet$ represents any one of the four coefficient families above.
 
 The equations above are **definitions**, not closed-form solutions.
 
-For a requested coordinate $x$:
+For a requested coordinate x:
 
 $$ \mathcal{S}(x) \longrightarrow \lbrace \Omega^k(x), \mathbf{C}^k(x,y,z) \rbrace \longrightarrow \text{numerical sectional integration} \longrightarrow J_\bullet^k(x) $$
 
@@ -820,19 +820,19 @@ No analytical evaluation of $J_\bullet(x)$ is required.
 
 ### 7.1 Longitudinal section dependence and transverse CUF expansion
 
-The longitudinal dependence of the CSF section does not require the CUF transverse approximation functions to depend explicitly on $x$.
+The longitudinal dependence of the CSF section does not require the CUF transverse approximation functions to depend explicitly on x.
 
 In the present coupling, the CUF approximation functions remain defined in the physical transverse coordinates:
 
 $$ F_\tau = F_\tau(y,z), \qquad F_s = F_s(y,z). $$
 
-The longitudinal coordinate $x$ determines instead the physical sectional state supplied by CSF. For every requested value of $x$, the CSF representation provides the corresponding sectional geometry and constitutive information:
+The longitudinal coordinate x determines instead the physical sectional state supplied by CSF. For every requested value of x, the CSF representation provides the corresponding sectional geometry and constitutive information:
 
 $$ x \longrightarrow \mathcal{S}(x) \longrightarrow \lbrace \Omega^k(x), \mathbf{C}^k(x,y,z) \rbrace_{k=1}^{N_\Omega}. $$
 
-Thus, changing $x$ changes the domains $\Omega^k(x)$ and the associated constitutive fields $\mathbf{C}^k(x,y,z)$, while the transverse CUF approximation functions remain functions of $y$ and $z$.
+Thus, changing x changes the domains $\Omega^k(x)$ and the associated constitutive fields $\mathbf{C}^k(x,y,z)$, while the transverse CUF approximation functions remain functions of y and $z$.
 
-The sectional coefficients are consequently functions of $x$ because their integration domains and constitutive data are supplied by the sectional state at that coordinate:
+The sectional coefficients are consequently functions of x because their integration domains and constitutive data are supplied by the sectional state at that coordinate:
 
 $$ J_\bullet(x) = \mathcal{J}_\bullet[\mathcal{S}(x), F_\tau, F_s]. $$
 
@@ -840,7 +840,7 @@ For example, a sectional coefficient may have the form
 
 $$ J_{\tau s}^{ggk}(x) = \int_{\Omega^k(x)} C_{gg}^{k}(x,y,z) F_\tau(y,z) F_s(y,z) d\Omega. $$
 
-At each longitudinal coordinate $x$, the quantities $\Omega^k(x)$ and $\mathbf{C}^k(x,y,z)$ are known data provided by CSF. Their longitudinal variation therefore does not introduce additional kinematic unknowns.
+At each longitudinal coordinate x, the quantities $\Omega^k(x)$ and $\mathbf{C}^k(x,y,z)$ are known data provided by CSF. Their longitudinal variation therefore does not introduce additional kinematic unknowns.
 
 The CUF displacement expansion retains the form
 
@@ -852,7 +852,7 @@ The specific role of CSF in this coupling is therefore to make the longitudinal 
 
 $$ x \longrightarrow \mathcal{S}(x). $$
 
-As $x$ varies, CSF determines the section on which the CUF sectional quantities are evaluated, while the transverse expansion remains defined in the physical coordinates $y$ and $z$.
+As x varies, CSF determines the section on which the CUF sectional quantities are evaluated, while the transverse expansion remains defined in the physical coordinates y and $z$.
 
 ---
 
@@ -956,7 +956,7 @@ The two sub-domain contributions were assembled into
 
 $$ \boxed{ J_{2,y\,2,y}^{66}(x) = 148000000 - 3810000x + 26000x^2 \ \mathrm{N} }. $$
 
-Here $x$ is expressed in metres over the interval
+Here x is expressed in metres over the interval
 
 $$ 0\le x\le L, \qquad L=10\ \mathrm{m}. $$
 
@@ -1017,21 +1017,21 @@ The loading treatment remains the one defined by the CUF formulation.
 
 The distinction between surface loads and line loads is retained.
 
-The only geometric generalization is that the relevant sub-domain boundaries and application locations may depend on $x$ through $\mathcal{S}(x)$.
+The only geometric generalization is that the relevant sub-domain boundaries and application locations may depend on x through $\mathcal{S}(x)$.
 
 Let
 
 $$ \Gamma_\phi^{k\pm}(x) $$
 
-denote the positive or negative boundary of sub-domain $k$ associated with transverse direction $\phi$.
+denote the positive or negative boundary of sub-domain k associated with transverse direction $\phi$.
 
-The sectional load projections can therefore be written formally as functions of $x$.
+The sectional load projections can therefore be written formally as functions of x.
 
 For example, a boundary projection coefficient has the structure
 
 $$ { E_\tau^{k\phi\pm}(x) = \int_{\Gamma_\phi^{k\pm}(x)} F_\tau(y,z)\,d\Gamma. } $$
 
-The corresponding line-load terms retain the CUF evaluation of $F_\tau$ at the load application point, whose transverse coordinates may now depend on $x$.
+The corresponding line-load terms retain the CUF evaluation of $F_\tau$ at the load application point, whose transverse coordinates may now depend on x.
 
 Accordingly,
 
@@ -1081,7 +1081,7 @@ This is the external-load counterpart of the same separation already used for th
 
 ### Relation with the boundary projection coefficient
 
-If the traction is uniform over the selected sectional boundary at fixed $x$, it can be written as
+If the traction is uniform over the selected sectional boundary at fixed x, it can be written as
 
 $$ \mathbf{p}^{k\phi\pm}(x,y,z) = \mathbf{p}^{k\phi\pm}(x). $$
 
@@ -1137,7 +1137,7 @@ The required boundary projection coefficient is therefore
 
 $$ E_1^{1z+}(x) = \int_{\Gamma_z^{1+}(x)} 1\,\mathrm{d}\Gamma. $$
 
-Along this boundary, $z$ is constant and the boundary coordinate is $y$, so
+Along this boundary, $z$ is constant and the boundary coordinate is y, so
 
 $$ \mathrm{d}\Gamma=\mathrm{d}y. $$
 
@@ -1155,7 +1155,7 @@ $$ \boxed{E_1^{1z+}(x)=0.10-0.002x\ \mathrm{m}}. $$
 
 ### Prescribed traction
 
-Assign a traction acting only in the global $y$ direction and uniform over $\Gamma_z^{1+}(x)$ at each fixed $x$:
+Assign a traction acting only in the global y direction and uniform over $\Gamma_z^{1+}(x)$ at each fixed x:
 
 $$ \mathbf{p}^{1z+}(x) = \begin{bmatrix}0\\p_y(x)\\0\end{bmatrix}. $$
 
@@ -1171,7 +1171,7 @@ Therefore,
 
 $$ \mathbf{p}_1^{1z+}(x)=\left(0.10-0.02\frac{x}{L}\right)\begin{bmatrix}0\\2.0\times10^6\left(1-0.20\frac{x}{L}\right)\\0\end{bmatrix}\ \mathrm{N/m}. $$
 
-Only the $y$ component is non-zero. Define
+Only the y component is non-zero. Define
 
 $$ q_{y1}^{1z+}(x)=E_1^{1z+}(x)\,p_y(x). $$
 
@@ -1223,7 +1223,7 @@ For $\tau=1$, the virtual CUF amplitude vector is
 
 $$ \delta\mathbf{u}_1(x)=\begin{bmatrix}\delta u_{x1}(x)\\\delta u_{y1}(x)\\\delta u_{z1}(x)\end{bmatrix}. $$
 
-Since the generalized load has only a $y$ component,
+Since the generalized load has only a y component,
 
 $$ \delta\mathbf{u}_1^{T}(x)\,\mathbf{p}_1^{1z+}(x)=\delta u_{y1}(x)\,q_{y1}^{1z+}(x). $$
 
@@ -1284,15 +1284,15 @@ The nuclear matrix retains the $3\times3$ structure
 
 $$ \mathbf{K}_{\tau s} = \begin{bmatrix} K_{xx}^{\tau s} & K_{xy}^{\tau s} & K_{xz}^{\tau s} \\ K_{yx}^{\tau s} & K_{yy}^{\tau s} & K_{yz}^{\tau s} \\ K_{zx}^{\tau s} & K_{zy}^{\tau s} & K_{zz}^{\tau s} \end{bmatrix}. $$
 
-The distinction between sub-domain and global quantities is essential. A coefficient carrying the index $k$,
+The distinction between sub-domain and global quantities is essential. A coefficient carrying the index k,
 
 $$ J_{\tau,\phi s,\xi}^{mn,k}(x), $$
 
-is the contribution associated with sub-domain $k$. The coefficient entering the assembled operator $\mathbf{K}_{\tau s}$ is instead
+is the contribution associated with sub-domain k. The coefficient entering the assembled operator $\mathbf{K}_{\tau s}$ is instead
 
 $$ J_{\tau,\phi s,\xi}^{mn}(x) = \sum_{k=1}^{N_\Omega} J_{\tau,\phi s,\xi}^{mn,k}(x). $$
 
-Therefore, from this point onward, formulas representing the assembled CSF-CUF nuclear operator use global coefficients without the index $k$. When the corresponding reference-paper expressions are reported, the sub-domain index is retained explicitly and the subsequent global assembly is shown separately.
+Therefore, from this point onward, formulas representing the assembled CSF-CUF nuclear operator use global coefficients without the index k. When the corresponding reference-paper expressions are reported, the sub-domain index is retained explicitly and the subsequent global assembly is shown separately.
 
 ---
 
@@ -1312,7 +1312,7 @@ The assembled CUF governing equations are
 
 $$ \mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x]\,\mathbf{u}_s(x)=\mathbf{f}_\tau(x). $$
 
-Select the transverse $y$ component and choose
+Select the transverse y component and choose
 
 $$ \tau=1,\qquad s=1. $$
 
@@ -1348,7 +1348,7 @@ Here
 
 $$ b(x)=u_{y1}(x) $$
 
-is the longitudinal CUF amplitude associated with the $y$ displacement and transverse basis function $F_1$.
+is the longitudinal CUF amplitude associated with the y displacement and transverse basis function $F_1$.
 
 ### Evaluation of the required sectional coefficient
 
@@ -1528,7 +1528,7 @@ The example ends with finite numerical quantities because the longitudinal field
 
 ### 10.1 Principle
 
-When a sectional coefficient multiplying an $x$-derivative depends on $x$, the coefficient must remain inside the longitudinal differential operator.
+When a sectional coefficient multiplying an x-derivative depends on x, the coefficient must remain inside the longitudinal differential operator.
 
 For a constant coefficient:
 
@@ -1540,7 +1540,7 @@ $$ -\partial_x\left[J(x)\,\partial_x u(x)\right] $$
 
 The expression is retained in divergence form rather than expanded through the product rule. This avoids introducing an unnecessary explicit classical derivative of $J(x)$ into the formulation.
 
-This generalization is directly justified when a nuclear term contains a single sectional coefficient multiplying a pure second derivative with respect to $x$.
+This generalization is directly justified when a nuclear term contains a single sectional coefficient multiplying a pure second derivative with respect to x.
 
 ---
 
@@ -1614,7 +1614,7 @@ The internal virtual work is
 
 $$ \delta L_i = \int_0^l \sum_{k=1}^{N_\Omega} \int_{\Omega^k(x)} \delta\boldsymbol{\varepsilon}^{T} \mathbf{C}^{k}(x,y,z) \boldsymbol{\varepsilon} \,d\Omega\,dx. $$
 
-At fixed $x$, the transverse integrations are first evaluated over the individual sub-domains and then summed. Consequently, the nine blocks below are written directly in terms of the global sectional coefficients defined in §5.1 and §6. No index $k$ appears in these assembled bilinear forms.
+At fixed x, the transverse integrations are first evaluated over the individual sub-domains and then summed. Consequently, the nine blocks below are written directly in terms of the global sectional coefficients defined in §5.1 and §6. No index k appears in these assembled bilinear forms.
 
 #### Axial block
 
@@ -1732,7 +1732,7 @@ and
 
 $$ K_{zz}^{\tau s} = J_{\tau,y s,y}^{44k} + J_{\tau,z s,z}^{33k} - J_{\tau s}^{55k}\,\partial_x^2. $$
 
-Here the coefficients carrying $k$ are sub-domain contributions. To make the assembly explicit, let $K_{ii}^{\tau s,k}$ denote the contribution associated with sub-domain $k$.
+Here the coefficients carrying k are sub-domain contributions. To make the assembly explicit, let $K_{ii}^{\tau s,k}$ denote the contribution associated with sub-domain k.
 
 For longitudinally varying coefficients, the corresponding sub-domain forms are
 
@@ -1832,7 +1832,7 @@ The divergence form is retained so that no explicit longitudinal derivative of t
 
 The diagonal second-order terms, the mixed first-order terms, and the zero-order off-diagonal terms are all defined for longitudinally varying sectional coefficients.
 
-At the sub-domain level, the corresponding quantities carry the index $k$. In the assembled nuclear operator, the dependence on the evolving CSF representation enters through the global sectional fields
+At the sub-domain level, the corresponding quantities carry the index k. In the assembled nuclear operator, the dependence on the evolving CSF representation enters through the global sectional fields
 
 $$ J_\bullet(x), $$
 
@@ -1879,7 +1879,7 @@ These global expressions coincide with the zero-order blocks obtained directly f
 | $K_{zz}^{\tau s}(x)$ | one coefficient × second derivative | §10.3 | §10.3; matches §10.2 |
 | $K_{xy}^{\tau s}(x)$, $K_{yx}^{\tau s}(x)$ | two coefficients × first derivative | §10.4 | §10.4; matches §10.2 |
 | $K_{xz}^{\tau s}(x)$, $K_{zx}^{\tau s}(x)$ | two coefficients × first derivative | §10.4 | §10.4; matches §10.2 |
-| $K_{yz}^{\tau s}(x)$, $K_{zy}^{\tau s}(x)$ | zero-order in $x$ | §10.7 | §10.7; matches §10.2 |
+| $K_{yz}^{\tau s}(x)$, $K_{zy}^{\tau s}(x)$ | zero-order in x | §10.7 | §10.7; matches §10.2 |
 
 The variable-section structure of the complete nuclear operator is therefore established at the formal level. The distinction between the sub-domain coefficients $J^{mn,k}_{\tau,\phi s,\xi}(x)$ and the global coefficients $J^{mn}_{\tau,\phi s,\xi}(x)$ entering the assembled operator $\mathbf{K}_{\tau s}$ is explicit throughout the formulation.
 
@@ -1960,7 +1960,7 @@ The longitudinal interval is
 0\le x\le10
 ```
 
-with $x$ expressed in metres.
+with x expressed in metres.
 
 #### Previously prescribed longitudinal field
 
@@ -2144,7 +2144,7 @@ For a constant coefficient, the corresponding second-order term can be written a
 -J\partial_x^2 b(x)
 ```
 
-That expression cannot be used unchanged when the coefficient depends on $x$.
+That expression cannot be used unchanged when the coefficient depends on x.
 
 In the present example,
 
