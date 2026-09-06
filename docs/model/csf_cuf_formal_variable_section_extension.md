@@ -2210,37 +2210,28 @@ This expansion is used only to verify the numerical result. The general formulat
 
 The numerical sequence is
 
-```math
-J_{11}^{66}(x)\longrightarrow Q^{66}(x)\longrightarrow K_{yy}^{11}(x)
-```
+$$J_{11}^{66}(x) \rightarrow Q^{66}(x) \rightarrow K_{yy}^{11}(x)$$
 
 with
 
-```math
-J_{11}^{66}(x)=148000000-3810000x+26000x^2
-```
+$$J_{11}^{66}(x) = 148000000 - 3810000x + 26000x^2$$
 
 with units N,
 
-```math
-b(x)=0.001x
-```
+$$b(x) = 0.001x$$
 
-```math
-Q^{66}(x)=148000-3810x+26x^2
-```
+$$Q^{66}(x) = 148000 - 3810x + 26x^2$$
 
 with units N,
 
 and
 
-```math
-K_{yy}^{11}(x)=3810-52x
-```
+$$K_{yy}^{11}(x) = 3810 - 52x$$
 
 with units N/m.
 
 No equation remains to be solved.
+
 
 #### Scope of the example
 
