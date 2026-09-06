@@ -25,7 +25,7 @@ This means that the same CUF solver can be used, for example, with a rectangular
 
 A complete command-by-command reproducibility guide for the non-prismatic variable-material T-section tutorial is available here:
 
-[`cuf/tutorials/variable_material_t_section/reproducibility.md`](cuf/tutorials/variable_material_t_section/reproducibility.md)
+[`cuf/tutorials/variable_material_t_section/reproducibility.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/reproducibility.md)
 
 The guide covers installation from a clean environment, CSF model inspection, CUF bending and torsion analyses, result inspection, and comparison against the FEM3D (OpenSees) reference solution.
 
