@@ -1,4 +1,4 @@
- # DRAFT
+ 
  
 # Introduction
 
@@ -20,6 +20,16 @@ In simple terms, the workflow is
 **CSF model → CUF structural model → solution**
 
 This means that the same CUF solver can be used, for example, with a rectangular section, a T section, a hollow section, a non-prismatic section, or a section made of spatially varying material, without introducing a new solver for each geometry.
+
+## Reproducibility
+
+A complete command-by-command reproducibility guide for the non-prismatic variable-material T-section tutorial is available here:
+
+[`cuf/tutorials/variable_material_t_section/reproducibility.md`](cuf/tutorials/variable_material_t_section/reproducibility.md)
+
+The guide covers installation from a clean environment, CSF model inspection, CUF bending and torsion analyses, result inspection, and comparison against the FEM3D (OpenSees) reference solution.
+
+Tested on Ubuntu/debian with Python 3.12.
 
 ## What must be chosen for a CUF analysis?
 
