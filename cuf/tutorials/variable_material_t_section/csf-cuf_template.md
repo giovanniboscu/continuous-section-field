@@ -565,7 +565,18 @@ The main parts of the output are explained below.
 
 ---
 
-#### 1. Analysis identification
+### Solver output and numerical quality assessment
+
+The following sections provide a detailed interpretation of the output produced by the CSF-CUF solver.
+
+The purpose is not only to describe what is printed during an analysis, but also to explain how the reported information can be used to assess the **numerical quality and reliability of the computed solution**.
+
+The solver output exposes the main numerical choices actually used during the analysis, including the effective integration orders, the dimensions and characteristics of the assembled algebraic system, its numerical conditioning, and the behavior of the solution procedure.
+
+These diagnostics make it possible to verify that the requested CUF model has been translated into an adequately resolved numerical problem and to identify situations in which additional numerical refinement may be required.
+
+The discussion below follows the solver output in the same order in which it is produced, starting from the identification of the analysis and proceeding through the principal numerical diagnostics.
+
 
 The first block summarizes the selected case:
 
