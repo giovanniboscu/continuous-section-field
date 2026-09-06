@@ -2232,7 +2232,6 @@ with units N/m.
 
 No equation remains to be solved.
 
-
 #### Scope of the example
 
 This example verifies one diagonal second-order term of the longitudinally varying CUF nuclear operator.
