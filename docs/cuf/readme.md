@@ -1,3 +1,11 @@
+## CUF implementation
+
+> **CUF solver documentation**
+>
+> The implementation details, usage instructions, configuration, and examples for the CUF solver are documented in the dedicated CUF README:
+>
+> **[Open the CUF implementation README](../../cuf/readme.md)**
+
 
 # What is the Carrera Unified Formulation?
 
