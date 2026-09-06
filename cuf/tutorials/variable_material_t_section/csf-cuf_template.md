@@ -231,6 +231,23 @@ For example, if `gauss_order: 30` is specified and the CUF basis requires a mini
 In normal cases, `section_integration` can simply be omitted and the automatic selection can be used.
 
 
+#### Solver equilibration
+
+```yaml
+solver:
+  equilibration:
+    iterations: 8
+```
+
+The `solver` block contains numerical settings associated with the solution of the assembled algebraic system.
+
+`equilibration.iterations` specifies the number of equilibration iterations applied by the numerical solver.
+
+In this case, eight equilibration iterations are requested.
+
+Equilibration acts on the numerical scaling of the assembled system before its solution. It does not modify the physical CSF model, the CUF basis, the applied loads, or the boundary conditions. Its purpose is to improve the numerical behavior of the linear system, particularly when the assembled equations contain coefficients with substantially different magnitudes.
+
+
 
 #### Sampling
 
