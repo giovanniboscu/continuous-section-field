@@ -205,21 +205,32 @@ For material laws that are constant or affine along the beam, the material contr
 
 This affects the longitudinal **integration order**, not `longitudinal.order` itself.
 
+
 #### Section integration
+
+The `section_integration` block is optional and can normally be omitted from the case file.
+
+When it is omitted, the solver automatically determines a valid section quadrature order from the CUF order and the minimum requirement declared by the selected CUF basis.
+
+An explicit section integration setting is only needed when a specific quadrature order is requested:
 
 ```yaml
 section_integration:
   method: fixed_gauss_polygon
-  gauss_order: 6
+  gauss_order: 30
 ```
 
-The CUF formulation also requires numerical integration over the physical cross-section.
+The CUF formulation requires numerical integration over the physical cross-section. The section is integrated polygon by polygon on the CSF geometry using Gaussian quadrature.
 
-Here the section is integrated polygon by polygon on the CSF geometry using Gaussian quadrature.
+`gauss_order` specifies a user-requested quadrature order. The selected CUF basis can declare a higher minimum requirement. In that case, the solver automatically uses the larger value.
 
-`gauss_order: 6` is the requested section quadrature order. The selected CUF basis can declare a higher minimum requirement; when this happens, the solver automatically uses the larger value.
+Therefore, the value specified in the case acts as a requested minimum and never reduces the quadrature below the requirement imposed by the CUF basis.
 
-The value written in the case should therefore be understood as the requested minimum, while the effective section quadrature can be higher.
+For example, if `gauss_order: 30` is specified and the CUF basis requires a minimum order of 18, the solver uses 30. If the basis requires 32, the solver uses 32.
+
+In normal cases, `section_integration` can simply be omitted and the automatic selection can be used.
+
+
 
 #### Sampling
 
