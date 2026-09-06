@@ -162,11 +162,11 @@ The complete contents of `bending_halfwave.yaml` are examined in **Step 3**, whe
 <img width="1448" height="1086" alt="04bd6629-961a-4db7-a0b4-5ad262a771f0" src="https://github.com/user-attachments/assets/d4ad542d-86b1-4a6c-a2f0-eb769af62d81" />
 
 
-<img width="1448" height="1086" alt="6162476d-c363-4517-9ebb-9495ba786ca3" src="https://github.com/user-attachments/assets/3766e2ba-a5cd-4bfd-a663-a751f9da8dc3" />
-
+<img width="1536" height="1024" alt="torsion" src="https://github.com/user-attachments/assets/9b4adc06-2528-489d-875d-9f97b57d01dc" />
 
 
 #### CUF transverse expansion
+
 
 ```yaml
 cuf:
