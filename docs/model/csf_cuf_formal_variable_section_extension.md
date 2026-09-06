@@ -1898,13 +1898,16 @@ For the diagonal $yy$ block, choose $\tau=1$ and $s=1$.
 
 For the first-order transverse basis, $F_1=1$. Therefore its transverse derivatives vanish:
 
-```math
-F_{1,y}=0
-```
 
-```math
+$$
+F_{1,y}=0
+$$
+
+$$
 F_{1,z}=0
-```
+$$
+
+
 
 Hence the two zero-order terms of the selected $yy$ block vanish.
 
