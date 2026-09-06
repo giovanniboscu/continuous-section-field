@@ -64,11 +64,11 @@ Figure - 2 Three-dimensional view of the non-prismatic T-shaped CSF model and it
 <img width="1000" height="480" alt="immagine" src="https://github.com/user-attachments/assets/27c3d474-3ef1-49bf-bc82-66f437e9577c" />
 
 
-*Figure 3 - Longitudinal distribution of the CSF `weight` field for the two polygons of the T section. In this example, `weight` represents the elastic modulus \(E\). The `top_flange` keeps a constant value of `71700` along the full beam length, while the `web` varies linearly from `71700` at `z = 0` to `57360` at `z = 1000`. The plot confirms that the prescribed elastic-modulus variation is applied only to the web, while the flange remains homogeneous.*
+*Figure - 3 - Longitudinal distribution of the CSF `weight` field for the two polygons of the T section. In this example, `weight` represents the elastic modulus \(E\). The `top_flange` keeps a constant value of `71700` along the full beam length, while the `web` varies linearly from `71700` at `z = 0` to `57360` at `z = 1000`. The plot confirms that the prescribed elastic-modulus variation is applied only to the web, while the flange remains homogeneous.*
 
 <img width="994" height="879" alt="immagine" src="https://github.com/user-attachments/assets/a2610114-38a6-4d9a-9c5a-7a4ff4b150b0" />
 
-*Figure 4 - Variation of the main geometric properties of the non-prismatic T section along the longitudinal coordinate `Z`. The plots show the cross-sectional area \(A\), the second moments of area \(I_x\) and \(I_y\), and the polar second moment of area \(I_p\). All four quantities decrease from `z = 0` to `z = 1000` as a consequence of the progressive reduction of the T-section dimensions. This provides a direct check that the non-prismatic geometry defined in the CSF model is reflected consistently in the section properties used by the structural analysis.*
+*Figure - 4 - Variation of the main geometric properties of the non-prismatic T section along the longitudinal coordinate `Z`. The plots show the cross-sectional area \(A\), the second moments of area \(I_x\) and \(I_y\), and the polar second moment of area \(I_p\). All four quantities decrease from `z = 0` to `z = 1000` as a consequence of the progressive reduction of the T-section dimensions. This provides a direct check that the non-prismatic geometry defined in the CSF model is reflected consistently in the section properties used by the structural analysis.*
 
 
 ### Step 2 - Define the CUF case
@@ -529,7 +529,7 @@ Therefore, this problem definition contains the torsional load, the automatic lo
 These two problems are examples of the loading schemes already available in the current CSF-CUF implementation. Other predefined load types are also provided, and new problem or loading adapters can be added without modifying the CUF solver core.
 
 
-### Step 3 - Run the CUF case
+### Step 4 - Run the CUF case
 
 Once the physical CSF model, the structural problem, and the CUF case have been defined, the analysis can be launched from the tutorial directory with:
 
@@ -1285,8 +1285,6 @@ torsion_halfwave_legendre_N08/displacement_uz_along_beam.png
 ```
 
 The comparison is therefore performed between two independent numerical descriptions of the same physical problem: the CUF solution obtained from the cross-section expansion and longitudinal approximation, and the full three-dimensional finite-element solution obtained with OpenSees. The FEM3D reference is not part of the CUF solution procedure; it is included only as an independent verification of the displacement response.
-
----
 
 ---
 
