@@ -21,15 +21,6 @@ In simple terms, the workflow is
 
 This means that the same CUF solver can be used, for example, with a rectangular section, a T section, a hollow section, a non-prismatic section, or a section made of spatially varying material, without introducing a new solver for each geometry.
 
-## Reproducibility
-
-A complete command-by-command reproducibility guide for the non-prismatic variable-material T-section tutorial is available here:
-
-[`cuf/tutorials/variable_material_t_section/reproducibility.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/reproducibility.md)
-
-The guide covers installation from a clean environment, CSF model inspection, CUF bending and torsion analyses, result inspection, and comparison against the FEM3D (OpenSees) reference solution.
-
-Tested on Ubuntu/debian with Python 3.12.
 
 ## What must be chosen for a CUF analysis?
 
@@ -69,6 +60,15 @@ The package currently provides:
 * `scaled_maclaurin_tensor`
 
 These are the expansion families presently distributed with the solver. Additional expansion laws can be implemented and added without rewriting the CUF core.
+
+## CSF-CUF tutorial
+
+A complete step-by-step guide to building and running a CSF-CUF model is available here:
+
+[`cuf/tutorials/variable_material_t_section/csf-cuf_template.md`](cuf/tutorials/variable_material_t_section/csf-cuf_template.md)
+
+The tutorial uses a non-prismatic, variable-material T-section to illustrate the complete workflow: physical model definition and inspection through CSF, structural problem definition, CUF case configuration, transverse expansion and numerical integration, solver execution, diagnostics, and continuous displacement-field evaluation.
+
 
 
 
