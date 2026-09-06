@@ -1133,3 +1133,58 @@ This is the complete execution path from the physical CSF description to the fin
 
 The structural problem files therefore define **what is applied to the physical CSF model and how it is constrained**, while the CUF case defined in Step 2 specifies **how that problem is approximated and solved**.
 
+
+---
+
+### Results produced by the output adapter
+
+After the solution has been completed, the output adapter configured in the case file
+
+```yaml
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../output/bending_halfwave_legendre_N08
+```
+
+post-processes the computed displacement field and writes the selected response quantities to the output directory.
+
+For this case, the main result file is:
+
+```text
+response.txt
+```
+
+The file contains the displacement response at the longitudinal stations requested in the `sampling.stations` block. At each station, the response is evaluated at a set of reference points of the current physical cross-section.
+
+The output has the following structure:
+
+```text
+x/L       x [mm]             y [mm]               z [mm]               point         ux [mm]             uy [mm]             uz [mm]
+0.00      0.000000000000e+00  0.000000000000e+00   0.000000000000e+00   center        ...
+0.00      0.000000000000e+00 -3.300000000000e+01   7.500000000000e+01   plus          ...
+0.00      0.000000000000e+00  1.250000000000e+01  -5.000000000000e+01   minus         ...
+0.00      0.000000000000e+00  0.000000000000e+00  -5.000000000000e+01   bottom_mid    ...
+```
+
+The columns have the following meaning:
+
+- `x/L` is the normalized longitudinal coordinate;
+- `x [mm]` is the corresponding physical longitudinal coordinate;
+- `y [mm]` and `z [mm]` identify the physical position of the reported point on the current cross-section;
+- `point` identifies the reference point;
+- `ux [mm]`, `uy [mm]`, and `uz [mm]` are the three global displacement components evaluated at that physical point.
+
+In this example, four reference points are reported at every station:
+
+```text
+center
+plus
+minus
+bottom_mid
+```
+
+Because the beam is non-prismatic, the physical coordinates of some of these points vary with `x`. The output therefore reports both the reference-point label and its actual physical coordinates at every longitudinal station.
+
+The output adapter converts the solved field `u(x,y,z)` into a compact set of directly readable physical displacement results. It does not perform a new structural solution; it queries and reports the displacement field obtained by the CUF analysis.
+
+
