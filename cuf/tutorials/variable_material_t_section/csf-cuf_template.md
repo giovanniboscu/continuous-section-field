@@ -233,19 +233,23 @@ In normal cases, `section_integration` can simply be omitted and the automatic s
 
 #### Solver equilibration
 
+The `solver` block is optional. If it is omitted, the solver uses the default equilibration setting of **8 iterations**.
+
+Therefore, the following block:
+
 ```yaml
 solver:
   equilibration:
     iterations: 8
 ```
 
-The `solver` block contains numerical settings associated with the solution of the assembled algebraic system.
+is optional and simply states explicitly the default behavior.
 
-`equilibration.iterations` specifies the number of equilibration iterations applied by the numerical solver.
+`equilibration.iterations` specifies the number of equilibration iterations applied to the assembled algebraic system before its solution.
 
-In this case, eight equilibration iterations are requested.
+Equilibration acts on the numerical scaling of the assembled system. It does not modify the physical CSF model, the CUF basis, the applied loads, or the boundary conditions. Its purpose is to improve the numerical behavior of the linear system, particularly when the assembled equations contain coefficients with substantially different magnitudes.
 
-Equilibration acts on the numerical scaling of the assembled system before its solution. It does not modify the physical CSF model, the CUF basis, the applied loads, or the boundary conditions. Its purpose is to improve the numerical behavior of the linear system, particularly when the assembled equations contain coefficients with substantially different magnitudes.
+A different number of iterations can be specified explicitly when needed.
 
 
 
