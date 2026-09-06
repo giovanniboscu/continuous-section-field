@@ -1,6 +1,6 @@
 ## Building the T-section example step by step
 
-The example is organized in three directories:
+The CUF input is organized in three directories:
 
 ```text
 .
@@ -53,22 +53,24 @@ Before proceeding to the structural analysis, we will use these tools to check t
 
 This is an important step because the CUF solver will subsequently use this CSF model as its physical description of the structure.
 
+**Coordinate convention.** In the inspection figures below, the longitudinal coordinate of the CSF model is labelled `Z`. In the CUF and FEM3D formulation used in the following steps, the beam axis is denoted by `x`, while `y` and `z` are the transverse coordinates. These are coordinate-label conventions for the same physical member; from Step 2 onward, this tutorial uses `x` as the longitudinal structural coordinate.
+
 <img width="1289" height="484" alt="immagine" src="https://github.com/user-attachments/assets/69cfbfc3-9dee-44de-a18a-1421f67865c6" />
 
-*Figure - 1 cross-sections of the non-prismatic T-shaped model at `z = 0` and `z = 1000`. The section is composed of two physical polygons: the upper flange (`top_flange`, ID=0) and the web (`web`, ID=1). The change in their dimensions between the two locations shows the non-prismatic variation of the geometry along the beam. The vertex and edge identifiers shown in the plots will later be used to identify the physical surface on which the CUF load is applied.*
+*Figure 1 - Cross-sections of the non-prismatic T-shaped model at `z = 0` and `z = 1000`. The section is composed of two physical polygons: the upper flange (`top_flange`, ID=0) and the web (`web`, ID=1). The change in their dimensions between the two locations shows the non-prismatic variation of the geometry along the beam. The vertex and edge identifiers shown in the plots will later be used to identify the physical surface on which the CUF load is applied.*
 
 <img width="1294" height="476" alt="immagine" src="https://github.com/user-attachments/assets/483c2407-c174-463e-8833-3fdac0a32561" />
 
-Figure - 2 Three-dimensional view of the non-prismatic T-shaped CSF model and its material fields. The section geometry varies along the longitudinal coordinate `Z`. In this example, the CSF `weight` field shown on the left represents the elastic modulus \(E\), while the `shear weight` field shown on the right represents the shear modulus \(G\). The color variation shows how the material stiffness changes along the member and provides a direct visual check of the material distribution defined in the CSF model.*****
+*Figure 2 - Three-dimensional view of the non-prismatic T-shaped CSF model and its material fields. The section geometry varies along the longitudinal coordinate `Z`. In this example, the CSF `weight` field shown on the left represents the elastic modulus \(E\), while the `shear weight` field shown on the right represents the shear modulus \(G\). The color variation shows how the material stiffness changes along the member and provides a direct visual check of the material distribution defined in the CSF model.*
 
 <img width="1000" height="480" alt="immagine" src="https://github.com/user-attachments/assets/27c3d474-3ef1-49bf-bc82-66f437e9577c" />
 
 
-*Figure - 3 - Longitudinal distribution of the CSF `weight` field for the two polygons of the T section. In this example, `weight` represents the elastic modulus \(E\). The `top_flange` keeps a constant value of `71700` along the full beam length, while the `web` varies linearly from `71700` at `z = 0` to `57360` at `z = 1000`. The plot confirms that the prescribed elastic-modulus variation is applied only to the web, while the flange remains homogeneous.*
+*Figure 3 - Longitudinal distribution of the CSF `weight` field for the two polygons of the T section. In this example, `weight` represents the elastic modulus \(E\). The `top_flange` keeps a constant value of `71700` along the full beam length, while the `web` varies linearly from `71700` at `z = 0` to `57360` at `z = 1000`. The plot confirms that the prescribed elastic-modulus variation is applied only to the web, while the flange remains homogeneous.*
 
 <img width="994" height="879" alt="immagine" src="https://github.com/user-attachments/assets/a2610114-38a6-4d9a-9c5a-7a4ff4b150b0" />
 
-*Figure - 4 - Variation of the main geometric properties of the non-prismatic T section along the longitudinal coordinate `Z`. The plots show the cross-sectional area \(A\), the second moments of area \(I_x\) and \(I_y\), and the polar second moment of area \(I_p\). All four quantities decrease from `z = 0` to `z = 1000` as a consequence of the progressive reduction of the T-section dimensions. This provides a direct check that the non-prismatic geometry defined in the CSF model is reflected consistently in the section properties used by the structural analysis.*
+*Figure 4 - Variation of the main geometric properties of the non-prismatic T section along the longitudinal coordinate `Z`. The plots show the cross-sectional area \(A\), the second moments of area \(I_x\) and \(I_y\), and the polar second moment of area \(I_p\). All four quantities decrease from `z = 0` to `z = 1000` as a consequence of the progressive reduction of the T-section dimensions. This provides a direct check that the non-prismatic geometry defined in the CSF model is reflected consistently in the section properties used by the structural analysis.*
 
 
 ### Step 2 - Define the CUF case
@@ -212,7 +214,7 @@ The `section_integration` block is optional and can normally be omitted from the
 
 When it is omitted, the solver automatically determines a valid section quadrature order from the CUF order and the minimum requirement declared by the selected CUF basis.
 
-An explicit section integration setting is only needed when a specific quadrature order is requested:
+An explicit section integration setting is only needed when a specific quadrature order is requested. The following `gauss_order: 30` block is an illustrative example; the actual case shown above requests `gauss_order: 6`:
 
 ```yaml
 section_integration:
@@ -234,6 +236,8 @@ In normal cases, `section_integration` can simply be omitted and the automatic s
 #### Solver equilibration
 
 The `solver` block is optional. If it is omitted, the solver uses the default equilibration setting of **8 iterations**.
+
+The case file shown above does not include this block because the default value of `8` is already active.
 
 Therefore, the following block:
 
@@ -276,6 +280,8 @@ The intermediate values define the additional sections at which results are eval
 
 These settings do not change the structural solution itself. They control how densely the solved continuous field is queried and reported.
 
+The `response.txt` output discussed in this example contains the displacement response. `stress_grid` becomes relevant when stress evaluation is requested by the post-processing workflow.
+
 #### Output
 
 ```yaml
@@ -286,7 +292,7 @@ output:
 
 The `output` block selects the standard CUF post-processing adapter and specifies the directory in which the results of this case will be written.
 
-### Output adapter
+##### Output adapter details
 
 ```yaml
 output:
@@ -1136,7 +1142,9 @@ The structural problem files therefore define **what is applied to the physical 
 
 ---
 
-### Results produced by the output adapter
+### Step 5 - Inspect the generated results
+
+#### Results produced by the output adapter
 
 After the solution has been completed, the output adapter configured in the case file
 
@@ -1189,7 +1197,9 @@ The output adapter converts the solved field `u(x,y,z)` into a compact set of di
 
 ---
 
-### Verification with the FEM3D reference model
+### Step 6 - Verify against the FEM3D reference model
+
+#### Verification with the FEM3D reference model
 
 The CUF results can be verified against the three-dimensional finite-element reference model included in:
 
@@ -1206,7 +1216,7 @@ run_torsion_halfwave.py
 
 Both drivers start from the same CSF model and from the same loading and boundary-condition definitions used by the corresponding CUF cases. The geometry and material state are read from the CSF model through the CSF API, while the three-dimensional finite-element model is built independently and solved with OpenSees.
 
-The two FEM3D reference analyses can be generated with:
+From the `t_section/fem3d` directory, the two FEM3D reference analyses can be generated with:
 
 ```bash
 python3 fem/run_bending_halfwave.py
@@ -1243,7 +1253,7 @@ The files have different purposes:
 
 For convenience, these FEM3D reference results are already included in the repository, so reproducing the OpenSees analyses is not required in order to generate the comparison plots.
 
-The graphical comparison between the CUF responses and the FEM3D reference solutions is produced with:
+From the same `t_section/fem3d` directory, the graphical comparison between the CUF responses and the FEM3D reference solutions is produced with:
 
 ```bash
 python plot_halfwave_outputs.py
@@ -1300,7 +1310,7 @@ The figures below show the longitudinal evolution of the three displacement comp
 
 ##### Bending half-wave
 
-For the bending case, the CUF solution obtained with the scaled Legendre expansion at \(N=8\) is already essentially superimposed on the FEM3D reference over the beam length. This is observed consistently for the three displacement components and indicates that, for this problem, \(N=8\) is sufficient to reproduce the FEM3D displacement response with very good accuracy.
+For the bending case, the CUF solution obtained with the scaled Legendre expansion at \(N=8\) is already essentially superimposed on the FEM3D reference over the beam length at the reported reference points. This is observed consistently for the three displacement components and provides a strong direct verification of the present \(N=8\) response. A formal convergence statement with respect to the transverse order would, however, require a dedicated study with increasing values of \(N\).
 
 **Longitudinal displacement \(u_x\)**
 
@@ -1320,7 +1330,7 @@ For the bending case, the CUF solution obtained with the scaled Legendre expansi
 
 ![Bending half-wave: CUF vs FEM3D, uz](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_uz_along_beam.png?raw=1)
 
-The bending comparison is therefore a strong direct verification of the CUF solution for the present model: at \(N=8\), increasing the transverse expansion order is not required to obtain agreement with the FEM3D reference at the level shown by these displacement plots.
+The bending comparison is therefore a strong direct verification of the CUF solution for the present model: at \(N=8\), the CUF and FEM3D curves are already essentially superimposed at the level shown by these displacement plots. This graphical agreement should be interpreted as a verification of the reported response, not as a formal proof of convergence with respect to \(N\).
 
 ##### Torsion half-wave
 
@@ -1344,7 +1354,7 @@ The same comparison can be performed for the torsional half-wave problem.
 
 ![Torsion half-wave: CUF vs FEM3D, uz](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/torsion_halfwave_legendre_N08/displacement_uz_along_beam.png?raw=1)
 
-For torsion, the \(N=8\) comparison should be regarded as an intermediate verification rather than as a final convergence result. The torsional response is more demanding for the transverse expansion, and it is therefore preferable to repeat the CUF analysis with higher values of \(N\) and verify that the displacement curves stabilize and approach a converged solution.
+For torsion, the \(N=8\) comparison should be regarded as an intermediate verification rather than as a final convergence result. A visible difference with the FEM3D reference remains in the present comparison, so it is preferable to repeat the CUF analysis with higher values of \(N\) and verify whether the displacement curves stabilize and approach a converged solution.
 
-A useful convergence check is to repeat the torsion case for increasing transverse expansion orders and compare each result with both the previous CUF order and the FEM3D reference. Once the curves become insensitive to further increases of \(N\), the remaining difference with FEM3D can be interpreted as a genuine difference between the two numerical discretizations rather than as incomplete CUF transverse convergence.
+A useful convergence check is to repeat the torsion case for increasing transverse expansion orders and compare each result with both the previous CUF order and the FEM3D reference. Once the CUF curves become insensitive to further increases of \(N\), any remaining difference can no longer be attributed to the CUF transverse order alone. A further interpretation of that residual difference would also require checking the convergence of the FEM3D discretization.
 
