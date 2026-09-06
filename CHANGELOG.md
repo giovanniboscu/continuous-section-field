@@ -1,5 +1,14 @@
 # Changelog
 
+# v0.2.1
+
+* added packaged CUF problem and output adapters for bending, torsion, and physical-surface loading
+* added support for loading CUF adapters from importable Python modules as well as filesystem paths
+* improved the numerical robustness of the Serendipity-Lagrange basis evaluation
+* added tools and reference workflows for evaluating compiled displacement checkpoints and validating CSF-CUF models against FEM3D
+
+
+
 # v0.2.0
 
 * implemented the Carrera Unified Formulation (CUF) model
