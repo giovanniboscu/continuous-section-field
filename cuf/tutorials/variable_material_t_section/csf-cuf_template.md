@@ -1187,4 +1187,102 @@ Because the beam is non-prismatic, the physical coordinates of some of these poi
 
 The output adapter converts the solved field `u(x,y,z)` into a compact set of directly readable physical displacement results. It does not perform a new structural solution; it queries and reports the displacement field obtained by the CUF analysis.
 
+---
+
+### Verification with the FEM3D reference model
+
+The CUF results can be verified against the three-dimensional finite-element reference model included in:
+
+```text
+t_section/fem3d/fem/
+```
+
+The directory contains the two problem-specific drivers:
+
+```text
+run_bending_halfwave.py
+run_torsion_halfwave.py
+```
+
+Both drivers start from the same CSF model and from the same loading and boundary-condition definitions used by the corresponding CUF cases. The geometry and material state are read from the CSF model through the CSF API, while the three-dimensional finite-element model is built independently and solved with OpenSees.
+
+The two FEM3D reference analyses can be generated with:
+
+```bash
+python3 fem/run_bending_halfwave.py
+python3 fem/run_torsion_halfwave.py
+```
+
+The resulting files are written to:
+
+```text
+t_section/fem3d/output/bending_halfwave_model2
+t_section/fem3d/output/torsion_halfwave_model2
+```
+
+For each problem, the FEM3D analysis produces:
+
+```text
+torsion_halfwave_model2/fem3d_native_displacements.csv
+torsion_halfwave_model2/station_extrema.csv
+torsion_halfwave_model2/summary.txt
+torsion_halfwave_model2/station_points.csv
+
+bending_halfwave_model2/fem3d_native_displacements.csv
+bending_halfwave_model2/station_extrema.csv
+bending_halfwave_model2/summary.txt
+bending_halfwave_model2/station_points.csv
+```
+
+The files have different purposes:
+
+- `fem3d_native_displacements.csv` contains the displacement field at all FEM3D nodes;
+- `station_extrema.csv` reports the maximum absolute displacement components at the selected longitudinal stations;
+- `summary.txt` contains the main information and checks associated with the FEM3D analysis;
+- `station_points.csv` contains the displacement components evaluated at the same reference-point roles used by the CUF post-processing and is therefore the file used for the direct CUF/FEM3D comparison.
+
+For convenience, these FEM3D reference results are already included in the repository, so reproducing the OpenSees analyses is not required in order to generate the comparison plots.
+
+The graphical comparison between the CUF responses and the FEM3D reference solutions is produced with:
+
+```bash
+python plot_halfwave_outputs.py
+```
+
+The script automatically scans the CUF output directory, identifies the supported bending and torsion `response.txt` files, associates them with the corresponding FEM3D `station_points.csv` files, and generates separate displacement plots for `ux`, `uy`, and `uz`.
+
+A typical execution reports:
+
+```text
+CUF scan root: .../t_section/output
+Found 2 supported response file(s):
+  [bending] bending_halfwave_legendre_N08 -> .../output/bending_halfwave_legendre_N08/response.txt
+  [torsion] torsion_halfwave_legendre_N08 -> .../output/torsion_halfwave_legendre_N08/response.txt
+
+FEM3D references:
+  bending -> .../fem3d/output/bending_halfwave_model2/station_points.csv
+  torsion -> .../fem3d/output/torsion_halfwave_model2/station_points.csv
+```
+
+A common vertical scale is then determined for each physical problem and displacement component so that the CUF and FEM3D curves are compared on the same graphical scale.
+
+The generated figures are written under:
+
+```text
+t_section/fem3d/plots_halfwave/
+```
+
+with separate subdirectories for the bending and torsion cases. For the present examples, the generated files are:
+
+```text
+bending_halfwave_legendre_N08/displacement_ux_along_beam.png
+bending_halfwave_legendre_N08/displacement_uy_along_beam.png
+bending_halfwave_legendre_N08/displacement_uz_along_beam.png
+
+torsion_halfwave_legendre_N08/displacement_ux_along_beam.png
+torsion_halfwave_legendre_N08/displacement_uy_along_beam.png
+torsion_halfwave_legendre_N08/displacement_uz_along_beam.png
+```
+
+The comparison is therefore performed between two independent numerical descriptions of the same physical problem: the CUF solution obtained from the cross-section expansion and longitudinal approximation, and the full three-dimensional finite-element solution obtained with OpenSees. The FEM3D reference is not part of the CUF solution procedure; it is included only as an independent verification of the displacement response.
 
