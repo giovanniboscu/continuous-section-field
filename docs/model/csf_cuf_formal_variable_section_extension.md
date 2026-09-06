@@ -1907,15 +1907,14 @@ $$
 F_{1,z}=0
 $$
 
-
-
 Hence the two zero-order terms of the selected $yy$ block vanish.
 
 The remaining contribution is written as
 
-```math
+$$
 K_{yy}^{11}(x)=-\partial_x[J_{11}^{66}(x)\partial_x b(x)]
-```
+$$
+
 
 where
 
