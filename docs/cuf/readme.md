@@ -1,4 +1,3 @@
-# DRAFT
 
 # What is the Carrera Unified Formulation?
 
