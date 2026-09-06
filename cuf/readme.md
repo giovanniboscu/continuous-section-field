@@ -20,21 +20,7 @@ The resulting architecture keeps the section and material description, CUF formu
 
 In practice, users can define and modify the physical model and select the transverse expansion law without having to interact with or modify the CUF solver core.
 
-<!--
-The repository includes two complete workflows.
 
-The first is a **prismatic model**, derived from the 2010 Carrera and Giunta reference case. It is organized to reproduce the final benchmark tables for the more complex cross-section, providing a direct and repeatable reference case.
-
-> **Original reference:**  
-> E. Carrera and G. Giunta, *Refined Beam Theories Based on a Unified Formulation*,  
-> International Journal of Applied Mechanics, Vol. 2, No. 1 (2010), pp. 117-143.  
-> DOI: [10.1142/S1758825110000500](https://doi.org/10.1142/S1758825110000500)
-
-
-The second is a **tapered model**, in which both geometry and material properties vary along the beam axis. It uses the same CUF core and the same CSF-based interface, showing how the framework can move from a classical prismatic benchmark to a genuinely variable-section problem without changing the solver architecture.
-
-From a user's point of view, the expected workflow is therefore simple: define the physical model and the analysis parameters in YAML, run the corresponding model, and inspect the resulting displacement and stress outputs. The CUF machinery remains inside the framework, while the model definition stays external, explicit, and replaceable.
--->
 
 ### Mathematical Formulation of the CSF–CUF Coupling
 
