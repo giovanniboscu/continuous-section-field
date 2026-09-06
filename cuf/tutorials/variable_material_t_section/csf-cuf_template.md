@@ -941,56 +941,44 @@ These files are numerical diagnostics; they are not the final physical displacem
 
 #### 11. Ill-conditioning warning and equilibration
 
-For this case the solver detects a poorly conditioned original KKT matrix:
+During the solution of the augmented KKT system, the solver evaluates its numerical conditioning.
+
+If the original system is detected as poorly conditioned, the solver reports a warning such as:
 
 ```text
 LinAlgWarning: Original KKT matrix is ill-conditioned
-(rcond=8.03057e-19):
+(rcond=...):
 equilibration will be applied before the solve.
 ```
 
 `rcond` is a reciprocal condition estimate. A very small value indicates that the algebraic system is numerically difficult to solve in its original scaling.
 
-This message does **not** mean that the analysis has failed.
-
-The solver automatically applies equilibration:
+The solver can then apply equilibration before factorization. The corresponding diagnostic block reports:
 
 ```text
 [kkt-equilibration]
-iterations=8
-iterations_requested=8
-iterations_performed=8
-original_rcond=8.030567733991e-19
-equilibrated_rcond=5.239671863586e-09
-scale_min=3.963236039126e-05
-scale_max=1.102447621678e+04
+iterations=...
+iterations_requested=...
+iterations_performed=...
+original_rcond=...
+equilibrated_rcond=...
+scale_min=...
+scale_max=...
 ```
 
 Equilibration rescales the algebraic equations to reduce their numerical imbalance before the direct solve.
 
 It does not change:
 
-- the CSF geometry;
-- the material field;
-- the CUF formulation;
-- the applied load;
-- the physical boundary conditions.
+* the CSF geometry;
+* the material field;
+* the CUF formulation;
+* the applied load;
+* the physical boundary conditions.
 
-The improvement from:
+The equilibration strategy and its parameters are configurable directly from the case YAML, as described above.
 
-```text
-8.03e-19
-```
-
-to approximately:
-
-```text
-5.24e-09
-```
-
-shows that the scaling substantially improves the numerical conditioning of the system used for the solve.
-
-The next line:
+The additional diagnostic:
 
 ```text
 [matrix-diagnostic] equilibration-scales
@@ -999,6 +987,9 @@ multiplier_min_median_max=(...)
 ```
 
 reports the scaling ranges applied respectively to the displacement unknowns and to the constraint multipliers.
+
+When reproducing the example, the actual conditioning estimates, scaling factors, and final solution diagnostics are reported directly by the solver.
+
 
 ---
 
@@ -1013,9 +1004,9 @@ After solving the KKT system:
 the solver verifies the result:
 
 ```text
-[verification] residual mean = -1.554559e-10
-[verification] residual standard deviation = 3.280431e-09
-[verification] equation-term scale = 3.025907e+05
+[verification] residual mean = ...
+[verification] residual standard deviation = ...
+[verification] equation-term scale = ...
 ```
 
 The residual measures how closely the computed solution satisfies the assembled equations.
