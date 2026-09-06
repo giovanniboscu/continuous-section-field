@@ -83,7 +83,7 @@ For the bending example, the case file is:
 cases/bending_halfwave_legendre_N08.yaml
 ```
 
-This is the main input file passed to the CUF solver. It does not redefine the geometry or the material model. Instead, it connects the structural problem already defined on the CSF model with the numerical choices used by the CUF formulation.
+This is the main input file passed to the CUF solver. It does not redefine the geometry or the material model. Instead, it connects the structural  already defined on the CSF model with the numerical choices used by the CUF formulation.
 
 ```yaml
 # CSF-CUF bending half-wave v2 test: scaled_legendre, N=08.
@@ -159,10 +159,9 @@ In this example, the `surface_halfwave` adapter is used for a distributed load a
 The complete contents of `bending_halfwave.yaml` are examined in **Step 3**, where the CSF model reference, loaded surface, load amplitude and direction, and boundary conditions are described explicitly.
 
 
-<img width="1000" height="700" alt="04bd6629-961a-4db7-a0b4-5ad262a771f0" src="https://github.com/user-attachments/assets/d4ad542d-86b1-4a6c-a2f0-eb769af62d81" />
+<img width="869" height="652" alt="04bd6629-961a-4db7-a0b4-5ad262a771f0" src="https://github.com/user-attachments/assets/d4ad542d-86b1-4a6c-a2f0-eb769af62d81" />
 
-
-<img width="921" height="614" alt="torsion" src="https://github.com/user-attachments/assets/9b4adc06-2528-489d-875d-9f97b57d01dc" />
+<img width="922" height="614" alt="torsion" src="https://github.com/user-attachments/assets/9b4adc06-2528-489d-875d-9f97b57d01dc" />
 
 
 #### CUF transverse expansion
