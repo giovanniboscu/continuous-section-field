@@ -1362,3 +1362,17 @@ For torsion, the \(N=8\) comparison should be regarded as an intermediate verifi
 
 A useful convergence check is to repeat the torsion case for increasing transverse expansion orders and compare each result with both the previous CUF order and the FEM3D reference. Once the CUF curves become insensitive to further increases of \(N\), any remaining difference can no longer be attributed to the CUF transverse order alone. A further interpretation of that residual difference would also require checking the convergence of the FEM3D discretization.
 
+
+---
+
+## Reproducibility
+
+A complete command-by-command reproducibility guide for the non-prismatic variable-material T-section tutorial is available here:
+
+[`cuf/tutorials/variable_material_t_section/reproducibility.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/reproducibility.md)
+
+The guide covers installation from a clean environment, CSF model inspection, CUF bending and torsion analyses, result inspection, and comparison against the FEM3D (OpenSees) reference solution.
+
+Tested on Ubuntu/debian with Python 3.12.
+
+
