@@ -65,7 +65,7 @@ These are the expansion families presently distributed with the solver. Addition
 
 A complete step-by-step guide to building and running a CSF-CUF model is available here:
 
-[`cuf/tutorials/variable_material_t_section/csf-cuf_template.md`](cuf/tutorials/variable_material_t_section/csf-cuf_template.md)
+[`cuf/tutorials/variable_material_t_section/csf-cuf_template.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/csf-cuf_template.md)
 
 The tutorial uses a non-prismatic, variable-material T-section to illustrate the complete workflow: physical model definition and inspection through CSF, structural problem definition, CUF case configuration, transverse expansion and numerical integration, solver execution, diagnostics, and continuous displacement-field evaluation.
 
