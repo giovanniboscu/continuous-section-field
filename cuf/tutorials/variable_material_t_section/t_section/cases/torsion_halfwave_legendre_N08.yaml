@@ -21,7 +21,7 @@ section_integration:
 
 solver:
   equilibration:
-    iterations: 5
+    iterations: 3
 
 
 sampling:
