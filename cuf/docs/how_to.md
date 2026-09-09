@@ -4,8 +4,6 @@
 
 > This page is intended for a reader who already has a basic theoretical idea of the Carrera Unified Formulation (CUF), but does not yet know the CSF–CUF infrastructure.
 
-The objective is not to re-teach the whole CUF theory from the beginning.
-
 The objective is to show, in a clear order:
 
 1. **what structural problem is being modelled;**
