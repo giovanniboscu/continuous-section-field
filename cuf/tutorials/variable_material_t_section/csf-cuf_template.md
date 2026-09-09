@@ -1364,7 +1364,7 @@ The \(u_z\) component contains the dominant bending response. The CUF \(N=8\) cu
 #### Longitudinal displacement \(u_x\)
 
 <p align="center">
-  <img width="90%" src="plots_halfwave/torsion_halfwave_legendre_N25/displacement_ux_along_beam.png" />
+  <img width="90%" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/torsion_halfwave_legendre_N25/displacement_ux_along_beam.png" />
 </p>
 
 For the torsion case, the longitudinal displacement \(u_x\) is very small, with values mainly of the order of \(10^{-3}\,\mathrm{mm}\). The CUF \(N=25\) solution reproduces the FEM3D shape and the change of sign along the beam. The largest visible differences occur for the `minus` point near the final part of the span. Because the absolute magnitude of this component is very small, these local differences appear visually amplified by the plot scale.
@@ -1372,7 +1372,7 @@ For the torsion case, the longitudinal displacement \(u_x\) is very small, with 
 #### Transverse displacement \(u_y\)
 
 <p align="center">
-  <img width="90%" src="plots_halfwave/torsion_halfwave_legendre_N25/displacement_uy_along_beam.png" />
+  <img width="90%" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/torsion_halfwave_legendre_N25/displacement_uy_along_beam.png" />
 </p>
 
 The \(u_y\) response clearly shows the torsional deformation of the section. The monitored points move with different signs and magnitudes according to their position on the T-section. CUF and FEM3D give the same overall longitudinal evolution, with zero displacement at both clamped ends and extrema in the interior of the beam. The CUF solution is slightly less pronounced than the FEM3D reference for the larger negative responses, but the two solutions remain closely aligned over the full span.
@@ -1380,7 +1380,7 @@ The \(u_y\) response clearly shows the torsional deformation of the section. The
 #### Transverse displacement \(u_z\)
 
 <p align="center">
-  <img width="90%" src="plots_halfwave/torsion_halfwave_legendre_N25/displacement_uz_along_beam.png" />
+  <img width="90%" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/torsion_halfwave_legendre_N25/displacement_uz_along_beam.png" />
 </p>
 
 The \(u_z\) component provides another clear view of the torsional response. The `plus` and `minus` points develop displacements of opposite sign, while `center` and `bottom_mid` remain essentially zero. The CUF \(N=25\) solution follows the FEM3D curves closely and reproduces the position and shape of the extrema. A small difference in amplitude remains, particularly for the positive `plus` response, but the overall torsional deformation pattern is consistently captured.
