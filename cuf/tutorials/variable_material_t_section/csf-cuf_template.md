@@ -138,6 +138,9 @@ surface:
   edge_start_point_id: 0
 ```
 
+<img width="1448" height="1086" alt="immagine" src="https://github.com/user-attachments/assets/1df0bb33-5137-4fb6-b0a8-7c8b298148e8" />
+
+
 The physical surface on which the load acts is selected directly from the CSF geometry.
 
 `polygon_name: web` identifies the `web` polygon of the T-section.
