@@ -306,7 +306,7 @@ section_integration:
 
 solver:
   equilibration:
-    iterations: 8
+    iterations: 3
 
 sampling:
   stations: [0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30,
