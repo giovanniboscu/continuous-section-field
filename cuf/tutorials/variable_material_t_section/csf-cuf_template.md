@@ -249,13 +249,30 @@ At this stage, the physical CSF model and the complete structural problem have b
 <img   width="50%" alt="immagine" src="https://github.com/user-attachments/assets/aad22530-4475-4f3a-bf5d-5d26bec60ad5" />
 </p>
 
-
-
-
-
 ### Step 3 - Define the CUF case
 
-Once the physical CSF model has been inspected and verified, we can define the CUF analysis.
+At this point, the physical ingredients of the analysis have already been defined.
+
+In Step 1, the CSF model defined the beam geometry and the associated material field.
+
+In Step 2, the structural problem defined the load and the boundary conditions to be applied to that physical model.
+
+The role of the CUF case is now to bring these ingredients together and specify how the structural problem will be represented and solved with the CUF formulation.
+
+In other words, the case file does not redefine the geometry, the material field, the load, or the constraints. It references the problem already defined and adds the numerical choices required by the CUF analysis, such as the transverse expansion, its order, the longitudinal approximation, the integration settings, the solver options, and the output configuration.
+
+The case file therefore acts as the analysis-level configuration that connects:
+
+```text
+CSF physical model
+        +
+structural problem
+        +
+CUF numerical settings
+        ↓
+complete CUF analysis
+```
+
 
 For the bending example, the case file is:
 
