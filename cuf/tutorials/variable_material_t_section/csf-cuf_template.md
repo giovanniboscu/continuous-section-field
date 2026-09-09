@@ -79,7 +79,9 @@ This is an important step because the CUF solver will subsequently use this CSF 
 *Figure 4 - Variation of the main geometric properties of the non-prismatic T section along the longitudinal coordinate `Z`. The plots show the cross-sectional area \(A\), the second moments of area \(I_x\) and \(I_y\), and the polar second moment of area \(I_p\). All four quantities decrease from `z = 0` to `z = 1000` as a consequence of the progressive reduction of the T-section dimensions. This provides a direct check that the non-prismatic geometry defined in the CSF model is reflected consistently in the section properties used by the structural analysis.*
 
 
-### Step 2 - Define the structural problem
+## Step 2 - Define the structural problem
+
+### BENDING
 
 <p align="center">
 
@@ -173,6 +175,8 @@ At this stage, the physical CSF model and the complete structural problem have b
 <img  width="50%"   alt="immagine" src="https://github.com/user-attachments/assets/3293a256-2b5b-4b2f-948c-f58793b89052" />
 </p>
 
+
+## TORSION
 
 ### Step 3 - Define the CUF case
 
