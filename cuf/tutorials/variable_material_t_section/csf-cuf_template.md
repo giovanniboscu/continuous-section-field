@@ -168,6 +168,9 @@ For this problem, the longitudinal variation is provided by the half-wave law, w
 At this stage, the physical CSF model and the complete structural problem have been defined. The next step is to define the CUF case that specifies how this problem will be represented and solved.
 
 
+<p align="center">
+<img  width="50%"   alt="immagine" src="https://github.com/user-attachments/assets/3293a256-2b5b-4b2f-948c-f58793b89052" />
+</p>
 
 
 ### Step 3 - Define the CUF case
