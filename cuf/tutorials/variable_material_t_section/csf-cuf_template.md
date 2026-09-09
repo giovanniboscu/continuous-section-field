@@ -26,16 +26,23 @@ models/t_noprismatic_csf.yaml
 ```
 
 This is the CSF description of the structure.
+The CSF model describes a non-prismatic T-section beam extending from
+section `S0` at the beginning of the beam to section `S1` at its end.
 
-It contains the information needed to define the physical beam before any CUF analysis is introduced:
+The cross-section progressively reduces along the beam: both the upper
+flange and the web become smaller from `S0` to `S1`, producing a tapered
+T-shaped geometry.
 
-* the beam length;
-* the T-shaped cross-section;
-* the variation of the section along the beam;
-* the material definition;
-* the spatial variation of the material properties.
+The material distribution also varies along the beam. The material
+associated with the upper flange remains unchanged, while the material
+weight assigned to the web decreases from `71700.0` at `S0` to `57360.0`
+at `S1`. The CSF therefore represents, within the same model, both the
+continuous geometric variation of the cross-section and the longitudinal
+variation of the material properties.
 
-The second file in the same directory is:
+An isotropic shear law with Poisson ratio `0.3` is also associated with
+the section.
+
 
 ```text
 models/action.yaml
