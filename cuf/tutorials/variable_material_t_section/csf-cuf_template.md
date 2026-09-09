@@ -435,7 +435,7 @@ In normal cases, `section_integration` can simply be omitted and the automatic s
 
 #### Solver equilibration
 
-The `solver` block is optional. If it is omitted, the solver uses the default equilibration setting of **8 iterations**.
+The `solver` block is optional. If it is omitted, the solver uses the default equilibration setting of **3 iterations**.
 
 The case file shown above does not include this block because the default value of `8` is already active.
 
