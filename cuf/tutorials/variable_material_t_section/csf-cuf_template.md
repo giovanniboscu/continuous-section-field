@@ -1336,7 +1336,7 @@ The figures below show the longitudinal evolution of the three displacement comp
 #### Longitudinal displacement \(u_x\)
 
 <p align="center">
-  <img width="90%" src="plots_halfwave/bending_halfwave_legendre_N08/displacement_ux_along_beam.png" />
+  <img width="90%" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_ux_along_beam.png" />
 </p>
 
 The longitudinal displacement \(u_x\) shows very close agreement between the CUF \(N=8\) solution and the FEM3D reference at all four monitored points. The overall shape, sign changes, and locations of the extrema are reproduced consistently. Small differences are visible mainly close to the larger extrema of the `minus` and `bottom_mid` responses, but they remain small compared with the total displacement range shown in the plots.
@@ -1344,7 +1344,7 @@ The longitudinal displacement \(u_x\) shows very close agreement between the CUF
 #### Transverse displacement \(u_y\)
 
 <p align="center">
-  <img width="90%" src="plots_halfwave/bending_halfwave_legendre_N08/displacement_uy_along_beam.png" />
+  <img width="90%" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_uy_along_beam.png" />
 </p>
 
 The \(u_y\) component is much smaller than the principal bending displacement. At `center` and `bottom_mid` it remains essentially zero, while the `plus` and `minus` points show small non-zero transverse responses of the order of \(10^{-2}\,\mathrm{mm}\). CUF reproduces the overall FEM3D trend and the sign changes along the beam, although the relative differences are more visible here because the absolute displacement itself is very small.
@@ -1352,7 +1352,7 @@ The \(u_y\) component is much smaller than the principal bending displacement. A
 #### Transverse displacement \(u_z\)
 
 <p align="center">
-  <img width="90%" src="plots_halfwave/bending_halfwave_legendre_N08/displacement_uz_along_beam.png" />
+  <img width="90%" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_uz_along_beam.png" />
 </p>
 
 The \(u_z\) component contains the dominant bending response. The CUF \(N=8\) curves closely follow the FEM3D solution over the full beam length and at all monitored points. Both models predict the same smooth displacement profile, zero displacement at the clamped ends, and a maximum downward displacement close to the central region. The remaining difference is small relative to the approximately \(2.5\text{--}2.6\,\mathrm{mm}\) peak response.
