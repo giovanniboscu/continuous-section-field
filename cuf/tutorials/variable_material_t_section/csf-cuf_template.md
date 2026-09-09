@@ -184,8 +184,6 @@ At this stage, the physical CSF model and the complete structural problem have b
 </p>
 
 
-Once the physical CSF model has been built and inspected in Step 1, the next step is to define the structural problem to be applied to that model.
-
 For the torsion example, the problem file is:
 
 ```text
@@ -229,7 +227,9 @@ The same problem also imposes fully clamped conditions at both longitudinal ends
 
 #### Load trajectories
 
-The two line loads are identified automatically from the CSF geometry.
+The two load trajectories are derived directly from the current CSF cross-section.
+
+At each longitudinal position, the positive load is applied to the leftmost CSF vertex on the maximum-`z` boundary, while the negative load is applied to the rightmost CSF vertex on the minimum-`z` boundary. As the cross-section changes along the beam, these two physical vertices move with the CSF geometry, so the load trajectories follow the actual non-prismatic shape of the member.
 
 At each longitudinal position, the positive load acts on the leftmost CSF vertex lying on the maximum-`z` boundary, while the negative load acts on the rightmost CSF vertex lying on the minimum-`z` boundary.
 
