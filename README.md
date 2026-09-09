@@ -163,7 +163,7 @@ then run
 **linux / Mac**
 ```
 python3 -m venv venv
-source source venv/bin/activate
+source venv/bin/activate
 pip install csfpy
 csf-actions geometry.yaml actions.yaml
 ```
