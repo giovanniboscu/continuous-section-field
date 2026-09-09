@@ -564,6 +564,12 @@ csf-cuf cases/bending_halfwave_legendre_N08.yaml
 ```bash
  csf-cuf cases/torsion_halfwave_legendre_N08.yaml
 ```
+
+```bash
+ csf-cuf cases/torsion_halfwave_legendre_N25.yaml
+```
+
+
 The solver prints a detailed execution report. This report is useful because it shows not only whether the analysis completed successfully, but also the numerical model that was actually assembled and solved.
 
 The main parts of the output are explained below.
@@ -1315,6 +1321,10 @@ bending_halfwave_legendre_N08/displacement_uz_along_beam.png
 torsion_halfwave_legendre_N08/displacement_ux_along_beam.png
 torsion_halfwave_legendre_N08/displacement_uy_along_beam.png
 torsion_halfwave_legendre_N08/displacement_uz_along_beam.png
+torsion_halfwave_legendre_N25/displacement_ux_along_beam.png
+torsion_halfwave_legendre_N25/displacement_uy_along_beam.png
+torsion_halfwave_legendre_N25/displacement_uz_along_beam.png
+
 ```
 
 The comparison is therefore performed between two independent numerical descriptions of the same physical problem: the CUF solution obtained from the cross-section expansion and longitudinal approximation, and the full three-dimensional finite-element solution obtained with OpenSees. The FEM3D reference is not part of the CUF solution procedure; it is included only as an independent verification of the displacement response.
