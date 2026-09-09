@@ -179,7 +179,7 @@ The reader can then proceed in a natural order:
 
 The didactic workflow should always follow the same sequence.
 
-## Step 1 — Identify the structural problem
+## Step 1 - Identify the structural problem
 
 Start from the engineering scheme.
 
@@ -191,7 +191,7 @@ Then choose the corresponding verified **problem adapter**.
 
 The exact `problem.type` should be taken from the implementation or from the problem-adapter table above.
 
-## Step 2 — Define the CSF model
+## Step 2 - Define the CSF model
 
 Prepare or select the separate CSF YAML that defines:
 
@@ -200,7 +200,7 @@ Prepare or select the separate CSF YAML that defines:
 
 This is the geometry/material input used by the CUF analysis.
 
-## Step 3 — Choose the CUF expansion
+## Step 3 - Choose the CUF expansion
 
 For example:
 
@@ -216,7 +216,7 @@ scaled_lagrange
 scaled_maclaurin
 ```
 
-## Step 4 — Connect the model choices in the CUF case
+## Step 4 - Connect the model choices in the CUF case
 
 The CUF case YAML should identify:
 
@@ -225,15 +225,15 @@ The CUF case YAML should identify:
 - the CSF model to be used;
 - the numerical settings required by the case.
 
-## Step 5 — Define the remaining numerical model choices
+## Step 5 - Define the remaining numerical model choices
 
 Only after the physical model is clear should the user choose the numerical parameters required by the case.
 
-## Step 6 — Run the case
+## Step 6 - Run the case
 
 The first run should be used to understand the full modelling chain.
 
-## Step 7 — Read the result physically
+## Step 7 - Read the result physically
 
 Before studying convergence, ask:
 
@@ -378,7 +378,7 @@ Once the mechanism is understood and validated, the CUF model should be usable o
 
 # 12. Suggested learning sequence
 
-## Level 1 — Recognise the building blocks
+## Level 1 - Recognise the building blocks
 
 Learn to identify:
 
@@ -387,13 +387,13 @@ Learn to identify:
 - CUF expansion;
 - CSF geometry/material description.
 
-## Level 2 — Run an existing example
+## Level 2 - Run an existing example
 
 Goal:
 
 > Understand how the building blocks appear in a complete case.
 
-## Level 3 — Change one building block
+## Level 3 - Change one building block
 
 For example:
 
@@ -405,7 +405,7 @@ Goal:
 
 > Understand what each part of the model controls.
 
-## Level 4 — Interpret the numerical result
+## Level 4 - Interpret the numerical result
 
 Study:
 
@@ -415,7 +415,7 @@ Study:
 - equilibration;
 - convergence.
 
-## Level 5 — Consult the theory
+## Level 5 - Consult the theory
 
 Once the practical meaning is clear, the detailed CUF formulation can be read with a much clearer understanding of what each term is doing in the actual model.
 
@@ -668,7 +668,7 @@ The reader can then proceed in a natural order:
 
 The didactic workflow should always follow the same sequence.
 
-## Step 1 — Identify the structural problem
+## Step 1 - Identify the structural problem
 
 Start from the engineering scheme.
 
@@ -680,7 +680,7 @@ Then choose the corresponding verified **problem adapter**.
 
 The exact `problem.type` should be taken from the implementation or from the problem-adapter table above.
 
-## Step 2 — Define the CSF model
+## Step 2 - Define the CSF model
 
 Prepare or select the separate CSF YAML that defines:
 
@@ -689,7 +689,7 @@ Prepare or select the separate CSF YAML that defines:
 
 This is the geometry/material input used by the CUF analysis.
 
-## Step 3 — Choose the CUF expansion
+## Step 3 - Choose the CUF expansion
 
 For example:
 
@@ -705,7 +705,7 @@ scaled_lagrange
 scaled_maclaurin
 ```
 
-## Step 4 — Connect the model choices in the CUF case
+## Step 4 - Connect the model choices in the CUF case
 
 The CUF case YAML should identify:
 
@@ -714,15 +714,15 @@ The CUF case YAML should identify:
 - the CSF model to be used;
 - the numerical settings required by the case.
 
-## Step 5 — Define the remaining numerical model choices
+## Step 5 - Define the remaining numerical model choices
 
 Only after the physical model is clear should the user choose the numerical parameters required by the case.
 
-## Step 6 — Run the case
+## Step 6 - Run the case
 
 The first run should be used to understand the full modelling chain.
 
-## Step 7 — Read the result physically
+## Step 7 - Read the result physically
 
 Before studying convergence, ask:
 
@@ -867,7 +867,7 @@ Once the mechanism is understood and validated, the CUF model should be usable o
 
 # 12. Suggested learning sequence
 
-## Level 1 — Recognise the building blocks
+## Level 1 - Recognise the building blocks
 
 Learn to identify:
 
@@ -876,13 +876,13 @@ Learn to identify:
 - CUF expansion;
 - CSF geometry/material description.
 
-## Level 2 — Run an existing example
+## Level 2 - Run an existing example
 
 Goal:
 
 > Understand how the building blocks appear in a complete case.
 
-## Level 3 — Change one building block
+## Level 3 - Change one building block
 
 For example:
 
@@ -894,7 +894,7 @@ Goal:
 
 > Understand what each part of the model controls.
 
-## Level 4 — Interpret the numerical result
+## Level 4 - Interpret the numerical result
 
 Study:
 
@@ -904,7 +904,7 @@ Study:
 - equilibration;
 - convergence.
 
-## Level 5 — Consult the theory
+## Level 5 - Consult the theory
 
 Once the practical meaning is clear, the detailed CUF formulation can be read with a much clearer understanding of what each term is doing in the actual model.
 
@@ -943,20 +943,45 @@ Every feature should eventually be documented with the same four fields:
 
 If the exact identifier has not been verified, it should remain explicitly marked as **to be verified**.
 
-It should never be guessed from the physical name.
 
 ---
 
-# 15. Final objective
 
-After reading this section, a new user should be able to say:
+## Example file organization
 
-> I know which structural problem adapter I need.  
-> I understand that the adapter contains the load and boundary conditions together.  
-> I know which CUF expansions are available.  
-> I know that geometry and materials are defined in a separate CSF YAML.  
-> I know how these building blocks fit together.  
-> I know that I should interpret the physical model before studying convergence.  
-> If I see a numerical irregularity, I know which checks to perform first.
+The files introduced above will be organized using the following directory structure:
 
-That is the didactic objective of this documentation.
+```text
+.
+├── models
+│   ├── t_noprismatic_csf.yaml
+│   └── action.yaml
+├── problems
+│   ├── bending_halfwave.yaml
+│   └── torsion_halfwave.yaml
+└── cases
+    ├── bending_halfwave_legendre_N08.yaml
+    └── torsion_halfwave_legendre_N08.yaml
+```
+
+The role of each file is:
+
+- `models/t_noprismatic_csf.yaml`  
+  Defines the CSF model, including the cross-section geometry and material description.
+
+- `models/action.yaml`  
+  Contains the action-related model data used by the example.
+
+- `problems/bending_halfwave.yaml`  
+  Defines the bending half-wave structural problem.
+
+- `problems/torsion_halfwave.yaml`  
+  Defines the torsion half-wave structural problem.
+
+- `cases/bending_halfwave_legendre_N08.yaml`  
+  Defines the executable CUF bending case using the Scaled Legendre expansion with order `N=8`.
+
+- `cases/torsion_halfwave_legendre_N08.yaml`  
+  Defines the executable CUF torsion case using the Scaled Legendre expansion with order `N=8`.
+
+This layout keeps the CSF model files, the problem definitions, and the executable CUF cases clearly separated.
