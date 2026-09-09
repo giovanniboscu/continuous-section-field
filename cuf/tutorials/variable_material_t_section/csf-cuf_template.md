@@ -231,8 +231,6 @@ The two load trajectories are derived directly from the current CSF cross-sectio
 
 At each longitudinal position, the positive load is applied to the leftmost CSF vertex on the maximum-`z` boundary, while the negative load is applied to the rightmost CSF vertex on the minimum-`z` boundary. As the cross-section changes along the beam, these two physical vertices move with the CSF geometry, so the load trajectories follow the actual non-prismatic shape of the member.
 
-At each longitudinal position, the positive load acts on the leftmost CSF vertex lying on the maximum-`z` boundary, while the negative load acts on the rightmost CSF vertex lying on the minimum-`z` boundary.
-
 Because these are physical CSF vertices, the two load trajectories follow the changing geometry of the non-prismatic T-section. No additional surface selector is therefore required in the YAML definition of this problem.
 
 #### Load amplitude
