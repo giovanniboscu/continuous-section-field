@@ -83,8 +83,9 @@ This is an important step because the CUF solver will subsequently use this CSF 
 
 <p align="center">
 
-<img  width="50%"  alt="immagine" src="https://github.com/user-attachments/assets/edcc2473-d288-4f02-8b0b-339c39aa0b8a" />
+<img  width="50%"  alt="immagine" src="https://github.com/user-attachments/assets/c0d86fe7-d3ea-45ed-9b55-cddd154e497c" />
 </p>
+
 
 
 Once the physical CSF model has been built and inspected in Step 1, the next step is to define the structural problem to be applied to that model.
