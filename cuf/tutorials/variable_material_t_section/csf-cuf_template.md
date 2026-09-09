@@ -246,8 +246,9 @@ For this problem, the longitudinal variation is provided by the half-wave law, w
 At this stage, the physical CSF model and the complete structural problem have been defined. The next step is to define the CUF case that specifies how this problem will be represented and solved.
 
 <p align="center">
-<img width="50%" alt="torsion half-wave trajectories on the T-section beam" src=""https://github.com/user-attachments/assets/254b7409-b272-4bf7-b6f1-cce0c4d3ff35" />
+<img   width="50%" alt="immagine" src="https://github.com/user-attachments/assets/aad22530-4475-4f3a-bf5d-5d26bec60ad5" />
 </p>
+
 
 
 
