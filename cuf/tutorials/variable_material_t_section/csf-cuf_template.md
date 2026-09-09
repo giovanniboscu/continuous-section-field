@@ -179,8 +179,10 @@ At this stage, the physical CSF model and the complete structural problem have b
 
 <p align="center">
 
-<img width="50%" alt="torsion half-wave load scheme" src="images/torsion_halfwave_load_scheme.png" />
+<img width="50%" alt="torsion half-wave load scheme" src="https://github.com/user-attachments/assets/59252dd5-b1bb-4ed5-88dc-3fedd07a1818" />
+
 </p>
+
 
 Once the physical CSF model has been built and inspected in Step 1, the next step is to define the structural problem to be applied to that model.
 
