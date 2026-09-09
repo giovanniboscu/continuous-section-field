@@ -444,7 +444,7 @@ Therefore, the following block:
 ```yaml
 solver:
   equilibration:
-    iterations: 8
+    iterations: 3
 ```
 
 is optional and simply states explicitly the default behavior.
