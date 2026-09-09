@@ -247,28 +247,15 @@ problem:
   adapter: csf.cuf.adapters.problem.surface_halfwave
 ```
 
-The `problem` block connects the CUF case to the physical structural problem to be solved.
+```yaml
+model:
+  csf_yaml: ../models/t_noprismatic_csf.yaml
 
-The case file does not define the applied load or the associated boundary conditions directly. Instead, those are kept in a separate problem file:
-
-```text
-problems/bending_halfwave.yaml
+problem:
+  type: torsion_halfwave
+  amplitude: 10.0
 ```
 
-This separation is deliberate. The problem file describes **what is applied to the physical CSF model and how the structure is constrained**, while the case file describes **how that problem is represented and solved with CUF**.
-
-The `yaml` entry selects the problem definition, while the `adapter` selects the implementation that translates that problem into the corresponding CUF load and constraint contributions.
-
-In this example, the `surface_halfwave` adapter is used for a distributed load acting on a physical surface of the CSF model with a half-wave variation along the longitudinal direction.
-
-The complete contents of `bending_halfwave.yaml` are examined in **Step 3**, where the CSF model reference, loaded surface, load amplitude and direction, and boundary conditions are described explicitly.
-
-
-<img width="60%" alt="04bd6629-961a-4db7-a0b4-5ad262a771f0"
-     src="https://github.com/user-attachments/assets/d4ad542d-86b1-4a6c-a2f0-eb769af62d81" />
-
-<img width="60%" alt="torsion"
-     src="https://github.com/user-attachments/assets/e1e700d1-6d7b-470e-8c6a-d9c2e93cbde2" />
 
 #### CUF transverse expansion
 
