@@ -30,7 +30,7 @@ It represents variable geometry and material distribution as continuous function
 
 
 ---
-
+### Illustrative example
 
 >Three-dimensional representation of the tapered pole with localized degradation. Gray regions indicate the non-degraded portions. Weight in this model is the elastic modulus.
 
