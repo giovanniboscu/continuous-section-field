@@ -53,11 +53,13 @@ The first practical choice is the **problem adapter**, which represents the stru
 - boundary conditions;
 - The problem adapter represents a complete structural problem, including its load and boundary conditions.
 
-This is the first building block the user should identify.
+
 
 ---
 
 ## 2.1 Choose the problem adapter
+
+This is the first building block the user should identify.
 
 The first question is:
 
