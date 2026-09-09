@@ -28,7 +28,16 @@ It represents variable geometry and material distribution as continuous function
  
  The resulting data can be exported in **CSV** and **YAML** formats for integration with beam solvers such as OpenSees and SAP2000, or with section-analysis tools such as [csf_sp](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_sp_user_guide.md) and [sp_csf](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/sectionproperties/sp_csf_guide.md).
 
+### CSF–CUF structural analysis
 
+CSF can be used as the continuous geometry and material provider for a
+Carrera Unified Formulation (CUF) beam model.
+
+The repository includes an open-source CUF implementation in which
+cross-sectional expansion functions are independent from the CSF
+geometry/material description.
+
+➡️ [CSF–CUF framework and documentation](cuf/readme.md)
 
 ---
 
