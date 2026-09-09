@@ -124,9 +124,11 @@ problem:
   type: surface_halfwave
 ```
 
-`type: surface_halfwave` identifies the predefined surface half-wave problem used in this example.
+`type: surface_halfwave` selects a predefined structural problem that combines both the applied load and the associated boundary conditions.
 
-The load varies along the longitudinal direction according to a half-wave distribution and acts on a physical surface selected from the CSF geometry.
+In this problem, a surface traction acts in the global `z` direction on a selected physical surface of the CSF model. Its intensity varies sinusoidally along the beam according to a single half-wave: it is zero at the two beam ends and reaches its maximum magnitude at mid-span.
+
+The same problem also imposes fully clamped conditions at both longitudinal ends of the beam. The displacement field is therefore zero in the global `x`, `y`, and `z` directions over both end cross-sections.
 
 #### Loaded surface
 
@@ -136,13 +138,13 @@ surface:
   edge_start_point_id: 0
 ```
 
-The loaded surface is identified directly from the CSF model.
+The physical surface on which the load acts is selected directly from the CSF geometry.
 
-`polygon_name: web` selects the `web` polygon of the T-section.
+`polygon_name: web` identifies the `web` polygon of the T-section.
 
-`edge_start_point_id: 0` selects the edge of that polygon that starts from vertex `0`. The polygon and vertex identifiers are the same physical identifiers already displayed during the CSF model inspection in Step 1.
+`edge_start_point_id: 0` identifies the edge of that polygon that starts from vertex `0`.
 
-Together, these two entries identify the physical surface on which the load is applied.
+The polygon and vertex identifiers are the same physical identifiers already shown during the CSF model inspection in Step 1. Together, these two entries identify the physical surface on which the sinusoidal traction is applied.
 
 #### Load amplitude
 
@@ -150,9 +152,12 @@ Together, these two entries identify the physical surface on which the load is a
 amplitude: -10.0
 ```
 
-`amplitude` defines the amplitude of the applied half-wave load. Its sign determines the direction of the load according to the convention implemented by the selected problem.
+`amplitude` defines the signed magnitude of the surface traction.
 
-At this stage, the physical model and the structural problem have been defined. The next step is to define the CUF case that specifies how this problem will be represented and solved.
+For this problem, the longitudinal variation is provided by the half-wave law, while the sign of `amplitude` determines the direction of the traction along the global `z` axis.
+
+At this stage, the physical CSF model and the complete structural problem have been defined. The next step is to define the CUF case that specifies how this problem will be represented and solved.
+
 
 
 
