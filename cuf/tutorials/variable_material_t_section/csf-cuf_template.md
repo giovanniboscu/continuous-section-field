@@ -246,8 +246,9 @@ For this problem, the longitudinal variation is provided by the half-wave law, w
 At this stage, the physical CSF model and the complete structural problem have been defined. The next step is to define the CUF case that specifies how this problem will be represented and solved.
 
 <p align="center">
-<img width="50%" alt="torsion half-wave trajectories on the T-section beam" src="images/torsion_halfwave_t_beam_paths.png" />
+<img width="50%" alt="torsion half-wave trajectories on the T-section beam" src=""https://github.com/user-attachments/assets/254b7409-b272-4bf7-b6f1-cce0c4d3ff35" />
 </p>
+
 
 
 
@@ -542,6 +543,9 @@ Once the physical CSF model, the structural problem, and the CUF case have been 
 csf-cuf cases/bending_halfwave_legendre_N08.yaml
 ```
 
+```bash
+ csf-cuf cases/torsion_halfwave_legendre_N08.yaml
+```
 The solver prints a detailed execution report. This report is useful because it shows not only whether the analysis completed successfully, but also the numerical model that was actually assembled and solved.
 
 The main parts of the output are explained below.
