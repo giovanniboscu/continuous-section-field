@@ -1331,55 +1331,60 @@ python plot_halfwave_outputs.py
 
 The figures below show the longitudinal evolution of the three displacement components evaluated at the same reference points for the CUF and FEM3D models.
 
-##### Bending half-wave
+### Bending half-wave
 
-For the bending case, the CUF solution obtained with the scaled Legendre expansion at \(N=8\) is already essentially superimposed on the FEM3D reference over the beam length at the reported reference points. This is observed consistently for the three displacement components and provides a strong direct verification of the present \(N=8\) response. A formal convergence statement with respect to the transverse order would, however, require a dedicated study with increasing values of \(N\).
+#### Longitudinal displacement \(u_x\)
 
-**Longitudinal displacement \(u_x\)**
+<p align="center">
+  <img width="90%" src="plots_halfwave/bending_halfwave_legendre_N08/displacement_ux_along_beam.png" />
+</p>
 
-[Open bending \(u_x\) plot](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_ux_along_beam.png)
+The longitudinal displacement \(u_x\) shows very close agreement between the CUF \(N=8\) solution and the FEM3D reference at all four monitored points. The overall shape, sign changes, and locations of the extrema are reproduced consistently. Small differences are visible mainly close to the larger extrema of the `minus` and `bottom_mid` responses, but they remain small compared with the total displacement range shown in the plots.
 
-![Bending half-wave: CUF vs FEM3D, ux](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_ux_along_beam.png?raw=1)
+#### Transverse displacement \(u_y\)
 
-**Transverse displacement \(u_y\)**
+<p align="center">
+  <img width="90%" src="plots_halfwave/bending_halfwave_legendre_N08/displacement_uy_along_beam.png" />
+</p>
 
-[Open bending \(u_y\) plot](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_uy_along_beam.png)
+The \(u_y\) component is much smaller than the principal bending displacement. At `center` and `bottom_mid` it remains essentially zero, while the `plus` and `minus` points show small non-zero transverse responses of the order of \(10^{-2}\,\mathrm{mm}\). CUF reproduces the overall FEM3D trend and the sign changes along the beam, although the relative differences are more visible here because the absolute displacement itself is very small.
 
-![Bending half-wave: CUF vs FEM3D, uy](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_uy_along_beam.png?raw=1)
+#### Transverse displacement \(u_z\)
 
-**Transverse displacement \(u_z\)**
+<p align="center">
+  <img width="90%" src="plots_halfwave/bending_halfwave_legendre_N08/displacement_uz_along_beam.png" />
+</p>
 
-[Open bending \(u_z\) plot](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_uz_along_beam.png)
+The \(u_z\) component contains the dominant bending response. The CUF \(N=8\) curves closely follow the FEM3D solution over the full beam length and at all monitored points. Both models predict the same smooth displacement profile, zero displacement at the clamped ends, and a maximum downward displacement close to the central region. The remaining difference is small relative to the approximately \(2.5\text{--}2.6\,\mathrm{mm}\) peak response.
 
-![Bending half-wave: CUF vs FEM3D, uz](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_uz_along_beam.png?raw=1)
+---
 
-The bending comparison is therefore a strong direct verification of the CUF solution for the present model: at \(N=8\), the CUF and FEM3D curves are already essentially superimposed at the level shown by these displacement plots. This graphical agreement should be interpreted as a verification of the reported response, not as a formal proof of convergence with respect to \(N\).
+### Torsion half-wave
 
-##### Torsion half-wave
+#### Longitudinal displacement \(u_x\)
 
-The same comparison can be performed for the torsional half-wave problem.
+<p align="center">
+  <img width="90%" src="plots_halfwave/torsion_halfwave_legendre_N25/displacement_ux_along_beam.png" />
+</p>
 
-**Longitudinal displacement \(u_x\)**
+For the torsion case, the longitudinal displacement \(u_x\) is very small, with values mainly of the order of \(10^{-3}\,\mathrm{mm}\). The CUF \(N=25\) solution reproduces the FEM3D shape and the change of sign along the beam. The largest visible differences occur for the `minus` point near the final part of the span. Because the absolute magnitude of this component is very small, these local differences appear visually amplified by the plot scale.
 
-[Open torsion \(u_x\) plot](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/torsion_halfwave_legendre_N08/displacement_ux_along_beam.png)
+#### Transverse displacement \(u_y\)
 
-![Torsion half-wave: CUF vs FEM3D, ux](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/torsion_halfwave_legendre_N08/displacement_ux_along_beam.png?raw=1)
+<p align="center">
+  <img width="90%" src="plots_halfwave/torsion_halfwave_legendre_N25/displacement_uy_along_beam.png" />
+</p>
 
-**Transverse displacement \(u_y\)**
+The \(u_y\) response clearly shows the torsional deformation of the section. The monitored points move with different signs and magnitudes according to their position on the T-section. CUF and FEM3D give the same overall longitudinal evolution, with zero displacement at both clamped ends and extrema in the interior of the beam. The CUF solution is slightly less pronounced than the FEM3D reference for the larger negative responses, but the two solutions remain closely aligned over the full span.
 
-[Open torsion \(u_y\) plot](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/torsion_halfwave_legendre_N08/displacement_uy_along_beam.png)
+#### Transverse displacement \(u_z\)
 
-![Torsion half-wave: CUF vs FEM3D, uy](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/torsion_halfwave_legendre_N08/displacement_uy_along_beam.png?raw=1)
+<p align="center">
+  <img width="90%" src="plots_halfwave/torsion_halfwave_legendre_N25/displacement_uz_along_beam.png" />
+</p>
 
-**Transverse displacement \(u_z\)**
+The \(u_z\) component provides another clear view of the torsional response. The `plus` and `minus` points develop displacements of opposite sign, while `center` and `bottom_mid` remain essentially zero. The CUF \(N=25\) solution follows the FEM3D curves closely and reproduces the position and shape of the extrema. A small difference in amplitude remains, particularly for the positive `plus` response, but the overall torsional deformation pattern is consistently captured.
 
-[Open torsion \(u_z\) plot](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/torsion_halfwave_legendre_N08/displacement_uz_along_beam.png)
-
-![Torsion half-wave: CUF vs FEM3D, uz](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/torsion_halfwave_legendre_N08/displacement_uz_along_beam.png?raw=1)
-
-For torsion, the \(N=8\) comparison should be regarded as an intermediate verification rather than as a final convergence result. A visible difference with the FEM3D reference remains in the present comparison, so it is preferable to repeat the CUF analysis with higher values of \(N\) and verify whether the displacement curves stabilize and approach a converged solution.
-
-A useful convergence check is to repeat the torsion case for increasing transverse expansion orders and compare each result with both the previous CUF order and the FEM3D reference. Once the CUF curves become insensitive to further increases of \(N\), any remaining difference can no longer be attributed to the CUF transverse order alone. A further interpretation of that residual difference would also require checking the convergence of the FEM3D discretization.
 
 
 ---
