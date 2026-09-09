@@ -80,7 +80,83 @@ This is an important step because the CUF solver will subsequently use this CSF 
 *Figure 4 - Variation of the main geometric properties of the non-prismatic T section along the longitudinal coordinate `Z`. The plots show the cross-sectional area \(A\), the second moments of area \(I_x\) and \(I_y\), and the polar second moment of area \(I_p\). All four quantities decrease from `z = 0` to `z = 1000` as a consequence of the progressive reduction of the T-section dimensions. This provides a direct check that the non-prismatic geometry defined in the CSF model is reflected consistently in the section properties used by the structural analysis.*
 
 
-### Step 2 - Define the CUF case
+### Step 2 - Define the structural problem
+
+Once the physical CSF model has been built and inspected in Step 1, the next step is to define the structural problem to be applied to that model.
+
+For the bending example, the problem file is:
+
+```text
+problems/bending_halfwave.yaml
+```
+
+Its contents are:
+
+```yaml
+model:
+  csf_yaml: ../models/t_noprismatic_csf.yaml
+
+problem:
+  type: surface_halfwave
+
+  surface:
+    polygon_name: web
+    edge_start_point_id: 0
+
+  amplitude: -10.0
+```
+
+The file can be read as the physical definition of the problem applied to the CSF model.
+
+#### Physical model
+
+```yaml
+model:
+  csf_yaml: ../models/t_noprismatic_csf.yaml
+```
+
+`csf_yaml` points to the CSF model defined and inspected in Step 1. The geometry and material field are therefore not defined again in the problem file; the problem refers directly to the existing CSF description of the beam.
+
+#### Problem type
+
+```yaml
+problem:
+  type: surface_halfwave
+```
+
+`type: surface_halfwave` identifies the predefined surface half-wave problem used in this example.
+
+The load varies along the longitudinal direction according to a half-wave distribution and acts on a physical surface selected from the CSF geometry.
+
+#### Loaded surface
+
+```yaml
+surface:
+  polygon_name: web
+  edge_start_point_id: 0
+```
+
+The loaded surface is identified directly from the CSF model.
+
+`polygon_name: web` selects the `web` polygon of the T-section.
+
+`edge_start_point_id: 0` selects the edge of that polygon that starts from vertex `0`. The polygon and vertex identifiers are the same physical identifiers already displayed during the CSF model inspection in Step 1.
+
+Together, these two entries identify the physical surface on which the load is applied.
+
+#### Load amplitude
+
+```yaml
+amplitude: -10.0
+```
+
+`amplitude` defines the amplitude of the applied half-wave load. Its sign determines the direction of the load according to the convention implemented by the selected problem.
+
+At this stage, the physical model and the structural problem have been defined. The next step is to define the CUF case that specifies how this problem will be represented and solved.
+
+
+
+### Step 3 - Define the CUF case
 
 Once the physical CSF model has been inspected and verified, we can define the CUF analysis.
 
