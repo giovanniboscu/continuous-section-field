@@ -99,12 +99,12 @@ file written to `output/bending_halfwave_legendre_N08/response.txt`.
 ### Torsion half-wave case
 
 ```bash
-csf-cuf cases/torsion_halfwave_legendre_N08.yaml
+csf-cuf cases/torsion_halfwave_legendre_N25.yaml
 ```
 
 Expected output: same `K`/`A` structure (same model/CUF basis),
 `solver.equilibration.iterations=5` (explicitly set in the YAML),
-file written to `output/torsion_halfwave_legendre_N08/response.txt`.
+file written to `output/torsion_halfwave_legendre_N25/response.txt`.
 
 ---
 
@@ -112,7 +112,7 @@ file written to `output/torsion_halfwave_legendre_N08/response.txt`.
 
 ```bash
 cat output/bending_halfwave_legendre_N08/response.txt
-cat output/torsion_halfwave_legendre_N08/response.txt
+cat output/torsion_halfwave_legendre_N25/response.txt
 ```
 
 Columns: `x/L, x[mm], y[mm], z[mm], point, ux[mm], uy[mm], uz[mm]`.
