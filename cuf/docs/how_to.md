@@ -75,17 +75,26 @@ Each row should tell the user:
 - the exact `problem.type` used in the YAML;
 - where a runnable example is available.
 
-A suitable table is:
+## Available problem adapters
 
-| Structural problem | Load included in the adapter | Boundary conditions included in the adapter | `problem.type` | Example |
+In the current CSF–CUF implementation, each problem adapter defines a complete structural scheme: the applied load and the associated boundary conditions are handled together.
+
+| Structural scheme | Load included in the adapter | Boundary conditions included in the adapter | `problem.type` | Example |
 |---|---|---|---|---|
-| **to be filled from verified implementation** | **to be filled** | **to be filled** | **to be filled** | **to be linked** |
+| Carrera torsion half-wave benchmark | Opposite global-`z` line-load pair with \(m=1\) half-wave variation, producing torsion | Global `y` and `z` displacement amplitudes constrained at both ends; rigid global-`x` translation removed by an axial mean constraint | `carrera_torsion_halfwave` | `bending_torsion_halfwave.py` |
+| Carrera bending half-wave benchmark | Global-`z` half-wave distributed load acting on the bottom boundary of the section | Global `y` and `z` displacement amplitudes constrained at both ends; rigid global-`x` translation removed by an axial mean constraint | `carrera_bending_bottom_surface_halfwave` | `bending_torsion_halfwave.py` |
+| Physical-surface bending half-wave | Global-`z` traction acting on a selected physical CSF surface, with intensity proportional to \(\sin(\pi(x-x_0)/L)\) | **Fixed-fixed:** \(u_x=u_y=u_z=0\) over both complete end cross-sections | `surface_halfwave` | `t_section/problems/bending_halfwave.yaml` |
+| Torsion half-wave | Two opposite global-`z` line loads applied at two physical CSF vertices; their magnitude follows \(\pm A\sin(\pi(x-x_0)/L)\). The load trajectories follow the changing CSF geometry | **Fixed-fixed:** \(u_x=u_y=u_z=0\) over both complete end cross-sections | `torsion_halfwave` | `t_section/problems/torsion_halfwave.yaml` |
+| Uniform torsion | Same opposite global-`z` moving line-load pair used by `torsion_halfwave`, but with constant longitudinal intensity | **Fixed-fixed:** \(u_x=u_y=u_z=0\) over both complete end cross-sections | `torsion_uniform` | `torsion_uniform.py` |
+| Uniform physical-surface load | Constant global-`z` traction acting on a selected physical CSF surface, evaluated using the real physical surface measure | **Fixed-fixed:** \(u_x=u_y=u_z=0\) over both complete end cross-sections | `uniform_surface` | `uniform_surface.py` |
 
-The exact rows should be populated directly from the verified adapters in:
+The corresponding problem-adapter modules are located in:
 
 ```text
 src/csf/cuf/adapters/problem
 ```
+
+
 
 No load name, boundary-condition combination, or `problem.type` should be guessed.
 
