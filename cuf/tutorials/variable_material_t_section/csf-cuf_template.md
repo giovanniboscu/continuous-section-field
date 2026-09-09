@@ -81,6 +81,12 @@ This is an important step because the CUF solver will subsequently use this CSF 
 
 ### Step 2 - Define the structural problem
 
+<p align="center">
+
+<img  width="50%"  alt="immagine" src="https://github.com/user-attachments/assets/edcc2473-d288-4f02-8b0b-339c39aa0b8a" />
+</p>
+
+
 Once the physical CSF model has been built and inspected in Step 1, the next step is to define the structural problem to be applied to that model.
 
 For the bending example, the problem file is:
@@ -138,10 +144,6 @@ surface:
 ```
 
 
-<p align="center">
-
-<img  width="50%"  alt="immagine" src="https://github.com/user-attachments/assets/edcc2473-d288-4f02-8b0b-339c39aa0b8a" />
-</p>
 
 
 
