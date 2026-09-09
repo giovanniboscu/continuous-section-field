@@ -1,13 +1,13 @@
-# CSF-CUF bending half-wave v2 test: scaled_legendre, N=08.
+# CSF-CUF torsion half-wave test: scaled_legendre, N=25
 case:
-  name: double_t_bending_halfwave_legendre_N08
+  name: double_t_torsion_halfwave_legendre_N25
 problem:
-  yaml: ../problems/bending_halfwave.yaml
-  adapter: csf.cuf.adapters.problem.surface_halfwave
+  yaml: ../problems/torsion_halfwave.yaml
+  adapter: csf.cuf.adapters.problem.torsion_halfwave
 
 cuf:
   basis: scaled_legendre
-  order: 8
+  order: 25
 
 longitudinal:
   method: finite_element
@@ -20,7 +20,7 @@ section_integration:
 
 solver:
   equilibration:
-    iterations: 4
+    iterations: 3
     
 sampling:
   stations: [0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30,
@@ -31,4 +31,4 @@ sampling:
 
 output:
   adapter: csf.cuf.adapters.output.post
-  directory: ../output/bending_halfwave_legendre_N08
+  directory: ../output/torsion_halfwave_legendre_N25

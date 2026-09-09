@@ -45,11 +45,24 @@ elsewhere only by the prescribed half-wave factor.
 
 Constraints
 -----------
-The constraints are copied mechanically from ``uniform_surface_load.py``:
-all global-y and global-z CUF amplitudes are fixed at both beam ends, and the
-remaining rigid global-x translation is removed with the FEM3D point anchor
+Both beam-end sections are perfectly clamped.
 
-    u_x(x_start, 0, 0) = 0.
+At ``x = x_start`` and ``x = x_end`` the complete displacement field is zero:
+
+    u_x = 0
+    u_y = 0
+    u_z = 0
+
+over the whole cross-section.  No pointwise axial anchor is used.
+
+In CUF this is enforced by setting every generalized transverse amplitude to
+zero for all three displacement components at both longitudinal end nodes.
+Because the physical field is reconstructed as
+
+    u_i(x,y,z) = sum_tau F_tau(y,z) * u_i,tau(x),
+
+zeroing every ``u_i,tau`` at an end node makes the complete physical
+displacement component ``u_i`` vanish everywhere on that end section.
 
 YAML interface
 --------------
@@ -551,25 +564,47 @@ class SurfaceHalfWaveLoadProblem:
         basis: Any,
         longitudinal_integrator: Any,
     ):
-        """Apply the bending supports and the FEM3D pointwise axial anchor.
+        """Perfectly clamp both beam ends: ux = uy = uz = 0.
 
-        Global y and z amplitudes are fixed at both longitudinal ends.  The
-        remaining rigid global-x translation is removed with the same anchor
-        used by the reference FEM3D model: ``u_x(0, 0, 0) = 0``.
+        CUF does not generally associate one generalized degree of freedom with
+        one physical point of the cross-section.  The physical displacement is
+        reconstructed from the transverse expansion
+
+            u_i(x, y, z) = sum_tau F_tau(y, z) * u_i,tau(x).
+
+        Therefore a full sectional clamp is imposed by setting *all* CUF
+        amplitudes ``u_i,tau`` to zero, for all three physical components, at
+        each longitudinal end node.  This avoids the previous pointwise axial
+        anchor and gives a boundary condition that is natural for the CUF
+        representation.
         """
 
         layout = assembled.dof_layout
-        row_count = 4 * int(basis.size) + 1
+        n_tau = int(basis.size)
+
+        # We constrain:
+        #   3 displacement components (x, y, z)
+        # x 2 longitudinal end sections (S0 and S1)
+        # x n_tau transverse CUF amplitudes.
+        #
+        # Hence the total number of scalar constraint equations is 6*n_tau.
+        row_count = 6 * n_tau
         matrix = np.zeros((row_count, layout.total_dofs), dtype=float)
         rhs = np.zeros(row_count, dtype=float)
         row = 0
 
-        # Fix every transverse CUF amplitude (global y and z components) at
-        # both longitudinal ends.  Component numbering follows the solver's
-        # established convention: 0=x, 1=y, 2=z.
+        # Perfect clamp at both longitudinal ends.
+        #
+        # Solver component numbering is:
+        #   0 -> global x displacement
+        #   1 -> global y displacement
+        #   2 -> global z displacement
+        #
+        # Setting every generalized amplitude to zero for a component makes the
+        # complete reconstructed CUF displacement vanish over the whole section.
         for node in (0, mesh.number_of_nodes - 1):
-            for component in (1, 2):
-                for tau in range(1, int(basis.size) + 1):
+            for component in (0, 1, 2):
+                for tau in range(1, n_tau + 1):
                     matrix[
                         row,
                         layout.index(
@@ -580,39 +615,6 @@ class SurfaceHalfWaveLoadProblem:
                     ] = 1.0
                     row += 1
 
-        # The end supports leave one rigid global-x translation.  Match the
-        # FEM3D reference exactly by anchoring the physical displacement at the
-        # start section and at the section point (y, z) = (0, 0):
-        #
-        #     u_x(x=0, y=0, z=0) = 0.
-        #
-        # At the first longitudinal FE node, the physical CUF displacement is
-        # the section-basis expansion sum_tau F_tau(0, 0) * q_x,tau.
-        axial_anchor_factors = np.asarray(
-            [
-                basis.value(
-                    tau,
-                    0.0,
-                    0.0,
-                    x=float(mesh.x_start),
-                )
-                for tau in range(1, int(basis.size) + 1)
-            ],
-            dtype=float,
-        )
-
-        start_node = 0
-        for tau, factor in enumerate(axial_anchor_factors, start=1):
-            matrix[
-                row,
-                layout.index(
-                    node=start_node,
-                    tau=tau,
-                    component=0,
-                ),
-            ] = float(factor)
-
-        row += 1
         if row != row_count:
             raise RuntimeError("internal constraint-row count mismatch")
 

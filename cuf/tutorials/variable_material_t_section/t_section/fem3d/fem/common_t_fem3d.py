@@ -1,3 +1,4 @@
+# Version: FEM3D common utilities fixed-fixed end constraints - 2026-09-07
 #!/usr/bin/env python3
 # Version: T-section non-prismatic FEM3D validation v6 - 2026-09-05
 # H8/SSPbrick reference driven by the public CSF geometry/material API.
@@ -863,29 +864,42 @@ def material_table(
     return key_to_tag, tag_to_material
 
 
-def end_constraints(d: dict, mesh: TSectionMesh, ops) -> tuple[list[int], list[int], int]:
+def end_constraints(d: dict, mesh: TSectionMesh, ops) -> tuple[list[int], list[int], None]:
+    """Clamp the two complete end faces of the 3D solid mesh.
+
+    This is the FEM3D counterpart of a perfect fixed-fixed CUF model.
+
+    ``end0`` contains every FEM node on the physical start section S0 and
+    ``end1`` contains every FEM node on the physical end section S1.  Every
+    translational degree of freedom of every node on both faces is fixed:
+
+        u_x = 0
+        u_y = 0
+        u_z = 0
+
+    Therefore neither end face can translate, deform in-plane, or develop
+    axial warping.  No single-node axial anchor and no average/gauge equation
+    is used here.
+
+    OpenSees uses ``1`` for a restrained translational DOF and ``0`` for a
+    free one, so ``ops.fix(tag, 1, 1, 1)`` is a complete translational clamp
+    for a 3-DOF solid node.
+    """
     end0 = mesh.plane_nodes(0)
     end1 = mesh.plane_nodes(d["nx"])
 
-    # Match the CUF gauge exactly: the only axial restraint is the physical
-    # point (x_start, y, z) = (x_start, 0, 0).  Do not silently substitute
-    # the nearest FEM node if that point is absent from the mesh.
-    try:
-        anchor = mesh.existing_node(0, 0.0, 0.0)
-    except KeyError as exc:
-        raise ValueError(
-            "FEM mesh does not contain the required axial anchor node "
-            "(x_start, y, z) = (x_start, 0, 0)"
-        ) from exc
-
+    # Clamp every node belonging to the complete start face S0.
     for tag in end0:
-        if tag == anchor:
-            ops.fix(tag, 1, 1, 1)
-        else:
-            ops.fix(tag, 0, 1, 1)
+        ops.fix(tag, 1, 1, 1)
+
+    # Clamp every node belonging to the complete end face S1.
     for tag in end1:
-        ops.fix(tag, 0, 1, 1)
-    return end0, end1, anchor
+        ops.fix(tag, 1, 1, 1)
+
+    # The third return value is kept only for API compatibility with the
+    # existing run_*.py wrappers, which unpack three values from solve().
+    # There is intentionally no axial anchor in this fixed-fixed model.
+    return end0, end1, None
 
 
 def solve(d: dict, mesh: TSectionMesh, loads: dict[int, np.ndarray]):

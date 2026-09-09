@@ -1,4 +1,4 @@
-# Version: CSF-CUF torsional line-pair half-wave adapter v1.0 - 2026-09-04
+# Version: CSF-CUF torsional line-pair half-wave adapter v1.1-fixed-fixed - 2026-09-07
 """
 Sinusoidal torsional line-pair problem adapter for CSF-CUF.
 
@@ -41,12 +41,17 @@ introduced.  Adding such a factor would define a different physical problem.
 
 Constraints
 -----------
-The constraints are copied mechanically from the current uniform torsion CUF
-adapter and match FEM3D:
+Both beam ends are perfectly clamped.
 
-* all global-y and global-z CUF amplitudes are fixed at both beam ends;
-* the remaining rigid global-x translation is removed with
-  ``u_x(x_start, 0, 0) = 0``.
+At ``x = x_start`` and ``x = x_end`` the complete displacement field is zero:
+
+    u_x = 0
+    u_y = 0
+    u_z = 0
+
+over the whole cross-section.  No pointwise axial anchor is used.  This is a
+fixed-fixed (clamped-clamped) model and therefore suppresses axial warping at
+both end sections.
 
 YAML interface
 --------------
@@ -310,19 +315,29 @@ class TorsionHalfWaveProblem:
         basis: Any,
         longitudinal_integrator: Any,
     ):
-        """Apply the torsion supports with the FEM3D pointwise axial anchor."""
+        """Perfectly clamp both beam ends: ux = uy = uz = 0."""
 
         layout = assembled.dof_layout
-        row_count = 4 * int(basis.size) + 1
+        n_tau = int(basis.size)
+
+        # Three displacement components x two beam ends x all transverse
+        # amplitudes.
+        row_count = 6 * n_tau
         matrix = np.zeros((row_count, layout.total_dofs), dtype=float)
         rhs = np.zeros(row_count, dtype=float)
         row = 0
 
-        # Fix all generalized global-y and global-z amplitudes at both beam
-        # ends.  Solver component numbering is 0=x, 1=y, 2=z.
+        # Perfect clamp at both longitudinal ends.
+        #
+        # Fixing every generalized amplitude for components x, y and z makes
+        # the complete CUF displacement field vanish on each end section:
+        #
+        #     u_x = u_y = u_z = 0
+        #
+        # for every physical point (y,z) of the section.
         for node in (0, mesh.number_of_nodes - 1):
-            for component in (1, 2):
-                for tau in range(1, int(basis.size) + 1):
+            for component in (0, 1, 2):
+                for tau in range(1, n_tau + 1):
                     matrix[
                         row,
                         layout.index(
@@ -333,33 +348,6 @@ class TorsionHalfWaveProblem:
                     ] = 1.0
                     row += 1
 
-        # Remove only the rigid global-x translation, using exactly the same
-        # physical anchor as FEM3D: u_x(x_start, y=0, z=0) = 0.
-        axial_anchor_factors = np.asarray(
-            [
-                basis.value(
-                    tau,
-                    0.0,
-                    0.0,
-                    x=float(mesh.x_start),
-                )
-                for tau in range(1, int(basis.size) + 1)
-            ],
-            dtype=float,
-        )
-
-        start_node = 0
-        for tau, factor in enumerate(axial_anchor_factors, start=1):
-            matrix[
-                row,
-                layout.index(
-                    node=start_node,
-                    tau=tau,
-                    component=0,
-                ),
-            ] = float(factor)
-
-        row += 1
         if row != row_count:
             raise RuntimeError("internal constraint-row count mismatch")
 

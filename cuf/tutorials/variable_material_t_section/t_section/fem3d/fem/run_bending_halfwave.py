@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Version: T-section non-prismatic FEM3D physical-surface half-wave bending v2 - 2026-09-05
+# Version: T-section non-prismatic FEM3D physical-surface half-wave bending v3 fixed-fixed - 2026-09-07
 """
 FEM3D reference for the CSF-CUF ``surface_halfwave`` problem.
 
@@ -10,8 +10,7 @@ This wrapper is the sinusoidal counterpart of the existing FEM3D
 - structured 3D mesh;
 - real isoparametric surface Jacobian;
 - material state queried from the CSF API;
-- end constraints;
-- pointwise axial anchor u_x(x_start, 0, 0) = 0;
+- fixed-fixed end constraints: u_x = u_y = u_z = 0 on both end faces;
 - solver and output routines.
 
 The only mechanical change is the traction law
@@ -246,10 +245,10 @@ def main() -> None:
         print("dry-run   : mesh/load construction OK; solve not executed")
         return
 
-    u, reactions, anchor = common.solve(d, mesh, loads)
+    u, reactions, _ = common.solve(d, mesh, loads)
     common.write_outputs(d, mesh, loads, u, reactions)
-    print(f"anchor ux : node {anchor} at {mesh.nodes[anchor]}")
-    print(f"output    : {d['output_dir']}")
+    print("supports   : fixed-fixed; ux=uy=uz=0 on both end faces")
+    print(f"output     : {d['output_dir']}")
 
 
 if __name__ == "__main__":
