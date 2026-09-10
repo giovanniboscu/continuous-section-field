@@ -1,6 +1,6 @@
 ## Building the T-section example step by step
 
-This tutorial shows how a complete CSF-CUF beam analysis is assembled from a small set of YAML files.
+This tutorial shows how a complete CUF beam analysis is assembled from a small set of YAML files.
 
 The example is a non-prismatic T-section beam whose cross-section and material properties vary continuously along its length. Both ends of the beam are fully clamped.
 
