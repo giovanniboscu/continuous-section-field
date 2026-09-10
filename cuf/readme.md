@@ -10,6 +10,10 @@
 Why use CUF? For many structural problems, a three-dimensional finite element model is the most immediate and established choice. CUF follows a different philosophy: rather than relying primarily on spatial discretization, it requires the analyst to explicitly choose how the structural response is represented over the cross-section. This additional freedom is one of CUF’s main strengths, but also one of the main barriers to its practical use. Without an existing infrastructure, applying CUF to a new problem may first require developing and validating the numerical model itself. CSF–CUF was created to reduce this barrier, without hiding the modelling choices that define the CUF approach.
 
 
+This repository is open for a reason: it is meant to be explored, questioned, tested, and even challenged. If you are a student, a researcher, or simply curious about how and why the method works, use it, experiment with it, and ask questions.
+The goal is not to impose a way of doing things, but to propose one. If something is unclear, if you think something could be improved, or if you have an idea for a different implementation, that is exactly the kind of interaction this project is meant to encourage.
+
+
 This repository provides a general-purpose framework for building and running beam models based on the Carrera Unified Formulation (CUF).
 
 The implementation is designed around a clear separation between the physical description of the problem and the CUF numerical formulation. Models are defined externally through YAML files specifying geometry, material distribution, loads, boundary conditions, longitudinal discretization, and the transverse expansion rule.
