@@ -1,21 +1,36 @@
 ## Building the T-section example step by step
 
+
 The CUF input is organized in three directories:
 
 ```text
 .
-├── models
-│   ├── t_noprismatic_csf.yaml
-│   └── action.yaml
-├── problems
-│   ├── bending_halfwave.yaml
-│   └── torsion_halfwave.yaml
-└── cases
-    ├── bending_halfwave_legendre_N08.yaml
-    └── torsion_halfwave_legendre_N08.yaml
++-- models
+|   +-- t_noprismatic_csf.yaml
+|   `-- action.yaml
++-- problems
+|   +-- bending_halfwave.yaml
+|   `-- torsion_halfwave.yaml
+`-- cases
+    +-- bending_halfwave_legendre_N08.yaml
+    +-- torsion_halfwave_legendre_N08.yaml
+    `-- torsion_halfwave_legendre_N25.yaml
 ```
 
-The files are separated according to their role in the analysis.
+The files are separated according to their role in the analysis:
+
+- `models/t_noprismatic_csf.yaml` -> CSF physical model defining the non-prismatic T-section geometry and material distribution.
+- `models/action.yaml` -> CSF actions used to inspect the model, including geometry, material fields, section properties, and volume.
+- `problems/bending_halfwave.yaml` -> bending problem with a half-wave surface load applied to the CSF model.
+- `problems/torsion_halfwave.yaml` -> torsion problem with a half-wave torsional load applied to the CSF model.
+- `cases/bending_halfwave_legendre_N08.yaml` -> CUF bending case using a scaled Legendre expansion with `N = 8`.
+- `cases/torsion_halfwave_legendre_N08.yaml` -> CUF torsion case using a scaled Legendre expansion with `N = 8`.
+- `cases/torsion_halfwave_legendre_N25.yaml` -> CUF torsion case using a scaled Legendre expansion with `N = 25`.
+
+These correspond to two distinct load configurations: bending and torsion.
+
+
+
 
 ### Step 1 - Build and inspect the physical model
 
