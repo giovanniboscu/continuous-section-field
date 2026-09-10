@@ -6,6 +6,10 @@
 >
 >The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
 
+
+Why use CUF? For many structural problems, a three-dimensional finite element model is the most immediate and established choice. CUF follows a different philosophy: rather than relying primarily on spatial discretization, it requires the analyst to explicitly choose how the structural response is represented over the cross-section. This additional freedom is one of CUF’s main strengths, but also one of the main barriers to its practical use. Without an existing infrastructure, applying CUF to a new problem may first require developing and validating the numerical model itself. CSF–CUF was created to reduce this barrier, without hiding the modelling choices that define the CUF approach.
+
+
 This repository provides a general-purpose framework for building and running beam models based on the Carrera Unified Formulation (CUF).
 
 The implementation is designed around a clear separation between the physical description of the problem and the CUF numerical formulation. Models are defined externally through YAML files specifying geometry, material distribution, loads, boundary conditions, longitudinal discretization, and the transverse expansion rule.
