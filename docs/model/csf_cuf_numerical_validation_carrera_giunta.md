@@ -1,4 +1,3 @@
-# DRAFT
 
 # CSF-CUF validation against Carrera and Giunta (2010)
 
