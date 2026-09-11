@@ -152,5 +152,27 @@ Classical beam theories can be interpreted as restricted choices within this fra
 
 The same formulation remains valid when the polynomial order or the family of transverse functions is changed. This is the unifying principle of CUF.
 
+### From the prismatic CUF introduction to the CSF-CUF formulation
+
+The derivation above introduces CUF using a prismatic beam, for which the cross-sectional domain $\Omega$ is independent of the longitudinal coordinate $x$.
+
+In the CSF-CUF formulation adopted in this repository, the physical cross-section and the constitutive properties may vary along the beam axis:
+
+$$\Omega \longrightarrow \Omega(x),\qquad \mathbf{C}(y,z)\longrightarrow \mathbf{C}(x,y,z)$$
+
+The CUF displacement approximation can still retain the same form introduced above:
+
+$$\mathbf{u}(x,y,z)\simeq\sum_{\tau=1}^{M}F_\tau(y,z)\mathbf{u}_\tau(x)$$
+
+The transverse approximation functions therefore remain functions of the cross-sectional coordinates,
+
+$$F_\tau=F_\tau(y,z)$$
+
+while the longitudinal variation of geometry and material is supplied directly by the Continuous Section Field through the current physical section at each value of $x$.
+
+The sectional integrations are consequently evaluated over the evolving domain $\Omega(x)$, so the corresponding sectional coefficients become functions of the longitudinal coordinate. The variation of the physical section therefore does not require the transverse approximation functions themselves to acquire an explicit dependence on $x$.
+
+For the complete variable-section formulation, see [CSF-CUF Formulation for Directly Prescribed Variable Sections](../model/csf_cuf_formal_variable_section_extension.md).
+
 ---
 
