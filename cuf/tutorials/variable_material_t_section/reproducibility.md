@@ -85,35 +85,78 @@ Move to the tutorial folder (one level above `models/`):
 cd ../
 ```
 
-### Bending half-wave case
+The `cases/` directory contains several ready-to-run CUF configurations.
+You can run only the cases needed for the tutorial or for your own
+comparison.
+
+For example, start with the bending half-wave case:
 
 ```bash
 csf-cuf cases/bending_halfwave_legendre_N08.yaml
 ```
 
-Expected output: log with effective quadratures (section=9, longitudinal=16),
-`M=45`, `DOFs=945`, `K` 945×945, `A` 181×945 rank 181/181,
-KKT 1126×1126, equilibration `rcond` 8.03e-19 → 5.24e-09,
-file written to `output/bending_halfwave_legendre_N08/response.txt`.
+The results are written to:
 
-### Torsion half-wave case
+```text
+output/bending_halfwave_legendre_N08/response.txt
+```
+
+A torsion half-wave case can be run in the same way, for example:
 
 ```bash
 csf-cuf cases/torsion_halfwave_legendre_N25.yaml
 ```
 
-Expected output: same `K`/`A` structure (same model/CUF basis),
-`solver.equilibration.iterations=5` (explicitly set in the YAML),
-file written to `output/torsion_halfwave_legendre_N25/response.txt`.
+with results written to:
+
+```text
+output/torsion_halfwave_legendre_N25/response.txt
+```
+
+Other CUF orders and basis configurations available in `cases/` can be run
+with the same command pattern:
+
+```bash
+csf-cuf cases/<case_name>.yaml
+```
+
+> **Note:** Computational cost increases significantly for the higher-order
+> CUF cases. In particular, cases such as `N27` may require substantially
+> more computation time depending on the machine. Running every available
+> case is not required to complete the tutorial.
+
 
 ---
 
+
 ## 6. Step 5 - Inspect the generated results
+
+Each executed case creates its own output directory containing a
+`response.txt` file.
+
+List the generated results:
+
+```bash
+ls output
+```
+
+Then inspect the response of any case you ran, for example:
 
 ```bash
 cat output/bending_halfwave_legendre_N08/response.txt
 cat output/torsion_halfwave_legendre_N25/response.txt
 ```
+
+In general:
+
+```bash
+cat output/<case_name>/response.txt
+```
+
+The `cases/` directory contains several ready-to-run configurations, so you
+can select only the cases relevant to the analysis.
+
+
 
 Columns: `x/L, x[mm], y[mm], z[mm], point, ux[mm], uy[mm], uz[mm]`.
 
