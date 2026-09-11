@@ -67,7 +67,7 @@ cross-sectional expansion functions are independent from the CSF
 geometry/material description.
 
 ```bash
-cd cuf/tutorials/variable_material_t_section/models
+cd cuf/tutorials/variable_material_t_section/t_section/models/
 csf-actions t_noprismatic_csf.yaml action.yaml   # inspect the non-prismatic T-section
 
 cd ../cases
