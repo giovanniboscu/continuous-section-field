@@ -1,167 +1,6 @@
 # DRAFT
 
-
 # CSF-CUF validation against Carrera and Giunta (2010)
-
-## Reproducibility
-
-The validation can be reproduced directly from the source repository.
-
-### Prerequisites
-
-The following tools are required:
-
-- Git;
-- Python 3.8 or newer;
-- `pip`.
-
-A Python virtual environment is recommended so that the validation runs with an isolated set of dependencies.
-
-### Clone the repository
-
-Clone the repository and enter its root directory:
-
-```bash
-git clone https://github.com/giovanniboscu/continuous-section-field.git
-cd continuous-section-field
-```
-
-### Create a Python virtual environment
-
-On Linux or macOS:
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-On Windows:
-
-```powershell
-py -m venv venv
-.\venv\Scripts\activate
-```
-
-### Install CSF-CUF from the repository
-
-Install the repository in editable mode:
-
-```bash
-pip install -e .
-```
-
-This installs the Python dependencies together with the command-line tools provided by the repository.
-
-### Move to the validation directory
-
-From the repository root, enter the Carrera-Giunta Tables 9-10 validation directory:
-
-```bash
-cd cuf/refined_beam_theories_tables_9_10
-```
-
-The working directory is now:
-
-```text
-continuous-section-field/
-└── cuf/
-    └── refined_beam_theories_tables_9_10/
-```
-
-All commands in the following sections are intended to be executed from this directory.
-
-### Validation data organization
-
-The validation input is separated into three levels:
-
-```text
-model YAML
-    |
-    v
-problem YAML
-    |
-    v
-case YAML
-    |
-    v
-csf-cuf
-    |
-    v
-post-processing
-```
-
-The three files have different responsibilities:
-
-| Input | Purpose |
-|---|---|
-| model YAML | CSF geometry and material definition |
-| problem YAML | physical loading and boundary-condition definition |
-| case YAML | CUF basis, order, longitudinal discretization, solver settings, sampling and output |
-
-The model describes the physical member.
-
-The problem selects the Carrera-Giunta bending or torsion benchmark to be applied to that member.
-
-The case selects how that physical problem is approximated and solved numerically.
-
-Changing the CUF order therefore requires changing only the case YAML; the physical model and problem definition remain unchanged.
-
-### Run a single case
-
-A single validation case can be launched with:
-
-```bash
-csf-cuf path/to/case.yaml
-```
-
-For example, a Table 9 or Table 10 case is selected directly by its case YAML.
-
-The solver reads:
-
-1. the case YAML;
-2. the referenced problem YAML;
-3. the referenced CSF model YAML.
-
-After the solution is obtained, the Carrera post-processing adapter generates the normalized displacement report for the corresponding reference table.
-
-### Run the Table 9 and Table 10 batch
-
-The complete validation series can be launched with:
-
-```bash
-python3 run_tables_9_10.py 21
-```
-
-The argument `21` is the maximum CUF order requested.
-
-It acts as a ceiling: the script runs all available Table 9 and Table 10 case files whose order is less than or equal to the requested value.
-
-The two tables are discovered independently. For example, if Table 9 cases are available only up to `N18` and Table 10 cases are available up to `N21`, the same command runs:
-
-```text
-Table 9  -> available cases up to N18
-Table 10 -> available cases up to N21
-```
-
-The batch searches the validation case directory for files following the naming convention:
-
-```text
-maclaurin_table9_Nxx.yaml
-maclaurin_table10_Nxx.yaml
-```
-
-For every available case, the script launches `csf-cuf`, reads the generated normalized displacement report, and collects the results by CUF order.
-
-At the end of the run, the combined validation report is written to:
-
-```text
-carrera_giunta_tables_9_10.txt
-```
-
-This file contains the CSF-CUF results for Tables 9 and 10 up to the requested maximum order.
-
----
-
 
 ## 1. Purpose
 
@@ -545,59 +384,164 @@ Changing the CUF order does not require changing the model or the physical probl
 
 ---
 
-## 11. Running one case
+## Reproducibility
 
-A single case is launched directly with `csf-cuf`:
+The validation can be reproduced directly from the source repository.
+
+### Prerequisites
+
+The following tools are required:
+
+- Git;
+- Python 3.8 or newer;
+- `pip`.
+
+A Python virtual environment is recommended so that the validation runs with an isolated set of dependencies.
+
+### Clone the repository
+
+Clone the repository and enter its root directory:
+
+```bash
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
+```
+
+### Create a Python virtual environment
+
+On Linux or macOS:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+On Windows:
+
+```powershell
+py -m venv venv
+.\venv\Scripts\activate
+```
+
+### Install CSF-CUF from the repository
+
+Install the repository in editable mode:
+
+```bash
+pip install -e .
+```
+
+This installs the Python dependencies together with the command-line tools provided by the repository.
+
+### Move to the validation directory
+
+From the repository root, enter the Carrera-Giunta Tables 9-10 validation directory:
+
+```bash
+cd cuf/refined_beam_theories_tables_9_10
+```
+
+The working directory is now:
+
+```text
+continuous-section-field/
+└── cuf/
+    └── refined_beam_theories_tables_9_10/
+```
+
+All commands in the following sections are intended to be executed from this directory.
+
+### Validation data organization
+
+The validation input is separated into three levels:
+
+```text
+model YAML
+    |
+    v
+problem YAML
+    |
+    v
+case YAML
+    |
+    v
+csf-cuf
+    |
+    v
+post-processing
+```
+
+The three files have different responsibilities:
+
+| Input | Purpose |
+|---|---|
+| model YAML | CSF geometry and material definition |
+| problem YAML | physical loading and boundary-condition definition |
+| case YAML | CUF basis, order, longitudinal discretization, solver settings, sampling and output |
+
+The model describes the physical member.
+
+The problem selects the Carrera-Giunta bending or torsion benchmark to be applied to that member.
+
+The case selects how that physical problem is approximated and solved numerically.
+
+Changing the CUF order therefore requires changing only the case YAML; the physical model and problem definition remain unchanged.
+
+### Run a single case
+
+A single validation case can be launched with:
 
 ```bash
 csf-cuf path/to/case.yaml
 ```
 
-The case selects the problem, the CUF basis and order, the numerical settings, and the output adapter.
+For example, a Table 9 or Table 10 case is selected directly by its case YAML.
 
-For the Carrera validation, the post-processor writes a file named `table9_style.txt` or `table10_style.txt` in the output directory defined by the case YAML.
+The solver reads:
 
----
+1. the case YAML;
+2. the referenced problem YAML;
+3. the referenced CSF model YAML.
 
-## 12. Running the complete Table 9 / Table 10 batch
+After the solution is obtained, the Carrera post-processing adapter generates the normalized displacement report for the corresponding reference table.
 
-The validation series is launched with:
+### Run the Table 9 and Table 10 batch
+
+The complete validation series can be launched with:
 
 ```bash
 python3 run_tables_9_10.py 21
 ```
 
-The number `21` is the requested maximum CUF order. It is a ceiling, not a requirement that both tables contain a case at every order through 21.
+The argument `21` is the maximum CUF order requested.
 
-The script searches recursively below `cases/` for files named
+It acts as a ceiling: the script runs all available Table 9 and Table 10 case files whose order is less than or equal to the requested value.
+
+The two tables are discovered independently. For example, if Table 9 cases are available only up to `N18` and Table 10 cases are available up to `N21`, the same command runs:
+
+```text
+Table 9  -> available cases up to N18
+Table 10 -> available cases up to N21
+```
+
+The batch searches the validation case directory for files following the naming convention:
 
 ```text
 maclaurin_table9_Nxx.yaml
 maclaurin_table10_Nxx.yaml
 ```
 
-and selects the files whose order is not greater than the requested ceiling.
+For every available case, the script launches `csf-cuf`, reads the generated normalized displacement report, and collects the results by CUF order.
 
-Each table is treated independently. For example, if Table 9 case files exist only through `N18` while Table 10 case files exist through `N21`, the command above runs:
-
-```text
-Table 9  -> available cases N01 ... N18
-Table 10 -> available cases N01 ... N21
-```
-
-For every discovered case, the batch script:
-
-1. launches `csf-cuf` with the case YAML;
-2. checks that the corresponding `table9_style.txt` or `table10_style.txt` was produced;
-3. reads the `GLOBAL MAXIMUM DISPLACEMENTS - PAPER FORMAT` row;
-4. collects the values by CUF order;
-5. writes the combined report
+At the end of the run, the combined validation report is written to:
 
 ```text
 carrera_giunta_tables_9_10.txt
 ```
 
-The final file contains the complete CSF-CUF Table 9 and Table 10 series available up to the requested maximum order.
+This file contains the CSF-CUF results for Tables 9 and 10 up to the requested maximum order.
+
+---
 
 ---
 
