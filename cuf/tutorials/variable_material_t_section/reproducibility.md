@@ -144,7 +144,7 @@ Then inspect the response of any case you ran, for example:
 
 ```bash
 cat output/bending_halfwave_legendre_N08/response.txt
-cat output/torsion_halfwave_legendre_N25/response.txt
+cat output/torsion_halfwave_legendre_N08/response.txt
 ```
 
 In general:
