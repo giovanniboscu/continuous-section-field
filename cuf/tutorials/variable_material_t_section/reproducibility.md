@@ -104,7 +104,7 @@ output/bending_halfwave_legendre_N08/response.txt
 A torsion half-wave case can be run in the same way, for example:
 
 ```bash
-csf-cuf cases/torsion_halfwave_legendre_N25.yaml
+csf-cuf cases/torsion_halfwave_legendre_N08.yaml
 ```
 
 with results written to:
