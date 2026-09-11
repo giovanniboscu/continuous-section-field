@@ -1,0 +1,11 @@
+case = torsion_halfwave_model2
+problem = torsion_halfwave
+element = stdBrick
+nodes = 101398
+elements = 90720
+applied_force = [0.0, 0.0, 0.0]
+applied_moment_about_origin = [-247485.93650789707, 0.0, 0.0]
+reaction_force = [-9.212604012986958e-10, -4.5197783515860124e-08, -1.3838006296396088e-08]
+reaction_moment_about_origin = [247485.93650110372, 1.0038136053935887e-05, -2.2182339989740285e-05]
+force_balance = [-9.212604012986958e-10, -4.5197783515860124e-08, -1.3838006296396088e-08]
+moment_balance = [-6.793357897549868e-06, 1.0038136053935887e-05, -2.2182339989740285e-05]

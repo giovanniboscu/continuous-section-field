@@ -71,6 +71,148 @@ class CompiledDisplacementField:
         ):
             value.setflags(write=False)
 
+    ##
+    
+    
+    @staticmethod
+    def _transverse_power_coefficients(basis):
+        """
+        Reconstruct a polynomial transverse basis from the normal CUF basis API.
+
+        No checkpoint-specific method is required from the expansion.
+        The reconstruction uses the existing basis order, transverse scales,
+        and basis evaluations.
+        """
+
+        try:
+            order = int(basis.order)
+            size = int(basis.size)
+            y_scale, z_scale = map(float, basis.scales)
+        except (AttributeError, TypeError, ValueError):
+            return None
+
+        if order < 0 or size < 1:
+            return None
+
+        if (
+            not np.isfinite(y_scale)
+            or not np.isfinite(z_scale)
+            or y_scale <= 0.0
+            or z_scale <= 0.0
+        ):
+            return None
+
+        count = order + 1
+
+        # Chebyshev-Lobatto interpolation points in normalized coordinates.
+        if count == 1:
+            points = np.asarray((0.0,), dtype=float)
+        else:
+            points = np.polynomial.chebyshev.chebpts2(count)
+
+        # V[i,p] = T_p(points[i])
+        vandermonde = np.polynomial.chebyshev.chebvander(
+            points,
+            order,
+        )
+        inverse_vandermonde = np.linalg.inv(vandermonde)
+
+        # values[tau, iy, iz]
+        values = np.empty(
+            (size, count, count),
+            dtype=float,
+        )
+
+        for iy, normalized_y in enumerate(points):
+            y = y_scale * float(normalized_y)
+
+            for iz, normalized_z in enumerate(points):
+                z = z_scale * float(normalized_z)
+
+                if hasattr(basis, "values"):
+                    current = np.asarray(
+                        basis.values(y, z),
+                        dtype=float,
+                    )
+                else:
+                    current = np.asarray(
+                        [
+                            basis.value(tau, y, z)
+                            for tau in range(1, size + 1)
+                        ],
+                        dtype=float,
+                    )
+
+                if current.shape != (size,):
+                    raise ValueError(
+                        "transverse basis evaluation has invalid shape"
+                    )
+
+                values[:, iy, iz] = current
+
+        # Tensor-product interpolation:
+        #
+        # values = V * C_chebyshev * V^T
+        chebyshev_coefficients = np.einsum(
+            "ai,tij,bj->tab",
+            inverse_vandermonde,
+            values,
+            inverse_vandermonde,
+            optimize=True,
+        )
+
+        # Transformation matrix:
+        #
+        # Chebyshev coefficients -> ordinary powers
+        conversion = np.zeros((count, count), dtype=float)
+
+        for degree in range(count):
+            unit = np.zeros(count, dtype=float)
+            unit[degree] = 1.0
+
+            polynomial = np.polynomial.chebyshev.cheb2poly(unit)
+
+            conversion[: polynomial.size, degree] = polynomial
+
+        normalized_power_coefficients = np.einsum(
+            "pa,tab,qb->tpq",
+            conversion,
+            chebyshev_coefficients,
+            conversion,
+            optimize=True,
+        )
+
+        # Convert normalized powers:
+        #
+        # Y = y / y_scale
+        # Z = z / z_scale
+        #
+        # into physical powers y^p z^q.
+        y_scaling = np.power(
+            y_scale,
+            -np.arange(count, dtype=float),
+        )
+        z_scaling = np.power(
+            z_scale,
+            -np.arange(count, dtype=float),
+        )
+
+        coefficients = (
+            normalized_power_coefficients
+            * y_scaling[None, :, None]
+            * z_scaling[None, None, :]
+        )
+
+        if not np.all(np.isfinite(coefficients)):
+            raise ValueError(
+                "compiled transverse polynomial contains non-finite values"
+            )
+
+        return np.asarray(coefficients, dtype=float)    
+    
+    
+
+
     @classmethod
     def from_solution_data(
         cls,
@@ -88,10 +230,7 @@ class CompiledDisplacementField:
         expansions continue to use the existing in-memory recovery path and
         are not altered by this feature.
         """
-
-        export = getattr(basis, "power_coefficients", None)
-        if not callable(export):
-            return None
+  
 
         solved_dofs = np.asarray(solved_dofs, dtype=float)
         if solved_dofs.shape != (dof_layout.total_dofs,):
@@ -135,7 +274,11 @@ class CompiledDisplacementField:
         longitudinal_coefficients = cls._lagrange_power_coefficients(
             reference_nodes
         )
-        transverse_coefficients = np.asarray(export(), dtype=float)
+        
+        
+        transverse_coefficients = cls._transverse_power_coefficients(basis)
+        if transverse_coefficients is None:
+            return None
 
         combined_metadata = dict(metadata or {})
         combined_metadata.update(

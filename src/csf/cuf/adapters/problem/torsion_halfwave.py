@@ -1,19 +1,25 @@
-# Version: CSF-CUF torsional line-pair half-wave adapter v1.1-fixed-fixed - 2026-09-07
+# Version: CSF-CUF torsional line-pair half-wave adapter v1.2-fixed-fixed - 2026-09-10
 """
 Sinusoidal torsional line-pair problem adapter for CSF-CUF.
 
 This adapter is the m=1 half-wave counterpart of ``torsion_uniform.py``.  It
-preserves exactly the same CSF moving vertices, the same opposite global-z
-force pair, the same longitudinal measure ``dx``, the same CUF projection, and
-the same FEM3D-compatible constraints.  The only mechanical change relative to
-the uniform adapter is the longitudinal half-wave intensity.
+preserves the same opposite global-z force pair, the same longitudinal measure
+``dx``, the same CUF projection, and the same FEM3D-compatible constraints.
+The only mechanical change relative to the uniform adapter is the longitudinal
+half-wave intensity.
 
 Physical loading
 ----------------
-At every physical coordinate x:
+The two load trajectories are defined once from the CSF end sections.
+At ``x = x0`` and ``x = x1``:
 
 * ``point_plus`` is the leftmost CSF vertex on the maximum-z boundary;
 * ``point_minus`` is the rightmost CSF vertex on the minimum-z boundary.
+
+The corresponding S0/S1 points define two straight physical load lines.
+For every interior x, including longitudinal Gauss points, ``point_plus(x)``
+and ``point_minus(x)`` are obtained by affine interpolation along those lines.
+No repeated minimum/maximum search is performed on intermediate CSF sections.
 
 The signed line-load intensities are
 
@@ -125,11 +131,14 @@ def _has_vertex(section_provider: Any, x: float, point) -> bool:
 
 
 def moving_load_points(section_provider: Any, x: float):
-    """Return the same two moving CSF vertices as the half-wave torsion case.
+    """Identify the two torsional load vertices on one CSF section.
 
     The positive point is the leftmost vertex on the maximum-z boundary.  The
     negative point is the rightmost vertex on the minimum-z boundary.  Ties are
     resolved deterministically by the physical y coordinate.
+
+    For the half-wave projector this selector is used only at x0 and x1; the
+    interior load points then follow the straight lines joining those endpoints.
     """
 
     x = float(x)
@@ -208,7 +217,35 @@ class HalfWaveTorsionalLinePairProjector:
 
         self.length = self.x1 - self.x0
         self.alpha = math.pi / self.length
+
+        # Identify the two physical load lines once from their CSF endpoints.
+        self.point_plus_0, self.point_minus_0 = moving_load_points(
+            self.section_provider,
+            self.x0,
+        )
+        self.point_plus_1, self.point_minus_1 = moving_load_points(
+            self.section_provider,
+            self.x1,
+        )
+
         self._cache: dict[float, np.ndarray] = {}
+
+    def load_points(self, x: float):
+        """Return the two points on the straight physical load trajectories."""
+
+        x = float(x)
+        t = (x - self.x0) / self.length
+
+        point_plus = (
+            (1.0 - t) * self.point_plus_0[0] + t * self.point_plus_1[0],
+            (1.0 - t) * self.point_plus_0[1] + t * self.point_plus_1[1],
+        )
+        point_minus = (
+            (1.0 - t) * self.point_minus_0[0] + t * self.point_minus_1[0],
+            (1.0 - t) * self.point_minus_0[1] + t * self.point_minus_1[1],
+        )
+
+        return point_plus, point_minus
 
     def generalized_vector(self, x: float) -> np.ndarray:
         """Return the complete half-wave ``q_tau,z(x)`` vector."""
@@ -218,10 +255,7 @@ class HalfWaveTorsionalLinePairProjector:
         if cached is not None:
             return cached
 
-        point_plus, point_minus = moving_load_points(
-            self.section_provider,
-            x,
-        )
+        point_plus, point_minus = self.load_points(x)
         y_plus, z_plus = point_plus
         y_minus, z_minus = point_minus
 

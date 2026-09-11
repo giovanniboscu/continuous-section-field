@@ -74,14 +74,7 @@ class ScaledLagrangeBasis(CUFBasis):
         self._y_scale = y_scale
         self._z_scale = z_scale
 
-        # Build the physical-coordinate power representation once.  The
-        # solver-side displacement checkpoint consumes this optional generic
-        # representation without knowing which concrete expansion produced
-        # it.  Future polynomial expansions may expose the same
-        # power_coefficients() method to opt into self-contained displacement
-        # checkpoints; the CUFBasis core contract remains unchanged.
-        self._power_coefficients = self._build_power_coefficients()
-        self._power_coefficients.setflags(write=False)
+
 
     @property
     def order(self) -> int:
@@ -106,124 +99,8 @@ class ScaledLagrangeBasis(CUFBasis):
 
         return self._reference_basis.definition(tau)
 
-    def power_coefficients(self) -> np.ndarray:
-        """Return F_tau coefficients in ascending physical powers of y and z.
+    
 
-        The returned array has shape ``(size, order + 1, order + 1)`` and
-        follows
-
-            F_tau(y,z) = sum_{p,q} coefficients[tau-1,p,q] y**p z**q.
-
-        This optional expansion-owned export is used only to create a
-        self-contained displacement checkpoint.  It is deliberately outside
-        the CUFBasis core interface so future non-polynomial expansions can
-        choose a different checkpoint representation without changing core.
-        """
-
-        return self._power_coefficients.copy()
-
-    @staticmethod
-    def _reference_polynomial(order: int, *, reverse: bool = False):
-        """Return p_order(mu) or p_order(-mu) in ascending powers.
-
-        This representation is needed only by the optional physical-power
-        checkpoint export.  The solver itself evaluates the reference
-        polynomial directly from its roots in ``core.basis``.
-
-        Coefficients are accumulated in extended precision before the final
-        float64 cast.  The checkpoint must ultimately contain monomial
-        coefficients, but coefficient construction should not add avoidable
-        float64 roundoff.
-        """
-
-        roots = np.linspace(-1.0, 1.0, int(order), dtype=np.longdouble)
-        coefficients = np.asarray((1.0,), dtype=np.longdouble)
-
-        # Ascending powers: multiply successively by (mu - root).
-        for root in roots:
-            coefficients = np.convolve(
-                coefficients,
-                np.asarray((-root, 1.0), dtype=np.longdouble),
-            )
-
-        if reverse:
-            coefficients = coefficients * np.power(
-                np.longdouble(-1.0),
-                np.arange(coefficients.size),
-            )
-
-        return np.asarray(coefficients, dtype=float)
-
-    def _build_power_coefficients(self) -> np.ndarray:
-        """Compile every hierarchy term into physical y,z power coefficients."""
-
-        count = self.order + 1
-        coefficients = np.zeros((self.size, count, count), dtype=float)
-
-        for tau in range(1, self.size + 1):
-            kind, r, side, n, m = self.definition(tau)
-
-            if kind == "I":
-                corner_signs = (
-                    (-1.0, -1.0),
-                    (+1.0, -1.0),
-                    (+1.0, +1.0),
-                    (-1.0, +1.0),
-                )
-                sign_y, sign_z = corner_signs[side - 1]
-                reference = 0.25 * np.outer(
-                    np.asarray((1.0, sign_y)),
-                    np.asarray((1.0, sign_z)),
-                )
-            elif kind in ("IIA", "IIB"):
-                if side == 1:
-                    reference = 0.5 * np.outer(
-                        self._reference_polynomial(r),
-                        np.asarray((1.0, -1.0)),
-                    )
-                elif side == 2:
-                    reference = 0.5 * np.outer(
-                        np.asarray((1.0, +1.0)),
-                        self._reference_polynomial(r),
-                    )
-                elif side == 3:
-                    reference = 0.5 * np.outer(
-                        self._reference_polynomial(r, reverse=True),
-                        np.asarray((1.0, +1.0)),
-                    )
-                elif side == 4:
-                    reference = 0.5 * np.outer(
-                        np.asarray((1.0, -1.0)),
-                        self._reference_polynomial(r, reverse=True),
-                    )
-                else:
-                    raise RuntimeError("invalid SL edge index")
-            elif kind == "III":
-                reference = np.outer(
-                    self._reference_polynomial(n),
-                    self._reference_polynomial(m),
-                )
-            else:
-                raise RuntimeError(
-                    f"unsupported SL function type {kind!r}"
-                )
-
-            rows, columns = reference.shape
-            y_scaling = np.power(
-                self._y_scale,
-                -np.arange(rows, dtype=float),
-            )
-            z_scaling = np.power(
-                self._z_scale,
-                -np.arange(columns, dtype=float),
-            )
-            coefficients[tau - 1, :rows, :columns] = (
-                reference
-                * y_scaling[:, None]
-                * z_scaling[None, :]
-            )
-
-        return coefficients
 
     def value(
         self,
