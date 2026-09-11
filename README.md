@@ -55,6 +55,8 @@ It represents variable geometry and material distribution as continuous function
 
   See [Ekofisk Jacket Platform - Foundation Piles](https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/ekofisk/README.md) for a localized corrosion case. 
 
+---
+
 **CSF–CUF structural analysis**
 
 CSF can be used as the continuous geometry and material provider for a
