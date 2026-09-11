@@ -1,0 +1,71 @@
+# Carrera & Giunta (2010), Section 6.2, I-shaped cross-section.
+# This file is the physical CSF model.
+# Geometry and material are stored here, not in the FEM3D Python code.
+
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        - name: top_flange
+          weight: 71700.0
+          vertices:
+            - [-33.3333333333333, 50]
+            - [-12.5, 50]
+            - [12.5, 50]
+            - [33.3333333333333, 50]
+            - [33.3333333333333, 75]
+            - [-33.3333333333333, 75]
+
+        - name: web
+          weight: 71700.0
+          vertices:
+            - [-12.5, -50]
+            - [12.5, -50]
+            - [12.5, 50]
+            - [-12.5, 50]
+
+        - name: bottom_flange
+          weight: 71700.0
+          vertices:
+            - [-33.3333333333333, -75]
+            - [33.3333333333333, -75]
+            - [33.3333333333333, -50]
+            - [12.5, -50]
+            - [-12.5, -50]
+            - [-33.3333333333333, -50]
+
+    S1:
+      z: 1000.0
+      polygons:
+        - name: top_flange
+          weight: 71700.0
+          vertices:
+            - [-33.3333333333333, 50]
+            - [-12.5, 50]
+            - [12.5, 50]
+            - [33.3333333333333, 50]
+            - [33.3333333333333, 75]
+            - [-33.3333333333333, 75]
+
+        - name: web
+          weight: 71700.0
+          vertices:
+            - [-12.5, -50]
+            - [12.5, -50]
+            - [12.5, 50]
+            - [-12.5, 50]
+
+        - name: bottom_flange
+          weight: 71700.0
+          vertices:
+            - [-33.3333333333333, -75]
+            - [33.3333333333333, -75]
+            - [33.3333333333333, -50]
+            - [12.5, -50]
+            - [-12.5, -50]
+            - [-33.3333333333333, -50]
+
+  # Generates the per-polygon isotropic shear carrier and Poisson ratio.
+  shear_weight_laws:
+    - 'iso(0.3)'

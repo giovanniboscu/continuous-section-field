@@ -1,0 +1,38 @@
+case:
+  name: cuf_scaled_maclaurin_taper00_table9_N15
+
+problem:
+  yaml: ../../problem/taper00_table9.yaml
+  adapter: ../../validation/carrera_problem.py
+
+cuf:
+  basis: scaled_maclaurin
+  order: 15
+
+longitudinal:
+  method: finite_element
+  elements: 1
+  order: 6
+
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 6
+
+solver:
+  equilibration:
+    iterations: 4
+
+sampling:
+  stations:
+    - 0.00
+    - 0.25
+    - 0.50
+    - 0.75
+    - 1.00
+  displacement_samples: 201
+  stress_grid: 31
+
+output:
+  adapter: ../../validation/carrera_post.py
+  directory: ../../output/taper00_prismatic/table9_N15
+

@@ -1,0 +1,44 @@
+# actions.yaml
+# Defines the post-processing operations to run on the CSF model.
+# - stations: named z-coordinate sets used as analysis points
+# - actions: ordered list of operations (3D plots, section analysis, property export, etc.)
+
+CSF_ACTIONS:
+  stations:
+    station_edge:
+      - 0
+      - 1000
+  actions:  
+    - plot_volume_3d:
+        params:
+          seed: s
+          title: "Not prismatic"  
+          equalize_z: false       
+
+    - plot_volume_3d:
+        params:
+          seed: w
+          title: "Not prismatic"  
+          equalize_z: false             
+    - plot_weight:
+        output:
+          - stdout
+    - plot_properties:
+        properties: [A,Ix,Iy,Ip]
+    - plot_section_2d:
+        stations:
+          - station_edge
+        show_ids: True
+        show_vertex_ids: True          
+    - section_selected_analysis:
+        stations:
+          - station_edge
+        properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy]
+    - volume:
+        stations:
+          - station_edge
+        output:
+          - stdout
+          - volume_report.txt
+                                   
+

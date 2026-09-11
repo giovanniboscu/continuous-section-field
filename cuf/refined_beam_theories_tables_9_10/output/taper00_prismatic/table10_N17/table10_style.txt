@@ -1,0 +1,53 @@
+TABLE 10 - CSF-CUF
+==================
+
+GLOBAL MAXIMUM DISPLACEMENTS - PAPER FORMAT
+-------------------------------------------
+model                10 |u_x*|           10 |u_y*|         10^2 u_z*
+CSF-CUF               2.220863            4.794516          4.528254
+
+LOCATIONS OF GLOBAL MAXIMA
+---------------------------
+component   criterion                x           y           z
+ux          max_abs            500.000      33.333     -75.000
+uy          max_abs            500.000     -33.333      75.000
+uz          max                  0.000     -33.333      50.000
+
+COMMANDED SECTIONS
+------------------
+x/L = 0.000, 0.250, 0.500, 0.750, 1.000
+
+SECTION x/L = 0.000   x = 0.000
+------------------------------------------------------
+component   criterion      scaled displacement           y           z
+ux          max_abs                   0.000000      33.333      75.000
+uy          max_abs                   0.000000     -33.333     -58.333
+uz          max                       4.528254     -33.333      50.000
+
+SECTION x/L = 0.250   x = 250.000
+------------------------------------------------------
+component   criterion      scaled displacement           y           z
+ux          max_abs                   1.570452      33.333     -75.000
+uy          max_abs                   3.390382     -33.333      75.000
+uz          max                       3.202113     -33.333      50.000
+
+SECTION x/L = 0.500   x = 500.000
+------------------------------------------------------
+component   criterion      scaled displacement           y           z
+ux          max_abs                   2.220863      33.333     -75.000
+uy          max_abs                   4.794516     -33.333      75.000
+uz          max                       0.000000     -33.333      52.083
+
+SECTION x/L = 0.750   x = 750.000
+------------------------------------------------------
+component   criterion      scaled displacement           y           z
+ux          max_abs                   1.570452      33.333     -75.000
+uy          max_abs                   3.390382     -33.333      75.000
+uz          max                       3.010529     -33.333     -50.000
+
+SECTION x/L = 1.000   x = 1000.000
+------------------------------------------------------
+component   criterion      scaled displacement           y           z
+ux          max_abs                   0.000000     -33.333     -50.000
+uy          max_abs                   0.000000     -33.333      75.000
+uz          max                       4.257324     -33.333     -50.000
