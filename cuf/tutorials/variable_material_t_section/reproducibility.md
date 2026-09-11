@@ -225,10 +225,10 @@ csf-actions t_noprismatic_csf.yaml action.yaml
 cd ..
 csf-actions models/t_noprismatic_csf.yaml models/action.yaml
 csf-cuf cases/bending_halfwave_legendre_N08.yaml
-csf-cuf cases/torsion_halfwave_legendre_N25.yaml
+csf-cuf cases/torsion_halfwave_legendre_N08.yaml
 
 cat output/bending_halfwave_legendre_N08/response.txt
-cat output/torsion_halfwave_legendre_N25/response.txt
+cat output/torsion_halfwave_legendre_N08/response.txt
 
 cd fem3d
 python3 fem/run_bending_halfwave.py
