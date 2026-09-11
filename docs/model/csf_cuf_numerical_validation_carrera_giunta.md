@@ -543,7 +543,6 @@ This file contains the CSF-CUF results for Tables 9 and 10 up to the requested m
 
 ---
 
----
 
 ## References
 
