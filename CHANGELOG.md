@@ -1,5 +1,9 @@
 # Changelog
 
+
+# v0.2.3
+* CSF-CUF validation against Carrera and Giunta (2010)
+
 # v0.2.1
 
 * added packaged CUF problem and output adapters for bending, torsion, and physical-surface loading
