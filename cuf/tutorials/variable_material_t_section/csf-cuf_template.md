@@ -1425,6 +1425,9 @@ The \(u_y\) response clearly shows the torsional deformation of the section. The
 
 The \(u_z\) component provides another clear view of the torsional response. The `plus` and `minus` points develop displacements of opposite sign, while `center` and `bottom_mid` remain essentially zero. The CUF \(N=25\) solution follows the FEM3D curves closely and reproduces the position and shape of the extrema. A small difference in amplitude remains, particularly for the positive `plus` response, but the overall torsional deformation pattern is consistently captured.
 
+### Numerical interpretation of the FEM3D comparison
+
+It is important to distinguish CUF convergence from agreement with the FEM3D reference. Increasing the CUF order \(N\) refines the transverse approximation and is used to assess convergence of the CUF solution itself. The FEM3D solution, however, is a separate discretized numerical solution and is not the mathematical limit toward which \(N\) is expected to converge. The two checks are therefore complementary: stabilization of the CSF-CUF response with increasing \(N\), and agreement of the converged CUF response with the independently discretized FEM3D model. A small residual difference between the two solutions may therefore remain even after the CUF response has become essentially independent of \(N\).
 
 
 ---
