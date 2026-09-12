@@ -49,7 +49,10 @@ Each displacement quantity is reported twice:
 | 17 | 4.050652 | - | 3.028798 | - | 8.745061 | - |
 | 18 | 4.050773 | 4.051 | 3.038514 | 3.040 | 8.745067 | 8.745 |
 
-**Carrera & Giunta FEM 3D reference:** $10\,u_{x,\max}^*=4.059$, $10^3\,\lvert u_{y,\max}^*\rvert=3.102$, $10^2\,u_{z,\max}^*=8.748$.
+
+**Carrera & Giunta FEM 3D reference:**  
+`10 u_x,max* = 4.059`, `10^3 |u_y,max*| = 3.102`, `10^2 u_z,max* = 8.748`.
+
 
 ## Table 10 - Torsion
 
@@ -77,7 +80,9 @@ Each displacement quantity is reported twice:
 | 20 | 2.288527 | 2.289 | 4.936553 | 4.937 | 4.672726 | 4.673 |
 | 21 | 2.291650 | 2.293 | 4.936626 | 4.939 | 4.672109 | 4.675 |
 
-**Carrera & Giunta FEM 3D reference:** $10\,\lvert u_{x,\max}^*\rvert=2.408$, $10\,\lvert u_{y,\max}^*\rvert=5.164$, $10^2\,u_{z,\max}^*=4.870$.
+
+**Carrera & Giunta FEM 3D reference:**  
+`10 |u_x,max*| = 2.408`, `10 |u_y,max*| = 5.164`, `10^2 u_z,max* = 4.870`.
 
 ---
 
