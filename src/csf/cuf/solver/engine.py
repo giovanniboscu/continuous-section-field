@@ -415,14 +415,10 @@ def _longitudinal_gauss_requirement(
                 "must be (y,z) pairs"
             )
 
-        if not close(vm, 0.5 * (v0 + v1)):
-            raise ValueError(
-                "cannot estimate longitudinal Gauss order: CSF geometry is "
-                f"not affine in x for domain {domain_index}"
-            )
 
-        varies_y = varies_y or (not close(v0[:, 0], v1[:, 0]))
-        varies_z = varies_z or (not close(v0[:, 1], v1[:, 1]))
+        varies_y = False
+        varies_z = False
+
 
     configured_material_degree = (
         case.longitudinal.material_polynomial_degree
@@ -477,7 +473,8 @@ def _longitudinal_gauss_requirement(
     # here    
     # contribution of the interaction to the degree of the polynomial 
     #################################################################      
-    varying_axes = int(varies_y) + int(varies_z)
+    #varying_axes = int(varies_y) + int(varies_z)
+    
     r = int(case.longitudinal.order)
     transverse_x_degree = (
         basis_plugin.transverse_x_polynomial_degree(basis)
@@ -565,21 +562,30 @@ def _longitudinal_gauss_requirement(
     ###minimum_gauss_order = (polynomial_degree + 2) // 2
     ######
     
-    axes = []
-    if varies_y:
-        axes.append("y")
-    if varies_z:
-        axes.append("z")      
+    #axes = []
+    #if varies_y:
+    #    axes.append("y")
+    #if varies_z:
+    #    axes.append("z")      
       
 
+    #return {
+    #    "polynomial_degree": int(polynomial_degree),
+    #    "minimum_gauss_order": int(minimum_gauss_order),
+    #    "varying_axes": tuple(axes),
+    #    "material_varies": bool(material_varies),
+    #    "material_polynomial_degree": int(material_degree),
+    #    "material_degree_source": material_degree_source,
+    #}
+    
     return {
         "polynomial_degree": int(polynomial_degree),
         "minimum_gauss_order": int(minimum_gauss_order),
-        "varying_axes": tuple(axes),
         "material_varies": bool(material_varies),
         "material_polynomial_degree": int(material_degree),
         "material_degree_source": material_degree_source,
-    }
+    }    
+    
 
 def solve_case(case, model_bridge, problem, *, progress: bool = True) -> CSFCUFSolution:
     """
@@ -673,15 +679,10 @@ def solve_case(case, model_bridge, problem, *, progress: bool = True) -> CSFCUFS
     )
 
     if progress:
-        axes = longitudinal_requirement["varying_axes"]
-        axes_text = ",".join(axes) if axes else "none"
+
         print(
             f"[quadrature] longitudinal degree estimate = "
             f"{longitudinal_requirement['polynomial_degree']}",
-            flush=True,
-        )
-        print(
-            f"[quadrature] longitudinal variation axes  = {axes_text}",
             flush=True,
         )
         print(
