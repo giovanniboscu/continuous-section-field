@@ -602,9 +602,9 @@ plt.show()
   title     = {{continuous-section-field}},
   year      = {2026},
   publisher = {Zenodo},
-  version   = {V2.1.0},
-  doi       = {10.5281/zenodo.20687216},
-  url       = {https://doi.org/10.5281/zenodo.20687216}
+  version   = {v0.2.3},
+  doi       = {10.5281/zenodo.22722439},
+  url       = {https://doi.org/10.5281/zenodo.22722439}
 }
 ```
 </details>
