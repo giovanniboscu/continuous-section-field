@@ -1,10 +1,16 @@
-cff-version: V2.1.0
-message: "If you use this software, please cite it as below."
-authors:
-- family-names: "Boscu"
-  given-names: "Giovanni"
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+
+type: software
+
 title: "continuous-section-field"
-version: V2.1.0
-doi: 10.5281/zenodo.20687216
-date-released: 2025-12-26
-url: "https://doi.org/10.5281/zenodo.20687216"
+
+authors:
+  - family-names: "Boscu"
+    given-names: "Giovanni"
+
+version: "v0.2.3"
+
+repository-code: "https://github.com/giovanniboscu/continuous-section-field"
+
+license: GPL-3.0
