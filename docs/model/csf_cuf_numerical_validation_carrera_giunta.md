@@ -13,6 +13,7 @@ The current validation chain covers:
 - prismatic CSF geometry;
 - comparison with published CUF results and with a three-dimensional FEM baseline.
 
+
 The key architectural result is that the CUF core remains independent of the particular cross-section. The section and material state are supplied by CSF, the transverse approximation is supplied by the basis plugin, and the physical loading/constraints are supplied by the problem adapter.
 
 ---
