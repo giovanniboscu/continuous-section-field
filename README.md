@@ -4,7 +4,7 @@
 
 
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20687216.svg)](https://doi.org/10.5281/zenodo.20687216)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22722439.svg)]([https://doi.org/10.5281/zenodo.20687216](https://doi.org/10.5281/zenodo.22722439))
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![CUF](https://img.shields.io/badge/CUF-Carrera_Unified_Formulation-purple.svg)
 ![Math](https://img.shields.io/badge/Engine-Analytical_Mechanics-red.svg)
