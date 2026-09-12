@@ -20,7 +20,24 @@ LongitudinalTransverseDegree = Callable[[object], int]
 
 @dataclass(frozen=True)
 class CUFBasisPlugin:
-    """Runtime descriptor for one transverse CUF basis implementation."""
+    
+    """Build a basis with access to the complete CSF field context.
+    
+    Simple expansions may ignore ``continuous_section_field``.
+    
+    The longitudinal coordinate ``x`` may be available during runtime basis
+    evaluation as contextual information for diagnostics, logging, tracing,
+    or bookkeeping.
+    
+    In the current CSF-CUF formulation, however, transverse basis functions
+    remain mathematically independent of ``x``:
+    
+        F_tau = F_tau(y, z)
+    
+    Therefore ``x`` must not affect the returned basis value or its
+    transverse derivatives.
+    """
+    
 
     name: str
     builder: BasisBuilder
