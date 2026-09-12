@@ -6,8 +6,8 @@
 
 The current validation chain covers:
 
-- prismatic double-T bending;
-- prismatic double-T torsion;
+- prismatic I-shaped bending;
+- prismatic I-shaped torsion;
 - high-order Maclaurin transverse expansions;
 - the generic weak-form longitudinal finite-element runtime;
 - prismatic CSF geometry;
