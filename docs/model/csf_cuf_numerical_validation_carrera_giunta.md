@@ -20,7 +20,7 @@ The key architectural result is that the CUF core remains independent of the par
 
 # Reproducing Tables 9 and 10
 
-## 10. YAML data structure
+##  YAML data structure
 
 The validation input is deliberately split into three levels:
 
@@ -42,7 +42,7 @@ Carrera post-processing
 
 Each level has one responsibility.
 
-### 10.1 CSF model YAML: geometry and material
+### CSF model YAML: geometry and material
 
 The model file contains the physical cross-section description. A double-T model is built from named polygonal domains such as `top_flange`, `web`, and `bottom_flange`.
 
@@ -81,7 +81,7 @@ The model YAML therefore answers the question:
 
 **What physical section and material exist at a given longitudinal position?**
 
-### 10.2 Problem YAML: physical benchmark
+### Problem YAML: physical benchmark
 
 The problem file connects a CSF model to a physical loading definition.
 
@@ -113,7 +113,7 @@ The problem YAML therefore answers:
 
 **Which physical test is applied to the CSF member?**
 
-### 10.3 Case YAML: CUF and numerical settings
+### Case YAML: CUF and numerical settings
 
 The case file references the problem and selects the numerical approximation. A current Maclaurin Table 9 case has the following structure:
 
@@ -168,7 +168,7 @@ The case YAML therefore answers:
 
 **How is this physical problem approximated and solved?**
 
-### 10.4 Separation of responsibilities
+### Separation of responsibilities
 
 The three YAML levels should not be merged conceptually:
 
