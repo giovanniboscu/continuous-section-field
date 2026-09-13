@@ -1376,26 +1376,26 @@ The figures below show the longitudinal evolution of the three displacement comp
 #### Longitudinal displacement \(u_x\)
 
 <p align="center">
-  <img width="90%" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_ux_along_beam.png" />
+  <img width="90%" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N21/displacement_ux_along_beam.png" />
 </p>
 
-The longitudinal displacement \(u_x\) shows very close agreement between the CUF \(N=8\) solution and the FEM3D reference at all four monitored points. The overall shape, sign changes, and locations of the extrema are reproduced consistently. Small differences are visible mainly close to the larger extrema of the `minus` and `bottom_mid` responses, but they remain small compared with the total displacement range shown in the plots.
+The longitudinal displacement \(u_x\) shows excellent agreement between the CUF \(N=21\) solution with equilibration \(=1\) and the FEM3D reference at all four monitored points. The overall response, sign changes, locations of the extrema, and their amplitudes are reproduced very closely. The two solutions are nearly indistinguishable over most of the beam length. Only small local differences are visible near the larger extrema, particularly for the minus and bottom_mid responses, while the center and plus curves show an almost complete overlap.
 
 #### Transverse displacement \(u_y\)
 
 <p align="center">
-  <img width="90%" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_uy_along_beam.png" />
+  <img width="90%" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N21/displacement_uy_along_beam.png" />
 </p>
 
-The \(u_y\) component is much smaller than the principal bending displacement. At `center` and `bottom_mid` it remains essentially zero, while the `plus` and `minus` points show small non-zero transverse responses of the order of \(10^{-2}\,\mathrm{mm}\). CUF reproduces the overall FEM3D trend and the sign changes along the beam, although the relative differences are more visible here because the absolute displacement itself is very small.
+The transverse displacement \(u_y\) shows very good agreement between the CUF \(N=21\) solution with equilibration \(=1\) and the FEM3D reference at all four monitored points. The longitudinal evolution of the displacement, including the sign changes and the positions of the extrema, is reproduced consistently. The CUF and FEM3D curves remain closely aligned over most of the beam length, with only small local deviations around the displacement extrema. Overall, the \(N=21\) expansion captures the FEM3D \(u_y\) response with high accuracy.
 
 #### Transverse displacement \(u_z\)
 
 <p align="center">
-  <img width="90%" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N08/displacement_uz_along_beam.png" />
+  <img width="90%" src="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/fem3d/plots_halfwave/bending_halfwave_legendre_N21/displacement_uz_along_beam.png" />
 </p>
 
-The \(u_z\) component contains the dominant bending response. The CUF \(N=8\) curves closely follow the FEM3D solution over the full beam length and at all monitored points. Both models predict the same smooth displacement profile, zero displacement at the clamped ends, and a maximum downward displacement close to the central region. The remaining difference is small relative to the approximately \(2.5\text{--}2.6\,\mathrm{mm}\) peak response.
+The transverse displacement \(u_z\) shows very close agreement between the CUF \(N=21\) solution with equilibration \(=1\) and the FEM3D reference at all four monitored points. The overall longitudinal evolution and the location of the maximum downward displacement are reproduced consistently. Small differences are mainly concentrated around the minimum region and during the recovery toward the right end, where the CUF response is slightly less negative than the FEM3D one. Despite these local deviations, the two solutions remain closely aligned over the entire beam length.
 
 ---
 
