@@ -1,3 +1,6 @@
+<img width="717" height="614" alt="immagine" src="https://github.com/user-attachments/assets/eecdab76-3a3b-48c2-a213-bacd8c07a1d8" />
+
+
 ## Building the T-section example step by step
 
 This tutorial shows how a complete CUF beam analysis is assembled from a small set of YAML files.
