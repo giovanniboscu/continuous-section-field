@@ -2,39 +2,26 @@
 
 This tutorial introduces the CSF-CUF framework through a complete structural example: a **non-prismatic T-section beam with variable material properties**.
 
-The beam extends from the initial section `S0` to the final section `S1`. Along this direction, both the geometry and the material distribution may change continuously.
-
-In the example considered here:
-
-* the upper flange and the web progressively become smaller;
-* the material assigned to the web varies along the beam;
-* the material of the upper flange remains unchanged.
-
-The example therefore combines two features that the framework is specifically designed to handle:
-
-* **geometry varying along the beam**;
-* **material properties varying along the beam**.
+From the initial section `S0` to the final section `S1`, both the geometry and the material distribution may change continuously. In this example, the upper flange and web become smaller, while the material assigned to the web also varies along the beam.
 
 No previous knowledge of CSF or CUF is required.
 
-The central idea of the framework is simple:
+The central idea is:
 
-**CSF describes the physical member, while CUF describes how its structural response is approximated.**
+**CSF describes the physical member; CUF describes how its structural response is approximated.**
 
-## CSF: the physical model
+## CSF and CUF
 
-**CSF (Continuous Section Field)** provides the physical description of the beam.
+**CSF (Continuous Section Field)** defines the physical beam:
 
-For the present T-section, it defines:
+* cross-section geometry;
+* its variation along the beam;
+* material distribution;
+* variation of material properties.
 
-* the geometry of the upper flange and web;
-* how their dimensions change from `S0` to `S1`;
-* the material associated with each part of the section;
-* how those material properties vary along the member.
+At any longitudinal position, CSF provides the actual section and material existing there.
 
-At any position along the beam, CSF can therefore provide the actual cross-section and material properties existing at that location.
-
-In this tutorial, the physical member is defined in
+In this tutorial, the beam is defined in
 
 `models/t_noprismatic_csf.yaml`
 
@@ -43,88 +30,52 @@ and contains two physical polygons:
 * `top_flange`;
 * `web`.
 
-The geometry and material are defined once in CSF and are then reused throughout the structural analysis.
+**CUF (Carrera Unified Formulation)** uses this physical description to construct the structural approximation and solve for the displacement field.
 
-## CUF: the structural approximation
-
-**CUF (Carrera Unified Formulation)** uses the physical information supplied by CSF to construct and solve the structural model.
-
-CUF does not redefine the beam geometry.
-
-Instead, during the analysis it obtains the current geometry and material directly from the CSF model and uses them to evaluate the structural equations.
-
-Its role is to define how the displacement field is represented:
+CUF does not redefine the geometry. It queries CSF during the analysis and approximates displacement:
 
 * over the cross-section;
 * along the beam axis.
 
-The overall logic is therefore
+The basic logic is therefore:
 
 **CSF physical model → CUF approximation → structural solution**
 
-or, more directly:
+## Main ingredients of the analysis
 
-* **CSF answers: what beam exists here?**
-* **CUF answers: how do we approximate its displacement field?**
+A complete CSF-CUF analysis combines four elements.
 
-## The structural problem
+### 1. Physical model
 
-Geometry and material alone do not define an analysis.
+The CSF model defines geometry and material once and makes them available to all structural analyses.
 
-The beam must also be given:
+### 2. Structural problem
 
-* boundary conditions;
-* applied loads;
-* the physical regions on which those loads act;
-* the longitudinal variation of the loads.
+The structural problem defines:
 
-These ingredients form the **structural problem**.
+* loads;
+* where they act;
+* their variation along the beam;
+* boundary conditions.
 
-This tutorial considers two problems:
+This tutorial considers **bending** and **torsion**.
 
-* **bending**;
-* **torsion**.
-
-For bending, a surface traction acts on a physical surface associated with the `web` polygon.
+For bending, a surface traction acts on a physical surface associated with the `web`.
 
 For torsion, opposite loads act along trajectories obtained from the changing CSF geometry.
 
-Both problems operate on the same CSF beam.
+The framework already provides predefined adapters for half-wave and uniform surface and torsional loading, as well as the original bending/torsion validation problem. Additional problems can be introduced through the same adapter architecture.
 
-Only the structural loading conditions change.
+### 3. CUF transverse expansion
 
-The current framework already provides predefined problem adapters for several static loading cases, including:
+The displacement field over the cross-section is represented through a **transverse expansion**.
 
-* surface half-wave loading;
-* uniform surface loading;
-* torsional half-wave loading;
-* uniform torsional loading;
-* the predefined bending/torsion half-wave problem used for the original CUF validation cases.
+The distinction is important:
 
-The examples in this tutorial use the half-wave surface-loading problem for bending and the half-wave torsional problem for torsion.
+* **CSF defines the physical shape;**
+* **CUF defines the displacement approximation over that shape.**
 
-These predefined problems are provided for convenience. Additional loads, boundary conditions, and complete structural problems can be introduced through the same adapter architecture.
-
-## The CUF transverse expansion
-
-A beam model must represent displacement not only along the beam axis, but also over the cross-section.
-
-CUF represents this transverse variation through a **transverse expansion**.
-
-The expansion is a set of mathematical functions used to approximate the displacement field over the physical cross-section supplied by CSF.
-
-This distinction is fundamental:
-
-* **CSF defines the physical shape of the T-section;**
-* **the CUF expansion defines the mathematical approximation over that shape.**
-
-Changing the CUF expansion therefore does not change the geometry of the beam.
-
-It changes only the way the displacement field is represented.
-
-The order of the expansion controls the richness of this transverse approximation.
-
-The package currently provides several expansion families:
+The package currently provides:
 
 * `scaled_lagrange`
 * `scaled_lagrange_q1`
@@ -132,56 +83,33 @@ The package currently provides several expansion families:
 * `scaled_maclaurin`
 * `scaled_maclaurin_tensor`
 
-The examples in this tutorial use existing expansions, in particular `scaled_legendre`.
+The examples in this tutorial use existing expansions, so no new CUF expansion needs to be programmed.
 
-No new transverse expansion needs to be programmed in order to follow the tutorial.
+### 4. Longitudinal discretization
 
-Additional expansion laws can nevertheless be implemented and added without modifying the CUF core.
+Variation along the beam is represented separately using finite elements.
 
-## The longitudinal approximation
+The longitudinal discretization defines:
 
-The displacement field also varies from `S0` to `S1`.
+* the number of elements;
+* the polynomial order inside them.
 
-This variation is represented independently using a longitudinal finite-element discretization.
+The complete approximation therefore combines:
 
-The longitudinal approximation specifies:
+* a **transverse CUF expansion** over the section;
+* a **longitudinal finite-element approximation** along the beam.
 
-* the number of elements along the beam;
-* the polynomial order used inside those elements.
+These two choices are independent.
 
-The complete CUF approximation therefore contains two separate directions:
+In summary, the analysis is built as
 
-* a **transverse expansion**, describing variation over the cross-section;
-* a **longitudinal finite-element approximation**, describing variation along the beam.
+**CSF physical model
 
-These two approximations are independent and can be selected separately.
-
-## The four ingredients of a CSF-CUF analysis
-
-A complete analysis can therefore be viewed as the combination of four building blocks:
-
-1. **CSF physical model**
-   geometry and material of the beam;
-
-2. **structural problem**
-   loads and boundary conditions;
-
-3. **CUF transverse expansion**
-   approximation of the displacement field over the cross-section;
-
-4. **longitudinal discretization**
-   approximation of the displacement field along the beam.
-
-For the example developed in this tutorial, these ingredients combine as
-
-**non-prismatic variable-material T-section
-
-* bending or torsion problem
-* CUF transverse expansion
-* longitudinal finite elements
+* structural problem
+* transverse expansion
+* longitudinal discretization
   → displacement solution**
 
-The following sections show how these building blocks are organized in practice.
 
 
 
