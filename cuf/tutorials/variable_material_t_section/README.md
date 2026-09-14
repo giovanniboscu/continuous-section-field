@@ -1,3 +1,6 @@
+
+<img width="40%" alt="immagine" src="https://github.com/user-attachments/assets/1a1d297d-6d68-45ae-b538-7906a8b833f4" />
+
 # Introduction
 
 This tutorial introduces the CSF-CUF framework through a complete structural example: a **non-prismatic T-section beam with variable material properties**.
