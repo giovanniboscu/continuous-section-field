@@ -1,4 +1,4 @@
-# Carrera & Giunta Tables 9–10 - Reproducibility
+# Carrera & Giunta Tables 9-10 - Reproducibility
 
 This directory contains the files required to reproduce the CSF-CUF numerical validation against the prismatic I-shaped beam results reported by Carrera and Giunta (2010), Tables 9 and 10.
 
@@ -7,7 +7,7 @@ The validation covers:
 * **Table 9** - bending;
 * **Table 10** - torsion;
 * increasing CUF transverse expansion orders;
-* comparison with the published Carrera–Giunta CUF results.
+* comparison with the published Carrera-Giunta CUF results.
 
 The complete description of the benchmark, formulation, numerical model and validation results is provided in:
 
@@ -61,7 +61,7 @@ Changing the CUF order therefore does not require rebuilding the physical benchm
 
 # Reproducibility
 
-The following procedure starts from a clean clone of the public repository and reproduces either a single Carrera–Giunta result or the complete available Table 9 and Table 10 series.
+The following procedure starts from a clean clone of the public repository and reproduces either a single Carrera-Giunta result or the complete available Table 9 and Table 10 series.
 
 ## 1. Clone the repository
 
@@ -99,7 +99,7 @@ This installs the project dependencies and makes the `csf-cuf` command available
 
 ---
 
-## 3. Enter the Carrera–Giunta validation directory
+## 3. Enter the Carrera-Giunta validation directory
 
 ```bash
 cd cuf/refined_beam_theories_tables_9_10
@@ -255,7 +255,7 @@ cuf:
   order: 10
 ```
 
-Consequently, an individual point of the Carrera–Giunta convergence sequence can be reproduced simply by executing the corresponding case YAML.
+Consequently, an individual point of the Carrera-Giunta convergence sequence can be reproduced simply by executing the corresponding case YAML.
 
 ---
 
@@ -395,7 +395,7 @@ carrera_giunta_tables_9_10.txt
 
 ## Reproducibility principle
 
-The important point of this validation structure is that the Carrera–Giunta benchmark is not rebuilt for every CUF order.
+The important point of this validation structure is that the Carrera-Giunta benchmark is not rebuilt for every CUF order.
 
 The physical information remains separated from the numerical approximation:
 
@@ -431,5 +431,5 @@ This separation makes each result directly traceable to a specific case YAML and
 
 E. Carrera and G. Giunta,
 “Refined Beam Theories Based on a Unified Formulation”,
-*International Journal of Applied Mechanics*, 2(1), 117–143, 2010.
+*International Journal of Applied Mechanics*, 2(1), 117-143, 2010.
 DOI: 10.1142/S1758825110000500
