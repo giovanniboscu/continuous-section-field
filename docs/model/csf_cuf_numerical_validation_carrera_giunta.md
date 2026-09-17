@@ -355,21 +355,92 @@ Changing the CUF order therefore requires changing only the case YAML; the physi
 
 ### Run a single case
 
-A single validation case can be launched with:
+All commands in this section are executed from:
 
-```bash
-csf-cuf path/to/case.yaml
+```text
+continuous-section-field/cuf/refined_beam_theories_tables_9_10/
 ```
 
-For example, a Table 9 or Table 10 case is selected directly by its case YAML.
+A validation case is launched by passing its case YAML directly to `csf-cuf`.
 
-The solver reads:
+For example, the first Maclaurin case of **Table 9 — bending** is:
 
-1. the case YAML;
-2. the referenced problem YAML;
-3. the referenced CSF model YAML.
+```bash
+csf-cuf cases/table9/maclaurin_table9_N01.yaml
+```
 
-After the solution is obtained, the Carrera post-processing adapter generates the normalized displacement report for the corresponding reference table.
+The corresponding **Table 10 — torsion** case is:
+
+```bash
+csf-cuf cases/table10/maclaurin_table10_N01.yaml
+```
+
+These are complete executable cases contained in the repository; no additional command-line parameters are required.
+
+For the Table 9 example, the input chain is:
+
+```text
+cases/table9/maclaurin_table9_N01.yaml
+        |
+        v
+problem/taper00_table9.yaml
+        |
+        v
+models/carrera_double_t_prismatic_csf.yaml
+```
+
+The case YAML also selects the Carrera problem and post-processing adapters:
+
+```text
+validation/carrera_problem.py
+validation/carrera_post.py
+```
+
+Therefore, executing
+
+```bash
+csf-cuf cases/table9/maclaurin_table9_N01.yaml
+```
+
+causes the solver to:
+
+1. read the CUF numerical settings from `cases/table9/maclaurin_table9_N01.yaml`;
+2. load the bending benchmark definition from `problem/taper00_table9.yaml`;
+3. load the prismatic double-T CSF geometry and material model referenced by the problem;
+4. assemble and solve the CUF system;
+5. run the Carrera post-processing adapter;
+6. write the results to:
+
+```text
+output/taper00_prismatic/table9_N1/
+```
+
+The normalized Table 9 displacement report is written as:
+
+```text
+output/taper00_prismatic/table9_N1/table9_style.txt
+```
+
+Similarly,
+
+```bash
+csf-cuf cases/table10/maclaurin_table10_N01.yaml
+```
+
+executes the Table 10 torsion benchmark and writes its normalized report to:
+
+```text
+output/taper00_prismatic/table10_N1/table10_style.txt
+```
+
+Higher-order cases are run in exactly the same way by selecting another available case YAML, for example:
+
+```bash
+csf-cuf cases/table9/maclaurin_table9_N10.yaml
+csf-cuf cases/table10/maclaurin_table10_N10.yaml
+```
+
+Thus, reproducing an individual point of Tables 9 or 10 requires only the selection of the corresponding case YAML; the referenced physical problem, CSF model, solver settings, and post-processing chain are resolved automatically from that file.
 
 ### Run the Table 9 and Table 10 batch
 
