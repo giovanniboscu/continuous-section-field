@@ -43,9 +43,9 @@ The sequence is
 
 $$ { \mathcal{S}(x) \longrightarrow \{ \Omega^k(x),\, \mathbf{C}^k(x,y,z) \} \longrightarrow J_\bullet^k(x) \longrightarrow \delta L_i \longrightarrow \delta L_{\mathrm{ext}} \longrightarrow \mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x]. } $$
 
-### 1.1 Correspondence with the reference formulation
+### 1.1 Correspondence with the constant-section CUF formulation
 
-| Reference paper | Present formulation | Treatment |
+| Constant-section CUF formulation | Present formulation | Treatment |
 |---|---|---|
 | Refined Beam Theories | CUF approximation functions | Retained in generic form; no specific approximation family or order is imposed |
 | Governing Differential Equations | Governing equations | Retained and generalized to longitudinally varying sectional coefficients |
@@ -86,9 +86,9 @@ The dependence on y and $z$ is retained in the general notation. A constitutive 
 
 ---
 
-## 3. Difference from the reference paper
+## 3. Generalization to longitudinally varying sections
 
-In the reference formulation, the beam cross-section is constant along x and the material gradation is prescribed analytically over the transverse coordinates.
+In the constant-section formulation, the beam cross-section does not vary along \(x\), while the sectional geometry and constitutive properties are defined over the transverse coordinates.
 
 For the FGM case considered in the paper, Young's modulus is written as an analytical function of y and $z$.
 
@@ -155,7 +155,7 @@ Therefore the CUF kinematic approximation is retained, while the sectional integ
 ## 5. Sectional coefficients as functions of $\mathcal{S}(x)$
 
 
-The four families of sectional coefficients introduced in Eq. (24) of the reference paper are retained, but their integration domains and constitutive coefficients are evaluated at the current longitudinal coordinate.
+The four families of sectional coefficients introduced in Eq. (24) of Carrera and Giunta (2010) are retained, but their integration domains and constitutive coefficients are evaluated at the current longitudinal coordinate
 
 For sub-domain k:
 
@@ -606,7 +606,7 @@ $$ J_{2,y\,2,y}^{66,1}(10)=93600000\ \mathrm{N}. $$
 
 ## 6. Global sectional coefficients
 
-The reference paper subsequently uses coefficients summed over the transverse sub-domains.
+The CUF formulation subsequently uses coefficients summed over the transverse sub-domains.
 
 The same operation is retained.
 
@@ -805,7 +805,7 @@ The internal virtual work can be written formally as
 
 $$ { \delta L_i = \int_0^l \sum_{k=1}^{N_\Omega} \int_{\Omega^k(x)} \delta\boldsymbol{\varepsilon}^{T} \mathbf{C}^k(x,y,z) \boldsymbol{\varepsilon} \,d\Omega\,dx. } $$
 
-This is the direct counterpart of the strain-energy variation used in the reference formulation, with the fixed sub-domain replaced by $\Omega^k(x)$.
+This is the direct counterpart of the strain-energy variation used in the constant-section CUF formulation, with the fixed sub-domain replaced by $\Omega^k(x)$.
 
 After introducing the CUF displacement expansion and the corresponding strain-displacement operators, the transverse integrations are identified with the previously defined coefficients
 
