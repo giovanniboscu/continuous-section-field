@@ -112,6 +112,8 @@ The resulting displacement approximation combines two distinct ingredients:
 
 These two approximations are independent. The transverse CUF expansion determines how the displacement field is represented over the section, while the longitudinal discretization determines how its variation along the beam is approximated.
 
+### 5. CSF-CUF is implemented in Python. 
+
 The complete analysis can therefore be viewed as the combination of four distinct components:
 
 **CSF physical model
@@ -146,13 +148,8 @@ The user therefore defines the physical model and selects and combines the requi
 
 Python programming is only required when introducing a capability that is not already available in the framework, such as a new structural problem, loading scheme, boundary condition, transverse expansion law, or a new type of physical-model description.
 
-### 5. CSF-CUF is implemented in Python. 
 
-However, using the framework does not normally require writing Python code.
 
-When the predefined building blocks already provided by the package are sufficient - including physical models, structural problems, boundary conditions, loads, and CUF expansion laws - an analysis can be assembled through the configuration files alone. In this case, the user selects and combines the required components without developing new numerical code.
-
-Python programming is only needed when introducing a new capability that is not already available, such as a new structural problem, loading scheme, boundary condition, or transverse expansion law.
 
 
 ### 6. How the tutorial is organized
