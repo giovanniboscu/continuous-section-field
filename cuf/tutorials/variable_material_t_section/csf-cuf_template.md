@@ -575,6 +575,35 @@ Keeping the output procedure in a separate adapter also preserves the modular st
 
 
 
+> **Extending loads and boundary conditions**
+>
+> In CSF-CUF, the applied loads and the associated boundary conditions are
+> implemented together through a **problem adapter**. A problem adapter therefore
+> represents a complete structural scheme: it defines the physical loading,
+> projects it onto the active CUF expansion, and defines the constraints required
+> by that problem.
+>
+> Problem adapters are independent of the CUF solver core and can be extended or
+> replaced without modifying the formulation or the assembly procedure. The
+> currently implemented adapters are available in
+> [`src/csf/cuf/adapters/problem`](https://github.com/giovanniboscu/continuous-section-field/tree/main/src/csf/cuf/adapters/problem).
+>
+> | `problem.type` | Load | Boundary conditions |
+> |---|---|---|
+> | `surface_halfwave` | Sinusoidal single-half-wave traction in global `z` acting on a selected physical CSF surface. The loaded surface follows the changing CSF geometry. | Both end cross-sections fully clamped: \(u_x=u_y=u_z=0\). |
+> | `torsion_halfwave` | Two opposite global-`z` line loads following physical CSF vertices, with sinusoidal single-half-wave intensity along the beam. | Both end cross-sections fully clamped: \(u_x=u_y=u_z=0\). |
+> | `double_clamped_point_load` | Concentrated physical point force applied at a prescribed longitudinal position and physical section point. Any combination of global `x`, `y`, and `z` force components can be specified. | Both end cross-sections fully clamped: \(u_x=u_y=u_z=0\). |
+> | `uniform_surface` | Uniform global-`z` traction acting on a selected physical CSF surface and evaluated using its physical surface measure. | Global `y` and `z` displacement amplitudes constrained at both ends; the remaining rigid global-`x` translation is removed by a physical axial anchor. |
+> | `carrera_torsion_uniform` | Uniform pair of opposite global-`z` line loads following the current CSF section geometry. | Global `y` and `z` displacement amplitudes constrained at both ends; a mean global-`x` displacement constraint removes rigid axial translation. |
+> | `carrera_torsion_halfwave` | Opposite moving global-`z` line-load pair with a single longitudinal half-wave, used for the Carrera torsion benchmark. | Global `y` and `z` displacement amplitudes constrained at both ends; a mean global-`x` displacement constraint removes rigid axial translation. |
+> | `carrera_bending_bottom_surface_halfwave` | Distributed global-`z` load on the physical minimum-`z` boundary, varying as a single longitudinal half-wave. | Global `y` and `z` displacement amplitudes constrained at both ends; a mean global-`x` displacement constraint removes rigid axial translation. |
+>
+> These adapters are examples of structural problems already implemented in the
+> framework rather than a closed set of admissible loads or support conditions.
+> New load-and-constraint combinations can be introduced through additional
+> problem adapters while leaving the CSF description, the transverse expansion,
+> and the CUF solver core unchanged.
+
 
 ---
 
