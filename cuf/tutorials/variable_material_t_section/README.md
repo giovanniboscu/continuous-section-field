@@ -112,42 +112,40 @@ The resulting displacement approximation combines two distinct ingredients:
 
 These two approximations are independent. The transverse CUF expansion determines how the displacement field is represented over the section, while the longitudinal discretization determines how its variation along the beam is approximated.
 
-### 5. CSF-CUF is implemented in Python. 
+### 5. Python implementation and configuration-driven use
 
-The complete analysis can therefore be viewed as the combination of four distinct components:
+CSF-CUF is implemented in Python, but using the framework does not normally require writing Python code.
 
-* CSF physical model
-* structural problem
-* transverse CUF expansion
-* longitudinal finite-element discretization
-  → displacement solution**
+The physical model, structural problem, transverse expansion, longitudinal discretization, and numerical parameters are assembled through YAML configuration files.
 
-The **CSF physical model** provides the geometrical and material description of the beam. It is defined through a YAML configuration file containing, among other information, the coordinates of the polygons describing the cross-section and the corresponding material definitions, including their possible variation along the beam.
-
-For example, the non-prismatic T-section used in this tutorial is defined by:
+For example, the geometrical and material model of the non-prismatic T-section used in this tutorial is defined in:
 
 [`t_noprismatic_csf.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/models/t_noprismatic_csf.yaml)
 
-This CSF model is supplied to the CUF solver, which queries the geometrical and material state required during the analysis.
+This YAML file provides the CSF description of the physical member, including the cross-section polygons and their associated material definitions.
 
-### Python implementation and ready-made building blocks
+When the predefined building blocks already provided by the package are sufficient, a complete analysis can therefore be configured and run without developing new numerical code.
 
-Using the framework does not normally require writing Python code.
-
-When the predefined building blocks already provided by the package are sufficient, an analysis can be assembled through YAML configuration files alone. These building blocks include:
+These predefined building blocks include:
 
 * CSF geometrical and material models;
 * structural problems;
 * boundary conditions;
 * loading schemes;
 * transverse CUF expansion laws;
-* longitudinal finite-element discretizations.
+* longitudinal finite-element discretization.
 
-The user therefore defines the physical model and selects and combines the required structural and numerical components without having to implement the underlying formulation.
+The user therefore defines the physical member and selects and combines the required structural and numerical components through configuration files.
 
-Python programming is only required when introducing a capability that is not already available in the framework, such as a new structural problem, loading scheme, boundary condition, transverse expansion law, or a new type of physical-model description.
+Python programming is only required when introducing a capability that is not already available in the framework, such as:
 
+* a new structural problem;
+* a new loading scheme;
+* a new boundary condition;
+* a new transverse expansion law;
+* a new type of CSF physical-model description.
 
+This separation is intentional: the YAML files describe and assemble an analysis, while the Python implementation provides the reusable numerical and physical building blocks behind it.
 
 
 
