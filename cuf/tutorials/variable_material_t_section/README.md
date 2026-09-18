@@ -94,26 +94,23 @@ The package currently provides:
 
 The examples in this tutorial use existing expansions, so no new CUF expansion needs to be programmed.
 
-
 ### 4. Longitudinal discretization
 
 Variation along the beam is represented separately using finite elements.
 
-The longitudinal discretization defines:
+The longitudinal discretization is defined in the YAML input and specifies:
 
 * the number of elements;
-* the polynomial order inside them.
+* the polynomial order inside each element.
 
-In the current implementation, each longitudinal element uses **one-dimensional Lagrange shape functions** on equally spaced reference nodes. An element of polynomial order \(r\) therefore contains \(r+1\) longitudinal shape functions.
-
-The Lagrange interpolation family is currently fixed by the solver; the number of elements and the polynomial order are configurable.
+The current implementation uses **one-dimensional Lagrange shape functions** for the longitudinal finite-element approximation. The interpolation family is therefore fixed by the solver, while the number of elements and the polynomial order are configurable from YAML.
 
 The complete approximation therefore combines:
 
 * a **transverse CUF expansion** over the section;
 * a **longitudinal finite-element approximation** along the beam.
 
-The transverse expansion family is selected independently of the longitudinal finite-element mesh and polynomial order.
+These two approximations are independent: the transverse CUF expansion is selected separately from the longitudinal finite-element discretization.
 
 In summary, the analysis is built as
 
@@ -121,9 +118,8 @@ In summary, the analysis is built as
 
 * structural problem
 * transverse expansion
-* longitudinal finite-element discretization
+* longitudinal discretization
   → displacement solution**
-
 
 
 ## How the tutorial is organized
