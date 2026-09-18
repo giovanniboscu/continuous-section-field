@@ -1,58 +1,61 @@
-
 # Introduction
 
 <p align="center">
 <img width="40%" alt="immagine" src="https://github.com/user-attachments/assets/1a1d297d-6d68-45ae-b538-7906a8b833f4" />
 </p>
 <p align="center">
-<img  width="40%"  alt="immagine" src="https://github.com/user-attachments/assets/eecdab76-3a3b-48c2-a213-bacd8c07a1d8" />
+<img width="40%" alt="immagine" src="https://github.com/user-attachments/assets/eecdab76-3a3b-48c2-a213-bacd8c07a1d8" />
 </p>
-
 
 This tutorial introduces the CSF-CUF framework through a complete structural example: a **non-prismatic T-section beam with variable material properties**.
 
-From the initial section `S0` to the final section `S1`, both the geometry and the material distribution may change continuously. In this example, the upper flange and web become smaller, while the material assigned to the web also varies along the beam.
+From the initial section `S0` to the final section `S1`, the geometry and the material distribution can vary continuously along the beam. In the example considered here, the upper flange and the web become smaller, while the material associated with the web also changes along the longitudinal direction.
 
 No previous knowledge of CSF or CUF is required.
 
-The central idea is:
+The framework is built around a simple separation of roles:
 
-**CSF describes the physical member; CUF describes how its structural response is approximated.**
+**CSF provides the physical description of the member; CUF provides the structural approximation built on that description.**
 
 ## CSF and CUF
 
-**CSF (Continuous Section Field)** defines the physical beam:
+**CSF (Continuous Section Field)** describes the physical member as a continuous geometrical and material field along the beam.
+
+Its role is to provide, at any longitudinal position, the corresponding physical section, including:
 
 * cross-section geometry;
-* its variation along the beam;
-* material distribution;
-* variation of material properties.
+* variation of that geometry along the beam;
+* material distribution over the section;
+* variation of material properties along the beam.
 
-At any longitudinal position, CSF provides the actual section and material existing there.
-
-In this tutorial, the beam is defined in
+In this tutorial, the physical member is defined in
 
 `models/t_noprismatic_csf.yaml`
 
-and contains two physical polygons:
+through two physical polygons:
 
 * `top_flange`;
 * `web`.
 
-**CUF (Carrera Unified Formulation)** uses this physical description to construct the structural approximation and solve for the displacement field.
+The CSF model is independent of the particular structural approximation subsequently used to analyse it.
 
-CUF does not redefine the geometry. It queries CSF during the analysis and approximates displacement:
+**CUF (Carrera Unified Formulation)** operates on this physical description.
 
-* over the cross-section;
-* along the beam axis.
+It does not introduce a separate geometrical or material model. Instead, during the analysis, the CUF solver queries CSF for the physical section and material state required at each longitudinal position and constructs the displacement approximation over that physical member.
 
-The basic logic is therefore:
+The displacement field is approximated in two distinct directions:
 
-**CSF physical model → CUF approximation → structural solution**
+* over the cross-section, through a **transverse CUF expansion**;
+* along the beam axis, through a **longitudinal finite-element approximation**.
+
+The fundamental relationship between the two frameworks is therefore:
+
+**CSF physical model → CUF structural approximation → displacement solution**
 
 ## Main ingredients of the analysis
 
-A complete CSF-CUF analysis combines four elements.
+Starting from this separation of roles, a complete CSF-CUF analysis combines four elements:
+
 
 ### 1. Physical model
 
