@@ -116,8 +116,7 @@ These two approximations are independent. The transverse CUF expansion determine
 
 The complete analysis can therefore be viewed as the combination of four distinct components:
 
-**CSF physical model
-
+* CSF physical model
 * structural problem
 * transverse CUF expansion
 * longitudinal finite-element discretization
