@@ -21,6 +21,37 @@ This separation is the main architectural principle behind the implementation:
 
 The objective is to preserve the CUF formulation while changing the way the physical problem is made available to it.
 
+This separation is the main architectural principle behind the implementation:
+
+```mermaid
+flowchart LR
+    CUF["CUF core"]
+
+    CSF["Continuous Section Field<br/>physical sectional state S(x)"]
+    EXP["Transverse expansion<br/>F_tau(y,z)"]
+    FE["Longitudinal FE<br/>N_i(x)"]
+
+    CUF -->|"query at x"| CSF
+    CSF -->|"geometry, domains, materials"| CUF
+
+    CUF -->|"query at y,z"| EXP
+    EXP -->|"F_tau and derivatives"| CUF
+
+    CUF -->|"query at x"| FE
+    FE -->|"N_i and derivatives"| CUF
+
+    CUF --> ASM["Integration and assembly"]
+```
+
+The architecture is therefore not a sequential transformation from geometry to a CUF model.  
+The CUF core queries three independent descriptions when the corresponding information is required:
+
+* the **Continuous Section Field** describes the physical member;
+* the **transverse expansion** describes the admissible cross-sectional kinematics;
+* the **longitudinal finite-element interpolation** describes the numerical approximation along the beam axis.
+
+The core combines these quantities according to the CUF formulation without containing the definition of any of them.
+
 ## Why use CUF?
 
 For many structural problems, a three-dimensional finite element model is the most immediate and established choice.
