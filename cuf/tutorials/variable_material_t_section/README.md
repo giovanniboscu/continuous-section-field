@@ -100,29 +100,51 @@ Variation along the beam is represented separately using finite elements.
 
 The longitudinal discretization is defined in the YAML input and specifies:
 
-* the number of elements;
+* the number of finite elements along the beam;
 * the polynomial order inside each element.
 
 The current implementation uses **one-dimensional Lagrange shape functions** for the longitudinal finite-element approximation. The interpolation family is therefore fixed by the solver, while the number of elements and the polynomial order are configurable from YAML.
 
-The complete approximation therefore combines:
+The resulting displacement approximation combines two distinct ingredients:
 
-* a **transverse CUF expansion** over the section;
-* a **longitudinal finite-element approximation** along the beam.
+* a **transverse CUF expansion** over the cross-section;
+* a **longitudinal finite-element approximation** along the beam axis.
 
-These two approximations are independent: the transverse CUF expansion is selected separately from the longitudinal finite-element discretization.
+These two approximations are independent. The transverse CUF expansion determines how the displacement field is represented over the section, while the longitudinal discretization determines how its variation along the beam is approximated.
 
-In summary, the analysis is built as
+The complete analysis can therefore be viewed as the combination of four distinct components:
 
 **CSF physical model
 
 * structural problem
-* transverse expansion
-* longitudinal discretization
+* transverse CUF expansion
+* longitudinal finite-element discretization
   → displacement solution**
 
+The **CSF physical model** provides the geometrical and material description of the beam. It is defined through a YAML configuration file containing, among other information, the coordinates of the polygons describing the cross-section and the corresponding material definitions, including their possible variation along the beam.
 
-Python implementation and ready-made building blocks
+For example, the non-prismatic T-section used in this tutorial is defined by:
+
+[`t_noprismatic_csf.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/t_section/models/t_noprismatic_csf.yaml)
+
+This CSF model is supplied to the CUF solver, which queries the geometrical and material state required during the analysis.
+
+### Python implementation and ready-made building blocks
+
+Using the framework does not normally require writing Python code.
+
+When the predefined building blocks already provided by the package are sufficient, an analysis can be assembled through YAML configuration files alone. These building blocks include:
+
+* CSF geometrical and material models;
+* structural problems;
+* boundary conditions;
+* loading schemes;
+* transverse CUF expansion laws;
+* longitudinal finite-element discretizations.
+
+The user therefore defines the physical model and selects and combines the required structural and numerical components without having to implement the underlying formulation.
+
+Python programming is only required when introducing a capability that is not already available in the framework, such as a new structural problem, loading scheme, boundary condition, transverse expansion law, or a new type of physical-model description.
 
 ### 5. CSF-CUF is implemented in Python. 
 
