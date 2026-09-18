@@ -124,7 +124,7 @@ In summary, the analysis is built as
 
 Python implementation and ready-made building blocks
 
-## CSF-CUF is implemented in Python. 
+### 5. CSF-CUF is implemented in Python. 
 
 However, using the framework does not normally require writing Python code.
 
@@ -133,7 +133,7 @@ When the predefined building blocks already provided by the package are sufficie
 Python programming is only needed when introducing a new capability that is not already available, such as a new structural problem, loading scheme, boundary condition, or transverse expansion law.
 
 
-## How the tutorial is organized
+### 6. How the tutorial is organized
 
 The analysis is built progressively.
 
