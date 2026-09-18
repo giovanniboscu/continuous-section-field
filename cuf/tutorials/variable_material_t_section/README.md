@@ -128,7 +128,7 @@ Python implementation and ready-made building blocks
 
 However, using the framework does not normally require writing Python code.
 
-When the predefined building blocks already provided by the package are sufficient — including physical models, structural problems, boundary conditions, loads, and CUF expansion laws — an analysis can be assembled through the configuration files alone. In this case, the user selects and combines the required components without developing new numerical code.
+When the predefined building blocks already provided by the package are sufficient - including physical models, structural problems, boundary conditions, loads, and CUF expansion laws - an analysis can be assembled through the configuration files alone. In this case, the user selects and combines the required components without developing new numerical code.
 
 Python programming is only needed when introducing a new capability that is not already available, such as a new structural problem, loading scheme, boundary condition, or transverse expansion law.
 
