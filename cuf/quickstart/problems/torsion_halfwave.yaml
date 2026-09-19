@@ -1,0 +1,6 @@
+model:
+  csf_yaml: ../models/rectangular_prismatic_csf.yaml
+
+problem:
+  type: torsion_halfwave
+  amplitude: 10.0
