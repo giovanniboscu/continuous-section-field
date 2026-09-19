@@ -1,4 +1,4 @@
-# Version: CSF-CUF YAML-configurable equilibration iterations v16 - 2026-09-12
+# Version: CSF-CUF memory-adaptive direct solve v17 - 2026-09-19
 """
 Generic direct solver for an augmented linear-constraint system.
 
@@ -30,11 +30,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator
+import gc
 import hashlib
 import os
 import warnings
 
 import numpy as np
+from scipy.linalg import LinAlgWarning, solve as dense_solve
 from scipy.sparse import diags, save_npz
 from scipy.sparse.linalg import MatrixRankWarning, spsolve
 
@@ -64,15 +66,20 @@ class AugmentedConstraintSolution:
 
 class AugmentedSparseLinearSolver:
     """
-    Direct sparse solution of a generic augmented constraint system.
+    Direct solution of a generic augmented constraint system.
 
-    ``spsolve`` is the numerical solution path.  Once a finite solution exists,
-    it is returned regardless of the magnitude of its residuals.  Residuals are
-    measured and reported descriptively; they are not compared with acceptance
-    tolerances.
+    The KKT system is assembled and equilibrated in sparse CSR form.  Immediately
+    before each requested solve, the solver compares the sparse and dense memory
+    requirements with the currently available physical memory.  ``spsolve``
+    remains the normal path; a dense symmetric solve is used as a memory fallback
+    when the dense representation is physically more sustainable.
 
-    Diagnostic v3 writes the exact CSR matrix and RHS presented to ``spsolve``
-    immediately before the solve.  The checkpoint does not modify either object.
+    Once a finite solution exists, it is returned regardless of the magnitude of
+    its residuals.  Residuals are measured and reported descriptively; they are
+    not compared with acceptance tolerances.
+
+    Diagnostic v3 writes the exact CSR matrix and RHS before the numerical solve.
+    The checkpoint does not modify either object.
     """
 
     def __init__(self, *, equilibration_iterations: int = 8):
@@ -329,6 +336,200 @@ class AugmentedSparseLinearSolver:
         )
 
     @staticmethod
+    def _available_physical_memory_bytes() -> int | None:
+        """Return currently available physical memory without external packages."""
+        try:
+            with open("/proc/meminfo", "r", encoding="utf-8") as handle:
+                for line in handle:
+                    if line.startswith("MemAvailable:"):
+                        fields = line.split()
+                        return int(fields[1]) * 1024
+        except (OSError, ValueError, IndexError):
+            pass
+
+        try:
+            pages = int(os.sysconf("SC_AVPHYS_PAGES"))
+            page_size = int(os.sysconf("SC_PAGE_SIZE"))
+            if pages > 0 and page_size > 0:
+                return pages * page_size
+        except (AttributeError, OSError, ValueError):
+            pass
+
+        return None
+
+    @staticmethod
+    def _csr_storage_bytes(matrix) -> int:
+        """Exact storage occupied by the three CSR arrays."""
+        return int(
+            matrix.data.nbytes
+            + matrix.indices.nbytes
+            + matrix.indptr.nbytes
+        )
+
+    @staticmethod
+    def _dense_storage_bytes(matrix) -> int:
+        """Exact storage of one dense matrix with the same shape and dtype."""
+        rows, columns = matrix.shape
+        return int(rows) * int(columns) * int(matrix.dtype.itemsize)
+
+    @staticmethod
+    def _dense_incremental_solve_bytes(matrix, rhs: np.ndarray) -> int:
+        """Estimate additional RAM needed by conversion plus dense factorization.
+
+        The estimate deliberately counts two dense matrix-sized work areas: one
+        for the dense KKT itself and one for conversion/factorization workspace.
+        The already-live sparse matrices are not counted here because available
+        physical memory is measured after those objects already exist.
+        """
+        dense_bytes = AugmentedSparseLinearSolver._dense_storage_bytes(matrix)
+        vector_bytes = 4 * int(np.asarray(rhs).nbytes)
+        return int(2 * dense_bytes + vector_bytes)
+
+    @staticmethod
+    def _sparse_factor_storage_upper_bytes(matrix, rhs: np.ndarray) -> int:
+        """Conservative storage bound for fully filled sparse LU factors.
+
+        Sparse LU fill-in cannot be predicted exactly without performing the
+        factorization.  This bound assumes that L and U together become fully
+        populated and remain stored with the matrix data/index dtypes.  It is
+        used only as a memory-safety indicator; it is not a density threshold.
+        """
+        n = int(matrix.shape[0])
+        data_bytes = int(matrix.data.dtype.itemsize)
+        index_bytes = int(matrix.indices.dtype.itemsize)
+        indptr_bytes = int(matrix.indptr.dtype.itemsize)
+
+        factor_entries = n * n + n
+        factor_bytes = factor_entries * (data_bytes + index_bytes)
+        factor_bytes += 2 * (n + 1) * indptr_bytes
+
+        # Permutations, RHS/solution vectors and small SuperLU work arrays.
+        vector_bytes = 8 * int(np.asarray(rhs).nbytes)
+        return int(factor_bytes + vector_bytes)
+
+    @staticmethod
+    def _format_gib(byte_count: int | None) -> str:
+        if byte_count is None:
+            return "unknown"
+        return f"{float(byte_count) / (1024.0 ** 3):.3f}GiB"
+
+    @staticmethod
+    def _select_direct_solver(matrix, rhs: np.ndarray) -> str:
+        """Select sparse or dense direct solve using memory only."""
+        gc.collect()
+
+        available = AugmentedSparseLinearSolver._available_physical_memory_bytes()
+        csr_bytes = AugmentedSparseLinearSolver._csr_storage_bytes(matrix)
+        dense_bytes = AugmentedSparseLinearSolver._dense_storage_bytes(matrix)
+
+        dense_incremental = (
+            AugmentedSparseLinearSolver._dense_incremental_solve_bytes(
+                matrix,
+                rhs,
+            )
+        )
+
+        sparse_factor_upper = (
+            AugmentedSparseLinearSolver._sparse_factor_storage_upper_bytes(
+                matrix,
+                rhs,
+            )
+        )
+
+        dense_fits = (
+            available is not None
+            and dense_incremental <= available
+        )
+
+        sparse_upper_fits = (
+            available is not None
+            and sparse_factor_upper <= available
+        )
+
+
+
+        if dense_fits and dense_bytes < csr_bytes:
+            selected = "dense"
+            reason = "dense-representation-smaller"
+
+        elif sparse_upper_fits:
+            selected = "sparse"
+            reason = "sparse-factor-bound-fits"
+
+        elif dense_fits:
+            selected = "dense"
+            reason = "sparse-factor-bound-exceeds-available"
+
+        else:
+            selected = "sparse"
+            reason = (
+                "dense-does-not-fit; sparse-fill-unknown"
+                if available is not None
+                else "available-memory-unknown"
+            )
+
+        print(
+            "[memory-solver] "
+            f"available={AugmentedSparseLinearSolver._format_gib(available)} "
+            f"csr={AugmentedSparseLinearSolver._format_gib(csr_bytes)} "
+            f"dense={AugmentedSparseLinearSolver._format_gib(dense_bytes)} "
+            "dense_incremental="
+            f"{AugmentedSparseLinearSolver._format_gib(dense_incremental)} "
+            "sparse_factor_upper="
+            f"{AugmentedSparseLinearSolver._format_gib(sparse_factor_upper)} "
+            f"selected={selected} reason={reason}",
+            flush=True,
+        )
+
+        return selected
+
+    @staticmethod
+    def _dense_symmetric_solve(matrix, rhs: np.ndarray) -> np.ndarray:
+        """Solve one symmetric-indefinite KKT system in dense form."""
+        dense_matrix = None
+        dense_rhs = None
+        try:
+            dense_matrix = matrix.toarray(order="F")
+            dense_rhs = np.array(rhs, dtype=float, copy=True)
+
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always", LinAlgWarning)
+                solution = dense_solve(
+                    dense_matrix,
+                    dense_rhs,
+                    assume_a="sym",
+                    overwrite_a=True,
+                    overwrite_b=True,
+                    check_finite=False,
+                )
+
+            for warning in caught:
+                print(
+                    "[memory-solver] dense-warning "
+                    f"{warning.category.__name__}: {warning.message}",
+                    flush=True,
+                )
+
+            return np.asarray(solution, dtype=float)
+        except (MemoryError, np.linalg.LinAlgError, ValueError) as exc:
+            raise RuntimeError(f"dense direct solve failed: {exc}") from exc
+        finally:
+            del dense_rhs
+            del dense_matrix
+            gc.collect()
+
+    @staticmethod
+    def _memory_adaptive_direct_solve(matrix, rhs: np.ndarray) -> np.ndarray:
+        """Solve one checkpoint using the memory-selected direct method."""
+        method = AugmentedSparseLinearSolver._select_direct_solver(matrix, rhs)
+        if method == "dense":
+            return AugmentedSparseLinearSolver._dense_symmetric_solve(
+                matrix,
+                rhs,
+            )
+        return np.asarray(spsolve(matrix, rhs), dtype=float)
+
+    @staticmethod
     def _direct_sparse_solve_many(
         matrix,
         rhs: np.ndarray,
@@ -338,17 +539,11 @@ class AugmentedSparseLinearSolver:
     ) -> Iterator[tuple[int, np.ndarray]]:
         """Yield solved vectors at requested progressive equilibration steps.
 
-        The KKT matrix remains sparse for the entire numerical solution path.
-        Iteration 0 denotes the original, unequilibrated KKT system. For
-        positive values, equilibration advances monotonically up to the largest
-        requested iteration count; at each requested checkpoint a separate
-        sparse solve is attempted. A numerical failure at one checkpoint is
-        local to that checkpoint and does not prevent later, more strongly
-        equilibrated checkpoints from being tried.
-
-        Dense LAPACK condition estimation is intentionally not performed here:
-        converting a large sparse KKT matrix to a dense array defeats the sparse
-        formulation and can require tens of GiB even before factorization.
+        The KKT matrix remains sparse during assembly and equilibration.  At each
+        requested checkpoint, temporary equilibration objects are released,
+        available physical memory is measured, and the direct solve is selected
+        from sparse ``spsolve`` or dense symmetric LAPACK without any matrix-
+        density threshold.  Equilibration itself remains cumulative and unchanged.
         """
 
         requested = tuple(sorted(set(int(v) for v in equilibration_iterations)))
@@ -373,7 +568,12 @@ class AugmentedSparseLinearSolver:
             zero_candidate = None
             if 0 in requested:
                 try:
-                    zero_solution = spsolve(matrix, rhs)
+                    zero_solution = (
+                        AugmentedSparseLinearSolver._memory_adaptive_direct_solve(
+                            matrix,
+                            rhs,
+                        )
+                    )
                     zero_candidate = np.asarray(zero_solution, dtype=float)
                     if zero_candidate.shape != rhs.shape:
                         raise RuntimeError(
@@ -445,6 +645,16 @@ class AugmentedSparseLinearSolver:
                 equilibrated_rhs *= step
                 accumulated_scale *= step
 
+                # Release equilibration temporaries before any memory estimate
+                # or numerical factorization.  The sparse ``equilibrated`` KKT
+                # itself must remain alive because later sweep checkpoints build
+                # cumulatively from the current scaling.
+                del D
+                del active
+                del row_max
+                del step
+                gc.collect()
+
                 if current_iteration not in requested_set:
                     continue
 
@@ -468,9 +678,11 @@ class AugmentedSparseLinearSolver:
                             profile=value_profile,
                         )
 
-                    scaled_solution = spsolve(
-                        equilibrated,
-                        equilibrated_rhs,
+                    scaled_solution = (
+                        AugmentedSparseLinearSolver._memory_adaptive_direct_solve(
+                            equilibrated,
+                            equilibrated_rhs,
+                        )
                     )
                     candidate_solution = np.asarray(
                         accumulated_scale * scaled_solution,
@@ -531,7 +743,7 @@ class AugmentedSparseLinearSolver:
         primal_size: int,
         equilibration_iterations: int,
     ) -> np.ndarray:
-        """Solve one sparse system using the historical scalar interface."""
+        """Solve one system using the historical scalar interface."""
 
         results = AugmentedSparseLinearSolver._direct_sparse_solve_many(
             matrix,

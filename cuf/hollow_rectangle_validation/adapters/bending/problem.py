@@ -6,7 +6,7 @@ import math
 import numpy as np
 
 from csf.cuf.problem.point_bc import LinearConstraintSystem
-from csf.cuf.problem.problem import GeneralizedLongitudinalLoad, ScalarLoadField
+from csf.cuf.adapters.problem._load_vector import assemble_distributed_load_vector
 from csf.cuf.numerics import transverse_bounds
 
 
@@ -127,7 +127,7 @@ class BendingSurfaceProjector:
         return values
 
 
-class ModeSurfaceLoadField(ScalarLoadField):
+class ModeSurfaceLoadField:
     def __init__(self, projector, tau: int):
         self.projector = projector
         self.tau = int(tau)
@@ -150,11 +150,14 @@ class HollowRectangleBendingProblem:
     def __init__(self, *, amplitude: float = 1.0):
         self.amplitude = float(amplitude)
 
-    def build_loads(
+    def build_load_vector(
         self,
         *,
         section_provider,
         basis,
+        mesh,
+        dof_layout,
+        longitudinal_integrator,
         x0: float,
         x1: float,
     ):
@@ -166,15 +169,18 @@ class HollowRectangleBendingProblem:
             amplitude=self.amplitude,
         )
 
-        loads = tuple(
-            GeneralizedLongitudinalLoad(
-                tau=tau,
-                component="z",
-                field=ModeSurfaceLoadField(projector, tau),
-            )
+        fields = tuple(
+            ModeSurfaceLoadField(projector, tau)
             for tau in range(1, int(basis.size) + 1)
         )
-        return loads, projector
+        load_vector = assemble_distributed_load_vector(
+            mesh=mesh,
+            dof_layout=dof_layout,
+            longitudinal_integrator=longitudinal_integrator,
+            component="z",
+            fields=fields,
+        )
+        return load_vector, projector
 
     def build_constraints(
         self,
