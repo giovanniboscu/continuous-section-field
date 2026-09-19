@@ -1,5 +1,7 @@
 CSF_ACTIONS:
   stations:
+    station_top:
+      - 1000  
     station_edge:
       - 0
       - 1000
@@ -16,7 +18,7 @@ CSF_ACTIONS:
         properties: [A,Ix,Iy,Ip]
     - plot_section_2d:
         stations:
-          - station_edge
+          - station_top
         show_ids: True
         show_vertex_ids: True          
     - section_selected_analysis:
