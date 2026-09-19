@@ -1,0 +1,89 @@
+# Architecture by responsibility
+
+This view separates input handling, problem/model adapters, the numerical CUF core, and output generation.
+
+```mermaid
+flowchart LR
+    subgraph INPUT["Input"]
+        A1["Case YAML"]
+        A2["Problem YAML"]
+        A3["Model / CSF YAML"]
+    end
+
+    subgraph APP["Application / orchestration"]
+        B1["CLI / __main__.py"]
+        B2["Case loader"]
+        B3["Problem loader"]
+        B4["Solver engine"]
+    end
+
+    subgraph ADAPTERS["Problem and model adapters"]
+        C1["Problem adapter<br/>physical problem semantics"]
+        C2["CSF section provider<br/>geometry and material fields"]
+    end
+
+    subgraph CORE["CUF numerical core"]
+        D1["CUF basis"]
+        D2["Longitudinal mesh"]
+        D3["GlobalDOFLayout"]
+        D4["Stiffness assembly"]
+        D5["Constraint machinery"]
+        D6["Linear solver"]
+        D7["Recovery / compiled field"]
+    end
+
+    subgraph OUTPUT["Output"]
+        E1["Sampling"]
+        E2["Writer"]
+        E3["Result files"]
+    end
+
+    A1 --> B1
+    B1 --> B2
+    A2 --> B3
+    A3 --> C2
+
+    B2 --> B3
+    B2 --> B4
+    B3 --> C1
+
+    B4 --> D1
+    B4 --> D2
+    D1 --> D3
+    D2 --> D3
+
+    C1 -->|"build_load_vector()"| B4
+    C1 -->|"build_constraints()"| D5
+
+    C2 --> D4
+    D1 --> D4
+    D2 --> D4
+    D3 --> D4
+
+    D4 --> D6
+    D5 --> D6
+
+    D6 --> D7
+    C2 --> D7
+    D1 --> D7
+    D2 --> D7
+    D3 --> D7
+
+    D7 --> E1
+    E1 --> E2
+    E2 --> E3
+```
+
+## Separation rule
+
+The CUF core does not interpret physical load categories such as point loads, distributed loads, torsional loads, tractions, or future load types.
+
+A problem adapter may use generic numerical services such as:
+
+- the longitudinal mesh;
+- the CUF basis;
+- `GlobalDOFLayout`;
+- longitudinal shape functions;
+- numerical integration.
+
+It then returns a numerical global load vector. The core only consumes that vector.
