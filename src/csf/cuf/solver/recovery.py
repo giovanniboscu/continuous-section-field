@@ -142,6 +142,7 @@ class CSFCUFDisplacementRecovery:
         )
 
         N = element.shape_values(xi)
+        active_basis_size = self.dof_layout.basis_size_at_node(element.node_ids[0])
 
         values = np.zeros(
             (
@@ -156,10 +157,7 @@ class CSFCUFDisplacementRecovery:
         ):
             weight = float(N[local_node])
 
-            for tau in range(
-                1,
-                self.dof_layout.basis_size + 1,
-            ):
+            for tau in range(1, active_basis_size + 1):
                 for component in range(3):
                     dof = self.dof_layout.index(
                         node=global_node,
@@ -192,6 +190,7 @@ class CSFCUFDisplacementRecovery:
         dNdx = element.shape_derivatives_physical(
             xi
         )
+        active_basis_size = self.dof_layout.basis_size_at_node(element.node_ids[0])
 
         values = np.zeros(
             (
@@ -206,10 +205,7 @@ class CSFCUFDisplacementRecovery:
         ):
             weight = float(dNdx[local_node])
 
-            for tau in range(
-                1,
-                self.dof_layout.basis_size + 1,
-            ):
+            for tau in range(1, active_basis_size + 1):
                 for component in range(3):
                     dof = self.dof_layout.index(
                         node=global_node,
@@ -385,11 +381,12 @@ class CSFCUFStrainStressRecovery:
     ----------
     With
 
-        u_i(x,y,z) = sum_tau F_tau(y,z) u_{i,tau}(x),
+        u_i(x,y,z) = sum_tau F_tau(x,y,z) u_{i,tau}(x),
 
-    the strain vector is recovered as
+    the strain vector is recovered with the complete product rule
 
-        epsilon_xx = sum F_tau     * u_x,tau,x
+        epsilon_xx = sum (F_tau,x * u_x,tau
+                        + F_tau   * u_x,tau,x)
         epsilon_yy = sum F_tau,y   * u_y,tau
         epsilon_zz = sum F_tau,z   * u_z,tau
 
@@ -397,10 +394,15 @@ class CSFCUFStrainStressRecovery:
                         + F_tau,y * u_z,tau)
 
         gamma_xz   = sum (F_tau,z * u_x,tau
+                        + F_tau,x * u_z,tau
                         + F_tau   * u_z,tau,x)
 
         gamma_xy   = sum (F_tau,y * u_x,tau
+                        + F_tau,x * u_y,tau
                         + F_tau   * u_y,tau,x)
+
+    If the basis does not provide ``dF_tau/dx``, that derivative is defined
+    as zero and the historical CUF expressions are recovered exactly.
 
     Stress recovery is then exactly
 
@@ -499,16 +501,33 @@ class CSFCUFStrainStressRecovery:
                 )
             )
 
+            longitudinal_derivative = getattr(
+                basis,
+                "longitudinal_derivative",
+                None,
+            )
+            if longitudinal_derivative is None:
+                Fx = 0.0
+            else:
+                Fx = float(
+                    longitudinal_derivative(
+                        tau,
+                        float(y),
+                        float(z),
+                        x=float(x),
+                    )
+                )
+
             ux, uy, uz = amplitudes[row, :]
             ux_x, uy_x, uz_x = amplitude_dx[row, :]
 
-            strain[0] += F * ux_x
+            strain[0] += Fx * ux + F * ux_x
             strain[1] += Fy * uy
             strain[2] += Fz * uz
 
             strain[3] += Fz * uy + Fy * uz
-            strain[4] += Fz * ux + F * uz_x
-            strain[5] += Fy * ux + F * uy_x
+            strain[4] += Fz * ux + Fx * uz + F * uz_x
+            strain[5] += Fy * ux + Fx * uy + F * uy_x
 
         if not np.all(np.isfinite(strain)):
             raise RuntimeError(

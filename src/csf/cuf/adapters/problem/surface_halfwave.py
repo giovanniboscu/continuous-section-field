@@ -90,7 +90,7 @@ from typing import Any, Mapping
 import numpy as np
 
 from csf.cuf.problem.point_bc import LinearConstraintSystem
-from csf.cuf.problem.problem import GeneralizedLongitudinalLoad, ScalarLoadField
+from csf.cuf.adapters.problem._load_vector import assemble_distributed_load_vector
 
 
 PROBLEM_TYPE = "surface_halfwave"
@@ -494,7 +494,7 @@ class HalfWavePhysicalSurfaceProjector:
         return values
 
 
-class _ModeSurfaceLoadField(ScalarLoadField):
+class _ModeSurfaceLoadField:
     """Expose one tau entry through the scalar load-field solver contract."""
 
     def __init__(self, projector: HalfWavePhysicalSurfaceProjector, tau: int):
@@ -520,11 +520,14 @@ class SurfaceHalfWaveLoadProblem:
         self.amplitude = float(amplitude)
         self._surface: HorizontalRuledSurface | None = None
 
-    def build_loads(
+    def build_load_vector(
         self,
         *,
         section_provider: Any,
         basis: Any,
+        mesh: Any,
+        dof_layout: Any,
+        longitudinal_integrator: Any,
         x0: float,
         x1: float,
     ):
@@ -545,16 +548,19 @@ class SurfaceHalfWaveLoadProblem:
             amplitude=self.amplitude,
         )
 
-        loads = tuple(
-            GeneralizedLongitudinalLoad(
-                tau=tau,
-                component="z",
-                field=_ModeSurfaceLoadField(projector, tau),
-            )
+        fields = tuple(
+            _ModeSurfaceLoadField(projector, tau)
             for tau in range(1, int(basis.size) + 1)
         )
+        load_vector = assemble_distributed_load_vector(
+            mesh=mesh,
+            dof_layout=dof_layout,
+            longitudinal_integrator=longitudinal_integrator,
+            component="z",
+            fields=fields,
+        )
 
-        return loads, projector
+        return load_vector, projector
 
     def build_constraints(
         self,
@@ -628,7 +634,7 @@ class SurfaceHalfWaveLoadProblem:
         """Return the two selected edge vertices for standard post-processing."""
 
         # The normal solver path has already constructed and validated the
-        # surface in build_loads().  The fallback keeps this public method
+        # surface in build_load_vector().  The fallback keeps this public method
         # usable in isolation without forcing repeated work in normal runs.
         surface = self._surface
         if surface is None:

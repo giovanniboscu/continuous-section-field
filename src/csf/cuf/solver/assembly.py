@@ -6,10 +6,6 @@ This module assembles:
 
     {K_e^(tau,s)} -> K_global
 
-and
-
-    {f_e^tau} -> f_global
-
 without applying boundary conditions and without solving the system.
 
 No assumption is made about:
@@ -30,16 +26,12 @@ from __future__ import annotations
 from array import array
 import time
 from dataclasses import dataclass
-from typing import Iterable, Tuple
+from typing import Tuple
 
 import numpy as np
 from scipy.sparse import coo_matrix, csr_matrix
 
-from csf.cuf.solver.longitudinal import (
-    LongitudinalIntegrator,
-    LongitudinalMesh1D,
-)
-from csf.cuf.problem.problem import GeneralizedLongitudinalLoad
+from csf.cuf.solver.longitudinal import LongitudinalMesh1D
 
 
 # =============================================================================
@@ -66,6 +58,7 @@ class GlobalDOFLayout:
 
     number_of_nodes: int
     basis_size: int
+    node_basis_sizes: Tuple[int, ...] | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.number_of_nodes, int):
@@ -80,6 +73,24 @@ class GlobalDOFLayout:
         if self.basis_size < 1:
             raise ValueError("basis_size must be >= 1")
 
+        sizes = self.node_basis_sizes
+        if sizes is None:
+            sizes = tuple(self.basis_size for _ in range(self.number_of_nodes))
+        else:
+            sizes = tuple(int(value) for value in sizes)
+            if len(sizes) != self.number_of_nodes:
+                raise ValueError("node_basis_sizes must have one entry per node")
+            if any(value < 1 for value in sizes):
+                raise ValueError("every node basis size must be >= 1")
+            if max(sizes) > self.basis_size:
+                raise ValueError("node basis size cannot exceed basis_size")
+        object.__setattr__(self, "node_basis_sizes", sizes)
+
+        offsets = [0]
+        for value in sizes:
+            offsets.append(offsets[-1] + value * self.components)
+        object.__setattr__(self, "_node_offsets", tuple(offsets))
+
     @property
     def components(self) -> int:
         return 3
@@ -90,7 +101,16 @@ class GlobalDOFLayout:
 
     @property
     def total_dofs(self) -> int:
-        return self.number_of_nodes * self.dofs_per_node
+        return self._node_offsets[-1]
+
+    @property
+    def is_uniform(self) -> bool:
+        return all(value == self.basis_size for value in self.node_basis_sizes)
+
+    def basis_size_at_node(self, node: int) -> int:
+        if not 0 <= node < self.number_of_nodes:
+            raise IndexError(f"node must be in 0..{self.number_of_nodes - 1}")
+        return self.node_basis_sizes[node]
 
     def index(
         self,
@@ -104,16 +124,17 @@ class GlobalDOFLayout:
                 f"node must be in 0..{self.number_of_nodes - 1}"
             )
 
-        if not 1 <= tau <= self.basis_size:
+        node_basis_size = self.basis_size_at_node(node)
+        if not 1 <= tau <= node_basis_size:
             raise IndexError(
-                f"tau must be in 1..{self.basis_size}"
+                f"tau must be in 1..{node_basis_size} at node {node}"
             )
 
         if component not in (0, 1, 2):
             raise IndexError("component must be 0, 1, or 2")
 
         return (
-            node * self.dofs_per_node
+            self._node_offsets[node]
             + (tau - 1) * self.components
             + component
         )
@@ -127,17 +148,48 @@ class GlobalDOFLayout:
                 f"dof must be in 0..{self.total_dofs - 1}"
             )
 
-        node, remainder = divmod(
-            dof,
-            self.dofs_per_node,
-        )
-
-        tau_zero_based, component = divmod(
-            remainder,
-            self.components,
-        )
-
+        node = int(np.searchsorted(self._node_offsets, dof, side="right") - 1)
+        remainder = dof - self._node_offsets[node]
+        tau_zero_based, component = divmod(remainder, self.components)
         return node, tau_zero_based + 1, component
+
+
+
+
+def build_global_dof_layout(
+    *,
+    mesh: LongitudinalMesh1D,
+    basis_size: int,
+    element_basis_sizes: Tuple[int, ...] | None = None,
+) -> GlobalDOFLayout:
+    """Build the global DOF numbering from the resolved discretization."""
+
+    if element_basis_sizes is None:
+        element_basis_sizes = tuple(int(basis_size) for _ in mesh.elements)
+    else:
+        element_basis_sizes = tuple(int(value) for value in element_basis_sizes)
+        if len(element_basis_sizes) != len(mesh.elements):
+            raise ValueError("element_basis_sizes must have one entry per element")
+        if any(value < 1 or value > basis_size for value in element_basis_sizes):
+            raise ValueError("invalid element basis size")
+
+    node_sizes = [None] * mesh.number_of_nodes
+    for element, element_basis_size in zip(mesh.elements, element_basis_sizes):
+        for node in element.node_ids:
+            current = node_sizes[node]
+            if current is None:
+                node_sizes[node] = element_basis_size
+            elif current != element_basis_size:
+                raise ValueError(
+                    "a shared longitudinal node belongs to elements with different "
+                    "basis sizes; expansion interfaces must use independent traces"
+                )
+
+    return GlobalDOFLayout(
+        number_of_nodes=mesh.number_of_nodes,
+        basis_size=basis_size,
+        node_basis_sizes=tuple(int(value) for value in node_sizes),
+    )
 
 
 # =============================================================================
@@ -175,69 +227,32 @@ class AssembledCSFCUFSystem:
 # =============================================================================
 
 class CSFCUFGlobalAssembler:
-    """
-    Assemble the unconstrained global longitudinal CSF-CUF system.
-
-    Parameters
-    ----------
-    element_matrix_builder:
-        Any object exposing
-
-            build_pair(element=..., tau=..., s=...)
-
-        and returning an object exposing
-
-            block(test_component, trial_component)
-
-        where every block is the local longitudinal matrix associated with one
-        ordered CUF pair and one displacement-component pair.
-
-        CUFElementMatrixBuilder is the normal production implementation.
-
-    longitudinal_integrator:
-        Generic longitudinal integration backend used for generalized loads.
-    """
+    """Assemble the unconstrained global longitudinal CSF-CUF stiffness matrix."""
 
     def __init__(
         self,
         *,
         element_matrix_builder,
-        longitudinal_integrator: LongitudinalIntegrator,
     ) -> None:
         if not hasattr(element_matrix_builder, "build_pair"):
             raise TypeError(
                 "element_matrix_builder must expose build_pair(...)"
             )
 
-        if not isinstance(
-            longitudinal_integrator,
-            LongitudinalIntegrator,
-        ):
-            raise TypeError(
-                "longitudinal_integrator must implement "
-                "LongitudinalIntegrator"
-            )
-
         self.element_matrix_builder = element_matrix_builder
-        self.longitudinal_integrator = longitudinal_integrator
 
     def assemble(
         self,
         *,
         mesh: LongitudinalMesh1D,
-        basis_size: int,
-        loads: Iterable[GeneralizedLongitudinalLoad] = (),
-    ) -> AssembledCSFCUFSystem:
-        """
-        Assemble global stiffness and generalized load vector.
+        dof_layout: GlobalDOFLayout,
+    ) -> csr_matrix:
+        """Assemble the unconstrained global stiffness matrix."""
 
-        The result is unconstrained. Essential boundary conditions are handled
-        by the next solver layer.
-        """
-
-        layout = GlobalDOFLayout(
-            number_of_nodes=mesh.number_of_nodes,
-            basis_size=basis_size,
+        layout = dof_layout
+        element_basis_sizes = tuple(
+            layout.basis_size_at_node(element.node_ids[0])
+            for element in mesh.elements
         )
 
         # MEM-01: keep assembly triplets in compact typed buffers instead of
@@ -265,12 +280,11 @@ class CSFCUFGlobalAssembler:
         # ---------------------------------------------------------------------
         assembly_started = time.perf_counter()
         number_of_elements = len(mesh.elements)
-        pairs_per_element = basis_size * basis_size
-
-        for element_index, element in enumerate(
-            mesh.elements,
+        for element_index, (element, element_basis_size) in enumerate(
+            zip(mesh.elements, element_basis_sizes),
             start=1,
         ):
+            pairs_per_element = element_basis_size * element_basis_size
             element_started = time.perf_counter()
             build_pair_time = 0.0
             scatter_time = 0.0
@@ -282,8 +296,8 @@ class CSFCUFGlobalAssembler:
                 flush=True,
             )
 
-            for tau in range(1, basis_size + 1):
-                for s in range(1, basis_size + 1):
+            for tau in range(1, element_basis_size + 1):
+                for s in range(1, element_basis_size + 1):
 
                     pair_started = time.perf_counter()
                     local_pair = (
@@ -367,17 +381,17 @@ class CSFCUFGlobalAssembler:
                 if (
                     tau == 1
                     or tau % 10 == 0
-                    or tau == basis_size
+                    or tau == element_basis_size
                 ):
                     element_elapsed = (
                         time.perf_counter() - element_started
                     )
-                    completed_pairs = tau * basis_size
+                    completed_pairs = tau * element_basis_size
 
                     print(
                         f"[assembly] element "
                         f"{element_index}/{number_of_elements} "
-                        f"tau={tau}/{basis_size} "
+                        f"tau={tau}/{element_basis_size} "
                         f"pairs={completed_pairs}/{pairs_per_element} "
                         f"entries={len(values)} "
                         f"elapsed={element_elapsed:.1f}s "
@@ -451,82 +465,4 @@ class CSFCUFGlobalAssembler:
             flush=True,
         )
 
-        loads_started = time.perf_counter()
-
-        load_vector = self._assemble_loads(
-            mesh=mesh,
-            layout=layout,
-            loads=tuple(loads),
-        )
-
-        print(
-            f"[assembly] loads complete "
-            f"elapsed={time.perf_counter() - loads_started:.1f}s "
-            f"total={time.perf_counter() - assembly_started:.1f}s",
-            flush=True,
-        )
-
-        return AssembledCSFCUFSystem(
-            stiffness=stiffness,
-            load=load_vector,
-            dof_layout=layout,
-        )
-
-    def _assemble_loads(
-        self,
-        *,
-        mesh: LongitudinalMesh1D,
-        layout: GlobalDOFLayout,
-        loads: Tuple[GeneralizedLongitudinalLoad, ...],
-    ) -> np.ndarray:
-        vector = np.zeros(
-            layout.total_dofs,
-            dtype=float,
-        )
-
-        component_index = {
-            "x": 0,
-            "y": 1,
-            "z": 2,
-        }
-
-        for generalized_load in loads:
-            if not 1 <= generalized_load.tau <= layout.basis_size:
-                raise ValueError(
-                    f"load tau={generalized_load.tau} exceeds "
-                    f"basis size {layout.basis_size}"
-                )
-
-            component = component_index[
-                generalized_load.component
-            ]
-
-            for element in mesh.elements:
-                local_vector = (
-                    self.longitudinal_integrator.integrate_linear(
-                        element=element,
-                        load=generalized_load.value,
-                    )
-                )
-
-                expected_size = len(element.node_ids)
-
-                if local_vector.shape != (expected_size,):
-                    raise ValueError(
-                        "local load vector has inconsistent size"
-                    )
-
-                for a, global_node in enumerate(
-                    element.node_ids
-                ):
-                    global_dof = layout.index(
-                        node=global_node,
-                        tau=generalized_load.tau,
-                        component=component,
-                    )
-
-                    vector[global_dof] += float(
-                        local_vector[a]
-                    )
-
-        return vector
+        return stiffness

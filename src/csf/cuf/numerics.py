@@ -28,7 +28,14 @@ class _ScaledMaclaurinFactorPlan:
         self._z_scale = float(z_scale)
         self._entries = tuple(entries)
 
-    def __call__(self, y: float, z: float) -> np.ndarray:
+    def __call__(
+        self,
+        y: float,
+        z: float,
+        *,
+        x: float | None = None,
+    ) -> np.ndarray:
+        del x
         # Compute the scaled coordinates once.  The arithmetic below preserves
         # the same per-factor operation order used by value()/derivative().
         Y = float(y) / self._y_scale
@@ -258,7 +265,15 @@ class _ScaledLegendreFactorPlan:
         self._z_scale = float(z_scale)
         self._entries = tuple(entries)
 
-    def __call__(self, y: float, z: float) -> np.ndarray:
+
+    def __call__(
+        self,
+        y: float,
+        z: float,
+        *,
+        x: float | None = None,
+    ) -> np.ndarray:
+        del x
         Y = float(y) / self._y_scale
         Z = float(z) / self._z_scale
         py, dpy = _legendre_values_and_derivatives(self._order, Y)

@@ -156,10 +156,8 @@ class PointwiseBoundaryConstraintMapper:
                     "constraint prescribed value must be finite"
                 )
 
-            for tau in range(
-                1,
-                self.basis.size + 1,
-            ):
+            active_basis_size = self.dof_layout.basis_size_at_node(node)
+            for tau in range(1, active_basis_size + 1):
                 coefficient = float(
                     self.basis.value(
                         tau,

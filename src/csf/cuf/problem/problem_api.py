@@ -3,7 +3,7 @@ Generic problem interface for the CSF-CUF solver.
 
 A problem definition supplies the solver with:
 
-1. generalized loads;
+1. its contribution to the global load vector;
 2. linear constraints.
 
 The interface is independent of geometry, material, benchmark, and
@@ -23,15 +23,18 @@ import yaml
 class CUFProblem(Protocol):
     """Problem contract required by the general CSF-CUF solver."""
 
-    def build_loads(
+    def build_load_vector(
         self,
         *,
         section_provider: Any,
         basis: Any,
+        mesh: Any,
+        dof_layout: Any,
+        longitudinal_integrator: Any,
         x0: float,
         x1: float,
     ) -> tuple[Any, Any]:
-        """Build generalized loads for the longitudinal assembly."""
+        """Build this problem's contribution to the global load vector."""
         ...
 
     def build_constraints(

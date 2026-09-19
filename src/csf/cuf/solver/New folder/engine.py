@@ -13,11 +13,7 @@ from csf.cuf.core.nucleus import FundamentalNucleusProvider
 from csf.cuf.core.sectional import SectionalCoefficientProvider
 from csf.cuf.core.sectional_geometry import SectionalGeometryProvider
 
-from csf.cuf.solver.assembly import (
-    AssembledCSFCUFSystem,
-    CSFCUFGlobalAssembler,
-    build_global_dof_layout,
-)
+from csf.cuf.solver.assembly import CSFCUFGlobalAssembler
 from csf.cuf.solver.augmented_solver import AugmentedSparseLinearSolver
 from csf.cuf.solver.element import CUFElementMatrixBuilder
 from csf.cuf.solver.linear_constraint import LinearConstraintAugmenter
@@ -1184,39 +1180,21 @@ def solve_case_runs(
                     flush=True,
                 )
 
-    dof_layout = build_global_dof_layout(
-        mesh=mesh,
-        basis_size=int(basis.size),
-        element_basis_sizes=element_basis_sizes,
-    )
-
-    stiffness = CSFCUFGlobalAssembler(
-        element_matrix_builder=element_builder,
-    ).assemble(
-        mesh=mesh,
-        dof_layout=dof_layout,
-    )
-
-    loads_started = time.perf_counter()
-    load_vector, _problem_state = problem.build_load_vector(
+    loads, _problem_state = problem.build_loads(
         section_provider=section_provider,
         basis=basis,
-        mesh=mesh,
-        dof_layout=dof_layout,
-        longitudinal_integrator=longitudinal_integrator,
         x0=x0,
         x1=x1,
     )
-    print(
-        f"[assembly] loads complete "
-        f"elapsed={time.perf_counter() - loads_started:.1f}s",
-        flush=True,
-    )
 
-    assembled = AssembledCSFCUFSystem(
-        stiffness=stiffness,
-        load=np.asarray(load_vector, dtype=float),
-        dof_layout=dof_layout,
+    assembled = CSFCUFGlobalAssembler(
+        element_matrix_builder=element_builder,
+        longitudinal_integrator=longitudinal_integrator,
+    ).assemble(
+        mesh=mesh,
+        basis_size=basis.size,
+        element_basis_sizes=element_basis_sizes,
+        loads=loads,
     )
 
     # MEM-02: assembly is complete.  The sectional coefficient cache and the
@@ -1225,7 +1203,7 @@ def solve_case_runs(
     # its peak-memory factorization phase.  This changes object lifetime only;
     # the assembled matrix and all numerical operations are unchanged.
     sectional.clear_cache()
-    del load_vector, _problem_state
+    del loads, _problem_state
     del element_builder, nucleus, sectional
     gc.collect()
 

@@ -43,8 +43,6 @@ class AugmentedLinearConstraintSystem:
     rhs: np.ndarray
     primal_size: int
     constraint_count: int
-    original_system: AssembledCSFCUFSystem
-    constraints: LinearConstraintSystem
 
     def __post_init__(self) -> None:
         total = self.primal_size + self.constraint_count
@@ -160,6 +158,4 @@ class LinearConstraintAugmenter:
             rhs=rhs,
             primal_size=n,
             constraint_count=m,
-            original_system=system,
-            constraints=constraints,
         )

@@ -82,7 +82,7 @@ import numpy as np
 
 from csf.cuf.numerics import all_vertices, transverse_bounds
 from csf.cuf.problem.point_bc import LinearConstraintSystem
-from csf.cuf.problem.problem import GeneralizedLongitudinalLoad, ScalarLoadField
+from csf.cuf.adapters.problem._load_vector import assemble_distributed_load_vector
 
 
 PROBLEM_TYPE = "torsion_halfwave"
@@ -291,7 +291,7 @@ class HalfWaveTorsionalLinePairProjector:
         return values
 
 
-class _ModeLineLoadField(ScalarLoadField):
+class _ModeLineLoadField:
     """Expose one tau entry through the scalar longitudinal load API."""
 
     def __init__(self, projector: HalfWaveTorsionalLinePairProjector, tau: int):
@@ -312,11 +312,14 @@ class TorsionHalfWaveProblem:
         if not math.isfinite(self.amplitude):
             raise ValueError("problem.amplitude must be finite")
 
-    def build_loads(
+    def build_load_vector(
         self,
         *,
         section_provider: Any,
         basis: Any,
+        mesh: Any,
+        dof_layout: Any,
+        longitudinal_integrator: Any,
         x0: float,
         x1: float,
     ):
@@ -330,16 +333,19 @@ class TorsionHalfWaveProblem:
             amplitude=self.amplitude,
         )
 
-        loads = tuple(
-            GeneralizedLongitudinalLoad(
-                tau=tau,
-                component="z",
-                field=_ModeLineLoadField(projector, tau),
-            )
+        fields = tuple(
+            _ModeLineLoadField(projector, tau)
             for tau in range(1, int(basis.size) + 1)
         )
+        load_vector = assemble_distributed_load_vector(
+            mesh=mesh,
+            dof_layout=dof_layout,
+            longitudinal_integrator=longitudinal_integrator,
+            component="z",
+            fields=fields,
+        )
 
-        return loads, projector
+        return load_vector, projector
 
     def build_constraints(
         self,

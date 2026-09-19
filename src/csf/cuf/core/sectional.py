@@ -5,7 +5,7 @@ Generalized sectional coefficients J(x) for the CSF-CUF bridge.
 
 This module is the public transverse-integration layer:
 
-    Omega^k(x), C^k(x,y,z), F_tau(y,z)
+    Omega^k(x), C^k(x,y,z), F_tau(x,y,z)
         -> J^{mn,k}_{tau,phi s,xi}(x)
         -> J^{mn}_{tau,phi s,xi}(x)
 
@@ -45,14 +45,19 @@ class SectionalCoefficientProvider:
         =
         integral_{Omega^k(x)}
             C_mn^k(x,y,z)
-            F_{tau,phi}(y,z)
-            F_{s,xi}(y,z)
+            F_{tau,phi}(x,y,z)
+            F_{s,xi}(x,y,z)
         dOmega
 
     ``test_derivative`` and ``trial_derivative`` may be:
-        None  -> no transverse derivative
-        "y"   -> derivative with respect to y
-        "z"   -> derivative with respect to z
+        None  -> no basis derivative
+        "x"   -> longitudinal basis derivative dF/dx
+        "y"   -> transverse derivative dF/dy
+        "z"   -> transverse derivative dF/dz
+
+    The longitudinal derivative is optional at basis level.  If an expansion
+    does not provide it, dF/dx is defined as exactly zero for backward
+    compatibility.
 
     Performance
     -----------
@@ -91,6 +96,19 @@ class SectionalCoefficientProvider:
         self.geometry = geometry_provider
         self.basis = basis
         self.integrator = integrator or AdaptivePolygonIntegrator()
+
+        marker = getattr(
+            basis,
+            "provides_longitudinal_derivative",
+            None,
+        )
+        if marker is None:
+            # Compatibility with basis implementations that predate the
+            # CUFBasis default hook but already expose a dedicated method.
+            marker = callable(
+                getattr(basis, "longitudinal_derivative", None)
+            )
+        self.longitudinal_basis_derivative_enabled = bool(marker)
 
         self.cache_enabled = bool(cache_enabled)
 
@@ -594,9 +612,9 @@ class SectionalCoefficientProvider:
     def _validate_derivative(
         derivative: str | None,
     ) -> None:
-        if derivative not in (None, "y", "z"):
+        if derivative not in (None, "x", "y", "z"):
             raise ValueError(
-                "derivative selector must be None, 'y', or 'z'"
+                "derivative selector must be None, 'x', 'y', or 'z'"
             )
 
     @classmethod
@@ -930,7 +948,10 @@ class SectionalCoefficientProvider:
         if derivative not in self._matrix_basis_plan_cache:
             compiled = None
 
-            if hasattr(self.basis, "compile_factors"):
+            if (
+                derivative != "x"
+                and hasattr(self.basis, "compile_factors")
+            ):
                 factor_keys = tuple(
                     (tau, derivative)
                     for tau in range(1, basis_size + 1)
@@ -945,6 +966,8 @@ class SectionalCoefficientProvider:
             self._matrix_basis_plan_cache[derivative] = compiled
 
         if compiled is not None:
+        
+       
             values = np.empty(
                 (y_points.size, basis_size),
                 dtype=float,
@@ -954,7 +977,7 @@ class SectionalCoefficientProvider:
                 zip(y_points, z_points)
             ):
                 row = np.asarray(
-                    compiled(float(y), float(z)),
+                    compiled(float(y), float(z), x=x),
                     dtype=float,
                 )
 
@@ -1315,7 +1338,7 @@ class SectionalCoefficientProvider:
                 required_basis_factors.add((tau, d_tau))
                 required_basis_factors.add((s, d_s))
 
-            derivative_rank = {None: 0, "y": 1, "z": 2}
+            derivative_rank = {None: 0, "x": 1, "y": 2, "z": 3}
             factor_keys = tuple(
                 sorted(
                     required_basis_factors,
@@ -1364,7 +1387,10 @@ class SectionalCoefficientProvider:
             )
 
             compiled_basis_factors = None
-            if hasattr(self.basis, "compile_factors"):
+            if (
+                not any(derivative == "x" for _, derivative in factor_keys)
+                and hasattr(self.basis, "compile_factors")
+            ):
                 compiled_basis_factors = self.basis.compile_factors(
                     factor_keys
                 )
@@ -1402,7 +1428,7 @@ class SectionalCoefficientProvider:
             ) -> np.ndarray:
                 if compiled_basis_factors is not None:
                     factor_values = np.asarray(
-                        compiled_basis_factors(float(y), float(z)),
+                        compiled_basis_factors(float(y), float(z), x=x),
                         dtype=float,
                     )
                 else:
@@ -1493,6 +1519,23 @@ class SectionalCoefficientProvider:
         if derivative is None:
             return self.basis.value(tau, y, z, x=x)
 
+        if derivative == "x":
+            method = getattr(
+                self.basis,
+                "longitudinal_derivative",
+                None,
+            )
+            if method is None:
+                return 0.0
+            return float(
+                method(
+                    tau=tau,
+                    y=y,
+                    z=z,
+                    x=x,
+                )
+            )
+
         if derivative in ("y", "z"):
             return self.basis.derivative(
                 tau=tau,
@@ -1503,5 +1546,5 @@ class SectionalCoefficientProvider:
             )
 
         raise ValueError(
-            "derivative selector must be None, 'y', or 'z'"
+            "derivative selector must be None, 'x', 'y', or 'z'"
         )

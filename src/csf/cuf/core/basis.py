@@ -43,7 +43,35 @@ class CUFBasis(ABC):
         *,
         x: float | None = None,
     ) -> float:
+        """Return a transverse derivative (``direction='y'`` or ``'z'``)."""
         raise NotImplementedError
+
+    def longitudinal_derivative(
+        self,
+        tau: int,
+        y: float,
+        z: float,
+        *,
+        x: float | None = None,
+    ) -> float:
+        """Return the optional longitudinal derivative ``dF_tau/dx``.
+
+        Existing transverse expansions are longitudinally constant, so the
+        backward-compatible default is exactly zero.  An expansion whose
+        basis depends explicitly on the beam coordinate ``x`` can override
+        this method without changing the historical ``value``/``derivative``
+        interface.
+        """
+        del tau, y, z, x
+        return 0.0
+
+    @property
+    def provides_longitudinal_derivative(self) -> bool:
+        """Whether this basis overrides the optional ``dF_tau/dx`` hook."""
+        return (
+            type(self).longitudinal_derivative
+            is not CUFBasis.longitudinal_derivative
+        )
 
 
 class MaclaurinCUFBasis(CUFBasis):

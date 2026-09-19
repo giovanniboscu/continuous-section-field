@@ -41,12 +41,22 @@ def _bounds(section_provider, x: float):
     return ymin, ymax, zmin, zmax, bottom_right_y
 
 
-def write_outputs(u, model_bridge, case, problem_definition):
+def write_outputs(
+    u,
+    model_bridge,
+    case,
+    problem_definition,
+    *,
+    equilibration_iterations=None,
+):
     x0, x1 = float(u.x_start), float(u.x_end)
     L = x1 - x0
     out = Path(case.output_dir)
     out.mkdir(parents=True, exist_ok=True)
-    path = out / "response.txt"
+    if equilibration_iterations is None:
+        path = out / "response.txt"
+    else:
+        path = out / f"response_eq{int(equilibration_iterations)}.txt"
 
     lines = [
         "CSF-CUF RESPONSE",

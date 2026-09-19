@@ -65,14 +65,13 @@ Its responsibility is limited to the structural problem definition:
         ->
     projection on the active CUF transverse basis
         ->
-    GeneralizedLongitudinalLoad objects
+    global load-vector contributions
 
 together with the constraints required by the corresponding problem.
 
 The module uses the standard CUF problem interfaces:
 
-    GeneralizedLongitudinalLoad
-    ScalarLoadField
+    adapter-side global load-vector assembly
     LinearConstraintSystem
 
 and exposes the standard adapter entry point:
@@ -127,7 +126,7 @@ import math
 import numpy as np
 
 from csf.cuf.problem.point_bc import LinearConstraintSystem
-from csf.cuf.problem.problem import GeneralizedLongitudinalLoad, ScalarLoadField
+from csf.cuf.adapters.problem._load_vector import assemble_distributed_load_vector
 from csf.cuf.numerics import all_vertices, transverse_bounds
 
 
@@ -198,11 +197,17 @@ class TorsionalLinePairProjector:
         y_plus, z_plus = point_plus
         y_minus, z_minus = point_minus
         F_plus = np.asarray(
-            [self.basis.value(tau, y_plus, z_plus) for tau in range(1, self.basis.size + 1)],
+            [
+                self.basis.value(tau, y_plus, z_plus, x=x)
+                for tau in range(1, self.basis.size + 1)
+            ],
             dtype=float,
         )
         F_minus = np.asarray(
-            [self.basis.value(tau, y_minus, z_minus) for tau in range(1, self.basis.size + 1)],
+            [
+                self.basis.value(tau, y_minus, z_minus, x=x)
+                for tau in range(1, self.basis.size + 1)
+            ],
             dtype=float,
         )
         phase = math.sin(self.alpha * (x - self.x0))
@@ -211,7 +216,7 @@ class TorsionalLinePairProjector:
         return values
 
 
-class ModeLineLoadField(ScalarLoadField):
+class ModeLineLoadField:
     def __init__(self, projector, tau: int):
         self.projector = projector
         self.tau = int(tau)
@@ -231,7 +236,17 @@ class CarreraTorsionHalfWaveProblem:
     def __init__(self, *, amplitude: float = 1.0):
         self.amplitude = float(amplitude)
 
-    def build_loads(self, *, section_provider, basis, x0: float, x1: float):
+    def build_load_vector(
+        self,
+        *,
+        section_provider,
+        basis,
+        mesh,
+        dof_layout,
+        longitudinal_integrator,
+        x0: float,
+        x1: float,
+    ):
         projector = TorsionalLinePairProjector(
             section_provider=section_provider,
             basis=basis,
@@ -239,15 +254,18 @@ class CarreraTorsionHalfWaveProblem:
             x1=x1,
             amplitude=self.amplitude,
         )
-        loads = tuple(
-            GeneralizedLongitudinalLoad(
-                tau=tau,
-                component="z",
-                field=ModeLineLoadField(projector, tau),
-            )
+        fields = tuple(
+            ModeLineLoadField(projector, tau)
             for tau in range(1, basis.size + 1)
         )
-        return loads, projector
+        load_vector = assemble_distributed_load_vector(
+            mesh=mesh,
+            dof_layout=dof_layout,
+            longitudinal_integrator=longitudinal_integrator,
+            component="z",
+            fields=fields,
+        )
+        return load_vector, projector
 
     def build_constraints(self, *, assembled, mesh, basis, longitudinal_integrator):
         layout = assembled.dof_layout
@@ -263,24 +281,22 @@ class CarreraTorsionHalfWaveProblem:
                     row += 1
 
         length = float(mesh.x_end - mesh.x_start)
-        axial_gauge_factors = np.asarray(
-            [
-                basis.value(tau, 0.0, 0.0)
-                for tau in range(1, basis.size + 1)
-            ],
-            dtype=float,
-        )
 
         for element in mesh.elements:
-            local = longitudinal_integrator.integrate_linear(
-                element=element,
-                load=lambda x: 1.0,
-            )
-            for a, node in enumerate(element.node_ids):
-                for tau, factor in enumerate(
-                    axial_gauge_factors,
-                    start=1,
-                ):
+            for tau in range(1, basis.size + 1):
+                local = longitudinal_integrator.integrate_linear(
+                    element=element,
+                    load=lambda x, tau=tau: float(
+                        basis.value(
+                            tau,
+                            0.0,
+                            0.0,
+                            x=float(x),
+                        )
+                    ) / length,
+                )
+
+                for a, node in enumerate(element.node_ids):
                     A[
                         row,
                         layout.index(
@@ -288,11 +304,7 @@ class CarreraTorsionHalfWaveProblem:
                             tau=tau,
                             component=0,
                         ),
-                    ] += (
-                        float(local[a])
-                        * float(factor)
-                        / length
-                    )
+                    ] += float(local[a])
         row += 1
 
         if row != row_count:
@@ -373,7 +385,7 @@ def _loaded_face_factors(section_provider, basis, x: float) -> np.ndarray:
                 * jacobian
                 * np.asarray(
                     [
-                        basis.value(tau, y, z_face)
+                        basis.value(tau, y, z_face, x=float(x))
                         for tau in range(1, basis.size + 1)
                     ],
                     dtype=float,
@@ -430,7 +442,7 @@ class BendingSurfaceProjector:
         return values
 
 
-class ModeSurfaceLoadField(ScalarLoadField):
+class ModeSurfaceLoadField:
     def __init__(self, projector, tau: int):
         self.projector = projector
         self.tau = int(tau)
@@ -451,11 +463,14 @@ class CarreraBendingBottomSurfaceHalfWaveProblem:
     def __init__(self, *, amplitude: float = 1.0):
         self.amplitude = float(amplitude)
 
-    def build_loads(
+    def build_load_vector(
         self,
         *,
         section_provider,
         basis,
+        mesh,
+        dof_layout,
+        longitudinal_integrator,
         x0: float,
         x1: float,
     ):
@@ -467,16 +482,19 @@ class CarreraBendingBottomSurfaceHalfWaveProblem:
             amplitude=self.amplitude,
         )
 
-        loads = tuple(
-            GeneralizedLongitudinalLoad(
-                tau=tau,
-                component="z",
-                field=ModeSurfaceLoadField(projector, tau),
-            )
+        fields = tuple(
+            ModeSurfaceLoadField(projector, tau)
             for tau in range(1, basis.size + 1)
         )
+        load_vector = assemble_distributed_load_vector(
+            mesh=mesh,
+            dof_layout=dof_layout,
+            longitudinal_integrator=longitudinal_integrator,
+            component="z",
+            fields=fields,
+        )
 
-        return loads, projector
+        return load_vector, projector
 
     def build_constraints(
         self,
@@ -506,25 +524,22 @@ class CarreraBendingBottomSurfaceHalfWaveProblem:
                     row += 1
 
         length = float(mesh.x_end - mesh.x_start)
-        axial_gauge_factors = np.asarray(
-            [
-                basis.value(tau, 0.0, 0.0)
-                for tau in range(1, basis.size + 1)
-            ],
-            dtype=float,
-        )
 
         for element in mesh.elements:
-            local = longitudinal_integrator.integrate_linear(
-                element=element,
-                load=lambda x: 1.0,
-            )
+            for tau in range(1, basis.size + 1):
+                local = longitudinal_integrator.integrate_linear(
+                    element=element,
+                    load=lambda x, tau=tau: float(
+                        basis.value(
+                            tau,
+                            0.0,
+                            0.0,
+                            x=float(x),
+                        )
+                    ) / length,
+                )
 
-            for a, node in enumerate(element.node_ids):
-                for tau, factor in enumerate(
-                    axial_gauge_factors,
-                    start=1,
-                ):
+                for a, node in enumerate(element.node_ids):
                     A[
                         row,
                         layout.index(
@@ -532,11 +547,7 @@ class CarreraBendingBottomSurfaceHalfWaveProblem:
                             tau=tau,
                             component=0,
                         ),
-                    ] += (
-                        float(local[a])
-                        * float(factor)
-                        / length
-                    )
+                    ] += float(local[a])
 
         row += 1
 

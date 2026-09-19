@@ -35,6 +35,7 @@ import os
 import warnings
 
 import numpy as np
+from scipy.linalg import LinAlgWarning
 from scipy.sparse import diags, save_npz
 from scipy.sparse.linalg import MatrixRankWarning, spsolve
 
@@ -261,25 +262,98 @@ class AugmentedSparseLinearSolver:
 
     @staticmethod
     def _print_structural_matrix_diagnostic(system) -> None:
-        """Report scale indicators for the augmented KKT matrix.
-
-        K and A are intentionally not retained by the augmented system. Once
-        the KKT matrix has been built they are no longer required by the
-        numerical solve, and keeping them alive duplicates a large fraction of
-        the sparse storage.
-        """
+        """Report scale and independence indicators for K, A, and KKT."""
+        K = system.original_system.stiffness.tocsr()
+        A = np.asarray(system.constraints.matrix, dtype=float)
         M = system.matrix.tocsr()
+
+        k_abs_min, k_abs_max = AugmentedSparseLinearSolver._sparse_abs_min_max(K)
+        k_row = AugmentedSparseLinearSolver._sparse_axis_l2(K, axis=1)
+        k_col = AugmentedSparseLinearSolver._sparse_axis_l2(K, axis=0)
+        k_diag = np.abs(np.asarray(K.diagonal(), dtype=float))
+        k_diag_min, k_diag_max, k_diag_zeros = (
+            AugmentedSparseLinearSolver._positive_min_max(k_diag)
+        )
+        k_fro = float(np.linalg.norm(np.asarray(K.data, dtype=float)))
+
+        print(
+            "[matrix-diagnostic] K "
+            f"shape={K.shape} nnz={K.nnz} "
+            f"abs_nonzero_min={k_abs_min:.12e} "
+            f"abs_nonzero_max={k_abs_max:.12e} "
+            f"frobenius={k_fro:.12e} "
+            f"diag_abs_positive_min={k_diag_min:.12e} "
+            f"diag_abs_max={k_diag_max:.12e} "
+            f"diag_zeros={k_diag_zeros}",
+            flush=True,
+        )
+        print(
+            "[matrix-diagnostic] K norms "
+            "row_l2_min_median_max="
+            f"{AugmentedSparseLinearSolver._summary(k_row)} "
+            "col_l2_min_median_max="
+            f"{AugmentedSparseLinearSolver._summary(k_col)}",
+            flush=True,
+        )
+
+        a_abs = np.abs(A)
+        a_nonzero = a_abs[a_abs > 0.0]
+        a_abs_min = float(np.min(a_nonzero)) if a_nonzero.size else 0.0
+        a_abs_max = float(np.max(a_nonzero)) if a_nonzero.size else 0.0
+        a_row = np.linalg.norm(A, axis=1)
+        a_col = np.linalg.norm(A, axis=0)
+        a_fro = float(np.linalg.norm(A))
+
+        gram = np.asarray(A @ A.T, dtype=float)
+        gram = 0.5 * (gram + gram.T)
+        eigenvalues = np.linalg.eigvalsh(gram)
+        eigenvalues[eigenvalues < 0.0] = 0.0
+        singular_values = np.sqrt(eigenvalues)
+        sigma_max = float(singular_values[-1]) if singular_values.size else 0.0
+        rank_tolerance = (
+            max(A.shape) * np.finfo(float).eps * sigma_max
+        )
+        numerical_rank = int(np.count_nonzero(singular_values > rank_tolerance))
+        positive_sigma = singular_values[singular_values > rank_tolerance]
+        sigma_min = float(positive_sigma[0]) if positive_sigma.size else 0.0
+        condition = (
+            float(sigma_max / sigma_min)
+            if sigma_min > 0.0
+            else float("inf")
+        )
+
+        print(
+            "[matrix-diagnostic] A "
+            f"shape={A.shape} nnz={int(np.count_nonzero(A))} "
+            f"abs_nonzero_min={a_abs_min:.12e} "
+            f"abs_nonzero_max={a_abs_max:.12e} "
+            f"frobenius={a_fro:.12e} "
+            f"row_l2_min_median_max={AugmentedSparseLinearSolver._summary(a_row)} "
+            f"col_l2_min_median_max={AugmentedSparseLinearSolver._summary(a_col)}",
+            flush=True,
+        )
+        print(
+            "[matrix-diagnostic] A spectrum "
+            f"numerical_rank={numerical_rank}/{A.shape[0]} "
+            f"rank_tolerance={rank_tolerance:.12e} "
+            f"sigma_min={sigma_min:.12e} "
+            f"sigma_max={sigma_max:.12e} "
+            f"condition={condition:.12e}",
+            flush=True,
+        )
 
         m_abs_min, m_abs_max = AugmentedSparseLinearSolver._sparse_abs_min_max(M)
         m_row = AugmentedSparseLinearSolver._sparse_axis_l2(M, axis=1)
         m_fro = float(np.linalg.norm(np.asarray(M.data, dtype=float)))
+        block_ratio = float(k_fro / a_fro) if a_fro > 0.0 else float("inf")
         print(
             "[matrix-diagnostic] KKT "
             f"shape={M.shape} nnz={M.nnz} "
             f"abs_nonzero_min={m_abs_min:.12e} "
             f"abs_nonzero_max={m_abs_max:.12e} "
             f"frobenius={m_fro:.12e} "
-            f"row_l2_min_median_max={AugmentedSparseLinearSolver._summary(m_row)}",
+            f"row_l2_min_median_max={AugmentedSparseLinearSolver._summary(m_row)} "
+            f"K_to_A_frobenius_ratio={block_ratio:.12e}",
             flush=True,
         )
 
@@ -338,17 +412,12 @@ class AugmentedSparseLinearSolver:
     ) -> Iterator[tuple[int, np.ndarray]]:
         """Yield solved vectors at requested progressive equilibration steps.
 
-        The KKT matrix remains sparse for the entire numerical solution path.
-        Iteration 0 denotes the original, unequilibrated KKT system. For
-        positive values, equilibration advances monotonically up to the largest
-        requested iteration count; at each requested checkpoint a separate
-        sparse solve is attempted. A numerical failure at one checkpoint is
-        local to that checkpoint and does not prevent later, more strongly
-        equilibrated checkpoints from being tried.
-
-        Dense LAPACK condition estimation is intentionally not performed here:
-        converting a large sparse KKT matrix to a dense array defeats the sparse
-        formulation and can require tens of GiB even before factorization.
+        The KKT matrix is prepared once. Iteration 0 denotes the original,
+        unequilibrated KKT system. For positive values, equilibration advances
+        monotonically up to the largest requested iteration count; at each
+        requested checkpoint a separate solve is attempted. A numerical failure
+        at one checkpoint is local to that checkpoint and does not prevent later,
+        more strongly equilibrated checkpoints from being tried.
         """
 
         requested = tuple(sorted(set(int(v) for v in equilibration_iterations)))
@@ -368,12 +437,62 @@ class AugmentedSparseLinearSolver:
                 rhs,
             )
 
-            # Iteration 0 is a valid checkpoint: solve the original sparse KKT
-            # system exactly as assembled, with no equilibration scaling.
+            from scipy.linalg import norm
+            from scipy.linalg.lapack import get_lapack_funcs
+
+            # The original system diagnostic is common to every candidate.
+            matrix_dense = np.asarray(matrix.toarray(), dtype=float)
+            getrf, getrs, gecon = get_lapack_funcs(
+                ("getrf", "getrs", "gecon"),
+                (matrix_dense,),
+            )
+
+            original_norm = float(norm(matrix_dense, 1))
+            original_lu, original_piv, original_info = getrf(
+                matrix_dense.copy(),
+                overwrite_a=True,
+            )
+            if original_info != 0:
+                raise RuntimeError(
+                    f"original KKT LU factorization failed with info={original_info}"
+                )
+            original_rcond, original_info = gecon(
+                original_lu,
+                original_norm,
+                norm="1",
+            )
+            if original_info != 0:
+                raise RuntimeError(
+                    f"original KKT condition estimate failed with info={original_info}"
+                )
+
+            if float(original_rcond) < np.finfo(float).eps:
+                warnings.warn(
+                    "Original KKT matrix is ill-conditioned "
+                    f"(rcond={float(original_rcond):.5e}).",
+                    LinAlgWarning,
+                    stacklevel=2,
+                )
+
+            # Iteration 0 is a valid checkpoint: solve the original KKT system
+            # exactly as assembled, with no equilibration scaling applied.
+            # Reuse the LU factorization already computed for the original
+            # condition estimate so requesting eq0 adds no extra factorization.
             zero_candidate = None
             if 0 in requested:
                 try:
-                    zero_solution = spsolve(matrix, rhs)
+                    zero_solution, zero_info = getrs(
+                        original_lu,
+                        original_piv,
+                        rhs,
+                        trans=0,
+                        overwrite_b=False,
+                    )
+                    if zero_info != 0:
+                        raise RuntimeError(
+                            f"original KKT solve failed with info={zero_info}"
+                        )
+
                     zero_candidate = np.asarray(zero_solution, dtype=float)
                     if zero_candidate.shape != rhs.shape:
                         raise RuntimeError(
@@ -389,8 +508,8 @@ class AugmentedSparseLinearSolver:
                         "iterations=0 "
                         "iterations_requested=0 "
                         "iterations_performed=0 "
-                        "original_rcond=nan "
-                        "equilibrated_rcond=nan "
+                        f"original_rcond={float(original_rcond):.12e} "
+                        f"equilibrated_rcond={float(original_rcond):.12e} "
                         "scale_min=1.000000000000e+00 "
                         "scale_max=1.000000000000e+00",
                         flush=True,
@@ -406,7 +525,7 @@ class AugmentedSparseLinearSolver:
                         f"{AugmentedSparseLinearSolver._summary(multiplier_scale)}",
                         flush=True,
                     )
-                except (RuntimeError, MatrixRankWarning) as exc:
+                except RuntimeError as exc:
                     print(
                         "[kkt-equilibration] "
                         f"iterations=0 failed: {exc}; "
@@ -414,6 +533,10 @@ class AugmentedSparseLinearSolver:
                         flush=True,
                     )
                     zero_candidate = None
+
+            # Dense factors are not needed by the progressive equilibration
+            # path and should not remain live while recovery/post uses eq0.
+            del original_lu, original_piv, matrix_dense
 
             if zero_candidate is not None:
                 yield 0, zero_candidate
@@ -431,8 +554,6 @@ class AugmentedSparseLinearSolver:
             ).strip().lower() in {"1", "true", "yes", "on"}
 
             for current_iteration in range(1, maximum_iterations + 1):
-                # This toarray() is only on an n x 1 vector of row maxima, not
-                # on the n x n KKT matrix, so the KKT itself remains sparse.
                 row_max = np.asarray(
                     abs(equilibrated).max(axis=1).toarray(),
                     dtype=float,
@@ -448,10 +569,14 @@ class AugmentedSparseLinearSolver:
                 if current_iteration not in requested_set:
                     continue
 
+                equilibrated_dense = None
+                equilibrated_lu = None
+                equilibrated_piv = None
                 scaled_solution = None
                 candidate_solution = None
 
                 try:
+                    value_profile = None
                     if distribution_enabled:
                         value_profile = (
                             AugmentedSparseLinearSolver._matrix_value_profile(
@@ -468,10 +593,44 @@ class AugmentedSparseLinearSolver:
                             profile=value_profile,
                         )
 
-                    scaled_solution = spsolve(
-                        equilibrated,
-                        equilibrated_rhs,
+                    equilibrated_dense = np.asarray(
+                        equilibrated.toarray(),
+                        dtype=float,
                     )
+                    equilibrated_norm = float(norm(equilibrated_dense, 1))
+                    equilibrated_lu, equilibrated_piv, equilibrated_info = getrf(
+                        equilibrated_dense,
+                        overwrite_a=True,
+                    )
+                    if equilibrated_info != 0:
+                        raise RuntimeError(
+                            "equilibrated KKT LU factorization failed "
+                            f"with info={equilibrated_info}"
+                        )
+
+                    equilibrated_rcond, equilibrated_info = gecon(
+                        equilibrated_lu,
+                        equilibrated_norm,
+                        norm="1",
+                    )
+                    if equilibrated_info != 0:
+                        raise RuntimeError(
+                            "equilibrated KKT condition estimate failed "
+                            f"with info={equilibrated_info}"
+                        )
+
+                    scaled_solution, solve_info = getrs(
+                        equilibrated_lu,
+                        equilibrated_piv,
+                        equilibrated_rhs,
+                        trans=0,
+                        overwrite_b=False,
+                    )
+                    if solve_info != 0:
+                        raise RuntimeError(
+                            f"equilibrated KKT solve failed with info={solve_info}"
+                        )
+
                     candidate_solution = np.asarray(
                         accumulated_scale * scaled_solution,
                         dtype=float,
@@ -491,8 +650,8 @@ class AugmentedSparseLinearSolver:
                         f"iterations={current_iteration} "
                         f"iterations_requested={current_iteration} "
                         f"iterations_performed={current_iteration} "
-                        "original_rcond=nan "
-                        "equilibrated_rcond=nan "
+                        f"original_rcond={float(original_rcond):.12e} "
+                        f"equilibrated_rcond={float(equilibrated_rcond):.12e} "
                         f"scale_min={float(np.min(accumulated_scale)):.12e} "
                         f"scale_max={float(np.max(accumulated_scale)):.12e}",
                         flush=True,
@@ -517,7 +676,14 @@ class AugmentedSparseLinearSolver:
                     )
                     candidate_solution = None
                 finally:
-                    del scaled_solution
+                    # Dense factors are candidate-local and can be large. They
+                    # must be released before control is yielded to recovery/post.
+                    del (
+                        equilibrated_dense,
+                        equilibrated_lu,
+                        equilibrated_piv,
+                        scaled_solution,
+                    )
 
                 if candidate_solution is not None:
                     yield current_iteration, candidate_solution

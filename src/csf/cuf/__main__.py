@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import importlib.util
+import inspect
 from pathlib import Path
 
 from csf.cuf.case import load_case
@@ -12,7 +13,7 @@ from csf.cuf.problem.problem_api import (
     load_problem,
     load_problem_adapter,
 )
-from csf.cuf.solver.engine import solve_case
+from csf.cuf.solver.engine import solve_case, solve_case_runs
 
 
 def _adapter_is_path(reference: str | Path) -> bool:
@@ -64,6 +65,60 @@ def _load_output_adapter(reference: str | Path):
     return module
 
 
+def _write_outputs(
+    output_adapter,
+    u,
+    model,
+    case,
+    problem_definition,
+    *,
+    equilibration_iterations=None,
+):
+    """Call one post adapter, passing equilibration metadata only if asked.
+
+    Output adapters remain responsible for their filenames and formats. An
+    adapter opts into the per-run equilibration value by declaring an
+    ``equilibration_iterations`` parameter (or ``**kwargs``) in
+    ``write_outputs``.
+    """
+
+    write_outputs = output_adapter.write_outputs
+    kwargs = {}
+
+    if equilibration_iterations is not None:
+        signature = inspect.signature(write_outputs)
+        parameter = signature.parameters.get(
+            "equilibration_iterations"
+        )
+        accepts_kwargs = any(
+            item.kind == inspect.Parameter.VAR_KEYWORD
+            for item in signature.parameters.values()
+        )
+
+        if parameter is not None:
+            if parameter.kind == inspect.Parameter.POSITIONAL_ONLY:
+                raise TypeError(
+                    "output adapter write_outputs() declares "
+                    "equilibration_iterations as positional-only; it must "
+                    "be keyword-capable"
+                )
+            kwargs["equilibration_iterations"] = int(
+                equilibration_iterations
+            )
+        elif accepts_kwargs:
+            kwargs["equilibration_iterations"] = int(
+                equilibration_iterations
+            )
+
+    return write_outputs(
+        u,
+        model,
+        case,
+        problem_definition,
+        **kwargs,
+    )
+
+
 def run(case_path, *, progress=True):
     case = load_case(case_path)
 
@@ -92,7 +147,14 @@ def run(case_path, *, progress=True):
     print(f"problem             = {case.problem_path}")
     print(f"CSF model           = {problem_definition.model_path}")
     print("solver public output= u(x,y,z)")
-    print(f"CUF order           = {case.cuf.order}")
+    if case.cuf.is_segmented:
+        segment_summary = " | ".join(
+            f"{segment['basis']} N{int(segment['order'])}"
+            for segment in case.cuf.segments
+        )
+        print(f"CUF expansion       = segmented: {segment_summary}")
+    else:
+        print(f"CUF order           = {case.cuf.order}")
     print(
         f"longitudinal FE     = "
         f"{case.longitudinal.elements} x order "
@@ -100,28 +162,83 @@ def run(case_path, *, progress=True):
     )
     print()
 
-    u = solve_case(
+    equilibration = case.solver.equilibration
+
+    if not equilibration.is_sweep:
+        u = solve_case(
+            case,
+            model,
+            problem,
+            progress=progress,
+        )
+
+        paths = _write_outputs(
+            output_adapter,
+            u,
+            model,
+            case,
+            problem_definition,
+        )
+
+        print()
+        print("continuous displacement field = READY")
+        print(f"output directory              = {case.output_dir}")
+
+        for path in paths:
+            print(f"  {path.name}")
+
+        return u
+
+    requested = equilibration.iteration_values
+    print(
+        "equilibration sweep = "
+        + ", ".join(str(value) for value in requested)
+    )
+    print()
+
+    output_paths = []
+    successful_iterations = []
+
+    for solved_run in solve_case_runs(
         case,
         model,
         problem,
         progress=progress,
-    )
+    ):
+        current_iterations = solved_run.equilibration_iterations
+        paths = _write_outputs(
+            output_adapter,
+            solved_run.solution,
+            model,
+            case,
+            problem_definition,
+            equilibration_iterations=current_iterations,
+        )
+        output_paths.extend(paths)
+        successful_iterations.append(current_iterations)
 
-    paths = output_adapter.write_outputs(
-        u,
-        model,
-        case,
-        problem_definition,
-    )
+        # Do not retain the previous physical field while the next potentially
+        # large KKT factorization is being computed.
+        del solved_run
 
     print()
-    print("continuous displacement field = READY")
+    print(
+        "continuous displacement fields = READY "
+        f"({len(successful_iterations)}/{len(requested)})"
+    )
+    print(
+        "successful equilibration       = "
+        + ", ".join(str(value) for value in successful_iterations)
+    )
     print(f"output directory              = {case.output_dir}")
 
-    for path in paths:
+    for path in output_paths:
         print(f"  {path.name}")
 
-    return u
+    # Sweep fields are deliberately streamed through the post adapter rather
+    # than retained together in memory. Programmatic callers that need each
+    # field can iterate solve_case_runs() directly.
+    return tuple(successful_iterations)
 
 
 def main():

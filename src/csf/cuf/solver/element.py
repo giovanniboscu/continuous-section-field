@@ -117,6 +117,54 @@ class CUFElementMatrixBuilder:
         self.nucleus = nucleus
         self.integrator = integrator
 
+        # Longitudinal shape functions depend only on the element and on the
+        # longitudinal quadrature points, not on the CUF pair (tau, s).
+        # Assembly visits all CUF pairs of the same element consecutively, so
+        # keep a one-element cache and reuse these quantities across pairs.
+        self._cached_longitudinal_element = None
+        self._cached_longitudinal_quadrature_data = None
+
+    def _longitudinal_quadrature_data(
+        self,
+        element: LongitudinalElement1D,
+    ):
+        """
+        Return longitudinal quadrature data reusable by every CUF pair.
+
+        The mapped coordinate, longitudinal shape values, physical
+        derivatives, and integration scale depend on the element and the
+        longitudinal quadrature only. They are therefore computed once for
+        the current element instead of once for every (tau, s) pair.
+        """
+
+        if self._cached_longitudinal_element is element:
+            return self._cached_longitudinal_quadrature_data
+
+        jacobian = element.jacobian
+        data = []
+
+        for xi, weight in zip(
+            self.integrator.points,
+            self.integrator.weights,
+        ):
+            xi = float(xi)
+
+            data.append(
+                (
+                    element.map_to_physical(xi),
+                    {
+                        0: element.shape_values(xi),
+                        1: element.shape_derivatives_physical(xi),
+                    },
+                    float(weight) * jacobian,
+                )
+            )
+
+        data = tuple(data)
+        self._cached_longitudinal_element = element
+        self._cached_longitudinal_quadrature_data = data
+        return data
+
     def build_pair(
         self,
         *,
@@ -233,16 +281,10 @@ class CUFElementMatrixBuilder:
             for j in range(3)
         }
 
-        jacobian = element.jacobian
-        points = self.integrator.points
-        weights = self.integrator.weights
-
         sectional = self.nucleus.sectional_coefficients
+        longitudinal_data = self._longitudinal_quadrature_data(element)
 
-        for xi, weight in zip(points, weights):
-            xi = float(xi)
-            x = element.map_to_physical(xi)
-
+        for x, shape_operator, scale in longitudinal_data:
             values = sectional.J_batch(
                 x=x,
                 signatures=tuple(unique_signatures),
@@ -251,13 +293,6 @@ class CUFElementMatrixBuilder:
             coefficient_by_signature = dict(
                 zip(unique_signatures, values)
             )
-
-            shape_operator = {
-                0: element.shape_values(xi),
-                1: element.shape_derivatives_physical(xi),
-            }
-
-            scale = float(weight) * jacobian
 
             for block_key, block_definitions in definitions.items():
                 matrix = matrices[block_key]

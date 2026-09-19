@@ -25,17 +25,19 @@ class CUFBasisPlugin:
     
     Simple expansions may ignore ``continuous_section_field``.
     
-    The longitudinal coordinate ``x`` may be available during runtime basis
-    evaluation as contextual information for diagnostics, logging, tracing,
-    or bookkeeping.
-    
-    In the current CSF-CUF formulation, however, transverse basis functions
-    remain mathematically independent of ``x``:
-    
-        F_tau = F_tau(y, z)
-    
-    Therefore ``x`` must not affect the returned basis value or its
-    transverse derivatives.
+    The longitudinal coordinate ``x`` is available during runtime basis
+    evaluation.  Classical expansions remain longitudinally constant,
+
+        F_tau = F_tau(y, z),
+
+    while generalized expansions may depend explicitly on the beam axis,
+
+        F_tau = F_tau(x, y, z).
+
+    In that case the basis should override the optional
+    ``CUFBasis.longitudinal_derivative(...)`` hook and return ``dF_tau/dx``.
+    Existing expansions need no change: if the hook is not overridden, the
+    longitudinal basis derivative is exactly zero.
     """
     
 
