@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
-# v3.0 - Standalone CUF/FEM3D half-wave plotter with automatic CUF discovery.
+# v3.1 - Standalone CUF/FEM3D half-wave plotter with equilibration-sweep support.
 #
 # This file merges the CUF/FEM3D response parser and the separate-N plotting
-# workflow into one script. It discovers every supported response.txt below
-# ../output by default, so no case list or CUF filename pattern is hard-coded.
+# workflow into one script. It discovers both legacy response.txt files and
+# sweep response_eqN.txt files below ../output by default.
 
 from __future__ import annotations
 
@@ -30,6 +29,10 @@ CASE_RE = re.compile(
     r"(?P<family>.+)_N(?P<order>\d+)$",
     re.IGNORECASE,
 )
+RESPONSE_RE = re.compile(
+    r"^response(?:_eq(?P<iterations>\d+))?\.txt$",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -39,24 +42,44 @@ class DiscoveredCase:
     problem: str
     family: str
     order: int
+    equilibration_iterations: int | None = None
 
     @property
     def key(self) -> str:
-        return self.directory_name
+        # A sweep stores several response files in the same case directory.
+        # Include the response filename so every solution has a unique key.
+        return f"{self.directory_name}/{self.response.name}"
 
     @property
     def title(self) -> str:
-        return (
+        base = (
             f"{self.problem.capitalize()} half-wave - "
             f"{self.family.replace('_', ' ').title()} - N={self.order:02d}"
         )
+        if self.equilibration_iterations is None:
+            return base
+        return f"{base} - equilibration={self.equilibration_iterations}"
+
+    @property
+    def cuf_label(self) -> str:
+        if self.equilibration_iterations is None:
+            return f"CUF N={self.order}"
+        return f"CUF N={self.order}, eq={self.equilibration_iterations}"
+
+    @property
+    def plot_suffix(self) -> str:
+        # Preserve historical plot names for response.txt. Sweep results get
+        # an _eqN suffix so several solutions can coexist in the same folder.
+        if self.equilibration_iterations is None:
+            return ""
+        return f"_eq{self.equilibration_iterations}"
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Discover CUF half-wave response.txt files and generate separate "
-            "CUF-vs-FEM3D displacement figures for every case found."
+            "Discover CUF half-wave response.txt and response_eqN.txt files and "
+            "generate separate CUF-vs-FEM3D displacement figures for every result found."
         )
     )
     parser.add_argument(
@@ -277,7 +300,7 @@ def join_results(
 
 
 def discover_cases(cuf_output_root: Path) -> list[DiscoveredCase]:
-    """Discover supported half-wave response.txt files below the CUF output tree."""
+    """Discover legacy response.txt and sweep response_eqN.txt half-wave results."""
     root = cuf_output_root.resolve()
     if not root.is_dir():
         raise FileNotFoundError(f"CUF output directory not found: {root}")
@@ -285,36 +308,56 @@ def discover_cases(cuf_output_root: Path) -> list[DiscoveredCase]:
     discovered: list[DiscoveredCase] = []
     ignored: list[Path] = []
 
-    for response in sorted(root.rglob("response.txt")):
+    for response in sorted(root.rglob("response*.txt")):
+        response_match = RESPONSE_RE.fullmatch(response.name)
+        if response_match is None:
+            continue
+
         directory_name = response.parent.name
-        match = CASE_RE.match(directory_name)
-        if match is None:
+        case_match = CASE_RE.fullmatch(directory_name)
+        if case_match is None:
             ignored.append(response)
             continue
+
+        raw_iterations = response_match.group("iterations")
+        equilibration_iterations = (
+            int(raw_iterations) if raw_iterations is not None else None
+        )
 
         discovered.append(
             DiscoveredCase(
                 response=response.resolve(),
                 directory_name=directory_name,
-                problem=match.group("problem").lower(),
-                family=match.group("family").lower(),
-                order=int(match.group("order")),
+                problem=case_match.group("problem").lower(),
+                family=case_match.group("family").lower(),
+                order=int(case_match.group("order")),
+                equilibration_iterations=equilibration_iterations,
             )
         )
 
     discovered.sort(
-        key=lambda case: (case.problem, case.family, case.order, case.directory_name)
+        key=lambda case: (
+            case.problem,
+            case.family,
+            case.order,
+            case.directory_name,
+            -1 if case.equilibration_iterations is None else case.equilibration_iterations,
+        )
     )
 
     if ignored:
-        print("Ignored response.txt files whose directory name is not a supported half-wave case:")
+        print(
+            "Ignored CUF response files whose directory name is not a supported "
+            "half-wave case:"
+        )
         for path in ignored:
             print(f"  {path}")
         print()
 
     if not discovered:
         raise FileNotFoundError(
-            f"No supported bending/torsion half-wave response.txt files found below {root}"
+            "No supported bending/torsion half-wave response.txt or "
+            f"response_eqN.txt files found below {root}"
         )
 
     return discovered
@@ -590,7 +633,7 @@ def plot_case_component(
             "s--",
             linewidth=1.35,
             markersize=3.2,
-            label=f"CUF N={case.order}",
+            label=case.cuf_label,
             zorder=4,
         )
 
@@ -653,7 +696,9 @@ def plot_case_component(
     case_output_dir = output_dir / case.directory_name
     case_output_dir.mkdir(parents=True, exist_ok=True)
 
-    output_base = case_output_dir / f"displacement_{component}_along_beam"
+    output_base = case_output_dir / (
+        f"displacement_{component}_along_beam{case.plot_suffix}"
+    )
     outputs = [output_base.with_suffix(".png")]
     fig.savefig(outputs[0], dpi=dpi, bbox_inches="tight", pad_inches=0.10)
 
@@ -673,7 +718,7 @@ def main() -> None:
     print(f"Found {len(cases)} supported response file(s):")
     for case in cases:
         print(
-            f"  [{case.problem:7s}] {case.directory_name} -> {case.response}"
+            f"  [{case.problem:7s}] {case.title} -> {case.response}"
         )
     print()
 
@@ -730,7 +775,7 @@ def main() -> None:
             )
             generated.extend(outputs)
             print(
-                f"[ok] {case.directory_name} component={component}"
+                f"[ok] {case.title} component={component}"
             )
             for output in outputs:
                 print(f"     {output.resolve()}")
