@@ -1,107 +1,140 @@
-# DRAFT
-
 # Implementing the `scaled_lagrange` Expansion in CSF-CUF
 
-## 1. Purpose
+## Purpose of this guide
 
-This guide shows, step by step, how to implement the hierarchical
-`scaled_lagrange` transverse expansion in CSF-CUF.
+This document is a practical implementation guide for a developer who wants to
+understand, add, verify, and use the hierarchical `scaled_lagrange` transverse
+expansion in CSF-CUF.
 
-The implementation uses the Serendipity-Lagrange hierarchy already provided by
-`core/basis.py` and adds one new expansion module,
-`expansions/scaled_lagrange.py`, which scales that reference hierarchy to the
-physical transverse coordinates and registers it as a CUF plugin.
+The important architectural point is simple:
 
-The implementation follows these constraints:
+> `scaled_lagrange` is an expansion plugin. It must not require a special branch
+> in the generic CUF solver.
 
-- do not modify the CUF formulation;
-- do not add expansion-name branches to `solver/engine.py`;
-- do not modify the KKT construction;
-- keep existing YAML files compatible;
-- keep the plugin-specific code in `cuf/expansions`;
-- preserve a stable meaning for every CUF index `tau`;
-- keep all code comments and YAML comments in English.
+The plugin reuses the Serendipity-Lagrange reference hierarchy that already
+exists in `core/basis.py`, maps that hierarchy to the physical transverse
+coordinates, declares the quadrature information required by the solver, and
+registers itself under the YAML name `scaled_lagrange`.
 
-The completed expansion supports hierarchy orders from N1 upward. The
-validated case series uses N1 through N27.
+The implementation described here keeps the following boundaries unchanged:
 
-## 2. STEP 1 - Verify the reference basis in the core
+- the CUF formulation is not modified;
+- `solver/engine.py` does not gain an `if scaled_lagrange ...` branch;
+- the KKT construction is not modified;
+- existing YAML structure remains compatible;
+- expansion-specific code stays in `cuf/expansions`;
+- the meaning of every CUF index `tau` remains stable;
+- code comments and YAML comments remain in English.
 
-`scaled_lagrange.py` does not define the Serendipity-Lagrange hierarchy. The
-hierarchy is already implemented in the CUF core; the new expansion module only
-converts physical coordinates to the reference coordinates used by that basis.
+The hierarchy starts at N1. The validated series described in this document
+covers N1 through N27.
 
-Before creating the plugin, verify that the reference class is present in:
+---
+
+## 1. Where `scaled_lagrange` fits in the architecture
+
+A useful way to read the implementation is to separate what already belongs to
+the CUF infrastructure from what belongs to this plugin.
+
+```mermaid
+flowchart TD
+    YAML["Case YAML<br/>cuf.basis: scaled_lagrange<br/>cuf.order: N"]
+
+    REGISTRY["CUF basis plugin registry"]
+    PLUGIN["expansions/scaled_lagrange.py"]
+    REF["core/basis.py<br/>SerendipityLagrangeReferenceBasis"]
+    CSF["CSF section provider"]
+    BASIS["ScaledLagrangeBasis"]
+    CORE["Generic CUF solver"]
+
+    YAML --> REGISTRY
+    REGISTRY --> PLUGIN
+    REF --> PLUGIN
+    CSF --> PLUGIN
+    PLUGIN --> BASIS
+    BASIS --> CORE
+```
+
+The generic solver only works with the common CUF basis interface. It does not
+need to know that the selected expansion is Lagrange, Legendre, Maclaurin, or
+another future expansion.
+
+For `scaled_lagrange`, the plugin has four jobs:
+
+1. obtain the existing reference hierarchy;
+2. convert physical coordinates `(y, z)` to reference coordinates `(xi, eta)`;
+3. expose values, derivatives, optional polynomial coefficients, and quadrature
+   requirements;
+4. register the implementation under the YAML name `scaled_lagrange`.
+
+This separation is what keeps the CUF core autonomous from the concrete
+expansion.
+
+---
+
+## 2. Before writing the plugin: verify what already exists
+
+Do **not** start by implementing Lagrange polynomials inside the new plugin.
+
+The reference hierarchy already exists in:
 
 ```text
 src/csf/cuf/core/basis.py
 ```
 
-and is named:
+as:
 
 ```python
 class SerendipityLagrangeReferenceBasis(CUFBasis):
 ```
 
-Do not create a second copy of this class inside `scaled_lagrange.py`.
-The plugin will import it and use it directly.
+`scaled_lagrange.py` must reuse that class rather than create a second
+hierarchy.
 
-### What `scaled_lagrange.py` requires from `core/basis.py`
+### 2.1 Objects required from `core/basis.py`
 
-The plugin uses two names from `core/basis.py`:
-
-| Required object | What the plugin needs from it |
+| Object | Why the plugin needs it |
 |---|---|
-| `CUFBasis` | The common CUF basis interface used by the solver |
-| `SerendipityLagrangeReferenceBasis` | The complete hierarchical Serendipity-Lagrange basis on the reference square |
+| `CUFBasis` | Common interface expected by the generic CUF solver |
+| `SerendipityLagrangeReferenceBasis` | Complete hierarchical Serendipity-Lagrange basis on the reference square |
 
-`ScaledLagrangeBasis` uses the following members of
-`SerendipityLagrangeReferenceBasis(order)`:
+The reference basis provides:
 
-| Member | Required meaning |
+| Member | Meaning |
 |---|---|
-| `order` | Returns the requested hierarchy order `N` |
-| `size` | Returns the total number of functions in orders `1..N` |
-| `definition(tau)` | Returns the stable hierarchical identity of function `tau` as `(kind, r, side, n, m)` |
-| `value(tau, xi, eta)` | Evaluates the reference function at the natural coordinates `(xi, eta)` |
-| `derivative(tau, "y", xi, eta)` | Returns the reference derivative with respect to `xi` |
-| `derivative(tau, "z", xi, eta)` | Returns the reference derivative with respect to `eta` |
+| `order` | Requested hierarchy order `N` |
+| `size` | Total number of functions present from orders 1 through `N` |
+| `definition(tau)` | Stable identity of function `tau` |
+| `value(tau, xi, eta)` | Value of a reference function |
+| `derivative(tau, "y", xi, eta)` | Reference derivative with respect to `xi` |
+| `derivative(tau, "z", xi, eta)` | Reference derivative with respect to `eta` |
 
-The derivative labels are still `"y"` and `"z"` because the class implements
-the common `CUFBasis` interface. Inside this reference class, however, the two
-arguments represent the natural coordinates `xi` and `eta`.
+The derivative labels remain `"y"` and `"z"` because
+`SerendipityLagrangeReferenceBasis` implements the common `CUFBasis` interface.
+Inside the reference basis, however, those arguments are the natural
+coordinates `xi` and `eta`.
 
-### How `definition(tau)` is used
+### 2.2 What `tau` means
 
-Every reference function has a stable descriptor returned by:
+The plugin must **not renumber** the hierarchy.
+
+For every `tau`, the reference basis returns:
 
 ```python
 kind, r, side, n, m = self.definition(tau)
 ```
 
-The labels `I`, `IIA`, `IIB`, and `III` are **not a general CUF nomenclature for
-transverse expansions**. They belong specifically to the
-Serendipity-Lagrange hierarchy implemented by
-`SerendipityLagrangeReferenceBasis`. Other expansions, such as Maclaurin or
-Legendre, do not use this classification.
+The possible descriptors belong specifically to this
+Serendipity-Lagrange hierarchy:
 
-In this Serendipity-Lagrange hierarchy, the descriptor is interpreted as
-follows:
+| `kind` | Meaning | Additional information |
+|---|---|---|
+| `I` | Four bilinear corner functions | `side=1..4` identifies the corner |
+| `IIA` | Lower-order edge enrichment | `side=1..4` identifies the edge |
+| `IIB` | Higher-order edge enrichment | `side=1..4` identifies the edge |
+| `III` | Interior functions | `n` and `m` identify the polynomial orders |
 
-| `kind` | Role in the Serendipity-Lagrange hierarchy | `r` | `side` | `n`, `m` |
-|---|---|---:|---|---|
-| `I` | Four bilinear corner functions | `1` | `1..4`, identifies the corner | not used |
-| `IIA` | Edge enrichment functions | `2` or `3` | `1..4`, identifies the edge | not used |
-| `IIB` | Higher-order edge enrichment functions | `>= 4` | `1..4`, identifies the edge | not used |
-| `III` | Interior functions | `>= 4` | not used | `n >= 2`, `m >= 2`, `n + m = r` |
-
-`Type II` is therefore the edge-function family. This implementation stores its
-lower enrichment levels as `IIA` and its higher enrichment levels as `IIB`.
-Both are evaluated as edge functions; the two labels distinguish their place
-in the hierarchy.
-
-For `kind == "I"`, the `side` field identifies the four reference-square
-corners in this order:
+Corner numbering is:
 
 ```text
 1 -> (-1, -1)
@@ -110,8 +143,7 @@ corners in this order:
 4 -> (-1, +1)
 ```
 
-For `kind == "IIA"` or `kind == "IIB"`, the same field identifies the four
-reference-square edges:
+Edge numbering is:
 
 ```text
 1 -> eta = -1
@@ -120,9 +152,8 @@ reference-square edges:
 4 -> xi  = -1
 ```
 
-For `kind == "III"`, `side` is not needed. The function is an interior product
-of the form $p_n(\xi)p_m(\eta)$, and the two integers `n` and `m` identify the
-polynomial orders used in the two natural directions.
+For an interior function, the reference polynomial has the form
+$`p_n(\xi)p_m(\eta)`$.
 
 Examples of complete descriptors are:
 
@@ -133,62 +164,77 @@ Examples of complete descriptors are:
 ("III", 6, None, 2,    4)
 ```
 
-The descriptor is needed because `ScaledLagrangeBasis` later builds the
-physical-coordinate power coefficients of each function. It asks the reference
-basis for `definition(tau)`, reconstructs that same reference polynomial, and
-then applies the powers of `y_scale` and `z_scale`.
+The practical consequence is important: `ScaledLagrangeBasis` inherits the
+identity of every `tau` from `SerendipityLagrangeReferenceBasis`. It scales the
+functions but does not create another numbering system.
 
-Therefore there is only one numbering of the hierarchy: the numbering defined
-by `SerendipityLagrangeReferenceBasis`. `ScaledLagrangeBasis` reuses it; it does
-not create or renumber the `tau` functions.
+### 2.3 Hierarchy size
 
-The expected hierarchy size is:
+For orders up to N3:
 
-$$ M(N)=4N,\qquad N\leq3, $$
+```math
+M(N)=4N, \qquad N\leq3
+```
 
-and:
+For N4 and above:
 
-$$ M(N)=4N+\frac{(N-2)(N-3)}{2},\qquad N\geq4. $$
+```math
+M(N)=4N+\frac{(N-2)(N-3)}{2}, \qquad N\geq4
+```
 
-### What is *not* required from `core/basis.py`
+Examples:
 
-`core/basis.py` also contains `QuadrilateralSerendipityCUFBasis`. That class is
-**not used by this `scaled_lagrange` plugin**.
+| Order | Functions |
+|---:|---:|
+| 1 | 4 |
+| 2 | 8 |
+| 3 | 12 |
+| 4 | 17 |
+| 5 | 23 |
+| 6 | 30 |
+| 10 | 68 |
+| 27 | 408 |
 
-`QuadrilateralSerendipityCUFBasis` performs a generic quadrilateral
-reference-to-physical map. `scaled_lagrange.py` instead uses the fixed global
-scaling:
+### 2.4 What is deliberately *not* used
 
-$$ \xi=\frac{y}{y_{\mathrm{scale}}},\qquad \eta=\frac{z}{z_{\mathrm{scale}}}. $$
+`core/basis.py` also contains:
 
-Do not replace the reference basis with `QuadrilateralSerendipityCUFBasis` in
-this example.
+```python
+QuadrilateralSerendipityCUFBasis
+```
 
-### Other existing infrastructure required by the plugin
+That class is not used by this plugin.
 
-The plugin also imports the following existing objects:
+`QuadrilateralSerendipityCUFBasis` performs a generic
+reference-to-physical quadrilateral mapping. `scaled_lagrange` instead uses two
+fixed global scales:
+
+```math
+\xi=\frac{y}{y_{\mathrm{scale}}},
+\qquad
+\eta=\frac{z}{z_{\mathrm{scale}}}
+```
+
+Do not replace the reference hierarchy with
+`QuadrilateralSerendipityCUFBasis` when implementing this plugin.
+
+### 2.5 Other infrastructure used by the plugin
 
 | Object | Module | Role |
 |---|---|---|
-| `CUFBasisPlugin` | `csf.cuf.core.basis_plugins` | Describes the plugin to the generic registry |
-| `register_cuf_basis_plugin` | `csf.cuf.core.basis_plugins` | Registers the YAML name `scaled_lagrange` |
-| `transverse_scales` | `csf.cuf.numerics` | Obtains `y_scale` and `z_scale` from the CSF section provider |
+| `CUFBasisPlugin` | `csf.cuf.core.basis_plugins` | Describes an expansion plugin |
+| `register_cuf_basis_plugin` | `csf.cuf.core.basis_plugins` | Registers the YAML name |
+| `transverse_scales` | `csf.cuf.numerics` | Obtains `y_scale` and `z_scale` from the section provider |
 
-These are infrastructure dependencies; they are not part of the Lagrange
-hierarchy itself.
+The common expansion builder also receives the complete
+`continuous_section_field`. This particular expansion does not need it because
+its current definition uses fixed global transverse scales obtained from the
+normalized section provider. The object is nevertheless available through the
+general plugin contract for expansions that may need the complete CSF model.
 
+### 2.6 Verify the existing reference basis
 
-The common expansion-plugin builder contract also provides the complete
-`continuous_section_field`. `scaled_lagrange` does not need it because its
-present definition is based on fixed global transverse scales obtained through
-`section_provider`. The availability of the complete CSF object is nevertheless
-part of the general interface so that a different, section-aware expansion can
-inspect the current physical model without adding expansion-specific logic to
-the CUF core.
-
-### Verify STEP 1 before creating the plugin
-
-Run this check from the repository environment:
+Run this before creating or changing `scaled_lagrange.py`:
 
 ```bash
 python - <<'PY'
@@ -219,61 +265,70 @@ print("STEP 1 core reference basis: OK")
 PY
 ```
 
-If this check passes, **do not modify `core/basis.py` for the steps below**.
-The required reference hierarchy is already available and the implementation
-can continue with `scaled_lagrange.py`.
+If this succeeds, the reference hierarchy is already available. Do not modify
+`core/basis.py` as part of the `scaled_lagrange` implementation.
 
-## 3. Mathematical definition
+---
 
-The physical transverse coordinates are scaled to reference coordinates:
+## 3. Mathematical idea
 
-$$ \xi = \frac{y}{y_{\mathrm{scale}}}, \qquad \eta = \frac{z}{z_{\mathrm{scale}}}. $$
+The plugin converts physical transverse coordinates `(y, z)` into the natural
+coordinates used by the reference hierarchy:
 
-The reference basis is defined on the square $[-1,1]\times[-1,1]$.
+```math
+\xi = \frac{y}{y_{\mathrm{scale}}},
+\qquad
+\eta = \frac{z}{z_{\mathrm{scale}}}
+```
 
-The displacement field remains
+The reference basis lives on the square $`[-1,1]\times[-1,1]`$.
 
-$$ \mathbf u(x,y,z) = \sum_{\tau=1}^{M} F_\tau(y,z)\,\mathbf u_\tau(x). $$
+The CUF displacement expansion remains:
 
-The physical transverse derivatives follow from the chain rule:
+```math
+\mathbf{u}(x,y,z)
+=
+\sum_{\tau=1}^{M}
+F_\tau(y,z)\,\mathbf{u}_\tau(x)
+```
 
-$$ F_{\tau,y} = \frac{1}{y_{\mathrm{scale}}} F_{\tau,\xi}, \qquad F_{\tau,z} = \frac{1}{z_{\mathrm{scale}}} F_{\tau,\eta}. $$
+The physical derivatives follow directly from the chain rule:
 
-The hierarchy size is
+```math
+F_{\tau,y}
+=
+\frac{1}{y_{\mathrm{scale}}}F_{\tau,\xi},
+\qquad
+F_{\tau,z}
+=
+\frac{1}{z_{\mathrm{scale}}}F_{\tau,\eta}
+```
 
-$$ M(N)=4N,\qquad N\leq3, $$
+This is the whole scaling idea. The plugin does not alter the reference
+hierarchy; it only evaluates it in scaled coordinates and converts its
+derivatives back to physical coordinates.
 
-and
-
-$$ M(N) = 4N+\frac{(N-2)(N-3)}{2}, \qquad N\geq4. $$
-
-Examples:
-
-| Order | Functions |
-|---:|---:|
-| 1 | 4 |
-| 2 | 8 |
-| 3 | 12 |
-| 4 | 17 |
-| 5 | 23 |
-| 6 | 30 |
-| 10 | 68 |
-| 27 | 408 |
+---
 
 ## 4. Create the expansion module
 
-Create this file:
+Create:
 
 ```text
 src/csf/cuf/expansions/scaled_lagrange.py
 ```
 
-Do not rename or overwrite `scaled_lagrange_q1.py`. The Q1 plugin remains a
-separate expansion.
+Do not rename or overwrite:
 
-Copy the following module **as a whole**. The class, the power-coefficient
-export, the quadrature declarations, the builder, and the plugin registration
-are all contained in this single file.
+```text
+scaled_lagrange_q1.py
+```
+
+The Q1 plugin remains a separate expansion.
+
+The implementation below is complete: it contains the basis wrapper, option
+validation, builder, power-coefficient export, quadrature declarations, and
+plugin registration.
 
 ```python
 # Version: CSF-CUF scaled hierarchical Lagrange expansion v2 - 2026-08-30
@@ -720,57 +775,160 @@ register_cuf_basis_plugin(
 
 ```
 
-## 5. How the module is organized
+---
 
-The numbered comments inside the module divide the implementation into these
-operations:
+## 5. How to read the module
 
-| Step in `scaled_lagrange.py` | What it does |
+The source is easier to understand if it is read by responsibility rather than
+line by line.
+
+| Part | Responsibility |
 |---|---|
-| `STEP 2` | Wraps the reference Lagrange hierarchy in physical scaled coordinates and implements `CUFBasis` |
-| `STEP 3` | Rejects unsupported `cuf.basis_options` |
-| `STEP 4` | Builds the basis selected by the YAML file, receives the common CSF model context, and obtains `y_scale` and `z_scale` from `section_provider` |
-| `STEP 5` | Declares the minimum sectional Gauss order |
-| `STEP 6` | Declares the transverse contribution to the longitudinal polynomial degree |
-| `STEP 7` | Registers the plugin under the YAML name `scaled_lagrange` |
+| `ScaledLagrangeBasis` | Adapts the existing reference hierarchy to physical scaled coordinates |
+| `_reject_options()` | Rejects unsupported expansion-specific YAML options |
+| `_build()` | Creates the concrete basis requested by the YAML case |
+| `_section_gauss_minimum()` | Declares the minimum sectional quadrature order |
+| `_longitudinal_transverse_degree()` | Declares the transverse contribution to the longitudinal polynomial degree estimate |
+| `register_cuf_basis_plugin(...)` | Makes `scaled_lagrange` discoverable by name |
 
-Inside `ScaledLagrangeBasis`, `_power_coefficients` is built once during
-construction. The methods `power_coefficients()`, `_reference_polynomial()` and
-`_build_power_coefficients()` are part of the class shown in Section 4; no
-additional code needs to be added later.
+### 5.1 `ScaledLagrangeBasis`
 
-The basis uses fixed global transverse scales. The optional `x` argument is
-kept because it belongs to the common `CUFBasis` calling convention, but this
-particular expansion does not use it explicitly. Likewise, the plugin receives
-the complete `continuous_section_field` through the common expansion contract
-but intentionally ignores it. Other transverse expansions may retain and query
-that object when their mathematical definition depends on the current physical
-section.
+The class owns a `SerendipityLagrangeReferenceBasis` instance:
 
-## 6. Verify syntax and plugin registration
+```python
+self._reference_basis = SerendipityLagrangeReferenceBasis(order)
+```
 
-First verify that the module is syntactically valid:
+Therefore:
+
+- `order` comes from the reference hierarchy;
+- `size` comes from the reference hierarchy;
+- `definition(tau)` comes from the reference hierarchy;
+- `tau` numbering remains unchanged.
+
+When `value()` is called, physical coordinates are scaled first:
+
+```python
+xi = float(y) / self._y_scale
+eta = float(z) / self._z_scale
+```
+
+and the reference function is then evaluated at `(xi, eta)`.
+
+When `derivative()` is called, the reference derivative is converted by the
+appropriate scale factor.
+
+### 5.2 Power coefficients
+
+The class also builds an optional polynomial representation:
+
+```math
+F_\tau(y,z)
+=
+\sum_{p,q} C_{\tau pq} y^p z^q
+```
+
+This representation is built once in `__init__`, stored read-only internally,
+and returned as a copy by `power_coefficients()`.
+
+It is not part of the mandatory `CUFBasis` contract. It is an
+expansion-specific optional export used by the displacement checkpoint
+machinery. This keeps non-polynomial future expansions free to use another
+representation.
+
+### 5.3 Builder and YAML options
+
+The builder receives:
+
+```text
+order
+section_provider
+continuous_section_field
+options
+```
+
+`scaled_lagrange` currently uses `section_provider` to obtain fixed transverse
+scales and deliberately does not use `continuous_section_field` beyond
+receiving it through the common contract.
+
+No expansion-specific `cuf.basis_options` are currently accepted.
+
+### 5.4 Section quadrature declaration
+
+For hierarchy order `N`, the plugin returns:
+
+```python
+N + 2
+```
+
+as its conservative minimum sectional Gauss order.
+
+The reasoning encoded in the source is that edge functions may reach degree
+`N + 1`, products may reach degree `2(N + 1)`, and polygon slicing can add one
+further degree to the outer one-dimensional integrand.
+
+### 5.5 Longitudinal quadrature contribution
+
+The plugin reports:
+
+```python
+2 * (N + 1)
+```
+
+as the transverse contribution to the longitudinal polynomial-degree estimate.
+
+This value is then combined by the generic solver with the independent
+geometry, material, and longitudinal finite-element contributions.
+
+### 5.6 Registration
+
+The final registration:
+
+```python
+register_cuf_basis_plugin(
+    CUFBasisPlugin(
+        name="scaled_lagrange",
+        ...
+    )
+)
+```
+
+is what connects the YAML name to the implementation.
+
+The solver itself does not need a special `scaled_lagrange` branch.
+
+---
+
+## 6. Verify syntax and plugin discovery
+
+First check the module itself:
 
 ```bash
 python -m py_compile src/csf/cuf/expansions/scaled_lagrange.py
 ```
 
-Then verify plugin discovery:
+Then verify discovery:
 
 ```bash
 python -c "from csf.cuf.core.basis_plugins import available_cuf_basis_plugins; print(available_cuf_basis_plugins())"
 ```
 
-The output must include:
+The output must contain:
 
 ```text
 scaled_lagrange
 ```
 
-No import is required in `expansions/__init__.py` when the registry uses its
-automatic discovery of modules below `csf.cuf.expansions`.
+When the registry automatically discovers modules below
+`csf.cuf.expansions`, no additional import is required in
+`expansions/__init__.py`.
 
-## 7. YAML case
+---
+
+## 7. Using the expansion from YAML
+
+Once the plugin is registered, using it does not require Python changes. Select
+it in the case YAML.
 
 Example N6 case:
 
@@ -811,43 +969,47 @@ output:
   directory: ../../../../output/taper40_deg20_scaled_lagrange/table10_N06
 ```
 
-For the N1-N27 series, change only:
+For an N1-N27 campaign, the original guide changes only:
 
 - `case.name`;
 - `cuf.order`;
 - `output.directory`.
 
+The plugin architecture therefore separates *implementing an expansion* from
+*using an expansion*: after registration, the user selects it through YAML.
 
-## 8. Power-coefficient export and optional displacement checkpoint
+---
 
-`ScaledLagrangeBasis` also exports each basis function as physical power
-coefficients. The representation is
+## 8. Displacement checkpoint support
 
-$$ F_\tau(y,z) = \sum_{p,q}C_{\tau pq}y^p z^q. $$
+`ScaledLagrangeBasis` can export every transverse function as physical
+polynomial coefficients:
 
-The public method returns a copy of the coefficients:
+```math
+F_\tau(y,z)
+=
+\sum_{p,q} C_{\tau pq} y^p z^q
+```
+
+The public method is:
 
 ```python
 def power_coefficients(self) -> np.ndarray:
     return self._power_coefficients.copy()
 ```
 
-The coefficients are constructed in `__init__` by calling
-`_build_power_coefficients()` and the stored array is then marked read-only.
-This is already part of the class created in Section 4.
-
-The solver may use this export after the KKT solve to create a self-contained
-displacement checkpoint:
+The solver may use this optional representation after the KKT solve to create a
+self-contained displacement checkpoint:
 
 ```text
 <case.name>.cuf.npz
 ```
 
-Using the checkpoint is optional. The coefficient export itself is part of
-this `ScaledLagrangeBasis` implementation.
+At a fixed longitudinal coordinate `x`, the solved CUF amplitudes and the
+transverse polynomial coefficients can then be contracted to evaluate
+$`u_x(y,z)`$, $`u_y(y,z)`$, and $`u_z(y,z)`$.
 
-At fixed `x`, the solved CUF amplitudes and transverse coefficients can be
-contracted into the section polynomials $u_x(y,z)$, $u_y(y,z)$ and $u_z(y,z)$.
+---
 
 ## 9. Verification tests
 
@@ -1361,3 +1523,4 @@ assess physical accuracy.
 - [ ] Checkpoint save/load reproduces displacement queries.
 - [ ] Consecutive N results demonstrate convergence.
 - [ ] No expansion-specific branch is added to the CUF solver core.
+
