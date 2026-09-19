@@ -52,6 +52,14 @@ The CUF core queries three independent descriptions when the corresponding infor
 
 The core combines these quantities according to the CUF formulation without containing the definition of any of them.
 
+---
+
+> [CSF–CUF quick start: prismatic rectangular beam](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/tutorials/quick_start)
+>
+> Minimal runnable example showing the basic CSF–CUF workflow with a prismatic rectangular section, a predefined torsion problem, and a basic CUF case.
+
+---
+
 ## Why use CUF?
 
 For many structural problems, a three-dimensional finite element model is the most immediate and established choice.
