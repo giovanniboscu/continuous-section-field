@@ -27,7 +27,7 @@ uz          max                       8.593199     -33.333      75.000
 SECTION x/L = 0.250   x = 250.000
 ------------------------------------------------------
 component   criterion      scaled displacement           y           z
-ux          max                       2.742079      12.500      -6.803
+ux          max                       2.742079     -12.500      -6.803
 uy          max_abs                   1.984270     -33.333     -75.000
 uz          max                       6.076609     -33.333      75.000
 
@@ -36,12 +36,12 @@ SECTION x/L = 0.500   x = 500.000
 component   criterion      scaled displacement           y           z
 ux          max                       3.877652      12.500      -6.809
 uy          max_abs                   2.803833     -33.333     -75.000
-uz          max                       0.000000       0.000      75.000
+uz          max                       0.000000       0.000     -75.000
 
 SECTION x/L = 0.750   x = 750.000
 ------------------------------------------------------
 component   criterion      scaled displacement           y           z
-ux          max                       2.742079      12.500      -6.803
+ux          max                       2.742079     -12.500      -6.803
 uy          max_abs                   1.984270     -33.333     -75.000
 uz          max                       5.987100       0.000     -75.000
 

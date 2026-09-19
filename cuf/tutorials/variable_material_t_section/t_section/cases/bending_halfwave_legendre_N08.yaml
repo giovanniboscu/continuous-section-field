@@ -12,7 +12,7 @@ cuf:
 longitudinal:
   method: finite_element
   elements: 1
-  order: 6
+  order: 12
 
 section_integration:
   method: fixed_gauss_polygon
