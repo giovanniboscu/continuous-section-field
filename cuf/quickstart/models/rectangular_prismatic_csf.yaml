@@ -1,0 +1,27 @@
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        - name: rectangle
+          weight: 71700.0
+          vertices:
+            - [-50.0, -50.0]
+            - [ 50.0, -50.0]
+            - [ 50.0,  50.0]
+            - [-50.0,  50.0]
+
+    S1:
+      z: 1000.0
+      polygons:
+        - name: rectangle
+          weight: 71700.0
+          vertices:
+            - [-50.0, -50.0]
+            - [ 50.0, -50.0]
+            - [ 50.0,  50.0]
+            - [-50.0,  50.0]
+
+  # Generates the isotropic shear carrier and Poisson ratio.
+  shear_weight_laws:
+    - 'iso(0.3)'
