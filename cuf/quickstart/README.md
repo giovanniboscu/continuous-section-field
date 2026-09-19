@@ -78,3 +78,133 @@ The solver writes the results below:
 ```text
 output/torsion_halfwave_legendre_N08
 ```
+
+
+## Understanding the response output
+
+At the end of the analysis, the solver prints a compact summary of the displacement field at a number of selected longitudinal stations and physical points of the cross-section.
+
+A typical output begins with:
+
+```text
+CSF-CUF RESPONSE
+======================
+problem.type = torsion_halfwave
+```
+
+This identifies the structural problem that has been solved.
+
+### Station responses
+
+The `STATION RESPONSES` table evaluates the continuous CUF displacement field at selected positions along the beam.
+
+```text
+x/L       x [mm]      y [mm]      z [mm]      point      ux [mm]      uy [mm]      uz [mm]
+```
+
+The columns have the following meaning:
+
+* `x/L` is the normalized longitudinal coordinate, from `0` at the first end to `1` at the second end;
+* `x [mm]` is the corresponding physical longitudinal coordinate;
+* `y [mm]` and `z [mm]` identify the physical point inside the cross-section;
+* `point` is a convenient label assigned to that sampling point;
+* `ux`, `uy`, and `uz` are the three global displacement components evaluated at that physical position.
+
+For this rectangular example, four representative points are sampled at each station:
+
+```text
+center       y =   0     z =   0
+plus         y = -50     z =  50
+minus        y =  50     z = -50
+bottom_mid   y =   0     z = -50
+```
+
+### Clamped ends
+
+At `x/L = 0` and `x/L = 1`, all displacement components are essentially zero.
+
+For example, at the first end:
+
+```text
+center   ux =  2.23e-20
+         uy =  2.34e-32
+         uz = -7.28e-33
+```
+
+and the displacements of the other sampled points are of the order of `10^-16 mm` or smaller.
+
+These values are numerical round-off and represent zero for the present analysis.
+
+This is the expected result because `torsion_halfwave` imposes fully clamped conditions on both end cross-sections:
+
+```text
+u_x = u_y = u_z = 0
+```
+
+### Torsional deformation
+
+Away from the supports, the transverse displacements become non-zero.
+
+At mid-span, `x/L = 0.5`, the two opposite corner points give:
+
+```text
+plus:
+    uy =  1.3229e-02 mm
+    uz =  1.3596e-02 mm
+
+minus:
+    uy = -1.3229e-02 mm
+    uz = -1.3596e-02 mm
+```
+
+The equal magnitudes and opposite signs are characteristic of the rotational deformation of the cross-section under torsion.
+
+The center of the section, by contrast, has practically zero transverse displacement:
+
+```text
+uy = -2.86e-18 mm
+uz =  8.39e-19 mm
+```
+
+so the dominant motion of the section is rotational rather than a rigid transverse translation.
+
+### Longitudinal symmetry
+
+The response is symmetric with respect to the beam mid-span.
+
+For example, the transverse corner displacement at `x/L = 0.25` is:
+
+```text
+plus:
+    uy = 9.4013e-03 mm
+    uz = 9.6593e-03 mm
+```
+
+and exactly the same values are obtained at `x/L = 0.75`.
+
+The largest transverse response occurs around the middle of the beam, consistently with the half-wave loading law, whose amplitude is zero at the ends and maximum at mid-span.
+
+The longitudinal displacement `ux`, associated with the three-dimensional torsional/warping response, instead changes sign across mid-span. For example, at the section center:
+
+```text
+x/L = 0.25   ux =  2.7433e-05 mm
+x/L = 0.50   ux ≈ 0
+x/L = 0.75   ux = -2.7433e-05 mm
+```
+
+This antisymmetry is consistent with the symmetry of the fixed-fixed torsion problem.
+
+### Continuous displacement field
+
+The values printed in the table are only selected samples of the solution.
+
+CUF does not define the displacement only at these points. Once the CUF amplitudes have been solved, the displacement field
+
+```text
+u(x, y, z)
+```
+
+is continuous inside the represented beam domain and can be evaluated at other physical positions of the cross-section and along the longitudinal direction.
+
+The station table therefore provides a compact set of checkpoints for inspecting the calculated structural response.
+
