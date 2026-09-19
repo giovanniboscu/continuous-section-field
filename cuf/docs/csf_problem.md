@@ -1,11 +1,11 @@
 ## Defining loads and boundary conditions
 
-The structural problem is kept outside the generic CUF solver.
+The structural problem is kept outside the generic CUF core.
 
 For the present bending example, the case YAML selects the structural
 problem adapter:
 
-``` yaml
+```yaml
 problem:
   yaml: ../../../problems/bending/hollow_rectangle_bending_halfwave.yaml
   adapter: ../../../adapters/bending/problem.py
@@ -14,57 +14,67 @@ problem:
 The adapter is the user-facing programmable location where loads and
 boundary conditions are defined.
 
-It does not implement a dedicated CUF solver. Instead, it connects the
-particular structural problem to the generic solver through the common
-CSF-CUF problem interfaces.
+It does not implement a dedicated CUF solver. Instead, it uses the
+general numerical services exposed by the CSF-CUF infrastructure while
+keeping the physical definition of the structural problem outside the
+CUF core.
 
 For this example, the adapter defines:
 
-``` python
+```python
 class HollowRectangleBendingProblem:
 ```
 
-and exposes two principal operations used by the generic solver:
+and exposes two principal operations:
 
-``` python
-build_loads(...)
+```python
+build_load_vector(...)
 build_constraints(...)
 ```
 
-The CUF core is therefore not modified when the structural loading or
-the boundary conditions are changed.
+The CUF core therefore does not contain any knowledge of the physical
+load type or of the boundary-condition configuration used by this
+problem.
+
+A different structural loading can be introduced through the adapter
+without modifying the CUF core.
 
 ### Loads
 
 Loads are constructed by:
 
-``` python
-def build_loads(
+```python
+def build_load_vector(
     self,
     *,
     section_provider,
     basis,
+    mesh,
+    dof_layout,
+    longitudinal_integrator,
     x0: float,
     x1: float,
 ):
 ```
 
-The generic solver supplies the adapter with the current continuous
-section provider, the selected CUF transverse basis, and the beginning
-and end coordinates of the longitudinal domain.
+Before the load adapter is called, the solver has already constructed the
+longitudinal discretization and the global CUF degree-of-freedom layout.
 
-For the present case, the load is a sinusoidal pressure applied to the
-actual bottom material boundary of the section.
+The adapter therefore receives the numerical infrastructure required to
+construct its contribution directly in the global load vector.
+
+For the present case, the physical load is a sinusoidal pressure applied
+to the actual bottom material boundary of the section.
 
 The current section is queried directly through:
 
-``` python
+```python
 for domain in section_provider.domains(float(x)):
 ```
 
 and the current transverse bounds through:
 
-``` python
+```python
 transverse_bounds(section_provider, float(x))
 ```
 
@@ -74,63 +84,85 @@ the loaded boundary are identified from the current sectional state.
 The load projection therefore operates on the physical boundary supplied
 by
 
-``` math
+```math
 \mathcal{S}(x)
 ```
 
-rather than on a boundary embedded in the CUF solver.
+rather than on a boundary embedded in the CUF core.
 
 For every CUF transverse function the adapter evaluates:
 
-``` python
+```python
 basis.value(tau, y, z_face)
 ```
 
 and computes:
 
-``` math
-B_\tau(x)=\int_{\Gamma(x)}F_\tau(y,z)\,\mathrm{d}s
+```math
+B_\tau(x)
+=
+\int_{\Gamma(x)}
+F_\tau(y,z)\,\mathrm{d}s
 ```
 
 The longitudinal pressure law is:
 
-``` math
-p(x)=p_0\sin\left(\frac{\pi(x-x_0)}{L}\right)
+```math
+p(x)
+=
+p_0
+\sin\left(
+\frac{\pi(x-x_0)}{L}
+\right)
 ```
 
 with
 
-``` math
+```math
 L=x_1-x_0
 ```
 
-and the generalized load is:
+and the corresponding generalized longitudinal contribution is:
 
-``` math
-q_\tau(x)=-p_0\sin\left(\frac{\pi(x-x_0)}{L}\right)B_\tau(x)
+```math
+q_\tau(x)
+=
+-p_0
+\sin\left(
+\frac{\pi(x-x_0)}{L}
+\right)
+B_\tau(x)
 ```
 
-The adapter exposes each generalized load through:
+The adapter then uses the common longitudinal integration machinery:
 
-``` python
-GeneralizedLongitudinalLoad(
-    tau=tau,
-    component="z",
-    field=ModeSurfaceLoadField(projector, tau),
+```python
+longitudinal_integrator.integrate_linear(
+    element=element,
+    load=field.value,
 )
 ```
 
-The longitudinal variation implements the common interface:
+to project the longitudinal contribution onto the finite-element shape
+functions.
 
-``` python
-class ModeSurfaceLoadField(ScalarLoadField):
-    def value(self, x: float) -> float:
-        ...
+For each resulting nodal contribution, the global CUF degree of freedom
+is obtained through:
+
+```python
+dof_layout.index(
+    node=node,
+    tau=tau,
+    component=component,
+)
 ```
+
+and the contribution is accumulated directly into the global load
+vector.
 
 The load path is therefore:
 
-``` text
+```text
 physical surface pressure
         |
         v
@@ -146,20 +178,65 @@ basis.value(tau, y, z)
 sectional projection onto F_tau
         |
         v
-ScalarLoadField
+q_tau(x)
         |
         v
-GeneralizedLongitudinalLoad
+longitudinal FE integration
         |
         v
-generic CUF solver
+GlobalDOFLayout
+        |
+        v
+global load vector
+        |
+        v
+generic CUF core
 ```
+
+No load-specific object is passed to the CUF core.
+
+In particular, the core does not distinguish between surface loads,
+point loads, torsional loads, half-wave loads, or any other present or
+future physical loading.
+
+Each problem adapter is responsible for converting its physical loading
+into a numerical contribution to the global load vector.
+
+The CUF core receives only the resulting vector.
+
+### Global degree-of-freedom layout
+
+The global degree-of-freedom layout is constructed from the
+longitudinal discretization before stiffness and load assembly.
+
+It provides the common mapping:
+
+```text
+(node, tau, component) -> global DOF
+```
+
+and is shared by both the stiffness assembler and the problem adapter.
+
+The adapter does not define or modify the global numbering. It only uses
+the layout supplied by the CUF infrastructure:
+
+```python
+dof_layout.index(
+    node=node,
+    tau=tau,
+    component=component,
+)
+```
+
+This keeps the global CUF organization entirely under the control of the
+core while allowing external problem adapters to construct their load
+vectors independently.
 
 ### Boundary conditions
 
 Boundary conditions are constructed by:
 
-``` python
+```python
 def build_constraints(
     self,
     *,
@@ -172,13 +249,13 @@ def build_constraints(
 
 The adapter accesses the CUF degree-of-freedom layout through:
 
-``` python
+```python
 layout = assembled.dof_layout
 ```
 
 Individual generalized degrees of freedom are addressed through:
 
-``` python
+```python
 layout.index(
     node=node,
     tau=tau,
@@ -189,7 +266,7 @@ layout.index(
 For this simply supported bending problem, transverse generalized
 amplitudes are constrained at the two end sections:
 
-``` python
+```python
 for node in (0, mesh.number_of_nodes - 1):
     for component in (1, 2):
         for tau in range(1, int(basis.size) + 1):
@@ -208,13 +285,13 @@ without suppressing an admissible axial deformation mode.
 
 It uses the selected transverse basis:
 
-``` python
+```python
 basis.value(tau, 0.0, 0.0)
 ```
 
 and the common longitudinal integration API:
 
-``` python
+```python
 longitudinal_integrator.integrate_linear(
     element=element,
     load=lambda x: 1.0,
@@ -223,7 +300,7 @@ longitudinal_integrator.integrate_linear(
 
 The complete constraint system is returned through:
 
-``` python
+```python
 LinearConstraintSystem(
     matrix=A,
     rhs=b,
@@ -233,55 +310,38 @@ LinearConstraintSystem(
 
 ### Problem-adapter API
 
-  -------------------------------------------------------------------------------------
-  API                                               Role
-  ------------------------------------------------- -----------------------------------
-  `section_provider.domains(x)`                     Query the physical domains of the
-                                                    current section `S(x)`
+| API                                             | Role                                                                                     |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `section_provider.domains(x)`                   | Query the physical domains of the current section `S(x)`                                 |
+| `transverse_bounds(section_provider, x)`        | Obtain the current transverse section bounds                                             |
+| `basis.value(tau, y, z)`                        | Evaluate the selected CUF transverse function                                            |
+| `basis.size`                                    | Obtain the number of available transverse functions                                      |
+| `mesh`                                          | Access the longitudinal finite-element discretization                                    |
+| `dof_layout`                                    | Access the global CUF degree-of-freedom organization                                     |
+| `dof_layout.index(...)`                         | Map `(node, tau, component)` to a global CUF degree of freedom                           |
+| `longitudinal_integrator.integrate_linear(...)` | Integrate a longitudinal scalar contribution against the longitudinal FE shape functions |
+| `LinearConstraintSystem`                        | Return the complete constraint system to the solver                                      |
 
-  `transverse_bounds(section_provider, x)`          Obtain the current transverse
-                                                    section bounds
+The adapter therefore depends only on general numerical services exposed
+by the CSF-CUF infrastructure.
 
-  `basis.value(tau, y, z)`                          Evaluate the selected CUF
-                                                    transverse function
+It does not require the CUF core to understand the physical meaning of a
+load.
 
-  `basis.size`                                      Obtain the number of active
-                                                    transverse functions
+A new structural problem can define a different load law, load
+localization, sectional projection, or boundary-condition configuration
+while leaving unchanged:
 
-  `ScalarLoadField.value(x)`                        Define a generalized longitudinal
-                                                    load field
-
-  `GeneralizedLongitudinalLoad`                     Pass a generalized CUF load to the
-                                                    solver
-
-  `assembled.dof_layout`                            Access the global CUF DOF
-                                                    organization
-
-  `dof_layout.index(...)`                           Address a generalized CUF DOF
-
-  `longitudinal_integrator.integrate_linear(...)`   Integrate a longitudinal scalar
-                                                    contribution
-
-  `LinearConstraintSystem`                          Pass the complete constraint system
-                                                    to the solver
-  -------------------------------------------------------------------------------------
-
-The adapter imports the common interfaces directly from the CSF-CUF
-infrastructure:
-
-``` python
-from csf.cuf.problem.point_bc import LinearConstraintSystem
-from csf.cuf.problem.problem import (
-    GeneralizedLongitudinalLoad,
-    ScalarLoadField,
-)
-```
-
-A new structural problem can therefore define different loads and
-boundary conditions through the problem adapter while leaving the
-continuous section representation, CUF core, transverse expansion
-implementation, longitudinal finite-element machinery, and global solver
-unchanged.
+* the continuous section representation;
+* the CUF core;
+* the transverse expansion implementation;
+* the longitudinal finite-element machinery;
+* the stiffness assembler;
+* the global solver.
 
 The structural problem is consequently a programmable external component
-of the analysis rather than a specialization embedded in the CUF core.
+of the analysis.
+
+The CUF core provides the numerical machinery, while the problem adapter
+provides the physical problem definition and converts it into the
+numerical quantities required by that machinery.
