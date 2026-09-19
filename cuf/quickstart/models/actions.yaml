@@ -8,7 +8,7 @@ CSF_ACTIONS:
         params:
           seed: s
           title: "Not prismatic"  
-          equalize_z: false       
+          equalize_z: true       
 
     - plot_volume_3d:
         params:
