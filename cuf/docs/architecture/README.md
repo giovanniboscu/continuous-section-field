@@ -2,7 +2,7 @@
 
 This directory documents the current CSF-CUF execution architecture, from YAML input to result-file generation.
 
-The diagrams are written in Mermaid and render directly on GitHub.
+The diagrams are written in Mermaid and render directly on GitHub. Mathematical expressions in the user-facing documentation use GitHub-compatible `math` blocks and inline math syntax.
 
 ## Contents
 
@@ -10,6 +10,7 @@ The diagrams are written in Mermaid and render directly on GitHub.
 - [Architecture by responsibility](./02_responsibilities.md)
 - [Execution sequence](./03_execution_sequence.md)
 - [Load path and solver boundary](./04_load_path.md)
+- [Defining loads and boundary conditions](./05_defining_loads_and_boundary_conditions.md)
 
 Standalone Mermaid sources are available in [`diagrams/`](./diagrams/).
 
