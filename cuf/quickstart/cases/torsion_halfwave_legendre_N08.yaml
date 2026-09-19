@@ -1,0 +1,28 @@
+case:
+  name: rectangular_prismatic_torsion_halfwave_legendre_N08
+
+problem:
+  yaml: ../problems/torsion_halfwave.yaml
+  adapter: csf.cuf.adapters.problem.torsion_halfwave
+
+cuf:
+  basis: scaled_legendre
+  order: 8
+
+longitudinal:
+  method: finite_element
+  elements: 1
+  order: 6
+
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 6
+
+sampling:
+  stations: [0.00, 0.25, 0.50, 0.75, 1.00]
+  displacement_samples: 201
+  stress_grid: 31
+
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../output/torsion_halfwave_legendre_N08
