@@ -1,8 +1,10 @@
 # CSF-CUF quick start
 
-The three elements introduced in this Quick Start - **the model** , **the problem**, and **the case** - should not be understood as three consecutive steps of a processing pipeline. They are three distinct objects that work together to define the same analysis.
-The model describes the physical system, the problem defines how that system is constrained and loaded, and the case specifies how the CUF formulation is used for that analysis.
-The solver operates on these objects together: they are different descriptions of the problem being solved, not intermediate data produced one after another
+The three elements introduced in this Quick Start - **the model**, **the problem**, and **the case** - form a **component composition** and should not be understood as consecutive steps in a processing pipeline. They are three distinct objects that are composed together to define a single analysis.
+
+The **model** describes the physical system, the **problem** defines how that system is constrained and loaded, and the **case** specifies how the CUF formulation is applied to the analysis.
+
+The solver uses these objects together. None of them is an intermediate result produced by another: they are independent descriptions of different aspects of the same problem.
 
 ```text
 .
