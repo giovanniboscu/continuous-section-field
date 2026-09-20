@@ -82,6 +82,12 @@ The solver writes the results below:
 output/torsion_halfwave_legendre_N08
 ```
 
+## Next step
+
+To understand how these components fit together within the overall CSF-CUF architecture, continue with:
+
+[**Inside the CSF-CUF architecture**](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/readme.md)
+
 
 ## Understanding the response output
 
