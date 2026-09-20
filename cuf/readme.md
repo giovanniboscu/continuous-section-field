@@ -17,8 +17,6 @@ The same principle is applied to the transverse approximation. The expansion law
 
 This separation is the main architectural principle behind the implementation:
 
-**physical description → transverse representation → CUF formulation**
-
 The objective is to preserve the CUF formulation while changing the way the physical problem is made available to it.
 
 This separation is the main architectural principle behind the implementation:
