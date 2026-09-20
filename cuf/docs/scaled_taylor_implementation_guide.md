@@ -31,34 +31,34 @@ The reason for keeping `scaled_taylor` separate is semantic and practical: it ex
 ## 2. Mathematical definition
 
 Let the Taylor centre be
-$$
+```math
 (y_c,z_c).
-$$
+```
 Let the global transverse scales supplied by the CSF geometry be
-$$
+```math
 y_s>0, \qquad z_s>0.
-$$
+```
 Define the shifted scaled coordinates
-$$
+```math
 Y=\frac{y-y_c}{y_s},
 \qquad
 Z=\frac{z-z_c}{z_s}.
-$$
+```
 For expansion order `N`, the complete Taylor basis contains all monomials
-$$
+```math
 F_{pq}(y,z)=Y^p Z^q,
 \qquad p\ge 0,\ q\ge 0,\ p+q\le N.
-$$
+```
 The CUF displacement field remains
-$$
+```math
 \mathbf u(x,y,z)
 =
 \sum_{\tau=1}^{M}F_\tau(y,z)\,\mathbf u_\tau(x).
-$$
+```
 The number of transverse functions is
-$$
+```math
 M(N)=\frac{(N+1)(N+2)}{2}.
-$$
+```
 Examples:
 
 | Order N | Functions M |
@@ -73,38 +73,38 @@ Examples:
 | 20 | 231 |
 
 The physical transverse derivatives are
-$$
+```math
 \frac{\partial F_{pq}}{\partial y}
 =
 \begin{cases}
 0, & p=0,\\
 \dfrac{p}{y_s}Y^{p-1}Z^q, & p>0,
 \end{cases}
-$$
+```
 and
-$$
+```math
 \frac{\partial F_{pq}}{\partial z}
 =
 \begin{cases}
 0, & q=0,\\
 \dfrac{q}{z_s}Y^pZ^{q-1}, & q>0.
 \end{cases}
-$$
+```
 No derivative with respect to `x` is introduced by this expansion. The Taylor centre and the transverse scales are fixed for the basis instance, therefore
-$$
+```math
 F_\tau=F_\tau(y,z).
-$$
+```
 ### 2.1 Relation with the existing `scaled_maclaurin`
 
 The existing `ScaledMaclaurinBasis` evaluates
-$$
+```math
 \left(\frac{y}{y_s}\right)^p
 \left(\frac{z}{z_s}\right)^q.
-$$
+```
 Therefore `scaled_taylor` with
-$$
+```math
 y_c=0,\qquad z_c=0
-$$
+```
 is algebraically identical to `scaled_maclaurin` for the same order and scales.
 
 This gives a strong regression test: with a zero Taylor centre, both bases must produce the same values and transverse derivatives for every `tau`.
@@ -114,13 +114,13 @@ This gives a strong regression test: with a zero Taylor centre, both bases must 
 A classical Taylor series is commonly written with coefficients divided by factorials. In a CUF expansion, however, the generalized displacement amplitudes are independent unknowns. Multiplying each basis function by a non-zero constant only rescales the associated generalized unknown and does not change the polynomial approximation space.
 
 For consistency with the existing CUF monomial expansion and with standard CUF Taylor-expansion notation, the basis is therefore kept as
-$$
+```math
 Y^pZ^q
-$$
+```
 rather than
-$$
+```math
 \frac{Y^pZ^q}{p!q!}.
-$$
+```
 ---
 
 ## 3. Stable `tau` numbering
@@ -427,9 +427,9 @@ The scales remain automatic and are obtained from `transverse_scales(section_pro
 At order `N`, every basis function has total transverse polynomial degree at most `N`.
 
 A product of two basis functions therefore has total degree at most
-$$
+```math
 2N.
-$$
+```
 The same degree statement holds after translation by `(y_c,z_c)`: translation changes polynomial coefficients, not polynomial degree.
 
 Therefore the same minimum used by `scaled_maclaurin` is retained:
@@ -440,9 +440,9 @@ def _section_gauss_minimum(basis):
 ```
 
 An `(N+1)`-point Gauss-Legendre rule is exact through one-dimensional polynomial degree
-$$
+```math
 2(N+1)-1=2N+1,
-$$
+```
 which provides the same conservative rule already adopted for the existing complete monomial basis.
 
 ---
@@ -452,9 +452,9 @@ which provides the same conservative rule already adopted for the existing compl
 The Taylor shift does not increase polynomial degree.
 
 If the transverse physical coordinates vary affinely along `x`, a basis monomial of total degree `N` contributes at most degree `N` in `x`. A product of two transverse basis functions therefore contributes at most
-$$
+```math
 2N.
-$$
+```
 Use:
 
 ```python
@@ -656,13 +656,13 @@ Only after this zero-centre equivalence test should non-zero Taylor centres be u
 Changing the Taylor centre does **not** change the finite-dimensional polynomial space when the same complete order `N` is retained.
 
 For any fixed `N`, the bases
-$$
+```math
 \{y^p z^q : p+q\le N\}
-$$
+```
 and
-$$
+```math
 \{(y-y_c)^p(z-z_c)^q : p+q\le N\}
-$$
+```
 span the same polynomial space.
 
 Therefore, in exact arithmetic and with a complete basis, changing `(y_c,z_c)` is a change of coordinates inside the same approximation space, not a richer or poorer kinematic model.
@@ -676,28 +676,28 @@ This distinction should be stated explicitly in the documentation.
 ## 12. Optional physical power-coefficient export
 
 If the displacement checkpoint requires `power_coefficients()`, the shifted basis can be converted exactly to powers of physical `y` and `z` using the binomial theorem:
-$$
+```math
 \left(\frac{y-y_c}{y_s}\right)^p
 \left(\frac{z-z_c}{z_s}\right)^q.
-$$
+```
 Expand each factor as
-$$
+```math
 (y-y_c)^p
 =
 \sum_{i=0}^{p}
 \binom{p}{i}
 y^i(-y_c)^{p-i},
-$$
+```
 and
-$$
+```math
 (z-z_c)^q
 =
 \sum_{j=0}^{q}
 \binom{q}{j}
 z^j(-z_c)^{q-j}.
-$$
+```
 Hence
-$$
+```math
 F_{pq}(y,z)
 =
 \sum_{i=0}^{p}
@@ -706,7 +706,7 @@ F_{pq}(y,z)
 (-y_c)^{p-i}(-z_c)^{q-j}}
 {y_s^p z_s^q}
 \,y^i z^j.
-$$
+```
 This gives a direct exact `power_coefficients()` implementation without symbolic algebra.
 
 A compact implementation is:
@@ -762,13 +762,13 @@ This gives a clean new expansion plugin while keeping the architectural separati
 ## 14. Summary
 
 The proposed `scaled_taylor` plugin is the shifted counterpart of the existing complete scaled Maclaurin basis:
-$$
+```math
 F_{pq}(y,z)
 =
 \left(\frac{y-y_c}{y_s}\right)^p
 \left(\frac{z-z_c}{z_s}\right)^q,
 \qquad p+q\le N.
-$$
+```
 It requires no solver-specific branch and no modification of the CUF equations.
 
 The default centre `(0,0)` provides an exact regression bridge to `scaled_maclaurin`. A non-zero centre then allows the same polynomial CUF space to be represented around an arbitrary physical point, making the Taylor interpretation explicit and providing a controlled way to study the numerical effect of basis translation.
