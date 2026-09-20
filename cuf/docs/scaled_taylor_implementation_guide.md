@@ -111,16 +111,27 @@ This gives a strong regression test: with a zero Taylor centre, both bases must 
 
 ### 2.2 Why no factorial appears in the basis
 
-A classical Taylor series is commonly written with coefficients divided by factorials. In a CUF expansion, however, the generalized displacement amplitudes are independent unknowns. Multiplying each basis function by a non-zero constant only rescales the associated generalized unknown and does not change the polynomial approximation space.
+In a classical Taylor series, the factorial factors arise because the coefficients are defined directly from derivatives of the expanded function at the expansion centre.
 
-For consistency with the existing CUF monomial expansion and with standard CUF Taylor-expansion notation, the basis is therefore kept as
+In the present CUF formulation, `scaled_taylor` instead denotes a complete polynomial basis expressed in shifted and scaled transverse coordinates. The generalized CUF amplitudes are independent unknowns determined by the structural problem; they are not identified with derivatives of the displacement field evaluated at the Taylor centre.
+
+Therefore the factorial normalization of the classical Taylor-series coefficients is not required. The basis is written as
+
 ```math
-Y^pZ^q
+Y^p Z^q
 ```
+
 rather than
+
 ```math
-\frac{Y^pZ^q}{p!q!}.
+\frac{Y^p Z^q}{p!q!}.
 ```
+
+Including the factor `1/(p!q!)` would only multiply each basis function by a non-zero constant and would therefore rescale the corresponding generalized CUF amplitude. It would not change the finite-dimensional polynomial approximation space spanned by the complete basis.
+
+Thus, in `scaled_taylor`, the word *Taylor* refers to the use of a complete polynomial basis centred at `(y_c,z_c)`, not to the literal reconstruction of a known function from its derivatives as in a classical Taylor series.
+
+The choice of normalization can still affect the numerical scaling and conditioning of the algebraic system, even though it does not change the approximation space.
 ---
 
 ## 3. Stable `tau` numbering
