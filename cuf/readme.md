@@ -6,6 +6,7 @@
 >
 >The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
 
+This repository currently focuses on **single one-dimensional beam members**. General assemblies of multiple connected members are outside the present implementation scope.
 
 The implementation of CSF–CUF is based on a simple guiding idea: the numerical solver should not contain the physical description of the structure.
 
