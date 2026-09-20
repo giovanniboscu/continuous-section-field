@@ -1,5 +1,5 @@
 
-# A CUF Solver 
+# Inside the CSF-CUF
 
 
 >[CSF–CUF tutorial: non-prismatic variable-material T-section](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/README.md)
