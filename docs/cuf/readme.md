@@ -4,7 +4,8 @@
 >
 > **[Open the CUF implementation README](../../cuf/readme.md)**
 
-# What is the Carrera Unified Formulation?
+# The foundational idea behind CSF-CUF
+
 
 The mathematical idea underlying the Carrera Unified Formulation is not specific to structural mechanics. It begins with the general possibility of representing, or approximating, a function through an expansion in a chosen set of basis functions.
 
