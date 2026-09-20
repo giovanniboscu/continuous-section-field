@@ -2,7 +2,7 @@
 >
 > Implementation details, usage instructions, configuration, and examples for the CUF solver are available in the dedicated README:
 >
-> **[Open the CUF implementation README](../../cuf/readme.md)**
+> **[Inside the CSF-CUF](../../cuf/readme.md)**
 
 # The foundational idea behind CSF-CUF
 
