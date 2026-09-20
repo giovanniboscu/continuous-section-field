@@ -1,5 +1,7 @@
 # CSF-CUF quick start
 
+This Quick Start considers a **single one-dimensional beam member**. General assemblies of multiple connected members are outside the present implementation scope.
+
 The three elements introduced in this Quick Start - **the model**, **the problem**, and **the case** - form a **component composition** and should not be understood as consecutive steps in a processing pipeline. They are three distinct objects that are composed together to define a single analysis.
 
 The **model** describes the physical system, the **problem** defines how that system is constrained and loaded, and the **case** specifies how the CUF formulation is applied to the analysis.
