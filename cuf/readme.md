@@ -99,6 +99,7 @@ If you are a student, a researcher, or simply curious about how and why the meth
 
 The goal is not to impose a way of doing things, but to propose one. If something is unclear, if you think something could be improved, or if you have an idea for a different implementation, that is exactly the kind of interaction this project is meant to encourage.
 
+> **Note:** For a general description of the CSF–CUF architecture, formulation, and solver workflow, see the [CUF solver documentation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cuf/readme.md).
 
 ### Mathematical Formulation of the CSF–CUF Coupling
 
