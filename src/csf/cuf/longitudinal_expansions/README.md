@@ -1,4 +1,4 @@
-# Longitudinal basis plugins — v3 (2026-09-21)
+# Longitudinal basis plugins - v3 (2026-09-21)
 
 The longitudinal approximation is isolated from the longitudinal finite-element
 implementation.
