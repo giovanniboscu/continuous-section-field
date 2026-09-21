@@ -6,7 +6,6 @@
 
 # The foundational idea behind CSF-CUF
 
-
 The mathematical idea underlying the Carrera Unified Formulation is not specific to structural mechanics. It begins with the general possibility of representing, or approximating, a function through an expansion in a chosen set of basis functions.
 
 Consider a scalar function $f(y,z)$ defined over a two-dimensional domain. Given a suitable family of functions $F_\tau(y,z)$, one may formally write
@@ -88,11 +87,11 @@ The **kinematic theory** is therefore determined by the selected transverse appr
 
 ---
 
-## Longitudinal discretization
+## Longitudinal approximation and finite-element discretization
 
 The functions $\mathbf{u}_\tau(x)$ remain unknown functions of the longitudinal coordinate.
 
-When a finite element discretization is adopted along the beam axis, they are approximated through longitudinal shape functions $N_i(x)$:
+When a finite-element discretization is adopted along the beam axis, their variation inside each longitudinal element can be approximated through a selected longitudinal basis $N_i(x)$:
 
 ```math
 \mathbf{u}_\tau(x)
@@ -113,12 +112,32 @@ F_\tau(y,z)
 \mathbf{q}_{\tau i}
 ```
 
-The approximation therefore contains two distinct ingredients:
+The complete displacement approximation therefore contains two distinct approximation spaces:
 
-* the transverse expansion $F_\tau(y,z)$, which describes the admissible variation over the cross-section;
-* the longitudinal interpolation $N_i(x)$, which approximates the variation of the generalized displacement functions along the beam axis.
+* the transverse basis $F_\tau(y,z)$, which describes the admissible variation over the cross-section;
+* the longitudinal basis $N_i(x)$, which describes the variation along the beam axis.
 
-Neither of these defines the physical geometry or the material distribution of the member.
+The longitudinal basis must in turn be distinguished from the finite-element discretization itself.
+
+The **finite-element topology** determines how the longitudinal domain is partitioned into elements and how those elements are connected.
+
+The **longitudinal basis** determines how the unknown field is represented inside each element.
+
+Schematically,
+
+```text
+longitudinal representation
+│
+├── finite-element partition and connectivity
+│
+└── longitudinal basis N_i(x)
+```
+
+These two ingredients cooperate, but they do not represent the same modelling choice.
+
+Changing the longitudinal element partition changes where the domain is discretized. Changing the longitudinal basis changes how the solution is approximated within that discretization.
+
+Neither the transverse nor the longitudinal approximation defines the physical geometry or the material distribution of the member.
 
 ---
 
@@ -205,7 +224,7 @@ F_\tau = F_\tau(y,z)
 
 while the longitudinal variation of geometry and material is supplied independently by the Continuous Section Field through $\mathcal{S}(x)$.
 
-The important distinction is that the physical variation of the member is represented by the sectional field itself; it does not need to be encoded into the transverse expansion functions.
+The important distinction is that the physical variation of the member is represented by the sectional field itself; it does not need to be encoded into either the transverse or the longitudinal approximation functions.
 
 ---
 
@@ -241,37 +260,47 @@ and
 
 while the displacement approximation introduces the transverse functions $F_\tau(y,z)$ and the longitudinal functions $N_i(x)$.
 
-The formulation consequently requires three conceptually distinct kinds of information:
+At the architectural level, the formulation consequently brings together four distinct kinds of information:
 
 * the **physical sectional state**, supplied by the Continuous Section Field;
-* the **transverse approximation**, supplied by the selected expansion;
-* the **longitudinal interpolation**, supplied by the finite element discretization.
+* the **transverse approximation**, supplied by the selected transverse basis;
+* the **longitudinal approximation**, supplied by the selected longitudinal basis;
+* the **longitudinal discretization**, supplied by the finite-element topology.
 
-These components can therefore be provided independently to the CUF core.
+These descriptions can remain separate while being combined by the CUF core during integration and assembly.
 
 ```mermaid
 flowchart LR
     CUF["CUF core"]
 
     CSF["Continuous Section Field<br/>S(x)"]
-    EXP["Transverse expansion<br/>F_tau(y,z)"]
-    FE["Longitudinal FE<br/>N_i(x)"]
+    TEXP["Transverse basis<br/>F_tau(y,z)"]
+
+    LONG["Longitudinal representation"]
+    LBASIS["Longitudinal basis<br/>N_i(x)"]
+    FETOP["FE partition / topology"]
+
+    LONG --> LBASIS
+    LONG --> FETOP
 
     CUF -->|"query sectional state"| CSF
     CSF -->|"Omega(x), C(x,y,z), ..."| CUF
 
-    CUF -->|"query expansion"| EXP
-    EXP -->|"F_tau and derivatives"| CUF
+    CUF -->|"query transverse approximation"| TEXP
+    TEXP -->|"F_tau and derivatives"| CUF
 
-    CUF -->|"query interpolation"| FE
-    FE -->|"N_i and derivatives"| CUF
+    CUF -->|"query longitudinal representation"| LONG
+    LBASIS -->|"N_i and derivatives"| CUF
+    FETOP -->|"element support and connectivity"| CUF
 
     CUF --> ASM["Integration and assembly"]
 ```
 
-The diagram is therefore not an additional modeling assumption. It is the computational representation of a separation already visible in the formulation.
+The diagram is therefore not an additional modelling assumption. It is the computational representation of separations already visible in the formulation.
 
-The CUF core does not need to construct the physical section or prescribe a particular transverse expansion family. It requires only the quantities needed to evaluate the governing equations.
+The CUF core does not need to construct the physical section, prescribe a particular transverse expansion family, or identify the longitudinal basis with the finite-element topology.
+
+It combines the quantities supplied by these independent descriptions according to the governing formulation.
 
 ---
 
@@ -310,6 +339,6 @@ This distinction separates the **physical description of the member** from the *
 
 The quadrature determines where the field is sampled; it does not define how geometry or material properties vary along the member.
 
-Geometry and material variation are properties of the Continuous Section Field, while the CUF discretization, quadrature rule, and transverse approximation determine how this physical description is used in the numerical solution.
+Geometry and material variation are properties of the Continuous Section Field, while the transverse basis, longitudinal basis, finite-element discretization, and quadrature rules determine how this physical description is used in the numerical solution.
 
 For the complete variable-section formulation, see [CSF-CUF Formulation for Directly Prescribed Variable Sections](../model/csf_cuf_formal_variable_section_extension.md).
