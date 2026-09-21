@@ -1,3 +1,4 @@
+# Version: CSF-CUF normalized longitudinal partition v3 - 2026-09-21
 #!/usr/bin/env python3
 from __future__ import annotations
 
@@ -155,11 +156,27 @@ def run(case_path, *, progress=True):
         print(f"CUF expansion       = segmented: {segment_summary}")
     else:
         print(f"CUF order           = {case.cuf.order}")
-    print(
-        f"longitudinal FE     = "
-        f"{case.longitudinal.elements} x order "
-        f"{case.longitudinal.order}"
-    )
+    if case.longitudinal.elements is not None:
+        print(
+            f"longitudinal FE     = "
+            f"{case.longitudinal.elements} uniform elements x order "
+            f"{case.longitudinal.order}"
+        )
+    else:
+        print(
+            f"longitudinal FE     = "
+            f"{case.longitudinal.number_of_elements} explicit elements x order "
+            f"{case.longitudinal.order}"
+        )
+        print(
+            "element boundaries  = "
+            + ", ".join(
+                f"{value:.16g}"
+                for value in case.longitudinal.element_boundaries
+            )
+            + " (normalized)"
+        )
+    print(f"longitudinal basis  = {case.longitudinal.basis}")
     print()
 
     equilibration = case.solver.equilibration

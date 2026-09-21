@@ -1,3 +1,4 @@
+# Version: CSF-CUF normalized longitudinal partition v3 - 2026-09-21
 """
 Generic longitudinal problem-data layer for the CSF-CUF solver.
 
@@ -25,7 +26,13 @@ problem:
     longitudinal_discretization:
       method: finite_element
       elements: 40
-      order: 2
+
+Alternative explicit partition:
+
+  solver:
+    longitudinal_discretization:
+      method: finite_element
+      element_boundaries: [0.0, 0.2, 0.5, 1.0]
 """
 
 from __future__ import annotations
@@ -83,15 +90,12 @@ class EssentialBoundaryCondition:
 
 @dataclass(frozen=True)
 class LongitudinalDiscretization:
-    """
-    Generic declaration of the longitudinal numerical discretization.
+    """Generic declaration of the longitudinal discretization topology.
 
-    This object does not contain the longitudinal coordinates themselves.
-    Those are obtained from CSF.
-
-    Current concrete method
-    -----------------------
-    finite_element
+    The approximation family and its order are intentionally not owned by
+    this object.  They are supplied through the independent longitudinal-basis
+    plugin API.  This keeps ``finite_element`` separate from any concrete
+    shape-function implementation.
 
     Parameters
     ----------
@@ -99,15 +103,17 @@ class LongitudinalDiscretization:
         Discretization family. Currently only ``finite_element`` is supported.
 
     elements:
-        Number of longitudinal finite elements.
+        Number of uniformly distributed longitudinal finite elements.
 
-    order:
-        Polynomial interpolation order of each longitudinal element.
+    element_boundaries:
+        Explicit normalized finite-element boundaries in the interval [0, 1].
+        The discretizer maps them to the physical CSF longitudinal domain.
+        Exactly one between ``elements`` and ``element_boundaries`` is required.
     """
 
     method: str
-    elements: int
-    order: int
+    elements: int | None = None
+    element_boundaries: tuple[float, ...] | None = None
 
     def __post_init__(self) -> None:
         if self.method != "finite_element":
@@ -116,17 +122,53 @@ class LongitudinalDiscretization:
                 "is 'finite_element'"
             )
 
-        if not isinstance(self.elements, int):
-            raise TypeError("elements must be an integer")
+        has_elements = self.elements is not None
+        has_boundaries = self.element_boundaries is not None
+        if has_elements == has_boundaries:
+            raise ValueError(
+                "exactly one of elements or element_boundaries is required"
+            )
 
-        if self.elements < 1:
-            raise ValueError("elements must be >= 1")
+        if has_elements:
+            if not isinstance(self.elements, int):
+                raise TypeError("elements must be an integer")
+            if self.elements < 1:
+                raise ValueError("elements must be >= 1")
+            return
 
-        if not isinstance(self.order, int):
-            raise TypeError("order must be an integer")
+        boundaries = tuple(float(value) for value in self.element_boundaries)
+        if len(boundaries) < 2:
+            raise ValueError("element_boundaries must contain at least two points")
+        if any(not math.isfinite(value) for value in boundaries):
+            raise ValueError("element_boundaries values must be finite")
+        if any(
+            right <= left
+            for left, right in zip(boundaries, boundaries[1:])
+        ):
+            raise ValueError("element_boundaries must be strictly increasing")
+        endpoint_tolerance = 1.0e-12
+        if not math.isclose(
+            boundaries[0], 0.0, rel_tol=0.0, abs_tol=endpoint_tolerance
+        ):
+            raise ValueError(
+                "element_boundaries are normalized coordinates and must start at 0"
+            )
+        if not math.isclose(
+            boundaries[-1], 1.0, rel_tol=0.0, abs_tol=endpoint_tolerance
+        ):
+            raise ValueError(
+                "element_boundaries are normalized coordinates and must end at 1"
+            )
+        boundaries = (0.0, *boundaries[1:-1], 1.0)
+        object.__setattr__(self, "element_boundaries", boundaries)
 
-        if self.order < 1:
-            raise ValueError("order must be >= 1")
+    @property
+    def number_of_elements(self) -> int:
+        if self.elements is not None:
+            return int(self.elements)
+        if self.element_boundaries is None:
+            raise RuntimeError("longitudinal partition is not configured")
+        return len(self.element_boundaries) - 1
 
 
 @dataclass(frozen=True)

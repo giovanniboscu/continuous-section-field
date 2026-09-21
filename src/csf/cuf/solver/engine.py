@@ -1,5 +1,5 @@
-# Version: CSF-CUF direct displacement-continuity perfect-bond v29 - 2026-09-16
-# OPT-09 CUF-ORDER-AWARE SECTION QUADRATURE
+# Version: CSF-CUF isolated longitudinal basis plugins v31 - 2026-09-21
+# OPT-10 COMPILED-FIELD BASIS-OPTIONS METADATA
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -30,6 +30,7 @@ from csf.cuf.solver.longitudinal import (
 )
 from csf.cuf.problem.problem import LongitudinalDiscretization
 from csf.cuf.core.basis_plugins import get_cuf_basis_plugin
+from csf.cuf.core.longitudinal_basis_plugins import get_longitudinal_basis_plugin
 from csf.cuf.numerics import FixedGaussPolygonIntegrator
 from csf.cuf.solver.recovery import (
     CSFCUFDisplacementRecovery,
@@ -371,6 +372,7 @@ def _longitudinal_gauss_requirement(
     case,
     basis,
     basis_plugin,
+    longitudinal_basis,
     section_provider,
     constitutive_provider,
 ):
@@ -390,8 +392,9 @@ def _longitudinal_gauss_requirement(
     up to 2N; variation of both coordinates can reach 4N.  The polygon-area
     Jacobian contributes one degree per varying transverse coordinate.  An
     affine constitutive variation contributes one further degree.  Finally,
-    the product of longitudinal Lagrange functions of order r contributes at
-    most 2r degrees.  This is a safe upper bound; individual nucleus terms can
+    the product of two longitudinal basis functions contributes at most twice
+    the polynomial degree declared by the selected longitudinal plugin.  This
+    is a safe upper bound; individual nucleus terms can
     have lower degree because derivatives reduce polynomial order.
     """
 
@@ -500,7 +503,7 @@ def _longitudinal_gauss_requirement(
     #################################################################      
     #varying_axes = int(varies_y) + int(varies_z)
     
-    r = int(case.longitudinal.order)
+    longitudinal_polynomial_degree = int(longitudinal_basis.polynomial_degree)
     transverse_x_degree = (
         basis_plugin.transverse_x_polynomial_degree(basis)
     )
@@ -529,8 +532,9 @@ def _longitudinal_gauss_requirement(
         material_degree = int(configured_material_degree)
         material_degree_source = "configured"
     
-    # Product of the two longitudinal interpolation functions.
-    longitudinal_shape_degree = 2 * r
+    # Product of the two longitudinal approximation functions.  The FEM does
+    # not infer this from a concrete family; the plugin declares its degree.
+    longitudinal_shape_degree = 2 * longitudinal_polynomial_degree
     
     polynomial_degree = (
         transverse_x_degree
@@ -545,63 +549,6 @@ def _longitudinal_gauss_requirement(
   
         
         
-        
-    #####
-    ###varying_axes = int(varies_y) + int(varies_z)
-    ###N = int(case.cuf.order)
-    ###r = int(case.longitudinal.order)
-    ###
-    ###if case.cuf.basis == "scaled_maclaurin_tensor":
-    ###    # Each basis function can contain y^N z^N.  A product therefore has
-    ###    # degree 2N in every transverse coordinate that varies with x.
-    ###    transverse_x_degree = 2 * N * varying_axes
-    ###elif case.cuf.basis == "scaled_maclaurin":
-    ###    # Complete-total-degree basis: F_tau F_s has total degree <= 2N,
-    ###    # regardless of whether one or both transverse coordinates vary.
-    ###    transverse_x_degree = 2 * N if varying_axes else 0
-    ###else:
-    ###    raise ValueError(
-    ###        "automatic longitudinal Gauss-order estimation is not defined "
-    ###        f"for CUF basis {case.cuf.basis!r}"
-    ###    )
-    ###
-    #### CSF polygon-domain contribution.
-    #### Omega_CSF(x), with affine polygon-vertex variation along x, can carry
-    #### a longitudinal polynomial contribution up to degree 2.
-    #### The upper bound +2 is always retained, including the degenerate
-    #### constant-section case, to keep the quadrature estimate conservative.
-    ###geometry_degree = 2
-    ###
-    ###
-    ###geometry_jacobian_degree = varying_axes
-    ###material_degree = 1 if material_varies else 0
-    ###longitudinal_shape_degree = 2 * r
-    ###
-    ###polynomial_degree = (
-    ###    transverse_x_degree
-    ###    + geometry_degree
-    ###    + material_degree
-    ###    + longitudinal_shape_degree
-    ###)
-    #### n-point Gauss-Legendre is exact through degree 2n-1.
-    ###minimum_gauss_order = (polynomial_degree + 2) // 2
-    ######
-    
-    #axes = []
-    #if varies_y:
-    #    axes.append("y")
-    #if varies_z:
-    #    axes.append("z")      
-      
-
-    #return {
-    #    "polynomial_degree": int(polynomial_degree),
-    #    "minimum_gauss_order": int(minimum_gauss_order),
-    #    "varying_axes": tuple(axes),
-    #    "material_varies": bool(material_varies),
-    #    "material_polynomial_degree": int(material_degree),
-    #    "material_degree_source": material_degree_source,
-    #}
     
     return {
         "polynomial_degree": int(polynomial_degree),
@@ -688,7 +635,16 @@ def _split_mesh_at_segment_interfaces(*, mesh, segments):
         abs(float(mesh.x_end)),
         abs(float(mesh.x_end) - float(mesh.x_start)),
     )
-    order = int(mesh.order)
+    reference_nodes = np.asarray(
+        mesh.elements[0].reference_nodes,
+        dtype=float,
+    )
+    equispaced_reference = np.linspace(
+        -1.0,
+        1.0,
+        reference_nodes.size,
+        dtype=float,
+    )
 
     # Partition every original element only where a real expansion change lies
     # in its closed interval.  This is an internal algebraic/interface mesh;
@@ -737,7 +693,21 @@ def _split_mesh_at_segment_interfaces(*, mesh, segments):
     previous_right_interface = None
 
     for new_element_index, (_original_index, a, b, left_interface, right_interface) in enumerate(pieces):
-        coordinates = tuple(float(x) for x in np.linspace(a, b, order + 1))
+        if np.array_equal(reference_nodes, equispaced_reference):
+            coordinates_array = np.linspace(
+                float(a),
+                float(b),
+                reference_nodes.size,
+                dtype=float,
+            )
+        else:
+            coordinates_array = (
+                0.5 * (1.0 - reference_nodes) * float(a)
+                + 0.5 * (1.0 + reference_nodes) * float(b)
+            )
+            coordinates_array[0] = float(a)
+            coordinates_array[-1] = float(b)
+        coordinates = tuple(float(x) for x in coordinates_array)
         local_ids = []
 
         if previous_last_node is None:
@@ -767,6 +737,7 @@ def _split_mesh_at_segment_interfaces(*, mesh, segments):
                 index=new_element_index,
                 node_ids=tuple(local_ids),
                 coordinates=coordinates,
+                basis=mesh.basis,
             )
         )
         previous_last_node = local_ids[-1]
@@ -785,7 +756,7 @@ def _split_mesh_at_segment_interfaces(*, mesh, segments):
         x_end=float(mesh.x_end),
         nodes=tuple(float(value) for value in new_nodes),
         elements=tuple(new_elements),
-        order=order,
+        basis=mesh.basis,
     )
     interface_pairs = tuple(
         interface_pairs_by_index[index] for index in sorted(interface_pairs_by_index)
@@ -1034,6 +1005,14 @@ def solve_case_runs(
         options=case.cuf.basis_options,
     )
 
+    longitudinal_basis_plugin = get_longitudinal_basis_plugin(
+        case.longitudinal.basis
+    )
+    longitudinal_basis = longitudinal_basis_plugin.build(
+        order=case.longitudinal.order,
+        options=case.longitudinal.basis_options,
+    )
+
     # OPT-09: each basis plugin declares the minimum section quadrature
     # required by its own approximation space. A higher order explicitly
     # requested by the case is always preserved.
@@ -1085,6 +1064,7 @@ def solve_case_runs(
         case=case,
         basis=basis,
         basis_plugin=basis_plugin,
+        longitudinal_basis=longitudinal_basis,
         section_provider=section_provider,
         constitutive_provider=constitutive_provider,
     )
@@ -1145,8 +1125,9 @@ def solve_case_runs(
         discretization=LongitudinalDiscretization(
             method=case.longitudinal.method,
             elements=case.longitudinal.elements,
-            order=case.longitudinal.order,
+            element_boundaries=case.longitudinal.element_boundaries,
         ),
+        basis=longitudinal_basis,
     )
 
     expansion_segments = _validate_segmented_expansion_against_mesh(
@@ -1329,6 +1310,7 @@ def solve_case_runs(
             metadata = {
                 "case_name": str(case.name),
                 "basis_name": str(case.cuf.basis),
+                "basis_options": dict(case.cuf.basis_options),
             }
             if sweep_mode:
                 metadata["equilibration_iterations"] = int(

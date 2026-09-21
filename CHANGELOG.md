@@ -1,5 +1,8 @@
 # Changelog
 
+# v0.2.4
+* CSF-CUF Generalize longitudinal basis handling
+
 
 # v0.2.3
 * CSF-CUF validation against Carrera and Giunta (2010)

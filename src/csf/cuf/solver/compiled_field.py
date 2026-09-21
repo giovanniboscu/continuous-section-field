@@ -256,7 +256,7 @@ class CompiledDisplacementField:
             max_y_count = max(max_y_count, int(current.shape[1]))
             max_z_count = max(max_z_count, int(current.shape[2]))
 
-        lagrange_x = CompiledDisplacementField._lagrange_power_coefficients(x_nodes)
+        lagrange_x = CompiledDisplacementField._cardinal_lagrange_power_coefficients(x_nodes)
         x_count = int(lagrange_x.shape[1])
         result = np.zeros(
             (global_size, x_count, max_y_count, max_z_count),
@@ -421,8 +421,29 @@ class CompiledDisplacementField:
                                 element_index, local_node, tau - 1, component
                             ] = solved_dofs[dof]
 
-        reference_nodes = np.asarray(elements[0].reference_nodes, dtype=float)
-        longitudinal_coefficients = cls._lagrange_power_coefficients(reference_nodes)
+        longitudinal_exporter = getattr(
+            elements[0].basis,
+            "power_coefficients",
+            None,
+        )
+        if not callable(longitudinal_exporter):
+            return None
+        longitudinal_coefficients = longitudinal_exporter()
+        if longitudinal_coefficients is None:
+            return None
+        longitudinal_coefficients = np.asarray(
+            longitudinal_coefficients,
+            dtype=float,
+        )
+        if (
+            longitudinal_coefficients.ndim != 2
+            or longitudinal_coefficients.shape[0] != local_node_count
+            or not np.all(np.isfinite(longitudinal_coefficients))
+        ):
+            raise ValueError(
+                "longitudinal basis power_coefficients() returned an invalid "
+                "checkpoint representation"
+            )
 
         transverse_coefficients = cls._static_transverse_power_coefficients(basis)
         transverse_x_coefficients = None
@@ -455,6 +476,12 @@ class CompiledDisplacementField:
                 ),
                 "basis_order": int(basis.order),
                 "basis_size": int(basis.size),
+                "longitudinal_basis_class": (
+                    f"{elements[0].basis.__class__.__module__}."
+                    f"{elements[0].basis.__class__.__qualname__}"
+                ),
+                "longitudinal_basis_order": int(elements[0].basis.order),
+                "longitudinal_basis_size": int(elements[0].basis.size),
                 "components": ["ux", "uy", "uz"],
                 "element_basis_sizes": [
                     int(dof_layout.basis_size_at_node(element.node_ids[0]))
@@ -484,9 +511,12 @@ class CompiledDisplacementField:
         )
 
     @staticmethod
-    def _lagrange_power_coefficients(nodes: np.ndarray) -> np.ndarray:
-        """Return Lagrange cardinal functions in ascending physical powers."""
+    def _cardinal_lagrange_power_coefficients(nodes: np.ndarray) -> np.ndarray:
+        """Return cardinal Lagrange polynomials in ascending powers.
 
+        This helper belongs to compilation of the transverse longitudinal-blend
+        expansion.  It is not the longitudinal FEM shape-function provider.
+        """
         nodes = np.asarray(nodes, dtype=float)
         count = int(nodes.size)
         result = np.empty((count, count), dtype=float)

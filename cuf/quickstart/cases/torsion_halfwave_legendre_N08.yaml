@@ -1,28 +1,61 @@
 case:
+  # Name of the numerical case.
+  # N08 refers to the order of the transverse CUF expansion.
   name: rectangular_prismatic_torsion_halfwave_legendre_N08
 
 problem:
+  # Physical problem definition: geometry, material, loads and boundary conditions.
   yaml: ../problems/torsion_halfwave.yaml
+
+  # Adapter connecting the generic CUF solver to this specific problem definition.
   adapter: csf.cuf.adapters.problem.torsion_halfwave
 
 cuf:
+  # Transverse CUF expansion over the cross-section (y, z).
+  # This is independent of the longitudinal finite-element approximation.
   basis: scaled_legendre
+
+  # Order of the transverse expansion.
   order: 8
 
 longitudinal:
+  # Longitudinal discretization along x.
   method: finite_element
-  elements: 1
+
+  # Element boundaries in normalized longitudinal coordinates.
+  # [0.00, 1.00] defines a single finite element spanning the whole beam.
+  element_boundaries: [0.00, 1.00]
+
+  # Longitudinal shape-function basis used inside each finite element.
+  # Lagrange is a nodal C0 basis: its coefficients are associated with
+  # longitudinal FEM nodes.
+  basis: lagrange
+
+  # Polynomial order of the longitudinal Lagrange approximation.
+  # Order 6 gives 7 longitudinal nodes for this single element.
   order: 6
 
 section_integration:
+  # Numerical integration over the cross-section.
   method: fixed_gauss_polygon
+
+  # Requested Gauss quadrature order for polygonal section integration.
   gauss_order: 6
 
 sampling:
+  # Longitudinal stations at which sectional/output quantities are sampled.
   stations: [0.00, 0.25, 0.50, 0.75, 1.00]
+
+  # Number of points used to sample the continuous longitudinal
+  # displacement field for post-processing.
   displacement_samples: 201
+
+  # Resolution of the cross-sectional grid used for stress post-processing.
   stress_grid: 31
 
 output:
+  # Post-processing/output adapter.
   adapter: csf.cuf.adapters.output.post
+
+  # Directory where the results of this case are written.
   directory: ../output/torsion_halfwave_legendre_N08

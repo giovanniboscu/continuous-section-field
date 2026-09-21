@@ -1,10 +1,11 @@
-# Version: CSF-CUF direct segmented case syntax v22 - 2026-09-15
+# Version: CSF-CUF normalized longitudinal partition v25 - 2026-09-21
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import math
 import yaml
 
 
@@ -28,10 +29,21 @@ class CUFSettings:
 @dataclass(frozen=True)
 class LongitudinalSettings:
     method: str
-    elements: int
+    basis: str
     order: int
+    basis_options: dict[str, Any]
+    elements: int | None
+    element_boundaries: tuple[float, ...] | None
     gauss_order: int
     material_polynomial_degree: int | None
+
+    @property
+    def number_of_elements(self) -> int:
+        if self.elements is not None:
+            return int(self.elements)
+        if self.element_boundaries is None:
+            raise RuntimeError("longitudinal partition is not configured")
+        return len(self.element_boundaries) - 1
 
 
 @dataclass(frozen=True)
@@ -245,8 +257,68 @@ def load_case(path: str | Path) -> CaseDefinition:
         cuf_default_order = cuf_order
         cuf_segments = ()
 
+    longitudinal_basis = str(longitudinal.get("basis", "lagrange")).strip()
+    if not longitudinal_basis:
+        raise ValueError("longitudinal.basis must be non-empty")
     longitudinal_order = int(longitudinal.get("order", 3))
-    elements = int(longitudinal.get("elements", 4))
+    longitudinal_basis_options = _mapping(
+        longitudinal.get("basis_options", {}),
+        "longitudinal.basis_options",
+    ).copy()
+
+    has_elements = "elements" in longitudinal
+    has_boundaries = "element_boundaries" in longitudinal
+    if has_elements == has_boundaries:
+        raise ValueError(
+            "longitudinal must define exactly one of 'elements' or "
+            "'element_boundaries'"
+        )
+
+    elements = None
+    element_boundaries = None
+    if has_elements:
+        elements = int(longitudinal["elements"])
+    else:
+        raw_boundaries = longitudinal["element_boundaries"]
+        if not isinstance(raw_boundaries, (list, tuple)):
+            raise TypeError(
+                "longitudinal.element_boundaries must be a YAML sequence"
+            )
+        element_boundaries = tuple(float(value) for value in raw_boundaries)
+        if len(element_boundaries) < 2:
+            raise ValueError(
+                "longitudinal.element_boundaries must contain at least two points"
+            )
+        if any(not math.isfinite(value) for value in element_boundaries):
+            raise ValueError(
+                "longitudinal.element_boundaries values must be finite"
+            )
+        if any(
+            right <= left
+            for left, right in zip(element_boundaries, element_boundaries[1:])
+        ):
+            raise ValueError(
+                "longitudinal.element_boundaries must be strictly increasing"
+            )
+        endpoint_tolerance = 1.0e-12
+        if not math.isclose(
+            element_boundaries[0], 0.0, rel_tol=0.0, abs_tol=endpoint_tolerance
+        ):
+            raise ValueError(
+                "longitudinal.element_boundaries are normalized coordinates "
+                "and must start at 0"
+            )
+        if not math.isclose(
+            element_boundaries[-1], 1.0, rel_tol=0.0, abs_tol=endpoint_tolerance
+        ):
+            raise ValueError(
+                "longitudinal.element_boundaries are normalized coordinates "
+                "and must end at 1"
+            )
+        element_boundaries = (
+            0.0, *element_boundaries[1:-1], 1.0
+        )
+
     section_order = int(section.get("gauss_order", cuf_default_order + 1))
     longitudinal_gauss = int(
         longitudinal.get(
@@ -266,7 +338,7 @@ def load_case(path: str | Path) -> CaseDefinition:
         equilibration.get("iterations", 8)
     )
 
-    if elements < 1:
+    if elements is not None and elements < 1:
         raise ValueError("longitudinal.elements must be >= 1")
     if longitudinal_order < 1:
         raise ValueError("longitudinal.order must be >= 1")
@@ -301,8 +373,11 @@ def load_case(path: str | Path) -> CaseDefinition:
         ),
         longitudinal=LongitudinalSettings(
             method=str(longitudinal.get("method", "finite_element")),
-            elements=elements,
+            basis=longitudinal_basis,
             order=longitudinal_order,
+            basis_options=longitudinal_basis_options,
+            elements=elements,
+            element_boundaries=element_boundaries,
             gauss_order=longitudinal_gauss,
             material_polynomial_degree=material_polynomial_degree,
         ),

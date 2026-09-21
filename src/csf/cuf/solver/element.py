@@ -43,8 +43,7 @@ class ElementCUFBlock:
     """
     One component block of a local CUF element matrix.
 
-    ``matrix`` has size (p+1) x (p+1), where p is the longitudinal element
-    interpolation order.
+    ``matrix`` has size m x m, where m is the local longitudinal basis size.
     """
 
     test_component: int
@@ -273,7 +272,7 @@ class CUFElementMatrixBuilder:
                         seen_signatures.add(signature)
                         unique_signatures.append(signature)
 
-        size = element.order + 1
+        size = element.local_size
 
         matrices = {
             (i, j): np.zeros((size, size), dtype=float)
@@ -356,7 +355,7 @@ class CUFElementMatrixBuilder:
             trial_component=trial_component,
         )
 
-        size = element.order + 1
+        size = element.local_size
         block = np.zeros((size, size), dtype=float)
 
         for definition in definitions:

@@ -1,4 +1,4 @@
-# Version: CSF-CUF memory-adaptive direct solve v17 - 2026-09-19
+# Version: CSF-CUF memory-adaptive direct solve v18 - 2026-09-19
 """
 Generic direct solver for an augmented linear-constraint system.
 
@@ -391,8 +391,10 @@ class AugmentedSparseLinearSolver:
 
         Sparse LU fill-in cannot be predicted exactly without performing the
         factorization.  This bound assumes that L and U together become fully
-        populated and remain stored with the matrix data/index dtypes.  It is
-        used only as a memory-safety indicator; it is not a density threshold.
+        populated and remain stored with the matrix data/index dtypes.
+
+        This value describes factor storage only.  It is not, by itself, an
+        estimate of the peak additional RAM required by ``spsolve``.
         """
         n = int(matrix.shape[0])
         data_bytes = int(matrix.data.dtype.itemsize)
@@ -403,9 +405,37 @@ class AugmentedSparseLinearSolver:
         factor_bytes = factor_entries * (data_bytes + index_bytes)
         factor_bytes += 2 * (n + 1) * indptr_bytes
 
-        # Permutations, RHS/solution vectors and small SuperLU work arrays.
+        # Permutations and RHS/solution vectors.
         vector_bytes = 8 * int(np.asarray(rhs).nbytes)
         return int(factor_bytes + vector_bytes)
+
+    @staticmethod
+    def _sparse_incremental_solve_bytes(matrix, rhs: np.ndarray) -> int:
+        """Estimate peak additional RAM needed by the sparse direct solve.
+
+        ``MemAvailable`` is sampled while the input CSR matrix is already
+        resident, so that existing CSR storage must not be counted again.
+
+        ``spsolve``/SuperLU can nevertheless require, concurrently:
+
+        1. a CSC-format copy of the input matrix;
+        2. the sparse LU factors;
+        3. temporary factorization workspace.
+
+        The CSC copy is conservatively taken equal to the current CSR storage.
+        The factorization workspace is bounded by one additional copy of the
+        fully-filled factor storage estimate.  This deliberately estimates the
+        peak incremental allocation rather than only the final L/U storage.
+        """
+        csr_copy_bytes = AugmentedSparseLinearSolver._csr_storage_bytes(matrix)
+        factor_bytes = (
+            AugmentedSparseLinearSolver._sparse_factor_storage_upper_bytes(
+                matrix,
+                rhs,
+            )
+        )
+        workspace_bytes = factor_bytes
+        return int(csr_copy_bytes + factor_bytes + workspace_bytes)
 
     @staticmethod
     def _format_gib(byte_count: int | None) -> str:
@@ -436,37 +466,42 @@ class AugmentedSparseLinearSolver:
             )
         )
 
+        sparse_incremental = (
+            AugmentedSparseLinearSolver._sparse_incremental_solve_bytes(
+                matrix,
+                rhs,
+            )
+        )
+
         dense_fits = (
             available is not None
             and dense_incremental <= available
         )
 
-        sparse_upper_fits = (
+        sparse_fits = (
             available is not None
-            and sparse_factor_upper <= available
+            and sparse_incremental <= available
         )
-
-
 
         if dense_fits and dense_bytes < csr_bytes:
             selected = "dense"
             reason = "dense-representation-smaller"
 
-        elif sparse_upper_fits:
+        elif sparse_fits:
             selected = "sparse"
-            reason = "sparse-factor-bound-fits"
+            reason = "sparse-peak-bound-fits"
 
         elif dense_fits:
             selected = "dense"
-            reason = "sparse-factor-bound-exceeds-available"
+            reason = "sparse-peak-bound-exceeds-available"
 
         else:
-            selected = "sparse"
-            reason = (
-                "dense-does-not-fit; sparse-fill-unknown"
-                if available is not None
-                else "available-memory-unknown"
-            )
+            if available is not None:
+                selected = "pardiso"
+                reason = "dense-does-not-fit; sparse-peak-bound-exceeds-available"
+            else:
+                selected = "sparse"
+                reason = "available-memory-unknown"
 
         print(
             "[memory-solver] "
@@ -477,6 +512,8 @@ class AugmentedSparseLinearSolver:
             f"{AugmentedSparseLinearSolver._format_gib(dense_incremental)} "
             "sparse_factor_upper="
             f"{AugmentedSparseLinearSolver._format_gib(sparse_factor_upper)} "
+            "sparse_incremental="
+            f"{AugmentedSparseLinearSolver._format_gib(sparse_incremental)} "
             f"selected={selected} reason={reason}",
             flush=True,
         )
@@ -519,15 +556,73 @@ class AugmentedSparseLinearSolver:
             gc.collect()
 
     @staticmethod
+    def _pardiso_oom_fallback(
+        matrix,
+        rhs: np.ndarray,
+        *,
+        primary_error: BaseException,
+    ) -> np.ndarray:
+        """Use PARDISO only after the selected direct solver runs out of memory."""
+        gc.collect()
+        print(
+            "[memory-solver] historical direct solver unavailable by memory; "
+            "falling back to PARDISO",
+            flush=True,
+        )
+
+        try:
+            from pypardiso import spsolve as pardiso_spsolve
+        except ImportError:
+            print(
+                "[memory-solver] PARDISO fallback unavailable; "
+                "re-raising primary out-of-memory failure",
+                flush=True,
+            )
+            raise primary_error
+
+        return np.asarray(
+            pardiso_spsolve(matrix, rhs),
+            dtype=float,
+        )
+
+    @staticmethod
     def _memory_adaptive_direct_solve(matrix, rhs: np.ndarray) -> np.ndarray:
         """Solve one checkpoint using the memory-selected direct method."""
         method = AugmentedSparseLinearSolver._select_direct_solver(matrix, rhs)
-        if method == "dense":
-            return AugmentedSparseLinearSolver._dense_symmetric_solve(
+
+        if method == "pardiso":
+            estimated_oom = MemoryError(
+                "both historical direct-solver paths exceed available physical memory"
+            )
+            return AugmentedSparseLinearSolver._pardiso_oom_fallback(
                 matrix,
                 rhs,
+                primary_error=estimated_oom,
             )
-        return np.asarray(spsolve(matrix, rhs), dtype=float)
+
+        if method == "dense":
+            try:
+                return AugmentedSparseLinearSolver._dense_symmetric_solve(
+                    matrix,
+                    rhs,
+                )
+            except RuntimeError as exc:
+                if not isinstance(exc.__cause__, MemoryError):
+                    raise
+                return AugmentedSparseLinearSolver._pardiso_oom_fallback(
+                    matrix,
+                    rhs,
+                    primary_error=exc,
+                )
+
+        try:
+            return np.asarray(spsolve(matrix, rhs), dtype=float)
+        except MemoryError as exc:
+            return AugmentedSparseLinearSolver._pardiso_oom_fallback(
+                matrix,
+                rhs,
+                primary_error=exc,
+            )
 
     @staticmethod
     def _direct_sparse_solve_many(
