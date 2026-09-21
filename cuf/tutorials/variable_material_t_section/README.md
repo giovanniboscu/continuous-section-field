@@ -17,6 +17,9 @@ The framework is built around a simple separation of roles:
 
 **CSF provides the physical description of the member; CUF provides the structural approximation built on that description.**
 
+The transverse CUF expansion and the longitudinal approximation are selected independently. In the longitudinal direction, the finite-element discretization uses a configurable basis; when no basis is specified in the case YAML, the solver uses **Lagrange as the default longitudinal basis**. 
+
+
 ## CSF and CUF
 
 **CSF (Continuous Section Field)** describes the physical member as a continuous geometrical and material field along the beam.
