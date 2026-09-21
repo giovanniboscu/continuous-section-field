@@ -2,257 +2,347 @@
 
 ## Scope
 
-This note isolates the CUF displacement expansion used in the coupling with the Continuous Section Field representation.
+This note defines the CUF displacement approximation used in the coupling with the Continuous Section Field (CSF).
 
-The sectional state is supplied independently by CSF through
+At each longitudinal coordinate \(x\), CSF supplies the physical sectional state,
 
-$$ \mathcal{S}(x) \longrightarrow ( \Omega^k(x), \mathbf{C}^k(x,y,z) ). $$
+```math
+\mathcal{S}(x)
+\longrightarrow
+\left(
+\Omega^k(x),
+\mathbf{C}^k(x,y,z)
+\right),
+```
 
-The present note does not define the sectional geometry or constitutive law. Its purpose is only to define the kinematic approximation of the three-dimensional displacement field that is subsequently evaluated over the section supplied by $\mathcal{S}(x)$.
+where \(\Omega^k(x)\) denotes a physical sectional domain and \(\mathbf{C}^k(x,y,z)\) its constitutive description.
 
-No longitudinal discretization, numerical integration, load formulation, boundary-condition treatment, or solution procedure is introduced here.
+The purpose of this note is limited to the **kinematic approximation of the three-dimensional displacement field** over the section supplied by CSF.
 
----
-
-## 1. Coordinates
-
-Let:
-
-- $x$ denote the longitudinal coordinate along the beam axis;
-- $y$ and $z$ denote the physical transverse coordinates on the cross-section.
-
-At each longitudinal coordinate $x$, the current cross-section is determined by the CSF representation $\mathcal{S}(x)$.
-
-The CUF notation is retained throughout this note.
+Longitudinal finite-element discretization, numerical integration, loads, boundary conditions, and solution procedures are separate parts of the formulation.
 
 ---
 
-## 2. Three-dimensional displacement field
+## 1. Coordinates and displacement field
 
-Let the three-dimensional displacement field be
+Let
 
-$$ \mathbf{u}(x,y,z) = \big(u_x(x,y,z), u_y(x,y,z), u_z(x,y,z)\big)^T. $$
+* \(x\) be the longitudinal coordinate along the beam axis;
+* \(y,z\) be the physical coordinates in the transverse plane.
 
-where:
+At each \(x\), the current cross-section is the domain
 
-- $u_x(x,y,z)$ is the displacement component along the longitudinal direction $x$;
-- $u_y(x,y,z)$ is the displacement component along the transverse direction $y$;
-- $u_z(x,y,z)$ is the displacement component along the transverse direction $z$.
+```math
+\Omega(x).
+```
 
-The displacement field is defined at every point $(y,z)$ belonging to the current cross-section $\Omega(x)$.
+The three-dimensional displacement field is
 
----
-
-## 3. Geometrical premise of the CUF beam expansion
-
-The CUF beam formulation is introduced for a structural body characterized by one predominant dimension. Let $x$ denote the coordinate along this predominant longitudinal direction, while $y$ and $z$ denote the coordinates in the transverse plane orthogonal to it.
-
-Under this geometrical premise, the three-dimensional displacement field is approximated by expanding its dependence over the transverse coordinates through the CUF functions $F_\tau(y,z)$, while the corresponding unknown amplitudes depend on the longitudinal coordinate $x$.
-
-No additional requirement that the cross-section be invariant along $x$ is introduced here as a premise of the CUF displacement expansion. In particular, constancy of the sectional geometry, sectional shape, or constitutive properties along the longitudinal coordinate is not imposed by the kinematic statement itself.
-
-Accordingly, the transverse domain may be written in the more general form
-
-$$ \Omega=\Omega(x). $$
-
-provided that, at every longitudinal coordinate $x$, $\Omega(x)$ remains the transverse section associated with the predominant beam direction.
-
-The CUF displacement expansion can therefore retain the form
-
-$$ \mathbf{u}(x,y,z)=\sum_{\tau=1}^{M}F_\tau(y,z)\,\mathbf{u}_\tau(x), \qquad (y,z)\in\Omega(x). $$
-
-Here, $M$ is the number of retained transverse approximation terms, $F_\tau(y,z)$ is the CUF transverse approximation function associated with index $\tau$, and $\mathbf{u}_\tau(x)$ is the corresponding vector of unknown longitudinal displacement amplitudes.
-
-The dependence of $\Omega(x)$ on $x$ does not introduce an additional kinematic unknown. At a prescribed longitudinal coordinate $x$, the current transverse domain is known from the sectional representation and defines the physical region over which the CUF transverse approximation is evaluated.
-
-In the CSF-CUF coupling, this distinction is fundamental. The CUF kinematic premise is retained, while CSF supplies the longitudinally evolving sectional state. Consequently, a constant cross-section is recovered as the particular case
-
-$$ \Omega(x)=\Omega. $$
-
-whereas the general CSF representation permits
-
-$$ x\longmapsto\mathcal{S}(x)\longmapsto\Omega(x). $$
-
-The longitudinal variation of the section therefore affects the sectional integrations and the resulting sectional coefficients, rather than constituting an additional restriction on the CUF displacement expansion.
+```math
+\mathbf{u}(x,y,z)
+=
+\begin{bmatrix}
+u_x(x,y,z)\\
+u_y(x,y,z)\\
+u_z(x,y,z)
+\end{bmatrix},
+\qquad
+(y,z)\in\Omega(x).
+```
 
 ---
 
-## 4. CUF transverse approximation
+## 2. CUF transverse expansion
 
-Let $M$ denote the number of transverse approximation terms retained in the CUF expansion.
+CUF approximates the dependence of the displacement field on the transverse coordinates through a selected family of functions \(F_\tau(y,z)\):
 
-For each approximation index $\tau$, with
+```math
+\mathbf{u}(x,y,z)
+=
+\sum_{\tau=1}^{M}
+F_\tau(y,z)\,
+\mathbf{u}_\tau(x),
+\qquad
+(y,z)\in\Omega(x).
+```
 
-$$ \tau = 1,\ldots,M, $$
+Here,
 
-let $F_\tau(y,z)$ denote the corresponding CUF transverse approximation function.
+* \(M\) is the number of retained transverse approximation terms;
+* \(F_\tau(y,z)\) is the transverse CUF basis function associated with index \(\tau\);
+* \(\mathbf{u}_\tau(x)\) is the corresponding vector of longitudinal amplitudes,
 
-The functions $F_\tau(y,z)$ describe the assumed variation of the displacement field over the physical transverse coordinates.
+```math
+\mathbf{u}_\tau(x)
+=
+\begin{bmatrix}
+u_{x\tau}(x)\\
+u_{y\tau}(x)\\
+u_{z\tau}(x)
+\end{bmatrix}.
+```
 
-Associated with each $F_\tau(y,z)$ is a vector of longitudinal displacement amplitudes
+The functions \(F_\tau\) determine the admissible variation of the displacement field over the cross-section, while the functions \(\mathbf{u}_\tau(x)\) describe how the corresponding amplitudes vary along the beam.
 
-$$ \mathbf{u}_\tau(x) = \big(u_{x\tau}(x), u_{y\tau}(x), u_{z\tau}(x)\big)^T. $$
+Thus the CUF approximation separates transverse and longitudinal dependence:
 
-where $u_{x\tau}(x)$, $u_{y\tau}(x)$, and $u_{z\tau}(x)$ are unknown functions of the longitudinal coordinate.
+```math
+F_\tau(y,z)
+\quad\text{and}\quad
+\mathbf{u}_\tau(x).
+```
 
-The CUF displacement expansion is therefore
+The choice of transverse basis and approximation order belongs to CUF and is independent of the CSF description.
 
-$$ \mathbf{u}(x,y,z) = \sum_{\tau=1}^{M} F_\tau(y,z)\,\mathbf{u}_\tau(x). $$
+---
 
-Equivalently, component by component,
+## 3. Variable cross-section
 
-$$ u_x(x,y,z) = \sum_{\tau=1}^{M} F_\tau(y,z)\,u_{x\tau}(x), $$
+The CUF displacement expansion does not require the section to remain constant along \(x\).
 
-$$ u_y(x,y,z) = \sum_{\tau=1}^{M} F_\tau(y,z)\,u_{y\tau}(x), $$
+For a prismatic beam,
+
+```math
+\Omega(x)=\Omega.
+```
+
+For a non-prismatic beam represented by CSF,
+
+```math
+x
+\longmapsto
+\mathcal{S}(x)
+\longmapsto
+\Omega(x).
+```
+
+The same CUF kinematic form is retained:
+
+```math
+\mathbf{u}(x,y,z)
+=
+\sum_{\tau=1}^{M}
+F_\tau(y,z)\,
+\mathbf{u}_\tau(x),
+\qquad
+(y,z)\in\Omega(x).
+```
+
+The longitudinal variation of the physical section therefore enters through the domain over which the approximation is evaluated.
+
+It does not require geometry-specific transverse functions of the form \(F_\tau(x,y,z)\).
+
+In the present CSF-CUF coupling,
+
+```math
+F_\tau = F_\tau(y,z),
+```
+
+while geometry and material variation are supplied independently by
+
+```math
+\mathcal{S}(x).
+```
+
+This distinction is central to the coupling: **CSF describes the evolving physical section; CUF describes the displacement approximation evaluated on that section.**
+
+---
+
+## 4. Longitudinal amplitudes
+
+The quantities
+
+```math
+\mathbf{u}_\tau(x)
+```
+
+remain functions of the longitudinal coordinate.
+
+Their numerical approximation is a separate modelling choice.
+
+For example, if a longitudinal finite-element approximation is subsequently introduced, one may write
+
+```math
+\mathbf{u}_\tau(x)
+\simeq
+\sum_i
+N_i(x)\,
+\mathbf{q}_{\tau i},
+```
+
+where \(N_i(x)\) belongs to the selected longitudinal basis.
+
+The resulting displacement approximation becomes
+
+```math
+\mathbf{u}(x,y,z)
+\simeq
+\sum_{\tau=1}^{M}
+\sum_i
+F_\tau(y,z)
+N_i(x)
+\mathbf{q}_{\tau i}.
+```
+
+The transverse basis \(F_\tau(y,z)\) and the longitudinal basis \(N_i(x)\) are therefore distinct approximation choices.
+
+This note concerns primarily the transverse CUF expansion. The definition of the longitudinal basis and of the finite-element topology belongs to the longitudinal discretization.
+
+---
+
+## 5. Source and test indices
+
+In the variational formulation it is useful to distinguish the approximation index associated with the displacement field from that associated with the virtual displacement field.
+
+Let \(s\) denote the source index:
+
+```math
+\mathbf{u}^{(s)}(x,y,z)
+=
+F_s(y,z)\,
+\mathbf{u}_s(x).
+```
+
+Let \(\tau\) denote the test index:
+
+```math
+\delta\mathbf{u}^{(\tau)}(x,y,z)
+=
+F_\tau(y,z)\,
+\delta\mathbf{u}_\tau(x).
+```
+
+The complete fields are therefore
+
+```math
+\mathbf{u}(x,y,z)
+=
+\sum_{s=1}^{M}
+F_s(y,z)\,
+\mathbf{u}_s(x),
+```
 
 and
 
-$$ u_z(x,y,z) = \sum_{\tau=1}^{M} F_\tau(y,z)\,u_{z\tau}(x). $$
+```math
+\delta\mathbf{u}(x,y,z)
+=
+\sum_{\tau=1}^{M}
+F_\tau(y,z)\,
+\delta\mathbf{u}_\tau(x).
+```
+
+This distinction is used later in the construction of the CUF fundamental nucleus.
 
 ---
 
-## 5. Separation between transverse and longitudinal dependence
+## 6. Transverse derivatives
 
-The CUF expansion separates the transverse dependence from the longitudinal unknowns.
+The strain field requires derivatives of the transverse basis functions.
 
-The functions
+For each \(F_\tau(y,z)\),
 
-$$ F_\tau(y,z) $$
+```math
+F_{\tau,y}
+=
+\frac{\partial F_\tau}{\partial y},
+\qquad
+F_{\tau,z}
+=
+\frac{\partial F_\tau}{\partial z}.
+```
 
-carry the transverse approximation, while the vectors
+For compact notation, a derivative label
 
-$$ \mathbf{u}_\tau(x) $$
+```math
+\phi\in\{\emptyset,y,z\}
+```
 
-carry the unknown longitudinal amplitudes.
+may be introduced, with
 
-Thus the three-dimensional displacement field is constructed from products of the form
+```math
+F_{\tau,\emptyset}=F_\tau.
+```
 
-$$ F_\tau(y,z)\,\mathbf{u}_\tau(x). $$
+The same notation applies to the source functions \(F_s\).
 
-The approximation order and the specific family of functions $F_\tau$ are CUF choices and are not prescribed by CSF.
-
----
-
-## 6. Relation with the longitudinally varying CSF section
-
-The CSF representation determines the physical sectional state at each longitudinal coordinate:
-
-$$ x \longrightarrow \mathcal{S}(x) \longrightarrow \Omega(x). $$
-
-In the present coupling, the CUF transverse functions are written in the physical transverse coordinates:
-
-$$ F_\tau = F_\tau(y,z). $$
-
-Therefore the longitudinal dependence of the section does not enter the displacement expansion by replacing $F_\tau(y,z)$ with a geometry-specific function.
-
-Instead, at each coordinate $x$, the same transverse approximation structure is evaluated over the current physical domain supplied by CSF:
-
-$$ (y,z)\in\Omega(x). $$
-
-The resulting kinematic statement is
-
-$$ \mathbf{u}(x,y,z) = \sum_{\tau=1}^{M} F_\tau(y,z)\,\mathbf{u}_\tau(x), \qquad (y,z)\in\Omega(x). $$
-
-Hence the evolving section enters through the domain on which the CUF approximation is evaluated, while the longitudinal unknowns remain the functions $\mathbf{u}_\tau(x)$.
+The basis functions and their transverse derivatives belong to the CUF approximation; they are not supplied by CSF.
 
 ---
 
-## 7. Source and test approximation indices
-
-For the variational formulation, it is useful to distinguish the approximation index associated with the displacement field from the index associated with the virtual displacement field.
-
-Let $s$ denote a source approximation index.
-
-The corresponding displacement contribution is
-
-$$ \mathbf{u}^{(s)}(x,y,z) = F_s(y,z)\,\mathbf{u}_s(x). $$
-
-Let $\tau$ denote a test approximation index.
-
-The corresponding virtual displacement contribution is
-
-$$ \delta\mathbf{u}^{(\tau)}(x,y,z) = F_\tau(y,z)\,\delta\mathbf{u}_\tau(x). $$
-
-The complete displacement and virtual displacement fields are therefore
-
-$$ \mathbf{u}(x,y,z) = \sum_{s=1}^{M} F_s(y,z)\,\mathbf{u}_s(x), $$
-
-and
-
-$$ \delta\mathbf{u}(x,y,z) = \sum_{\tau=1}^{M} F_\tau(y,z)\,\delta\mathbf{u}_\tau(x). $$
-
-This distinction between $s$ and $\tau$ is subsequently used in the construction of the CUF fundamental nucleus.
-
----
-
-## 8. Transverse derivatives of the approximation functions
-
-The strain field requires transverse derivatives of the CUF approximation functions.
-
-For each approximation function $F_\tau(y,z)$, define its derivative with respect to $y$ as
-
-$$ F_{\tau,y}(y,z) = \partial_y F_\tau(y,z). $$
-
-Similarly, define its derivative with respect to $z$ as
-
-$$ F_{\tau,z}(y,z) = \partial_z F_\tau(y,z). $$
-
-For compact notation, let $\phi$ denote a transverse derivative label.
-
-The label $\phi$ may be $\emptyset$, $y$, or $z$, where $\emptyset$ denotes the absence of a transverse derivative.
-
-Accordingly,
-
-$$ F_{\tau,\emptyset}(y,z) = F_\tau(y,z). $$
-
-The same notation applies to the source approximation functions $F_s(y,z)$.
-
-These functions and their transverse derivatives are supplied by the CUF kinematic approximation, not by CSF.
-
----
-
-## 9. Boundary between CSF and CUF
+## 7. CSF-CUF interface
 
 The two descriptions remain distinct.
 
-### CSF supplies
+### CSF supplies the physical sectional state
 
-$$ \mathcal{S}(x) \longrightarrow ( \Omega^k(x), \mathbf{C}^k(x,y,z) ). $$
+```math
+\mathcal{S}(x)
+\longrightarrow
+\left(
+\Omega^k(x),
+\mathbf{C}^k(x,y,z)
+\right).
+```
 
-### CUF supplies
+### CUF supplies the kinematic approximation
 
-$$ (F_\tau(y,z), F_{\tau,y}(y,z), F_{\tau,z}(y,z), \mathbf{u}_\tau(x)). $$
+```math
+F_\tau(y,z),
+\qquad
+F_{\tau,y}(y,z),
+\qquad
+F_{\tau,z}(y,z),
+\qquad
+\mathbf{u}_\tau(x).
+```
 
-The displacement field is therefore a CUF kinematic construction evaluated over the sectional state provided by CSF.
+The displacement field is therefore a CUF kinematic construction evaluated on the physical section supplied by CSF.
 
-CSF does not determine the CUF approximation functions, and CUF does not replace the CSF sectional representation.
+Schematically,
+
+```math
+\mathcal{S}(x)
+\longrightarrow
+\Omega(x),
+```
+
+while
+
+```math
+\left(
+F_\tau(y,z),
+\mathbf{u}_\tau(x)
+\right)
+\longrightarrow
+\mathbf{u}(x,y,z).
+```
+
+Together,
+
+```math
+\mathcal{S}(x)
++
+\left(
+F_\tau,
+\mathbf{u}_\tau
+\right)
+\longrightarrow
+\mathbf{u}(x,y,z)
+\quad\text{on}\quad
+\Omega(x).
+```
+
+CSF does not determine the CUF basis functions, and CUF does not replace the CSF sectional description.
+
+The subsequent construction of strains, sectional integrals, generalized coefficients, and the CUF fundamental nucleus follows from this kinematic statement.
 
 ---
-
-## 10. Coupling chain
-
-At the kinematic level, the coupling can be summarized as
-
-$$ \mathcal{S}(x) \longrightarrow \Omega(x), $$
-
-together with
-
-$$ (F_\tau(y,z), \mathbf{u}_\tau(x)) \longrightarrow \mathbf{u}(x,y,z). $$
-
-Combining the two statements gives
-
-$$ \mathcal{S}(x) + (F_\tau,\mathbf{u}_\tau) \longrightarrow \mathbf{u}(x,y,z)\ \text{on}\ \Omega(x). $$
-
-The subsequent strain expansion, sectional integrations, generalized sectional coefficients, and fundamental nuclear operator are separate steps of the CSF–CUF formulation.
-
----
-
 
 ### References
 
 * E. Carrera, G. Giunta, **“Refined Beam Theories Based on a Unified Formulation”**, *International Journal of Applied Mechanics*, 2(1) (2010), 117–143. [DOI](https://doi.org/10.1142/S1758825110000500).
 
+* G. Giunta, S. Belouettar, E. Carrera, **“Analysis of FGM Beams by Means of Classical and Advanced Theories”**, *Mechanics of Advanced Materials and Structures*, 17 (2010), 622–635.
 
-- G. Giunta, S. Belouettar, E. Carrera, **“Analysis of FGM Beams by Means of Classical and Advanced Theories”**, *Mechanics of Advanced Materials and Structures*, 17 (2010), 622-635.
-
-- S. O. Ojo, P. M. Weaver, **“Efficient strong Unified Formulation for stress analysis of non-prismatic beam structures”**, 2021.
+* S. O. Ojo, P. M. Weaver, **“Efficient strong Unified Formulation for stress analysis of non-prismatic beam structures”**, 2021.
