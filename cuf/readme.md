@@ -1,55 +1,78 @@
-
 # Inside the CSF-CUF
 
-
->[CSF–CUF tutorial: non-prismatic variable-material T-section](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/README.md)
+> [CSF–CUF tutorial: non-prismatic variable-material T-section](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/README.md)
 >
->The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
+> The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
 
 This repository currently focuses on **single one-dimensional beam members**. General assemblies of multiple connected members are outside the present implementation scope.
 
-The implementation of CSF–CUF is based on a simple guiding idea: the numerical solver should not contain the physical description of the structure.
+The implementation of CSF–CUF is based on a simple guiding idea: the numerical solver should not contain the physical description of the structure or embed a particular approximation family.
 
-Instead, the solver should request the geometric and material information it needs from an external continuous description of the problem, at the position where that information is required.
+Instead, the solver should request the physical and numerical information it needs from independent descriptions, at the position where that information is required.
 
 This changes the direction in which the model is constructed. Geometry and material are not reduced in advance to a set of solver-specific sectional properties. They remain part of an independent physical description, represented by the Continuous Section Field (CSF), which the CUF formulation queries during assembly.
 
-The same principle is applied to the transverse approximation. The expansion law is not embedded in the CUF core, but is provided through an independent interface. The solver therefore operates on the information supplied by the section description and by the selected expansion law without containing assumptions about a particular geometry, material distribution, or approximation family.
+The same principle is applied to the numerical approximations.
 
-This separation is the main architectural principle behind the implementation:
+The transverse expansion law is not embedded in the CUF core, but is supplied through an independent transverse basis.
 
-The objective is to preserve the CUF formulation while changing the way the physical problem is made available to it.
+Likewise, the longitudinal approximation is kept distinct from the finite-element partition itself. The subdivision of the beam into longitudinal elements determines the numerical topology, while the longitudinal basis determines how the solution is represented inside those elements.
 
-This separation is the main architectural principle behind the implementation:
+The solver therefore operates on independent descriptions of:
+
+* the physical sectional state;
+* the transverse approximation;
+* the longitudinal approximation;
+* the longitudinal discretization.
+
+The CUF core combines the information supplied by these components according to the formulation without containing the definition of any particular geometry, material distribution, transverse expansion family, or longitudinal approximation family.
+
+This separation is the main architectural principle behind the implementation.
 
 ```mermaid
 flowchart LR
     CUF["CUF core"]
 
     CSF["Continuous Section Field<br/>physical sectional state S(x)"]
-    EXP["Transverse expansion<br/>F_tau(y,z)"]
-    FE["Longitudinal FE<br/>N_i(x)"]
+
+    TEXP["Transverse approximation<br/>F_tau(y,z)"]
+
+    LONG["Longitudinal approximation"]
+    LBASIS["Longitudinal basis<br/>N_i(x)"]
+    FETOP["FE partition / topology"]
+
+    LONG --> LBASIS
+    LONG --> FETOP
 
     CUF -->|"query at x"| CSF
     CSF -->|"geometry, domains, materials"| CUF
 
-    CUF -->|"query at y,z"| EXP
-    EXP -->|"F_tau and derivatives"| CUF
+    CUF -->|"query at y,z"| TEXP
+    TEXP -->|"F_tau and derivatives"| CUF
 
-    CUF -->|"query at x"| FE
-    FE -->|"N_i and derivatives"| CUF
+    CUF -->|"query at x"| LONG
+    LBASIS -->|"N_i and derivatives"| CUF
+    FETOP -->|"element support and connectivity"| CUF
 
     CUF --> ASM["Integration and assembly"]
 ```
 
-The architecture is therefore not a sequential transformation from geometry to a CUF model.  
-The CUF core queries three independent descriptions when the corresponding information is required:
+The architecture is therefore not a sequential transformation from geometry to a CUF model.
+
+The CUF core combines several independent descriptions when the corresponding information is required:
 
 * the **Continuous Section Field** describes the physical member;
 * the **transverse expansion** describes the admissible cross-sectional kinematics;
-* the **longitudinal finite-element interpolation** describes the numerical approximation along the beam axis.
+* the **longitudinal basis** describes the approximation along the beam axis;
+* the **finite-element topology** describes how the longitudinal domain is partitioned and connected.
 
-The core combines these quantities according to the CUF formulation without containing the definition of any of them.
+The distinction between the last two is important.
+
+The finite-element discretization determines **where the longitudinal elements are**, while the longitudinal basis determines **how the field is approximated inside each element**.
+
+They are therefore related, but they are not the same object.
+
+The objective is to preserve the CUF formulation while allowing the physical description and the approximation choices to evolve independently around it.
 
 ---
 
@@ -71,7 +94,7 @@ CSF–CUF was created to reduce this barrier without hiding the modelling choice
 
 This repository provides a general-purpose framework for building and running beam models based on the Carrera Unified Formulation.
 
-Models are defined externally through YAML files specifying geometry, material distribution, loads, boundary conditions, longitudinal discretization, and the transverse expansion rule.
+An analysis is composed from independent external descriptions of the physical model, the structural problem, and the numerical case.
 
 Geometry and material properties are supplied by the Continuous Section Field, which acts as a general section provider along the beam axis. During assembly, the CUF solver queries this continuous description at the current longitudinal position.
 
@@ -81,16 +104,23 @@ The CUF core is consequently independent of the specific section geometry and ma
 
 Likewise, transverse expansion laws are treated as interchangeable components through a common interface. Different CUF approximation families can therefore be introduced without modifying the solver core.
 
-The resulting architecture keeps four aspects distinct:
+The same separation is applied in the longitudinal direction.
+
+The finite-element partition defines the subdivision and connectivity of the beam domain, while the longitudinal basis defines the approximation used within that discretization. The approximation law is therefore not identified with the finite-element topology itself.
+
+At the architectural level, the framework keeps five aspects distinct:
 
 * the physical description of geometry and materials;
 * the transverse expansion law;
-* the CUF numerical formulation;
-* the longitudinal finite-element discretization.
+* the longitudinal approximation law;
+* the longitudinal finite-element discretization;
+* the CUF numerical formulation.
 
-The objective is not to implement a CUF model tailored to a particular benchmark, geometry, or expansion family, but to provide a reusable framework in which these components can be varied independently.
+These components cooperate during assembly, but none of them is intended to define the others.
 
-In practice, users can modify the physical model, the material distribution, the longitudinal discretization, or the transverse expansion law without having to modify the CUF solver core.
+The objective is not to implement a CUF model tailored to a particular benchmark, geometry, transverse expansion, or longitudinal approximation family, but to provide a reusable framework in which these choices remain explicit and can evolve independently.
+
+In practice, users can change the physical model, material distribution, transverse approximation, or longitudinal numerical representation without embedding those choices in the CUF solver core.
 
 ## An open implementation
 
@@ -106,17 +136,13 @@ The goal is not to impose a way of doing things, but to propose one. If somethin
 
 * [Formulation for Directly Prescribed Variable Sections](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md)
 * [CUF displacement expansion for CSF coupling](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_displacement_expansionf_coupling.md)
-
 * [Numerical validation against Carrera & Giunta](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_numerical_validation_carrera_giunta.md)
 * [CSF–CUF sectional constitutive interface](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_sectional_constitutive_interface.md)
-
-
 
 ### References
 
 * E. Carrera, G. Giunta, **“Refined Beam Theories Based on a Unified Formulation”**, *International Journal of Applied Mechanics*, 2(1) (2010), 117–143. [DOI](https://doi.org/10.1142/S1758825110000500).
 
+* G. Giunta, S. Belouettar, E. Carrera, **“Analysis of FGM Beams by Means of Classical and Advanced Theories”**, *Mechanics of Advanced Materials and Structures*, 17 (2010), 622-635.
 
-- G. Giunta, S. Belouettar, E. Carrera, **“Analysis of FGM Beams by Means of Classical and Advanced Theories”**, *Mechanics of Advanced Materials and Structures*, 17 (2010), 622-635.
-
-- S. O. Ojo, P. M. Weaver, **“Efficient strong Unified Formulation for stress analysis of non-prismatic beam structures”**, 2021.
+* S. O. Ojo, P. M. Weaver, **“Efficient strong Unified Formulation for stress analysis of non-prismatic beam structures”**, 2021.
