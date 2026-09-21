@@ -54,3 +54,6 @@ sp = [
     "shapely",
     "sectionproperties"
 ]
+pardiso = [
+    "pypardiso"
+]
