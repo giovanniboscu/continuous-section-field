@@ -125,6 +125,19 @@ The transverse CUF expansion and the longitudinal FEM approximation are independ
 
 ## Run
 
+install cuf-cuf
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
+pip install --upgrade pip
+pip install -e .
+pip install pypardiso
+cd cuf/quickstart/
+```
+
 From this directory:
 
 ```bash
