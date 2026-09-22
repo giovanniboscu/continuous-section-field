@@ -125,7 +125,7 @@ The transverse CUF expansion and the longitudinal FEM approximation are independ
 
 ## Run
 
-install cuf-cuf
+install csf-cuf
 
 ```bash
 python3 -m venv venv
