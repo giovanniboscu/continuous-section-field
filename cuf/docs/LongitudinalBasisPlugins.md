@@ -70,9 +70,7 @@ A longitudinal plugin registers a `LongitudinalBasisPlugin` and builds a
 - `derivatives_reference(xi)`
 - optional `power_coefficients()` for compiled-field persistence
 
-The current `finite_element` formulation supports nodal longitudinal basis functions with C0 continuity between adjacent elements.
-This is a topology requirement of the current FEM adapter, not a Lagrange
-assumption. Unsupported topologies are rejected explicitly.
+The current `finite_element` formulation supports nodal longitudinal basis functions with C0 continuity between adjacent elements. Unsupported topologies are rejected explicitly.
 
 Built-in plugins are discovered lazily from this directory. Adding another
 module does not require changes to the solver or registry.
