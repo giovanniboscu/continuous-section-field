@@ -93,6 +93,7 @@ Install the repository in editable mode:
 
 ```bash
 pip install -e .
+pip install pyupartiso
 ```
 
 This installs the project dependencies and makes the `csf-cuf` command available in the active environment.
