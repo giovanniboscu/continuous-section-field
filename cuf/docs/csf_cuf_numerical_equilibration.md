@@ -24,7 +24,9 @@ A typical case configuration is:
 The parameter `iterations` may be specified as a list of non-negative integers:
 
 ```yaml
-iterations: [0, 1, 2, ..., n]
+solver:
+  equilibration:
+    iterations: [0, 1, 2, 3]
 ```
 
 Each value identifies the number of equilibration passes to be applied before solving the system.
