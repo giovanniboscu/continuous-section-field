@@ -21,59 +21,19 @@ Its role is to reduce large scale differences among the equations and unknowns o
 
 A typical case configuration is:
 
+The parameter `iterations` may be specified as a list of non-negative integers:
+
 ```yaml
-solver:
-  equilibration:
-    iterations: 3
+iterations: [0, 1, 2, ..., n]
 ```
 
-The parameter `iterations` controls the number of equilibration passes performed before the final solve.
+Each value identifies the number of equilibration passes to be applied before solving the system.
+
+This allows the same physical model to be evaluated under different levels of numerical equilibration without changing the CUF formulation, geometry, materials, loads, boundary conditions, or discretization.
+
+The value `0` corresponds to a solve without equilibration, while `1`, `2`, ..., `n` apply the corresponding number of equilibration passes.
 
 > Equilibration iterations are numerical scaling passes. They are not nonlinear iterations, load increments, Newton iterations, or iterations of the physical model.
-
----
-
-## 1. Algebraic system solved by CSF-CUF
-
-After assembly, an unconstrained linear CSF-CUF problem can be written as
-
-```math
-K q = f
-```
-
-where:
-
-- `K` is the assembled stiffness matrix;
-- `q` is the vector of global generalized CUF unknowns;
-- `f` is the assembled load vector.
-
-When constraints are enforced through an augmented system, the numerical solver may instead receive a KKT-type system of the form
-
-```math
-\begin{bmatrix}
-K & C^T \\
-C & 0
-\end{bmatrix}
-\begin{bmatrix}
-q \\
-\lambda
-\end{bmatrix}
-=
-\begin{bmatrix}
-f \\
-g
-\end{bmatrix}
-```
-
-In that case, equilibration acts on the complete assembled algebraic system that is passed to the linear solver. It does not redefine the constraints themselves.
-
-For the remainder of this document, the generic notation
-
-```math
-A x = b
-```
-
-is used for either the standard stiffness system or the complete augmented system.
 
 ---
 
