@@ -1598,7 +1598,7 @@ $$ \gamma_{xy}=A_{,y}\,a+A\,b_{,x}. $$
 
 The corresponding virtual strains are obtained by replacing $A$ with $B$ and replacing the source amplitudes with the corresponding virtual amplitudes.
 
-For an isotropic constitutive specialization in Voigt order
+Using Voigt order
 
 $$ (xx,yy,zz,yz,xz,xy), $$
 
