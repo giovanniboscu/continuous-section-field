@@ -1,36 +1,66 @@
 case:
+  # Name used to identify this analysis.
   name: cuf_scaled_lagrange_taper_table9_N18
+
 problem:
+  # YAML file containing the data for the tapered structural problem.
   yaml: ../../problems/taper_table9.yaml
+
+  # Python adapter implementing the loading and boundary-condition logic.
+  # The adapter is reusable across different models and cases.
   adapter: ../../validation/surface_halfwave_paper2010.py
 
 cuf:
+  # Transverse CUF expansion used over the cross-section.
   basis: scaled_lagrange
+
+  # Order of the transverse expansion.
   order: 18
+
 longitudinal:
+  # Approximation used along the beam axis.
   method: finite_element
+
+  # Number of longitudinal finite elements.
   elements: 1
+
+  # Longitudinal shape-function family.
   basis: lagrange
+
+  # Polynomial order of the longitudinal shape functions.
   order: 12
 
 section_integration:
+  # Numerical integration method used over the physical cross-section.
   method: fixed_gauss_polygon
+
+  # Gauss quadrature order used inside each polygonal region.
   gauss_order: 6
 
 sampling:
+  # Normalized longitudinal stations at which selected responses are reported.
   stations:
     - 0.00
     - 0.25
     - 0.50
     - 0.75
     - 1.00
+
+  # Number of longitudinal points used to sample the displacement field.
   displacement_samples: 201
+
+  # Resolution used for stress-field sampling over the cross-section.
   stress_grid: 31
 
 solver:
   equilibration:
+    # Number of matrix-equilibration iterations applied before solving.
     iterations: 1
 
 output:
+  # Python post-processing adapter used to extract and format
+  # the quantities required for the comparison.
   adapter: ../../validation/carrera_post.py
+
+  # Directory where the results of this tapered analysis are written.
   directory: ../../output/taper/lagrange/table9_N18_E1
