@@ -160,6 +160,27 @@ For each selected point, the displacement predicted by CSF–CUF is plotted toge
 
 The complete set of plots is available here:
 
+
 [FEM3D - prismatic vs. tapered comparison plots](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape/fem3d/prism_vs_taper)
 
+Two representative comparisons are shown below.
+
+### Bottom flange - vertex 0 - $u_y$
+
+The prismatic and tapered responses are clearly different, while the CSF–CUF solution closely follows the corresponding FEM3D result along the beam.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/bottom_flange_v0_uy.png" width="50%" />
+</p>
+
+### Bottom flange - vertex 3 - $u_z$
+
+The taper produces a substantial change in the displacement profile, while the CSF–CUF and FEM3D curves remain closely aligned.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/bottom_flange_v3_uz.png" width="50%" />
+</p>
+
 Details concerning the numerical settings, model construction, and full reproducibility of the calculations are provided separately.
+
+
