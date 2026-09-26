@@ -1,5 +1,4 @@
-<img width="376" height="594" alt="Screenshot 2026-09-26 at 18 20 21" src="https://github.com/user-attachments/assets/2a5ebe09-7568-486a-a094-b26e7c43c633" />
-<img width="358" height="571" alt="Screenshot 2026-09-26 at 18 20 07" src="https://github.com/user-attachments/assets/0f756f67-edf2-47d4-816f-5c593859f5bf" />
+
 # I-Shape - Prismatic and Tapered Beam Comparison
 
 ## Purpose of this example
@@ -80,7 +79,6 @@ The two model definitions are:
 
 - [Prismatic I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_prism.yaml)
 
-<img width="211" height="344" alt="Screenshot 2026-09-26 at 18 15 38" src="https://github.com/user-attachments/assets/aa98db1f-26ea-43a5-b94d-adf1ccd189af" />
 <img width="510" height="352" alt="Screenshot 2026-09-26 at 18 13 22" src="https://github.com/user-attachments/assets/f34bf086-a345-4a35-a003-a5951564f472" />
 
 - [Tapered I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_taper80.yaml)
