@@ -38,6 +38,7 @@ source venv/bin/activate
 
 pip install --upgrade pip
 pip install -e .
+pip install pypardiso
 ```
 
 The installation registers the `csf-cuf` command.
