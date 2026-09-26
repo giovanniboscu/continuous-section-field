@@ -43,7 +43,7 @@ The FEM3D reference solutions already included in the repository are used, the t
 
 ---
 
-# I-Shape - Prismatic vs. Tap
+# I-Shape - Prismatic vs. Tapered
 
 This document provides a command-by-command guide to reproduce the **prismatic and tapered I-shaped beam comparison** contained in:
 
