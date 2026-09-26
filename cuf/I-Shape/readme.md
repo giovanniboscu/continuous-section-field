@@ -113,17 +113,6 @@ For the comparison presented here, the same case is used for both geometries. Th
 
 
 
-## CSF–CUF representation
-
-In the prismatic case, CSF returns the same cross-section at every longitudinal position.
-
-In the tapered case, the section changes continuously with the longitudinal coordinate $x$, from the initial I-section to the final reduced section.
-
-The CUF solver itself is unchanged between the two analyses.
-
-The corresponding CSF–CUF cases are available here:
-
-[CSF–CUF I-Shape cases](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape)
 
 ## Independent FEM3D comparison
 
