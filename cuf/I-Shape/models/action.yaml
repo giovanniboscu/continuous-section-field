@@ -19,7 +19,8 @@ CSF_ACTIONS:
         stations:
           - station_edge
         show_ids: True
-        show_vertex_ids: True          
+        show_vertex_ids: True
+        show_legenda: False
     - section_selected_analysis:
         stations:
           - station_edge
