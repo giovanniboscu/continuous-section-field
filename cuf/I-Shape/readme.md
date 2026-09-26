@@ -21,48 +21,24 @@ The aim is to compare the results obtained with the **CSF–CUF model** against 
 
 ## Starting geometry
 
-The starting cross-section is the prismatic I-section considered in:
+The reference geometry is the prismatic I-section considered in:
 
 > E. Carrera and G. Giunta,  
 > “Refined Beam Theories Based on a Unified Formulation”,  
 > *International Journal of Applied Mechanics*, 2(1), 117–143, 2010.  
 > DOI: [10.1142/S1758825110000500](https://doi.org/10.1142/S1758825110000500)
 
-Only the **prismatic section geometry** is taken from the paper.
+Starting from this geometry, two configurations are considered:
 
-The tapered configuration described below is generated separately from this initial geometry.
+- **Prismatic case:** the I-section remains constant along the beam.
+- **Tapered case:** the clear web height decreases continuously from
 
-## Prismatic case
+$$ a = 100\ \mathrm{mm} $$ to $$ a = 20\ \mathrm{mm}, $$
 
-In the first case, the I-shaped cross-section is identical at every position along the beam.
+corresponding to an **80% reduction**.
 
-In other words, if the beam is cut at any longitudinal position, the same I-section is obtained.
+The flange width and flange thickness remain unchanged.
 
-This case provides the reference configuration.
-
-## Tapered case
-
-The second case starts from exactly the same I-shaped section.
-
-The beam is then made progressively smaller in the vertical direction by reducing the height of the **web**, i.e. the central vertical part connecting the two flanges.
-
-At the beginning of the beam, the clear web height is
-
-$$
-a = 100\ \mathrm{mm}
-$$
-
-and at the opposite end it becomes
-
-$$
-a = 20\ \mathrm{mm}.
-$$
-
-The web height is therefore reduced by **80%**.
-
-The flange width and flange thickness are kept unchanged.
-
-The transition between the initial and final sections is continuous along the beam length.
 
 The two cases can therefore be pictured as:
 
