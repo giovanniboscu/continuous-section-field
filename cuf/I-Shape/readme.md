@@ -80,6 +80,8 @@ The same loading and boundary-condition scheme is used for both geometries: a **
 
 The **case** combines a model and a problem, and specifies the transverse CUF basis and order, the longitudinal finite-element approximation, and the numerical integration settings.
 
+It is the **entry file passed to the `csf-cuf` solver**. From this file, the solver resolves the selected model, problem, reusable numerical components, and all settings required to assemble and run the analysis.
+
 Unlike the model, which is pure YAML, the **transverse expansion and the longitudinal shape functions are implemented in Python**; once defined, they can be selected and configured from the case YAML and reused across different models, problems, and cases.
 
 The same numerical approximation is used in both analyses - only the cross-section geometry provided by the model differs.
