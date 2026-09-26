@@ -8,11 +8,6 @@ The purpose of this example is to show how the CSF-CUF framework separates the C
 
 To make this separation explicit, two closely related I-section cases are considered: the original prismatic configuration from Carrera et al. (2010) and a non-prismatic configuration obtained by reducing the web height along the beam axis. All the other analysis settings are kept unchanged.
 
-Two analyses are considered:
-
-- a beam with a **prismatic I-shaped cross-section**;
-- a beam with a **continuously tapered I-shaped cross-section**.
-
 Between the two analyses, **only the cross-section geometry is changed**. The CUF formulation, the longitudinal and transverse approximations, the loads, and the remaining analysis settings are kept unchanged.
 
 The cross-section is provided independently through the **Continuous Section Field (CSF)**. During the analysis, the CUF solver requests from CSF the section information required at each longitudinal position.
