@@ -55,14 +55,11 @@ Each CSF–CUF analysis is defined by combining three independent components:
 
 These components are not consecutive processing steps. They are separate descriptions of different aspects of the same structural analysis and are used together by the solver.
 
-
-
 In the present comparison, the **problem formulation** and the **case settings** are kept unchanged. Only the **model geometry** is modified: one model contains the prismatic I-section, while the other contains the continuously tapered I-section.
 
 Separate problem and case files are used for the two analyses only to keep the runs and their outputs clearly separated.
 
 This separation makes it possible to compare the two geometries without changing the CUF formulation, the loading, the boundary conditions, or the numerical approximation.
-
 
 ### Model
 
@@ -81,8 +78,6 @@ The two model definitions are:
 
 - [Prismatic I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_prism.yaml)
 - [Tapered I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_taper80.yaml)
-
-The model is defined in a dedicated YAML file and is independent of the CUF approximation used to solve the problem.
 
 ### Problem
 
@@ -105,7 +100,7 @@ For the two geometries, the corresponding problem definitions are:
 - [Prismatic problem](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/problems/prism_table9.yaml)
 - [Tapered problem](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/problems/taper_table9.yaml)
 
-The loading and boundary conditions are kept equivalent between the two analyses, so that the effect of changing the geometry can be examined without changing the structural problem being applied.
+The same loading and boundary-condition formulation is used in both analyses; separate problem files are retained only to keep the two runs and their outputs clearly separated.
 
 ### Case
 
@@ -114,6 +109,8 @@ The **case** brings together the previously defined model and problem, and speci
 It references the **transverse expansion** and the **longitudinal shape functions**, together with their associated orders, discretization parameters, numerical integration settings, and the remaining solver options.
 
 Both the transverse expansion and the longitudinal shape functions are implemented in Python and, once defined, can be reused across different models, problems, and analysis cases.
+
+In particular, the case specifies:
 
 - the **transverse CUF basis** and its order;
 - the **longitudinal finite-element approximation**;
@@ -133,7 +130,6 @@ The numerical approximation is kept unchanged between the two analyses. The same
 
 The only physical change introduced in the comparison is therefore the cross-section geometry provided by the model.
 
-
 ## Running the analyses
 
 At this point, all ingredients required for the analyses have been defined: the physical model, the structural problem, and the CUF numerical case.
@@ -146,11 +142,6 @@ csf-cuf cases/taper/lagrange_table9_N18_E1.yaml
 ```
 
 The output location is defined directly in each case file through the `output` section. In this example, the results are written to the corresponding subdirectories of `output`.
-
-Both analyses use the same CUF approximation, longitudinal discretization, loading, boundary conditions, and numerical settings. The only physical difference between them is the cross-section geometry provided by the model.
-
-
-
 
 ## Independent FEM3D comparison
 
