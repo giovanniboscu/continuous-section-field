@@ -1,5 +1,50 @@
 # CSF-CUF I-Shape Reproducibility
 
+---
+## Command summary
+
+Starting from a new system:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y python3 python3-venv python3-pip git
+
+git clone https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
+
+python3 -m venv venv
+source venv/bin/activate
+
+pip install --upgrade pip
+pip install -e .
+pip install pypardiso
+
+pip show csfpy
+csf-cuf --help
+
+export MPLBACKEND=Agg
+
+cd cuf/I-Shape
+
+csf-cuf cases/prism/lagrange_table9_N18_E1.yaml
+csf-cuf cases/taper/lagrange_table9_N18_E1.yaml
+
+cd fem3d
+
+# Optional: regenerate the FEM3D reference solutions
+./startfem_prism.sh
+./startfem_tap.sh
+
+# Generate the prismatic/tapered CSF-CUF vs FEM3D plots
+./plot_prism_taper.sh
+```
+
+The FEM3D reference solutions already included in the repository are used, the two `startfem_*.sh` commands can be omitted.
+
+---
+
+# I-Shape — Prismatic vs. Tap
+
 This document provides a command-by-command guide to reproduce the **prismatic and tapered I-shaped beam comparison** contained in:
 
 `cuf/I-Shape`
@@ -185,50 +230,7 @@ cd fem3d
 
 This reruns the two CSF-CUF analyses and generates the comparison plots using the FEM3D reference solutions already present in `fem3d/output/`.
 
----
-## Command summary
-
-Starting from a new system:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y python3 python3-venv python3-pip git
-
-git clone https://github.com/giovanniboscu/continuous-section-field.git
-cd continuous-section-field
-
-python3 -m venv venv
-source venv/bin/activate
-
-pip install --upgrade pip
-pip install -e .
-pip install pypardiso
-
-pip show csfpy
-csf-cuf --help
-
-export MPLBACKEND=Agg
-
-cd cuf/I-Shape
-
-csf-cuf cases/prism/lagrange_table9_N18_E1.yaml
-csf-cuf cases/taper/lagrange_table9_N18_E1.yaml
-
-cd fem3d
-
-# Optional: regenerate the FEM3D reference solutions
-./startfem_prism.sh
-./startfem_tap.sh
-
-# Generate the prismatic/tapered CSF-CUF vs FEM3D plots
-./plot_prism_taper.sh
-```
-
-If the FEM3D reference solutions already included in the repository are used, the two `startfem_*.sh` commands can be omitted.
-
----
-
-# I-Shape — Prismatic vs. Tapered FEM3D Comparison Plots
+ered FEM3D Comparison Plots
 
 The following figures show the CSF-CUF/FEM3D displacement comparisons for all geometric vertices of the three I-section polygons.
 
