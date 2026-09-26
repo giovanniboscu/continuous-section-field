@@ -51,9 +51,8 @@ The **model** is defined entirely in YAML - no Python code required. It contains
 <p align="center">
   <img width="480" height="330" alt="Prismatic I-section" src="https://github.com/user-attachments/assets/f34bf086-a345-4a35-a003-a5951564f472" />
 </p>
-  
-- [Tapered I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_taper80.yaml)
 
+- [Tapered I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_taper80.yaml)
 
 <p align="center">
   <img width="700" height="270" alt="Tapered I-section" src="https://github.com/user-attachments/assets/ad73144d-3579-4511-9604-66471f88a2ff" />
@@ -61,14 +60,20 @@ The **model** is defined entirely in YAML - no Python code required. It contains
 
 ### Problem
 
-The **problem** defines how the beam is loaded and constrained, independently of the section geometry - it answers "what is done to the beam?", not "what is the beam?". Like the case, the **problem is implemented in Python** and can be reused across different models. The same scheme is used for both geometries: a **transverse surface load with a half-wave sinusoidal variation along the beam axis**, applied to the lower flange, with matching boundary conditions at the ends.
+The **problem** defines how the beam is loaded and constrained, independently of the section geometry - it answers "what is done to the beam?", not "what is the beam?".
+
+The problem logic is **implemented in Python**, while its parameters and selection can be **configured and driven from YAML**. Once implemented, the same problem definition can therefore be reused across different models and cases without modifying the solver core.
+
+The same loading and boundary-condition scheme is used for both geometries: a **transverse surface load with a half-wave sinusoidal variation along the beam axis**, applied to the lower flange, with matching boundary conditions at the ends.
 
 - [Prismatic problem](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/problems/prism_table9.yaml)
 - [Tapered problem](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/problems/taper_table9.yaml)
 
 ### Case
 
-The **case** combines a model and a problem, and specifies the transverse CUF basis and order, the longitudinal finite-element approximation, and the numerical integration settings. Unlike the model, which is pure YAML, the **transverse expansion and the longitudinal shape functions are implemented in Python**; once defined, they can be reused across different models, problems, and cases.
+The **case** combines a model and a problem, and specifies the transverse CUF basis and order, the longitudinal finite-element approximation, and the numerical integration settings.
+
+Unlike the model, which is pure YAML, the **transverse expansion and the longitudinal shape functions are implemented in Python**; once defined, they can be selected and configured from the case YAML and reused across different models, problems, and cases.
 
 The same numerical approximation is used in both analyses - only the cross-section geometry provided by the model differs.
 
