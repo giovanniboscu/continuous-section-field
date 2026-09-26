@@ -11,15 +11,8 @@ CSF_ACTIONS:
   actions:  
     - plot_volume_3d:
         params:
-          seed: s
           title: "Not prismatic"  
           equalize_z: false       
-
-    - plot_volume_3d:
-        params:
-          seed: w
-          title: "Not prismatic"  
-          equalize_z: false             
     - plot_weight:
         output:
           - stdout
