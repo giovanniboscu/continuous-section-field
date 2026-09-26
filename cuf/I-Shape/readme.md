@@ -1,5 +1,17 @@
 # I-Shape - Prismatic and Tapered Beam Comparison
 
+## Purpose of this example
+
+This example illustrates the architecture of the **CSF–CUF framework**, in which the CUF computational core is separated from the information used to define a particular structural problem, such as the cross-section geometry, the longitudinal and transverse approximations, and the applied loads.
+
+Two analyses are considered: a beam with a **prismatic I-shaped cross-section** and a beam with a **continuously tapered I-shaped cross-section**.
+
+Between the two analyses, **only the cross-section geometry is changed**. The CUF formulation, the longitudinal and transverse approximations, the loads, and the remaining analysis settings are kept unchanged.
+
+The purpose is to show that the same CUF model can operate on different physical geometries without modifying its computational formulation. The cross-section is supplied independently through the **Continuous Section Field (CSF)**, while the CUF solver requests the corresponding section information at the longitudinal positions required during the analysis.
+
+The results of both analyses are subsequently compared with independent three-dimensional finite-element models (FEM3D).
+
 This example considers an **I-shaped beam** in two configurations:
 
 - a **prismatic beam**, whose cross-section remains unchanged along its length;
