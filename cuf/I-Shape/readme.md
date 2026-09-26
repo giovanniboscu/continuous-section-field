@@ -77,10 +77,13 @@ In the present comparison, this is the only ingredient that changes:
 The two model definitions are:
 
 - [Prismatic I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_prism.yaml)
+
+<img width="211" height="344" alt="Screenshot 2026-09-26 at 18 15 38" src="https://github.com/user-attachments/assets/aa98db1f-26ea-43a5-b94d-adf1ccd189af" />
+<img width="510" height="352" alt="Screenshot 2026-09-26 at 18 13 22" src="https://github.com/user-attachments/assets/f34bf086-a345-4a35-a003-a5951564f472" />
+
 - [Tapered I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_taper80.yaml)
 
 
-<img width="510" height="352" alt="Screenshot 2026-09-26 at 18 13 22" src="https://github.com/user-attachments/assets/f34bf086-a345-4a35-a003-a5951564f472" />
 
 
 ### Problem
