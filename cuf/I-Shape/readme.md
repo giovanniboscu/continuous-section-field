@@ -30,15 +30,7 @@ Starting from this section, two geometries are analysed:
 - **Prismatic case:** the I-section remains constant along the beam.
 - **Tapered case:** the clear web height decreases continuously from
 
-$$
-a = 100\ \mathrm{mm}
-$$
-
-to
-
-$$
-a = 20\ \mathrm{mm},
-$$
+from $a = 100\ \mathrm{mm}$ to $a = 20\ \mathrm{mm}$
 
 corresponding to an **80% reduction**.
 
