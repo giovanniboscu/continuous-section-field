@@ -37,7 +37,7 @@ Only the prismatic section geometry is taken from the reference paper. The taper
 
 Each CSF–CUF analysis combines three independent components: the **model** (beam geometry and material data), the **problem** (loads and boundary conditions), and the **case** (numerical approximation - transverse expansion, longitudinal shape functions, discretization).
 
-In the present comparison, only the **model geometry** changes between the two analyses; problem and case are kept identical. Separate problem and case files are used only to keep the two runs and their outputs cleanly separated.
+In the present comparison, only the **model geometry** changes between the two analyses; the **problem definition and numerical approximation are kept unchanged**. Separate problem and case files are used only to keep the two runs and their outputs cleanly separated.
 
 ### Model
 
