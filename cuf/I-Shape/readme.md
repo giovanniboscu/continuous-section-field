@@ -84,6 +84,7 @@ The two model definitions are:
 - [Tapered I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_taper80.yaml)
 
 
+<img width="1267" height="488" alt="immagine" src="https://github.com/user-attachments/assets/ad73144d-3579-4511-9604-66471f88a2ff" />
 
 
 ### Problem
