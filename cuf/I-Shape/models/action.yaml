@@ -13,9 +13,6 @@ CSF_ACTIONS:
         params:
           title: "Not prismatic"  
           equalize_z: false       
-    - plot_weight:
-        output:
-          - stdout
     - plot_properties:
         properties: [A,Ix,Iy,Ip]
     - plot_section_2d:
