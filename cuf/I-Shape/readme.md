@@ -133,7 +133,15 @@ The numerical approximation is kept unchanged between the two analyses. The same
 The only physical change introduced in the comparison is therefore the cross-section geometry provided by the model.
 
 
+## Running the analyses
 
+At this point, all ingredients required for the analyses have been defined: the physical model, the structural problem, and the CUF numerical case.
+
+The two configurations are launched with:
+
+```bash
+csf-cuf cases/prism/lagrange_table9_N18_E1.yaml
+csf-cuf cases/taper/lagrange_table9_N18_E1.yaml
 
 
 
