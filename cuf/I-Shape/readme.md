@@ -59,6 +59,59 @@ In the present comparison, the **problem** and the **case** are kept unchanged. 
 
 This separation makes it possible to compare the two geometries without changing the CUF formulation, the loading, the boundary conditions, or the numerical approximation.
 
+## Ingredients of the analysis
+
+Each analysis is obtained by combining three independent descriptions: the **model**, the **problem**, and the **case**.
+
+### Model
+
+The **model** describes the physical beam.
+
+It contains the beam length and the CSF description of the cross-section: the geometry of the section at the reference stations, the polygons that compose it, and the material data associated with those regions.
+
+From this information, CSF provides the physical cross-section at any longitudinal coordinate $x$.
+
+In the present comparison, this is the only ingredient that changes:
+
+- in the **prismatic model**, the initial and final I-sections are identical;
+- in the **tapered model**, the final section is obtained by reducing the web height by 80%, and the intermediate sections are generated continuously between the two ends.
+
+The model is defined in a dedicated YAML file and is independent of the CUF approximation used to solve the problem.
+
+### Problem
+
+The **problem** describes how the beam is loaded and constrained.
+
+It defines:
+
+- the applied loads;
+- their spatial distribution;
+- the boundary conditions.
+
+The problem therefore answers the question: **what is done to the beam?**
+
+It does not define the cross-section and it does not select the CUF approximation.
+
+In this comparison, the same problem definition is used for both the prismatic and tapered models, so the loads and boundary conditions are unchanged.
+
+### Case
+
+The **case** defines how the structural problem is approximated and solved with CUF.
+
+It specifies, among other numerical settings:
+
+- the **transverse CUF basis** and its order;
+- the **longitudinal finite-element approximation**;
+- the longitudinal basis and polynomial order;
+- the numerical integration settings.
+
+The transverse and longitudinal approximations are independent choices. The transverse basis describes the displacement field over the cross-section, while the longitudinal finite-element basis describes its variation along the beam axis.
+
+The case also identifies which **model** and which **problem** are to be combined for a given analysis.
+
+For the comparison presented here, the same case is used for both geometries. Therefore, the CUF expansion, the longitudinal approximation, the loads, the boundary conditions, and the numerical settings remain unchanged; only the model geometry is replaced.
+
+
 
 ## CSF–CUF representation
 
