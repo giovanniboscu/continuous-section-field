@@ -1,6 +1,8 @@
 
 # I-Shape - Prismatic and Tapered Beam Comparison
 
+[Reproducibility](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/reproducibility.md)
+
 ## Purpose of this example
 
 This example shows how the **CSF–CUF framework** separates the CUF computational core from the information defining a specific structural problem, such as the cross-section geometry, the longitudinal and transverse approximations, and the applied loads.
