@@ -4,7 +4,9 @@
 
 ## Purpose of this example
 
-This example shows how the **CSF–CUF framework** separates the CUF computational core from the information defining a specific structural problem, such as the cross-section geometry, the longitudinal and transverse approximations, and the applied loads.
+The purpose of this example is to show how the CSF-CUF framework separates the CUF computational core from the components that define a specific structural problem. Cross-section geometry and material description, transverse expansion, longitudinal FEM approximation, loads and boundary conditions are provided as independent components, while the CUF core itself remains unchanged.
+
+To make this separation explicit, two closely related I-section cases are considered: the original prismatic configuration from Carrera et al. (2010) and a non-prismatic configuration obtained by reducing the web height along the beam axis. All the other analysis settings are kept unchanged.
 
 Two analyses are considered:
 
