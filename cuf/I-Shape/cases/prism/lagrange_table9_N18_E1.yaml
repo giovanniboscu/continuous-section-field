@@ -1,39 +1,69 @@
 case:
+  # Name used to identify this analysis.
   name: cuf_scaled_lagrange_taper_table9_N18
 
 problem:
+  # YAML file containing the problem data.
+  # It defines the loading and the parameters associated with the structural problem.
   yaml: ../../problems/prism_table9.yaml
-  adapter:  ../../validation/surface_halfwave_paper2010.py
+
+  # Python adapter implementing the loading and boundary-condition logic.
+  # Once implemented, the same adapter can be reused by different models and cases.
+  adapter: ../../validation/surface_halfwave_paper2010.py
 
 cuf:
+  # Transverse CUF expansion used over the cross-section.
+  # The basis implementation is reusable and is selected here by name.
   basis: scaled_lagrange
+
+  # Order of the transverse expansion.
   order: 18
 
 longitudinal:
+  # Approximation used along the beam axis.
   method: finite_element
+
+  # Number of longitudinal finite elements.
   elements: 1
+
+  # Longitudinal shape-function family.
+  # The Lagrange basis is implemented once and reused here through this reference.
   basis: lagrange
+
+  # Polynomial order of the longitudinal shape functions.
   order: 12
 
 section_integration:
+  # Numerical integration method used over the physical cross-section.
   method: fixed_gauss_polygon
+
+  # Gauss quadrature order used inside each polygonal region.
   gauss_order: 6
 
 sampling:
+  # Longitudinal stations at which selected section responses are reported.
   stations:
     - 0.00
     - 0.25
     - 0.50
     - 0.75
     - 1.00
+
+  # Number of longitudinal samples used to reconstruct the displacement response.
   displacement_samples: 201
+
+  # Resolution used for stress-field sampling over the section.
   stress_grid: 31
 
 solver:
   equilibration:
+    # Number of matrix-equilibration iterations applied before solving.
     iterations: 1
 
 output:
+  # Python post-processing adapter used to extract and format
+  # the quantities required for the Carrera comparison.
   adapter: ../../validation/carrera_post.py
-  directory: ../../output/prism/lagrange/table9_N18_E1
 
+  # Directory where the results of this analysis are written.
+  directory: ../../output/prism/lagrange/table9_N18_E1
