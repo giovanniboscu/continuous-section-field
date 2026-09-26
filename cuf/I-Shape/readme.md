@@ -45,6 +45,21 @@ The flange width and flange thickness remain unchanged.
 
 Only the prismatic section geometry is taken from the reference paper. The tapered geometry is generated from this section by continuously reducing the web height along the beam.
 
+## Ingredients of the analysis
+
+Each CSF–CUF analysis is defined by combining three independent components:
+
+- the **model**, which describes the physical beam, including its length, cross-section geometry, and material data;
+- the **problem**, which defines the applied loads and boundary conditions;
+- the **case**, which specifies how the CUF formulation is approximated numerically, including the transverse expansion and the longitudinal finite-element approximation.
+
+These components are not consecutive processing steps. They are separate descriptions of different aspects of the same structural analysis and are used together by the solver.
+
+In the present comparison, the **problem** and the **case** are kept unchanged. Only the **model geometry** is modified: one model contains the prismatic I-section, while the other contains the continuously tapered I-section.
+
+This separation makes it possible to compare the two geometries without changing the CUF formulation, the loading, the boundary conditions, or the numerical approximation.
+
+
 ## CSF–CUF representation
 
 In the prismatic case, CSF returns the same cross-section at every longitudinal position.
