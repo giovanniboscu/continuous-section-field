@@ -1,4 +1,4 @@
-# Version: CSF-CUF isolated longitudinal basis plugins v31 - 2026-09-21
+# Version: CSF-CUF minimal self-contained stress checkpoint v34 - 2026-09-22
 # OPT-10 COMPILED-FIELD BASIS-OPTIONS METADATA
 from __future__ import annotations
 
@@ -1324,6 +1324,8 @@ def solve_case_runs(
                 dof_layout=assembled.dof_layout,
                 solved_dofs=algebraic.primal,
                 basis=basis,
+                section_provider=section_provider,
+                constitutive_provider=constitutive_provider,
                 metadata=metadata,
             )
 

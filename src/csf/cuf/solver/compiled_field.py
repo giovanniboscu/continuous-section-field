@@ -1,32 +1,38 @@
-# Version: CSF-CUF self-contained displacement checkpoint v3 - 2026-09-15
-"""Compiled displacement field independent of case and model YAML files.
+# Version: CSF-CUF compiled displacement field v21 - 2026-09-23
+"""Pure compiled representation of the solved CUF displacement field.
 
-Version 1 stores a longitudinally constant polynomial transverse basis as
+The ``.cuf.npz`` checkpoint stores only the data required to reconstruct the
+continuous solved displacement field
+
+    u_i(x, y, z)
+
+for ``i = x, y, z``.  No CSF geometry, material data, constitutive provider,
+constitutive matrix, stress data, or recovery context is persisted.
+
+The physical field is represented by the solved element coefficients together
+with the longitudinal and transverse polynomial representations needed to
+evaluate it exactly.  Three transverse representations are supported:
+
+Version 1 (static transverse polynomial):
 
     F_tau(y,z) = sum_{p,q} C[tau-1,p,q] y**p z**q.
 
-Version 2 additionally supports the smooth longitudinal Lagrange blend
-expansion exactly.  For that case the checkpoint stores
+Version 2 (smooth longitudinally varying transverse polynomial):
 
     F_tau(x,y,z) = sum_{r,p,q} C[tau-1,r,p,q] x**r y**p z**q.
 
-Version 3 adds a piecewise transverse representation.  It stores only the
-physical longitudinal boundaries and compiled polynomial coefficients
+Version 3 (piecewise transverse polynomial):
 
-    F_tau^(k)(y,z) = sum_{p,q} C[k,tau-1,p,q] y**p z**q
+    F_tau^(k)(y,z) = sum_{p,q} C[k,tau-1,p,q] y**p z**q.
 
-for each interval k.  Evaluation of a v3 checkpoint therefore does not need
-the expansion plugin, its YAML definition, or any CUF basis object.
-
-The checkpoint remains self-contained: no case/model YAML, KKT data, material
-laws, geometry domains, or expansion implementation are required to evaluate
-the solved displacement.  Version-1 and version-2 files remain readable.
+Analytical derivatives of ``u_i`` with respect to ``x``, ``y`` and ``z`` are
+evaluated directly from these polynomial coefficients.  Derivative samples are
+not stored in the checkpoint.
 """
 
 from __future__ import annotations
 
 import hashlib
-import json
 import os
 from pathlib import Path
 import tempfile
@@ -100,6 +106,7 @@ class CompiledDisplacementField:
                 transverse_segment_power_coefficients,
                 dtype=float,
             )
+
 
         self._metadata = dict(metadata or {})
         self._validate()
@@ -355,6 +362,8 @@ class CompiledDisplacementField:
         dof_layout,
         solved_dofs,
         basis,
+        section_provider=None,
+        constitutive_provider=None,
         metadata=None,
     ):
         """Compile solved FE/CUF coefficients into a reusable field.
@@ -363,7 +372,13 @@ class CompiledDisplacementField:
         polynomial dependence uses v2.  Piecewise transverse laws use v3.
         Unsupported expansions return ``None`` and remain on the normal
         in-memory path.
+
+        ``section_provider`` and ``constitutive_provider`` are accepted only
+        for compatibility with the solver call signature.  They are deliberately
+        ignored and are never retained or written to the displacement checkpoint.
         """
+
+        _ = section_provider, constitutive_provider
 
         solved_dofs = np.asarray(solved_dofs, dtype=float)
         if solved_dofs.shape != (dof_layout.total_dofs,):
@@ -638,6 +653,222 @@ class CompiledDisplacementField:
         index = int(np.searchsorted(self._element_x_ends, x, side="right"))
         return min(index, self._element_x_ends.size - 1)
 
+    @staticmethod
+    def _powers_and_derivatives(value: float, count: int) -> tuple[np.ndarray, np.ndarray]:
+        """Return monomial powers and their exact analytical derivatives."""
+
+        value = float(value)
+        count = int(count)
+        if not np.isfinite(value):
+            raise ValueError("polynomial coordinate must be finite")
+        if count < 1:
+            raise ValueError("polynomial coefficient count must be positive")
+
+        powers = np.power(value, np.arange(count, dtype=int))
+        derivatives = np.zeros(count, dtype=float)
+        if count > 1:
+            degrees = np.arange(1, count, dtype=float)
+            derivatives[1:] = degrees * np.power(
+                value,
+                np.arange(count - 1, dtype=int),
+            )
+        return powers, derivatives
+
+    def _amplitudes_and_derivatives(self, x: float) -> tuple[np.ndarray, np.ndarray]:
+        """Evaluate generalized CUF amplitudes and exact d/dx derivatives."""
+
+        x = float(x)
+        index = self._element_index(x)
+        start = float(self._element_x_starts[index])
+        end = float(self._element_x_ends[index])
+        length = end - start
+        xi = 2.0 * (x - start) / length - 1.0
+
+        xi_powers, xi_derivatives = self._powers_and_derivatives(
+            xi,
+            self._longitudinal_shape_coefficients.shape[1],
+        )
+        shape_values = self._longitudinal_shape_coefficients @ xi_powers
+        shape_derivatives_x = (
+            self._longitudinal_shape_coefficients @ xi_derivatives
+        ) * (2.0 / length)
+
+        coefficients = self._element_coefficients[index]
+        amplitudes = np.tensordot(shape_values, coefficients, axes=(0, 0))
+        amplitude_derivatives_x = np.tensordot(
+            shape_derivatives_x,
+            coefficients,
+            axes=(0, 0),
+        )
+        return (
+            np.asarray(amplitudes, dtype=float),
+            np.asarray(amplitude_derivatives_x, dtype=float),
+        )
+
+    def _transverse_values_and_derivatives(
+        self,
+        x: float,
+        y: float,
+        z: float,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Evaluate F_tau and exact analytical derivatives Fx, Fy, Fz."""
+
+        x = float(x)
+        y = float(y)
+        z = float(z)
+        if not np.isfinite(y) or not np.isfinite(z):
+            raise ValueError("y and z must be finite")
+
+        if self._transverse_power_coefficients is not None:
+            coefficients = self._transverse_power_coefficients
+            x_dependent = False
+        elif self._transverse_segment_power_coefficients is not None:
+            boundaries = self._transverse_segment_boundaries
+            segment_index = int(
+                np.searchsorted(boundaries[1:-1], x, side="right")
+            )
+            coefficients = self._transverse_segment_power_coefficients[
+                segment_index
+            ]
+            x_dependent = False
+        else:
+            coefficients = self._transverse_x_power_coefficients
+            x_dependent = True
+
+        if x_dependent:
+            x_powers, x_derivatives = self._powers_and_derivatives(
+                x, coefficients.shape[1]
+            )
+            y_powers, y_derivatives = self._powers_and_derivatives(
+                y, coefficients.shape[2]
+            )
+            z_powers, z_derivatives = self._powers_and_derivatives(
+                z, coefficients.shape[3]
+            )
+            values = np.einsum(
+                "trpq,r,p,q->t",
+                coefficients, x_powers, y_powers, z_powers,
+                optimize=True,
+            )
+            derivative_x = np.einsum(
+                "trpq,r,p,q->t",
+                coefficients, x_derivatives, y_powers, z_powers,
+                optimize=True,
+            )
+            derivative_y = np.einsum(
+                "trpq,r,p,q->t",
+                coefficients, x_powers, y_derivatives, z_powers,
+                optimize=True,
+            )
+            derivative_z = np.einsum(
+                "trpq,r,p,q->t",
+                coefficients, x_powers, y_powers, z_derivatives,
+                optimize=True,
+            )
+        else:
+            y_powers, y_derivatives = self._powers_and_derivatives(
+                y, coefficients.shape[1]
+            )
+            z_powers, z_derivatives = self._powers_and_derivatives(
+                z, coefficients.shape[2]
+            )
+            values = np.einsum(
+                "tpq,p,q->t", coefficients, y_powers, z_powers, optimize=True
+            )
+            derivative_x = np.zeros_like(values)
+            derivative_y = np.einsum(
+                "tpq,p,q->t",
+                coefficients, y_derivatives, z_powers,
+                optimize=True,
+            )
+            derivative_z = np.einsum(
+                "tpq,p,q->t",
+                coefficients, y_powers, z_derivatives,
+                optimize=True,
+            )
+
+        return tuple(
+            np.asarray(value, dtype=float)
+            for value in (values, derivative_x, derivative_y, derivative_z)
+        )
+
+    def displacement_gradient(self, x: float, y: float, z: float) -> np.ndarray:
+        """Evaluate the exact analytical gradient of the compiled CUF field.
+
+        The returned matrix uses displacement components by rows and physical
+        coordinates ``(x, y, z)`` by columns, i.e. ``gradient[i, j] = du_i/dx_j``.
+        No finite differences, sampling, smoothing, or fitted recovery is used.
+        """
+
+        amplitudes, amplitude_derivatives_x = self._amplitudes_and_derivatives(x)
+        F, Fx, Fy, Fz = self._transverse_values_and_derivatives(x, y, z)
+
+        derivative_x = Fx @ amplitudes + F @ amplitude_derivatives_x
+        derivative_y = Fy @ amplitudes
+        derivative_z = Fz @ amplitudes
+        gradient = np.column_stack((derivative_x, derivative_y, derivative_z))
+        gradient = np.asarray(gradient, dtype=float)
+
+        if gradient.shape != (3, 3):
+            raise RuntimeError("compiled displacement gradient has invalid shape")
+        if not np.all(np.isfinite(gradient)):
+            raise RuntimeError(
+                "compiled displacement gradient contains non-finite values"
+            )
+        return gradient
+
+    def displacement_derivative_x(
+        self,
+        x: float,
+        y: float,
+        z: float,
+    ) -> np.ndarray:
+        """Return the exact analytical vector du_i/dx from the solved field."""
+
+        return self.displacement_gradient(x, y, z)[:, 0].copy()
+
+    def displacement_derivative_y(
+        self,
+        x: float,
+        y: float,
+        z: float,
+    ) -> np.ndarray:
+        """Return the exact analytical vector du_i/dy from the solved field."""
+
+        return self.displacement_gradient(x, y, z)[:, 1].copy()
+
+    def displacement_derivative_z(
+        self,
+        x: float,
+        y: float,
+        z: float,
+    ) -> np.ndarray:
+        """Return the exact analytical vector du_i/dz from the solved field."""
+
+        return self.displacement_gradient(x, y, z)[:, 2].copy()
+
+    def strain(self, x: float, y: float, z: float) -> np.ndarray:
+        """Evaluate the continuous six-component small-strain field.
+
+        Voigt order:
+            [epsilon_xx, epsilon_yy, epsilon_zz,
+             gamma_yz, gamma_xz, gamma_xy]
+        """
+
+        gradient = self.displacement_gradient(x, y, z)
+        strain = np.asarray(
+            [
+                gradient[0, 0],
+                gradient[1, 1],
+                gradient[2, 2],
+                gradient[1, 2] + gradient[2, 1],
+                gradient[0, 2] + gradient[2, 0],
+                gradient[0, 1] + gradient[1, 0],
+            ],
+            dtype=float,
+        )
+        return strain
+
     def section_evaluator(self, x: float):
         """Compile one fixed-x section evaluator from persisted coefficients."""
 
@@ -716,15 +947,16 @@ class CompiledDisplacementField:
         return _STATIC_FORMAT_VERSION
 
     def save_atomic(self, path: str | Path) -> tuple[Path, str]:
-        """Atomically save and verify the self-contained NPZ checkpoint."""
+        """Atomically save and verify a pure displacement-field NPZ checkpoint.
+
+        Only the numerical representation required to evaluate ``u_i(x,y,z)``
+        is persisted.  Analytical derivatives are reconstructed from the same
+        coefficients and are therefore not duplicated in the archive.
+        """
 
         path = Path(path).resolve()
         path.parent.mkdir(parents=True, exist_ok=True)
         format_version = self._format_version()
-        metadata = dict(self._metadata)
-        metadata["format"] = _FORMAT_NAME
-        metadata["format_version"] = format_version
-        metadata_json = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
 
         descriptor, temporary_name = tempfile.mkstemp(
             dir=path.parent,
@@ -735,8 +967,6 @@ class CompiledDisplacementField:
         try:
             with os.fdopen(descriptor, "wb") as stream:
                 payload = {
-                    "format_version": np.asarray(format_version, dtype=np.int64),
-                    "metadata_json": np.asarray(metadata_json),
                     "element_x_starts": self._element_x_starts,
                     "element_x_ends": self._element_x_ends,
                     "element_coefficients": self._element_coefficients,
@@ -744,6 +974,7 @@ class CompiledDisplacementField:
                         self._longitudinal_shape_coefficients
                     ),
                 }
+
                 if format_version == _STATIC_FORMAT_VERSION:
                     payload["transverse_power_coefficients"] = (
                         self._transverse_power_coefficients
@@ -759,39 +990,61 @@ class CompiledDisplacementField:
                     payload["transverse_segment_power_coefficients"] = (
                         self._transverse_segment_power_coefficients
                     )
+
                 np.savez_compressed(stream, **payload)
                 stream.flush()
                 os.fsync(stream.fileno())
 
-            verified = type(self).load(temporary_path)
-            expected_metadata = dict(self.metadata)
-            expected_metadata["format"] = _FORMAT_NAME
-            expected_metadata["format_version"] = format_version
-            if verified.metadata != expected_metadata:
-                raise RuntimeError("checkpoint metadata verification failed")
+            # A successful reload validates the complete persisted field structure.
+            type(self).load(temporary_path)
             os.replace(temporary_path, path)
         except Exception:
             temporary_path.unlink(missing_ok=True)
             raise
 
-        self._metadata = metadata
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         return path, digest
 
     @classmethod
     def load(cls, path: str | Path):
-        """Load a self-contained displacement checkpoint without YAML files."""
+        """Load a pure compiled displacement field from an NPZ checkpoint."""
 
         path = Path(path).resolve()
         with np.load(path, allow_pickle=False) as archive:
-            version = int(np.asarray(archive["format_version"]).item())
-            if version not in _SUPPORTED_FORMAT_VERSIONS:
+            names = set(archive.files)
+
+            has_static = "transverse_power_coefficients" in names
+            has_variable = "transverse_x_power_coefficients" in names
+            has_segmented = (
+                "transverse_segment_boundaries" in names
+                or "transverse_segment_power_coefficients" in names
+            )
+
+            if sum((has_static, has_variable, has_segmented)) != 1:
                 raise ValueError(
-                    f"unsupported displacement checkpoint version {version}"
+                    "compiled displacement checkpoint must contain exactly one "
+                    "transverse field representation"
                 )
-            metadata = json.loads(str(np.asarray(archive["metadata_json"]).item()))
-            if metadata.get("format") != _FORMAT_NAME:
-                raise ValueError("invalid displacement checkpoint format")
+            if has_segmented and not {
+                "transverse_segment_boundaries",
+                "transverse_segment_power_coefficients",
+            }.issubset(names):
+                raise ValueError(
+                    "segmented compiled displacement checkpoint is incomplete"
+                )
+
+            required = {
+                "element_x_starts",
+                "element_x_ends",
+                "element_coefficients",
+                "longitudinal_shape_coefficients",
+            }
+            missing = required.difference(names)
+            if missing:
+                raise ValueError(
+                    "compiled displacement checkpoint is missing: "
+                    + ", ".join(sorted(missing))
+                )
 
             common = dict(
                 element_x_starts=archive["element_x_starts"],
@@ -800,16 +1053,17 @@ class CompiledDisplacementField:
                 longitudinal_shape_coefficients=(
                     archive["longitudinal_shape_coefficients"]
                 ),
-                metadata=metadata,
+                metadata=None,
             )
-            if version == _STATIC_FORMAT_VERSION:
+
+            if has_static:
                 return cls(
                     transverse_power_coefficients=(
                         archive["transverse_power_coefficients"]
                     ),
                     **common,
                 )
-            if version == _VARIABLE_FORMAT_VERSION:
+            if has_variable:
                 return cls(
                     transverse_x_power_coefficients=(
                         archive["transverse_x_power_coefficients"]

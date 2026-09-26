@@ -1,4 +1,4 @@
-# Version: CSF-CUF section provider v20 - 2026-09-03
+# Version: CSF-CUF section provider v23 - 2026-09-22
 # Changelog: v20 delegates the public CSF entity-inspection API; v19 introduced net homogeneous domain slicing.
 """Section representation and CSF adapter for the CSF-CUF bridge.
 
@@ -11,6 +11,9 @@ from dataclasses import dataclass
 from typing import Any, Tuple
 
 import numpy as np
+
+from csf import _tol
+from csf.section_field import _point_in_poly_inclusive
 
 
 @dataclass(frozen=True)
@@ -254,6 +257,52 @@ class CSFSectionProvider(SectionProvider):
             raise TypeError("CSF section has no polygons attribute")
 
         return self._domain_slicer.domains(section)
+
+    def domain_at_point(
+        self,
+        x: float,
+        y: float,
+        z: float,
+    ) -> PolygonDomain:
+        """Return the unique net CSF domain containing ``(y, z)`` at ``x``.
+
+        Point-in-polygon evaluation is delegated to the existing CSF geometry
+        helper.  This adapter only applies the already prepared net-domain
+        topology (outer polygon minus direct excluded children).
+        """
+
+        x = float(x)
+        y = float(y)
+        z = float(z)
+        if not np.all(np.isfinite((x, y, z))):
+            raise ValueError("x, y and z must be finite")
+
+        tolerance = float(_tol.EPS_L)
+        matches = []
+        for domain in self.domains(x):
+            if not _point_in_poly_inclusive(
+                y, z, domain.vertices, tolerance
+            ):
+                continue
+            if any(
+                _point_in_poly_inclusive(y, z, excluded, tolerance)
+                for excluded in domain.excluded_vertices
+            ):
+                continue
+            matches.append(domain)
+
+        if not matches:
+            raise ValueError(
+                f"point (x={x}, y={y}, z={z}) lies outside every CSF material domain"
+            )
+        if len(matches) != 1:
+            identifiers = tuple(domain.domain_id for domain in matches)
+            raise ValueError(
+                "point lies on an ambiguous material interface; "
+                f"matching domain_ids={identifiers}"
+            )
+
+        return matches[0]
 
     def inspect_section_entities(self, x: float):
         """Delegate stable polygon metadata to the public CSF inspection API.

@@ -1,0 +1,64 @@
+# Variable-section test derived from the prismatic l/a=10 benchmark.
+
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        - name: top_flange
+          weight: 71700.0
+          vertices:
+            - [-33, 50]
+            - [-12.5, 50]
+            - [12.5, 50]
+            - [33, 50]
+            - [33, 75]
+            - [-33, 75]
+        - name: web
+          weight: 71700.0
+          vertices:
+            - [-12.5, -50]
+            - [12.5, -50]
+            - [12.5, 50]
+            - [-12.5, 50]
+        - name: bottom_flange
+          weight: 71700.0
+          vertices:
+            - [-33, -75]
+            - [33, -75]
+            - [33, -50]
+            - [12.5, -50]
+            - [-12.5, -50]
+            - [-33, -50]
+
+    S1:
+      z: 1000
+      polygons:
+        - name: top_flange
+          weight: 71700.0
+          vertices:
+            - [-33, 10]
+            - [-12.5, 10]
+            - [12.5, 10]
+            - [33, 10]
+            - [33, 35]
+            - [-33, 35]
+        - name: web
+          weight: 71700.0
+          vertices:
+            - [-12.5, -10]
+            - [12.5, -10]
+            - [12.5, 10]
+            - [-12.5, 10]
+        - name: bottom_flange
+          weight: 71700.0
+          vertices:
+            - [-33, -35]
+            - [33, -35]
+            - [33, -10]
+            - [12.5, -10]
+            - [-12.5, -10]
+            - [-33, -10]
+
+  shear_weight_laws:
+    - 'iso(0.3)'

@@ -1,0 +1,42 @@
+# Version: CSF-CUF hollow-rectangle analytical report v2 - 2026-08-28
+HOLLOW RECTANGLE - SINUSOIDAL BENDING
+=======================================
+
+GEOMETRY AND MATERIAL
+---------------------
+outer B x H [mm]          = 100 x 100
+void  b x h [mm]          = 80 x 80
+net area [mm^2]           = 3600
+I_y [mm^4]                = 4920000
+length L [mm]             = 10000
+Young modulus E [MPa]     = 71700
+
+LOAD
+----
+surface pressure p0 [N/mm^2] = 1.000000000000e-05
+line-load amplitude q0 [N/mm] = 1.000000000000e-03
+q(x) = q0 sin(pi x/L), acting in solver -z
+
+MIDSPAN BOTTOM-WALL DISPLACEMENT
+--------------------------------
+sample point (x,y,z) [mm] = (5000, 0, -50)
+CSF-CUF u_z [mm]           = -2.911664863863e-01
+Euler-Bernoulli u_z [mm]   = -2.910155870408e-01
+relative magnitude error [%] = 5.185266777099e-02
+
+BOTTOM-WALL FIELD CHECK AT MIDSPAN
+----------------------------------
+u_z is sampled at 9 points over the complete outer bottom wall.
+minimum u_z [mm]            = -2.911772113516e-01
+maximum u_z [mm]            = -2.911664863863e-01
+mean u_z [mm]               = -2.911709551218e-01
+max-min spread [mm]         = 1.072496536342e-05
+
+STATIONS
+--------
+       x/L           x [mm]         CUF u_z [mm]          EB u_z [mm]        error [%]
+  0.000000         0.000000   2.284056495549e-15  -0.000000000000e+00                -
+  0.250000      2500.000000  -2.058981303909e-01  -2.057790950275e-01   5.78461886e-02
+  0.500000      5000.000000  -2.911664863863e-01  -2.910155870408e-01   5.18526678e-02
+  0.750000      7500.000000  -2.058981303900e-01  -2.057790950275e-01   5.78461882e-02
+  1.000000     10000.000000  -9.223118140184e-16  -3.563913071714e-17                -

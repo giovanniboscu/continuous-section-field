@@ -1,0 +1,48 @@
+# Version: CSF-CUF hollow-rectangle torsion analytical report v6 - 2026-08-28
+HOLLOW RECTANGLE - SINUSOIDAL TORSION
+========================================
+
+GEOMETRY AND MATERIAL
+---------------------
+outer B x H [mm]          = 100 x 100
+void  b x h [mm]          = 80 x 80
+uniform thickness t [mm]  = 10
+mean-line area A_m [mm^2] = 8100
+Bredt J_t [mm^4]          = 7290000
+Young modulus E [MPa]     = 71700
+Poisson ratio nu          = 0.3
+shear modulus G [MPa]     = 27576.9230769
+length L [mm]             = 10000
+
+LOAD
+----
+side traction p0 [N/mm^2] = 1.000000000000e-06
+torque amplitude m0 [N]   = 1.000000000000e-02
+m(x) = m0 sin(pi x/L); zero transverse resultant
+
+MIDSPAN TWIST
+-------------
+CSF-CUF theta [rad]        = 3.734678453701e-07
+Bredt-Batho theta [rad]    = 5.039958014936e-07
+relative magnitude error [%] = 2.589861973783e+01
+
+TRANSVERSE FIELD CHECK AT MIDSPAN
+---------------------------------
+The same twist is recovered independently from u_z at y=+/-B/2
+and from u_y at z=+/-H/2.
+theta from u_z pair [rad]   = 3.734678453701e-07
+theta from u_y pair [rad]   = 3.733027729022e-07
+pair difference [rad]       = 1.650724679110e-10
+pair mismatch [%]           = 4.419991438550e-02
+
+NOTE: Bredt-Batho is a thin-wall closed-section approximation.
+The CUF sequence must also be checked for internal convergence.
+
+STATIONS
+--------
+       x/L           x [mm]      CUF theta [rad]    Bredt theta [rad]        error [%]    pair mismatch [%]
+  0.000000         0.000000  -2.978705156040e-21   0.000000000000e+00                -       1.59047641e+00
+  0.250000      2500.000000   2.640868083055e-07   3.563788489257e-07   2.58971712e+01       4.41994700e-02
+  0.500000      5000.000000   3.734678453701e-07   5.039958014936e-07   2.58986197e+01       4.41999144e-02
+  0.750000      7500.000000   2.640868083053e-07   3.563788489257e-07   2.58971712e+01       4.41994700e-02
+  1.000000     10000.000000   1.306960013613e-21   6.172168450828e-23                -       3.76248328e+00

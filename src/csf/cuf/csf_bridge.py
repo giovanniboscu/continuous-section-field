@@ -1,4 +1,4 @@
-# Version: CSF-CUF absolute constitutive carriers v17 - 2026-08-27
+# Version: CSF-CUF absolute constitutive carriers v18 - 2026-09-22
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -9,7 +9,7 @@ import numpy as np
 from csf.io.csf_issues import CSFIssues
 from csf.io.csf_reader import CSFReader
 from csf.cuf.core.section import CSFSectionProvider
-from csf.cuf.core.material import IsotropicEGConstitutive
+from csf.cuf.core.material import MaterialConstitutive
 
 
 @dataclass(frozen=True)
@@ -46,10 +46,32 @@ class CSFCUFModelBridge:
         self.section_provider = CSFSectionProvider(field)
         self._section_cache = {}
         self._state_cache = {}
-        self.constitutive_provider = IsotropicEGConstitutive(
+        self.constitutive_provider = MaterialConstitutive(
             E_field=self._E_field,
             G_field=self._G_field,
+            nu_field=self._nu_field,
         )
+
+    def __getstate__(self):
+        """Persist only model state needed by the existing providers.
+
+        ``_section_cache`` and ``_state_cache`` are transient assembly/query
+        caches.  They are deliberately excluded so a compiled result does not
+        carry sampled sections or sampled constitutive states.
+        """
+
+        return {
+            "field": self.field,
+            "section_provider": self.section_provider,
+            "constitutive_provider": self.constitutive_provider,
+        }
+
+    def __setstate__(self, state):
+        self.field = state["field"]
+        self.section_provider = state["section_provider"]
+        self.constitutive_provider = state["constitutive_provider"]
+        self._section_cache = {}
+        self._state_cache = {}
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "CSFCUFModelBridge":
@@ -132,6 +154,19 @@ class CSFCUFModelBridge:
         )
         self._state_cache[key] = state
         return state
+
+
+    def _nu_field(self, x, domain_id, y, z):
+        return self.domain_state(
+            float(x),
+            int(domain_id),
+        ).poisson
+        
+    def _nu_field(self, x, domain_id, y, z):
+        return self.domain_state(
+            float(x),
+            int(domain_id),
+        ).poisson
 
     def _E_field(self, x, domain_id, y, z) -> float:
         return self.domain_state(float(x), int(domain_id)).E

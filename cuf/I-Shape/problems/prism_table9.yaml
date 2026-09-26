@@ -1,0 +1,11 @@
+model:
+  csf_yaml: ../models/carrera_i_shaped_prism.yaml
+  
+problem:
+  type: surface_halfwave_transverse_supported
+
+  surface:
+    polygon_name: bottom_flange
+    edge_start_point_id: 0
+
+  amplitude: -1

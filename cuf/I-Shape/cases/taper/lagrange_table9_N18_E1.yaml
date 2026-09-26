@@ -1,0 +1,36 @@
+case:
+  name: cuf_scaled_lagrange_taper_table9_N18
+problem:
+  yaml: ../../problems/taper_table9.yaml
+  adapter: ../../validation/surface_halfwave_paper2010.py
+
+cuf:
+  basis: scaled_lagrange
+  order: 18
+longitudinal:
+  method: finite_element
+  elements: 1
+  basis: lagrange
+  order: 12
+
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 6
+
+sampling:
+  stations:
+    - 0.00
+    - 0.25
+    - 0.50
+    - 0.75
+    - 1.00
+  displacement_samples: 201
+  stress_grid: 31
+
+solver:
+  equilibration:
+    iterations: 1
+
+output:
+  adapter: ../../validation/carrera_post.py
+  directory: ../../output/taper/lagrange/table9_N18_E1

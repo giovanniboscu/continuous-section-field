@@ -1,4 +1,3 @@
-# DRAFT
 # Direct segmented CUF expansion law
 
 A piecewise longitudinal expansion is declared directly in the case file.

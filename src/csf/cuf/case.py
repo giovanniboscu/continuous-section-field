@@ -335,7 +335,7 @@ def load_case(path: str | Path) -> CaseDefinition:
         else int(material_polynomial_degree_raw)
     )
     equilibration_iterations = _equilibration_iterations(
-        equilibration.get("iterations", 8)
+        equilibration.get("iterations", 3)
     )
 
     if elements is not None and elements < 1:

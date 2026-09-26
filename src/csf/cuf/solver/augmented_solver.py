@@ -82,7 +82,7 @@ class AugmentedSparseLinearSolver:
     The checkpoint does not modify either object.
     """
 
-    def __init__(self, *, equilibration_iterations: int = 8):
+    def __init__(self, *, equilibration_iterations: int = 3):
         equilibration_iterations = int(equilibration_iterations)
         if equilibration_iterations < 0:
             raise ValueError("equilibration_iterations must be >= 0")
@@ -483,25 +483,31 @@ class AugmentedSparseLinearSolver:
             and sparse_incremental <= available
         )
 
-        if dense_fits and dense_bytes < csr_bytes:
-            selected = "dense"
-            reason = "dense-representation-smaller"
-
-        elif sparse_fits:
-            selected = "sparse"
-            reason = "sparse-peak-bound-fits"
+        if dense_fits and sparse_fits:
+            # Both methods fit in physical memory:
+            # choose the one with the lower estimated peak memory usage.
+            if dense_incremental < sparse_incremental:
+                selected = "dense"
+                reason = "dense-lower-estimated-physical-memory-peak"
+            else:
+                selected = "sparse"
+                reason = "sparse-lower-estimated-physical-memory-peak"
 
         elif dense_fits:
             selected = "dense"
-            reason = "sparse-peak-bound-exceeds-available"
+            reason = "dense-only-method-fits-physical-memory"
+
+        elif sparse_fits:
+            selected = "sparse"
+            reason = "sparse-only-method-fits-physical-memory"
 
         else:
-            if available is not None:
-                selected = "pardiso"
-                reason = "dense-does-not-fit; sparse-peak-bound-exceeds-available"
-            else:
-                selected = "sparse"
-                reason = "available-memory-unknown"
+            # Neither of the standard solver paths fits in physical memory.
+            # PARDISO can use the virtual-memory path.
+            selected = "pardiso"
+            reason = "physical-memory-insufficient-for-dense-and-sparse"
+
+
 
         print(
             "[memory-solver] "
@@ -646,6 +652,15 @@ class AugmentedSparseLinearSolver:
             raise ValueError(
                 "equilibration_iterations must contain values >= 0"
             )
+
+        print(
+            "[kkt-equilibration] "
+            "requested_iterations="
+            + ",".join(str(value) for value in requested),
+            flush=True,
+        )
+
+
 
         with warnings.catch_warnings():
             warnings.simplefilter(

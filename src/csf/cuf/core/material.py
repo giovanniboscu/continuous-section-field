@@ -501,13 +501,26 @@ class TransformedConstitutiveProvider(ConstitutiveProvider):
         ).copy()
 
 
-class IsotropicEGConstitutive(ConstitutiveProvider):
-    """Two-field isotropic constitutive closure based on E and G."""
+class MaterialConstitutive(ConstitutiveProvider):
+    """
+    CSF material constitutive law based on the independent E and G carriers
+    and an optional Poisson coefficient.
+
+    If nu is defined, the standard isotropic elastic closure is used.
+
+    If nu is None, CSF uses an uncoupled two-modulus elastic law:
+    E controls the normal stiffness terms and G controls the shear
+    stiffness terms, with no Poisson coupling.
+
+    The uncoupled law is a reduced constitutive model and does not
+    represent general anisotropy.
+    """
 
     def __init__(
         self,
         E_field: ScalarField,
         G_field: ScalarField,
+        nu_field,
     ) -> None:
         if not callable(E_field):
             raise TypeError(
@@ -520,6 +533,7 @@ class IsotropicEGConstitutive(ConstitutiveProvider):
 
         self._E_field = E_field
         self._G_field = G_field
+        self._nu_field = nu_field
 
     def matrix(
         self,
@@ -545,11 +559,42 @@ class IsotropicEGConstitutive(ConstitutiveProvider):
             )
         )
 
+        nu = self._nu_field(
+            x,
+            domain_id,
+            y,
+            z,
+        )
+
         self._validate_fields(E, G)
 
         if E == 0.0 and G == 0.0:
             return np.zeros((6, 6), dtype=float)
 
+        # CSF uncoupled two-modulus elastic law.
+        #
+        # When no Poisson coefficient is supplied, E and G remain
+        # independent constitutive carriers. E provides the normal
+        # stiffness and G provides the shear stiffness. No coupling
+        # between the normal strain components is introduced.
+        if nu is None:
+            C = np.zeros((6, 6), dtype=float)
+
+            C[0, 0] = E
+            C[1, 1] = E
+            C[2, 2] = E
+
+            C[3, 3] = G
+            C[4, 4] = G
+            C[5, 5] = G
+
+            return C
+
+        # Isotropic elastic closure.
+        #
+        # E and G define the complete isotropic constitutive matrix.
+        # The presence of nu identifies the CSF material as using
+        # Poisson coupling.
         denominator = 3.0 * G - E
         lam = G * (E - 2.0 * G) / denominator
         normal = lam + 2.0 * G

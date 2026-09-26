@@ -1,4 +1,3 @@
-# DRAFT
 # `longitudinal_lagrange_blend`
 
 This expansion plugin makes the transverse CUF basis explicitly dependent on
