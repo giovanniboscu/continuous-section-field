@@ -1,4 +1,4 @@
-# I-Shape — Prismatic and Tapered Beam Comparison
+# I-Shape - Prismatic and Tapered Beam Comparison
 
 This example considers an **I-shaped beam** in two configurations:
 
@@ -6,8 +6,6 @@ This example considers an **I-shaped beam** in two configurations:
 - a **tapered beam**, whose cross-section gradually changes from one end to the other.
 
 The aim is to compare the results obtained with the **CSF–CUF model** against an independent **three-dimensional finite-element model (FEM3D)**.
-
-The comparison is intentionally kept simple: the same beam is considered first with a constant cross-section and then with a continuously varying one.
 
 ## Starting geometry
 
@@ -54,7 +52,7 @@ The flange width and flange thickness are kept unchanged.
 
 The transition between the initial and final sections is continuous along the beam length.
 
-The two cases can therefore be pictured simply as:
+The two cases can therefore be pictured as:
 
 - **prismatic case:** the same I-section along the entire beam;
 - **tapered case:** the same initial I-section, with the web height gradually decreasing toward the other end.
@@ -82,29 +80,25 @@ The comparison therefore consists of:
 - prismatic CSF–CUF vs. prismatic FEM3D;
 - tapered CSF–CUF vs. tapered FEM3D.
 
-The purpose is not only to compare a single displacement value.
-
-Instead, the displacement evolution along the complete beam is examined at several points located on the perimeter of the I-section.
+The displacement evolution along the complete beam is examined at several points located on the perimeter of the I-section.
 
 For each selected point, the corresponding displacement obtained with CSF–CUF is plotted together with the result from the FEM3D model.
 
-This makes it possible to see both:
+This makes it possible to examine:
 
 - how the structural response changes when the beam becomes tapered;
 - how closely the CSF–CUF solution follows the independent three-dimensional solution.
 
 The complete set of comparison plots is available here:
 
-[FEM3D — prismatic vs. tapered comparison plots](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape/fem3d/prism_vs_taper)
+[FEM3D - prismatic vs. tapered comparison plots](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape/fem3d/prism_vs_taper)
 
 ## Scope
 
-This example is deliberately limited to the comparison of two simple configurations.
-
-The first reproduces the prismatic I-shaped geometry used as the starting reference.
+The first configuration reproduces the prismatic I-shaped geometry used as the starting reference.
 
 The second uses the same initial section but introduces a continuous geometric variation along the beam.
 
-The purpose is to show, in a direct numerical example, how the same CSF–CUF formulation can be used for both a constant and a continuously variable cross-section.
+The comparison shows how the same CSF–CUF formulation is applied to both a constant and a continuously variable cross-section.
 
-Details concerning the numerical settings, model construction and full reproducibility of the calculations are kept separate from this introductory comparison.
+Details concerning the numerical settings, model construction and full reproducibility of the calculations are kept in separate documentation.
