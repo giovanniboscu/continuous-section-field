@@ -2,22 +2,18 @@
 
 ## Purpose of this example
 
-This example illustrates the architecture of the **CSF–CUF framework**, in which the CUF computational core is separated from the information used to define a particular structural problem, such as the cross-section geometry, the longitudinal and transverse approximations, and the applied loads.
+This example shows how the **CSF–CUF framework** separates the CUF computational core from the information defining a specific structural problem, such as the cross-section geometry, the longitudinal and transverse approximations, and the applied loads.
 
-Two analyses are considered: a beam with a **prismatic I-shaped cross-section** and a beam with a **continuously tapered I-shaped cross-section**.
+Two analyses are considered:
+
+- a beam with a **prismatic I-shaped cross-section**;
+- a beam with a **continuously tapered I-shaped cross-section**.
 
 Between the two analyses, **only the cross-section geometry is changed**. The CUF formulation, the longitudinal and transverse approximations, the loads, and the remaining analysis settings are kept unchanged.
 
-The purpose is to show that the same CUF model can operate on different physical geometries without modifying its computational formulation. The cross-section is supplied independently through the **Continuous Section Field (CSF)**, while the CUF solver requests the corresponding section information at the longitudinal positions required during the analysis.
+The cross-section is provided independently through the **Continuous Section Field (CSF)**. During the analysis, the CUF solver requests from CSF the section information required at each longitudinal position.
 
-The results of both analyses are subsequently compared with independent three-dimensional finite-element models (FEM3D).
-
-This example considers an **I-shaped beam** in two configurations:
-
-- a **prismatic beam**, whose cross-section remains unchanged along its length;
-- a **tapered beam**, whose cross-section gradually changes from one end to the other.
-
-The aim is to compare the results obtained with the **CSF–CUF model** against an independent **three-dimensional finite-element model (FEM3D)**.
+The results of both cases are then compared with independent three-dimensional finite-element models (FEM3D).
 
 ## Starting geometry
 
@@ -28,65 +24,54 @@ The reference geometry is the prismatic I-section considered in:
 > *International Journal of Applied Mechanics*, 2(1), 117–143, 2010.  
 > DOI: [10.1142/S1758825110000500](https://doi.org/10.1142/S1758825110000500)
 
-Starting from this geometry, two configurations are considered:
+Starting from this section, two geometries are analysed:
 
 - **Prismatic case:** the I-section remains constant along the beam.
 - **Tapered case:** the clear web height decreases continuously from
 
-$$ a = 100\ \mathrm{mm} $$ to $$ a = 20\ \mathrm{mm}, $$
+$$
+a = 100\ \mathrm{mm}
+$$
+
+to
+
+$$
+a = 20\ \mathrm{mm},
+$$
 
 corresponding to an **80% reduction**.
 
 The flange width and flange thickness remain unchanged.
 
+Only the prismatic section geometry is taken from the reference paper. The tapered geometry is generated from this section by continuously reducing the web height along the beam.
 
-The two cases can therefore be pictured as:
+## CSF–CUF representation
 
-- **prismatic case:** the same I-section along the entire beam;
-- **tapered case:** the same initial I-section, with the web height gradually decreasing toward the other end.
+In the prismatic case, CSF returns the same cross-section at every longitudinal position.
 
-## CSF–CUF model
+In the tapered case, the section changes continuously with the longitudinal coordinate $x$, from the initial I-section to the final reduced section.
 
-In the CSF–CUF model, the changing cross-section is described directly as a function of the longitudinal position $x$.
+The CUF solver itself is unchanged between the two analyses.
 
-This means that the solver can request the actual section geometry at any required position along the beam.
-
-For the prismatic case, the section returned is always the same.
-
-For the tapered case, the returned section gradually changes from the initial I-section to the final reduced I-section.
-
-The two CSF–CUF cases are available here:
+The corresponding CSF–CUF cases are available here:
 
 [CSF–CUF I-Shape cases](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape)
 
 ## Independent FEM3D comparison
 
-The same two beams were also analysed with an independent three-dimensional finite-element model.
+The same two geometries are also analysed using independent three-dimensional finite-element models.
 
-The comparison therefore consists of:
+The comparison therefore includes:
 
 - prismatic CSF–CUF vs. prismatic FEM3D;
 - tapered CSF–CUF vs. tapered FEM3D.
 
-The displacement evolution along the complete beam is examined at several points located on the perimeter of the I-section.
+The comparison is performed along the beam at several points on the perimeter of the I-section.
 
-For each selected point, the corresponding displacement obtained with CSF–CUF is plotted together with the result from the FEM3D model.
+For each selected point, the displacement predicted by CSF–CUF is plotted together with the corresponding FEM3D result.
 
-This makes it possible to examine:
-
-- how the structural response changes when the beam becomes tapered;
-- how closely the CSF–CUF solution follows the independent three-dimensional solution.
-
-The complete set of comparison plots is available here:
+The complete set of plots is available here:
 
 [FEM3D - prismatic vs. tapered comparison plots](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape/fem3d/prism_vs_taper)
 
-## Scope
-
-The first configuration reproduces the prismatic I-shaped geometry used as the starting reference.
-
-The second uses the same initial section but introduces a continuous geometric variation along the beam.
-
-The comparison shows how the same CSF–CUF formulation is applied to both a constant and a continuously variable cross-section.
-
-Details concerning the numerical settings, model construction and full reproducibility of the calculations are kept in separate documentation.
+Details concerning the numerical settings, model construction, and full reproducibility of the calculations are provided separately.
