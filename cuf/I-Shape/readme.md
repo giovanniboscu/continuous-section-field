@@ -47,11 +47,13 @@ The **model** is defined entirely in YAML - no Python code required. It contains
 - in the **tapered model**, the final section has an 80% reduced web height, with intermediate sections generated continuously between the two ends.
 
 - [Prismatic I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_prism.yaml)
-- [Tapered I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_taper80.yaml)
 
 <p align="center">
   <img width="480" height="330" alt="Prismatic I-section" src="https://github.com/user-attachments/assets/f34bf086-a345-4a35-a003-a5951564f472" />
 </p>
+  
+- [Tapered I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_taper80.yaml)
+
 
 <p align="center">
   <img width="700" height="270" alt="Tapered I-section" src="https://github.com/user-attachments/assets/ad73144d-3579-4511-9604-66471f88a2ff" />
