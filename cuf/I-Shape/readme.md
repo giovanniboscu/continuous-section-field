@@ -1,4 +1,4 @@
-—# I-Shape - Prismatic and Tapered Beam Comparison
+# I-Shape - Prismatic and Tapered Beam Comparison
 
 This example considers an **I-shaped beam** in two configurations:
 
