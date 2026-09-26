@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.5
+* Added CSF-CUF I-Shape cases.
+
+
 # v0.2.4
 * CSF-CUF Generalize longitudinal basis handling
 
