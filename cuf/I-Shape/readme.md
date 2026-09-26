@@ -76,6 +76,11 @@ In the present comparison, this is the only ingredient that changes:
 - in the **prismatic model**, the initial and final I-sections are identical;
 - in the **tapered model**, the final section is obtained by reducing the web height by 80%, and the intermediate sections are generated continuously between the two ends.
 
+The two model definitions are:
+
+- [Prismatic I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_prism.yaml)
+- [Tapered I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_taper80.yaml)
+
 The model is defined in a dedicated YAML file and is independent of the CUF approximation used to solve the problem.
 
 ### Problem
@@ -92,7 +97,12 @@ The problem therefore answers the question: **what is done to the beam?**
 
 It does not define the cross-section and it does not select the CUF approximation.
 
-In this comparison, the same problem definition is used for both the prismatic and tapered models, so the loads and boundary conditions are unchanged.
+For the two geometries, the corresponding problem definitions are:
+
+- [Prismatic problem](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/problems/prism_table9.yaml)
+- [Tapered problem](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/problems/taper_table9.yaml)
+
+The loading and boundary conditions are kept equivalent between the two analyses, so that the effect of changing the geometry can be examined without changing the structural problem being applied.
 
 ### Case
 
@@ -109,7 +119,16 @@ The transverse and longitudinal approximations are independent choices. The tran
 
 The case also identifies which **model** and which **problem** are to be combined for a given analysis.
 
-For the comparison presented here, the same case is used for both geometries. Therefore, the CUF expansion, the longitudinal approximation, the loads, the boundary conditions, and the numerical settings remain unchanged; only the model geometry is replaced.
+The two case files used in this comparison are:
+
+- [Prismatic case](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/cases/prism/lagrange_table9_N18_E1.yaml)
+- [Tapered case](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/cases/taper/lagrange_table9_N18_E1.yaml)
+
+The numerical approximation is kept unchanged between the two analyses. The same transverse CUF basis and order, the same longitudinal finite-element approximation, and the same numerical integration settings are used in both cases.
+
+The only physical change introduced in the comparison is therefore the cross-section geometry provided by the model.
+
+
 
 
 
