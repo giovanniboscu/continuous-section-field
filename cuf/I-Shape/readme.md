@@ -59,10 +59,6 @@ In the present comparison, the **problem** and the **case** are kept unchanged. 
 
 This separation makes it possible to compare the two geometries without changing the CUF formulation, the loading, the boundary conditions, or the numerical approximation.
 
-## Ingredients of the analysis
-
-Each analysis is obtained by combining three independent descriptions: the **model**, the **problem**, and the **case**.
-
 ### Model
 
 The **model** describes the physical beam and is defined entirely in YAML; no Python code is required.
