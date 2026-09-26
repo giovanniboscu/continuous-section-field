@@ -5,11 +5,9 @@ This document provides a command-by-command guide to reproduce the **prismatic a
 `cuf/I-Shape`
 
 The two CSF-CUF analyses use the same loading and boundary-condition scheme. The prismatic case uses the reference I-shaped geometry, while the tapered case progressively reduces the clear web height by 80%.
-
 The comparison with an independent three-dimensional finite-element model (FEM3D) can be reproduced as well. The FEM3D reference solutions are already included in the repository, so rerunning the 3D analyses is optional.
 
 ---
-
 ## 1. System prerequisites
 
 On Ubuntu/Debian:
@@ -29,7 +27,6 @@ cd continuous-section-field
 ```
 
 ---
-
 ## 3. Virtual environment and package installation
 
 ```bash
@@ -59,7 +56,6 @@ export MPLBACKEND=Agg
 From this point onward, the virtual environment is assumed to remain active.
 
 ---
-
 ## 4. Move to the I-Shape example
 
 From the repository root:
@@ -101,11 +97,9 @@ output/taper/lagrange/table9_N18_E1/
 The two analyses use the same problem definition and the same CUF approximation settings. The difference between them is the section geometry.
 
 The prismatic model keeps the same I-shaped cross-section along the beam.
-
 The tapered model starts from the same section and progressively reduces the clear web height from $a = 100\ \mathrm{mm}$ to $a = 20\ \mathrm{mm}$, corresponding to an 80% reduction.
 
 ---
-
 ## 6. FEM3D reference solutions
 
 The independent FEM3D reference solutions used for the comparison are already included in the repository.
@@ -139,15 +133,12 @@ output/fem3d_prism.npz
 This generates:
 
 ```text
-output/fem3d_tapper.npz
+output/fem3d_taper.npz
 ```
-
-The filename `fem3d_tapper.npz` is the filename currently used by the repository scripts.
 
 After these commands, remain in the `fem3d` directory for the plotting step.
 
 ---
-
 ## 7. Generate the CSF-CUF vs FEM3D comparison plots
 
 From:
@@ -178,7 +169,6 @@ prism_vs_taper/
 The resulting directory contains the plots used in the I-Shape comparison documentation.
 
 ---
-
 ## 8. Using the precomputed FEM3D solutions
 
 Because the FEM3D results are already stored in the repository, the shortest reproduction path is:
@@ -196,7 +186,6 @@ cd fem3d
 This reruns the two CSF-CUF analyses and generates the comparison plots using the FEM3D reference solutions already present in `fem3d/output/`.
 
 ---
-
 ## Command summary
 
 Starting from a new system:
@@ -213,6 +202,7 @@ source venv/bin/activate
 
 pip install --upgrade pip
 pip install -e .
+pip install pypardiso
 
 pip show csfpy
 csf-cuf --help
@@ -243,7 +233,6 @@ If the FEM3D reference solutions already included in the repository are used, th
 The following figures show the CSF-CUF/FEM3D displacement comparisons for all geometric vertices of the three I-section polygons.
 
 ## Top flange
-
 ### Vertex 0
 
 **$u_x$**
@@ -259,7 +248,6 @@ The following figures show the CSF-CUF/FEM3D displacement comparisons for all ge
 </p>
 
 **$u_z$**
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/top_flange_v0_uz.png" width="50%" />
 </p>
@@ -279,7 +267,6 @@ The following figures show the CSF-CUF/FEM3D displacement comparisons for all ge
 </p>
 
 **$u_z$**
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/top_flange_v1_uz.png" width="50%" />
 </p>
@@ -299,7 +286,6 @@ The following figures show the CSF-CUF/FEM3D displacement comparisons for all ge
 </p>
 
 **$u_z$**
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/top_flange_v2_uz.png" width="50%" />
 </p>
@@ -319,13 +305,11 @@ The following figures show the CSF-CUF/FEM3D displacement comparisons for all ge
 </p>
 
 **$u_z$**
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/top_flange_v3_uz.png" width="50%" />
 </p>
 
 ## Web
-
 ### Vertex 0
 
 **$u_x$**
@@ -341,7 +325,6 @@ The following figures show the CSF-CUF/FEM3D displacement comparisons for all ge
 </p>
 
 **$u_z$**
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/web_v0_uz.png" width="50%" />
 </p>
@@ -361,7 +344,6 @@ The following figures show the CSF-CUF/FEM3D displacement comparisons for all ge
 </p>
 
 **$u_z$**
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/web_v1_uz.png" width="50%" />
 </p>
@@ -381,7 +363,6 @@ The following figures show the CSF-CUF/FEM3D displacement comparisons for all ge
 </p>
 
 **$u_z$**
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/web_v2_uz.png" width="50%" />
 </p>
@@ -401,13 +382,11 @@ The following figures show the CSF-CUF/FEM3D displacement comparisons for all ge
 </p>
 
 **$u_z$**
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/web_v3_uz.png" width="50%" />
 </p>
 
 ## Bottom flange
-
 ### Vertex 0
 
 **$u_x$**
@@ -423,7 +402,6 @@ The following figures show the CSF-CUF/FEM3D displacement comparisons for all ge
 </p>
 
 **$u_z$**
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/bottom_flange_v0_uz.png" width="50%" />
 </p>
@@ -443,7 +421,6 @@ The following figures show the CSF-CUF/FEM3D displacement comparisons for all ge
 </p>
 
 **$u_z$**
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/bottom_flange_v1_uz.png" width="50%" />
 </p>
@@ -463,7 +440,6 @@ The following figures show the CSF-CUF/FEM3D displacement comparisons for all ge
 </p>
 
 **$u_z$**
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/bottom_flange_v2_uz.png" width="50%" />
 </p>
@@ -483,8 +459,6 @@ The following figures show the CSF-CUF/FEM3D displacement comparisons for all ge
 </p>
 
 **$u_z$**
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape/fem3d/prism_vs_taper/bottom_flange_v3_uz.png" width="50%" />
 </p>
-
