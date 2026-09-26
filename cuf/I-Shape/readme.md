@@ -79,13 +79,16 @@ The two model definitions are:
 
 - [Prismatic I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_prism.yaml)
 
-<img width="510" height="352" alt="Screenshot 2026-09-26 at 18 13 22" src="https://github.com/user-attachments/assets/f34bf086-a345-4a35-a003-a5951564f472" />
+<p align="center">
+  <img width="510" height="352" alt="Screenshot 2026-09-26 at 18 13 22" src="https://github.com/user-attachments/assets/f34bf086-a345-4a35-a003-a5951564f472" />
+</p>
+
 
 - [Tapered I-section model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/models/carrera_i_shaped_taper80.yaml)
 
-
+<p align="center">
 <img width="1267" height="488" alt="immagine" src="https://github.com/user-attachments/assets/ad73144d-3579-4511-9604-66471f88a2ff" />
-
+</p>
 
 ### Problem
 
