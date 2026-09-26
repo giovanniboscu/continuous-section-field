@@ -142,6 +142,12 @@ The two configurations are launched with:
 ```bash
 csf-cuf cases/prism/lagrange_table9_N18_E1.yaml
 csf-cuf cases/taper/lagrange_table9_N18_E1.yaml
+```
+
+The output location is defined directly in each case file through the `output` section. In this example, the results are written to the corresponding subdirectories of `output`.
+
+Both analyses use the same CUF approximation, longitudinal discretization, loading, boundary conditions, and numerical settings. The only physical difference between them is the cross-section geometry provided by the model.
+
 
 
 
