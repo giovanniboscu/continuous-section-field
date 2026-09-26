@@ -90,17 +90,16 @@ The two model definitions are:
 <img width="1267" height="488" alt="immagine" src="https://github.com/user-attachments/assets/ad73144d-3579-4511-9604-66471f88a2ff" />
 </p>
 
+
 ### Problem
 
-The **problem** describes how the beam is loaded and constrained.
+The **problem** defines how the beam is loaded and constrained.
 
-It is implemented in Python and referenced through a YAML file. Once defined, the same problem implementation can be reused across different models and analysis cases without rewriting the loading and boundary-condition logic.
+The same loading and boundary-condition scheme is used for both the prismatic and tapered geometries.
 
-It defines:
+A **transverse surface load with a half-wave sinusoidal variation along the beam axis** is applied to the lower flange. The corresponding boundary conditions define the support conditions at the ends of the beam.
 
-- the applied loads;
-- their spatial distribution;
-- the boundary conditions.
+The problem is implemented separately from the section geometry and is referenced through the YAML file. This allows the same loading and boundary-condition definition to be applied to different beam geometries without rewriting the problem.
 
 The problem therefore answers the question: **what is done to the beam?**
 
@@ -111,7 +110,7 @@ For the two geometries, the corresponding problem definitions are:
 - [Prismatic problem](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/problems/prism_table9.yaml)
 - [Tapered problem](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/problems/taper_table9.yaml)
 
-The same loading and boundary-condition formulation is used in both analyses; separate problem files are retained only to keep the two runs and their outputs clearly separated.
+The exact load parameters and constrained displacement components are documented in the corresponding problem definition.
 
 ### Case
 
