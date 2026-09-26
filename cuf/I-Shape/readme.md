@@ -42,6 +42,8 @@ The Python components are implemented once and can then be reused across differe
 
 In the present comparison, only the **model geometry** changes between the two analyses; the **problem definition and numerical approximation are kept unchanged**. Separate problem and case files are used only to keep the two runs and their outputs cleanly separated.
 
+---
+
 ### Model
 
 The **model** is defined entirely in YAML - no Python code required. It contains the beam length and the CSF description of the cross-section (geometry, polygons, material data), from which CSF provides the physical cross-section at any longitudinal coordinate $x$.
