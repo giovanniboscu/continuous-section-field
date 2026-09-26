@@ -65,7 +65,7 @@ Each analysis is obtained by combining three independent descriptions: the **mod
 
 ### Model
 
-The **model** describes the physical beam.
+The **model** describes the physical beam and is defined entirely in YAML; no Python code is required.
 
 It contains the beam length and the CSF description of the cross-section: the geometry of the section at the reference stations, the polygons that compose it, and the material data associated with those regions.
 
@@ -87,6 +87,8 @@ The model is defined in a dedicated YAML file and is independent of the CUF appr
 
 The **problem** describes how the beam is loaded and constrained.
 
+It is implemented in Python and referenced through a YAML file. Once defined, the same problem implementation can be reused across different models and analysis cases without rewriting the loading and boundary-condition logic.
+
 It defines:
 
 - the applied loads;
@@ -106,9 +108,11 @@ The loading and boundary conditions are kept equivalent between the two analyses
 
 ### Case
 
-The **case** defines how the structural problem is approximated and solved with CUF.
+The **case** brings together the previously defined model and problem, and specifies the numerical ingredients required for a complete CUF analysis.
 
-It specifies, among other numerical settings:
+It references the **transverse expansion** and the **longitudinal shape functions**, together with their associated orders, discretization parameters, numerical integration settings, and the remaining solver options.
+
+Both the transverse expansion and the longitudinal shape functions are implemented in Python and, once defined, can be reused across different models, problems, and analysis cases.
 
 - the **transverse CUF basis** and its order;
 - the **longitudinal finite-element approximation**;
