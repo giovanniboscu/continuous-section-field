@@ -55,9 +55,14 @@ Each CSF–CUF analysis is defined by combining three independent components:
 
 These components are not consecutive processing steps. They are separate descriptions of different aspects of the same structural analysis and are used together by the solver.
 
-In the present comparison, the **problem** and the **case** are kept unchanged. Only the **model geometry** is modified: one model contains the prismatic I-section, while the other contains the continuously tapered I-section.
+
+
+In the present comparison, the **problem formulation** and the **case settings** are kept unchanged. Only the **model geometry** is modified: one model contains the prismatic I-section, while the other contains the continuously tapered I-section.
+
+Separate problem and case files are used for the two analyses only to keep the runs and their outputs clearly separated.
 
 This separation makes it possible to compare the two geometries without changing the CUF formulation, the loading, the boundary conditions, or the numerical approximation.
+
 
 ### Model
 
