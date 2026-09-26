@@ -38,7 +38,6 @@ Each CSF–CUF analysis combines three independent components:
 - the **problem**, which defines loads and boundary conditions by referencing a reusable Python implementation and configuring it through YAML;
 - the **case**, which assembles the analysis by referencing reusable Python implementations for the transverse expansion, the longitudinal shape functions, and the other numerical components, while their orders, discretization, integration settings, and solver parameters are specified in YAML.
 
-The Python components are implemented once and can then be reused across different analyses, while the YAML files select, configure, and combine them for each specific case.
 The Python components are implemented once and can then be reused across different analyses, while the YAML files provide the problem-specific configuration and composition.
 
 In the present comparison, only the **model geometry** changes between the two analyses; the **problem definition and numerical approximation are kept unchanged**. Separate problem and case files are used only to keep the two runs and their outputs cleanly separated.
