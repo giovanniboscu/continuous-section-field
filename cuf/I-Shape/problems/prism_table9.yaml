@@ -1,11 +1,20 @@
 model:
+  # Prismatic I-shaped section used as the reference geometry.
   csf_yaml: ../models/carrera_i_shaped_prism.yaml
-  
+
 problem:
+  # Loading and boundary-condition scheme corresponding to the
+  # reference problem from Carrera & Giunta (2010).
+  #
+  # The implementation applies a transverse surface load with a
+  # half-wave sinusoidal variation along the beam axis and the
+  # associated support conditions.
   type: surface_halfwave_transverse_supported
 
+  # Loaded surface: lower flange of the I-section.
   surface:
     polygon_name: bottom_flange
     edge_start_point_id: 0
 
+  # Load amplitude. The negative sign sets the transverse load direction.
   amplitude: -1
