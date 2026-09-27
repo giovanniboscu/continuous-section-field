@@ -119,6 +119,8 @@ All subsequent commands in this document are executed from this directory unless
 
 ### Prismatic I-shaped beam
 
+As a reference, on a machine equipped with an AMD Ryzen 7 8745HS with Radeon 780M Graphics and 20 GB of RAM, each analysis requires approximately 10 minutes.
+
 ```bash
 csf-cuf cases/prism/lagrange_table9_N18_E1.yaml
 ```
