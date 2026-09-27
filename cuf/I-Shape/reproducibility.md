@@ -39,6 +39,8 @@ cd fem3d
 ./plot_prism_taper.sh
 ```
 
+> For Windows installation and execution commands, see [Reproducibility on Windows](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/reproducibility_windows.md).
+
 The FEM3D reference solutions already included in the repository are used, the two `startfem_*.sh` commands can be omitted.
 
 ---
