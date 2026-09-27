@@ -312,6 +312,59 @@ describes the evolution of the geometry, while
 
 describes the evolution of the constitutive properties.
 
+## Implementation note: constitutive laws and interface scope
+
+The isotropic matrix presented in Sections 3 and 4 is one constitutive specialization, rather than a restriction of the CSF–CUF interface. The current implementation in [`src/csf/cuf/core/material.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/core/material.py) distinguishes the generic matrix interface from the material laws implemented by `MaterialConstitutive`.
+
+### Material laws implemented by `MaterialConstitutive`
+
+`MaterialConstitutive` evaluates the local fields at `(x, domain_id, y, z)` and selects between two constitutive laws according to whether the Poisson coefficient is defined.
+
+| Local condition | Constitutive law |
+|---|---|
+| `nu is not None` | Isotropic elastic closure with coupling between normal components, using the matrix given in Section 4. |
+| `nu is None` | Uncoupled two-modulus elastic law: `E` supplies the three normal stiffness terms and `G` supplies the three shear stiffness terms. |
+
+For the uncoupled law, the local matrix is
+
+```text
+C_k(x, y, z) = diag(E_k, E_k, E_k, G_k, G_k, G_k)
+```
+
+Here, `k` identifies the material domain and `diag(...)` denotes a diagonal matrix with the listed entries.
+
+When `nu is None`, the following matrix is used in place of the isotropic matrix in Section 4:
+
+| C_k | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---:|---:|---:|---:|---:|---:|
+| **1** | E_k | 0 | 0 | 0 | 0 | 0 |
+| **2** | 0 | E_k | 0 | 0 | 0 | 0 |
+| **3** | 0 | 0 | E_k | 0 | 0 | 0 |
+| **4** | 0 | 0 | 0 | G_k | 0 | 0 |
+| **5** | 0 | 0 | 0 | 0 | G_k | 0 |
+| **6** | 0 | 0 | 0 | 0 | 0 | G_k |
+
+Rows and columns follow the CSF–CUF constitutive component order: the first three entries are normal components and the last three are shear components.
+
+where the fields are evaluated at the same material point. All off-diagonal coefficients are zero, so no Poisson coupling is introduced. Here, `E` and `G` remain independent: the absence of `nu` does not trigger an inferred Poisson ratio or the isotropic closure of Section 4. This two-modulus law does not represent general anisotropy.
+
+In the current isotropic branch, the presence of `nu` selects the closure, while the matrix coefficients are calculated from `E` and `G` through
+
+```text
+lambda = G * (E - 2*G) / (3*G - E)
+```
+
+The numerical value returned by `nu_field` is not used in this calculation. Consistency between the supplied Poisson coefficient and the relation `E = 2*G*(1 + nu)` must therefore be established by the material definition supplying these fields.
+
+### General constitutive interface
+
+`ConstitutiveProvider.matrix(x, domain_id, y, z)` defines the more general contract: a local constitutive matrix of size `6 × 6`. The interface does not impose the isotropic matrix structure or the two-modulus parameterization. A dedicated provider can therefore supply an orthotropic or general anisotropic matrix, expressed in the component convention used by CSF–CUF. Such a material law must be implemented by that provider; it is not supplied by `MaterialConstitutive` itself.
+
+The module also provides explicit matrix transformations and constitutive condensation, together with `ConstitutiveModel`, which distinguishes the providers used for stiffness construction and stress recovery. These choices are explicit and are not inferred from geometry, CUF order, loads, or boundary conditions.
+
+Accordingly, the geometry-and-material interface described in Sections 5 and 6 remains general. The isotropic formulas in Sections 3 and 4 describe one supported closure, while the current material implementation also includes the uncoupled two-modulus law.
+
+
 ---
 
 ## 7. Boundary between CSF and CUF
