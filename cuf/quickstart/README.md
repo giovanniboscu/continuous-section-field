@@ -17,6 +17,7 @@ The solver uses these objects together. None of them is an intermediate result p
 └── cases
     └── torsion_halfwave_legendre_N08.yaml
 ```
+> For coordinate systems and displacement conventions, see [Coordinate Systems and Displacement Conventions](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/coordinate_systems.md).
 
 ## Model
 
