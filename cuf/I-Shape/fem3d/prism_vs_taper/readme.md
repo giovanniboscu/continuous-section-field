@@ -1,3 +1,37 @@
+## Coordinate systems and displacement components
+
+The displacement components reported in this example retain the notation of Carrera and Giunta (2010): **u<sub>z</sub> denotes the longitudinal displacement**.
+
+### CSF and CUF coordinate systems
+
+CSF describes the cross-section in the (X, Y) plane, with Z along the beam axis. The CSF–CUF solver uses x along the beam axis and (y, z) within the cross-section.
+
+| Physical direction | CSF coordinate | CUF solver coordinate |
+| --- | --- | --- |
+| Longitudinal | Z | x |
+| First transverse direction | X | y |
+| Second transverse direction | Y | z |
+
+The coordinate correspondence is therefore **x = Z, y = X, z = Y**.
+
+### Displacement components in the comparison plots
+
+The same transformation is applied to both CUF and FEM3D displacement results to express them in the paper convention:
+
+| Component in the plots (paper notation) | Component in the solver | CSF direction |
+| --- | --- | --- |
+| u<sub>x</sub> | −u<sub>z</sub> | −Y |
+| u<sub>y</sub> | u<sub>y</sub> | +X |
+| u<sub>z</sub> | u<sub>x</sub> | +Z (longitudinal) |
+
+Thus, the longitudinal displacement is labelled **u<sub>z</sub> in the plots** and **u<sub>x</sub> in the solver**.
+
+### Point coordinates and plot abscissa
+
+Point coordinates in plot titles and CSV coordinate columns remain in the **CSF reference system (X, Y, Z)**.
+
+The plot abscissa **x/L** uses the solver's longitudinal coordinate and is equivalent to **Z/L** in CSF, where L is the beam length.
+
 ## Top flange
 ### Vertex 0
 
