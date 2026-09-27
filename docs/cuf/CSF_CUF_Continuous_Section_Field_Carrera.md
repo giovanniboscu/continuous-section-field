@@ -1,6 +1,6 @@
 # CSF-CUF: Continuous Section Description and Separation of Computational Components
 
-*Technical note for discussion — Giovanni Boscu*
+*Technical note for discussion - Giovanni Boscu*
 
 ## Purpose
 
