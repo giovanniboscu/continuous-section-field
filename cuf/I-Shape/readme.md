@@ -92,7 +92,7 @@ The same numerical approximation is used in both analyses - only the cross-secti
 
 Although the model configuration is defined in YAML, the CSF-CUF solver and its reusable computational components are implemented in **Python**. A working Python installation is therefore required to run the analyses.
 
-For complete installation instructions, environment setup, and commands to reproduce the examples from a new system, see the [reproducibility guide](...).
+For complete installation instructions, environment setup, and commands to reproduce the examples from a new system, see the [reproducibility guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/reproducibility.md).
 
 
 ## Running the analyses
