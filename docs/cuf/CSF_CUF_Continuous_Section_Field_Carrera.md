@@ -16,7 +16,15 @@ At any longitudinal coordinate, this field provides the corresponding sectional 
 
 Throughout this note, $x$ denotes the beam axis and $(y,z)$ the transverse coordinates.
 
-## 1. The continuous sectional state
+## 1. From the formulation to the software architecture
+
+Any computational implementation requires a choice of software architecture. In CSF-CUF, this choice follows the mathematical objects and operations presented in this note: the continuous sectional state, the transverse expansion, the longitudinal approximation, and their combination through integration and assembly. These are represented by cooperating Python components with defined interfaces.
+
+The formulation provides the mathematical basis for this organization, while the architecture makes its components reusable across different structural problems. When using the available components, the user specifies the physical model and the approximation choices without having to derive or implement the corresponding integrals for each new case. The software evaluates the required quantities and performs the numerical integrations and assembly.
+
+The practical objective is to make the formulation directly usable through configurable building blocks, while retaining an explicit correspondence between the mathematical model and its computational implementation.
+
+## 2. The continuous sectional state
 
 Let $\Omega(x)$ denote the physical cross-sectional domain at coordinate $x$, and let $\mathbf{C}(x,y,z)$ denote the local constitutive matrix. The sectional state can be expressed as
 
@@ -44,7 +52,7 @@ The three-dimensional body is described by
 
 A prismatic geometry is recovered when $\Omega(x)=\Omega_0$ for every $x$. A non-prismatic geometry is obtained by allowing $\Omega(x)$ to vary along the beam. Material variation is specified through $\mathbf{C}$; a geometrically variable member may still have uniform material properties.
 
-## 2. Displacement approximation
+## 3. Displacement approximation
 
 The CUF displacement approximation is written, for a transverse basis independent of $x$, as
 
@@ -92,7 +100,7 @@ N_i\frac{\partial F_\tau}{\partial x}
 
 The separation of computational components accommodates this dependence: the expansion component supplies the basis values and the derivatives required by the formulation.
 
-## 3. Where the descriptions meet
+## 4. Where the descriptions meet
 
 Under small-strain linear elasticity, the internal virtual work is
 
@@ -119,7 +127,7 @@ This expression identifies the information that the computational core must comb
 
 The CUF core combines these quantities during integration and assembly. The components communicate through defined interfaces and must satisfy the compatibility requirements of the formulation. This organization makes the physical model and the approximation choices separately configurable.
 
-## 4. Continuous definition and quadrature evaluation
+## 5. Continuous definition and quadrature evaluation
 
 At a longitudinal quadrature point $x_g$, the solver evaluates
 
@@ -143,7 +151,7 @@ Changing the quadrature points changes the sampling used in the calculation whil
 
 Evaluation of variable geometric and elastic properties at Gauss points is compatible with standard finite-element practice. The specific emphasis of CSF-CUF is the explicit representation of the sectional state as a reusable continuous field and its connection to the CUF core through a dedicated interface.
 
-## 5. Illustrative comparison
+## 6. Illustrative comparison
 
 The prepared comparison uses a prismatic I-section case from the 2010 work and a corresponding non-prismatic case in which the final web height is reduced by 80% relative to its initial value. Both cases use uniform material properties.
 
@@ -151,21 +159,11 @@ The CUF core, loading, boundary conditions, longitudinal discretization and tran
 
 The accompanying displacement plots show close agreement with the FEM3D reference in both cases. The example illustrates the practical use of the separation described above: the same computational core operates on two different continuous geometric descriptions. The comparison is presented as an illustration of this organization; it does not constitute a general convergence assessment.
 
-## 6. From the formulation to the software architecture
-
-Any computational implementation requires a choice of software architecture. In CSF-CUF, this choice follows the mathematical objects and operations described above: the continuous sectional state, the transverse expansion, the longitudinal approximation, and their combination through integration and assembly. These are represented by cooperating Python components with defined interfaces.
-
-The formulation provides the mathematical basis for this organization, while the architecture makes its components reusable across different structural problems. When using the available components, the user specifies the physical model and the approximation choices without having to derive or implement the corresponding integrals for each new case. The software evaluates the required quantities and performs the numerical integrations and assembly.
-
-The practical objective is to make the formulation directly usable through configurable building blocks, while retaining an explicit correspondence between the mathematical model and its computational implementation.****
-
 ## Supporting material
 
 **Case descriptions and numerical results**
 
 [https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/readme.md](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/readme.md)
-
-
 
 **Reproducibility instructions**
 
