@@ -2,7 +2,7 @@
 
 ---
 ## Command summary
-
+Prerequisite: Python 3 is required, together with the venv and pip modules.
 Starting from a new system:
 
 ```bash
