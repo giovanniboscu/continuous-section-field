@@ -4,6 +4,11 @@
 # its section properties. It is not used by CSF-CUF.
 # - stations: named z-coordinate sets used as analysis points
 # - actions: ordered list of operations (3D plots, section analysis, property export, etc.)
+#
+# Run with:
+#   csf-actions carrera_i_shaped_taper80.yaml actions.yaml
+#   csf-actions carrera_i_shaped_prism.yaml action.yaml 
+
 
 CSF_ACTIONS:
   stations:
