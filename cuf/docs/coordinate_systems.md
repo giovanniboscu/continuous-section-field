@@ -1,8 +1,8 @@
 # Coordinate Systems and Displacement Conventions
 
-This document defines the coordinate correspondence between CSF and the CSF–CUF solver, and the displacement convention used in the I-Shape comparison.
+This document defines the coordinate systems used by CSF and the CSF–CUF solver, together with the correspondence between their coordinates and displacement components.
 
-The term **CUF solver** refers here to the implementation in this repository.
+The term **CUF solver** refers to the implementation in this repository.
 
 ## 1. CSF coordinate system
 
@@ -11,7 +11,7 @@ CSF uses the coordinates **(X, Y, Z)**:
 - **X, Y** define the cross-section plane;
 - **Z** is the longitudinal coordinate along the beam.
 
-The corresponding displacement components are u<sub>X</sub>, u<sub>Y</sub>, and u<sub>Z</sub>. The longitudinal component is **u<sub>Z</sub>**.
+Displacement components expressed in this system are denoted by u<sub>X</sub>, u<sub>Y</sub>, and u<sub>Z</sub>. The longitudinal component is **u<sub>Z</sub>**.
 
 ## 2. CUF solver coordinate system
 
@@ -44,41 +44,37 @@ The displacement components follow the same correspondence:
 
 This correspondence changes the coordinate labels and component order without reversing any direction.
 
-## 4. I-Shape comparison: paper convention
+To evaluate the solver displacement field at a point expressed in CSF coordinates **(X, Y, Z)**, the solver arguments are therefore **u(Z, X, Y)**. The returned components remain ordered according to the CUF system.
 
-The I-Shape example retains the displacement notation of Carrera and Giunta (2010) in its reported results and comparison plots.
+## 4. Longitudinal position
 
-Both CUF and FEM3D displacement results are converted to this convention using the same mapping:
+The longitudinal coordinates satisfy **x = Z**.
 
-| Reported component (paper notation) | Solver component | CSF direction |
-| --- | --- | --- |
-| u<sub>x</sub> | −u<sub>z</sub> | −Y |
-| u<sub>y</sub> | u<sub>y</sub> | +X |
-| u<sub>z</sub> | u<sub>x</sub> | +Z (longitudinal) |
+For a beam of length L whose initial section is located at x<sub>0</sub> = Z<sub>0</sub>, the normalized longitudinal position is:
 
-Therefore, **u<sub>z</sub> in the I-Shape plots is the longitudinal displacement**. It corresponds to u<sub>x</sub> in the solver and u<sub>Z</sub> in CSF.
+**s = (x − x<sub>0</sub>)/L = (Z − Z<sub>0</sub>)/L**
 
-The minus sign in the first reported component accounts for the reversed transverse direction in the paper convention.
+When the longitudinal origin coincides with the initial section, this reduces to **s = x/L = Z/L**.
 
-This transformation is applied during post-processing. The solver continues to use its own coordinate system.
+## 5. Post-processing and external conventions
 
-### Point coordinates
+An example or comparison may express results in a different reference system, including the convention of a reference publication or an external solver.
 
-Point coordinates in the I-Shape plot titles and CSV coordinate columns are expressed in the **CSF system (X, Y, Z)**.
+The documentation accompanying those results must specify:
 
-These coordinate labels must be distinguished from the displacement labels, which follow the paper convention.
+- the reference system used for point coordinates;
+- the reference system used for displacement components;
+- the component mapping, including any changes of sign;
+- the definition of the longitudinal plot coordinate.
 
-### Longitudinal plot coordinate
+Point coordinates and displacement components may be reported in different conventions, provided both are explicitly identified.
 
-The plot abscissa **x/L** uses the CUF longitudinal coordinate, where L is the beam length.
+For comparisons, all displacement results must be expressed in the same reference system and evaluated at corresponding physical points.
 
-For the I-Shape models, the longitudinal origin is at the initial section, so **x/L = Z/L**.
+Any conversion applied during post-processing leaves the solver's coordinate convention unchanged. Example-specific mappings are documented with the relevant example.
 
-## 5. Documentation convention
+## 6. Notation used in this document
 
-Throughout the documentation:
+Uppercase **(X, Y, Z)** identifies CSF coordinates, while lowercase **(x, y, z)** identifies CUF solver coordinates.
 
-- **CSF coordinates** are identified as (X, Y, Z).
-- **CUF solver coordinates** are identified as (x, y, z).
-- Displacement components presented in another convention are accompanied by an explicit mapping.
-- The paper convention described in Section 4 applies specifically to the I-Shape comparison and must not be assumed for other examples.
+This distinction makes the correspondence explicit. When reading code, configuration files, plots, or exported data, the declared reference system determines the meaning of each coordinate and displacement component.
