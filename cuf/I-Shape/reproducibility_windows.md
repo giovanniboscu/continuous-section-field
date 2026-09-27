@@ -1,4 +1,4 @@
-# I-shaped beam — Reproducibility on Windows
+# I-shaped beam - Reproducibility on Windows
 
 Run the following commands in **Windows PowerShell**, in the order shown. All commands are explicit; no shell scripts are required.
 
