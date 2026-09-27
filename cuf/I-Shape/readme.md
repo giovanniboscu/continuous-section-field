@@ -65,7 +65,7 @@ The **model** is defined entirely in YAML - no Python code required. It contains
 
 ### Problem
 
-The **problem** defines how the beam is loaded and constrained, independently of the section geometry - it answers "what is done to the beam?", not "what is the beam?".
+The **problem** specifies the applied loads and boundary conditions of the beam. Loads describe the external actions, while boundary conditions prescribe the displacement constraints at supports and other constrained locations.
 
 The problem logic is **implemented in Python**, while its parameters and selection can be **configured and driven from YAML**. Once implemented, the same problem definition can therefore be reused across different models and cases without modifying the solver core.
 
