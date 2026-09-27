@@ -6,7 +6,7 @@ Run the following commands in **Windows PowerShell**, in the order shown. All co
 
 Install **Python 3.12 (64-bit)** from [python.org](https://www.python.org/downloads/windows/) with the Python launcher enabled, and [Git for Windows](https://git-scm.com/download/win). Python 3.12 is used for compatibility with OpenSeesPy on Windows, following the repository's [environment instructions](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/aes/reproducibility_environment.md).
 
-Open a new PowerShell window and check both installations:
+Open a new PowerShell window and check both installations:``
 
 ```powershell
 py -3.12 --version
@@ -58,6 +58,8 @@ $env:MPLBACKEND = "Agg"
 csf-cuf cases/prism/lagrange_table9_N18_E1.yaml
 csf-cuf cases/taper/lagrange_table9_N18_E1.yaml
 ```
+
+As a reference, on a machine equipped with an **AMD Ryzen 7 8745HS with Radeon 780M Graphics** and **20 GB of RAM**, each analysis requires approximately **10 minutes**.
 
 ## 4. Optional: regenerate the FEM3D references
 
