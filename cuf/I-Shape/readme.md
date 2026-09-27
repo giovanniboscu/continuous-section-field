@@ -34,7 +34,7 @@ Only the prismatic section geometry is taken from the reference paper. The taper
 
 Each CSF–CUF analysis combines three independent components:
 
-- the **model**, which describes the beam geometry and material data and is defined entirely in YAML;
+- the **model**, which describes the beam geometry and material data and is defined entirely in YAML (**YAML is a human-readable text format used to organize configuration data as named parameters and values**);
 - the **problem**, which defines loads and boundary conditions by referencing a reusable Python implementation and configuring it through YAML;
 - the **case**, which assembles the analysis by referencing reusable Python implementations for the transverse expansion, the longitudinal shape functions, and the other numerical components, while their orders, discretization, integration settings, and solver parameters are specified in YAML.
 
