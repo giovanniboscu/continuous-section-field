@@ -239,7 +239,7 @@ The prepared comparison uses a prismatic I-section case from the 2010 work and a
 
 The CUF core, loading, boundary conditions, longitudinal discretization and transverse expansion are kept unchanged, using a Lagrange expansion of order $N=18$. The change is introduced through the external geometric description supplied by CSF.
 
-The accompanying displacement plots show close agreement with the FEM3D reference in both cases. The example illustrates the practical use of the separation described above: the same computational core operates on two different continuous geometric descriptions. The comparison is presented as an illustration of this organization; it does not constitute a general convergence assessment.
+The example illustrates the practical use of the separation described above: the same computational core operates on two different continuous geometric descriptions. Further details of the formulation and figures showing the numerical comparisons can be provided upon request.
 
 ## Supporting material
 
