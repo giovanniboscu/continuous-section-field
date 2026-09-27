@@ -73,8 +73,3 @@ For comparisons, all displacement results must be expressed in the same referenc
 
 Any conversion applied during post-processing leaves the solver's coordinate convention unchanged. Example-specific mappings are documented with the relevant example.
 
-## 6. Notation used in this document
-
-Uppercase **(X, Y, Z)** identifies CSF coordinates, while lowercase **(x, y, z)** identifies CUF solver coordinates.
-
-This distinction makes the correspondence explicit. When reading code, configuration files, plots, or exported data, the declared reference system determines the meaning of each coordinate and displacement component.
