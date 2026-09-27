@@ -1,5 +1,7 @@
 # actions.yaml
 # Defines the post-processing operations to run on the CSF model.
+# This file is used to visually verify the model geometry and inspect
+# its section properties. It is not used by CSF-CUF.
 # - stations: named z-coordinate sets used as analysis points
 # - actions: ordered list of operations (3D plots, section analysis, property export, etc.)
 
