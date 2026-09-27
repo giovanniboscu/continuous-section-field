@@ -18,7 +18,7 @@ CSF_ACTIONS:
   actions:  
     - plot_volume_3d:
         params:
-          title: "Not prismatic"  
+          title: "I-Shaped"  
           equalize_z: false       
     - plot_properties:
         properties: [A,Ix,Iy,Ip]
