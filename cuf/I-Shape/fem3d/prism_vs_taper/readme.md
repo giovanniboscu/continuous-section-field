@@ -1,7 +1,6 @@
 ## Coordinate systems and displacement components
 
-The displacement components reported in this example retain the notation of Carrera and Giunta (2010): **u<sub>z</sub> denotes the longitudinal displacement**.
-
+The comparison is performed at the **12 control points defined by the four vertices of each of the three polygons composing the I-shaped cross-section**. For each control point, the displacement field obtained with CSF-CUF is compared with the corresponding FEM3D result along the beam axis.
 ### CSF and CUF coordinate systems
 
 CSF describes the cross-section in the (X, Y) plane, with Z along the beam axis. The CSF–CUF solver uses x along the beam axis and (y, z) within the cross-section.
