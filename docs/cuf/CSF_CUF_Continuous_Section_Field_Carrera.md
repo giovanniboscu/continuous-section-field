@@ -127,7 +127,89 @@ This expression identifies the information that the computational core must comb
 
 The CUF core combines these quantities during integration and assembly. The components communicate through defined interfaces and must satisfy the compatibility requirements of the formulation. This organization makes the physical model and the approximation choices separately configurable.
 
-## 5. Continuous definition and quadrature evaluation
+## 5. From the continuous sectional field to the fundamental nucleus
+
+The longitudinal dependence of the sectional state is retained through the sectional integrations and into the CUF fundamental nucleus. This can be made explicit for the transverse basis $F_\tau(y,z)$ independent of $x$ introduced in Section 3.
+
+For a sectional sub-domain $\Omega^k(x)$, define
+
+```math
+J_{\tau,\phi s,\xi}^{mn,k}(x)
+=
+\int_{\Omega^k(x)}
+C_{mn}^{k}(x,y,z)
+F_{\tau,\phi}(y,z)
+F_{s,\xi}(y,z)
+\,d\Omega.
+```
+
+Here, $m,n$ select a constitutive-matrix entry, $\tau,s$ select the test and trial transverse functions, and $\phi,\xi\in\{\varnothing,y,z\}$ specify the transverse derivatives; $\varnothing$ means that no derivative is applied. Summing the sub-domain contributions gives the corresponding global sectional coefficient:
+
+```math
+J_{\tau,\phi s,\xi}^{mn}(x)
+=
+\sum_{k=1}^{N_\Omega}
+J_{\tau,\phi s,\xi}^{mn,k}(x).
+```
+
+The resulting coefficients remain functions of the longitudinal coordinate. Their dependence on geometry and material is carried into the differential operator through the sequence
+
+```math
+\mathcal{S}(x)
+\longrightarrow
+\{\Omega^k(x),\mathbf{C}^k(x,y,z)\}
+\longrightarrow
+J_\bullet(x)
+\longrightarrow
+\mathbf{K}_{\tau s}[\mathcal{S}(x),\partial_x].
+```
+
+A representative second-order contribution to the fundamental nucleus has the divergence form
+
+```math
+-\partial_x\left[J(x)\,\partial_x u(x)\right],
+```
+
+where $J(x)$ denotes the relevant sectional coefficient and $u(x)$ a longitudinal displacement amplitude. Wherever the coefficient and amplitude are sufficiently differentiable, this expression expands as
+
+```math
+-\partial_x\left[J(x)\,\partial_x u(x)\right]
+=
+-\frac{dJ}{dx}\frac{du}{dx}
+-J(x)\frac{d^2u}{dx^2}.
+```
+
+The derivative acts on the product of the sectional coefficient and the displacement gradient. Thus, the longitudinal variation supplied by the sectional field remains present in the governing operator. Replacing this term with $-J(x)\,d^2u/dx^2$ would omit its contribution through $dJ/dx$.
+
+For example, if $u(x)=a x$, with constant $a$, then
+
+```math
+\frac{d^2u}{dx^2}=0,
+\qquad
+-\partial_x\left[J(x)\,\partial_x u(x)\right]
+=
+-a\frac{dJ}{dx}.
+```
+
+The operator contribution can therefore be nonzero even for a linear longitudinal amplitude. This simple example exposes the role of the variable sectional coefficient within the nucleus.
+
+The finite-element implementation evaluates the corresponding weak-form contribution. For a virtual amplitude $v(x)$, integration by parts gives
+
+```math
+\int_0^L
+v(x)\left\{-\partial_x\left[J(x)\,\partial_x u(x)\right]\right\}
+\,dx
+=
+\int_0^L
+\frac{dv}{dx}J(x)\frac{du}{dx}
+\,dx
+-
+\left[v(x)J(x)\frac{du}{dx}\right]_0^L.
+```
+
+Consequently, numerical assembly can use evaluations of $J(x)$ without explicitly computing its longitudinal derivative. The continuous sectional description is retained at the formulation level, while quadrature evaluates the integrals at selected points. Neither a closed-form expression for $J(x)$ nor symbolic differentiation of the sectional geometry is required for this weak-form assembly.
+
+## 6. Continuous definition and quadrature evaluation
 
 At a longitudinal quadrature point $x_g$, the solver evaluates
 
@@ -143,7 +225,7 @@ x_g
 \}
 ```
 
-The resulting domain is used for sectional integration, and the constitutive matrix is evaluated at the required material points. Numerical quadrature therefore samples an already defined physical description.
+The resulting domain is used for sectional integration, and the constitutive matrix is evaluated at the required material points to obtain the sectional coefficients described in Section 5. Longitudinal quadrature then uses these coefficients in the weak-form assembly. Numerical quadrature therefore samples an already defined physical description.
 
 **The field $\mathcal{S}(x)$ defines how the section varies; the quadrature defines where that field is evaluated for integration.**
 
@@ -151,7 +233,7 @@ Changing the quadrature points changes the sampling used in the calculation whil
 
 Evaluation of variable geometric and elastic properties at Gauss points is compatible with standard finite-element practice. The specific emphasis of CSF-CUF is the explicit representation of the sectional state as a reusable continuous field and its connection to the CUF core through a dedicated interface.
 
-## 6. Illustrative comparison
+## 7. Illustrative comparison
 
 The prepared comparison uses a prismatic I-section case from the 2010 work and a corresponding non-prismatic case in which the final web height is reduced by 80% relative to its initial value. Both cases use uniform material properties.
 
