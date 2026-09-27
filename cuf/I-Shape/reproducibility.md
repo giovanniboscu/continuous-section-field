@@ -147,7 +147,7 @@ The two analyses use the same problem definition and the same CUF approximation 
 
 The prismatic model keeps the same I-shaped cross-section along the beam.
 The tapered model starts from the same section and progressively reduces the clear web height from $a = 100\ \mathrm{mm}$ to $a = 20\ \mathrm{mm}$, corresponding to an 80% reduction.
-
+> **Performance note.** The FEM model uses section and material data that are pre-computed before the analysis. In CSF–CUF, instead, the solver queries the continuous section field on demand during numerical integration. This preserves the separation between physical description and numerical solver, but introduces a significantly higher computational cost. Therefore, execution times should not be compared directly on the basis of the number of DOFs alone.
 ---
 ## 6. FEM3D reference solutions
 
