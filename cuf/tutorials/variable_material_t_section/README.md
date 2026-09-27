@@ -20,6 +20,10 @@ The framework is built around a simple separation of roles:
 The transverse CUF expansion and the longitudinal approximation are selected independently. In the longitudinal direction, the finite-element discretization uses a configurable basis; when no basis is specified in the case YAML, the solver uses **Lagrange as the default longitudinal basis**. 
 
 
+
+> For coordinate systems and displacement conventions, see [Coordinate Systems and Displacement Conventions](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/coordinate_systems.md).
+
+
 ## CSF and CUF
 
 **CSF (Continuous Section Field)** describes the physical member as a continuous geometrical and material field along the beam.
