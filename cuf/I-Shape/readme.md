@@ -87,6 +87,14 @@ The same numerical approximation is used in both analyses - only the cross-secti
 - [Prismatic case](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/cases/prism/lagrange_table9_N18_E1.yaml)
 - [Tapered case](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/cases/taper/lagrange_table9_N18_E1.yaml)
 
+
+### Python requirement
+
+Although the model configuration is defined in YAML, the CSF-CUF solver and its reusable computational components are implemented in **Python**. A working Python installation is therefore required to run the analyses.
+
+For complete installation instructions, environment setup, and commands to reproduce the examples from a new system, see the [reproducibility guide](...).
+
+
 ## Running the analyses
 
 ```bash
