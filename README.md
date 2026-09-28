@@ -625,7 +625,7 @@ or rejected based on their consistency with the intended formulation and
 the results of the validation process.
 
 Responsibility for the methodology, validation, released software, and
-scientific conclusions remains with the author.
+conclusions remains with the author.
 
 ---
 ## License
