@@ -56,20 +56,5 @@ For a beam of length L whose initial section is located at x<sub>0</sub> = Z<sub
 
 When the longitudinal origin coincides with the initial section, this reduces to **s = x/L = Z/L**.
 
-## 5. Post-processing and external conventions
 
-An example or comparison may express results in a different reference system, including the convention of a reference publication or an external solver.
-
-The documentation accompanying those results must specify:
-
-- the reference system used for point coordinates;
-- the reference system used for displacement components;
-- the component mapping, including any changes of sign;
-- the definition of the longitudinal plot coordinate.
-
-Point coordinates and displacement components may be reported in different conventions, provided both are explicitly identified.
-
-For comparisons, all displacement results must be expressed in the same reference system and evaluated at corresponding physical points.
-
-Any conversion applied during post-processing leaves the solver's coordinate convention unchanged. Example-specific mappings are documented with the relevant example.
 
