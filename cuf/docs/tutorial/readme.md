@@ -39,7 +39,7 @@ The formulation keeps geometry and material external and general up to the evalu
 
 They are therefore not embedded in a case-specific CUF formulation: the geometric and constitutive descriptions provide the quantities required by the CUF formulation where they are needed.
 
-The implementation follows this separation directly.
+This separation approach allows the geometry to be described externally and queried by the CSF core at the required points, without modifying the formulation.
 
 
 That is the basic organization. Now we can build the first example.
