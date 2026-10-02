@@ -35,10 +35,11 @@ In CUF, the transverse functions approximate the displacement over the cross-sec
 
 ### 4. How do these parts work together?
 
-They are **independent components that communicate with each other**.
+The formulation keeps geometry and material external and general up to the evaluation of the CUF nuclei.
 
-Geometry and materials describe the beam. Loads and boundary conditions describe the problem. CUF describes the displacement approximation.
+They are therefore not embedded in a case-specific CUF formulation: the geometric and constitutive descriptions provide the quantities required by the CUF formulation where they are needed.
 
-**CUF does not incorporate these components: it queries them for the information required by the analysis.**
+The implementation follows this separation directly.
+
 
 That is the basic organization. Now we can build the first example.
