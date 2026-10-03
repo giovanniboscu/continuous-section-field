@@ -36,6 +36,8 @@ CSF can be used as a continuous provider of cross-sectional geometry and materia
 
 The repository includes an open-source CUF implementation designed to keep the structural formulation modular. Cross-sectional geometry and material fields are provided by CSF, while the transverse expansion and longitudinal shape functions are supplied independently and can be replaced without modifying the CSF model.
 
+See the [CSF–CUF documentation](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/readme.md) for details on the formulation, implementation, and available examples.
+
 ```bash
 cd cuf/tutorials/variable_material_t_section/t_section/models/
 csf-actions t_noprismatic_csf.yaml action.yaml   # inspect the non-prismatic T-section
