@@ -1,26 +1,11 @@
-# Version: CSF-CUF isolated transverse expansion plugins v21 - 2026-08-29
-# SOURCE VERSION: CSF-CUF-MACLAURIN-TENSOR-v1.0.0
-"""Tensor-product scaled Maclaurin transverse basis for CSF-CUF.
+# Version: CSF-CUF numerics package reorganization v1 - 2026-09-30
+"""Tensor-product extension of the scaled Maclaurin transverse basis."""
 
-This module adds a richer Maclaurin expansion without modifying the validated
-``ScaledMaclaurinBasis`` implementation.
-
-For CUF order N, the basis contains every monomial
-
-    Y**p_y * Z**p_z
-
-with
-
-    0 <= p_y <= N
-    0 <= p_z <= N
-
-for a total of (N + 1)**2 transverse terms.
-"""
 from __future__ import annotations
 
 import numpy as np
 
-from csf.cuf.numerics import ScaledMaclaurinBasis
+from .scaled_maclaurin import ScaledMaclaurinBasis
 
 
 class ScaledMaclaurinTensorBasis(ScaledMaclaurinBasis):

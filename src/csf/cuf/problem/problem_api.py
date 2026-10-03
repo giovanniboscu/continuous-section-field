@@ -6,6 +6,10 @@ A problem definition supplies the solver with:
 1. its contribution to the global load vector;
 2. linear constraints.
 
+Historically both responsibilities are supplied by one adapter object.  The
+loader also supports composing independent load and constraint adapter objects
+without changing the solver-facing problem contract.
+
 The interface is independent of geometry, material, benchmark, and
 transverse CUF basis family. Concrete applications, such as the
 Carrera-Giunta validation problems, implement this contract.
@@ -47,6 +51,83 @@ class CUFProblem(Protocol):
     ) -> Any:
         """Build the linear constraint system for the assembled problem."""
         ...
+
+
+class CUFLoadProblem(Protocol):
+    """Load-side contract for a split problem adapter."""
+
+    def build_load_vector(
+        self,
+        *,
+        section_provider: Any,
+        basis: Any,
+        mesh: Any,
+        dof_layout: Any,
+        longitudinal_integrator: Any,
+        x0: float,
+        x1: float,
+    ) -> tuple[Any, Any]:
+        ...
+
+
+class CUFConstraintProblem(Protocol):
+    """Constraint-side contract for a split problem adapter."""
+
+    def build_constraints(
+        self,
+        *,
+        assembled: Any,
+        mesh: Any,
+        basis: Any,
+        longitudinal_integrator: Any,
+    ) -> Any:
+        ...
+
+
+@dataclass(frozen=True)
+class CompositeCUFProblem:
+    """Compose independent load and constraint problem components.
+
+    The solver still sees the historical single ``problem`` object.  Only the
+    adapter-loading layer knows that its load and constraint responsibilities
+    may come from different modules.  ``tracked_points`` belongs to the load
+    side and is therefore delegated there as well.
+    """
+
+    load_problem: Any
+    constraint_problem: Any
+
+    def build_load_vector(self, **kwargs):
+        return self.load_problem.build_load_vector(**kwargs)
+
+    def build_constraints(self, **kwargs):
+        return self.constraint_problem.build_constraints(**kwargs)
+
+    def tracked_points(self, section_provider: Any, x: float):
+        tracked_points = getattr(self.load_problem, "tracked_points", None)
+        if not callable(tracked_points):
+            return ()
+        return tracked_points(section_provider, x)
+
+
+def compose_problem(load_problem: Any, constraint_problem: Any) -> CompositeCUFProblem:
+    """Validate and compose independently built problem components."""
+
+    if not callable(getattr(load_problem, "build_load_vector", None)):
+        raise TypeError(
+            "load adapter build_problem() result must define callable "
+            "build_load_vector()"
+        )
+    if not callable(getattr(constraint_problem, "build_constraints", None)):
+        raise TypeError(
+            "constraint adapter build_problem() result must define callable "
+            "build_constraints()"
+        )
+
+    return CompositeCUFProblem(
+        load_problem=load_problem,
+        constraint_problem=constraint_problem,
+    )
 
 
 @dataclass(frozen=True)

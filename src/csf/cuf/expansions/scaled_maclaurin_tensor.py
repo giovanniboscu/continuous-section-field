@@ -2,8 +2,7 @@
 """Registration of the tensor-product scaled Maclaurin expansion."""
 
 from csf.cuf.core.basis_plugins import CUFBasisPlugin, register_cuf_basis_plugin
-from csf.cuf.maclaurin_tensor import ScaledMaclaurinTensorBasis
-from csf.cuf.numerics import transverse_scales
+from csf.cuf.numerics import ScaledMaclaurinTensorBasis, transverse_scales
 
 
 def _reject_options(options):

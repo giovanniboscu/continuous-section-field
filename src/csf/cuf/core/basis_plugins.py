@@ -1,3 +1,4 @@
+# Version: CSF-CUF external transverse basis v1 - 2026-09-29
 # Version: CSF-CUF expansion ContinuousSectionField context v25.1 - 2026-08-30
 """Registry and runtime contract for isolated transverse CUF expansions.
 
@@ -6,25 +7,30 @@ themselves through :func:`register_cuf_basis_plugin`.  Discovery is lazy so
 importing the registry never creates a dependency on a concrete basis class.
 """
 from __future__ import annotations
-
 from dataclasses import dataclass
 import importlib
 import pkgutil
 from typing import Callable, Dict, Tuple
+from pathlib import Path
+
+from csf.cuf.core.external_basis import (
+    cuf_basis_registration_target,
+    is_external_cuf_basis_reference,
+    load_external_cuf_basis_plugin,
+)
 
 
 BasisBuilder = Callable[..., object]
 SectionGaussMinimum = Callable[[object], int]
 LongitudinalTransverseDegree = Callable[[object], int]
 
-
 @dataclass(frozen=True)
 class CUFBasisPlugin:
-    
+
     """Build a basis with access to the complete CSF field context.
-    
+
     Simple expansions may ignore ``continuous_section_field``.
-    
+
     The longitudinal coordinate ``x`` is available during runtime basis
     evaluation.  Classical expansions remain longitudinally constant,
 
@@ -33,19 +39,17 @@ class CUFBasisPlugin:
     while generalized expansions may depend explicitly on the beam axis,
 
         F_tau = F_tau(x, y, z).
-
     In that case the basis should override the optional
     ``CUFBasis.longitudinal_derivative(...)`` hook and return ``dF_tau/dx``.
     Existing expansions need no change: if the hook is not overridden, the
     longitudinal basis derivative is exactly zero.
     """
-    
+
 
     name: str
     builder: BasisBuilder
     section_gauss_minimum: SectionGaussMinimum
     longitudinal_transverse_degree: LongitudinalTransverseDegree
-
     def build(
         self,
         *,
@@ -55,7 +59,6 @@ class CUFBasisPlugin:
         options=None,
     ):
         """Build a basis with access to the complete CSF field context.
-
         Simple expansions may ignore ``continuous_section_field``.
         Section-aware expansions can retain it and query the complete
         ContinuousSectionField at the longitudinal coordinate passed to
@@ -69,7 +72,6 @@ class CUFBasisPlugin:
             continuous_section_field=continuous_section_field,
             options={} if options is None else dict(options),
         )
-
     def minimum_section_gauss_order(self, basis) -> int:
         value = int(self.section_gauss_minimum(basis))
         if value < 1:
@@ -78,7 +80,6 @@ class CUFBasisPlugin:
                 f"minimum section Gauss order {value}"
             )
         return value
-
     def transverse_x_polynomial_degree(self, basis) -> int:
         value = int(self.longitudinal_transverse_degree(basis))
         if value < 0:
@@ -92,7 +93,6 @@ class CUFBasisPlugin:
 _PLUGINS: Dict[str, CUFBasisPlugin] = {}
 _DISCOVERY_COMPLETE = False
 
-
 def discover_cuf_basis_plugins() -> None:
     """Import every built-in expansion module exactly once.
 
@@ -103,7 +103,6 @@ def discover_cuf_basis_plugins() -> None:
     global _DISCOVERY_COMPLETE
     if _DISCOVERY_COMPLETE:
         return
-
     package = importlib.import_module("csf.cuf.expansions")
     for module_info in pkgutil.iter_modules(
         package.__path__,
@@ -112,7 +111,6 @@ def discover_cuf_basis_plugins() -> None:
         importlib.import_module(module_info.name)
 
     _DISCOVERY_COMPLETE = True
-
 
 def register_cuf_basis_plugin(plugin: CUFBasisPlugin, *, replace: bool = False) -> None:
     """Register a transverse CUF basis implementation by name."""
@@ -123,16 +121,18 @@ def register_cuf_basis_plugin(plugin: CUFBasisPlugin, *, replace: bool = False) 
     if not name:
         raise ValueError("CUF basis plugin name must be non-empty")
 
-    if name in _PLUGINS and not replace:
+    registry = cuf_basis_registration_target(_PLUGINS)
+    if name in registry and not replace:
         raise ValueError(f"CUF basis plugin {name!r} is already registered")
+    registry[name] = plugin
 
-    _PLUGINS[name] = plugin
 
-
-def get_cuf_basis_plugin(name: str) -> CUFBasisPlugin:
-    """Return the registered plugin for ``name``."""
+def get_cuf_basis_plugin(name: str | Path) -> CUFBasisPlugin:
+    """Return a built-in plugin by name or an external plugin by file path."""
     discover_cuf_basis_plugins()
     key = str(name).strip()
+    if is_external_cuf_basis_reference(name):
+        return load_external_cuf_basis_plugin(name)
     try:
         return _PLUGINS[key]
     except KeyError as exc:
@@ -140,7 +140,6 @@ def get_cuf_basis_plugin(name: str) -> CUFBasisPlugin:
         raise ValueError(
             f"unsupported CUF basis {key!r}; available basis plugins: {available}"
         ) from exc
-
 
 def available_cuf_basis_plugins() -> Tuple[str, ...]:
     """Return registered basis names in deterministic order."""

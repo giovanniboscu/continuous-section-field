@@ -52,6 +52,7 @@ from typing import Any, Mapping
 import numpy as np
 
 from csf.cuf.problem.point_bc import LinearConstraintSystem
+from csf.cuf.adapters.problem.constraints.full_clamp_node_dependent import FullClampNodeDependentConstraints
 
 
 PROBLEM_TYPE = "double_clamped_point_load"
@@ -251,39 +252,11 @@ class DoubleClampedPointLoadProblem:
         basis: Any,
         longitudinal_integrator: Any,
     ):
-        del longitudinal_integrator
-
-        layout = assembled.dof_layout
-        end_nodes = (0, mesh.number_of_nodes - 1)
-        end_basis_sizes = tuple(
-            int(layout.basis_size_at_node(node))
-            for node in end_nodes
-        )
-        row_count = 3 * sum(end_basis_sizes)
-        matrix = np.zeros((row_count, layout.total_dofs), dtype=float)
-        rhs = np.zeros(row_count, dtype=float)
-
-        row = 0
-        for node, node_basis_size in zip(end_nodes, end_basis_sizes):
-            for component in (0, 1, 2):
-                for tau in range(1, node_basis_size + 1):
-                    matrix[
-                        row,
-                        layout.index(
-                            node=node,
-                            tau=tau,
-                            component=component,
-                        ),
-                    ] = 1.0
-                    row += 1
-
-        if row != row_count:
-            raise RuntimeError("internal constraint-row count mismatch")
-
-        return LinearConstraintSystem(
-            matrix=matrix,
-            rhs=rhs,
-            constraints=tuple(None for _ in range(row_count)),
+        return FullClampNodeDependentConstraints().build_constraints(
+            assembled=assembled,
+            mesh=mesh,
+            basis=basis,
+            longitudinal_integrator=longitudinal_integrator,
         )
 
     def tracked_points(self, section_provider: Any, x: float):

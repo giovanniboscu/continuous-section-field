@@ -126,6 +126,7 @@ import math
 import numpy as np
 
 from csf.cuf.problem.point_bc import LinearConstraintSystem
+from csf.cuf.adapters.problem.constraints.transverse_supported_integrated_axial import TransverseSupportedIntegratedAxialConstraints
 from csf.cuf.adapters.problem._load_vector import assemble_distributed_load_vector
 from csf.cuf.numerics import all_vertices, transverse_bounds
 
@@ -267,53 +268,19 @@ class CarreraTorsionHalfWaveProblem:
         )
         return load_vector, projector
 
-    def build_constraints(self, *, assembled, mesh, basis, longitudinal_integrator):
-        layout = assembled.dof_layout
-        row_count = 4 * basis.size + 1
-        A = np.zeros((row_count, layout.total_dofs), dtype=float)
-        b = np.zeros(row_count, dtype=float)
-        row = 0
-
-        for node in (0, mesh.number_of_nodes - 1):
-            for component in (1, 2):
-                for tau in range(1, basis.size + 1):
-                    A[row, layout.index(node=node, tau=tau, component=component)] = 1.0
-                    row += 1
-
-        length = float(mesh.x_end - mesh.x_start)
-
-        for element in mesh.elements:
-            for tau in range(1, basis.size + 1):
-                local = longitudinal_integrator.integrate_linear(
-                    element=element,
-                    load=lambda x, tau=tau: float(
-                        basis.value(
-                            tau,
-                            0.0,
-                            0.0,
-                            x=float(x),
-                        )
-                    ) / length,
-                )
-
-                for a, node in enumerate(element.node_ids):
-                    A[
-                        row,
-                        layout.index(
-                            node=node,
-                            tau=tau,
-                            component=0,
-                        ),
-                    ] += float(local[a])
-        row += 1
-
-        if row != row_count:
-            raise RuntimeError("internal constraint-row count mismatch")
-
-        return LinearConstraintSystem(
-            matrix=A,
-            rhs=b,
-            constraints=tuple(None for _ in range(row_count)),
+    def build_constraints(
+        self,
+        *,
+        assembled,
+        mesh,
+        basis,
+        longitudinal_integrator,
+    ):
+        return TransverseSupportedIntegratedAxialConstraints().build_constraints(
+            assembled=assembled,
+            mesh=mesh,
+            basis=basis,
+            longitudinal_integrator=longitudinal_integrator,
         )
 
     def tracked_points(self, section_provider, x: float):
@@ -504,60 +471,11 @@ class CarreraBendingBottomSurfaceHalfWaveProblem:
         basis,
         longitudinal_integrator,
     ):
-        layout = assembled.dof_layout
-        row_count = 4 * basis.size + 1
-        A = np.zeros((row_count, layout.total_dofs), dtype=float)
-        b = np.zeros(row_count, dtype=float)
-        row = 0
-
-        for node in (0, mesh.number_of_nodes - 1):
-            for component in (1, 2):
-                for tau in range(1, basis.size + 1):
-                    A[
-                        row,
-                        layout.index(
-                            node=node,
-                            tau=tau,
-                            component=component,
-                        ),
-                    ] = 1.0
-                    row += 1
-
-        length = float(mesh.x_end - mesh.x_start)
-
-        for element in mesh.elements:
-            for tau in range(1, basis.size + 1):
-                local = longitudinal_integrator.integrate_linear(
-                    element=element,
-                    load=lambda x, tau=tau: float(
-                        basis.value(
-                            tau,
-                            0.0,
-                            0.0,
-                            x=float(x),
-                        )
-                    ) / length,
-                )
-
-                for a, node in enumerate(element.node_ids):
-                    A[
-                        row,
-                        layout.index(
-                            node=node,
-                            tau=tau,
-                            component=0,
-                        ),
-                    ] += float(local[a])
-
-        row += 1
-
-        if row != row_count:
-            raise RuntimeError("internal constraint-row count mismatch")
-
-        return LinearConstraintSystem(
-            matrix=A,
-            rhs=b,
-            constraints=tuple(None for _ in range(row_count)),
+        return TransverseSupportedIntegratedAxialConstraints().build_constraints(
+            assembled=assembled,
+            mesh=mesh,
+            basis=basis,
+            longitudinal_integrator=longitudinal_integrator,
         )
 
     def tracked_points(self, section_provider, x: float):

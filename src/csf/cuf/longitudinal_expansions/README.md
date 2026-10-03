@@ -77,3 +77,37 @@ assumption. Unsupported topologies are rejected explicitly.
 
 Built-in plugins are discovered lazily from this directory. Adding another
 module does not require changes to the solver or registry.
+
+## External basis file
+
+`longitudinal.basis` may also be a Python file path. The existing built-in
+syntax is unchanged:
+
+```yaml
+longitudinal:
+  method: finite_element
+  elements: 2
+  basis: lagrange
+  order: 6
+```
+
+To load a custom basis from outside the installed `src` tree, use a path:
+
+```yaml
+longitudinal:
+  method: finite_element
+  elements: 2
+  basis: ./my_longitudinal_basis.py
+  order: 6
+```
+
+Relative paths are resolved from the directory containing the case YAML. The
+external file registers one `LongitudinalBasisPlugin` with the same
+`register_longitudinal_basis_plugin()` API used by built-in modules.
+
+The current `finite_element` implementation still requires
+`NodalC0LongitudinalBasis`. External loading does not add non-nodal topology or
+additional inter-element constraints.
+
+See `cuf/external_longitudinal_basis/` for an external example numerically
+equivalent to the built-in `lagrange` basis.

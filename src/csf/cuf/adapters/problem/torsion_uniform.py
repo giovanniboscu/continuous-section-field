@@ -141,6 +141,7 @@ import numpy as np
 
 from csf.cuf.numerics import all_vertices, transverse_bounds
 from csf.cuf.problem.point_bc import LinearConstraintSystem
+from csf.cuf.adapters.problem.constraints.transverse_supported_point_anchor import TransverseSupportedPointAnchorConstraints
 from csf.cuf.adapters.problem._load_vector import assemble_distributed_load_vector
 
 
@@ -383,63 +384,11 @@ class UniformTorsionProblem:
         basis: Any,
         longitudinal_integrator: Any,
     ):
-        """Apply the torsion supports with the FEM3D pointwise axial anchor."""
-
-        layout = assembled.dof_layout
-        row_count = 4 * int(basis.size) + 1
-        matrix = np.zeros((row_count, layout.total_dofs), dtype=float)
-        rhs = np.zeros(row_count, dtype=float)
-        row = 0
-
-        # Fix all generalized global-y and global-z amplitudes at both beam
-        # ends.  Solver component numbering is 0=x, 1=y, 2=z.
-        for node in (0, mesh.number_of_nodes - 1):
-            for component in (1, 2):
-                for tau in range(1, int(basis.size) + 1):
-                    matrix[
-                        row,
-                        layout.index(
-                            node=node,
-                            tau=tau,
-                            component=component,
-                        ),
-                    ] = 1.0
-                    row += 1
-
-        # Remove only the rigid global-x translation, using exactly the same
-        # physical anchor as FEM3D: u_x(x_start, y=0, z=0) = 0.
-        axial_anchor_factors = np.asarray(
-            [
-                basis.value(
-                    tau,
-                    0.0,
-                    0.0,
-                    x=float(mesh.x_start),
-                )
-                for tau in range(1, int(basis.size) + 1)
-            ],
-            dtype=float,
-        )
-
-        start_node = 0
-        for tau, factor in enumerate(axial_anchor_factors, start=1):
-            matrix[
-                row,
-                layout.index(
-                    node=start_node,
-                    tau=tau,
-                    component=0,
-                ),
-            ] = float(factor)
-
-        row += 1
-        if row != row_count:
-            raise RuntimeError("internal constraint-row count mismatch")
-
-        return LinearConstraintSystem(
-            matrix=matrix,
-            rhs=rhs,
-            constraints=tuple(None for _ in range(row_count)),
+        return TransverseSupportedPointAnchorConstraints().build_constraints(
+            assembled=assembled,
+            mesh=mesh,
+            basis=basis,
+            longitudinal_integrator=longitudinal_integrator,
         )
 
     def tracked_points(self, section_provider: Any, x: float):

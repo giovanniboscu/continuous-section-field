@@ -1,3 +1,4 @@
+# Version: CSF-CUF external longitudinal basis v1 - 2026-09-30
 # Version: CSF-CUF isolated longitudinal basis plugins v1 - 2026-09-21
 """Registry for isolated longitudinal approximation-basis plugins."""
 
@@ -7,8 +8,14 @@ from dataclasses import dataclass
 import importlib
 import pkgutil
 from typing import Callable, Dict, Tuple
+from pathlib import Path
 
 from csf.cuf.core.longitudinal_basis import LongitudinalBasis
+from csf.cuf.core.external_longitudinal_basis import (
+    is_external_longitudinal_basis_reference,
+    load_external_longitudinal_basis_plugin,
+    longitudinal_basis_registration_target,
+)
 
 
 LongitudinalBasisBuilder = Callable[..., LongitudinalBasis]
@@ -67,18 +74,23 @@ def register_longitudinal_basis_plugin(
     if not name:
         raise ValueError("longitudinal basis plugin name must be non-empty")
 
-    if name in _PLUGINS and not replace:
+    registry = longitudinal_basis_registration_target(_PLUGINS)
+    if name in registry and not replace:
         raise ValueError(
             f"longitudinal basis plugin {name!r} is already registered"
         )
 
-    _PLUGINS[name] = plugin
+    registry[name] = plugin
 
 
-def get_longitudinal_basis_plugin(name: str) -> LongitudinalBasisPlugin:
-    """Return the registered longitudinal plugin for ``name``."""
+def get_longitudinal_basis_plugin(
+    name: str | Path,
+) -> LongitudinalBasisPlugin:
+    """Return a built-in plugin by name or an external one by file path."""
     discover_longitudinal_basis_plugins()
     key = str(name).strip()
+    if is_external_longitudinal_basis_reference(name):
+        return load_external_longitudinal_basis_plugin(name)
     try:
         return _PLUGINS[key]
     except KeyError as exc:

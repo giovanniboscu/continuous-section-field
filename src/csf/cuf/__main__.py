@@ -11,6 +11,7 @@ from pathlib import Path
 from csf.cuf.case import load_case
 from csf.cuf.csf_bridge import CSFCUFModelBridge
 from csf.cuf.problem.problem_api import (
+    compose_problem,
     load_problem,
     load_problem_adapter,
 )
@@ -125,9 +126,27 @@ def run(case_path, *, progress=True):
 
     problem_definition = load_problem(case.problem_path)
 
-    problem_adapter = load_problem_adapter(
-        case.problem_adapter_path
-    )
+    if case.problem_adapter_path is not None:
+        problem_adapter = load_problem_adapter(
+            case.problem_adapter_path
+        )
+        load_adapter = None
+        constraint_adapter = None
+    else:
+        if (
+            case.problem_load_adapter_path is None
+            or case.problem_constraint_adapter_path is None
+        ):
+            raise RuntimeError(
+                "split problem adapters are incompletely configured"
+            )
+        problem_adapter = None
+        load_adapter = load_problem_adapter(
+            case.problem_load_adapter_path
+        )
+        constraint_adapter = load_problem_adapter(
+            case.problem_constraint_adapter_path
+        )
 
     output_adapter = _load_output_adapter(
         case.output_adapter_path
@@ -137,10 +156,26 @@ def run(case_path, *, progress=True):
         problem_definition.model_path
     )
 
-    problem = problem_adapter.build_problem(
-        problem_definition.problem_type,
-        problem_definition.problem_options,
-    )
+    if problem_adapter is not None:
+        # Historical mode: build exactly one object and preserve the original
+        # state-sharing semantics between load and constraint methods.
+        problem = problem_adapter.build_problem(
+            problem_definition.problem_type,
+            problem_definition.problem_options,
+        )
+    else:
+        load_problem_instance = load_adapter.build_problem(
+            problem_definition.problem_type,
+            problem_definition.problem_options,
+        )
+        constraint_problem = constraint_adapter.build_problem(
+            problem_definition.problem_type,
+            problem_definition.problem_options,
+        )
+        problem = compose_problem(
+            load_problem_instance,
+            constraint_problem,
+        )
 
     print("CSF-CUF solver")
     print("==============")

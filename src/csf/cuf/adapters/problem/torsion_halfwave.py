@@ -82,6 +82,7 @@ import numpy as np
 
 from csf.cuf.numerics import all_vertices, transverse_bounds
 from csf.cuf.problem.point_bc import LinearConstraintSystem
+from csf.cuf.adapters.problem.constraints.full_clamp import FullClampConstraints
 from csf.cuf.adapters.problem._load_vector import assemble_distributed_load_vector
 
 
@@ -355,46 +356,11 @@ class TorsionHalfWaveProblem:
         basis: Any,
         longitudinal_integrator: Any,
     ):
-        """Perfectly clamp both beam ends: ux = uy = uz = 0."""
-
-        layout = assembled.dof_layout
-        n_tau = int(basis.size)
-
-        # Three displacement components x two beam ends x all transverse
-        # amplitudes.
-        row_count = 6 * n_tau
-        matrix = np.zeros((row_count, layout.total_dofs), dtype=float)
-        rhs = np.zeros(row_count, dtype=float)
-        row = 0
-
-        # Perfect clamp at both longitudinal ends.
-        #
-        # Fixing every generalized amplitude for components x, y and z makes
-        # the complete CUF displacement field vanish on each end section:
-        #
-        #     u_x = u_y = u_z = 0
-        #
-        # for every physical point (y,z) of the section.
-        for node in (0, mesh.number_of_nodes - 1):
-            for component in (0, 1, 2):
-                for tau in range(1, n_tau + 1):
-                    matrix[
-                        row,
-                        layout.index(
-                            node=node,
-                            tau=tau,
-                            component=component,
-                        ),
-                    ] = 1.0
-                    row += 1
-
-        if row != row_count:
-            raise RuntimeError("internal constraint-row count mismatch")
-
-        return LinearConstraintSystem(
-            matrix=matrix,
-            rhs=rhs,
-            constraints=tuple(None for _ in range(row_count)),
+        return FullClampConstraints().build_constraints(
+            assembled=assembled,
+            mesh=mesh,
+            basis=basis,
+            longitudinal_integrator=longitudinal_integrator,
         )
 
     def tracked_points(self, section_provider: Any, x: float):

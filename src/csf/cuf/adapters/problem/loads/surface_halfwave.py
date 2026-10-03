@@ -1,152 +1,10 @@
-# Version: CSF-CUF uniform physical-surface load adapter v1.2 - 2026-09-03
-# Changelog: v1.2 uses accurately rounded surface-quadrature summation and documents the FEM3D pointwise axial gauge; v1.1 resolves polygon identity through the public CSF entity API; v1.0 added the adapter.
-"""
-Uniform physical-surface load adapter for CSF-CUF.
+# Version: CSF-CUF physical-surface half-wave adapter v1.0 - 2026-09-04
+"""Reusable physical-surface half-wave load component for CSF-CUF.
 
-Purpose
--------
-This module applies a spatially uniform traction in the global ``z`` direction
-to one physical lateral surface of a CSF beam model.  The traction magnitude is
-specified per unit of *real surface area*.  It is not specified per unit of
-projected area and it is not first converted into a line load.
-
-The adapter is deliberately separate from ``bottom_surface_halfwave.py``.
-Consequently, the existing validated half-wave adapter is not modified and
-existing problem files retain their original behaviour.
-
-
-User interface
---------------
-The problem YAML has the following form::
-
-    model:
-      csf_yaml: ../models/model.yaml
-
-    problem:
-      type: uniform_surface_load
-
-      surface:
-        polygon_name: web
-        edge_start_point_id: 0
-
-      components:
-        z: -1.0
-
-``polygon_name`` identifies one CSF polygon.  ``edge_start_point_id`` is the
-zero-based index of the first vertex of the loaded polygon edge.  The second
-vertex is the next polygon vertex, using cyclic polygon ordering.  Stable CSF
-topology supplies the homologous edge in every other section; the adapter does
-not reproduce or second-guess that CSF responsibility.
-
-Version 1 accepts exactly one signed component, ``components.z``.  Its units
-are force per unit of physical surface area in the consistent unit system used
-by the model.  A positive value acts towards global ``+z`` and a negative value
-acts towards global ``-z``.  Keys ``x`` and ``y`` are intentionally rejected by
-this version with an explicit error.  Keeping the ``components`` mapping in the
-interface permits those directions to be added later without changing the YAML
-structure.
-
-
-Supported surface geometry
---------------------------
-The first implementation supports a surface bounded by a horizontal straight
-edge in end section S0 and its homologous horizontal straight edge in end
-section S1.  Here "horizontal" means constant global transverse coordinate
-``z`` along each edge, and therefore an edge parallel to global ``y``.
-
-The two end edges may:
-
-* have different lengths;
-* have different transverse ``y`` positions; and
-* lie at different global ``z`` elevations.
-
-Different end elevations produce the intended surface inclination in the
-longitudinal ``x-z`` plane.  Because both end edges are parallel to global
-``y``, they define a planar ruled surface even when their lengths differ.
-
-An unsupported non-horizontal edge is never silently projected or replaced by
-another edge.  Construction stops with an error that reports both end-section
-edge elevations and explains the current geometric limitation.
-
-
-Physical measure and weak form
-------------------------------
-Let the selected edge at longitudinal coordinate ``x`` be parameterised by
-
-    y(x, eta) = y_mid(x) + h(x) * eta,     eta in [-1, 1],
-    z(x, eta) = z_edge(x),
-
-where ``h`` is half the physical edge width.  Since the end edges may lie at
-different elevations, define the constant longitudinal slope
-
-    slope_z = (z_S1 - z_S0) / (x1 - x0).
-
-The real surface measure factorises exactly as
-
-    dGamma = sqrt(1 + slope_z**2) * h(x) * d_eta * dx.
-
-For CUF expansion function ``F_tau``, the generalized load per unit global
-longitudinal coordinate is therefore
-
-    q_tau,z(x)
-        = p_z * sqrt(1 + slope_z**2)
-              * integral[-1,1] F_tau(y(x,eta), z_edge(x)) h(x) d_eta.
-
-The standard solver subsequently forms
-
-    f_i,tau,z = integral[x0,x1] N_i(x) q_tau,z(x) dx.
-
-This is exactly the physical virtual-work term
-
-    delta W_ext = integral[Gamma] p_z * delta u_z dGamma.
-
-No local normal/tangential coefficients are introduced and no artificial
-global ``x`` load is added.  On an inclined surface the same global traction
-has a non-zero local tangential-axial projection.  That local projection is
-already contained in the coordinate-invariant virtual work above.  The global
-resultant remains parallel to global ``z``.
-
-
-Quadrature
-----------
-The transverse surface integration order is selected internally.  If the CUF
-expansion order is ``N``, restriction of a degree-``N`` polynomial expansion to
-the supported straight edge has degree at most ``N`` in ``eta``.  An
-``n``-point Gauss-Legendre rule is exact through degree ``2*n - 1``; hence the
-minimum transverse number of points is
-
-    n_eta = ceil((N + 1) / 2).
-
-No surface quadrature parameter is exposed in the YAML.
-
-Longitudinal integration remains the responsibility of the standard CUF
-solver.  Its stiffness-driven quadrature requirement is at least as demanding
-as this linear load vector for the currently supported polynomial expansion
-families.  The load field returned here therefore participates in the ordinary
-element-by-element longitudinal integration without introducing a second or
-competing longitudinal integrator.
-
-
-Constraints
------------
-For direct comparison with the reference FEM3D model, this adapter uses the
-same support conditions and the same pointwise axial anchor:
-
-* global ``y`` and ``z`` CUF amplitudes are fixed at both beam ends;
-* the remaining global ``x`` rigid translation is removed by imposing
-  ``u_x(0, 0, 0) = 0``.
-
-The axial condition is a gauge fixing only.  It selects the same rigid-body
-reference used by the FEM3D anchor node and does not alter the load
-formulation.
-
-
-Future extension
-----------------
-The YAML surface identifier is already suitable for a general polygon edge.
-A future version may support non-horizontal or warped ruled surfaces by
-replacing only the internal surface geometry and Jacobian evaluation.  Existing
-``surface`` and ``components`` mappings need not change.
+This module contains only the load-side implementation: physical surface
+selection, generalized load projection, distributed load-vector assembly, and
+tracked loaded-edge points.  It deliberately contains no boundary-condition
+logic so the load can be combined with any compatible constraint adapter.
 """
 
 from __future__ import annotations
@@ -157,13 +15,10 @@ from typing import Any, Mapping
 
 import numpy as np
 
-from csf.cuf.problem.point_bc import LinearConstraintSystem
-from csf.cuf.adapters.problem.constraints.transverse_supported_point_anchor import TransverseSupportedPointAnchorConstraints
 from csf.cuf.adapters.problem._load_vector import assemble_distributed_load_vector
 
 
-PROBLEM_TYPE = "uniform_surface"
-
+PROBLEM_TYPE = "surface_halfwave"
 
 def _finite_float(value: Any, *, path: str) -> float:
     """Convert one YAML scalar to a finite float and report its full path."""
@@ -444,22 +299,22 @@ class HorizontalRuledSurface:
         )
 
 
-class UniformPhysicalSurfaceProjector:
-    """Project the uniform global-z traction onto all active CUF functions."""
+class HalfWavePhysicalSurfaceProjector:
+    """Project the global-z half-wave traction onto all active CUF functions."""
 
     def __init__(
         self,
         *,
         surface: HorizontalRuledSurface,
         basis: Any,
-        z_component: float,
+        amplitude: float,
     ) -> None:
         self.surface = surface
         self.basis = basis
-        self.z_component = float(z_component)
+        self.amplitude = float(amplitude)
 
-        if not math.isfinite(self.z_component):
-            raise ValueError("problem.components.z must be finite")
+        if not math.isfinite(self.amplitude):
+            raise ValueError("problem.amplitude must be finite")
 
         order = getattr(basis, "order", None)
         if isinstance(order, bool) or not isinstance(order, int) or order < 0:
@@ -541,15 +396,21 @@ class UniformPhysicalSurfaceProjector:
             count=basis_size,
         )
 
+        # This is the ONLY mechanical difference from uniform_surface_load:
+        # multiply the same physical real-surface projection by the m=1
+        # longitudinal half-wave.
+        length = self.surface.x1 - self.surface.x0
+        phase = math.sin(math.pi * (x - self.surface.x0) / length)
+
         # The line integral above contains the physical current edge width.
         # Multiplication by the inclination factor converts dy*dx into the real
         # lateral-surface measure dGamma.  No projected-area convention enters
         # this calculation.
-        values *= self.z_component * self.surface.inclination_factor
+        values *= self.amplitude * phase * self.surface.inclination_factor
 
         if not np.all(np.isfinite(values)):
             raise ValueError(
-                "uniform surface projection produced a non-finite generalized "
+                "surface half-wave projection produced a non-finite generalized "
                 f"load vector at x={x}"
             )
 
@@ -561,7 +422,7 @@ class UniformPhysicalSurfaceProjector:
 class _ModeSurfaceLoadField:
     """Expose one tau entry through the scalar load-field solver contract."""
 
-    def __init__(self, projector: UniformPhysicalSurfaceProjector, tau: int):
+    def __init__(self, projector: HalfWavePhysicalSurfaceProjector, tau: int):
         self.projector = projector
         self.tau = int(tau)
 
@@ -571,17 +432,17 @@ class _ModeSurfaceLoadField:
         )
 
 
-class UniformSurfaceLoadProblem:
-    """Complete CUF problem using the new uniform physical-surface load."""
+class SurfaceHalfWaveLoadProblem:
+    """Reusable load-side physical-surface half-wave component."""
 
     def __init__(
         self,
         *,
         selector: SurfaceSelector,
-        z_component: float,
+        amplitude: float,
     ) -> None:
         self.selector = selector
-        self.z_component = float(z_component)
+        self.amplitude = float(amplitude)
         self._surface: HorizontalRuledSurface | None = None
 
     def build_load_vector(
@@ -606,10 +467,10 @@ class UniformSurfaceLoadProblem:
         # Retain the resolved geometry so optional post-processing reuses the
         # same one-time polygon lookup and end-section compatibility check.
         self._surface = surface
-        projector = UniformPhysicalSurfaceProjector(
+        projector = HalfWavePhysicalSurfaceProjector(
             surface=surface,
             basis=basis,
-            z_component=self.z_component,
+            amplitude=self.amplitude,
         )
 
         fields = tuple(
@@ -626,20 +487,6 @@ class UniformSurfaceLoadProblem:
 
         return load_vector, projector
 
-    def build_constraints(
-        self,
-        *,
-        assembled: Any,
-        mesh: Any,
-        basis: Any,
-        longitudinal_integrator: Any,
-    ):
-        return TransverseSupportedPointAnchorConstraints().build_constraints(
-            assembled=assembled,
-            mesh=mesh,
-            basis=basis,
-            longitudinal_integrator=longitudinal_integrator,
-        )
 
     def tracked_points(self, section_provider: Any, x: float):
         """Return the two selected edge vertices for standard post-processing."""
@@ -693,33 +540,16 @@ def _parse_surface(options: Mapping[str, Any]) -> SurfaceSelector:
     )
 
 
-def _parse_z_component(options: Mapping[str, Any]) -> float:
-    """Parse the only global traction component supported by version 1."""
+def _parse_amplitude(options: Mapping[str, Any]) -> float:
+    """Parse the single signed global-z half-wave amplitude."""
 
-    if "components" not in options:
-        raise ValueError("problem.components is required")
-    components = _require_mapping(
-        options["components"], path="problem.components"
-    )
-
-    unsupported = sorted(str(key) for key in components if key != "z")
-    if unsupported:
-        raise ValueError(
-            "problem.components contains unsupported component(s): "
-            f"{', '.join(unsupported)}. This adapter version accepts only "
-            "the signed global-z component 'z'."
-        )
-    if "z" not in components:
-        raise ValueError(
-            "problem.components.z is required; this adapter version accepts "
-            "only a signed load in the global z direction"
-        )
-
-    return _finite_float(components["z"], path="problem.components.z")
+    if "amplitude" not in options:
+        raise ValueError("problem.amplitude is required")
+    return _finite_float(options["amplitude"], path="problem.amplitude")
 
 
-def build_problem(problem_type: str, options: dict):
-    """Standard problem-adapter entry point used by the CSF-CUF loader."""
+def build_load_problem(problem_type: str, options: dict):
+    """Build only the reusable load component."""
 
     if problem_type != PROBLEM_TYPE:
         raise ValueError(
@@ -730,21 +560,32 @@ def build_problem(problem_type: str, options: dict):
     options = _require_mapping(options, path="problem")
     _reject_unknown_keys(
         options,
-        allowed={"surface", "components"},
+        allowed={"surface", "amplitude"},
         path="problem",
     )
 
-    return UniformSurfaceLoadProblem(
+    return SurfaceHalfWaveLoadProblem(
         selector=_parse_surface(options),
-        z_component=_parse_z_component(options),
+        amplitude=_parse_amplitude(options),
     )
+
+
+def build_problem(problem_type: str, options: dict):
+    """Backward-compatible public factory returning the composed problem."""
+
+    from csf.cuf.adapters.problem.surface_halfwave import (
+        build_problem as build_composed_problem,
+    )
+
+    return build_composed_problem(problem_type, options)
 
 
 __all__ = (
     "HorizontalRuledSurface",
     "PROBLEM_TYPE",
     "SurfaceSelector",
-    "UniformPhysicalSurfaceProjector",
-    "UniformSurfaceLoadProblem",
+    "HalfWavePhysicalSurfaceProjector",
+    "SurfaceHalfWaveLoadProblem",
+    "build_load_problem",
     "build_problem",
 )

@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.2.9
+* refactorized csf-cuf for externla expansion and extenrla shape function
+
 ## v0.2.5
 * Added CSF-CUF I-Shape cases.
 

@@ -1,3 +1,5 @@
+# Version: CSF-CUF external longitudinal basis v1 - 2026-09-30
+# Version: CSF-CUF external transverse basis v1 - 2026-09-29
 # Version: CSF-CUF normalized longitudinal partition v25 - 2026-09-21
 from __future__ import annotations
 
@@ -8,9 +10,13 @@ from typing import Any
 import math
 import yaml
 
+from csf.cuf.core.external_basis import resolve_cuf_basis_reference
+from csf.cuf.core.external_longitudinal_basis import (
+    resolve_longitudinal_basis_reference,
+)
+
 
 AdapterReference = Path | str
-
 
 @dataclass(frozen=True)
 class CUFSettings:
@@ -25,7 +31,6 @@ class CUFSettings:
     def is_segmented(self) -> bool:
         return bool(self.segments)
 
-
 @dataclass(frozen=True)
 class LongitudinalSettings:
     method: str
@@ -36,7 +41,6 @@ class LongitudinalSettings:
     element_boundaries: tuple[float, ...] | None
     gauss_order: int
     material_polynomial_degree: int | None
-
     @property
     def number_of_elements(self) -> int:
         if self.elements is not None:
@@ -51,13 +55,11 @@ class SectionIntegrationSettings:
     method: str
     gauss_order: int
 
-
 @dataclass(frozen=True)
 class EquilibrationSettings:
     # Scalar keeps the historical single-solve mode. A tuple marks an
     # equilibration sweep requested by a YAML sequence.
     iterations: int | tuple[int, ...]
-
     def __post_init__(self) -> None:
         # Keep the invariant even for programmatic construction, not only for
         # values coming through load_case().
@@ -70,7 +72,6 @@ class EquilibrationSettings:
     @property
     def is_sweep(self) -> bool:
         return isinstance(self.iterations, tuple)
-
     @property
     def iteration_values(self) -> tuple[int, ...]:
         if isinstance(self.iterations, tuple):
@@ -89,13 +90,12 @@ class SamplingSettings:
     displacement_samples: int
     stress_grid: int
 
-
 @dataclass(frozen=True)
 class CaseDefinition:
     path: Path
     name: str
     problem_path: Path
-    problem_adapter_path: AdapterReference
+    problem_adapter_path: AdapterReference | None
     output_adapter_path: AdapterReference
     cuf: CUFSettings
     longitudinal: LongitudinalSettings
@@ -103,7 +103,8 @@ class CaseDefinition:
     solver: SolverSettings
     sampling: SamplingSettings
     output_dir: Path
-
+    problem_load_adapter_path: AdapterReference | None = None
+    problem_constraint_adapter_path: AdapterReference | None = None
 
 def _mapping(value: Any, name: str) -> dict[str, Any]:
     if not isinstance(value, dict):
@@ -120,13 +121,11 @@ def _relative(base: Path, value: Any) -> Path:
 
 def _equilibration_iterations(value: Any) -> int | tuple[int, ...]:
     """Normalize one scalar or YAML sequence of equilibration iterations.
-
     A sequence is a sweep request. Sweep values are de-duplicated and sorted
     increasingly so progressive equilibration can be reused between requested
     checkpoints. Zero is valid and means solve the original KKT system without
     equilibration. The scalar form intentionally preserves the historical mode.
     """
-
     if isinstance(value, (list, tuple)):
         if not value:
             raise ValueError(
@@ -138,7 +137,6 @@ def _equilibration_iterations(value: Any) -> int | tuple[int, ...]:
                 "solver.equilibration.iterations values must be >= 0"
             )
         return tuple(sorted(set(parsed)))
-
     parsed = int(value)
     if parsed < 0:
         raise ValueError(
@@ -156,7 +154,6 @@ def _adapter_reference(base: Path, value: Any) -> AdapterReference:
 
         csf.cuf.adapter.surface_load_problem
     """
-
     text = str(value).strip()
     if not text:
         raise ValueError("adapter reference must not be empty")
@@ -174,17 +171,15 @@ def _adapter_reference(base: Path, value: Any) -> AdapterReference:
 
     return text
 
-
 def load_case(path: str | Path) -> CaseDefinition:
     path = Path(path).resolve()
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     root = _mapping(raw, "case file")
-
     case = _mapping(root.get("case", {}), "case")
     problem = _mapping(root.get("problem"), "problem")
     cuf = _mapping(root.get("cuf"), "cuf")
     longitudinal = _mapping(root.get("longitudinal"), "longitudinal")
-    
+
     section = _mapping(root.get("section_integration", {}), "section_integration")
     solver = _mapping(root.get("solver", {}), "solver")
     equilibration = _mapping(
@@ -193,11 +188,9 @@ def load_case(path: str | Path) -> CaseDefinition:
     )
     sampling = _mapping(root.get("sampling", {}), "sampling")
     output = _mapping(root.get("output"), "output")
-
     stations = tuple(float(v) for v in sampling.get("stations", [0.0, 0.5]))
     if not stations or any(v < 0.0 or v > 1.0 for v in stations):
         raise ValueError("sampling.stations must contain values in [0,1]")
-
     raw_segments = cuf.get("segments")
     if raw_segments is not None:
         if any(key in cuf for key in ("basis", "order", "basis_options")):
@@ -208,7 +201,6 @@ def load_case(path: str | Path) -> CaseDefinition:
             )
         if not isinstance(raw_segments, list) or not raw_segments:
             raise TypeError("cuf.segments must be a non-empty YAML sequence")
-
         segment_specs = []
         segment_orders = []
         for index, raw_segment in enumerate(raw_segments, start=1):
@@ -239,14 +231,15 @@ def load_case(path: str | Path) -> CaseDefinition:
                 ).copy()
             segment_specs.append(segment)
             segment_orders.append(segment_order)
-
         cuf_basis = None
         cuf_order = None
         basis_options = {}
         cuf_default_order = max(segment_orders)
         cuf_segments = tuple(segment_specs)
     else:
-        cuf_basis = str(cuf.get("basis", "scaled_maclaurin"))
+        cuf_basis = resolve_cuf_basis_reference(
+            path.parent, cuf.get("basis", "scaled_maclaurin")
+        )
         cuf_order = int(cuf.get("order", 5))
         if cuf_order < 1:
             raise ValueError("cuf.order must be >= 1")
@@ -256,8 +249,9 @@ def load_case(path: str | Path) -> CaseDefinition:
         ).copy()
         cuf_default_order = cuf_order
         cuf_segments = ()
-
-    longitudinal_basis = str(longitudinal.get("basis", "lagrange")).strip()
+    longitudinal_basis = resolve_longitudinal_basis_reference(
+        path.parent, longitudinal.get("basis", "lagrange")
+    ).strip()
     if not longitudinal_basis:
         raise ValueError("longitudinal.basis must be non-empty")
     longitudinal_order = int(longitudinal.get("order", 3))
@@ -265,7 +259,6 @@ def load_case(path: str | Path) -> CaseDefinition:
         longitudinal.get("basis_options", {}),
         "longitudinal.basis_options",
     ).copy()
-
     has_elements = "elements" in longitudinal
     has_boundaries = "element_boundaries" in longitudinal
     if has_elements == has_boundaries:
@@ -273,7 +266,6 @@ def load_case(path: str | Path) -> CaseDefinition:
             "longitudinal must define exactly one of 'elements' or "
             "'element_boundaries'"
         )
-
     elements = None
     element_boundaries = None
     if has_elements:
@@ -318,7 +310,6 @@ def load_case(path: str | Path) -> CaseDefinition:
         element_boundaries = (
             0.0, *element_boundaries[1:-1], 1.0
         )
-
     section_order = int(section.get("gauss_order", cuf_default_order + 1))
     longitudinal_gauss = int(
         longitudinal.get(
@@ -337,7 +328,6 @@ def load_case(path: str | Path) -> CaseDefinition:
     equilibration_iterations = _equilibration_iterations(
         equilibration.get("iterations", 3)
     )
-
     if elements is not None and elements < 1:
         raise ValueError("longitudinal.elements must be >= 1")
     if longitudinal_order < 1:
@@ -353,14 +343,40 @@ def load_case(path: str | Path) -> CaseDefinition:
         raise ValueError(
             "longitudinal.material_polynomial_degree must be >= 0"
         )
+    legacy_problem_adapter = problem.get("adapter")
+    load_adapter = problem.get("load_adapter")
+    constraint_adapter = problem.get("constraint_adapter")
+
+    if legacy_problem_adapter is not None:
+        if load_adapter is not None or constraint_adapter is not None:
+            raise ValueError(
+                "problem.adapter cannot be combined with problem.load_adapter "
+                "or problem.constraint_adapter"
+            )
+        problem_adapter_path = _adapter_reference(
+            path.parent, legacy_problem_adapter
+        )
+        problem_load_adapter_path = None
+        problem_constraint_adapter_path = None
+    else:
+        if load_adapter is None or constraint_adapter is None:
+            raise ValueError(
+                "problem must define either 'adapter' or both "
+                "'load_adapter' and 'constraint_adapter'"
+            )
+        problem_adapter_path = None
+        problem_load_adapter_path = _adapter_reference(
+            path.parent, load_adapter
+        )
+        problem_constraint_adapter_path = _adapter_reference(
+            path.parent, constraint_adapter
+        )
+
     return CaseDefinition(
         path=path,
         name=str(case.get("name", path.stem)),
         problem_path=_relative(path.parent, problem["yaml"]),
-        problem_adapter_path=_adapter_reference(
-            path.parent,
-            problem["adapter"],
-        ),
+        problem_adapter_path=problem_adapter_path,
         output_adapter_path=_adapter_reference(
             path.parent,
             output["adapter"],
@@ -396,4 +412,6 @@ def load_case(path: str | Path) -> CaseDefinition:
             stress_grid=int(sampling.get("stress_grid", 41)),
         ),
         output_dir=_relative(path.parent, output["directory"]),
+        problem_load_adapter_path=problem_load_adapter_path,
+        problem_constraint_adapter_path=problem_constraint_adapter_path,
     )
