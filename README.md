@@ -32,12 +32,9 @@ It represents variable geometry and material distribution as continuous function
 
 **CSF–CUF structural analysis**
 
-CSF can be used as the continuous geometry and material provider for a
-Carrera Unified Formulation (CUF) beam model.
+CSF can be used as a continuous provider of cross-sectional geometry and material properties for Carrera Unified Formulation (CUF) beam models.
 
-The repository includes an open-source CUF implementation in which
-cross-sectional expansion functions are independent from the CSF
-geometry/material description.
+The repository includes an open-source CUF implementation designed to keep the structural formulation modular. Cross-sectional geometry and material fields are provided by CSF, while the transverse expansion and longitudinal shape functions are supplied independently and can be replaced without modifying the CSF model.
 
 ```bash
 cd cuf/tutorials/variable_material_t_section/t_section/models/
@@ -46,7 +43,6 @@ csf-actions t_noprismatic_csf.yaml action.yaml   # inspect the non-prismatic T-s
 cd ../cases
 csf-cuf bending_halfwave_legendre_N08.yaml       # run a CUF bending analysis
 ```
-
 
 ---
 ### Illustrative example
