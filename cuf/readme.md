@@ -1,8 +1,13 @@
 # Inside the CSF-CUF
 
-> [CSF–CUF tutorial: non-prismatic variable-material T-section](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/README.md)
+> [I-Shape - Prismatic and Tapered Beam Comparison](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/readme.md)  
+> Numerical validation case comparing CSF-CUF and 3D FEM solutions for both prismatic and continuously tapered I-shaped beams, using the same CUF formulation and solver settings while changing only the continuous cross-section geometry.
+>
+> [CSF–CUF tutorial: non-prismatic variable-material T-section](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/README.md)  
+> Step-by-step tutorial showing how CSF describes continuously varying geometry and material properties and how these fields are used directly by the CUF solver for a non-prismatic T-section beam.
 >
 > The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
+
 
 This repository currently focuses on **single one-dimensional beam members**. General assemblies of multiple connected members are outside the present implementation scope.
 
