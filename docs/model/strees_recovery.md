@@ -716,7 +716,7 @@ $$
 
 The implementation sequence can be:
 
-### Step 1 — Evaluate raw CUF stresses
+### Step 1 - Evaluate raw CUF stresses
 
 Compute:
 
@@ -726,7 +726,7 @@ $$
 
 over the cross-section.
 
-### Step 2 — Evaluate the axial equilibrium residual
+### Step 2 - Evaluate the axial equilibrium residual
 
 Compute:
 
@@ -734,7 +734,7 @@ $$
 r_x^{H} = \frac{\partial\sigma_{xx}^{H}}{\partial x} + \frac{\partial\tau_{xy}^{H}}{\partial y} + \frac{\partial\tau_{xz}^{H}}{\partial z} + b_x
 $$
 
-### Step 3 — Solve the cross-sectional Poisson problem
+### Step 3 - Solve the cross-sectional Poisson problem
 
 Solve:
 
@@ -754,7 +754,7 @@ $$
 \int_\Omega \phi_x\,d\Omega=0
 $$
 
-### Step 4 — Recover the shear stresses
+### Step 4 - Recover the shear stresses
 
 Compute:
 
@@ -766,7 +766,7 @@ $$
 \tau_{xz}^{rec} = \tau_{xz}^{H} + \frac{\partial\phi_x}{\partial z}
 $$
 
-### Step 5 — Verify the recovered field
+### Step 5 - Verify the recovered field
 
 Evaluate:
 
