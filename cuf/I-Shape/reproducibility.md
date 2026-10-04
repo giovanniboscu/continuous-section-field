@@ -202,7 +202,8 @@ output/fem3d_taper.npz
 After these commands, remain in the `fem3d` directory for the plotting step.
 
 ---
-## 7. Generate the CSF-CUF vs FEM3D comparison plots
+## 7. Gen plots
+<img width="1037" height="589" alt="Screenshot 2026-10-04 at 17 42 19" src="https://github.com/user-attachments/assets/bbd090c3-34ab-491c-bdff-a8e77366b1e5" />
 
 From:
 
