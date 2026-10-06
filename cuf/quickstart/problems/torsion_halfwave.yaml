@@ -3,4 +3,4 @@ model:
 
 problem:
   type: torsion_halfwave
-  amplitude: 10.0
+  amplitude: 10.0  # line load intensity, N/mm in this model
