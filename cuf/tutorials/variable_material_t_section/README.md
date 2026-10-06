@@ -42,6 +42,42 @@ through two physical polygons:
 * `web`.
 
 The CSF model is independent of the particular structural approximation subsequently used to analyse it.
+## Units of Measure
+
+CSF-CUF does not impose a fixed system of units. All quantities must be defined using a **consistent unit system** throughout the model.
+
+For example, the rectangular prismatic model used in the torsion examples adopts:
+
+- length: **mm**
+- force: **N**
+- stress and Young's modulus: **MPa = N/mm²**
+- line-load intensity: **N/mm**
+
+Therefore,
+
+```yaml
+weight: 71700.0
+```
+
+represents
+
+$$
+E = 71700\ \text{MPa} = 71.7\ \text{GPa}
+$$
+
+and
+
+```yaml
+amplitude: 10.0
+```
+
+for `torsion_halfwave` represents a line-load intensity of
+
+$$
+q_0 = 10\ \text{N/mm}
+$$
+
+The same CSF-CUF formulation can be used with another unit system, provided that geometry, material properties, loads, and resulting quantities are all expressed consistently.
 
 **CUF (Carrera Unified Formulation)** operates on this physical description.
 
