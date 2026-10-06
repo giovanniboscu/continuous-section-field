@@ -4,7 +4,7 @@ CSF:
       z: 0.0
       polygons:
         - name: rectangle
-          weight: 71700.0
+          weight: 71700.0 # Young's modulus, MPa (= N/mm^2)
           vertices:
             - [-50.0, -50.0]
             - [ 50.0, -50.0]
