@@ -1,4 +1,7 @@
-
+# Consistent unit system used in this example:
+# length: mm
+# force: N
+# stress / Young's modulus: MPa (= N/mm^2)
 CSF:
   sections:
     S0:
