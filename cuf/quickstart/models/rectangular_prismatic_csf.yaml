@@ -1,10 +1,18 @@
+# Consistent unit system used in this example:
+# length: mm
+# force: N
+# stress / Young's modulus: MPa (= N/mm^2)
+
+CSF:
+  sections:
+
 CSF:
   sections:
     S0:
       z: 0.0
       polygons:
         - name: rectangle
-          weight: 71700.0 # Young's modulus, MPa (= N/mm^2)
+          weight: 71700.0 
           vertices:
             - [-50.0, -50.0]
             - [ 50.0, -50.0]
