@@ -6,7 +6,7 @@ CSF:
       z: 0.0
       polygons:
         - name: top_flange
-          weight: 71700.0
+          weight: 71700.0 # Young's modulus, MPa (= N/mm^2)
           vertices:
             - [-33, 50]
             - [-12.5, 50]
