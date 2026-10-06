@@ -193,6 +193,44 @@ therefore defines one finite element extending over the complete normalized beam
 
 The transverse CUF expansion and the longitudinal FEM approximation are independent: in this example, the cross-section uses a scaled Legendre expansion of order `8`, while the longitudinal direction uses a Lagrange finite-element basis of order `6`.
 
+
+## Units of Measure
+
+CSF-CUF does not impose a fixed system of units. All quantities must be defined using a **consistent unit system** throughout the model.
+
+For example, the rectangular prismatic model used in the torsion examples adopts:
+
+- length: **mm**
+- force: **N**
+- stress and Young's modulus: **MPa = N/mm²**
+- line-load intensity: **N/mm**
+
+Therefore,
+
+```yaml
+weight: 71700.0
+```
+
+represents
+
+$$
+E = 71700\ \text{MPa} = 71.7\ \text{GPa}
+$$
+
+and
+
+```yaml
+amplitude: 10.0
+```
+
+for `torsion_halfwave` represents a line-load intensity of
+
+$$
+q_0 = 10\ \text{N/mm}
+$$
+
+The same CSF-CUF formulation can be used with another unit system, provided that geometry, material properties, loads, and resulting quantities are all expressed consistently.
+
 ## Run
 
 Install `csf-cuf`:
