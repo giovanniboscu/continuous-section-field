@@ -23,25 +23,6 @@ The transverse CUF expansion and the longitudinal approximation are selected ind
 
 > For coordinate systems and displacement conventions, see [Coordinate Systems and Displacement Conventions](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/coordinate_systems.md).
 
-
-## CSF and CUF
-
-**CSF (Continuous Section Field)** describes the physical member as a continuous geometrical and material field along the beam.
-
-At any longitudinal position, CSF can provide the corresponding physical section, including its geometry and material state.
-
-In this tutorial, the physical member is defined in:
-
-```text
-models/t_noprismatic_csf.yaml
-```
-
-through two physical polygons:
-
-* `top_flange`;
-* `web`.
-
-The CSF model is independent of the particular structural approximation subsequently used to analyse it.
 ## Units of Measure
 
 CSF-CUF does not impose a fixed system of units. All quantities must be defined using a **consistent unit system** throughout the model.
@@ -78,6 +59,27 @@ q_0 = 10\ \text{N/mm}
 $$
 
 The same CSF-CUF formulation can be used with another unit system, provided that geometry, material properties, loads, and resulting quantities are all expressed consistently.
+
+
+## CSF and CUF
+
+**CSF (Continuous Section Field)** describes the physical member as a continuous geometrical and material field along the beam.
+
+At any longitudinal position, CSF can provide the corresponding physical section, including its geometry and material state.
+
+In this tutorial, the physical member is defined in:
+
+```text
+models/t_noprismatic_csf.yaml
+```
+
+through two physical polygons:
+
+* `top_flange`;
+* `web`.
+
+The CSF model is independent of the particular structural approximation subsequently used to analyse it.
+
 
 **CUF (Carrera Unified Formulation)** operates on this physical description.
 
