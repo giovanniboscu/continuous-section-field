@@ -17,23 +17,74 @@ The solver uses these objects together. None of them is an intermediate result p
 └── cases
     └── torsion_halfwave_legendre_N08.yaml
 ```
+
+The complete YAML files used in this Quick Start are available directly in the repository:
+
+- [`models/rectangular_prismatic_csf.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/models/rectangular_prismatic_csf.yaml) - CSF description of the beam geometry and sectional material data.
+- [`problems/torsion_halfwave.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/problems/torsion_halfwave.yaml) - structural problem definition, linking the CSF model to the predefined torsional loading and boundary-condition scheme.
+- [`cases/torsion_halfwave_legendre_N08.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/cases/torsion_halfwave_legendre_N08.yaml) - numerical CSF-CUF case, defining the transverse expansion, longitudinal approximation, integration, sampling, and output settings.
+
 > For coordinate systems and displacement conventions, see [Coordinate Systems and Displacement Conventions](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/coordinate_systems.md).
 
 ## Model
 
-`models/rectangular_prismatic_csf.yaml` defines a prismatic rectangular beam:
+The physical beam model used in this example is defined in:
 
-* length: `1000`
-* section: `100 x 100`
-* one physical polygon: `rectangle`
-* constant elastic weight: `71700`
-* isotropic Poisson ratio: `0.3`
+[`models/rectangular_prismatic_csf.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/models/rectangular_prismatic_csf.yaml)
 
-The section is prismatic because `S0` and `S1` have identical geometry and material data.
+This is a standard **CSF model file**. It describes the geometry and sectional material information independently of the CUF approximation and independently of the applied structural problem.
+
+The file defines a prismatic rectangular beam with:
+
+- length: `1000`
+- section: `100 x 100`
+- one physical polygon: `rectangle`
+- constant elastic weight: `71700`
+- isotropic Poisson ratio: `0.3`
+
+The section is prismatic because the two CSF stations `S0` and `S1` contain identical geometry and material data.
+
+The complete model definition can be inspected directly in the repository:
+
+[`rectangular_prismatic_csf.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/models/rectangular_prismatic_csf.yaml)
+
+This same CSF model can in principle be reused by different structural problems or different CUF numerical cases without redefining the geometry.
 
 ## Problem
 
-`problems/torsion_halfwave.yaml` uses the predefined `torsion_halfwave` structural problem with amplitude `10.0`.
+The structural problem used in this example is defined in:
+
+[`problems/torsion_halfwave.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/problems/torsion_halfwave.yaml)
+
+The YAML is intentionally small because it composes an existing CSF model with a predefined structural problem:
+
+```yaml
+model:
+  csf_yaml: ../models/rectangular_prismatic_csf.yaml
+
+problem:
+  type: torsion_halfwave
+  amplitude: 10.0
+```
+
+The first block selects the physical model:
+
+```yaml
+model:
+  csf_yaml: ../models/rectangular_prismatic_csf.yaml
+```
+
+while the second selects the predefined `torsion_halfwave` structural problem and its load amplitude:
+
+```yaml
+problem:
+  type: torsion_halfwave
+  amplitude: 10.0
+```
+
+The complete file is available here:
+
+[`torsion_halfwave.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/problems/torsion_halfwave.yaml)
 
 The problem definition includes both the applied torsional loading and the associated boundary conditions.
 
@@ -62,15 +113,33 @@ No additional boundary conditions need to be specified in the problem YAML becau
 
 ## Case
 
-`cases/torsion_halfwave_legendre_N08.yaml` specifies both the transverse CUF expansion and the longitudinal finite-element approximation:
+The numerical analysis case is defined in:
 
-* transverse CUF basis: `scaled_legendre`
-* transverse CUF order: `N = 8`
-* longitudinal method: `finite_element`
-* one longitudinal finite element over the complete beam
-* longitudinal basis: `lagrange`
-* longitudinal polynomial order: `6`
-* fixed polygon Gauss integration
+[`cases/torsion_halfwave_legendre_N08.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/cases/torsion_halfwave_legendre_N08.yaml)
+
+This is the file passed directly to the `csf-cuf` command. It connects the structural problem to the numerical approximation used for the analysis.
+
+In particular, the case file references:
+
+```yaml
+problem:
+  yaml: ../problems/torsion_halfwave.yaml
+  adapter: csf.cuf.adapters.problem.torsion_halfwave
+```
+
+and then specifies both the transverse CUF expansion and the longitudinal finite-element approximation:
+
+- transverse CUF basis: `scaled_legendre`
+- transverse CUF order: `N = 8`
+- longitudinal method: `finite_element`
+- one longitudinal finite element over the complete beam
+- longitudinal basis: `lagrange`
+- longitudinal polynomial order: `6`
+- fixed polygon Gauss integration
+
+The complete numerical case can be inspected here:
+
+[`torsion_halfwave_legendre_N08.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/cases/torsion_halfwave_legendre_N08.yaml)
 
 The relevant part of the case is:
 
@@ -126,7 +195,7 @@ The transverse CUF expansion and the longitudinal FEM approximation are independ
 
 ## Run
 
-install csf-cuf
+Install `csf-cuf`:
 
 ```bash
 python3 -m venv venv
@@ -144,6 +213,20 @@ From this directory:
 ```bash
 csf-cuf cases/torsion_halfwave_legendre_N08.yaml
 ```
+
+The command therefore starts from the **case YAML**. The case references the **problem YAML**, and the problem in turn references the **CSF model YAML**:
+
+```text
+cases/torsion_halfwave_legendre_N08.yaml
+              │
+              ▼
+problems/torsion_halfwave.yaml
+              │
+              ▼
+models/rectangular_prismatic_csf.yaml
+```
+
+This dependency should not be interpreted as a processing pipeline. The three files remain descriptions of different aspects of the same analysis: numerical approximation, structural problem, and physical model respectively.
 
 The solver writes the results below:
 
@@ -181,11 +264,11 @@ x/L       x [mm]      y [mm]      z [mm]      point      ux [mm]      uy [mm]   
 
 The columns have the following meaning:
 
-* `x/L` is the normalized longitudinal coordinate, from `0` at the first end to `1` at the second end;
-* `x [mm]` is the corresponding physical longitudinal coordinate;
-* `y [mm]` and `z [mm]` identify the physical point inside the cross-section;
-* `point` is a convenient label assigned to that sampling point;
-* `ux`, `uy`, and `uz` are the three global displacement components evaluated at that physical position.
+- `x/L` is the normalized longitudinal coordinate, from `0` at the first end to `1` at the second end;
+- `x [mm]` is the corresponding physical longitudinal coordinate;
+- `y [mm]` and `z [mm]` identify the physical point inside the cross-section;
+- `point` is a convenient label assigned to that sampling point;
+- `ux`, `uy`, and `uz` are the three global displacement components evaluated at that physical position.
 
 For this rectangular example, four representative points are sampled at each station:
 
