@@ -138,6 +138,45 @@ Point coordinates in plot titles and CSV coordinate columns remain in the **CSF 
 
 The plot abscissa **x/L** uses the solver's longitudinal coordinate and is equivalent to **Z/L** in CSF, where L is the beam length.
 
+## Units of Measure
+
+CSF-CUF does not impose a fixed system of units. All quantities must be defined using a **consistent unit system** throughout the model.
+
+For example, the I-Shape model used in the surface-load benchmark adopts:
+
+- length: **mm**
+- force: **N**
+- stress and Young's modulus: **MPa = N/mm²**
+- surface traction: **MPa = N/mm²**
+
+Therefore,
+
+```yaml
+weight: 71700.0
+```
+
+represents
+
+$$
+E = 71700\ \text{MPa} = 71.7\ \text{GPa}
+$$
+
+and
+
+```yaml
+amplitude: -1.0
+```
+
+for `surface_halfwave` represents a surface traction amplitude of
+
+$$
+q_0 = -1\ \text{N/mm}^2 = -1\ \text{MPa}.
+$$
+
+The negative sign defines the transverse load direction.
+
+The same CSF-CUF formulation can be used with another unit system, provided that geometry, material properties, loads, and resulting quantities are all expressed consistently.
+
 ## Independent FEM3D comparison
 
 The same two geometries are also analysed with independent three-dimensional finite-element models, at several points on the perimeter of the I-section:
