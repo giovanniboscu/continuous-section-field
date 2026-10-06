@@ -18,4 +18,5 @@ problem:
     edge_start_point_id: 0
 
   # Load amplitude. The negative sign sets the transverse load direction.
+  #  surface traction, MPa (= N/mm^2) in this model
   amplitude: -1
