@@ -1,4 +1,4 @@
-# Output and Sampling Configuration — YAML Reference
+# Output and Sampling Configuration - YAML Reference
 
 This reference describes the **output configuration of a CUF case**, how sampling settings affect result extraction, and the separation between continuous computed fields and the files exported by a selected output adapter.
 
