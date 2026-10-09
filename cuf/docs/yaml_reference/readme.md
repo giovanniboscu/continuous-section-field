@@ -93,5 +93,3 @@ longitudinal expansions  geometry/material fields
 The immediate consequence is that the CUF mechanical formulation remains unchanged when the physical section changes.
 
 CSF-CUF enhances the operational generality of the CUF framework by providing geometry and material properties through independent continuous fields, queried during numerical integration. This allows the same computational core to accommodate different cross-sections, material distributions, and longitudinal variations without modifying the underlying CUF kinematic assumptions, variational formulation, or finite-element framework.
-
-That is the basic organization. Now we can build the first example.
