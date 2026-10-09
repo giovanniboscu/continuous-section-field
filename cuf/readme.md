@@ -127,6 +127,8 @@ The objective is not to implement a CUF model tailored to a particular benchmark
 
 In practice, users can change the physical model, material distribution, transverse approximation, or longitudinal numerical representation without embedding those choices in the CUF solver core.
 
+
+
 ## An open implementation
 
 This repository is open for a reason: it is meant to be explored, questioned, tested, and challenged.
@@ -136,6 +138,16 @@ If you are a student, a researcher, or simply curious about how and why the meth
 The goal is not to impose a way of doing things, but to propose one. If something is unclear, if you think something could be improved, or if you have an idea for a different implementation, that is exactly the kind of interaction this project is meant to encourage.
 
 > **Note:** For a general description of the CSF–CUF architecture, formulation, and solver workflow, see the [CUF solver documentation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cuf/readme.md).
+
+## Documentation
+
+The following resources provide an introduction to CSF-CUF, its configuration, and its internal architecture.
+
+- **[Quick Start](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/quickstart)** - A practical introduction with ready-to-run examples.
+
+- **[YAML Configuration Reference](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/yaml_reference)** - How to define geometry, materials, loads, boundary conditions, CUF expansions, and solver settings.
+
+- **[Architecture](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/architecture)** - The internal organization of CSF-CUF and the separation between the physical model, CUF formulation, and numerical solver.
 
 ### Mathematical Formulation of the CSF–CUF Coupling
 
