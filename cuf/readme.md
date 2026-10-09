@@ -8,14 +8,14 @@
 >
 > The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
 
+The implementation of CSF–CUF starts from a fundamental choice: **the beam cross-section is treated as a first-class object**, rather than being reduced in advance to a set of sectional properties or incorporated into a case-specific mathematical formulation.
 
-This repository currently focuses on **single one-dimensional beam members**. General assemblies of multiple connected members are outside the present implementation scope.
+Through the Continuous Section Field (CSF), geometry and material properties remain explicitly defined and accessible at any position along the beam. The CUF formulation can therefore evaluate the physical quantities it requires directly, wherever they are needed.
 
-The implementation of CSF–CUF is based on a simple guiding idea: the numerical solver should not contain the physical description of the structure or embed a particular approximation family.
+This approach removes the need to derive and formally integrate case-specific sectional expressions, **without sacrificing the exactness of the underlying CUF formulation**. The formulation remains unchanged, while the sectional contributions are evaluated numerically from the physical description.
 
-Instead, the solver should request the physical and numerical information it needs from independent descriptions, at the position where that information is required.
+As a consequence, geometry, material description, transverse CUF expansion, and longitudinal finite-element approximation can evolve independently, without requiring modifications to the core formulation.
 
-This changes the direction in which the model is constructed. Geometry and material are not reduced in advance to a set of solver-specific sectional properties. They remain part of an independent physical description, represented by the Continuous Section Field (CSF), which the CUF formulation queries during assembly.
 
 The same principle is applied to the numerical approximations.
 
