@@ -1,6 +1,3 @@
-.
-# DRAFT
-
 # From the Physical Problem to the CUF Model
 
 ## I want to analyse this beam. What do I need to decide?
@@ -93,3 +90,22 @@ longitudinal expansions  geometry/material fields
 The immediate consequence is that the CUF mechanical formulation remains unchanged when the physical section changes.
 
 CSF-CUF enhances the operational generality of the CUF framework by providing geometry and material properties through independent continuous fields, queried during numerical integration. This allows the same computational core to accommodate different cross-sections, material distributions, and longitudinal variations without modifying the underlying CUF kinematic assumptions, variational formulation, or finite-element framework.
+
+
+## YAML Configuration Reference
+
+The [CSF-CUF YAML Configuration Reference](docs/yaml_reference/readme.md) describes how to translate a physical structural problem and the corresponding numerical modelling choices into the configuration files used by the solver.
+
+The configuration follows the separation of responsibilities adopted throughout CSF-CUF: geometry and materials are provided by CSF, the physical problem defines loads and boundary conditions, and the numerical case selects the CUF expansion, longitudinal finite-element approximation, integration settings, and output processing.
+
+The documentation is organized into three complementary references:
+
+- **[Case Configuration](docs/yaml_reference/case_configuration.md)** — Describes the numerical case configuration, including transverse CUF expansions, built-in and external basis plugins, longitudinal approximation and element partitioning, quadrature, solver settings, and adapter selection.
+
+- **[Problem Configuration](docs/yaml_reference/problem_configuration.md)** — Describes how a structural problem references the CSF geometry and material model, specifies physical loads, and interacts with the selected load and constraint adapters.
+
+- **[Output Configuration](docs/yaml_reference/output_configuration.md)** — Describes result sampling, output adapters, exported data, displacement fields, stresses, and numerical diagnostics.
+
+These documents distinguish the general configuration interfaces from the options provided by individual plugins and adapters. They describe alternative modelling arrangements rather than prescribing a single CUF expansion, structural problem, or numerical discretization.
+
+For a complete executable example, see the [CSF-CUF Quick Start](quickstart/README.md).
