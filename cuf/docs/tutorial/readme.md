@@ -91,10 +91,6 @@ longitudinal expansions  geometry/material fields
 
 The immediate consequence is that the CUF mechanical formulation remains unchanged when the physical section changes.
 
-The same computational core can operate on different geometries, material distributions, and sections varying along the beam axis through a common continuous section-provider interface.
-
-In this sense, CSF-CUF avoids the need for case-specific sectional implementations by delegating geometric and material descriptions to continuous fields evaluated during numerical integration. This preserves the CUF kinematic assumptions, variational formulation, and finite-element framework.
-
-CSF-CUF enhances the operational generality of the CUF framework by introducing an independent continuous-field description of geometry and material properties, while preserving the underlying kinematic and mechanical formulation.
+CSF-CUF enhances the operational generality of the CUF framework by providing geometry and material properties through independent continuous fields, queried during numerical integration. This allows the same computational core to accommodate different cross-sections, material distributions, and longitudinal variations without modifying the underlying CUF kinematic assumptions, variational formulation, or finite-element framework.
 
 That is the basic organization. Now we can build the first example.
