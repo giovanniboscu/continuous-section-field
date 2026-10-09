@@ -95,6 +95,6 @@ The same computational core can operate on different geometries, material distri
 
 In this sense, CSF-CUF avoids the need for case-specific sectional implementations by delegating geometric and material descriptions to continuous fields evaluated during numerical integration. This preserves the CUF kinematic assumptions, variational formulation, and finite-element framework.
 
-**CSF-CUF introduces operational generality rather than theoretical novelty, preserving the original CUF formulation while separating geometry and material descriptions from the mechanical core.**
+CSF-CUF enhances the operational generality of the CUF framework by introducing an independent continuous-field description of geometry and material properties, while preserving the underlying kinematic and mechanical formulation.
 
 That is the basic organization. Now we can build the first example.
