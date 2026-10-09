@@ -347,6 +347,8 @@ For example, if the case file and the plugin are located so that the following r
 ```yaml
 cuf:
   basis: ../expansions/xyz_demo_expansion.py
+
+  # Order of the transverse expansion.
   order: 1
 ```
 
