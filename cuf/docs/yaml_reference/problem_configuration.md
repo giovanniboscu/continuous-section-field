@@ -1,4 +1,4 @@
-# Physical Problem Configuration — YAML Reference
+# Physical Problem Configuration - YAML Reference
 
 A **problem YAML** defines the structural problem to be solved by CSF-CUF. It names an existing CSF model and provides the load or boundary-condition data expected by a chosen problem adapter. It is separate from the **case YAML**, which selects the CUF expansion, longitudinal finite elements, numerical integration and output settings.
 
