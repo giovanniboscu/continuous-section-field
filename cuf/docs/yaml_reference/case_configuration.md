@@ -1,4 +1,4 @@
-# CUF Case Configuration — YAML Reference
+# CUF Case Configuration - YAML Reference
 
 This document describes the **case YAML** used to configure a CSF-CUF numerical analysis. It is a parameter reference, not a tutorial. For the conceptual introduction, return to [From the Physical Problem to the CUF Model](readme.md). For physical problem files, see [Problem Configuration](problem_configuration.md); for output settings, see [Output Configuration](output_configuration.md).
 
@@ -92,7 +92,7 @@ case:
 
 Prefer names that match the chosen physical problem and current expansion; the name itself does not set solver parameters.
 
-## 5. `problem` — reference to the physical problem
+## 5. `problem` - reference to the physical problem
 
 ```yaml
 problem:
@@ -128,7 +128,7 @@ Do **not** combine `problem.adapter` with either split adapter. When using the s
 
 For the contents of the referenced file, see [Problem Configuration](problem_configuration.md).
 
-## 6. `cuf` — expansion law
+## 6. `cuf` - expansion law
 
 ### 6.1 Standard or external expansion
 
@@ -183,7 +183,7 @@ This snippet shows the **loader-level shape only**, not a complete operational s
 
 The loader rejects `cuf.segments` when combined with top-level `cuf.basis`, `cuf.order` or `cuf.basis_options`. Additional segment keys and the meaning of intervals, polygon scope, blending and continuity must be documented by the actual segmented-expansion implementation; they cannot be inferred from the generic loader alone. The largest segment order is used to construct default quadrature requests.
 
-## 7. `longitudinal` — finite-element approximation
+## 7. `longitudinal` - finite-element approximation
 
 ```yaml
 longitudinal:
