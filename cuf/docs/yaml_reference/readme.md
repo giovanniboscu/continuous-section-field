@@ -108,4 +108,4 @@ The documentation is organized into three complementary references:
 
 These documents distinguish the general configuration interfaces from the options provided by individual plugins and adapters. They describe alternative modelling arrangements rather than prescribing a single CUF expansion, structural problem, or numerical discretization.
 
-For a complete executable example, see the [CSF-CUF Quick Start](quickstart/README.md).
+For a complete executable example, see the [CSF-CUF Quick Start](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/quickstart).
