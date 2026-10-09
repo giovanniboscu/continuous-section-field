@@ -1,59 +1,216 @@
+
 case:
-  # Name of the numerical case.
-  # N08 refers to the order of the transverse CUF expansion.
+  # Unique identifier of this numerical analysis.
+  #
+  # The case name is used to identify the simulation and its results.
+  # It does not determine the expansion family or numerical settings.
+  #
+  # NOTE:
+  # The current name refers to the original Legendre N08 analysis.
+  # The active expansion below is instead xyz_demo_expansion.py.
   name: rectangular_prismatic_torsion_halfwave_legendre_N08
 
+
 problem:
-  # Physical problem definition: geometry, material, loads and boundary conditions.
+  # YAML description of the physical problem.
+  #
+  # Defines the problem independently of the CUF approximation:
+  #   - continuous beam geometry supplied by CSF;
+  #   - material properties;
+  #   - applied loads;
+  #   - boundary conditions.
+  #
+  # The same physical problem may be analysed using different
+  # CUF expansions and longitudinal discretizations.
   yaml: ../problems/torsion_halfwave.yaml
 
-  # Adapter connecting the generic CUF solver to this specific problem definition.
+  # Python adapter connecting the physical problem to the
+  # generic CUF solver.
+  #
+  # The adapter implements the problem-specific interpretation
+  # of loads and boundary conditions.
+  #
+  # IMPORTANT FOR GENERALIZED EXPANSIONS:
+  # When evaluating expansion functions, the adapter must supply
+  # the actual three spatial coordinates:
+  #
+  #   x : longitudinal coordinate along the beam axis;
+  #   y : first transverse coordinate;
+  #   z : second transverse coordinate.
+  #
+  # The CUF basis interface uses the call:
+  #
+  #   basis.value(tau, y, z, x=x)
+  #
+  # The same coordinate convention applies to derivatives.
+  #
+  # Coordinates must refer to the actual evaluation or
+  # integration point. They must not be replaced by arbitrary
+  # reference coordinates.
+  #
+  # This requirement allows the adapter to work with expansion
+  # functions depending explicitly on x, y and z.
   adapter: csf.cuf.adapters.problem.torsion_halfwave
 
+
 cuf:
+  # CUF expansion law.
+  #
+  # An external Python file defines the expansion functions
+  # and their spatial derivatives.
+  #
+  # The xyz_demo_expansion.py example defines:
+  #
+  #   F1(x,y,z) = 1
+  #   F2(x,y,z) = y
+  #   F3(x,y,z) = z
+  #   F4(x,y,z) = x*y*z
+  #
+  # Therefore, the example provides four expansion functions
+  # (M = 4), including one that depends simultaneously on
+  # all three spatial coordinates.
+  #
+  # The expansion plugin supplies:
+  #
+  #   F_tau(x,y,z)
+  #   dF_tau/dx
+  #   dF_tau/dy
+  #   dF_tau/dz
+  #
+  # The plugin may also access the continuous CSF geometry
+  # and implement additional internal consistency checks.
+  #
+  # The solver uses the functions and derivatives without
+  # needing to know how the expansion was constructed.
   basis: ../expansions/xyz_demo_expansion.py
 
-  # Order of the transverse expansion.
+  # Order parameter supplied to the CUF expansion plugin.
+  #
+  # Its interpretation depends on the selected expansion law.
+  # For conventional polynomial families, it generally
+  # identifies the requested polynomial expansion order.
+  #
+  # For this demonstrative plugin, the four functions are
+  # defined explicitly: order = 1 must not be interpreted
+  # as meaning that only two functions are present.
   order: 1
 
+
 longitudinal:
-  # Longitudinal discretization along x.
+  # Approximation of the displacement field along the beam axis.
+  #
+  # The longitudinal finite-element approximation is separate
+  # from the CUF expansion law.
+  #
+  # The resulting displacement field has the general form:
+  #
+  #   u(x,y,z) = sum_i sum_tau
+  #              N_i(x) * F_tau(x,y,z) * q_i_tau
+  #
+  # where:
+  #   N_i      : longitudinal finite-element shape functions;
+  #   F_tau    : CUF expansion functions;
+  #   q_i_tau  : generalized displacement coefficients.
+  #
+  # The CUF expansion may itself depend on x without replacing
+  # the longitudinal finite-element approximation.
   method: finite_element
 
   # Element boundaries in normalized longitudinal coordinates.
-  # [0.00, 1.00] defines a single finite element spanning the whole beam.
+  #
+  # The interval [0.00, 1.00] defines one finite element
+  # extending over the entire beam length.
+  #
+  # Additional boundaries subdivide the beam into elements,
+  # for example [0.00, 0.50, 1.00] for two elements.
   element_boundaries: [0.00, 1.00]
 
-  # Longitudinal shape-function basis used inside each finite element.
-  # Lagrange is a nodal C0 basis: its coefficients are associated with
-  # longitudinal FEM nodes.
+  # Longitudinal finite-element shape-function family.
+  #
+  # Lagrange functions provide a nodal polynomial approximation
+  # with C0 continuity between adjacent finite elements.
+  #
+  # This choice is independent of the CUF expansion plugin.
   basis: lagrange
 
-  # Polynomial order of the longitudinal Lagrange approximation.
-  # Order 6 gives 7 longitudinal nodes for this single element.
+  # Polynomial order of the longitudinal shape functions.
+  #
+  # A sixth-order Lagrange element has seven longitudinal
+  # interpolation nodes.
+  #
+  # This parameter controls longitudinal FEM approximation,
+  # not the number of CUF expansion functions.
   order: 6
 
+
 section_integration:
-  # Numerical integration over the cross-section.
+  # Numerical integration of CUF quantities over the
+  # cross-sectional domains supplied by CSF.
+  #
+  # The section may consist of one or multiple polygons.
+  # Geometry and material properties are evaluated through
+  # the continuous CSF representation.
+  #
+  # The integration procedure remains independent of the
+  # mathematical construction of the CUF expansion.
   method: fixed_gauss_polygon
 
-  # Requested Gauss quadrature order for polygonal section integration.
+  # Requested Gaussian quadrature order for polygon integration.
+  #
+  # The effective integration order may be increased when
+  # required by the selected expansion or solver settings.
+  #
+  # Higher-order or more complex expansion functions may
+  # require additional integration accuracy.
   gauss_order: 6
 
+
 sampling:
-  # Longitudinal stations at which sectional/output quantities are sampled.
+  # Normalized longitudinal stations used for evaluating
+  # and reporting section-dependent output quantities.
+  #
+  #   0.00 : beam beginning;
+  #   0.25 : one-quarter of the beam length;
+  #   0.50 : beam midpoint;
+  #   0.75 : three-quarters of the beam length;
+  #   1.00 : beam end.
+  #
+  # These stations control output sampling, not the
+  # longitudinal finite-element discretization.
   stations: [0.00, 0.25, 0.50, 0.75, 1.00]
 
-  # Number of points used to sample the continuous longitudinal
-  # displacement field for post-processing.
+  # Number of longitudinal samples for post-processing
+  # the continuous CUF displacement field.
+  #
+  # The field is evaluated from the CUF representation,
+  # rather than being defined only at these sample points.
+  #
+  # Increasing this value improves output resolution
+  # without changing the solved approximation.
   displacement_samples: 201
 
-  # Resolution of the cross-sectional grid used for stress post-processing.
+  # Resolution parameter for cross-sectional stress sampling.
+  #
+  # Controls the numerical sampling grid used to evaluate
+  # and visualize stress quantities in post-processing.
+  #
+  # This parameter does not modify the CUF expansion,
+  # the section-integration quadrature or the solved DOFs.
   stress_grid: 31
 
+
 output:
-  # Post-processing/output adapter.
+  # Adapter responsible for reconstructing and exporting
+  # numerical results after the CUF solution.
+  #
+  # Output quantities may include displacement fields,
+  # stresses, sampled sections and diagnostic information.
   adapter: csf.cuf.adapters.output.post
 
-  # Directory where the results of this case are written.
+  # Destination directory for the analysis results.
+  #
+  # NOTE:
+  # The directory name still refers to the original
+  # Legendre N08 case, although the selected expansion
+  # is now xyz_demo_expansion.py.
   directory: ../output/torsion_halfwave_legendre_N08
