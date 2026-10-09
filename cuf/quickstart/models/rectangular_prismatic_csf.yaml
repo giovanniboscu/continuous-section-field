@@ -2,10 +2,6 @@
 # length: mm
 # force: N
 # stress / Young's modulus: MPa (= N/mm^2)
-
-CSF:
-  sections:
-
 CSF:
   sections:
     S0:
