@@ -87,47 +87,6 @@ The objective is to preserve the CUF formulation while allowing the physical des
 
 ---
 
-## Why use CUF?
-
-For many structural problems, a three-dimensional finite element model is the most immediate and established choice.
-
-CUF follows a different philosophy: rather than relying primarily on spatial discretization, it requires the analyst to explicitly choose how the structural response is represented over the cross-section.
-
-This additional freedom is one of CUF's main strengths, but also one of the main barriers to its practical use. Without an existing infrastructure, applying CUF to a new problem may first require developing and validating the numerical model itself.
-
-CSF–CUF was created to reduce this barrier without hiding the modelling choices that define the CUF approach.
-
-This repository provides a general-purpose framework for building and running beam models based on the Carrera Unified Formulation.
-
-An analysis is composed from independent external descriptions of the physical model, the structural problem, and the numerical case.
-
-Geometry and material properties are supplied by the Continuous Section Field, which acts as a general section provider along the beam axis. During assembly, the CUF solver queries this continuous description at the current longitudinal position.
-
-Variable cross-sections are therefore represented directly through their physical sectional state, rather than by embedding a particular reference-to-physical coordinate mapping in the CUF solver. The longitudinal variation of geometry and material belongs to the sectional description, while the CUF formulation operates on the physical section made available at each position.
-
-The CUF core is consequently independent of the specific section geometry and material distribution.
-
-Likewise, transverse expansion laws are treated as interchangeable components through a common interface. Different CUF approximation families can therefore be introduced without modifying the solver core.
-
-The same separation is applied in the longitudinal direction.
-
-The finite-element partition defines the subdivision and connectivity of the beam domain, while the longitudinal basis defines the approximation used within that discretization. The approximation law is therefore not identified with the finite-element topology itself.
-
-At the architectural level, the framework keeps five aspects distinct:
-
-* the physical description of geometry and materials;
-* the transverse expansion law;
-* the longitudinal approximation law;
-* the longitudinal finite-element discretization;
-* the CUF numerical formulation.
-
-These components cooperate during assembly, but none of them is intended to define the others.
-
-The objective is not to implement a CUF model tailored to a particular benchmark, geometry, transverse expansion, or longitudinal approximation family, but to provide a reusable framework in which these choices remain explicit and can evolve independently.
-
-In practice, users can change the physical model, material distribution, transverse approximation, or longitudinal numerical representation without embedding those choices in the CUF solver core.
-
-
 
 ## An open implementation
 
