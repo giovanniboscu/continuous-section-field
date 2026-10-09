@@ -137,7 +137,7 @@ This is where the CSF geometry file becomes useful. Instead of drawing every cro
 The following example is adapted from the [main CSF README](https://github.com/giovanniboscu/continuous-section-field/blob/main/README.md). It is a genuine CSF configuration structure, not just invented YAML vocabulary.
 
 ```yaml
-# geometry.yaml — continuous geometry and material participation
+# geometry.yaml - continuous geometry and material participation
 CSF:
   sections:
     S0:
@@ -200,7 +200,7 @@ Once the beam has been described, you may want to inspect the model before runni
 For these tasks, CSF uses a separate `actions.yaml` file. Here is a short extract in the same style as the main README:
 
 ```yaml
-# actions.yaml — operations on the CSF model
+# actions.yaml - operations on the CSF model
 CSF_ACTIONS:
   stations:
     station_edge:
@@ -273,9 +273,9 @@ You do not need to memorize YAML before using CSF-CUF. Start from a working exam
 
 For the available configuration fields and their meaning, follow the reference pages:
 
-- [Case Configuration](case_configuration.md) — Numerical case, CUF expansion, longitudinal approximation, and solver choices.
-- [Problem Configuration](problem_configuration.md) — Physical model, loads, and constraints.
-- [Output Configuration](output_configuration.md) — Requested results and diagnostics.
+- [Case Configuration](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/yaml_reference/case_configuration.md) - Numerical case, CUF expansion, longitudinal approximation, and solver choices.
+- [Problem Configuration](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/yaml_reference/problem_configuration.md) - Requested results and diagnostics.
+- [Output Configuration](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/yaml_reference/output_configuration.md) - Physical model, loads, and constraints.
 
 For a complete example that can be run, see the [CSF-CUF Quick Start](../../quickstart/README.md).
 
