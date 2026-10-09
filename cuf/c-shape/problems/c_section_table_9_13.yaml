@@ -1,0 +1,20 @@
+# Carrera Table 9.13, L/h = 20.
+#
+# The load is expressed directly in CUF coordinates.
+#
+# Carrera PDF:
+#   Pz = -1 N at (b1, L, -h/2)
+#
+# CUF:
+#   (x, y, z) = (20000, 0, -500) mm
+
+model:
+  csf_yaml: ../models/c_section_chapter9_5_3_csf.yaml
+
+problem:
+  type: c_section_table_9_13
+  force:
+    amplitude: -1.0
+    x: 20000.0
+    y: 0.0
+    z: -500.0

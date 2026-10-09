@@ -1,0 +1,36 @@
+# actions.yaml
+# Defines the post-processing operations to run on the CSF model.
+# This file is used to visually verify the model geometry and inspect
+# its section properties. It is not used by CSF-CUF.
+# - stations: named z-coordinate sets used as analysis points
+# - actions: ordered list of operations (3D plots, section analysis, property export, etc.)
+#
+# Run with:
+#   csf-actions carrera_i_shaped_taper80.yaml actions.yaml
+#   csf-actions carrera_i_shaped_prism.yaml action.yaml 
+
+
+CSF_ACTIONS:
+  stations:
+    station_edge:
+      - 0
+      - 20000.0
+  actions:  
+    - plot_volume_3d:
+        params:
+          title: "C-Shaped"  
+          equalize_z: false       
+    - plot_properties:
+        properties: [A,Ix,Iy,Ip]
+    - plot_section_2d:
+        stations:
+          - station_edge
+        show_ids: True
+        show_vertex_ids: True
+        show_legenda: False
+    - section_selected_analysis:
+        stations:
+          - station_edge
+        properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy]
+   
+

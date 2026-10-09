@@ -1,0 +1,49 @@
+# Carrera Table 9.13 - C-shaped cantilever beam.
+#
+# Transverse expansion:
+#   scaled Lagrange, N = 8
+#
+# Longitudinal discretization:
+#   one finite element defined explicitly by normalized element boundaries.
+#   element_boundaries are normalized coordinates in [0, 1].
+#
+# The stress comparison reported in Table 9.13 includes locations at:
+#   x/L = 0.1
+#   x/L = 1.0
+#
+# All comments and identifiers are intentionally kept in English.
+
+case:
+  name: c_section_table_9_13_lagrange_N08_1el
+
+problem:
+  yaml: ../problems/c_section_table_9_13.yaml
+  adapter: csf.cuf.adapters.problem.c_section_cantilever_point_load
+
+cuf:
+  basis: scaled_lagrange
+  order: 8
+
+longitudinal:
+  method: finite_element
+  element_boundaries: [0.0, 1.0]
+  order: 12
+  gauss_order: 15
+  material_polynomial_degree: 0
+
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 9
+
+solver:
+  equilibration:
+    iterations: [1, 2, 3]
+
+sampling:
+  stations: [0.0, 0.1, 1.0]
+  displacement_samples: 201
+  stress_grid: 41
+
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../output/c_section_table_9_13_lagrange_N08_1el

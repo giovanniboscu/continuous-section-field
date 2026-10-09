@@ -1,0 +1,65 @@
+# Carrera et al. (2014), Chapter 9, p. 177, Figure 9.23
+# C-shaped open cross-section.
+# Geometry oriented to match the figure visually:
+#   long flange on top, short flange on bottom.
+#
+# Units: mm, N, MPa.
+#
+# Geometry:
+#   h = 1000 mm
+#   t = 100 mm
+#   long flange = 1000 mm
+#   short flange = 500 mm
+#   L = 20000 mm
+#
+# Material:
+#   E  = 75 GPa = 75000 MPa
+#   nu = 0.33
+#
+# Coordinate mapping:
+#   paper y (beam axis) -> CSF section station z
+#   paper x             -> CSF section y
+#   paper z             -> CSF section z-coordinate inside each polygon
+#
+# Section orientation:
+#   paper/section x positive to the right
+#   paper/section z positive upward
+#   web on the right
+#   opening toward the left
+#   long flange on top
+
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        - name: c_section
+          weight: 75000.0
+          vertices:
+            # (CSF y, CSF z) = (paper x, paper z)
+            - [-500.0,  -500.0]   # 0 bottom flange, free outer corner
+            - [0.0,     -500.0]   # 1 bottom-right outer corner
+            - [0.0,      500.0]   # 2 top-right outer corner
+            - [-1000.0,  500.0]   # 3 top flange, free outer corner
+            - [-1000.0,  400.0]   # 4 top flange, inner free corner
+            - [-100.0,   400.0]   # 5 web/top-flange inner corner
+            - [-100.0,  -400.0]   # 6 web/bottom-flange inner corner
+            - [-500.0,  -400.0]   # 7 bottom flange, inner free corner
+
+    S1:
+      z: 20000.0
+      polygons:
+        - name: c_section
+          weight: 75000.0
+          vertices:
+            - [-500.0,  -500.0]
+            - [0.0,     -500.0]
+            - [0.0,      500.0]
+            - [-1000.0,  500.0]
+            - [-1000.0,  400.0]
+            - [-100.0,   400.0]
+            - [-100.0,  -400.0]
+            - [-500.0,  -400.0]
+
+  shear_weight_laws:
+    - 'iso(0.33)'

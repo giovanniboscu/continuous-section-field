@@ -42,7 +42,7 @@ class SurfaceHalfWaveLoadProblem(_SurfaceHalfWaveLoadProblem):
 
 
 def build_problem(problem_type: str, options: dict):
-    """Build the legacy composed adapter from the split load/constraint parts."""
+    """Build the composed adapter from the split load/constraint parts."""
 
     load_problem = _build_load_problem(problem_type, options)
     return SurfaceHalfWaveLoadProblem(
