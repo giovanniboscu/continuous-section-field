@@ -22,9 +22,7 @@ The same principle is applied to the numerical approximations.
 
 The transverse expansion law is not embedded in the CUF core, but is supplied through an independent transverse basis.
 
-Likewise, the longitudinal approximation is kept distinct from the finite-element partition itself. The subdivision of the beam into longitudinal elements determines the numerical topology, while the longitudinal basis determines how the solution is represented inside those elements.
-
-The solver therefore operates on independent descriptions of:
+The solver  operates on independent descriptions of:
 
 * the physical sectional state;
 * the transverse approximation;
