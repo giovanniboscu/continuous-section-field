@@ -12,7 +12,7 @@ The implementation of CSF–CUF starts from a fundamental choice: **the beam cro
 
 Through the Continuous Section Field (CSF), geometry and material properties remain explicitly defined and accessible at any position along the beam. The CUF formulation can therefore evaluate the physical quantities it requires directly, wherever they are needed.
 
-This approach removes the need to derive and symbolically integrate case-specific sectional expressions. The formulation remains unchanged, while the sectional contributions are evaluated numerically from the physical description.
+This approach removes the need to derive and symbolically integrate case-specific sectional expressions. The formulation remains unchanged, while the sectional contributions are evaluated numerically from the exact physical description.
 
 As a consequence, geometry, material description, transverse CUF expansion, and longitudinal finite-element approximation can evolve independently, without requiring modifications to the core formulation.
 
