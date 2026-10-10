@@ -14,11 +14,10 @@ Through the Continuous Section Field (CSF), geometry and material properties rem
 
 This approach removes the need to derive and symbolically integrate case-specific sectional expressions. The formulation remains unchanged, while the sectional contributions are evaluated numerically from the exact physical description.
 
-The same principle is applied to the numerical approximations.
 
-The transverse expansion law is not embedded in the CUF core, but is supplied through an independent transverse basis.
+The same separation principle applies to the numerical approximations. Both the transverse CUF expansion functions and the longitudinal finite-element shape functions remain symbolically defined, but become independent, reusable components rather than being embedded in the CUF core.
 
-The solver  operates on independent descriptions of:
+This way the solver  operates on independent descriptions of:
 
 * the physical sectional state;
 * the transverse approximation;
