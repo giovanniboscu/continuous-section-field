@@ -57,14 +57,6 @@ flowchart LR
     CUF --> ASM["Integration and assembly"]
 ```
 
-The CUF core combines several independent descriptions when the corresponding information is required:
-
-* the **Continuous Section Field** describes the physical member;
-* the **transverse expansion** describes the admissible cross-sectional kinematics;
-* the **longitudinal basis** describes the approximation along the beam axis;
-* the **finite-element topology** describes how the longitudinal domain is partitioned and connected.
-
-The finite-element discretization determines **where the longitudinal elements are**, while the longitudinal basis determines **how the field is approximated inside each element**
 
 
 ---
