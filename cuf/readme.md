@@ -57,8 +57,6 @@ flowchart LR
     CUF --> ASM["Integration and assembly"]
 ```
 
-The architecture is therefore not a sequential transformation from geometry to a CUF model.
-
 The CUF core combines several independent descriptions when the corresponding information is required:
 
 * the **Continuous Section Field** describes the physical member;
@@ -66,13 +64,8 @@ The CUF core combines several independent descriptions when the corresponding in
 * the **longitudinal basis** describes the approximation along the beam axis;
 * the **finite-element topology** describes how the longitudinal domain is partitioned and connected.
 
-The distinction between the last two is important.
+The finite-element discretization determines **where the longitudinal elements are**, while the longitudinal basis determines **how the field is approximated inside each element**
 
-The finite-element discretization determines **where the longitudinal elements are**, while the longitudinal basis determines **how the field is approximated inside each element**.
-
-They are therefore related, but they are not the same object.
-
-The objective is to preserve the CUF formulation while allowing the physical description and the approximation choices to evolve independently around it.
 
 ---
 
