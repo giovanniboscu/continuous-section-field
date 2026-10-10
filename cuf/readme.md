@@ -17,7 +17,7 @@ This approach removes the need to derive and symbolically integrate case-specifi
 
 The same separation principle applies to the numerical approximations. Both the transverse CUF expansion functions and the longitudinal finite-element shape functions remain symbolically defined, but become independent, reusable components rather than being embedded in the CUF core.
 
-This way the solver  operates on independent descriptions of:
+In this way the solver  operates on independent descriptions of:
 
 * the physical sectional state;
 * the transverse approximation;
