@@ -7,7 +7,6 @@
 > [CSF–CUF tutorial: non-prismatic variable-material T-section](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/README.md)  
 > Step-by-step tutorial showing how CSF describes continuously varying geometry and material properties and how these fields are used directly by the CUF solver for a non-prismatic T-section beam.
 >
-> The solver implements the Carrera Unified Formulation (CUF), with CSF (Continuous Section Field) providing the continuous field description of the cross-section geometry and material properties along the structural member.
 
 The implementation of CSF–CUF starts from a fundamental choice: **the beam cross-section is treated as a first-class object**, rather than being reduced in advance to a set of sectional properties or incorporated into a case-specific mathematical formulation.
 
