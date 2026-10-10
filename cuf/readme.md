@@ -30,10 +30,6 @@ The solver therefore operates on independent descriptions of:
 * the longitudinal approximation;
 * the longitudinal discretization.
 
-The CUF core combines the information supplied by these components according to the formulation without containing the definition of any particular geometry, material distribution, transverse expansion family, or longitudinal approximation family.
-
-This separation is the main architectural principle behind the implementation.
-
 ```mermaid
 flowchart LR
     CUF["CUF core"]
