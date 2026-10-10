@@ -18,7 +18,7 @@ case:
 
 problem:
   yaml: ../problems/c_section_table_9_13.yaml
-  adapter: csf.cuf.adapters.problem.c_section_table_9_13
+  adapter: csf.cuf.adapters.problem.c_section_cantilever_point_load
 
 cuf:
   basis: scaled_lagrange
