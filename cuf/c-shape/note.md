@@ -1,55 +1,115 @@
-# C-section cantilever - a CSF–CUF example
+# C-section benchmark – CSF–CUF with polygon-wise L9 expansion
 
-*A compact illustration of the separation between the physical section and the CUF approximation.*
+## Reference problem
 
-## The structural problem
+This example revisits the open C-section beam described by **E. Carrera and M. Petrolo**, *Refined beam elements with only displacement variables and plate/shell capabilities*, Section 4.3.
 
-The example considers a cantilever beam with an unsymmetric C-shaped cross-section, based on the Carrera–Petrolo C-section benchmark (Chapter 9, Table 9.13). The beam is 20,000 mm long, with a 1,000 mm section height, 100 mm wall thickness, and unequal flange widths of 1,000 and 500 mm. The material is isotropic, with Young's modulus 75,000 MPa and Poisson's ratio 0.33. A transverse concentrated load of −1 N is applied at the free end. Length, force and stress are expressed in mm, N and MPa.
+The objective is to reproduce the C-section geometry and the **nine-domain L9 transverse layout** within the CSF–CUF framework. The section is represented by nine adjacent quadrilateral polygons: five along the upper flange, one along the web, and three along the lower flange.
 
-![C-section reference illustration](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/img/Figure_3.png)
+The main section dimensions follow the reference proportions: height \(h=1000\,\mathrm{mm}\), thickness \(t=100\,\mathrm{mm}\), upper-flange width \(b_2=1000\,\mathrm{mm}\), and lower-flange width \(b_1=500\,\mathrm{mm}\). The prismatic beam length is \(L=20000\,\mathrm{mm}\). The isotropic material has \(E=75000\,\mathrm{MPa}\) and \(\nu=0.33\).
 
-*Reference figure included with the example; consult the original publication for the benchmark convention.*
+The beam is cantilevered, with a transverse concentrated force of −1 N applied at the free end.
 
-## What CSF–CUF changes
+> The paper specifies the L9 subdivision graphically, but not the internal partition coordinates. The subdivisions used here are reconstructed from the published figure rather than taken from tabulated values.
 
-In the Carrera Unified Formulation (CUF), the displacement field is represented through transverse expansion functions and longitudinal approximations. CSF–CUF preserves this separation while introducing the **Continuous Section Field (CSF)** as an independent description of the physical cross-section, including geometry and material properties.
+## CSF section and transverse expansion
 
-The physical section is evaluated numerically, without deriving and symbolically integrating new sectional expressions for each geometry. Changing the section does not require rewriting the CUF formulation or the transverse expansion law. The same architecture can accommodate different sections, materials and approximation choices.
+The **physical sectional description** is provided by CSF. Each polygon identifies one local domain for the transverse CUF expansion; its vertices and material properties belong to the CSF model, not to the expansion law.
 
-A **CSF polygon** identifies a local physical domain. Its vertices and material properties belong to the CSF model, **not** to the transverse expansion law. In this example, nine quadrilateral CSF polygons describe the section partition used by the nine-domain Lagrange approximation. The partition follows the topology of the published figure; the internal split coordinates are reconstructed from that figure rather than taken from a numerical table.
+![C-section geometry](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/img/Figure_3.png)
 
-The transverse approximation is supplied by a **separate Python module**, implementing the nine-node Lagrange interpolation over each quadrilateral domain. Shared interpolation points connect neighbouring domains. The longitudinal approximation is independently defined by finite elements.
+*Figure 1 – C-section geometry and reference partition.*
 
-## Three files, three responsibilities
+The transverse approximation is supplied by the independent [`lagrangeL9_v4.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/expansions/lagrangeL9_v4.py) module. It defines a **nine-point Lagrange interpolation on each quadrilateral CSF polygon**, using an isoparametric mapping from the reference square to the physical domain.
 
-The analysis is assembled from three human-readable YAML files, with links to the corresponding sources:
+The local functions are quadratic in each natural coordinate. Shared interpolation points on neighbouring polygons provide displacement continuity across their common edges.
 
-1. **Model - what is the beam?** [CSF geometry and material](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/models/c_section_chapter9_5_3_9L9_csf.yaml). This describes the section polygons, their coordinates and physical properties.
-2. **Problem - how is the beam loaded and constrained?** [Cantilever and point load](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/problems/c_section_cantilever_point_9L9.yaml). It refers to the model and specifies the structural problem.
-3. **Case - how is the solution approximated and computed?** [Analysis case](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/cases/c_section_table_9_13_lagrangeL9_E10.yaml). It refers to the problem and selects the [external transverse expansion](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/expansions/lagrangeL9_v4.py), longitudinal finite elements, numerical integration and solver options.
+Thus, the CSF geometry and the transverse approximation remain separate descriptions: the former provides the physical domains, while the latter defines how the displacement field is approximated over those domains.
 
-The case uses ten longitudinal elements of order 12 and a nine-point requested sectional Gauss rule. These are **choices for this analysis**, not fixed features of CSF–CUF. The geometry, structural problem and numerical approximation can be varied independently.
+## Reproducible input files
 
-## Reading the results
+The example is configured through three plain-text YAML files:
 
-The solver constructs a displacement field that can be evaluated at arbitrary physical points along the beam and across the section. Strains and stresses are obtained from the derivatives of that approximation. The latter deserve particular care: agreement in displacement does not, by itself, establish local convergence of every stress component, especially near a concentrated force or at boundaries.
+1. **Model** – the CSF section geometry and material distribution: [`c_section_chapter9_5_3_9L9_csf.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/models/c_section_chapter9_5_3_9L9_csf.yaml).
+2. **Problem** – the cantilever boundary conditions and concentrated loading: [`c_section_cantilever_point_9L9.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/problems/c_section_cantilever_point_9L9.yaml).
+3. **Case** – the transverse expansion, longitudinal finite elements, integration and solver settings: [`c_section_table_9_13_lagrangeL9_E10.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/cases/c_section_table_9_13_lagrangeL9_E10.yaml).
 
-The repository includes a FEM3D reference and boundary plots of displacement, strain and stress. These plots are useful not only for comparison but also for inspecting the spatial regularity of the reconstructed fields. The figures below are representative examples; the full gallery remains available online.
+The case uses ten longitudinal elements of order 12. These are numerical choices for this analysis, not fixed characteristics of CSF–CUF.
 
-![Longitudinal displacement along the boundary](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/ux_along_boundary_part01.png)
+The geometry, material, structural problem and approximation choices can be changed independently without modifying the CUF solver core.
 
-*Representative displacement comparison along one boundary segment.*
+## Displacement comparison with FEM3D
 
-![Normal stress along the boundary](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/sigma_xx_along_boundary_part01.png)
+The CUF solver constructs a displacement field evaluable at arbitrary physical points along the beam and across its section.
 
-*Representative stress comparison: local behaviour should be interpreted in light of the approximation and load singularity.*
+The following figures compare the CSF–CUF displacement components with the FEM3D reference along the longitudinal trajectories of selected CSF polygon vertices.
 
-![Shear stress along the boundary](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xy_along_boundary_part01.png)
+![Longitudinal displacement ux](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/ux_along_boundary_part01.png)
 
-*Representative shear-stress comparison.*
+*Figure 2 – Longitudinal displacement \(u_x\).*
 
-[Browse all 75 boundary plots](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/strain_stress_boundary/README.md) · [Example directory](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape) · [CSF–CUF documentation](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/README.md) · [YAML reference](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/yaml_reference/readme.md)
+![Transverse displacement uy](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uy_along_boundary_part01.png)
+
+*Figure 3 – Transverse displacement \(u_y\).*
+
+![Transverse displacement uz](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uz_along_boundary_part01.png)
+
+*Figure 4 – Transverse displacement \(u_z\).*
+
+The displacement comparison provides a first assessment of the global structural response. Stress convergence, however, requires separate examination because stresses depend on derivatives of the displacement approximation.
+
+## Strain comparison with FEM3D
+
+The strain components are obtained directly from the displacement gradients.
+
+![Normal strain epsilon xx](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part01.png)
+
+*Figure 5 – Longitudinal normal strain \(\varepsilon_{xx}\).*
+
+![Shear strain gamma xy](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/gamma_xy_along_boundary_part01.png)
+
+*Figure 6 – Shear strain \(\gamma_{xy}\).*
+
+The strain comparison helps distinguish differences in the underlying displacement derivatives from those associated with stress recovery.
+
+## Stress comparison with FEM3D
+
+The FEM3D stress values are calculated from the displacement gradients of individual H8 elements using the CSF constitutive law.
+
+At element boundaries, **the original element-side values are retained without averaging across adjacent elements**. Several FEM3D values may therefore appear at the same longitudinal position.
+
+The CSF–CUF stresses are instead obtained directly from the derivatives of the continuous displacement representation and the constitutive law, without averaging or smoothing.
+
+![Normal stress sigma xx](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/sigma_xx_along_boundary_part01.png)
+
+*Figure 7 – Longitudinal normal stress \(\sigma_{xx}\).*
+
+![Shear stress tau xy](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xy_along_boundary_part01.png)
+
+*Figure 8 – Shear stress \(\tau_{xy}\).*
+
+![Shear stress tau xz](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part01.png)
+
+*Figure 9 – Shear stress \(\tau_{xz}\).*
+
+![Shear stress tau yz](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_yz_along_boundary_part01.png)
+
+*Figure 10 – Shear stress \(\tau_{yz}\).*
+
+For the shear stress component \(\tau_{xy}\), the CSF–CUF curves generally follow the **central trend of the FEM3D stress distribution**, particularly away from the beam ends, despite the scatter of individual FEM3D element-side values.
+
+This does not imply that CSF–CUF computes an average of FEM3D stresses. The two fields are obtained independently, and the observed correspondence concerns their overall behaviour rather than pointwise agreement between individual element-side values.
+
+Differences near the beam ends remain more pronounced and require separate consideration, particularly in the presence of concentrated loading and boundary constraints.
 
 ## Closing perspective
 
-This example illustrates the central design choice of CSF–CUF: **the physical beam is defined independently of the functions chosen to approximate its displacement**. The CUF formulation remains unchanged, while geometry, material, transverse expansions and longitudinal approximation remain interchangeable components. The purpose is not a special-purpose implementation for one C-section, but a reusable way of constructing and examining CUF models.
+This example illustrates the central design choice of CSF–CUF: **the physical beam is defined independently of the functions chosen to approximate its displacement**.
+
+The CUF formulation remains unchanged, while geometry, material, transverse expansions and longitudinal approximation remain interchangeable components.
+
+The purpose is not a special-purpose implementation for one C-section, but a reusable framework for constructing and examining CUF models.
+
+**Repository:** [C-section example](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape)
+
+**Additional results:** [Strain and stress boundary comparisons](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape/strain_stress_boundary)
