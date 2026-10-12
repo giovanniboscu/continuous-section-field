@@ -1,3 +1,9 @@
+# Version: CSF-CUF optional MITC diagnostics v08 - 2026-10-11
+# Changelog: solver.mitcDiagnostic boolean, default false; no kinematic changes.
+# Version: CSF-CUF MITC assembly verification v06 - 2026-10-11
+# Changelog: opt-in diagnostic assembly comparison.
+# Version: CSF-CUF YAML correctionMITC toggle v01 - 2026-10-11
+# Changelog: optional solver.correctionMITC Boolean, default false.
 # Version: CSF-CUF external longitudinal basis v1 - 2026-09-30
 # Version: CSF-CUF external transverse basis v1 - 2026-09-29
 # Version: CSF-CUF normalized longitudinal partition v25 - 2026-09-21
@@ -82,6 +88,9 @@ class EquilibrationSettings:
 @dataclass(frozen=True)
 class SolverSettings:
     equilibration: EquilibrationSettings
+    correctionMITC: bool = False
+    verifyMITCAssembly: bool = False
+    mitcDiagnostic: bool = False
 
 
 @dataclass(frozen=True)
@@ -186,6 +195,15 @@ def load_case(path: str | Path) -> CaseDefinition:
         solver.get("equilibration", {}),
         "solver.equilibration",
     )
+    correction_mitc = solver.get("correctionMITC", False)
+    if not isinstance(correction_mitc, bool):
+        raise TypeError("solver.correctionMITC must be a YAML boolean")
+    verify_mitc = solver.get("verifyMITCAssembly", False)
+    if not isinstance(verify_mitc, bool):
+        raise TypeError("solver.verifyMITCAssembly must be a YAML boolean")
+    mitc_diagnostic = solver.get("mitcDiagnostic", False)
+    if not isinstance(mitc_diagnostic, bool):
+        raise TypeError("solver.mitcDiagnostic must be a YAML boolean")
     sampling = _mapping(root.get("sampling", {}), "sampling")
     output = _mapping(root.get("output"), "output")
     stations = tuple(float(v) for v in sampling.get("stations", [0.0, 0.5]))
@@ -405,6 +423,9 @@ def load_case(path: str | Path) -> CaseDefinition:
             equilibration=EquilibrationSettings(
                 iterations=equilibration_iterations,
             ),
+            correctionMITC=correction_mitc,
+            verifyMITCAssembly=verify_mitc,
+            mitcDiagnostic=mitc_diagnostic,
         ),
         sampling=SamplingSettings(
             stations=stations,

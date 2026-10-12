@@ -1,4 +1,4 @@
-# Version: CSF-CUF longitudinal Lagrange plugin v1 - 2026-09-21
+# Version: CSF-CUF longitudinal Lagrange plugin v2 - 2026-10-11
 """Equally spaced nodal Lagrange longitudinal basis.
 
 This plugin reproduces the historical longitudinal shape functions exactly,
@@ -46,8 +46,32 @@ class LagrangeLongitudinalBasis(NodalC0LongitudinalBasis):
         return self._nodes.copy()
 
     def values(self, xi: float) -> np.ndarray:
+        """Return the original shape functions on the element's fixed nodes."""
+        return self._lagrange_weights(float(xi), self._nodes)
+
+    @staticmethod
+    def interpolation_values(xi: float, nodes: np.ndarray) -> np.ndarray:
+        """Return cardinal Lagrange weights at ``xi`` on supplied nodes.
+
+        This interpolation is independent of the basis's reference nodes.
+        For example, ``nodes`` can be MITC tying/Barlow points. The
+        interpolation values do not change element nodes or displacement DOFs.
+        A single tying point is supported (constant interpolation).
+        """
         xi = float(xi)
-        count = self.size
+        nodes = np.asarray(nodes, dtype=float)
+        if nodes.ndim != 1 or nodes.size < 1:
+            raise ValueError("interpolation nodes must be a nonempty 1D array")
+        if not np.isfinite(xi) or not np.all(np.isfinite(nodes)):
+            raise ValueError("interpolation nodes and xi must be finite")
+        if np.unique(nodes).size != nodes.size:
+            raise ValueError("interpolation nodes must be distinct")
+        return LagrangeLongitudinalBasis._lagrange_weights(xi, nodes)
+
+    @staticmethod
+    def _lagrange_weights(xi: float, nodes: np.ndarray) -> np.ndarray:
+        """Shared cardinal interpolation calculation for both interfaces."""
+        count = int(nodes.size)
         values = np.ones(count, dtype=float)
 
         for a in range(count):
@@ -55,8 +79,8 @@ class LagrangeLongitudinalBasis(NodalC0LongitudinalBasis):
                 if a == b:
                     continue
                 values[a] *= (
-                    (xi - self._nodes[b])
-                    / (self._nodes[a] - self._nodes[b])
+                    (xi - nodes[b])
+                    / (nodes[a] - nodes[b])
                 )
 
         return values

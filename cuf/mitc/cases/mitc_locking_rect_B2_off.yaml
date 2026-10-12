@@ -1,0 +1,46 @@
+# Version: MITC shear-locking rectangular benchmark case v01 - 2026-10-11
+# One B2 (order-1) longitudinal element. Same model, load, BCs, quadrature,
+# basis and material in the paired OFF/ON cases. Only MITC setting differs.
+
+case:
+  name: mitc_locking_rect_B2_off
+
+problem:
+  yaml: ../problems/mitc_locking_rect_point.yaml
+  adapter: csf.cuf.adapters.problem.c_section_cantilever_point_load
+
+cuf:
+  basis: ../expansions/lagrangeL9_v4.py
+  order: 2
+  basis_options:
+    domain_source: csf_polygons
+    mapping: isoparametric
+    connectivity: shared_points
+    boundary_tolerance: 1.0e-10
+
+longitudinal:
+  method: finite_element
+  element_boundaries: [0.0, 1.0]
+  basis: lagrange
+  order: 1
+  gauss_order: 15
+  material_polynomial_degree: 0
+
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 9
+
+solver:
+  correctionMITC: false
+  verifyMITCAssembly: false
+  equilibration:
+    iterations: 5
+
+sampling:
+  stations: [0.0, 0.5, 1.0]
+  displacement_samples: 201
+  stress_grid: 41
+
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../output/mitc_locking_rect_B2_off

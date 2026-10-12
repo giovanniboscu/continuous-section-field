@@ -1,0 +1,208 @@
+# CSF model for the Carrera-Petrolo C-section benchmark.
+# Transverse partition reproduces the 9-L9 layout shown in Fig. 13(b).
+#
+# Version: v1 - 2026-10-10
+#
+# Changelog:
+# - Preserved the original C-section geometry and material.
+# - Replaced the single C-shaped polygon with 9 non-overlapping quadrilateral
+#   CSF polygons arranged as the 9 transverse L9 domains of Fig. 13(b).
+# - The internal flange split coordinates are reconstructed from the figure by
+#   equally subdividing the free flange portions:
+#       top free flange:    900 mm / 4 = 225 mm
+#       bottom free flange: 400 mm / 2 = 200 mm
+#   The 100 mm web-width corner domains are kept as separate polygons.
+#
+# Units: mm, N, MPa.
+#
+# Geometry:
+#   h = 1000 mm
+#   t = 100 mm
+#   long flange b2 = 1000 mm
+#   short flange b1 = 500 mm
+#   L = 20000 mm
+#
+# Material:
+#   E  = 75 GPa = 75000 MPa
+#   nu = 0.33
+#
+# Coordinate mapping:
+#   paper y (beam axis) -> CSF section station z
+#   paper x             -> CSF section y
+#   paper z             -> CSF section z-coordinate inside each polygon
+#
+# Section orientation:
+#   paper/section x positive to the right
+#   paper/section z positive upward
+#   web on the right
+#   opening toward the left
+#   long flange on top
+#
+# 9-L9 transverse partition (CSF y coordinates):
+#   top flange:    [-1000,-775], [-775,-550], [-550,-325], [-325,-100], [-100,0]
+#   web:           [-100,0] x z[-400,400]
+#   bottom flange: [-500,-300], [-300,-100], [-100,0]
+#
+# NOTE:
+# The paper shows the 9-L9 topology graphically but does not tabulate the
+# internal split coordinates. The equal subdivisions above are therefore a
+# geometric reconstruction of Fig. 13(b), not quoted numerical data.
+
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        # --- Top flange: 5 transverse domains ---
+        - name: top_1
+          weight: 75000.0
+          vertices:
+            - [-1000.0, 400.0]
+            - [-775.0,  400.0]
+            - [-775.0,  500.0]
+            - [-1000.0, 500.0]
+
+        - name: top_2
+          weight: 75000.0
+          vertices:
+            - [-775.0, 400.0]
+            - [-550.0, 400.0]
+            - [-550.0, 500.0]
+            - [-775.0, 500.0]
+
+        - name: top_3
+          weight: 75000.0
+          vertices:
+            - [-550.0, 400.0]
+            - [-325.0, 400.0]
+            - [-325.0, 500.0]
+            - [-550.0, 500.0]
+
+        - name: top_4
+          weight: 75000.0
+          vertices:
+            - [-325.0, 400.0]
+            - [-100.0, 400.0]
+            - [-100.0, 500.0]
+            - [-325.0, 500.0]
+
+        - name: top_web_corner
+          weight: 75000.0
+          vertices:
+            - [-100.0, 400.0]
+            - [0.0,    400.0]
+            - [0.0,    500.0]
+            - [-100.0, 500.0]
+
+        # --- Web: 1 transverse domain ---
+        - name: web
+          weight: 75000.0
+          vertices:
+            - [-100.0, -400.0]
+            - [0.0,    -400.0]
+            - [0.0,     400.0]
+            - [-100.0,  400.0]
+
+        # --- Bottom flange: 3 transverse domains ---
+        - name: bottom_1
+          weight: 75000.0
+          vertices:
+            - [-500.0, -500.0]
+            - [-300.0, -500.0]
+            - [-300.0, -400.0]
+            - [-500.0, -400.0]
+
+        - name: bottom_2
+          weight: 75000.0
+          vertices:
+            - [-300.0, -500.0]
+            - [-100.0, -500.0]
+            - [-100.0, -400.0]
+            - [-300.0, -400.0]
+
+        - name: bottom_web_corner
+          weight: 75000.0
+          vertices:
+            - [-100.0, -500.0]
+            - [0.0,    -500.0]
+            - [0.0,    -400.0]
+            - [-100.0, -400.0]
+
+    S1:
+      z: 20000.0
+      polygons:
+        # Same 9-domain partition: prismatic section.
+        - name: top_1
+          weight: 75000.0
+          vertices:
+            - [-1000.0, 400.0]
+            - [-775.0,  400.0]
+            - [-775.0,  500.0]
+            - [-1000.0, 500.0]
+
+        - name: top_2
+          weight: 75000.0
+          vertices:
+            - [-775.0, 400.0]
+            - [-550.0, 400.0]
+            - [-550.0, 500.0]
+            - [-775.0, 500.0]
+
+        - name: top_3
+          weight: 75000.0
+          vertices:
+            - [-550.0, 400.0]
+            - [-325.0, 400.0]
+            - [-325.0, 500.0]
+            - [-550.0, 500.0]
+
+        - name: top_4
+          weight: 75000.0
+          vertices:
+            - [-325.0, 400.0]
+            - [-100.0, 400.0]
+            - [-100.0, 500.0]
+            - [-325.0, 500.0]
+
+        - name: top_web_corner
+          weight: 75000.0
+          vertices:
+            - [-100.0, 400.0]
+            - [0.0,    400.0]
+            - [0.0,    500.0]
+            - [-100.0, 500.0]
+
+        - name: web
+          weight: 75000.0
+          vertices:
+            - [-100.0, -400.0]
+            - [0.0,    -400.0]
+            - [0.0,     400.0]
+            - [-100.0,  400.0]
+
+        - name: bottom_1
+          weight: 75000.0
+          vertices:
+            - [-500.0, -500.0]
+            - [-300.0, -500.0]
+            - [-300.0, -400.0]
+            - [-500.0, -400.0]
+
+        - name: bottom_2
+          weight: 75000.0
+          vertices:
+            - [-300.0, -500.0]
+            - [-100.0, -500.0]
+            - [-100.0, -400.0]
+            - [-300.0, -400.0]
+
+        - name: bottom_web_corner
+          weight: 75000.0
+          vertices:
+            - [-100.0, -500.0]
+            - [0.0,    -500.0]
+            - [0.0,    -400.0]
+            - [-100.0, -400.0]
+
+  shear_weight_laws:
+    - 'iso(0.33)'

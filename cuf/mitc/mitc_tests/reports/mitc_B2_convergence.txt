@@ -1,0 +1,14 @@
+MITC rectangular cantilever, longitudinal B2 convergence
+========================================================
+Euler-Bernoulli reference u_z(L): -6.666666667 mm
+All runs use E=75000 MPa, nu=0.33, L=5000 mm, 100 x 100 mm, Fz=-100 N.
+Displacement measured at x=5000,y=0,z=0 (response.txt: center, x/L=1).
+
+B2   u_z OFF [mm]  u_z ON [mm]   |ON/OFF|   EB err OFF %   EB err ON %
+ 1   -0.00708710   -4.46440963    629.935        99.8937       33.0339
+ 2   -0.02823923   -5.32304167    188.498        99.5764       20.1544
+ 4   -0.11144445   -6.04742888     54.264        98.3283        9.2886
+ 8   -0.42380388   -6.36966283     15.030        93.6429        4.4551
+
+Note: Euler-Bernoulli is a slender-beam reference, not an exact CUF/3D solution.
+No numerical PASS criterion is imposed on displacement convergence.

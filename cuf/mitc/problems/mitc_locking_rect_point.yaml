@@ -1,0 +1,16 @@
+# Version: MITC shear-locking rectangular benchmark problem v01 - 2026-10-11
+# Same existing cantilever adapter: full clamp at CUF x=0, force in global -z.
+# Units: mm, N, MPa; amplitude is total concentrated force in N.
+# Point load located at the free-end section centroid.
+
+model:
+  csf_yaml: ../models/mitc_locking_rect_csf.yaml
+
+problem:
+  type: c_section_cantilever
+  force:
+    type: point
+    amplitude: -100.0
+    x: 5000.0
+    y: 0.0
+    z: 0.0

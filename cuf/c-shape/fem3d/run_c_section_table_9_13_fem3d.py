@@ -1,5 +1,18 @@
+# Driver v8 (2026-10-12)
+# Changelog: explicitly accept the actual CSF-CUF PointForceGlobalZPoint class
+# reported by the installed library. The point load and the start-section clamp
+# still come from the CUF problem builder, with no implicit fallback.
 """
+FEM3D driver v8 (2026-10-12).
+Historical changelog:
+- Remove hard-coded benchmark load amplitude and y/z location restrictions.
+- Validate the free-end station against CSF; preserve exact FEM-node matching.
+- Preserve structured H8 mesh, OpenSees solve, CLI and NPZ interface.
+
 FEM3D reference for the Carrera Table 9.13 C-section benchmark.
+
+Version v4: adapt structured H8 mesh to the point-load coordinates from YAML;
+remove free-end-only point-load restriction; retain exact nodal loading.
 
 The purpose of this driver is to reproduce the CSF-CUF physical problem with a
 3D OpenSees stdBrick model while keeping geometry, material, units, coordinates,
@@ -13,13 +26,16 @@ Geometry and material:
 Load:
     The same CSF-CUF problem YAML is read through the same
     c_section_table_9_13 adapter.  The FEM load is therefore the exact
-    PointForceGlobalZ defined by that problem: no amplitude or coordinate is
-    independently re-entered in this driver.
+    PointForceGlobalZPoint (point_force_global_z_point), legacy PointForce, or
+    PointForceGlobalZ defined by that problem: neither amplitude nor coordinates
+    are independently re-entered here.
 
 Constraint:
-    FEM counterpart of FullStartSectionClamp: every node of the complete start
-    section has ux = uy = uz = 0.  No other displacement constraint or axial
-    gauge is added.
+    The same CSF-CUF problem adapter supplies the FullStartSectionClamp object.
+    This driver accepts that adapter explicitly and translates its physical
+    meaning into OpenSees nodal restrictions: ux = uy = uz = 0 on every node
+    of the complete start section. Unsupported adapter types raise an error.
+    CUF generalized-DOF constraint matrices cannot be applied to H8 DOFs.
 
 Coordinate system
 -----------------
@@ -51,13 +67,24 @@ the current stress/strain postprocessor and the legacy keys used by earlier
 FEM3D comparison tools.
 """
 
+# Driver v2 (2026-10-10)
+# Changelog: accept the load at the area-patch centroid (-50,-450) while
+# retaining the original benchmark point (0,-500). Mesh topology, FEM load
+# projection, and all other benchmark validations remain unchanged.
+
 from __future__ import annotations
 
 import argparse
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from csf.cuf.adapters.problem.loads.point_force_global_z import PointForceGlobalZ
+    from csf.cuf.adapters.problem.loads.point_force_global_z_point import PointForceGlobalZPoint
+    from csf.cuf.adapters.problem.constraints.full_start_section_clamp import FullStartSectionClamp
+    SupportedPointLoad = PointForceGlobalZ | PointForceGlobalZPoint
 
 import numpy as np
 
@@ -96,16 +123,6 @@ class CSectionStation:
     z_top: float
 
 
-@dataclass(frozen=True)
-class PointForce:
-    """Physical concentrated load copied from the CSF-CUF problem adapter."""
-
-    amplitude: float
-    x: float
-    y: float
-    z: float
-
-
 @dataclass
 class StructuredMesh:
     nodes: np.ndarray
@@ -142,15 +159,16 @@ def load_csf_field(path: Path):
     return field
 
 
-def load_cuf_problem_force(path: Path) -> PointForce:
-    """Read the same problem YAML through the same Table 9.13 CUF adapter."""
+def load_cuf_problem(path: Path):
+    """Build and retain the original CSF-CUF load AND constraint adapters."""
 
     try:
         import yaml
         from csf.cuf.adapters.problem.c_section_cantilever_point_load import build_problem
+        from csf.cuf.adapters.problem.constraints.full_start_section_clamp import FullStartSectionClamp
     except ImportError as exc:
-        raise SystemExit(
-            "The CSF-CUF package and PyYAML are required to load the Table 9.13 problem."
+        raise ImportError(
+            f"Unable to import the CSF-CUF problem builder, clamp adapter, or PyYAML: {exc}"
         ) from exc
 
     with path.open("r", encoding="utf-8") as stream:
@@ -166,16 +184,43 @@ def load_cuf_problem_force(path: Path) -> PointForce:
     problem = build_problem(problem_type, options)
     load = getattr(problem, "load", None)
     required = ("amplitude", "x", "y", "z")
-    if load is None or any(not hasattr(load, name) for name in required):
+    # The CSF-CUF builder is the source of the physical load instance.
+    # Validate its concrete adapter identity without importing unrelated load
+    # modules that a particular installed CSF-CUF release need not export.
+    # Accept only explicitly identified global-z point-load adapters.
+    # PointForceGlobalZPoint is the concrete class returned by the user's
+    # current CSF-CUF problem builder (see 2026-10-12 traceback).
+    supported_load_classes = frozenset({
+        "csf.cuf.adapters.problem.loads.point_force_global_z_point.PointForceGlobalZPoint",
+        "csf.cuf.adapters.problem.loads.point_force_global_z_point.PointForce",
+        "csf.cuf.adapters.problem.loads.point_force_global_z.PointForceGlobalZ",
+    })
+    actual_load_class = f"{type(load).__module__}.{type(load).__name__}"
+    if actual_load_class not in supported_load_classes:
         raise ValueError(
-            "c_section_cantilever_point_load adapter did not expose the expected PointForceGlobalZ"
+            f"Unsupported CSF-CUF global-z point-load adapter: {actual_load_class}. "
+            "No implicit conversion is permitted."
+        )
+    missing = [name for name in required if not hasattr(load, name)]
+    if missing:
+        raise ValueError(
+            "CSF-CUF point-load adapter is missing physical load attributes: "
+            + ", ".join(missing)
         )
 
     values = [float(getattr(load, name)) for name in required]
     if not all(math.isfinite(value) for value in values):
         raise ValueError("point-force data contain non-finite values")
 
-    return PointForce(*values)
+    constraint = getattr(problem, "constraint", None)
+    if type(constraint) is not FullStartSectionClamp:
+        raise ValueError(
+            "Unsupported CSF-CUF constraint adapter for this FEM3D driver: "
+            f"{type(constraint).__module__}.{type(constraint).__name__}. "
+            "Expected FullStartSectionClamp; no implicit fallback is permitted."
+        )
+
+    return problem
 
 
 
@@ -366,12 +411,43 @@ def _joined_grid(a: float, interface: float, b: float, n_a: int, n_b: int) -> np
     return np.concatenate((left[:-1], right))
 
 
-def build_mesh(field, settings: MeshSettings) -> StructuredMesh:
+def _insert_grid_coordinate(grid: np.ndarray, position: float) -> np.ndarray:
+    """Include an interior target coordinate without moving existing grid nodes."""
+    target = float(position)
+    if grid[0] < target < grid[-1] and not np.any(np.isclose(grid, target, rtol=0, atol=1e-9)):
+        return np.sort(np.append(grid, target))
+    return grid
+
+
+def build_mesh(field, settings: MeshSettings, force: SupportedPointLoad | None = None) -> StructuredMesh:
     """Build a conforming three-block H8 mesh directly in CUF physical axes."""
 
     x0 = float(field.s0.z)
     x1 = float(field.s1.z)
     xs = np.linspace(x0, x1, settings.nx + 1)
+    if force is not None:
+        if not x0 <= force.x <= x1:
+            raise ValueError(f"Point-load x={force.x} lies outside [{x0}, {x1}]")
+        xs = _insert_grid_coordinate(xs, force.x)
+
+    # Determine which structured section band contains the requested point.
+    # Insert matching cuts on every longitudinal station to preserve H8 topology.
+    target_y_band = None
+    target_z_band = None
+    if force is not None:
+        station = _station_from_csf(field, force.x)
+        if station.y_bottom_left < force.y < station.y_web_left and station.z_bottom <= force.z <= station.z_web_bottom:
+            target_y_band = "bottom_free"
+        elif station.y_top_left < force.y < station.y_web_left and station.z_web_top <= force.z <= station.z_top:
+            target_y_band = "top_free"
+        elif station.y_web_left < force.y < station.y_right:
+            target_y_band = "web"
+        if station.z_bottom < force.z < station.z_web_bottom:
+            target_z_band = "bottom"
+        elif station.z_web_bottom < force.z < station.z_web_top:
+            target_z_band = "web"
+        elif station.z_web_top < force.z < station.z_top:
+            target_z_band = "top"
 
     node_xyz: list[tuple[float, float, float]] = []
     layer_coord_to_id: list[dict[tuple[float, float], int]] = []
@@ -402,6 +478,28 @@ def build_mesh(field, settings: MeshSettings) -> StructuredMesh:
         z_bottom = _grid(s.z_bottom, s.z_web_bottom, settings.nz_flange)
         z_web = _grid(s.z_web_bottom, s.z_web_top, settings.nz_web)
         z_top = _grid(s.z_web_top, s.z_top, settings.nz_flange)
+
+        if force is not None:
+            if target_y_band == "bottom_free":
+                if not s.y_bottom_left < force.y < s.y_web_left:
+                    raise ValueError("Point y cannot define a conforming bottom-flange grid at all stations")
+                y_bottom = _insert_grid_coordinate(y_bottom, force.y)
+            elif target_y_band == "top_free":
+                if not s.y_top_left < force.y < s.y_web_left:
+                    raise ValueError("Point y cannot define a conforming top-flange grid at all stations")
+                y_top = _insert_grid_coordinate(y_top, force.y)
+            elif target_y_band == "web":
+                if not s.y_web_left < force.y < s.y_right:
+                    raise ValueError("Point y cannot define a conforming web grid at all stations")
+                y_web = _insert_grid_coordinate(y_web, force.y)
+                y_bottom = _insert_grid_coordinate(y_bottom, force.y)
+                y_top = _insert_grid_coordinate(y_top, force.y)
+            if target_z_band == "bottom":
+                z_bottom = _insert_grid_coordinate(z_bottom, force.z)
+            elif target_z_band == "web":
+                z_web = _insert_grid_coordinate(z_web, force.z)
+            elif target_z_band == "top":
+                z_top = _insert_grid_coordinate(z_top, force.z)
 
         coord_to_id: dict[tuple[float, float], int] = {}
 
@@ -467,7 +565,7 @@ def build_mesh(field, settings: MeshSettings) -> StructuredMesh:
                 )
                 element_xmid.append(float(xmid))
 
-    for ix in range(settings.nx):
+    for ix in range(len(xs) - 1):
         yb0, yw0, yt0, zb0, zw0, zt0 = block_grids[ix]
         yb1, yw1, yt1, zb1, zw1, zt1 = block_grids[ix + 1]
         add_block(ix, yb0, zb0, yb1, zb1)
@@ -512,7 +610,7 @@ def evaluate_element_materials(field, mesh: StructuredMesh):
     return E, G, nu
 
 
-def build_point_load(mesh: StructuredMesh, force: PointForce) -> tuple[np.ndarray, int]:
+def build_point_load(mesh: StructuredMesh, force: SupportedPointLoad) -> tuple[np.ndarray, int]:
     """Apply exactly one physical global-z point force at its FEM node."""
 
     point = np.asarray((force.x, force.y, force.z), dtype=float)
@@ -532,46 +630,39 @@ def build_point_load(mesh: StructuredMesh, force: PointForce) -> tuple[np.ndarra
     return loads, load_node
 
 
-def _validate_physical_contract(field, mesh: StructuredMesh, force: PointForce) -> None:
-    """Fail early if units/axes/load/clamp geometry are not the benchmark contract."""
-
+def _validate_physical_contract(field, mesh: StructuredMesh, force: SupportedPointLoad) -> None:
+    """Validate CSF longitudinal bounds and exact mesh position, not fixed inputs."""
     x0 = float(field.s0.z)
     x1 = float(field.s1.z)
-    if not math.isclose(force.x, x1, rel_tol=0.0, abs_tol=1.0e-10 * max(1.0, abs(x1))):
+    if not x0 <= force.x <= x1:
+        raise ValueError(f"Point-force x={force.x} lies outside the CSF domain [{x0}, {x1}]")
+    tol = 1e-10 * max(1.0, abs(x0), abs(x1))
+    if not np.allclose(mesh.nodes[mesh.end0_nodes, 0], x0, rtol=0.0, atol=tol):
+        raise RuntimeError("start-section nodes do not match the CSF start station")
+
+
+
+def apply_cuf_constraint_to_fem(mesh: StructuredMesh, constraint: FullStartSectionClamp, ops) -> None:
+    """Translate the physical meaning of the selected CSF-CUF adapter to H8 DOFs.
+
+    FullStartSectionClamp.build_constraints() acts on CUF generalized DOFs and
+    cannot be reused directly for FEM nodal DOFs. The adapter type is checked
+    explicitly: no other constraint is silently treated as a full clamp.
+    """
+    from csf.cuf.adapters.problem.constraints.full_start_section_clamp import FullStartSectionClamp
+
+    if type(constraint) is not FullStartSectionClamp:
         raise ValueError(
-            "Carrera Table 9.13 force is expected on the free end section; "
-            f"force.x={force.x}, x_end={x1}"
+            "Unsupported constraint adapter for H8 translation: "
+            f"{type(constraint).__module__}.{type(constraint).__name__}"
         )
+    if mesh.end0_nodes.size == 0:
+        raise ValueError("No nodes were found on the start section")
 
-    # Validate the exact supplied benchmark scale.  These checks deliberately
-    # prevent accidental m-vs-mm or Pa-vs-MPa runs from looking plausible.
-    s0 = _station_from_csf(field, x0)
-    E0, _, nu0 = _material_from_csf(field, x0)
-    expected = {
-        "x0": (x0, 0.0),
-        "x1": (x1, 20000.0),
-        "height": (s0.z_top - s0.z_bottom, 1000.0),
-        "top_flange_length": (s0.y_right - s0.y_top_left, 1000.0),
-        "bottom_flange_length": (s0.y_right - s0.y_bottom_left, 500.0),
-        "web_thickness": (s0.y_right - s0.y_web_left, 100.0),
-        "top_flange_thickness": (s0.z_top - s0.z_web_top, 100.0),
-        "bottom_flange_thickness": (s0.z_web_bottom - s0.z_bottom, 100.0),
-        "E_MPa": (E0, 75000.0),
-        "nu": (nu0, 0.33),
-        "force_N": (force.amplitude, -1.0),
-        "force_y_mm": (force.y, 0.0),
-        "force_z_mm": (force.z, -500.0),
-    }
-    for name, (actual, target) in expected.items():
-        tol = 1.0e-9 * max(1.0, abs(target))
-        if not math.isclose(actual, target, rel_tol=0.0, abs_tol=tol):
-            raise ValueError(
-                f"benchmark physical-contract mismatch for {name}: "
-                f"actual={actual}, expected={target}. No unit conversion is allowed."
-            )
-
-    if not np.allclose(mesh.nodes[mesh.end0_nodes, 0], x0, rtol=0.0, atol=1.0e-10):
-        raise RuntimeError("start-section node set is not exactly at x=0 mm")
+    # Exact FEM nodal counterpart of the original CSF-CUF adapter:
+    # ux = uy = uz = 0 on the entire initial section.
+    for nid in mesh.end0_nodes:
+        ops.fix(int(nid) + 1, 1, 1, 1)
 
 
 def solve_opensees(
@@ -579,8 +670,9 @@ def solve_opensees(
     element_E: np.ndarray,
     element_nu: np.ndarray,
     nodal_loads: np.ndarray,
+    constraint: FullStartSectionClamp,
 ):
-    """Solve the fully clamped C-section cantilever with the exact point load."""
+    """Solve using the exact CUF problem load and translated CUF constraint."""
 
     try:
         import openseespy.opensees as ops
@@ -611,10 +703,7 @@ def solve_opensees(
         tags = [int(n) + 1 for n in conn]
         ops.element("stdBrick", eid, *tags, int(mat_tag))
 
-    # Exact FEM counterpart of FullStartSectionClamp:
-    # ux = uy = uz = 0 on every node of the complete start section.
-    for nid in mesh.end0_nodes:
-        ops.fix(int(nid) + 1, 1, 1, 1)
+    apply_cuf_constraint_to_fem(mesh, constraint, ops)
 
     ops.timeSeries("Linear", 1)
     ops.pattern("Plain", 1, 1)
@@ -676,7 +765,7 @@ def _save_npz(
     element_mat_tag: np.ndarray,
     nodal_loads: np.ndarray,
     load_node: int,
-    force: PointForce,
+    force: SupportedPointLoad,
     support_reactions: np.ndarray,
     x0: float,
     x1: float,
@@ -765,7 +854,9 @@ def main() -> None:
 
     field = load_csf_field(model_path)
     _validate_csf_polygon_identity(field)
-    force = load_cuf_problem_force(problem_path)
+    cuf_problem = load_cuf_problem(problem_path)
+    force = cuf_problem.load
+    constraint = cuf_problem.constraint
     x0 = float(field.s0.z)
     x1 = float(field.s1.z)
 
@@ -777,7 +868,7 @@ def main() -> None:
         nz_flange=args.nz_flange,
         nz_web=args.nz_web,
     )
-    mesh = build_mesh(field, settings)
+    mesh = build_mesh(field, settings, force)
     element_E, element_G, element_nu = evaluate_element_materials(field, mesh)
     nodal_loads, load_node = build_point_load(mesh, force)
     _validate_physical_contract(field, mesh, force)
@@ -792,6 +883,7 @@ def main() -> None:
             element_E,
             element_nu,
             nodal_loads,
+            constraint,
         )
 
     _save_npz(
@@ -816,6 +908,8 @@ def main() -> None:
     print("====================================")
     print(f"model             : {model_path}")
     print(f"problem           : {problem_path}")
+    print(f"CUF load adapter  : {type(force).__module__}.{type(force).__name__}")
+    print(f"CUF constraint    : {type(constraint).__module__}.{type(constraint).__name__}")
     print(f"coordinate system : CUF (x longitudinal, y/z cross-section)")
     print(f"mapping           : x=CSF station z, y=CSF Pt.x, z=CSF Pt.y")
     print(f"units             : {UNITS} (no conversion)")

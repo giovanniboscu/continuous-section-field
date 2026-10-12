@@ -12,8 +12,9 @@ model:
   csf_yaml: ../models/c_section_chapter9_5_3_csf.yaml
 
 problem:
-  type: c_section_table_9_13
+  type: c_section_cantilever
   force:
+    type: point
     amplitude: -1.0
     x: 20000.0
     y: 0.0

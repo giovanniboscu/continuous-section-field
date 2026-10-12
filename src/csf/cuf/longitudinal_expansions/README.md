@@ -68,6 +68,7 @@ A longitudinal plugin registers a `LongitudinalBasisPlugin` and builds a
 - `polynomial_degree`
 - `values(xi)`
 - `derivatives_reference(xi)`
+- `LagrangeLongitudinalBasis.interpolation_values(xi, nodes)` (Lagrange plugin only): cardinal interpolation weights on caller-supplied nodes; does not modify the element basis
 - optional `power_coefficients()` for compiled-field persistence
 
 The current `finite_element` topology supports the explicit capability
@@ -111,3 +112,29 @@ additional inter-element constraints.
 
 See `cuf/external_longitudinal_basis/` for an external example numerically
 equivalent to the built-in `lagrange` basis.
+
+## Arbitrary-node interpolation (e.g. MITC tying points)
+
+The built-in Lagrange plugin also exposes a dedicated operation for interpolation
+on a separate set of nodes, without changing `values()`, `reference_nodes`, or
+longitudinal displacement DOFs:
+
+```python
+import numpy as np
+
+# 'basis' is the existing Lagrange longitudinal plugin instance,
+# already obtained through the solver's plugin registry.
+# Example: longitudinal polynomial order 3 -> three Barlow points.
+barlow_points, _ = np.polynomial.legendre.leggauss(3)
+xi_gauss = 0.37
+weights = basis.interpolation_values(xi_gauss, barlow_points)
+
+# B_at_barlow contains shear kinematic operator coefficients at each tying point.
+# Once the solver has computed it, the MITC values at xi_gauss are:
+# B_mitc = weights @ B_at_barlow
+```
+
+The selection of tying points is **not** a responsibility of the Lagrange
+plugin. It is delegated to a separate numerical-method component in the solver.
+This method computes only interpolation weights, not sectional integrals or
+MITC-corrected stiffness blocks.

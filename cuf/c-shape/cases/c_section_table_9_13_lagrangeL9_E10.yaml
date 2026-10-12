@@ -1,0 +1,57 @@
+# Version: Carrera Table 9.13 custom lagrangeL9 case v1 - 2026-10-10
+#
+# Changelog:
+# - Keeps geometry/load in a separate problem YAML.
+# - Loads lagrangeL9 from a local external Python file.
+# - Uses the 9-polygon CSF model through the problem definition.
+# - First development case for the L9 transverse expansion.
+#
+# NOTE:
+# lagrangeL9_v1 currently validates CSF domains and point location only.
+# value() and derivative() intentionally raise NotImplementedError, so this
+# case is not yet expected to complete a CUF solution.
+
+case:
+  name: c_section_table_9_13_lagrangeL9_v4_E10
+
+problem:
+  yaml: ../problems/c_section_cantilever_point_9L9.yaml
+  adapter: csf.cuf.adapters.problem.c_section_cantilever_point_load
+
+cuf:
+  # External transverse expansion. Relative path is resolved from this case YAML.
+  basis: ../expansions/lagrangeL9_v4.py
+  order: 2
+  basis_options:
+    domain_source: csf_polygons
+    mapping: isoparametric
+    connectivity: shared_points
+    boundary_tolerance: 1.0e-10
+    require_prismatic: true
+
+longitudinal:
+  method: finite_element
+  element_boundaries: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  basis: lagrange
+  order: 12
+  gauss_order: 15
+  material_polynomial_degree: 0
+
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 9
+
+solver:
+  correctionMITC: true
+  verifyMITCAssembly: true
+  equilibration:
+    iterations: [1,2,3,4,5]
+
+sampling:
+  stations: [0.0, 0.1, 1.0]
+  displacement_samples: 201
+  stress_grid: 41
+
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../output/c_section_table_9_13_lagrangeL9_v4_E10

@@ -1,3 +1,9 @@
+# Version: CSF-CUF optional MITC diagnostics v08 - 2026-10-11
+# Changelog: forward mitcDiagnostic and suppress redundant YAML flags print.
+# Version: CSF-CUF MITC assembly verification v06 - 2026-10-11
+# Changelog: transmit opt-in assembly verification flag.
+# Version: CSF-CUF MITC YAML wiring v01 - 2026-10-11
+# Changelog: pass solver.correctionMITC to element builder.
 # Version: CSF-CUF minimal self-contained stress checkpoint v34 - 2026-09-22
 # OPT-10 COMPILED-FIELD BASIS-OPTIONS METADATA
 from __future__ import annotations
@@ -1118,6 +1124,9 @@ def solve_case_runs(
     element_builder = CUFElementMatrixBuilder(
         nucleus=nucleus,
         integrator=longitudinal_integrator,
+        correctionMITC=case.solver.correctionMITC,
+        verifyMITCAssembly=case.solver.verifyMITCAssembly,
+        mitcDiagnostic=case.solver.mitcDiagnostic,
     )
 
     mesh = LongitudinalDiscretizer().build(

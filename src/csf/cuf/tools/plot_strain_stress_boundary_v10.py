@@ -1,4 +1,26 @@
-# Version: CSF-CUF plot_strain_stress_boundary v10 - 2026-10-03
+# Version: CSF-CUF plot_strain_stress_boundary v12 - 2026-10-10
+# Revision-ID: 01849c1a-fc00-448c-ac40-9fea04fb06f0
+#
+# Changelog v12:
+# - FEM3D element-side selection now uses positive transverse area overlap
+#   with the requested CSF polygon for axis-aligned extruded H8 elements.
+# - One FEM element can belong to multiple CSF subdivisions; its existing
+#   unaveraged H8 field is evaluated at the ORIGINAL sample position.
+# - Preserve existing centroid-based assignment for other H8 geometries,
+#   and reject ambiguous assignments instead of inventing a side.
+# - No changes to CUF sampling, checkpoint data, or constitutive recovery.
+#
+# Changelog v11.1:
+# - Added unique Revision-ID for auditability.
+# - Header-only revision; no numerical or functional changes.
+#
+# Changelog v11:
+# - For solved-field v4, select a polygon-side derivative explicitly using
+#   the mathematical checkpoint domain index (validated against CSF geometry).
+# - Original polygon-vertex sampling is unchanged; no inward displacement,
+#   derivative averaging, interpolation, or fitted stress recovery.
+# - Split plots into small page files to avoid very large 36-panel figures.
+# - Persist numeric samples before plotting, even if PNG rendering is interrupted.
 # Changelog v10: FEM3D loader now accepts both the standardized
 # fem3d_h8_displacement v1 schema and the legacy I-Shape raw H8 NPZ schema
 # (nodes/elements/displacement/amplitude/x0/x1). No conversion or resampling.
@@ -14,9 +36,11 @@ Optional FEM3D comparison:
     --fem3d checkpoint.fem.npz overlays native H8 displacement and strain.
     --fem-stress-from-csf additionally recovers stress using the CSF material law.
     FEM and CUF must share physical axes, units, geometry and material partition.
-    FEM mesh must conform to CSF polygon boundaries. No unit conversion, nodal
-    strain averaging or nearest-point extrapolation is performed. Coincident
-    polygon vertices are evaluated on their own polygon side.
+    The FEM and CSF must share the same physical domain and material law.
+    For extruded rectangular H8 elements, FEM cells may cross purely internal
+    CSF subdivisions. No unit conversion, nodal strain averaging or nearest-
+    point extrapolation is performed. Polygon-side FEM traces are selected by
+    positive cross-sectional area overlap and evaluated at the original point.
 
 Inputs:
     CUF output tree containing compiled displacement checkpoints (*.cuf.npz), or one explicit checkpoint
@@ -255,6 +279,55 @@ def sample_geometry(csf_field, points: int, mode: str, inward_offset: float | No
     return point_ids, rows, start, end
 
 
+def map_checkpoint_domains_to_csf(field, section):
+    """Match independent v4 solved-field domains to CSF physical polygons.
+
+    Match by physical vertices, not by index or a concrete expansion name.
+    A mismatch is an error: accidental use of a different CSF partition
+    would otherwise select the wrong stress side.
+    """
+    vertices = field.solved_domain_vertices
+    if vertices is None:
+        return None  # legacy v1-v3: no explicit transverse domains
+
+    polygons = tuple(section.polygons)
+    if len(polygons) != len(vertices):
+        raise ValueError(
+            "v4 solved-field checkpoint and supplied CSF YAML contain "
+            f"different transverse domain counts ({len(vertices)} vs {len(polygons)}). "
+            "Use the matching CSF model."
+        )
+
+    def match_vertices(a, b):
+        if a.shape != b.shape:
+            return False
+        scale = max(1., float(np.max(np.abs(a))), float(np.max(np.abs(b))))
+        atol = 1.e-10 * scale
+        available = list(range(len(b)))
+        for point in a:
+            possible = [j for j in available if np.allclose(point, b[j], rtol=0., atol=atol)]
+            if not possible:
+                return False
+            available.remove(possible[0])
+        return True
+
+    lookup = {}
+    remaining = set(range(len(vertices)))
+    for pi, polygon in enumerate(polygons, start=1):
+        csf_vertices = np.asarray([(v.x, v.y) for v in polygon.vertices], dtype=float)
+        matches = [idx for idx in sorted(remaining)
+                   if match_vertices(csf_vertices, np.asarray(vertices[idx], dtype=float))]
+        if len(matches) != 1:
+            raise ValueError(
+                "v4 solved-field checkpoint domain geometry does not match "
+                f"CSF polygon {pi}; matching domains={matches}. "
+                "Check the CSF YAML or checkpoint."
+            )
+        lookup[pi] = matches[0]
+        remaining.remove(matches[0])
+    return lookup
+
+
 def _recover_boundary_field_sets(
     npz_path: Path,
     csf_yaml: Path,
@@ -294,6 +367,7 @@ def _recover_boundary_field_sets(
         )
 
     constitutive_provider = bridge.constitutive_provider
+    domain_lookup = map_checkpoint_domains_to_csf(field, result.field.section(start))
 
     def recover(geometry_rows):
         recovered_rows = []
@@ -308,7 +382,16 @@ def _recover_boundary_field_sets(
             domain_id = int(station["polygon_index"])
 
             displacement = np.asarray(field(x, y, z), dtype=float)
-            strain = np.asarray(field.strain(x, y, z), dtype=float)
+            if domain_lookup is None:
+                # v1-v3 have a global transverse polynomial: unchanged evaluation.
+                strain = np.asarray(field.strain(x, y, z), dtype=float)
+            else:
+                # v4: select the mathematical one-sided derivative at the exact
+                # CSF vertex, using the already-known physical polygon side.
+                side_index = domain_lookup[domain_id]
+                strain = np.asarray(
+                    field.strain(x, y, z, domain_index=side_index), dtype=float
+                )
 
             if displacement.shape != (3,):
                 raise RuntimeError(
@@ -460,15 +543,99 @@ class FEM3DH8:
         self.coords, self.disp = coords[conn], disp[conn]
         self.low, self.high = self.coords.min(axis=1), self.coords.max(axis=1)
         self.centers = self.coords.mean(axis=1)
+        self.tol = 1e-9 * max(1., float(np.ptp(coords, axis=0).max()))
+        # Classify by the geometry of the H8 element, not the CUF basis family.
+        # For an extruded, axis-aligned rectangular element, its exact physical
+        # transverse footprint is the box (y_min, y_max, z_min, z_max).
+        # Other H8 elements retain the previous conservative centroid path.
+        self.rectangular_prisms = self._rectangular_prism_mask()
+        self.transverse_boxes = np.column_stack((
+            self.low[:, 1], self.high[:, 1],
+            self.low[:, 2], self.high[:, 2],
+        ))
         box_centers = (self.low + self.high) / 2
         self.tree = cKDTree(box_centers)
         self.radius = float(np.linalg.norm((self.high - self.low) / 2, axis=1).max())
-        self.tol = 1e-9 * max(1., float(np.ptp(coords, axis=0).max()))
         self.domain_cache = {}
         print(
             f"FEM3D: {len(conn)} H8 elements; schema={self.source_schema}; "
             f"native units={self.units}; no unit conversion"
         )
+        print(
+            "FEM3D transverse prism geometry: "
+            f"{int(np.count_nonzero(self.rectangular_prisms))}/{len(conn)} "
+            "H8 elements support exact polygon-overlap side selection"
+        )
+
+    def _rectangular_prism_mask(self):
+        """Identify exact extruded, axis-aligned H8 cells by their 8 corners."""
+        vertices = self.coords
+        lower = self.low
+        upper = self.high
+        nondegenerate = np.all(upper > lower, axis=1)
+        # Each corner must have one of the two global bounds in every axis.
+        at_lower = np.isclose(vertices, lower[:, None, :], rtol=0., atol=self.tol)
+        at_upper = np.isclose(vertices, upper[:, None, :], rtol=0., atol=self.tol)
+        on_corners = np.all(at_lower | at_upper, axis=(1, 2))
+        # Exactly one vertex at each of the 8 box corners, in any numbering.
+        corner_id = (at_upper[:, :, 0].astype(int) * 4
+                     + at_upper[:, :, 1].astype(int) * 2
+                     + at_upper[:, :, 2].astype(int))
+        unique_corners = np.sort(corner_id, axis=1)
+        correct = np.all(unique_corners == np.arange(8)[None, :], axis=1)
+        return nondegenerate & on_corners & correct
+
+    @staticmethod
+    def _positive_polygon_rectangle_overlap(vertices, bounds):
+        """Strict positive-area intersection; touching at a point/edge is excluded.
+
+        Clips the CSF polygon to a physical y-z rectangle. The clipping
+        procedure handles concave CSF polygons; no FEM mesh partition is
+        presumed to coincide with internal CUF transverse domains.
+        """
+        polygon = [(float(y), float(z)) for y, z in vertices]
+        ymin, ymax, zmin, zmax = map(float, bounds)
+        if len(polygon) < 3:
+            return False
+        # Fast rejection of separated transverse bounding boxes.
+        a = np.asarray(polygon, dtype=float)
+        if (float(a[:, 0].max()) <= ymin or float(a[:, 0].min()) >= ymax
+                or float(a[:, 1].max()) <= zmin or float(a[:, 1].min()) >= zmax):
+            return False
+        # Four Sutherland-Hodgman clipping halfplanes.
+        for axis, bound, sign in ((0, ymin, 1), (0, ymax, -1),
+                                  (1, zmin, 1), (1, zmax, -1)):
+            if not polygon:
+                return False
+            clipped = []
+            previous = polygon[-1]
+            prev_signed = sign * (previous[axis] - bound)
+            for current in polygon:
+                curr_signed = sign * (current[axis] - bound)
+                curr_inside = curr_signed >= 0.0
+                prev_inside = prev_signed >= 0.0
+                if curr_inside != prev_inside:
+                    fraction = prev_signed / (prev_signed - curr_signed)
+                    clipped.append((
+                        previous[0] + fraction * (current[0] - previous[0]),
+                        previous[1] + fraction * (current[1] - previous[1]),
+                    ))
+                if curr_inside:
+                    clipped.append(current)
+                previous, prev_signed, prev_inside = current, curr_signed, curr_inside
+            polygon = clipped
+        if len(polygon) < 3:
+            return False
+        # Center before computing area to avoid catastrophic cancellation for
+        # large coordinate offsets (the area itself is translation-invariant).
+        p = np.asarray(polygon, dtype=float)
+        p -= p[0].copy()
+        signed_double_area = (np.dot(p[:, 0], np.roll(p[:, 1], -1))
+                              - np.dot(p[:, 1], np.roll(p[:, 0], -1)))
+        scale = max(1., abs(ymax-ymin), abs(zmax-zmin),
+                    float(np.ptp(a[:,0])), float(np.ptp(a[:,1])))
+        area_tol = 64. * np.finfo(float).eps * scale**2
+        return 0.5 * abs(float(signed_double_area)) > area_tol
 
     @classmethod
     def shape(cls, q):
@@ -481,7 +648,7 @@ class FEM3DH8:
         return n, d
 
     def domain(self, element, csf_field):
-        """Classify an element by its interior center; reject ambiguous membership."""
+        """Legacy side assignment for nonrectangular H8 geometries."""
         from matplotlib.path import Path as PolygonPath
         if element not in self.domain_cache:
             center = self.centers[element]
@@ -492,9 +659,22 @@ class FEM3DH8:
                 if PolygonPath(vertices).contains_point(center[1:]):
                     matches.append(pi)
             if len(matches) != 1:
-                raise ValueError(f"FEM element {self.ids[element]} has ambiguous CSF polygon membership: {matches}")
+                raise ValueError(
+                    f"FEM element {self.ids[element]} has ambiguous CSF polygon "
+                    f"membership with nonrectangular H8 geometry: {matches}"
+                )
             self.domain_cache[element] = matches[0]
         return self.domain_cache[element]
+
+    def intersects_polygon_side(self, element, polygon_index, section, csf_field):
+        """Check genuine positive-area FEM/polygon overlap, not center ownership."""
+        if self.rectangular_prisms[element]:
+            polygon = section.polygons[int(polygon_index) - 1]
+            points = [(v.x, v.y) for v in polygon.vertices]
+            return self._positive_polygon_rectangle_overlap(
+                points, self.transverse_boxes[element]
+            )
+        return self.domain(element, csf_field) == int(polygon_index)
 
     def evaluate(self, point):
         candidates = self.tree.query_ball_point(point, self.radius + self.tol)
@@ -529,13 +709,22 @@ class FEM3DH8:
 
 def recover_fem_boundary(fem, geometry, csf_field, provider=None):
     rows = []
+    previous_x = None
+    section = None
     for station in geometry:
         point = np.array([station[k] for k in ("x", "y", "z")], dtype=float)
+        if previous_x != float(point[0]):
+            section = csf_field.section(float(point[0]))
+            previous_x = float(point[0])
         recovered = fem.evaluate(point)
         accepted = 0
         for ei, displacement, strain in recovered:
-            # At shared CSF vertices, retain only the requested polygon side.
-            if fem.domain(ei, csf_field) != int(station["polygon_index"]):
+            # Intersect the actual FEM footprint with the requested CSF side.
+            # A FEM cell may cross an internal CUF-domain interface; evaluate
+            # its original H8 field exactly at this point, without averaging.
+            if not fem.intersects_polygon_side(
+                ei, station["polygon_index"], section, csf_field
+            ):
                 continue
             row = {k: v for k, v in station.items() if k not in ("displacement", "strain", "stress")}
             row.update(element_id=int(fem.ids[ei]), displacement=displacement, strain=strain)
@@ -714,11 +903,15 @@ def build_parser():
         help="Output directory for PNG and sampled NPZ files",
     )
     parser.add_argument("--dpi", type=int, default=220, help="PNG resolution (default: 220)")
+    parser.add_argument(
+        "--max-vertices-per-plot", type=int, default=8,
+        help="Maximum vertex panels per PNG (default: 8, paginates 9-domain cases)",
+    )
     parser.add_argument("--csv", type=Path, default=None, help="Optional CSV containing every recovered value")
     parser.add_argument("--fem3d", type=Path, default=None,
                         help="Optional native fem3d_h8_displacement v1 NPZ, in the same geometry, axes and units as CUF")
     parser.add_argument("--fem-stress-from-csf", action="store_true",
-                        help="Explicitly use the CSF YAML constitutive law for FEM3D stresses; requires matching materials and a mesh conforming to CSF polygons")
+                        help="Use the CSF constitutive law for FEM3D stresses; requires matching physical material regions (internal same-material polygon splits may cross H8 cells)")
     parser.add_argument(
         "--inward-offset",
         type=float,
@@ -758,6 +951,10 @@ def main():
     args = build_parser().parse_args()
     if args.fem_stress_from_csf and args.fem3d is None:
         raise ValueError("--fem-stress-from-csf requires --fem3d")
+    if args.max_vertices_per_plot < 1:
+        raise ValueError("--max-vertices-per-plot must be >= 1")
+    if args.dpi < 1:
+        raise ValueError("--dpi must be >= 1")
     if args.inward_offset is not None and (
         not math.isfinite(args.inward_offset) or args.inward_offset <= 0.0
     ):
@@ -773,7 +970,8 @@ def main():
         if not result.ok or result.field is None:
             raise ValueError(CSFIssues.format_report(result.issues))
         provider = CSFCUFModelBridge.from_yaml(args.csf_yaml).constitutive_provider if args.fem_stress_from_csf else None
-        print("FEM3D uses a mesh conforming to CSF polygons; interface values are selected by polygon side.")
+        print("FEM3D side comparison: preserve original H8 element-side values; "
+              "transverse polygon-overlap selection for rectangular prism elements.")
         if provider is None:
             print("FEM3D stress overlay disabled: use --fem-stress-from-csf only when materials match.")
     checkpoints = discover_checkpoints(args.cuf_output_root, args.checkpoint)
@@ -805,31 +1003,44 @@ def main():
             print(f"FEM3D inward recovered: {len(fem_inward_rows)} element-side samples")
 
         case_output_dir = output_root / checkpoint_output_name(checkpoint)
-        for curve in CURVES:
-            path = save_curve_plot(
-                point_ids, rows, curve, case_output_dir, args.dpi,
-                fem_rows, args.fem_stress_from_csf,
-            )
-            print(f"[ok] {path}")
-            if inward_rows is not None:
-                tag = offset_tag(args.inward_offset)
-                inward_path = save_curve_plot(
-                    point_ids, inward_rows, curve, case_output_dir, args.dpi,
-                    fem_inward_rows, args.fem_stress_from_csf,
-                    filename_suffix=f"_inward_{tag}",
-                    location_title=(
-                        "CSF polygon inward points "
-                        f"(offset={args.inward_offset:g} model units)"
-                    ),
-                )
-                print(f"[ok] {inward_path}")
 
+        # Save numerical verification outputs before expensive Matplotlib work.
         sampled_path = save_npz(case_output_dir / "sampled_boundary_fields.npz", rows)
-        print(f"[ok] {sampled_path}")
-
+        print(f"[ok] {sampled_path}", flush=True)
         if fem_rows is not None:
             save_npz(case_output_dir / "sampled_fem3d_boundary_fields.npz", fem_rows)
             save_csv(case_output_dir / "sampled_fem3d_boundary_fields.csv", fem_rows)
+        if inward_rows is not None:
+            tag = offset_tag(args.inward_offset)
+            inward_sampled_path = save_npz(
+                case_output_dir / f"sampled_boundary_fields_inward_{tag}.npz", inward_rows
+            )
+            print(f"[ok] {inward_sampled_path}", flush=True)
+
+        # One curve remains one mathematical quantity; pagination only splits
+        # the plotting layout. Each identity is included on exactly one page.
+        page_size = args.max_vertices_per_plot
+        pages = [point_ids[i:i+page_size] for i in range(0, len(point_ids), page_size)]
+        for curve in CURVES:
+            for page_index, page_ids in enumerate(pages, start=1):
+                suffix = f"_part{page_index:02d}" if len(pages) > 1 else ""
+                path = save_curve_plot(
+                    page_ids, rows, curve, case_output_dir, args.dpi,
+                    fem_rows, args.fem_stress_from_csf, filename_suffix=suffix,
+                )
+                print(f"[ok] {path}", flush=True)
+                if inward_rows is not None:
+                    tag = offset_tag(args.inward_offset)
+                    inward_path = save_curve_plot(
+                        page_ids, inward_rows, curve, case_output_dir, args.dpi,
+                        fem_inward_rows, args.fem_stress_from_csf,
+                        filename_suffix=f"_inward_{tag}{suffix}",
+                        location_title=(
+                            "CSF polygon inward points "
+                            f"(offset={args.inward_offset:g} model units)"
+                        ),
+                    )
+                    print(f"[ok] {inward_path}", flush=True)
 
         if args.csv is not None:
             csv_root = args.csv.expanduser().resolve()
