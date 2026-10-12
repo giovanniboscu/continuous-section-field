@@ -14,9 +14,7 @@ The main section dimensions follow the reference proportions: height $h = 1000\,
 
 The **physical sectional description** is provided by CSF. Each CSF polygon identifies one local domain for the transverse CUF expansion; its vertices and material properties belong to the CSF model, not to the expansion law.
 
-<p align="center">
-  <img src="img/Figure_3.png" alt="C-section at the initial station, partitioned into nine CSF polygons (IDs 0–8)" width="50%">
-</p>
+![C-section at the initial station, partitioned into nine CSF polygons](img/Figure_3.png)
 
 *Figure 1 - CSF section at the initial station, showing the nine polygonal domains used by the L9 expansion.*
 
@@ -34,4 +32,22 @@ The example is configured through **three plain-text YAML files**, all kept in t
 
 The case file selects the separate Python transverse-basis implementation. In this way, the geometry/material model, transverse expansion, longitudinal approximation and problem definition can be specified without embedding them in the CUF solver core.
 
-**Repository:** [C-section example](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape)
+## Stress comparison with FEM3D
+
+The comparison also examines the stress field along the longitudinal trajectories of the CSF polygon vertices.
+
+The FEM3D results are obtained directly from the displacement derivatives of individual H8 elements, using the CSF constitutive law. At element boundaries, **the original element-side values are retained without averaging across adjacent elements**. Consequently, several FEM3D stress values may appear at the same longitudinal position.
+
+The CSF–CUF stresses are instead evaluated directly from the derivatives of the continuous displacement representation and the corresponding constitutive law, without stress averaging or smoothing.
+
+For the shear stress component $\tau_{xy}$, the CSF–CUF curves generally follow the **central trend of the FEM3D stress distribution**, particularly away from the beam ends, despite the considerable scatter of individual FEM3D values.
+
+This agreement does not imply that CSF–CUF computes an average of the FEM3D stresses. The two fields are obtained independently, and the observed correspondence concerns their overall behaviour rather than pointwise agreement between individual element-side values.
+
+Differences near the beam ends remain more pronounced and require separate consideration.
+
+The complete displacement, strain and stress comparisons are available in the [strain and stress boundary results](strain_stress_boundary/).
+
+## Repository
+
+[C-section example](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape)
