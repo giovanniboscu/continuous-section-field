@@ -30,9 +30,10 @@ Thus, the CSF geometry and the transverse approximation remain separate descript
 
 The example is configured through three plain-text YAML files:
 
-1. **Model** – the CSF section geometry and material distribution: [`c_section_chapter9_5_3_9L9_csf.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/models/c_section_chapter9_5_3_9L9_csf.yaml).
-2. **Problem** – the cantilever boundary conditions and concentrated loading: [`c_section_cantilever_point_9L9.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/problems/c_section_cantilever_point_9L9.yaml).
-3. **Case** – the transverse expansion, longitudinal finite elements, integration and solver settings: [`c_section_table_9_13_lagrangeL9_E10.yaml`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/cases/c_section_table_9_13_lagrangeL9_E10.yaml).
+1. **[Model](models/c_section_chapter9_5_3_9L9_csf.yaml)** – CSF geometry and material properties.
+2. **[Problem](problems/c_section_cantilever_point_9L9.yaml)** – boundary conditions and applied loading.
+3. **[Case](cases/c_section_table_9_13_lagrangeL9_E10.yaml)** – CUF expansion, longitudinal discretization and numerical settings.
+
 
 The case uses ten longitudinal elements of order 12. These are numerical choices for this analysis, not fixed characteristics of CSF–CUF.
 
