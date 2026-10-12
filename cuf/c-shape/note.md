@@ -4,7 +4,7 @@
 
 This example revisits the open C-section beam described by **E. Carrera and M. Petrolo**, *Refined beam elements with only displacement variables and plate/shell capabilities*, Section 4.3.
 
-The objective is to reproduce the C-section geometry and the **nine-domain L9 transverse layout** within the CSF–CUF framework. The section is represented by nine adjacent quadrilateral polygons: five along the upper flange, one along the web, and three along the lower flange.
+The objective is to reconstruct the C-section geometry and the **nine-domain L9 transverse layout** within the CSF–CUF framework. The plots below compare the resulting CSF–CUF solution with an independently computed FEM3D reference; they are not a point-by-point reproduction of the numerical values in the paper’s Table 13. The section is represented by nine adjacent quadrilateral polygons: five along the upper flange, one along the web, and three along the lower flange.
 
 The main section dimensions follow the reference proportions: height \(h=1000\,\mathrm{mm}\), thickness \(t=100\,\mathrm{mm}\), upper-flange width \(b_2=1000\,\mathrm{mm}\), and lower-flange width \(b_1=500\,\mathrm{mm}\). The prismatic beam length is \(L=20000\,\mathrm{mm}\). The isotropic material has \(E=75000\,\mathrm{MPa}\) and \(\nu=0.33\).
 
@@ -107,15 +107,15 @@ The following figures compare the CSF–CUF displacement components with the FEM
 
 ![Longitudinal displacement ux](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/ux_along_boundary_part01.png)
 
-*Figure 2 – Longitudinal displacement \(u_x\).*
+*Figure 2 – Longitudinal displacement uₓ.*
 
 ![Transverse displacement uy](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uy_along_boundary_part01.png)
 
-*Figure 3 – Transverse displacement \(u_y\).*
+*Figure 3 – Transverse displacement uᵧ.*
 
 ![Transverse displacement uz](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uz_along_boundary_part01.png)
 
-*Figure 4 – Transverse displacement \(u_z\).*
+*Figure 4 – Transverse displacement u_z.*
 
 The displacement comparison provides a first assessment of the global structural response. Stress convergence, however, requires separate examination because stresses depend on derivatives of the displacement approximation.
 
@@ -125,11 +125,11 @@ The strain components are obtained directly from the displacement gradients.
 
 ![Normal strain epsilon xx](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part01.png)
 
-*Figure 5 – Longitudinal normal strain \(\varepsilon_{xx}\).*
+*Figure 5 – Longitudinal normal strain εₓₓ.*
 
 ![Shear strain gamma xy](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/gamma_xy_along_boundary_part01.png)
 
-*Figure 6 – Shear strain \(\gamma_{xy}\).*
+*Figure 6 – Shear strain γₓᵧ.*
 
 The strain comparison helps distinguish differences in the underlying displacement derivatives from those associated with stress recovery.
 
@@ -143,25 +143,25 @@ The CSF–CUF stresses are instead obtained directly from the derivatives of the
 
 ![Normal stress sigma xx](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/sigma_xx_along_boundary_part01.png)
 
-*Figure 7 – Longitudinal normal stress \(\sigma_{xx}\).*
+*Figure 7 – Longitudinal normal stress σₓₓ.*
 
 ![Shear stress tau xy](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xy_along_boundary_part01.png)
 
-*Figure 8 – Shear stress \(\tau_{xy}\).*
+*Figure 8 – Shear stress τₓᵧ.*
 
 ![Shear stress tau xz](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part01.png)
 
-*Figure 9 – Shear stress \(\tau_{xz}\).*
+*Figure 9 – Shear stress τₓz.*
 
 ![Shear stress tau yz](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_yz_along_boundary_part01.png)
 
-*Figure 10 – Shear stress \(\tau_{yz}\).*
+*Figure 10 – Shear stress τᵧz.*
 
 For the shear stress component \(\tau_{xy}\), the CSF–CUF curves generally follow the **central trend of the FEM3D stress distribution**, particularly away from the beam ends, despite the scatter of individual FEM3D element-side values.
 
 This does not imply that CSF–CUF computes an average of FEM3D stresses. The two fields are obtained independently, and the observed correspondence concerns their overall behaviour rather than pointwise agreement between individual element-side values.
 
-Differences near the beam ends remain more pronounced and require separate consideration, particularly in the presence of concentrated loading and boundary constraints.
+Differences near the beam ends remain more pronounced and require separate consideration, particularly in the presence of concentrated loading and boundary constraints. Agreement is not uniform across the shear components: the comparisons for τ_xz and τ_yz show substantial discrepancies, including away from the beam ends. Their origin is not established by the present benchmark.
 
 ## Closing perspective
 
@@ -171,6 +171,4 @@ The CUF formulation remains unchanged, while geometry, material, transverse expa
 
 The purpose is not a special-purpose implementation for one C-section, but a reusable framework for constructing and examining CUF models.
 
-**Repository:** [C-section example](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape)
-
-**Additional results:** [Strain and stress boundary comparisons](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape/strain_stress_boundary)
+**Repository:** [C-section example](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape) · **Additional results:** [Strain and stress boundary comparisons](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape/strain_stress_boundary)
