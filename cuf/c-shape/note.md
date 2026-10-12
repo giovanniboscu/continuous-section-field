@@ -28,14 +28,60 @@ Thus, the CSF geometry and the transverse approximation remain separate descript
 
 ## Reproducible input files
 
-The example is configured through three plain-text YAML files:
+
+
+CSF–CUF uses **YAML files** to describe the analysis. YAML is a simple, human-readable text format in which parameters and data are organized by names and indentation. No programming is required to define a new structural model.
+
+The analysis is organized into three separate files:
 
 1. **[Model](models/c_section_chapter9_5_3_9L9_csf.yaml)** – CSF geometry and material properties.
 2. **[Problem](problems/c_section_cantilever_point_9L9.yaml)** – boundary conditions and applied loading.
 3. **[Case](cases/c_section_table_9_13_lagrangeL9_E10.yaml)** – CUF expansion, longitudinal discretization and numerical settings.
 
+### Geometry and material
 
-The case uses ten longitudinal elements of order 12. These are numerical choices for this analysis, not fixed characteristics of CSF–CUF.
+The following excerpt from the **Model YAML** describes one polygon of the upper flange at the initial section:
+
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        - name: top_1
+          weight: 75000.0
+          vertices:
+            - [-1000.0, 400.0]
+            - [-775.0,  400.0]
+            - [-775.0,  500.0]
+            - [-1000.0, 500.0]
+```
+
+The four vertices define the physical polygon in millimetres, while `weight` specifies its elastic modulus in MPa. The complete model contains nine polygons at each of two stations, `S0` and `S1`, located at 0 and 20,000 mm. The identical sectional descriptions define a prismatic beam.
+
+The isotropic material is completed by the Poisson ratio, specified in the same model:
+
+```yaml
+shear_weight_laws:
+  - 'iso(0.33)'
+```
+
+### Numerical approximation
+
+The **Case YAML** specifies how the displacement field is approximated. For example:
+
+```yaml
+longitudinal:
+  method: finite_element
+  elements: 10
+  order: 12
+```
+
+This selects ten longitudinal finite elements of order 12. The transverse L9 expansion is provided independently by a Python module.
+
+These examples illustrate the essential separation in CSF–CUF: **the Model describes the physical beam, the Problem defines its loading and constraints, and the Case selects how the solution is approximated and computed.**
+
+Geometry, material properties and numerical approximation can therefore be modified independently without changing the CUF solver core.
 
 The geometry, material, structural problem and approximation choices can be changed independently without modifying the CUF solver core.
 
