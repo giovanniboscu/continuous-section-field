@@ -12,28 +12,6 @@ All links are relative to this README and refer to files in the repository.
 
 ### `c_section_table_9_13_lagrangeL9_v4_E10_eq1/`
 
-**epsilon_xx_along_boundary_part01.png**
-
-[Open original image](c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part01.png)
-
-![epsilon_xx_along_boundary_part01.png](c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part01.png)
-
----
-
-**epsilon_xx_along_boundary_part02.png**
-
-[Open original image](c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part02.png)
-
-![epsilon_xx_along_boundary_part02.png](c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part02.png)
-
----
-
-**epsilon_xx_along_boundary_part03.png**
-
-[Open original image](c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part03.png)
-
-![epsilon_xx_along_boundary_part03.png](c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part03.png)
-
 ---
 
 **epsilon_xx_along_boundary_part04.png**
@@ -489,6 +467,29 @@ All links are relative to this README and refer to files in the repository.
 [Open original image](c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_yz_along_boundary_part05.png)
 
 ![tau_yz_along_boundary_part05.png](c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_yz_along_boundary_part05.png)
+
+---
+**epsilon_xx_along_boundary_part01.png**
+
+[Open original image](c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part01.png)
+
+![epsilon_xx_along_boundary_part01.png](c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part01.png)
+
+---
+
+**epsilon_xx_along_boundary_part02.png**
+
+[Open original image](c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part02.png)
+
+![epsilon_xx_along_boundary_part02.png](c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part02.png)
+
+---
+
+**epsilon_xx_along_boundary_part03.png**
+
+[Open original image](c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part03.png)
+
+![epsilon_xx_along_boundary_part03.png](c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part03.png)
 
 ---
 
