@@ -28,9 +28,7 @@ Thus, the CSF geometry and the transverse approximation remain separate descript
 
 ## Reproducible input files
 
-
-
-CSF–CUF uses **YAML files** to describe the analysis. YAML is a simple, human-readable text format in which parameters and data are organized by names and indentation. No programming is required to define a new structural model.
+CSF–CUF uses **YAML files** to describe an analysis. YAML is a simple, human-readable text format in which parameters and data are organized through names and indentation. The physical model and numerical settings can therefore be specified without writing solver code.
 
 The analysis is organized into three separate files:
 
@@ -57,7 +55,9 @@ CSF:
             - [-1000.0, 500.0]
 ```
 
-The four vertices define the physical polygon in millimetres, while `weight` specifies its elastic modulus in MPa. The complete model contains nine polygons at each of two stations, `S0` and `S1`, located at 0 and 20,000 mm. The identical sectional descriptions define a prismatic beam.
+The four vertices define the physical polygon in millimetres, while `weight` specifies its Young's modulus in MPa.
+
+The complete model contains nine polygons at each of two stations, `S0` and `S1`, located at 0 and 20,000 mm. Identical sectional descriptions at both stations define a prismatic beam.
 
 The isotropic material is completed by the Poisson ratio, specified in the same model:
 
@@ -68,22 +68,36 @@ shear_weight_laws:
 
 ### Numerical approximation
 
-The **Case YAML** specifies how the displacement field is approximated. For example:
+The **Case YAML** specifies how the displacement field is approximated and how the numerical problem is solved.
+
+The transverse expansion is selected through an external Python module, independently of the CSF geometry:
+
+```yaml
+cuf:
+  basis: ../expansions/lagrangeL9_v4.py
+  order: 2
+  basis_options:
+    domain_source: csf_polygons
+    mapping: isoparametric
+    connectivity: shared_points
+```
+
+Here, `basis` identifies the module implementing the L9 transverse expansion. The expansion operates on the nine physical polygons defined by CSF, using isoparametric mapping and shared-point connectivity between adjacent domains.
+
+The longitudinal approximation is specified separately:
 
 ```yaml
 longitudinal:
   method: finite_element
-  elements: 10
+  basis: lagrange
   order: 12
 ```
 
-This selects ten longitudinal finite elements of order 12. The transverse L9 expansion is provided independently by a Python module.
+For this benchmark, ten longitudinal finite elements of order 12 are used. These are numerical choices for the present analysis, not fixed characteristics of CSF–CUF.
 
-These examples illustrate the essential separation in CSF–CUF: **the Model describes the physical beam, the Problem defines its loading and constraints, and the Case selects how the solution is approximated and computed.**
+The distinction is fundamental: **the Model describes the physical beam, the Problem defines its loads and constraints, and the Case determines how the displacement field is represented and computed.**
 
-Geometry, material properties and numerical approximation can therefore be modified independently without changing the CUF solver core.
-
-The geometry, material, structural problem and approximation choices can be changed independently without modifying the CUF solver core.
+Geometry, material properties, structural conditions and approximation functions can therefore be changed independently, without modifying the CUF solver core.
 
 ## Displacement comparison with FEM3D
 
