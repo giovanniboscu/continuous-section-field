@@ -58,13 +58,13 @@ CSF:
 
 The fragment is **illustrative**, not a complete input file; use the linked YAML to reproduce the model.
 
-## Why nine polygons?
+## Nine polygons
 
 The layout follows the nine-domain L9 partition shown in Carrera and Petrolo's reference figure. CSF supplies the physical domains; the independent transverse basis later supplies the Lagrange interpolation on those domains. **A polygon is a geometric domain, not a longitudinal finite element.**
 
 The paper illustrates the subdivision but does not tabulate its internal coordinates. The flange partition used here reconstructs them from the figure: four 225 mm subdivisions of the upper free flange and two 200 mm subdivisions of the lower free flange, with 100 mm corner domains adjoining the web. These internal coordinates are modelling choices, not tabulated values from the paper.
 
-## What is deliberately not defined here?
+## What is deliberately not defined here
 
 No support, force, transverse polynomial basis, longitudinal element count or solver setting is defined by this model. Those belong to the [Problem](cshape-problem.md) and [Case](cshape-cases.md) respectively.
 
