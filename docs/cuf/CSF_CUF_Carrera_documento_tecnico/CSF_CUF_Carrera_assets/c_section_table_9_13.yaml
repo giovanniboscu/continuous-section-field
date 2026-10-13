@@ -1,0 +1,12 @@
+# Problema del riferimento FEM3D: stesso problema, geometria a poligono unico.
+model:
+  csf_yaml: ../models/c_section_chapter9_5_3_csf.yaml
+
+problem:
+  type: c_section_cantilever
+  force:
+    type: point
+    amplitude: -1.0
+    x: 20000.0
+    y: 0.0
+    z: -500.0

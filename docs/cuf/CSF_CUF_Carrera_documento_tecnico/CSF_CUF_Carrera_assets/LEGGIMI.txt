@@ -1,0 +1,4 @@
+Allegati della bozza Markdown CSF-CUF per Carrera (13 ottobre 2026).
+Contiene 3 figure geometriche calcolate dai valori YAML e 5 file YAML completi.
+Non contiene risultati FEM3D/CUF sintetici o inventati.
+Le figure dei confronti numerici sono da integrare dopo acquisizione dai risultati del repository.

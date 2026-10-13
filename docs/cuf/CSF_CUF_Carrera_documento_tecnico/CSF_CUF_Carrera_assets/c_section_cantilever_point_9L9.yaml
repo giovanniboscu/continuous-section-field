@@ -1,0 +1,12 @@
+# Problema del case CUF L9: geometria nove quadrilateri.
+model:
+  csf_yaml: ../models/c_section_chapter9_5_3_9L9_csf.yaml
+
+problem:
+  type: c_section_cantilever
+  force:
+    type: point
+    amplitude: -1.0
+    x: 20000.0
+    y: 0.0
+    z: -500.0
