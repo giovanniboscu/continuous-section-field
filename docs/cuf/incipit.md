@@ -126,6 +126,320 @@ Per ogni passaggio saranno indicati i file sorgente e il significato dei paramet
 
 Il riferimento della sezione a C asimmetrica è il lavoro di **Erasmo Carrera e Marco Petrolo, _Refined beam elements with only displacement variables and plate/shell capabilities_**, in particolare la **sezione 4.3, “Open cross-sections”**, le **figure 12 e 13** e le **tabelle 13 e 14**. La figura 12 definisce la sezione a C; la figura 13(b) mostra la partizione in nove domini L9. Le tabelle 13 e 14 riportano spostamenti e tensioni per i rapporti `L/h = 20` e `L/h = 10` nella configurazione flesso-torsionale. Il confronto del presente caso va interpretato rispetto alla specifica configurazione di carico e ai punti di valutazione dichiarati, senza confondere i risultati pubblicati con quelli prodotti dall'implementazione CSF–CUF e dalla baseline OpenSees.
 
+
+
+### 6.7 I quattro file YAML completi, commentati
+
+Questa appendice rende esplicito il collegamento **case → problem → model CSF**, distinguendo il modello geometrico a nove domini L9 dal modello fisico a poligono unico usato come riferimento FEM3D. I blocchi conservano **tutte le chiavi e tutti i valori operativi** dei file consultati; sono stati aggiunti commenti didattici in italiano. I commenti iniziali di cronologia/versione dei sorgenti sono sostituiti da questa nota, senza modificarne i parametri. Per verificare eventuali aggiornamenti successivi si deve consultare il repository.
+
+Il caso punta al `problem`, che a sua volta punta al modello a nove domini. Il modello a poligono unico **non** e richiamato dal `problem` qui riprodotto: rappresenta la medesima sezione fisica ed e utilizzato nel percorso FEM3D.
+
+#### 6.7.1 Case CUF completo
+
+[Sorgente nel repository](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/cases/c_section_table_9_13_lagrangeL9_E10.yaml)
+
+```yaml
+# Identificativo della configurazione, non una proprieta fisica.
+case:
+  name: c_section_table_9_13_lagrangeL9_v4_E10
+# Riferimento esterno al problema e al suo adapter Python.
+problem:
+  yaml: ../problems/c_section_cantilever_point_9L9.yaml
+  adapter: csf.cuf.adapters.problem.c_section_cantilever_point_load
+# Scelta dell espansione trasversale.
+cuf:
+  basis: ../expansions/lagrangeL9_v4.py
+# Ordine nominale della base trasversale L9.
+  order: 2
+  basis_options:
+    domain_source: csf_polygons
+    mapping: isoparametric
+    connectivity: shared_points
+    boundary_tolerance: 1.0e-10
+# Questo plugin richiede sezioni prismatiche.
+    require_prismatic: true
+# Discretizzazione e integrazione lungo l asse.
+longitudinal:
+  method: finite_element
+# Undici estremi normalizzati delimitano dieci elementi.
+  element_boundaries: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  basis: lagrange
+# Ordine dell approssimazione longitudinale; distinto da E10 nel nome file.
+  order: 12
+  gauss_order: 15
+# Grado dichiarato per la dipendenza polinomiale del materiale.
+  material_polynomial_degree: 0
+# Quadratura sulla sezione.
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 9
+# Opzioni di correzione, controllo e riequilibratura.
+solver:
+  correctionMITC: true
+  verifyMITCAssembly: true
+  equilibration:
+# Iterazioni richieste al procedimento di equilibration.
+    iterations: [1,2,3,4,5]
+# Posizioni e risoluzione del post-processing.
+sampling:
+  stations: [0.0, 0.1, 1.0]
+  displacement_samples: 201
+  stress_grid: 41
+# Adapter e cartella dei risultati.
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../output/c_section_table_9_13_lagrangeL9_v4_E10
+```
+
+#### 6.7.2 Problema fisico completo
+
+[Sorgente nel repository](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/problems/c_section_cantilever_point_9L9.yaml)
+
+```yaml
+# Il modello fisico e esterno al problema.
+model:
+  csf_yaml: ../models/c_section_chapter9_5_3_9L9_csf.yaml
+# Tipo di problema e carico.
+problem:
+  type: c_section_cantilever
+# Forza puntuale nelle coordinate fisiche x longitudinale, y/z sezionali.
+  force:
+    type: point
+# Intensita con segno, in N.
+    amplitude: -1.0
+# Posizione lungo la trave, in mm.
+    x: 20000.0
+# Prima coordinata trasversale, in mm.
+    y: 0.0
+# Seconda coordinata trasversale, in mm.
+    z: -500.0
+```
+
+#### 6.7.3 Modello CSF a nove domini L9
+
+[Sorgente nel repository](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/models/c_section_chapter9_5_3_9L9_csf.yaml)
+
+```yaml
+# Modello CSF diviso in nove quadrilateri.
+CSF:
+  sections:
+# Sezione iniziale.
+    S0:
+      z: 0.0
+# Cinque domini superiori, un anima, tre inferiori.
+      polygons:
+# Dominio trasversale top_1
+        - name: top_1
+# E=75000 MPa per ciascun poligono.
+          weight: 75000.0
+# Quattro vertici del quadrilatero, in coordinate sezionali (mm).
+          vertices:
+            - [-1000.0, 400.0]
+            - [-775.0, 400.0]
+            - [-775.0, 500.0]
+            - [-1000.0, 500.0]
+# Dominio trasversale top_2
+        - name: top_2
+          weight: 75000.0
+          vertices:
+            - [-775.0, 400.0]
+            - [-550.0, 400.0]
+            - [-550.0, 500.0]
+            - [-775.0, 500.0]
+# Dominio trasversale top_3
+        - name: top_3
+          weight: 75000.0
+          vertices:
+            - [-550.0, 400.0]
+            - [-325.0, 400.0]
+            - [-325.0, 500.0]
+            - [-550.0, 500.0]
+# Dominio trasversale top_4
+        - name: top_4
+          weight: 75000.0
+          vertices:
+            - [-325.0, 400.0]
+            - [-100.0, 400.0]
+            - [-100.0, 500.0]
+            - [-325.0, 500.0]
+# Dominio trasversale top_web_corner
+        - name: top_web_corner
+          weight: 75000.0
+          vertices:
+            - [-100.0, 400.0]
+            - [0.0, 400.0]
+            - [0.0, 500.0]
+            - [-100.0, 500.0]
+# Dominio trasversale web
+        - name: web
+          weight: 75000.0
+          vertices:
+            - [-100.0, -400.0]
+            - [0.0, -400.0]
+            - [0.0, 400.0]
+            - [-100.0, 400.0]
+# Dominio trasversale bottom_1
+        - name: bottom_1
+          weight: 75000.0
+          vertices:
+            - [-500.0, -500.0]
+            - [-300.0, -500.0]
+            - [-300.0, -400.0]
+            - [-500.0, -400.0]
+# Dominio trasversale bottom_2
+        - name: bottom_2
+          weight: 75000.0
+          vertices:
+            - [-300.0, -500.0]
+            - [-100.0, -500.0]
+            - [-100.0, -400.0]
+            - [-300.0, -400.0]
+# Dominio trasversale bottom_web_corner
+        - name: bottom_web_corner
+          weight: 75000.0
+          vertices:
+            - [-100.0, -500.0]
+            - [0.0, -500.0]
+            - [0.0, -400.0]
+            - [-100.0, -400.0]
+# Sezione finale: stessa partizione, quindi prisma.
+    S1:
+      z: 20000.0
+      polygons:
+# Dominio trasversale top_1
+        - name: top_1
+          weight: 75000.0
+          vertices:
+            - [-1000.0, 400.0]
+            - [-775.0, 400.0]
+            - [-775.0, 500.0]
+            - [-1000.0, 500.0]
+# Dominio trasversale top_2
+        - name: top_2
+          weight: 75000.0
+          vertices:
+            - [-775.0, 400.0]
+            - [-550.0, 400.0]
+            - [-550.0, 500.0]
+            - [-775.0, 500.0]
+# Dominio trasversale top_3
+        - name: top_3
+          weight: 75000.0
+          vertices:
+            - [-550.0, 400.0]
+            - [-325.0, 400.0]
+            - [-325.0, 500.0]
+            - [-550.0, 500.0]
+# Dominio trasversale top_4
+        - name: top_4
+          weight: 75000.0
+          vertices:
+            - [-325.0, 400.0]
+            - [-100.0, 400.0]
+            - [-100.0, 500.0]
+            - [-325.0, 500.0]
+# Dominio trasversale top_web_corner
+        - name: top_web_corner
+          weight: 75000.0
+          vertices:
+            - [-100.0, 400.0]
+            - [0.0, 400.0]
+            - [0.0, 500.0]
+            - [-100.0, 500.0]
+# Dominio trasversale web
+        - name: web
+          weight: 75000.0
+          vertices:
+            - [-100.0, -400.0]
+            - [0.0, -400.0]
+            - [0.0, 400.0]
+            - [-100.0, 400.0]
+# Dominio trasversale bottom_1
+        - name: bottom_1
+          weight: 75000.0
+          vertices:
+            - [-500.0, -500.0]
+            - [-300.0, -500.0]
+            - [-300.0, -400.0]
+            - [-500.0, -400.0]
+# Dominio trasversale bottom_2
+        - name: bottom_2
+          weight: 75000.0
+          vertices:
+            - [-300.0, -500.0]
+            - [-100.0, -500.0]
+            - [-100.0, -400.0]
+            - [-300.0, -400.0]
+# Dominio trasversale bottom_web_corner
+        - name: bottom_web_corner
+          weight: 75000.0
+          vertices:
+            - [-100.0, -500.0]
+            - [0.0, -500.0]
+            - [0.0, -400.0]
+            - [-100.0, -400.0]
+# Legge isotropa con nu=0.33.
+  shear_weight_laws:
+    - 'iso(0.33)'
+```
+
+#### 6.7.4 Modello CSF a poligono unico
+
+[Sorgente nel repository](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/models/c_section_chapter9_5_3_csf.yaml)
+
+```yaml
+# Descrizione della sezione fisica senza partizione L9.
+CSF:
+  sections:
+# Sezione iniziale, a coordinata longitudinale CSF z=0.
+    S0:
+      z: 0.0
+      polygons:
+# Unico poligono concavo che descrive il contorno fisico.
+        - name: c_section
+# Modulo E espresso in MPa per il materiale del poligono.
+          weight: 75000.0
+# Otto vertici ordinati del contorno della C; coordinate sezionali in mm.
+          vertices:
+            - [-500.0, -500.0]
+            - [0.0, -500.0]
+            - [0.0, 500.0]
+            - [-1000.0, 500.0]
+            - [-1000.0, 400.0]
+            - [-100.0, 400.0]
+            - [-100.0, -400.0]
+            - [-500.0, -400.0]
+# Sezione finale, a z=20000 mm.
+    S1:
+      z: 20000.0
+      polygons:
+        - name: c_section
+          weight: 75000.0
+          vertices:
+            - [-500.0, -500.0]
+            - [0.0, -500.0]
+            - [0.0, 500.0]
+            - [-1000.0, 500.0]
+            - [-1000.0, 400.0]
+            - [-100.0, 400.0]
+            - [-100.0, -400.0]
+            - [-500.0, -400.0]
+# Legge isotropa con coefficiente di Poisson 0.33.
+  shear_weight_laws:
+    - 'iso(0.33)' 
+```
+
+#### 6.7.5 Come leggere i quattro file insieme
+
+- **Geometria:** le sezioni `S0` e `S1` definiscono la posizione e i vertici. Essendo uguali, la geometria e prismatica; la descrizione a nove poligoni serve alla partizione trasversale L9.
+- **Materiale:** `weight: 75000.0` compare su ogni poligono, mentre `iso(0.33)` fissa la legge isotropa dichiarata. Le unita di riferimento sono mm, N, MPa.
+- **Problema:** `type: c_section_cantilever` seleziona l'adapter del vincolo; la forza di `-1.0 N` e applicata in `(x,y,z)=(20000,0,-500) mm`. Il file non contiene una lista esplicita dei nodi vincolati: questi sono definiti dall'adapter Python.
+- **Espansione:** `lagrangeL9_v4.py` e un file Python esterno, non un nome astratto. `domain_source`, `mapping` e `connectivity` ne configurano il rapporto con i poligoni CSF.
+- **Discretizzazione:** `element_boundaries` sono coordinate normalizzate; l'ordine longitudinale 12, la quadratura longitudinale 15 e quella sezionale 9 sono parametri distinti.
+- **Calcolo e risultati:** `solver`, `sampling` e `output` determinano opzioni operative e dati di uscita; non modificano la geometria.
+
+**Nota di rigore:** i commenti spiegano il significato delle dichiarazioni, ma la semantica esatta delle opzioni avanzate del solver e degli adapter va verificata nei relativi moduli Python. La dicitura `E10` nel nome del file non sostituisce la lettura dei valori effettivi del YAML.
+
 ### 7. Limiti attualmente dichiarati
 
 È importante distinguere il **perimetro delle funzionalità oggi disponibili** dai limiti della **formulazione CUF** e dall'architettura del suo nucleo di calcolo.
