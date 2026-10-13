@@ -45,7 +45,7 @@ case YAML
   └── integration / solver / output configuration
 ```
 
-## What is specific to the 9-L9 example?
+## What is specific to the 9-L9 example
 
 The label **9-L9** means that the section is divided into nine physical quadrilateral domains, each carrying a local nine-node Lagrange transverse approximation. It does **not** mean nine beam elements along the longitudinal direction.
 
