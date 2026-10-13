@@ -26,10 +26,11 @@ Thus, the CSF geometry and the transverse approximation remain separate descript
 
 The example is configured through **three plain-text YAML files**, all kept in the [`cuf/c-shape`](./) directory tree:
 
-1. **Case** - the CUF expansion, longitudinal finite-element discretization, numerical integration and solver/output settings ([`cases/`](cases/)).
-2. **Model** - the CSF section geometry and material distribution ([`c_section_chapter9_5_3_9L9_csf.yaml`](models/c_section_chapter9_5_3_9L9_csf.yaml)).
-3. **Problem** - the boundary-value problem and applied loading, with a reference to the model ([`c_section_cantilever_point_9L9.yaml`](problems/c_section_cantilever_point_9L9.yaml)).
+1. **Model** - the CSF section geometry and material distribution ([`c_section_chapter9_5_3_9L9_csf.yaml`](models/c_section_chapter9_5_3_9L9_csf.yaml)).
 
+2. **Problem** - the boundary-value problem and applied loading, with a reference to the model ([`c_section_cantilever_point_9L9.yaml`](problems/c_section_cantilever_point_9L9.yaml)).
+
+3. **Case** - the CUF expansion, longitudinal finite-element discretization, numerical integration and solver/output settings ([`cases/`](cases/)).
 The case file selects the separate Python transverse-basis implementation. In this way, the geometry/material model, transverse expansion, longitudinal approximation and problem definition can be specified without embedding them in the CUF solver core.
 
 ## Stress comparison with FEM3D
