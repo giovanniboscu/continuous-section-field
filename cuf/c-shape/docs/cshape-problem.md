@@ -4,7 +4,7 @@
 
 [← C-section benchmark](../readme.md) · [Model](cshape-model.md) · [Case](cshape-cases.md)
 
-## What does the problem describe?
+## What the problem describe
 
 The **problem** defines the boundary-value problem applied to the physical CSF model: which beam is analysed, how it is constrained and where and how it is loaded. It does not choose the CUF approximation order or the longitudinal discretization.
 
@@ -47,7 +47,7 @@ The beam extends from axial station 0 to 20,000 mm. Its root is clamped and a po
 
 A point load is an idealisation: stresses very near its application point may exhibit strong local gradients or singular-like numerical behaviour. Accordingly, comparisons of stress fields should distinguish the load neighbourhood from regions sufficiently far from it. This does not prevent meaningful comparisons of the global displacement field.
 
-## What is deliberately not defined here?
+## What is deliberately not defined here
 
 The problem reuses the [Model](cshape-model.md) rather than duplicating geometry or material. It leaves the transverse basis, approximation order, longitudinal FEM discretization, quadrature and solver/output options to the [Case](cshape-cases.md).
 
