@@ -6,7 +6,7 @@ Il punto di partenza è stato un problema di implementazione: come costruire un 
 
 La scelta che ha orientato il lavoro è stata **mantenere la sezione come oggetto continuo lungo l'asse della trave e portarne la dipendenza longitudinale fino ai nuclei CUF**. In altre parole, considerare esplicitamente una sezione `S(x)` e le proprietà costitutive associate alla posizione `x`, anziché fissarle preliminarmente in una descrizione sezionale specializzata.
 
-L'obiettivo non era modificare i principi della formulazione CUF, ma trovare un'organizzazione matematica e computazionale che ne consentisse un'implementazione riutilizzabile.
+L'obiettivo non era modificare i principi della formulazione CUF, ma trovare un'organizzazione matematica e computazionale che ne consentisse uan'implementazione riutilizzabile.
 
 ## 1. La scelta fondamentale: conservare S(x) fino ai nuclei
 
