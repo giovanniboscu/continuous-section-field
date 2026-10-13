@@ -759,5 +759,5 @@ Il risultato architetturale illustrato dall'esempio è più preciso: gli oggetti
 
 ---
 
-**Nota editoriale per la revisione tecnica.** Questa è una stesura Markdown **ampia ma non ancora definitiva per l'invio al professore**: l'incipit fino all'inizio del §6.1 è riprodotto senza modifiche; i cinque YAML sono inclusi per intero nei dati operativi; la parte matematica e implementativa è espansa dai sorgenti. Restano da integrare nei capitoli sui risultati le **figure FEM3D/CUF effettivamente pubblicate**, corredate dalle relative didascalie, e gli eventuali valori numerici verificati sui dati di calcolo originali. Queste informazioni non sono state sostituite con grafici simulati o con numeri ipotetici.
+
 
