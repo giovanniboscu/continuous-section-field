@@ -177,7 +177,7 @@ Questo caso mette alla prova **due questioni distinte**:
 
 ### 1.7 Stato delle evidenze disponibili
 
-Le configurazioni permettono di documentare problema fisico, CSF, L9, discretizzazione longitudinale e impostazioni del riferimento solido. **Non sono invece inclusi in questa versione i checkpoint numerici e le tabelle di confronto**, quindi non vengono inseriti risultati inventati.
+Le configurazioni permettono di documentare problema fisico, CSF, L9, discretizzazione longitudinale e impostazioni del riferimento solido. 
 
 **La geometria fisica della sezione a C è la medesima nei due modelli.** Per CSF–CUF è suddivisa in nove domini quadrilateri su cui opera l’espansione L9; per agevolare la costruzione della mesh solida in OpenSees, il modello FEM3D usa invece un unico poligono di contorno a otto vertici. Le due descrizioni geometriche hanno finalità numeriche differenti e non rappresentano due problemi strutturali diversi.
 
