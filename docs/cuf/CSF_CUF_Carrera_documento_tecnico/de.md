@@ -165,7 +165,6 @@ Questo caso mette alla prova **due questioni distinte**:
 - **Architettura del modello:** è possibile applicare la medesima espansione CUF L9 a una geometria costruita esternamente in CSF, senza derivare e programmare nuclei sezionali specifici per la sezione a C?
 - **Accuratezza della soluzione:** con quella particolare espansione L9, la discretizzazione longitudinale scelta e le quadrature impiegate, quali differenze si ottengono rispetto a un riferimento FEM3D solido e ai dati pubblicati?
 
-La prima questione riguarda l'impostazione della formulazione e del software. La seconda richiede i **risultati numerici effettivi**. Non si deve presentare il buon accordo degli spostamenti come una prova generale di correttezza di tutte le componenti di tensione.
 
 ### 1.7 Stato delle evidenze disponibili
 
@@ -271,6 +270,11 @@ Il campo tridimensionale è rappresentato tramite **funzioni trasversali** e **g
 
 L'approccio è quello standard CUF: la particolarità del lavoro è **da dove provengono geometria e proprietà sezionali**, non l'introduzione di nuove incognite o nuove leggi di equilibrio.
 
+Per esigenze implementative, la formulazione CUF è stata estesa introducendo la dipendenza continua dei coefficienti sezionali dalla coordinata longitudinale, attraverso la funzione di sezione $\mathcal{S}(x)$ fornita da CSF.
+
+Questa estensione consente di rappresentare geometrie e materiali variabili lungo l'asse, **preservando la struttura cinematica e variazionale generale della formulazione CUF originaria**, senza imporre una particolare geometria, legge costitutiva o famiglia di espansioni trasversali.
+
+Per una trattazione formale si rimanda al documento [CSF–CUF: Formulation for Directly Prescribed Variable Sections](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md).
 ### 4.2 Espansione trasversale L9
 
 Ogni quadrilatero fisico CSF viene associato a un dominio parametrico e riceve un'espansione **L9 con nove punti di interpolazione**, disposti su una griglia 3 × 3. Le funzioni e le loro derivate sono fornite dal modulo trasversale, mentre geometria e materiale provengono da CSF.
