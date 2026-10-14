@@ -59,7 +59,7 @@ Il nome **CSF–CUF** indica quindi un *accoppiamento*: **CSF descrive il domini
 
 ### 1.3 CSF: un modello fisico, non una soluzione
 
-CSF è il **livello di rappresentazione della realtà fisica**. A una stazione longitudinale richiesta, restituisce il dominio della sezione, la sua geometria e le proprietà dei materiali. **Non** sceglie la cinematica, non costruisce da solo una matrice di rigidezza e non risolve il problema di equilibrio.
+CSF è il **livello di rappresentazione della realtà fisica**. A una stazione longitudinale richiesta, restituisce il dominio della sezione, la sua geometria e le proprietà dei materiali. non sceglie la cinematica, non costruisce da solo una matrice di rigidezza e non risolve il problema di equilibrio.
 
 
 
@@ -167,7 +167,8 @@ Per una trattazione formale si rimanda al documento [CSF–CUF: Formulation for 
 
 ### 1.5 FEM3D: stesso problema, soluzione strutturale indipendente
 
-FEM3D è un **secondo modello di soluzione**, costruito con elementi solidi tridimensionali H8 in OpenSees. Non utilizza i gradi di libertà generalizzati né le funzioni trasversali L9 della CUF: ha incognite di spostamento ai nodi della mesh volumetrica.
+FEM3D è un **secondo modello di soluzione**, costruito con elementi solidi tridimensionali H8 in OpenSees, nel quale gli spostamenti nodali costituiscono le incognite della discretizzazione volumetrica.
+
 
 ```text
        STESSO PROBLEMA FISICO
@@ -191,7 +192,7 @@ FEM3D è un **secondo modello di soluzione**, costruito con elementi solidi trid
        CONFRONTO CON CSF–CUF
 ```
 
-Il contorno unico a otto vertici è usato **solo per comodità di generazione della mesh FEM3D**; descrive la stessa sezione a C che CSF–CUF suddivide in nove domini. Il confronto è indipendente rispetto alla discretizzazione degli spostamenti, non rispetto al problema fisico condiviso. Gli scarti vanno verificati sui medesimi punti, componenti e convenzioni di carico e vincolo.
+Il contorno unico a otto vertici è usato **solo per comodità di generazione della mesh FEM3D**; descrive la stessa sezione a C che CSF–CUF suddivide in nove domini. Il confronto è indipendente rispetto alla discretizzazione degli spostamenti, non rispetto al problema fisico condiviso. 
 
 ### 1.6 Che cosa viene verificato in questo benchmark
 
