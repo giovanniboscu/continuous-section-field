@@ -100,9 +100,9 @@ Nel caso numerico esaminato, i tre file di configurazione sono:
 
 | Configurazione | File YAML | Riferimento |
 |---|---|---|
-| **Model** | `c_section_chapter9_5_3_9L9_csf.yaml` | Appendice A |
-| **Problem** | `c_section_cantilever_point_9L9.yaml` | Appendice B |
-| **Case** | `c_section_table_9_13_lagrangeL9_v4_E10.yaml` | Appendice C |
+| **Model** | `c_section_chapter9_5_3_9L9_`<br>`csf.yaml` | Appendice A |
+| **Problem** | `c_section_cantilever_`<br>`point_9L9.yaml` | Appendice B |
+| **Case** | `c_section_table_9_13_`<br>`lagrangeL9_v4_E10.yaml` | Appendice C |
 
 I tre file sono riportati integralmente nelle rispettive appendici e descritti nelle sezioni successive.
 
