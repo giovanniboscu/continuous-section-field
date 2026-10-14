@@ -103,8 +103,8 @@ La **formulazione strutturale rimane CUF**. La specificità dell'implementazione
                    │ Punti di quadratura fisici    │
                    │ mappe e jacobiani             │
                    │ funzioni/derivate L9          │
-                   │ proprietà elastiche locali   │
-                   │ nuclei/contributi CUF        │
+                   │ proprietà elastiche locali    │
+                   │ nuclei/contributi CUF         │
                    └───────────────┬───────────────┘
                                    │
         ELEMENTI LONGITUDINALI     │
@@ -115,7 +115,7 @@ La **formulazione strutturale rimane CUF**. La specificità dell'implementazione
                        ASSEMBLAGGIO CUF
                    ┌───────────────────────────────┐
                    │ rigidezza + carichi + vincoli │
-                   │ soluzione incognite CUF      │
+                   │ soluzione incognite CUF       │
                    └───────────────┬───────────────┘
                                    ▼
                          POSTPROCESSING
