@@ -515,13 +515,8 @@ Controllo cinematico derivato, da confrontare qualitativamente con `σ_xx`.
 
 
 
-### Taglio τ_xz - gruppo 1
 
-![Taglio τ_xz - gruppo 1](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part01.png)
-
-[Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part01.png)
-
-### Taglio τ_xz - gruppo 5
+### Taglio τ_xz 
 
 ![Taglio τ_xz - gruppo 5](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part05.png)
 
