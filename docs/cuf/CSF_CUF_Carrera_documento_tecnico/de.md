@@ -652,10 +652,7 @@ problem:
 # - Uses the 9-polygon CSF model through the problem definition.
 # - First development case for the L9 transverse expansion.
 #
-# NOTE:
-# lagrangeL9_v1 currently validates CSF domains and point location only.
-# value() and derivative() intentionally raise NotImplementedError, so this
-# case is not yet expected to complete a CUF solution.
+
 case:
   name: c_section_table_9_13_lagrangeL9_v4_E10
 
@@ -733,7 +730,6 @@ output:
 | `output.adapter` | componente per la scrittura/postprocesso dei risultati |
 | `output.directory` | directory destinazione dei dati numerici prodotti |
 
-**Precisazione sul commento storico nello YAML:** il commento sull'incompleta implementazione `lagrangeL9_v1` è rimasto nel file del caso, ma il campo esecutivo `cuf.basis` seleziona **`lagrangeL9_v4.py`**. Il commento non deve essere confuso con la versione di base effettivamente richiesta. L'esito dell'esecuzione va comunque verificato mediante checkpoint/log prodotti.
 
 # Appendice D - Definizione del riferimento solido e controlli di tracciabilità
 
