@@ -429,7 +429,13 @@ Presentare un confronto leggibile tra CSF–CUF e FEM3D lungo la trave, sui punt
 La galleria organizza i grafici per componente e in cinque parti (`part01`–`part05`). La selezione sotto, con **immagini incorporate**, è una **proposta editoriale**, fondata sull'inventario verificato dei file; non implica ancora una valutazione quantitativa delle sovrapposizioni o degli scarti delle curve. Prima dell'impaginazione definitiva occorre verificare, in ogni figura, quali vertici siano effettivamente contenuti in ciascuna parte.
 
 
-### Confronto della componenti di spostamento, nella direzione del carico applicato, valutata lungo l'asse longitudinale della trave in corrispondenza dei vertici dei nove poligoni che compongono la sezione CSF.
+### Confronto delle componenti di spostamento
+
+Confronto delle componenti di spostamento CSF–CUF e FEM3D, valutate lungo l'asse longitudinale della trave in corrispondenza dei vertici di alcuni dei nove poligoni che compongono la sezione CSF.
+
+La serie completa dei diagrammi degli spostamenti, delle deformazioni e delle tensioni è disponibile al seguente indirizzo:
+
+https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/strain_stress_boundary/README.md
 
 ### Spostamento trasversale `u_z`
 
