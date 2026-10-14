@@ -792,58 +792,100 @@ problem:
 # Appendice C - Configurazione completa del caso CUF E10
 
 ```yaml
-# Version: Carrera Table 9.13 custom lagrangeL9 case v1 - 2026-10-10
+# CSF-CUF C-section cantilever benchmark
 #
-# Changelog:
-# - Keeps geometry/load in a separate problem YAML.
-# - Loads lagrangeL9 from a local external Python file.
-# - Uses the 9-polygon CSF model through the problem definition.
-# - First development case for the L9 transverse expansion.
-#
+# PURPOSE
+# Geometry and materials come from CSF via the problem YAML.
+# The external L9 Python module defines the transverse approximation.
+# Longitudinal finite elements and numerical integration are selected here.
+# The nine quadrilateral CSF domains are specific to this L9 benchmark;
+# they are not three-dimensional finite elements or a general CSF restriction.
+# Units in the physical model: mm, N, MPa (= N/mm^2).
 
+# Case identifier (descriptive; discretization is configured below).
 case:
   name: c_section_table_9_13_lagrangeL9_v4_E10
 
+# Structural problem: separate physical model, loading and constraints.
 problem:
+  # Relative path to the physical problem configuration.
   yaml: ../problems/c_section_cantilever_point_9L9.yaml
+  # Python adapter interpreting the problem's loading and boundary conditions.
   adapter: csf.cuf.adapters.problem.c_section_cantilever_point_load
 
+# CUF transverse approximation, independent of the longitudinal FE basis.
 cuf:
-  # External transverse expansion. Relative path is resolved from this case YAML.
+  # External Python implementation of the nine-node Lagrange expansion.
+  # The module provides transverse functions, derivatives and connectivity.
   basis: ../expansions/lagrangeL9_v4.py
+  # Quadratic polynomial interpolation in each natural coordinate (L9).
   order: 2
   basis_options:
+    # Build transverse L9 domains from CSF polygons (nine quadrilaterals here).
     domain_source: csf_polygons
+    # Map each reference quadrilateral to its physical CSF quadrilateral.
+    # The mapping Jacobian transforms derivatives and sectional measures;
+    # it is a numerical mapping, not a new term in the CUF nuclei.
     mapping: isoparametric
+    # Share coincident interpolation points across adjacent domain edges.
     connectivity: shared_points
+    # Geometric tolerance for boundary/connectivity comparisons;
+    # not a linear solver tolerance or a convergence criterion.
     boundary_tolerance: 1.0e-10
+    # Require the prismatic geometry supported by this L9 configuration.
+    # Both CSF stations describe the same section in this benchmark.
     require_prismatic: true
 
+# One-dimensional finite-element approximation along the beam axis.
 longitudinal:
+  # Generalized CUF displacement variables use longitudinal finite elements.
   method: finite_element
+  # Ten elements in normalized axial coordinates [0, 1].
+  # For L = 20000 mm each interval is 2000 mm long.
   element_boundaries: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  # Lagrange interpolation along the axis; distinct from transverse L9.
   basis: lagrange
+  # Polynomial degree 12 for each longitudinal finite element.
   order: 12
+  # Requested Gauss integration order along the beam axis.
   gauss_order: 15
+  # Declared degree of longitudinal material variation (constant here).
   material_polynomial_degree: 0
 
+# Sectional numerical integration of CUF contributions.
 section_integration:
+  # Numerical quadrature on the physical CSF polygon domains.
   method: fixed_gauss_polygon
+  # Requested sectional quadrature order; not the number of L9 nodes.
   gauss_order: 9
 
+# Solver-specific options; numerical effects require run diagnostics.
 solver:
+  # Request MITC treatment of the strain terms handled by the implementation.
+  # Enabling it does not itself establish the presence/removal of locking.
   correctionMITC: true
+  # Request the solver's MITC assembly verification procedure.
+  # The precise checks are determined by the solver implementation.
   verifyMITCAssembly: true
   equilibration:
+    # Requested solver equilibration iteration settings.
+    # Not a stress-recovery procedure or a convergence certificate.
     iterations: [1,2,3,4,5]
 
+# Postprocessing sampling; does not change the solution discretization.
 sampling:
+  # Normalized longitudinal stations: x = 0, 2000, 20000 mm.
   stations: [0.0, 0.1, 1.0]
+  # Requested displacement output sampling resolution.
   displacement_samples: 201
+  # Requested stress sampling-grid resolution (not a CUF FE mesh).
   stress_grid: 41
 
+# Output handling, separate from the structural problem adapter.
 output:
+  # Python postprocessing/output adapter.
   adapter: csf.cuf.adapters.output.post
+  # Relative destination; actual generated files depend on execution.
   directory: ../output/c_section_table_9_13_lagrangeL9_v4_E10
 ```
 
