@@ -745,7 +745,7 @@ CSF:
 
 ## Lettura dei parametri del modello
 
-`CSF.sections.S0/S1` identifica le due sezioni fisiche di estremità; `z` è la **stazione lungo l'asse CSF**. `polygons` elenca le porzioni reali di materiale, `name` mantiene l'identità di ciascuna regione, `vertices` contiene coordinate 2D di sezione e `weight` fornisce il valore materiale impiegato dal modello. `shear_weight_laws` descrive il trattamento isotropo associato a `ν=0.33`. I domini non sono elementi solidi tridimensionali: rappresentano i supporti geometrici dell'espansione trasversale CUF.
+`CSF.sections.S0/S1` identifica le due sezioni fisiche di estremità; `z` è la **stazione lungo l'asse CSF**. `polygons` elenca le porzioni reali di materiale, `name` mantiene l'identità di ciascuna regione, `vertices` contiene coordinate 2D di sezione e `weight` fornisce il valore materiale impiegato dal modello. `shear_weight_laws` descrive il trattamento isotropo associato a `ν=0.33`. I domini CSF rappresentano porzioni della geometria fisica della trave, definite attraverso le sezioni lungo l'asse longitudinale, e costituiscono al contempo il supporto geometrico delle funzioni di espansione trasversale CUF. Non devono essere confusi con gli elementi finiti solidi tridimensionali utilizzati nella discretizzazione FEM3D.
 
 # Appendice B - Configurazione completa del problema
 
