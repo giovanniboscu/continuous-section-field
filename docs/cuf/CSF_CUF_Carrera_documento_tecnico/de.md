@@ -50,7 +50,7 @@ Il nome **CSF–CUF** indica quindi un *accoppiamento*: **CSF descrive il domini
                              v
                      CONFRONTO NUMERICO
                 stessi punti e componenti fisiche
-```
+
 
 **CSF alimenta entrambi i solutori**, CSF–CUF e FEM3D, fornendo una descrizione fisica comune e continua della geometria e dei materiali. I due solutori mantengono formulazioni strutturali e discretizzazioni numeriche indipendenti.
 
