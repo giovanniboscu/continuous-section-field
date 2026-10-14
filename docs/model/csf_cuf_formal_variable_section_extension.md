@@ -960,6 +960,8 @@ Here x is expressed in metres over the interval
 
 $$ 0\le x\le L, \qquad L=10\ \mathrm{m}. $$
 
+The expression assumes that the physical surface-area element is given by \(dA=d\Gamma\,dx\).
+
 For consistency with the notation of the internal virtual work, in this worked example
 
 $$ l=L=10\ \mathrm{m}. $$
