@@ -209,8 +209,8 @@ Una rappresentazione schematica, non in scala, è:
                                      |   |   anima
                                      |   |
    +---------------+-----------------+---+   z = −400
-   |                                   |
-   +-----------------------------------+   z = −500  (ala inferiore)
+   |                                     |
+   +-------------------------------------+   z = −500  (ala inferiore)
    ← apertura                            anima → y
 ```
 
