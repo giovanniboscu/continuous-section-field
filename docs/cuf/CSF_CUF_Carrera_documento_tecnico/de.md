@@ -171,8 +171,8 @@ Il contorno unico a otto vertici è usato **solo per comodità di generazione de
 
 Questo caso mette alla prova **due questioni distinte**:
 
-- **Architettura del modello:** è possibile applicare la medesima espansione CUF L9 a una geometria costruita esternamente in CSF, senza derivare e programmare nuclei sezionali specifici per la sezione a C?
-- **Accuratezza della soluzione:** con quella particolare espansione L9, la discretizzazione longitudinale scelta e le quadrature impiegate, quali differenze si ottengono rispetto a un riferimento FEM3D solido e ai dati pubblicati?
+- **Architettura del modello:** è possibile applicare la medesima espansione CUF L9 a una geometria costruita esternamente in CSF, senza derivare e programmare nuclei sezionali specifici per la sezione a C.
+- **Accuratezza della soluzione:** con quella particolare espansione L9, la discretizzazione longitudinale scelta e le quadrature impiegate, quali differenze si ottengono rispetto a un riferimento FEM3D solido.
 
 
 ### 1.7 Stato delle evidenze disponibili
