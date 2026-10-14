@@ -8,6 +8,8 @@
 ## 1. I tre modelli: che cosa sono e come si collegano
 
 La domanda preliminare è: **che cosa rappresentano CSF, CSF–CUF e FEM3D, e quale relazione esiste tra loro?** 
+
+
 ### 1.1 La distinzione fondamentale
 
 | Oggetto | Che cosa rappresenta | Che cosa riceve | Che cosa produce | Che cosa NON è |
