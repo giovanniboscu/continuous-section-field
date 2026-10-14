@@ -1,22 +1,21 @@
 # Analisi di una mensola a sezione C mediante CSF–CUF e FEM tridimensionale
 
-**Rapporto tecnico — descrizione del problema fisico, dei modelli e del confronto numerico**  
+**Rapporto tecnico - descrizione del problema fisico, dei modelli e del confronto numerico**  
 **Autore:** Giovanni Boscu  
 **Data:** 14 ottobre 2026  
 **Stato:** versione tecnica documentata; risultati quantitativi da integrare.
 
-> **Scopo del documento.** Rispondere anzitutto alla distinzione tra CSF, CSF–CUF e FEM3D, mostrando che cosa descrive ciascun modello, come vengono costruite le incognite e in quale punto entra CSF nella formulazione CUF. Illustrare poi il caso della mensola a sezione C e il confronto numerico. Il testo è comprensibile senza consultare un repository. I file di ingresso effettivamente consultati sono riprodotti integralmente in appendice. I risultati numerici non disponibili non vengono sostituiti da valori ipotetici.
+> **Scopo del documento.** Rispondere anzitutto alla distinzione tra CSF, CSF–CUF e il collegamento con FEM3D, mostrando che cosa descrive ciascun modello, come vengono costruite le incognite e in quale punto entra CSF nella formulazione CUF. Illustrare poi il caso della mensola a sezione C e il confronto numerico. Il testo è comprensibile senza consultare un repository. I file di ingresso effettivamente consultati sono riprodotti integralmente in appendice. I risultati numerici non disponibili non vengono sostituiti da valori ipotetici.
 
 ## 1. I tre modelli: che cosa sono e come si collegano
 
-La domanda preliminare è: **che cosa rappresentano CSF, CSF–CUF e FEM3D, e quale relazione esiste tra loro?** Non sono tre formulazioni strutturali alternative dello stesso livello. La loro funzione è diversa.
-
+La domanda preliminare è: **che cosa rappresentano CSF, CSF–CUF e FEM3D, e quale relazione esiste tra loro?** 
 ### 1.1 La distinzione fondamentale
 
 | Oggetto | Che cosa rappresenta | Che cosa riceve | Che cosa produce | Che cosa NON è |
 |---|---|---|---|---|
-| **CSF — Continuous Section Field** | Il **modello fisico della sezione** lungo l'asse: domini geometrici, coordinate e proprietà materiali | Descrizione della geometria, lunghezza, stazioni e materiali | Sezioni fisiche interrogabili in qualsiasi posizione longitudinale; dati geometrici e costitutivi da utilizzare nelle integrazioni | Non risolve l'equilibrio elastico e non è una discretizzazione FEM solida |
-| **CSF–CUF** | Il **modello strutturale ridotto** che utilizza la formulazione CUF e interroga CSF per geometria e materiali | CSF + funzioni trasversali CUF + elementi longitudinali + carichi e vincoli | Sistema di rigidezza, incognite generalizzate, spostamenti tridimensionali ricostruiti e tensioni | Non è una seconda teoria costitutiva, né un FEM3D costruito per sezioni solide |
+| **CSF - Continuous Section Field** | Il **modello fisico della sezione** lungo l'asse: domini geometrici, coordinate e proprietà materiali | Descrizione della geometria, lunghezza, stazioni e materiali | Sezioni fisiche interrogabili in qualsiasi posizione longitudinale; dati geometrici e costitutivi da utilizzare nelle integrazioni | Non risolve l'equilibrio elastico e non è una discretizzazione FEM solida |
+| **CSF–CUF** | Il **modello strutturale** che utilizza la formulazione CUF e interroga CSF per geometria e materiali | CSF + funzioni trasversali CUF + elementi longitudinali + carichi e vincoli | Sistema di rigidezza, incognite generalizzate, spostamenti tridimensionali ricostruiti e tensioni | Non è una seconda teoria costitutiva, né un FEM3D costruito per sezioni solide |
 | **FEM3D** | Un **modello strutturale tridimensionale volumetrico indipendente** | Geometria fisica, proprietà materiali, carichi e vincoli; mesh volumetrica | Spostamenti nodali solidi, deformazioni e tensioni del modello 3D | Non usa l'espansione trasversale L9 di CUF come insieme delle incognite |
 
 Il nome **CSF–CUF** indica quindi un *accoppiamento*: **CSF descrive il dominio fisico** e **CUF definisce l'approssimazione degli spostamenti e le equazioni di equilibrio**. FEM3D rappresenta invece una **seconda soluzione numerica dello stesso problema fisico**, con incognite e discretizzazione diverse.
@@ -380,7 +379,7 @@ Il contributo che questo caso mette alla prova è la **separazione fra geometria
 
 ---
 
-# Appendice A — Configurazione completa del modello CSF
+# Appendice A - Configurazione completa del modello CSF
 
 Questo file è il modello fisico `c_section_chapter9_5_3_9L9_csf.yaml`. I commenti originali sono conservati. Le coordinate delle sezioni `S0` e `S1` definiscono due rappresentazioni identiche della stessa sezione, quindi la geometria è prismatica. La ripetizione completa è intenzionale: il lettore può verificare le nove corrispondenze senza dipendere da file esterni.
 
@@ -598,7 +597,7 @@ CSF:
 
 `CSF.sections.S0/S1` identifica le due sezioni fisiche di estremità; `z` è la **stazione lungo l'asse CSF**. `polygons` elenca le porzioni reali di materiale, `name` mantiene l'identità di ciascuna regione, `vertices` contiene coordinate 2D di sezione e `weight` fornisce il valore materiale impiegato dal modello. `shear_weight_laws` descrive il trattamento isotropo associato a `ν=0.33`. I domini non sono elementi solidi tridimensionali: rappresentano i supporti geometrici dell'espansione trasversale CUF.
 
-# Appendice B — Configurazione completa del problema
+# Appendice B - Configurazione completa del problema
 
 ```yaml
 # Version: Carrera Table 9.13 L9 problem v1 - 2026-10-10
@@ -627,7 +626,7 @@ problem:
 
 `model.csf_yaml` identifica la descrizione geometrica e materiale riprodotta nell'appendice A. `problem.type: c_section_cantilever` seleziona l'adattatore che definisce la mensola e il suo incastro; `force.type: point` specifica un carico concentrato; `amplitude: -1.0` fornisce il valore con segno, in N; `x,y,z` sono **coordinate fisiche del punto di applicazione** in mm e non stazioni di interpolazione YAML. Il segno negativo si riferisce alla direzione della forza associata all'adattatore, qui globale z.
 
-# Appendice C — Configurazione completa del caso CUF E10
+# Appendice C - Configurazione completa del caso CUF E10
 
 ```yaml
 # Version: Carrera Table 9.13 custom lagrangeL9 case v1 - 2026-10-10
@@ -721,7 +720,7 @@ output:
 
 **Precisazione sul commento storico nello YAML:** il commento sull'incompleta implementazione `lagrangeL9_v1` è rimasto nel file del caso, ma il campo esecutivo `cuf.basis` seleziona **`lagrangeL9_v4.py`**. Il commento non deve essere confuso con la versione di base effettivamente richiesta. L'esito dell'esecuzione va comunque verificato mediante checkpoint/log prodotti.
 
-# Appendice D — Definizione del riferimento solido e controlli di tracciabilità
+# Appendice D - Definizione del riferimento solido e controlli di tracciabilità
 
 Il driver FEM3D consultato è identificato dalla dicitura `Driver v8 (2026-10-12)` e dichiara esplicitamente elementi **OpenSees `stdBrick` (H8)**. I suoi parametri predefiniti di discretizzazione sono:
 
