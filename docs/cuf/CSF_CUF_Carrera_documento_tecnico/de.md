@@ -316,9 +316,10 @@ Ogni quadrilatero fisico CSF viene associato a un dominio parametrico e riceve u
 
 I punti geometricamente coincidenti sui bordi dei domini adiacenti sono condivisi dalla connettività trasversale; quindi il numero globale di incognite **non** si ottiene moltiplicando semplicemente nove per nove. La base L9, in quanto modulo separato, non contiene valori codificati delle dimensioni della sezione C.
 
+Nella presente implementazione, il modulo L9 richiede che la sezione sia suddivisa in domini quadrilateri compatibili con la trasformazione isoparametrica adottata. Tale requisito è specifico dell'espansione trasversale utilizzata e non costituisce una limitazione generale della rappresentazione geometrica CSF o della formulazione CUF.
+
 >L'espansione trasversale deve essere implementata in un modulo Python conforme a un'interfaccia prestabilita, che ne definisce le modalità di valutazione delle funzioni e delle relative derivate. Questa organizzazione consente di utilizzare la stessa espansione con differenti geometrie e distribuzioni materiali, indipendentemente dal modello fisico CSF.
 
-Nella presente implementazione, il modulo L9 richiede che la sezione sia suddivisa in domini quadrilateri compatibili con la trasformazione isoparametrica adottata. Tale requisito è specifico dell'espansione trasversale utilizzata e non costituisce una limitazione generale della rappresentazione geometrica CSF o della formulazione CUF.
 
 ### 4.3 Dall'integrazione sezionale alla soluzione
 
