@@ -514,9 +514,7 @@ Controllo cinematico derivato, da confrontare qualitativamente con `σ_xx`.
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part03.png)
 
-## Diagrammi integrativi
 
-Questi quattro diagrammi sono inclusi per consentire una valutazione visiva prima di decidere se inserirli nel rapporto principale.
 
 ### Taglio τ_xz - gruppo 1
 
