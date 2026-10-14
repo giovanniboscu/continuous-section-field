@@ -290,6 +290,8 @@ Ogni quadrilatero fisico CSF viene associato a un dominio parametrico e riceve u
 
 I punti geometricamente coincidenti sui bordi dei domini adiacenti sono condivisi dalla connettività trasversale; quindi il numero globale di incognite **non** si ottiene moltiplicando semplicemente nove per nove. La base L9, in quanto modulo separato, non contiene valori codificati delle dimensioni della sezione C.
 
+>L'espansione trasversale deve essere implementata in un modulo Python conforme a un'interfaccia prestabilita, che ne definisce le modalità di valutazione delle funzioni e delle relative derivate. Questa organizzazione consente di utilizzare la stessa espansione con differenti geometrie e distribuzioni materiali, indipendentemente dal modello fisico CSF.
+
 ### 4.3 Dall'integrazione sezionale alla soluzione
 
 Il motore utilizza i contributi ottenuti sui punti di quadratura della sezione per assemblare il problema CUF, assieme alle informazioni degli elementi longitudinali. Dopo la soluzione, tensioni e deformazioni sono ricavate dal campo di spostamento ricostruito e dalla legge elastica del materiale.
@@ -325,7 +327,10 @@ Il file di caso seleziona dieci intervalli con confini longitudinali normalizzat
 
 I confini corrispondono a `x = 0,2000,…,20000 mm`. Per ciascun elemento è dichiarata una base di Lagrange di **ordine 12** e una quadratura longitudinale di **ordine 15**. L'integrazione sezionale è `fixed_gauss_polygon` con `gauss_order: 9`. Il modello è prismatico e il materiale non presenta variazione polinomiale lungo l'asse (`material_polynomial_degree: 0`).
 
-**Attenzione alla terminologia:** `E10` nel nome del caso indica qui dieci intervalli longitudinali; non designa l'ordine dell'espansione trasversale, che è L9. L'ordine 12 è quello della base longitudinale specificata dal file.
+
+In questo caso viene utilizzata una funzione di forma longitudinale di Lagrange già disponibile nella libreria Python. Come per le espansioni trasversali, è comunque possibile sviluppare nuove funzioni di forma in Python, purché rispettino l'interfaccia e le regole di implementazione previste dal modello CSF–CUF. Le funzioni così definite rimangono indipendenti dal modello fisico e sono riutilizzabili con differenti geometrie e materiali.
+
+
 
 ### 4.5 Scelte operative del caso
 
