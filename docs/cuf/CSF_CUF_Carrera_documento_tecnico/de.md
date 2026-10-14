@@ -22,41 +22,43 @@ Il nome **CSF–CUF** indica quindi un *accoppiamento*: **CSF descrive il domini
 
 ### 1.2 Schema logico dell'esperimento
 
-```text
                       PROBLEMA FISICO COMUNE
-           geometria della trave, E, ν, forza e incastro
-                               |
-                +--------------+--------------+
-                |                             |
-                v                             v
-      MODELLO FISICO CSF                MODELLO FEM3D
-      sezioni lungo l'asse              volume discretizzato
-      domini e materiali                in elementi solidi H8
-                |                             |
-                v                             v
-      MODELLO STRUTTURALE                 RISOLUZIONE 3D
-            CSF–CUF                       spostamenti u(x,y,z)
-      - espansione L9                    e tensioni FEM3D
-      - elementi lungo x                       |
-      - integrazioni numeriche                 |
-      - assemblaggio/equilibrio                |
-                |                             |
-                v                             |
-      spostamenti u(x,y,z)                     |
-      e tensioni CSF–CUF                       |
-                |                             |
-                +------------+----------------+
+                   geometria, materiali,
+                       carichi e vincoli
+                              |
+                              v
+                     MODELLO FISICO CSF
+                    geometria e materiali
+                     continui lungo l'asse
+                              |
+               +--------------+--------------+
+               |                             |
+               v                             v
+      MODELLO STRUTTURALE                MODELLO FEM3D
+           CSF–CUF                     mesh volumetrica H8
+      - espansione L9                  - elementi solidi
+      - elementi lungo x               - discretizzazione 3D
+      - integrazioni numeriche         - assemblaggio/equilibrio
+      - assemblaggio/equilibrio               |
+               |                             |
+               v                             v
+      spostamenti u(x,y,z)             spostamenti u(x,y,z)
+      e tensioni CSF–CUF               e tensioni FEM3D
+               |                             |
+               +-------------+---------------+
                              |
                              v
-                    CONFRONTO NUMERICO
-               stessi punti e componenti fisiche
+                     CONFRONTO NUMERICO
+                stessi punti e componenti fisiche
 ```
 
-**Attenzione:** la freccia *problema fisico → FEM3D* non implica che FEM3D debba consumare direttamente lo stesso file CSF. Significa che deve rappresentare la **stessa geometria fisica**, gli **stessi materiali** e lo **stesso problema al contorno**. Il driver consultato può leggere dati attraverso l'infrastruttura condivisa, ma la **mesh volumetrica e l'assemblaggio** restano propri del modello FEM3D.
+**CSF alimenta entrambi i solutori**, CSF–CUF e FEM3D, fornendo una descrizione fisica comune e continua della geometria e dei materiali. I due solutori mantengono formulazioni strutturali e discretizzazioni numeriche indipendenti.
 
 ### 1.3 CSF: un modello fisico, non una soluzione
 
 CSF è il **livello di rappresentazione della realtà fisica**. A una stazione longitudinale richiesta, restituisce il dominio della sezione, la sua geometria e le proprietà dei materiali. **Non** sceglie la cinematica, non costruisce da solo una matrice di rigidezza e non risolve il problema di equilibrio.
+
+
 
 ```text
       MODELLO CSF (descrizione fisica)
@@ -79,7 +81,7 @@ In questo caso CSF descrive una sezione prismatica a C suddivisa in nove quadril
 
 La **formulazione strutturale rimane CUF**. La specificità dell'implementazione CSF–CUF è l'organizzazione del calcolo: geometria/materiale, espansione trasversale e discretizzazione longitudinale sono definiti in componenti distinti e collegati durante l'assemblaggio. Non si derivano a mano nuclei sezionali specializzati per la forma a C.
 
-```text
+
   CSF: geometria + materiali        MODULO CUF: espansione trasversale
   ┌────────────────────────┐        ┌───────────────────────────────┐
   │ 9 domini quadrilateri  │        │ L9: funzioni e derivate       │
@@ -111,7 +113,6 @@ La **formulazione strutturale rimane CUF**. La specificità dell'implementazione
                          POSTPROCESSING
                     spostamenti e tensioni
                     ricostruiti nello spazio
-```
 
 L'ordine operativo è il seguente:
 
