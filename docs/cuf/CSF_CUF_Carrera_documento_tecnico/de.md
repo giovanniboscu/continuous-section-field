@@ -540,14 +540,7 @@ Controllo cinematico derivato, da confrontare qualitativamente con `σ_xx`.
 
 I grafici rimanenti possono restare accessibili attraverso il README originale, evitando di sovraccaricare il rapporto principale.
 
-## Controlli prima della selezione definitiva
 
-- Identificare l'insieme dei vertici raffigurati in ogni `partNN` e accertare che la selezione copra le zone fisicamente più interessanti.
-- Verificare legenda, unità, convenzioni di segno e corrispondenza CSF–CUF/FEM3D.
-- Conservare almeno una figura che rappresenti eventuali scarti locali effettivamente riscontrati: non selezionare soltanto le sovrapposizioni migliori.
-- Distinguere confronto visivo e validazione quantitativa: i file della galleria, da soli, non certificano errori percentuali.
-
-*Nota: questa è una cernita ragionata dei diagrammi elencati nel README, non ancora un giudizio numerico sulle singole curve.*
 
 # Appendice A - Configurazione completa del modello CSF
 
