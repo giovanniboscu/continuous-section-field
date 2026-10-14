@@ -411,10 +411,6 @@ Le rappresentazioni consentono di esaminare la corrispondenza tra le due soluzio
 I risultati sono organizzati per componente fisica e posizione di campionamento, distinguendo gli spostamenti dalle grandezze derivate.
 
 
-
-
-### 6.2 Interpretazione provvisoria
-
 ## 7. Conclusioni
 
 L'esperimento distingue tre oggetti: (i) **il problema fisico** della mensola a sezione C; (ii) **la sua soluzione CUF**, in cui una espansione L9 opera su nove domini di sezione forniti da CSF; (iii) **un riferimento FEM3D** volumetrico basato su elementi solidi H8 in OpenSees. CSF è il livello di descrizione della geometria e del materiale e di valutazione sezionale, non un'alternativa alla formulazione strutturale CUF.
