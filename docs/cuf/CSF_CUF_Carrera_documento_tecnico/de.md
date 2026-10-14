@@ -2,8 +2,7 @@
 
 **Rapporto tecnico - descrizione del problema fisico, dei modelli e del confronto numerico**  
 **Autore:** Giovanni Boscu  
-**Data:** 14 ottobre 2026  
-**Stato:** versione tecnica documentata; risultati quantitativi da integrare.
+**Data:** 16 ottobre 2026  
 
 
 ## 1. I tre modelli: che cosa sono e come si collegano
