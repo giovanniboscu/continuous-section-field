@@ -86,7 +86,7 @@ In questo caso CSF descrive una sezione prismatica a C suddivisa in nove quadril
 
 ### 1.4 CSF–CUF: come viene utilizzata l'infrastruttura CSF nella CUF
 
-La configurazione di un'analisi CSF–CUF è organizzata in tre file di testo leggibili, nel formato YAML, che separano la descrizione fisica, la definizione del problema strutturale e le scelte di discretizzazione e soluzione numerica.
+La configurazione di un'analisi CSF–CUF è organizzata in tre file di testo leggibili, nel formato YAML, che separano la descrizione fisica, la definizione del problema strutturale e le scelte di discretizzazione e soluzione numerica. Il contenuto e la struttura dei tre file sono riportati integralmente in appendice.
 
 | File YAML | Funzione |
 |---|---|
