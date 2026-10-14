@@ -433,9 +433,6 @@ La galleria organizza i grafici per componente e in cinque parti (`part01`–`pa
 
 Confronto delle componenti di spostamento CSF–CUF e FEM3D, valutate lungo l'asse longitudinale della trave in corrispondenza dei vertici di alcuni dei nove poligoni che compongono la sezione CSF.
 
-La serie completa dei diagrammi degli spostamenti, delle deformazioni e delle tensioni è disponibile al seguente indirizzo:
-
-https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/strain_stress_boundary/README.md
 
 ### Spostamento trasversale `u_z`
 
