@@ -85,6 +85,9 @@ In questo caso CSF descrive una sezione prismatica a C suddivisa in nove quadril
 La **formulazione strutturale rimane CUF**. La specificità dell'implementazione CSF–CUF è l'organizzazione del calcolo: geometria/materiale, espansione trasversale e discretizzazione longitudinale sono definiti in componenti distinti e collegati durante l'assemblaggio. La descrizione continua della sezione fornita da CSF entra direttamente nella rappresentazione dei nuclei sezionali CUF, senza richiedere la derivazione di espressioni specializzate per la specifica geometria, come nel caso della sezione a C.
 
 
+>Le espansioni trasversali CUF e le funzioni di forma longitudinali sono implementate come componenti Python indipendenti dalla descrizione fisica della sezione. Le rispettive funzioni e derivate vengono definite una sola volta e possono essere >riutilizzate in differenti modelli geometrici e materiali, senza modificare la formulazione generale né il nucleo di assemblaggio CUF.
+
+
 
 ```
   CSF: geometria + materiali        MODULO CUF: espansione trasversale
