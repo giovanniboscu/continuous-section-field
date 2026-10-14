@@ -85,6 +85,8 @@ In questo caso CSF descrive una sezione prismatica a C suddivisa in nove quadril
 La **formulazione strutturale rimane CUF**. La specificità dell'implementazione CSF–CUF è l'organizzazione del calcolo: geometria/materiale, espansione trasversale e discretizzazione longitudinale sono definiti in componenti distinti e collegati durante l'assemblaggio. Non si derivano a mano nuclei sezionali specializzati per la forma a C.
 
 
+
+```
   CSF: geometria + materiali        MODULO CUF: espansione trasversale
   ┌────────────────────────┐        ┌───────────────────────────────┐
   │ 9 domini quadrilateri  │        │ L9: funzioni e derivate       │
@@ -117,6 +119,7 @@ La **formulazione strutturale rimane CUF**. La specificità dell'implementazione
                     spostamenti e tensioni
                     ricostruiti nello spazio
 
+```
 L'ordine operativo è il seguente:
 
 1. Il caso CUF seleziona un **modello CSF** e un **problema** (carichi e vincoli).
