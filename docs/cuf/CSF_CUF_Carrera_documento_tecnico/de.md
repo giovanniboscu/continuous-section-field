@@ -134,9 +134,8 @@ L'ordine operativo è il seguente:
 **Separazione delle responsabilità:** CSF dice *dove è il materiale e quali proprietà ha*; l'espansione CUF dice *come viene rappresentato il campo trasversale*; l'elemento longitudinale dice *come varia lungo la trave*; il motore CUF applica *equilibrio, assemblaggio e soluzione*. È questa la scelta architetturale che si intende mostrare a Carrera, non una riformulazione delle sue equazioni.
 
 
-Per esigenze implementative, la formulazione CUF è stata estesa introducendo la dipendenza continua dei coefficienti sezionali dalla coordinata longitudinale, attraverso la funzione di sezione $\mathcal{S}(x)$ fornita da CSF.
+Per esigenze implementative, la formulazione CUF è stata estesa a livello simbolico, introducendo la dipendenza continua dei coefficienti sezionali dalla coordinata longitudinale attraverso la funzione di sezione $\mathcal{S}(x)$ fornita da CSF. Tale estensione non modifica i principi cinematici e variazionali della formulazione CUF originaria, preservandone la generalità.
 
-Questa estensione consente di rappresentare geometrie e materiali variabili lungo l'asse, **preservando la struttura cinematica e variazionale generale della formulazione CUF originaria**, senza imporre una particolare geometria, legge costitutiva o famiglia di espansioni trasversali.
 
 Per una trattazione formale si rimanda al documento [CSF–CUF: Formulation for Directly Prescribed Variable Sections](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md).
 
