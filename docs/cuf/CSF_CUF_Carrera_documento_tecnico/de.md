@@ -229,7 +229,7 @@ Una rappresentazione  è:
 
 ![Partizione della sezione a C in nove quadrilateri](CSF_CUF_Carrera_assets/sezione_c_nove_domini.png)
 
-*Figura 1 — Contorno fisico e partizione sezionale nei nove domini CSF usati dall'espansione L9. Figura ricostruita direttamente dalle coordinate YAML riportate in questo documento, non riproduzione della figura del paper.*
+*Figura 1 - Contorno fisico e partizione sezionale nei nove domini CSF usati dall'espansione L9. Figura ricostruita direttamente dalle coordinate YAML riportate in questo documento, non riproduzione della figura del paper.*
 
 
 Le divisioni interne dei nove domini sono specificate al §3.2. Nel lavoro di riferimento la topologia 9-L9 è mostrata graficamente, **senza tabella delle coordinate dei tagli interni**: le suddivisioni riportate qui sono una ricostruzione geometrica e non numeri attribuiti agli autori.
@@ -438,7 +438,7 @@ La galleria organizza i grafici per componente e in cinque parti (`part01`–`pa
 
 Componente direttamente connessa alla direzione del carico; primo confronto del campo di spostamento.
 
-![Spostamento trasversale `u_z` — uz_along_boundary_part01.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uz_along_boundary_part01.png)
+![Spostamento trasversale `u_z` - uz_along_boundary_part01.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uz_along_boundary_part01.png)
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uz_along_boundary_part01.png)
 
@@ -446,7 +446,7 @@ Componente direttamente connessa alla direzione del carico; primo confronto del 
 
 Estensione del confronto a un altro gruppo di vertici.
 
-![Spostamento trasversale `u_z` — uz_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uz_along_boundary_part03.png)
+![Spostamento trasversale `u_z` - uz_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uz_along_boundary_part03.png)
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uz_along_boundary_part03.png)
 
@@ -454,7 +454,7 @@ Estensione del confronto a un altro gruppo di vertici.
 
 Ulteriore gruppo di vertici: verifica della rappresentatività della sezione.
 
-![Spostamento trasversale `u_z` — uz_along_boundary_part05.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uz_along_boundary_part05.png)
+![Spostamento trasversale `u_z` - uz_along_boundary_part05.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uz_along_boundary_part05.png)
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uz_along_boundary_part05.png)
 
@@ -462,7 +462,7 @@ Ulteriore gruppo di vertici: verifica della rappresentatività della sezione.
 
 Mostrare anche la componente assiale, distinta dalla flessione trasversale.
 
-![Spostamento longitudinale `u_x` — ux_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/ux_along_boundary_part03.png)
+![Spostamento longitudinale `u_x` - ux_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/ux_along_boundary_part03.png)
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/ux_along_boundary_part03.png)
 
@@ -470,7 +470,7 @@ Mostrare anche la componente assiale, distinta dalla flessione trasversale.
 
 Completare il controllo delle tre componenti cinematiche.
 
-![Spostamento `u_y` — uy_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uy_along_boundary_part03.png)
+![Spostamento `u_y` - uy_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uy_along_boundary_part03.png)
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/uy_along_boundary_part03.png)
 
@@ -478,7 +478,7 @@ Completare il controllo delle tre componenti cinematiche.
 
 Avviare il confronto delle tensioni normali longitudinali.
 
-![Tensione normale `σ_xx` — sigma_xx_along_boundary_part01.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/sigma_xx_along_boundary_part01.png)
+![Tensione normale `σ_xx` - sigma_xx_along_boundary_part01.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/sigma_xx_along_boundary_part01.png)
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/sigma_xx_along_boundary_part01.png)
 
@@ -486,7 +486,7 @@ Avviare il confronto delle tensioni normali longitudinali.
 
 Estendere il confronto a un secondo gruppo di vertici.
 
-![Tensione normale `σ_xx` — sigma_xx_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/sigma_xx_along_boundary_part03.png)
+![Tensione normale `σ_xx` - sigma_xx_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/sigma_xx_along_boundary_part03.png)
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/sigma_xx_along_boundary_part03.png)
 
@@ -494,7 +494,7 @@ Estendere il confronto a un secondo gruppo di vertici.
 
 Considerare la componente tangenziale associata al piano longitudinale–trasversale del carico.
 
-![Taglio `τ_xz` — tau_xz_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part03.png)
+![Taglio `τ_xz` - tau_xz_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part03.png)
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part03.png)
 
@@ -502,7 +502,7 @@ Considerare la componente tangenziale associata al piano longitudinale–trasver
 
 Affiancare l'altra componente di taglio longitudinale, utile per evidenziare la risposta tridimensionale.
 
-![Taglio `τ_xy` — tau_xy_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xy_along_boundary_part03.png)
+![Taglio `τ_xy` - tau_xy_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xy_along_boundary_part03.png)
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xy_along_boundary_part03.png)
 
@@ -510,7 +510,7 @@ Affiancare l'altra componente di taglio longitudinale, utile per evidenziare la 
 
 Controllo cinematico derivato, da confrontare qualitativamente con `σ_xx`.
 
-![Deformazione `ε_xx` — epsilon_xx_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part03.png)
+![Deformazione `ε_xx` - epsilon_xx_along_boundary_part03.png](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part03.png)
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/epsilon_xx_along_boundary_part03.png)
 
@@ -518,15 +518,15 @@ Controllo cinematico derivato, da confrontare qualitativamente con `σ_xx`.
 
 Questi quattro diagrammi sono inclusi per consentire una valutazione visiva prima di decidere se inserirli nel rapporto principale.
 
-### Taglio τ_xz — gruppo 1
+### Taglio τ_xz - gruppo 1
 
-![Taglio τ_xz — gruppo 1](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part01.png)
+![Taglio τ_xz - gruppo 1](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part01.png)
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part01.png)
 
-### Taglio τ_xz — gruppo 5
+### Taglio τ_xz - gruppo 5
 
-![Taglio τ_xz — gruppo 5](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part05.png)
+![Taglio τ_xz - gruppo 5](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part05.png)
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part05.png)
 
