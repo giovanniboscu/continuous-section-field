@@ -60,7 +60,10 @@ CSF è il **livello di rappresentazione della realtà fisica**. A una stazione l
 
 
 
-```text
+
+
+
+```
       MODELLO CSF (descrizione fisica)
       ┌──────────────────────────────────────┐
       │ Stazioni lungo l'asse                │
