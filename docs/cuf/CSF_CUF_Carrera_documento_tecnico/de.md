@@ -160,7 +160,7 @@ L'ordine operativo è il seguente:
 **Separazione delle responsabilità:** CSF dice *dove è il materiale e quali proprietà ha*; l'espansione CUF dice *come viene rappresentato il campo trasversale*; l'elemento longitudinale dice *come varia lungo la trave*; il motore CUF applica *equilibrio, assemblaggio e soluzione*. 
 
 
-Per consentire l'impiego diretto della descrizione continua della sezione fornita da CSF, è stata introdotta una dipendenza esplicita dei nuclei sezionali dalla coordinata longitudinale. Tale estensione formale mantiene invariati la cinematica, il principio dei lavori virtuali e la struttura generale della formulazione CUF originaria.
+Per consentire l'impiego diretto della descrizione continua della sezione fornita da CSF, è stata introdotta una dipendenza esplicita dei nuclei sezionali dalla coordinata longitudinale. L'impiego  della descrizione continua mantiene invariati la cinematica, il principio dei lavori virtuali e la struttura generale della formulazione CUF originaria.
 
 
 Per una trattazione formale si rimanda al documento [CSF–CUF: Formulation for Directly Prescribed Variable Sections](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md).
