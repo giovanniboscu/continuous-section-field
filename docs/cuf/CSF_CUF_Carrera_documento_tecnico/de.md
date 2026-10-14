@@ -80,7 +80,19 @@ CSF è il **livello di rappresentazione della realtà fisica**. A una stazione l
 
 In questo caso CSF descrive una sezione prismatica a C suddivisa in nove quadrilateri fisici. **I quadrilateri non sono elementi solidi FEM3D**: costituiscono il supporto geometrico e materiale su cui CSF–CUF valuta la base L9 e gli integrali sezionali. La suddivisione in nove domini risponde alla particolare rappresentazione trasversale selezionata per questo benchmark; CSF, in sé, non impone L9.
 
+
 ### 1.4 CSF–CUF: come viene utilizzata l'infrastruttura CSF nella CUF
+
+La configurazione di un'analisi CSF–CUF è organizzata in tre file YAML distinti, che separano la descrizione fisica, la definizione del problema strutturale e le scelte di discretizzazione e soluzione numerica.
+
+| File YAML | Funzione |
+|---|---|
+| **`model`** | Definisce il modello fisico CSF: geometria, stazioni longitudinali e proprietà dei materiali. |
+| **`problem`** | Definisce il problema strutturale, inclusi carichi e condizioni al contorno. |
+| **`case`** | Collega modello e problema, seleziona le espansioni trasversali, la discretizzazione longitudinale e i parametri di integrazione e soluzione. |
+
+Questa organizzazione permette di combinare differenti modelli fisici, problemi strutturali e approssimazioni numeriche senza modificare il nucleo della formulazione CUF.
+
 
 La **formulazione strutturale rimane CUF**. La specificità dell'implementazione CSF–CUF è l'organizzazione del calcolo: geometria/materiale, espansione trasversale e discretizzazione longitudinale sono definiti in componenti distinti e collegati durante l'assemblaggio. La descrizione continua della sezione fornita da CSF entra direttamente nella rappresentazione dei nuclei sezionali CUF, senza richiedere la derivazione di espressioni specializzate per la specifica geometria, come nel caso della sezione a C.
 
