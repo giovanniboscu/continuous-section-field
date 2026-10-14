@@ -929,6 +929,5 @@ La catena di tracciabilità richiesta per ogni risultato è: (1) geometria/mater
 # Riferimenti bibliografici e nota sulle fonti
 
 1. E. Carrera e M. Petrolo, *Refined beam elements with only displacement variables and plate/shell capabilities*, §4.3, figure 12 e 13. Dati editoriali completi da controllare nell'edizione originale prima della distribuzione accademica.
-2. G. Boscu, *Continuous Section Field (CSF)*, descrizione del quadro geometrico e dell'accoppiamento CUF. La presente versione del rapporto integra direttamente i parametri del caso e **non richiede collegamenti esterni per comprenderli**.
 
 **Nota di metodo.** Le appendici A–C riportano il contenuto dei tre YAML pubblicati e verificati il 14 ottobre 2026. La descrizione FEM3D è derivata dal driver OpenSees disponibile alla medesima data. Le interpretazioni e le questioni aperte sono distinte espressamente dai dati presenti nei file, per non confondere una configurazione verificabile con una validazione numerica completata.
