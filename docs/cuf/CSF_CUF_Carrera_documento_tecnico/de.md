@@ -318,6 +318,8 @@ I punti geometricamente coincidenti sui bordi dei domini adiacenti sono condivis
 
 >L'espansione trasversale deve essere implementata in un modulo Python conforme a un'interfaccia prestabilita, che ne definisce le modalità di valutazione delle funzioni e delle relative derivate. Questa organizzazione consente di utilizzare la stessa espansione con differenti geometrie e distribuzioni materiali, indipendentemente dal modello fisico CSF.
 
+Nella presente implementazione, il modulo L9 richiede che la sezione sia suddivisa in domini quadrilateri compatibili con la trasformazione isoparametrica adottata. Tale requisito è specifico dell'espansione trasversale utilizzata e non costituisce una limitazione generale della rappresentazione geometrica CSF o della formulazione CUF.
+
 ### 4.3 Dall'integrazione sezionale alla soluzione
 
 Il motore utilizza i contributi ottenuti sui punti di quadratura della sezione per assemblare il problema CUF, assieme alle informazioni degli elementi longitudinali. Dopo la soluzione, tensioni e deformazioni sono ricavate dal campo di spostamento ricostruito e dalla legge elastica del materiale.
