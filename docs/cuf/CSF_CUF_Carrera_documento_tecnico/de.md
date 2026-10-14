@@ -40,7 +40,7 @@ Il nome **CSF–CUF** indica quindi un *accoppiamento*: **CSF descrive il domini
       - elementi lungo x               - discretizzazione 3D
       - integrazioni numeriche         - assemblaggio/equilibrio
       - assemblaggio/equilibrio               |
-               |                             |
+               |                              |
                v                             v
       spostamenti u(x,y,z)             spostamenti u(x,y,z)
       e tensioni CSF–CUF               e tensioni FEM3D
