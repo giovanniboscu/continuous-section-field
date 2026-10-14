@@ -155,7 +155,7 @@ L'ordine operativo è il seguente:
 2. Il plugin trasversale esterno seleziona la famiglia **L9**, senza contenere le dimensioni della C.
 3. Il calcolo sezionale interroga CSF ai punti d'integrazione e valuta le funzioni L9 sui domini ottenuti.
 4. I contributi sezionali vengono combinati con gli elementi longitudinali; si assemblano e si risolvono le equazioni CUF.
-5. Gli spostamenti e le tensioni sono ricostruiti per il confronto con il modello volumetrico.
+5. Gli spostamenti sono ricostruiti dal campo delle incognite generalizzate CUF; le deformazioni e le tensioni sono successivamente calcolate mediante le relazioni cinematiche e costitutive, per il confronto con il modello volumetrico FEM3D.
 
 **Separazione delle responsabilità:** CSF dice *dove è il materiale e quali proprietà ha*; l'espansione CUF dice *come viene rappresentato il campo trasversale*; l'elemento longitudinale dice *come varia lungo la trave*; il motore CUF applica *equilibrio, assemblaggio e soluzione*. È questa la scelta architetturale che si intende mostrare a Carrera, non una riformulazione delle sue equazioni.
 
