@@ -429,9 +429,8 @@ Presentare un confronto leggibile tra CSF–CUF e FEM3D lungo la trave, sui punt
 
 La galleria organizza i grafici per componente e in cinque parti (`part01`–`part05`). La selezione sotto, con **immagini incorporate**, è una **proposta editoriale**, fondata sull'inventario verificato dei file; non implica ancora una valutazione quantitativa delle sovrapposizioni o degli scarti delle curve. Prima dell'impaginazione definitiva occorre verificare, in ogni figura, quali vertici siano effettivamente contenuti in ciascuna parte.
 
-## Nucleo consigliato per il documento principale
 
-**10 diagrammi selezionati, visualizzati direttamente qui sotto.**
+**10 diagrammi**
 
 ### 1. Spostamento trasversale `u_z`
 
