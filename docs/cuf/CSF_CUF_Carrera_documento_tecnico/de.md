@@ -520,12 +520,6 @@ Controllo cinematico derivato, da confrontare qualitativamente con `σ_xx`.
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/tau_xz_along_boundary_part05.png)
 
-### Tensione normale σ_zz
-
-![Tensione normale σ_zz](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/sigma_zz_along_boundary_part03.png)
-
-[Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/sigma_zz_along_boundary_part03.png)
-
 ### Deformazione γ_xz
 
 ![Deformazione γ_xz](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/gamma_xz_along_boundary_part03.png)
