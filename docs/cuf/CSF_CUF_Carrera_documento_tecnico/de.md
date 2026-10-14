@@ -769,7 +769,7 @@ class MeshSettings:
     nz_web: int = 16
 ```
 
-La catena di tracciabilità richiesta per ogni risultato è: (1) geometria/materiale effettivamente letti dal driver, (2) problema e carico effettivamente acquisiti, (3) opzioni mesh e loro eventuali override, (4) versione del codice, (5) file di uscita, (6) routine usata per la valutazione di tensioni e spostamenti. La rappresentazione FEM3D utilizza intenzionalmente **un unico poligono di contorno a otto vertici** per generare agevolmente la mesh OpenSees, anziché i nove quadrilateri utilizzati per L9. Il file geometrico e il comando concretamente impiegati vanno riportati per la riproducibilità. Questa appendice non riproduce le 872 righe del driver Python, perché esso è una implementazione del modello, non la definizione scientifica del modello stesso.
+La catena di tracciabilità richiesta per ogni risultato è: (1) geometria/materiale effettivamente letti dal driver, (2) problema e carico effettivamente acquisiti, (3) opzioni mesh e loro eventuali override, (4) versione del codice, (5) file di uscita, (6) routine usata per la valutazione di tensioni e spostamenti. La rappresentazione FEM3D utilizza intenzionalmente **un unico poligono di contorno a otto vertici** per generare agevolmente la mesh OpenSees, anziché i nove quadrilateri utilizzati per L9. 
 
 # Riferimenti bibliografici e nota sulle fonti
 
