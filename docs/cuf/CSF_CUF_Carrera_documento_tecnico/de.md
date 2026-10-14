@@ -82,7 +82,7 @@ In questo caso CSF descrive una sezione prismatica a C suddivisa in nove quadril
 
 ### 1.4 CSF–CUF: come viene utilizzata l'infrastruttura CSF nella CUF
 
-La **formulazione strutturale rimane CUF**. La specificità dell'implementazione CSF–CUF è l'organizzazione del calcolo: geometria/materiale, espansione trasversale e discretizzazione longitudinale sono definiti in componenti distinti e collegati durante l'assemblaggio. Non si derivano a mano nuclei sezionali specializzati per la forma a C.
+La **formulazione strutturale rimane CUF**. La specificità dell'implementazione CSF–CUF è l'organizzazione del calcolo: geometria/materiale, espansione trasversale e discretizzazione longitudinale sono definiti in componenti distinti e collegati durante l'assemblaggio. La descrizione continua della sezione fornita da CSF entra direttamente nella rappresentazione dei nuclei sezionali CUF, senza richiedere la derivazione di espressioni specializzate per la specifica geometria, come nel caso della sezione a C.
 
 
 
@@ -129,6 +129,13 @@ L'ordine operativo è il seguente:
 5. Gli spostamenti e le tensioni sono ricostruiti per il confronto con il modello volumetrico.
 
 **Separazione delle responsabilità:** CSF dice *dove è il materiale e quali proprietà ha*; l'espansione CUF dice *come viene rappresentato il campo trasversale*; l'elemento longitudinale dice *come varia lungo la trave*; il motore CUF applica *equilibrio, assemblaggio e soluzione*. È questa la scelta architetturale che si intende mostrare a Carrera, non una riformulazione delle sue equazioni.
+
+
+Per esigenze implementative, la formulazione CUF è stata estesa introducendo la dipendenza continua dei coefficienti sezionali dalla coordinata longitudinale, attraverso la funzione di sezione $\mathcal{S}(x)$ fornita da CSF.
+
+Questa estensione consente di rappresentare geometrie e materiali variabili lungo l'asse, **preservando la struttura cinematica e variazionale generale della formulazione CUF originaria**, senza imporre una particolare geometria, legge costitutiva o famiglia di espansioni trasversali.
+
+Per una trattazione formale si rimanda al documento [CSF–CUF: Formulation for Directly Prescribed Variable Sections](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md).
 
 ### 1.5 FEM3D: stesso problema, soluzione strutturale indipendente
 
