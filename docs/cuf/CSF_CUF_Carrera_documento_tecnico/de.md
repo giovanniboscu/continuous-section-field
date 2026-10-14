@@ -1,0 +1,746 @@
+# Analisi di una mensola a sezione C mediante CSF–CUF e FEM tridimensionale
+
+**Rapporto tecnico — descrizione del problema fisico, dei modelli e del confronto numerico**  
+**Autore:** Giovanni Boscu  
+**Data:** 14 ottobre 2026  
+**Stato:** versione tecnica documentata; risultati quantitativi da integrare.
+
+> **Scopo del documento.** Rispondere anzitutto alla distinzione tra CSF, CSF–CUF e FEM3D, mostrando che cosa descrive ciascun modello, come vengono costruite le incognite e in quale punto entra CSF nella formulazione CUF. Illustrare poi il caso della mensola a sezione C e il confronto numerico. Il testo è comprensibile senza consultare un repository. I file di ingresso effettivamente consultati sono riprodotti integralmente in appendice. I risultati numerici non disponibili non vengono sostituiti da valori ipotetici.
+
+## 1. I tre modelli: che cosa sono e come si collegano
+
+La domanda preliminare è: **che cosa rappresentano CSF, CSF–CUF e FEM3D, e quale relazione esiste tra loro?** Non sono tre formulazioni strutturali alternative dello stesso livello. La loro funzione è diversa.
+
+### 1.1 La distinzione fondamentale
+
+| Oggetto | Che cosa rappresenta | Che cosa riceve | Che cosa produce | Che cosa NON è |
+|---|---|---|---|---|
+| **CSF — Continuous Section Field** | Il **modello fisico della sezione** lungo l'asse: domini geometrici, coordinate e proprietà materiali | Descrizione della geometria, lunghezza, stazioni e materiali | Sezioni fisiche interrogabili in qualsiasi posizione longitudinale; dati geometrici e costitutivi da utilizzare nelle integrazioni | Non risolve l'equilibrio elastico e non è una discretizzazione FEM solida |
+| **CSF–CUF** | Il **modello strutturale ridotto** che utilizza la formulazione CUF e interroga CSF per geometria e materiali | CSF + funzioni trasversali CUF + elementi longitudinali + carichi e vincoli | Sistema di rigidezza, incognite generalizzate, spostamenti tridimensionali ricostruiti e tensioni | Non è una seconda teoria costitutiva, né un FEM3D costruito per sezioni solide |
+| **FEM3D** | Un **modello strutturale tridimensionale volumetrico indipendente** | Geometria fisica, proprietà materiali, carichi e vincoli; mesh volumetrica | Spostamenti nodali solidi, deformazioni e tensioni del modello 3D | Non usa l'espansione trasversale L9 di CUF come insieme delle incognite |
+
+Il nome **CSF–CUF** indica quindi un *accoppiamento*: **CSF descrive il dominio fisico** e **CUF definisce l'approssimazione degli spostamenti e le equazioni di equilibrio**. FEM3D rappresenta invece una **seconda soluzione numerica dello stesso problema fisico**, con incognite e discretizzazione diverse.
+
+### 1.2 Schema logico dell'esperimento
+
+```text
+                      PROBLEMA FISICO COMUNE
+           geometria della trave, E, ν, forza e incastro
+                               |
+                +--------------+--------------+
+                |                             |
+                v                             v
+      MODELLO FISICO CSF                MODELLO FEM3D
+      sezioni lungo l'asse              volume discretizzato
+      domini e materiali                in elementi solidi H8
+                |                             |
+                v                             v
+      MODELLO STRUTTURALE                 RISOLUZIONE 3D
+            CSF–CUF                       spostamenti u(x,y,z)
+      - espansione L9                    e tensioni FEM3D
+      - elementi lungo x                       |
+      - integrazioni numeriche                 |
+      - assemblaggio/equilibrio                |
+                |                             |
+                v                             |
+      spostamenti u(x,y,z)                     |
+      e tensioni CSF–CUF                       |
+                |                             |
+                +------------+----------------+
+                             |
+                             v
+                    CONFRONTO NUMERICO
+               stessi punti e componenti fisiche
+```
+
+**Attenzione:** la freccia *problema fisico → FEM3D* non implica che FEM3D debba consumare direttamente lo stesso file CSF. Significa che deve rappresentare la **stessa geometria fisica**, gli **stessi materiali** e lo **stesso problema al contorno**. Il driver consultato può leggere dati attraverso l'infrastruttura condivisa, ma la **mesh volumetrica e l'assemblaggio** restano propri del modello FEM3D.
+
+### 1.3 CSF: un modello fisico, non una soluzione
+
+CSF è il **livello di rappresentazione della realtà fisica**. A una stazione longitudinale richiesta, restituisce il dominio della sezione, la sua geometria e le proprietà dei materiali. **Non** sceglie la cinematica, non costruisce da solo una matrice di rigidezza e non risolve il problema di equilibrio.
+
+```text
+      MODELLO CSF (descrizione fisica)
+      ┌──────────────────────────────────────┐
+      │ Stazioni lungo l'asse                │
+      │  └─ domini della sezione             │
+      │      ├─ vertici e contorni           │
+      │      ├─ materiali                    │
+      │      └─ variazioni longitudinali     │
+      └──────────────────┬───────────────────┘
+                         │ interrogazioni
+                         ▼
+            Geometria e materiali locali
+            disponibili al modello CUF
+```
+
+In questo caso CSF descrive una sezione prismatica a C suddivisa in nove quadrilateri fisici. **I quadrilateri non sono elementi solidi FEM3D**: costituiscono il supporto geometrico e materiale su cui CSF–CUF valuta la base L9 e gli integrali sezionali. La suddivisione in nove domini risponde alla particolare rappresentazione trasversale selezionata per questo benchmark; CSF, in sé, non impone L9.
+
+### 1.4 CSF–CUF: come viene utilizzata l'infrastruttura CSF nella CUF
+
+La **formulazione strutturale rimane CUF**. La specificità dell'implementazione CSF–CUF è l'organizzazione del calcolo: geometria/materiale, espansione trasversale e discretizzazione longitudinale sono definiti in componenti distinti e collegati durante l'assemblaggio. Non si derivano a mano nuclei sezionali specializzati per la forma a C.
+
+```text
+  CSF: geometria + materiali        MODULO CUF: espansione trasversale
+  ┌────────────────────────┐        ┌───────────────────────────────┐
+  │ 9 domini quadrilateri  │        │ L9: funzioni e derivate       │
+  │ coordinate e materiale │        │ connettività shared_points    │
+  └───────────┬────────────┘        └───────────────┬───────────────┘
+              │                                     │
+              └─────────────────┬───────────────────┘
+                                ▼
+                   VALUTAZIONE SEZIONALE
+                   ┌───────────────────────────────┐
+                   │ Punti di quadratura fisici    │
+                   │ mappe e jacobiani             │
+                   │ funzioni/derivate L9          │
+                   │ proprietà elastiche locali   │
+                   │ nuclei/contributi CUF        │
+                   └───────────────┬───────────────┘
+                                   │
+        ELEMENTI LONGITUDINALI     │
+        ┌────────────────────────┐ │
+        │ E10, ordine 12         ├─┤
+        │ quadratura lungo x     │ │
+        └────────────────────────┘ ▼
+                       ASSEMBLAGGIO CUF
+                   ┌───────────────────────────────┐
+                   │ rigidezza + carichi + vincoli │
+                   │ soluzione incognite CUF      │
+                   └───────────────┬───────────────┘
+                                   ▼
+                         POSTPROCESSING
+                    spostamenti e tensioni
+                    ricostruiti nello spazio
+```
+
+L'ordine operativo è il seguente:
+
+1. Il caso CUF seleziona un **modello CSF** e un **problema** (carichi e vincoli).
+2. Il plugin trasversale esterno seleziona la famiglia **L9**, senza contenere le dimensioni della C.
+3. Il calcolo sezionale interroga CSF ai punti d'integrazione e valuta le funzioni L9 sui domini ottenuti.
+4. I contributi sezionali vengono combinati con gli elementi longitudinali; si assemblano e si risolvono le equazioni CUF.
+5. Gli spostamenti e le tensioni sono ricostruiti per il confronto con il modello volumetrico.
+
+**Separazione delle responsabilità:** CSF dice *dove è il materiale e quali proprietà ha*; l'espansione CUF dice *come viene rappresentato il campo trasversale*; l'elemento longitudinale dice *come varia lungo la trave*; il motore CUF applica *equilibrio, assemblaggio e soluzione*. È questa la scelta architetturale che si intende mostrare a Carrera, non una riformulazione delle sue equazioni.
+
+### 1.5 FEM3D: stesso problema, soluzione strutturale indipendente
+
+FEM3D è un **secondo modello di soluzione**, costruito con elementi solidi tridimensionali H8 in OpenSees. Non utilizza i gradi di libertà generalizzati né le funzioni trasversali L9 della CUF: ha incognite di spostamento ai nodi della mesh volumetrica.
+
+```text
+       STESSO PROBLEMA FISICO
+                 │
+                 ▼
+       SEZIONE C COME CONTORNO
+       poligono unico a 8 vertici
+                 │
+                 ▼
+       MESH VOLUMETRICA H8
+       (discretizzazione di tutto il volume)
+                 │
+                 ▼
+       OpenSees: assemblaggio e soluzione
+                 │
+                 ▼
+       Spostamenti nodali 3D
+       + tensioni derivate negli elementi
+                 │
+                 ▼
+       CONFRONTO CON CSF–CUF
+```
+
+Il contorno unico a otto vertici è usato **solo per comodità di generazione della mesh FEM3D**; descrive la stessa sezione a C che CSF–CUF suddivide in nove domini. Il confronto è indipendente rispetto alla discretizzazione degli spostamenti, non rispetto al problema fisico condiviso. Gli scarti vanno verificati sui medesimi punti, componenti e convenzioni di carico e vincolo.
+
+### 1.6 Che cosa viene verificato in questo benchmark
+
+Questo caso mette alla prova **due questioni distinte**:
+
+- **Architettura del modello:** è possibile applicare la medesima espansione CUF L9 a una geometria costruita esternamente in CSF, senza derivare e programmare nuclei sezionali specifici per la sezione a C?
+- **Accuratezza della soluzione:** con quella particolare espansione L9, la discretizzazione longitudinale scelta e le quadrature impiegate, quali differenze si ottengono rispetto a un riferimento FEM3D solido e ai dati pubblicati?
+
+La prima questione riguarda l'impostazione della formulazione e del software. La seconda richiede i **risultati numerici effettivi**. Non si deve presentare il buon accordo degli spostamenti come una prova generale di correttezza di tutte le componenti di tensione.
+
+### 1.7 Stato delle evidenze disponibili
+
+Le configurazioni permettono di documentare problema fisico, CSF, L9, discretizzazione longitudinale e impostazioni del riferimento solido. **Non sono invece inclusi in questa versione i checkpoint numerici e le tabelle di confronto**, quindi non vengono inseriti risultati inventati.
+
+**La geometria fisica della sezione a C è la medesima nei due modelli.** Per CSF–CUF è suddivisa in nove domini quadrilateri su cui opera l’espansione L9; per agevolare la costruzione della mesh solida in OpenSees, il modello FEM3D usa invece un unico poligono di contorno a otto vertici. Le due descrizioni geometriche hanno finalità numeriche differenti e non rappresentano due problemi strutturali diversi.
+
+## 2. Problema strutturale
+
+### 2.1 Geometria e sistema di riferimento
+
+La trave è prismatica, con asse longitudinale identificato dalla coordinata fisica **x** del modello CUF/FEM3D, nell'intervallo `0 ≤ x ≤ 20000 mm`. Il piano della sezione usa le coordinate fisiche **(y,z)**. Nel file CSF, per motivi legati all'interfaccia della libreria, la stazione longitudinale è indicata anch'essa come `z` del campo: questa **non** va confusa con la coordinata fisica trasversale `z`.
+
+| Grandezza | Valore |
+|---|---:|
+| Lunghezza della mensola, L | 20.000 mm |
+| Altezza complessiva, h | 1.000 mm |
+| Spessore, t | 100 mm |
+| Ala superiore, b₂ | 1.000 mm |
+| Ala inferiore, b₁ | 500 mm |
+| Sezione iniziale/finale | identiche (trave prismatica) |
+
+Nel piano `(y,z)` la sezione ha l'anima a destra e l'apertura rivolta verso sinistra. I limiti sono: ala superiore `−1000 ≤ y ≤ 0`, `400 ≤ z ≤ 500`; anima `−100 ≤ y ≤ 0`, `−400 ≤ z ≤ 400`; ala inferiore `−500 ≤ y ≤ 0`, `−500 ≤ z ≤ −400`. L'unione dei tre rettangoli è senza sovrapposizioni di area.
+
+Una rappresentazione schematica, non in scala, è:
+
+```text
+ z ↑
+   +-------------------------------------+   z = +500  (ala superiore)
+   |                                     |
+   +---------------------------------+---+   z = +400
+                                     |   |
+                                     |   |   anima
+                                     |   |
+   +---------------+-----------------+---+   z = −400
+   |                                   |
+   +-----------------------------------+   z = −500  (ala inferiore)
+   ← apertura                            anima → y
+```
+
+Le divisioni interne dei nove domini sono specificate al §3.2. Nel lavoro di riferimento la topologia 9-L9 è mostrata graficamente, **senza tabella delle coordinate dei tagli interni**: le suddivisioni riportate qui sono una ricostruzione geometrica e non numeri attribuiti agli autori.
+
+### 2.2 Materiale
+
+Si adotta elasticità lineare isotropa, con `E = 75000 MPa` e `ν = 0.33`. Il modulo di taglio corrispondente è circa **28.195,49 MPa**.
+
+Le unità sono coerentemente **mm, N, MPa**. Nel file CSF il valore `weight: 75000.0` compare in ciascun poligono e l'indicazione `shear_weight_laws: ['iso(0.33)']` specifica la legge isotropa con il coefficiente di Poisson adottato. Questi parametri sono interpretati dal collegamento CSF–CUF per il materiale di questo esperimento; `weight` non è una densità volumica.
+
+### 2.3 Vincolo e forza
+
+La sezione iniziale `x = 0` è completamente incastrata. Nel modello solido il vincolo è tradotto in `u_x = u_y = u_z = 0` per tutti i nodi appartenenti alla sezione iniziale; nel modello CUF esso agisce sui gradi di libertà generalizzati coerenti con l'annullamento del campo degli spostamenti alla sezione d'incastro.
+
+Il carico dichiarato dal problema è una **forza concentrata di ampiezza −1 N in direzione globale z**, applicata in `(x,y,z) = (20000,0,−500) mm`. L'azione è dunque localizzata all'estremità libera, in corrispondenza di un punto della sezione. La rappresentazione di una forza puntuale può produrre campi di tensione fortemente localizzati e dipendenti dalla discretizzazione in prossimità del punto di applicazione. In tali zone il confronto diretto di massimi puntuali di tensione va trattato con cautela.
+
+## 3. Modello CSF: descrizione fisica indipendente dall'espansione
+
+### 3.1 Funzione del Continuous Section Field
+
+CSF descrive, stazione per stazione lungo la trave, **domini fisici** di sezione, vertici e caratteristiche materiali. Nell'esempio corrente le sezioni alle estremità `S0` e `S1` sono uguali; quindi non vi è variazione geometrica lungo l'asse. Il fatto di usare CSF per una trave prismatica è intenzionale: permette di testare l'accoppiamento con CUF evitando di aggiungere la complessità di una geometria rastremata.
+
+CSF **non sostituisce** la teoria CUF, **non** rappresenta un modello FEM3D e **non** determina da solo le incognite dello spostamento. Fornisce il supporto geometrico/materiale sul quale un'espansione trasversale può essere valutata e integrata.
+
+### 3.2 Nove domini quadrilateri
+
+| Dominio CSF | Intervallo y (mm) | Intervallo z (mm) | Regione |
+|---|---|---|---|
+| `top_1` | −1000 … −775 | 400 … 500 | ala superiore |
+| `top_2` | −775 … −550 | 400 … 500 | ala superiore |
+| `top_3` | −550 … −325 | 400 … 500 | ala superiore |
+| `top_4` | −325 … −100 | 400 … 500 | ala superiore |
+| `top_web_corner` | −100 … 0 | 400 … 500 | raccordo superiore |
+| `web` | −100 … 0 | −400 … 400 | anima |
+| `bottom_1` | −500 … −300 | −500 … −400 | ala inferiore |
+| `bottom_2` | −300 … −100 | −500 … −400 | ala inferiore |
+| `bottom_web_corner` | −100 … 0 | −500 … −400 | raccordo inferiore |
+
+La porzione libera dell'ala superiore, larga 900 mm, è ripartita in quattro segmenti da 225 mm; quella inferiore, larga 400 mm, in due segmenti da 200 mm. Le due zone di giunzione con l'anima occupano ciascuna 100 mm in direzione y. Ogni poligono è definito tramite vertici ordinati lungo il contorno e appare con la stessa identità in `S0` e `S1`.
+
+### 3.3 Significato dell'indipendenza geometria–approssimazione
+
+La descrizione della forma, delle dimensioni e del materiale resta nel campo CSF. La base trasversale si occupa invece di rappresentare gli spostamenti sul dominio dato. È questa separazione, più che il particolare caso della sezione C, il contenuto infrastrutturale dell'esperimento: una base L9 può essere selezionata esternamente al nucleo di assemblaggio senza codificare nella formulazione globale le dimensioni della C.
+
+## 4. Modello CUF e sua discretizzazione
+
+### 4.1 Organizzazione delle incognite CUF
+
+Il campo tridimensionale è rappresentato tramite **funzioni trasversali** e **gradi di libertà generalizzati che evolvono lungo l'asse**. In questo caso non viene costruita una mesh di elementi solidi per determinare le incognite CUF.
+
+```text
+ Funzioni L9 sulla sezione      Elementi finiti lungo l'asse
+           │                              │
+           └──────────────┬───────────────┘
+                          ▼
+                Incognite generalizzate
+                   del modello CUF
+                          │
+                          ▼
+                Campo di spostamento 3D
+                          │
+                          ▼
+                  Deformazioni / tensioni
+```
+
+L'approccio è quello standard CUF: la particolarità del lavoro è **da dove provengono geometria e proprietà sezionali**, non l'introduzione di nuove incognite o nuove leggi di equilibrio.
+
+### 4.2 Espansione trasversale L9
+
+Ogni quadrilatero fisico CSF viene associato a un dominio parametrico e riceve un'espansione **L9 con nove punti di interpolazione**, disposti su una griglia 3 × 3. Le funzioni e le loro derivate sono fornite dal modulo trasversale, mentre geometria e materiale provengono da CSF.
+
+```text
+ Dominio CSF quadrilatero        Interpolazione trasversale L9
+ ┌──────────────────────┐          o────────o────────o
+ │                      │          │        │        │
+ │ geometria e materiale│  ───►    o────────o────────o
+ │                      │          │        │        │
+ └──────────────────────┘          o────────o────────o
+                                 9 punti per dominio
+```
+
+I punti geometricamente coincidenti sui bordi dei domini adiacenti sono condivisi dalla connettività trasversale; quindi il numero globale di incognite **non** si ottiene moltiplicando semplicemente nove per nove. La base L9, in quanto modulo separato, non contiene valori codificati delle dimensioni della sezione C.
+
+### 4.3 Dall'integrazione sezionale alla soluzione
+
+Il motore utilizza i contributi ottenuti sui punti di quadratura della sezione per assemblare il problema CUF, assieme alle informazioni degli elementi longitudinali. Dopo la soluzione, tensioni e deformazioni sono ricavate dal campo di spostamento ricostruito e dalla legge elastica del materiale.
+
+```text
+ coordinate fisiche + materiale (CSF)
+                  +
+ funzioni, derivate e connettività (L9)
+                  │
+                  ▼
+           QUADRATURA SEZIONALE
+       valutazione numerica dei nuclei CUF
+                  │
+                  + elementi lungo l'asse
+                  │
+                  ▼
+       ASSEMBLAGGIO + VINCOLI + CARICHI
+                  │
+                  ▼
+          SOLUZIONE DEL MODELLO CUF
+                  │
+                  ▼
+     CAMPI 3D RICOSTRUITI E TENSIONI
+```
+
+Il beneficio architetturale è evitare espressioni integrate o routine sezionali **specifiche per ogni nuova geometria**, mantenendo invariata la formulazione CUF. Le impostazioni MITC sono riportate nel file di caso, senza attribuire loro effetti numerici non verificati.
+
+### 4.4 Discretizzazione longitudinale e integrazione del caso E10
+
+Il file di caso seleziona dieci intervalli con confini longitudinali normalizzati:
+
+`[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]`.
+
+I confini corrispondono a `x = 0,2000,…,20000 mm`. Per ciascun elemento è dichiarata una base di Lagrange di **ordine 12** e una quadratura longitudinale di **ordine 15**. L'integrazione sezionale è `fixed_gauss_polygon` con `gauss_order: 9`. Il modello è prismatico e il materiale non presenta variazione polinomiale lungo l'asse (`material_polynomial_degree: 0`).
+
+**Attenzione alla terminologia:** `E10` nel nome del caso indica qui dieci intervalli longitudinali; non designa l'ordine dell'espansione trasversale, che è L9. L'ordine 12 è quello della base longitudinale specificata dal file.
+
+### 4.5 Scelte operative del caso
+
+L'espansione esterna è caricata da `lagrangeL9_v4.py`; la selezione dei domini avviene con `domain_source: csf_polygons`; la mappa è `isoparametric`; la connettività è `shared_points`; la tolleranza geometrica dichiarata è `1.0e-10`; `require_prismatic: true` impedisce l'uso inconsapevole con un caso non prismatico. Sono attivi i controlli/correzioni `correctionMITC: true` e `verifyMITCAssembly: true`, con iterazioni di equilibratura richieste `[1,2,3,4,5]`. Non si attribuisce qui a queste opzioni un effetto numerico specifico non verificato mediante i risultati del solutore.
+
+Le stazioni di campionamento del file sono `[0.0,0.1,1.0]`, interpretate nel contesto dell'interfaccia come parametri longitudinali da verificare con il postprocessore; `displacement_samples: 201` e `stress_grid: 41` regolano il campionamento di uscita. Una griglia più densa di visualizzazione **non** equivale a una discretizzazione CUF più fine.
+
+## 5. Riferimento FEM3D
+
+### 5.1 Che cosa significa FEM3D in questo studio
+
+**Sì: FEM3D indica un modello tridimensionale con elementi solidi.** Lo script di riferimento consultato impiega il solutore OpenSees con elementi esaedrici a **otto nodi** `stdBrick` (H8). Si tratta di una discretizzazione volumetrica fisica della sezione e dell'asse, diversa dal modello CUF a espansione trasversale e approssimazione unidimensionale lungo la trave.
+
+Il driver dichiara, come impostazioni di default, `nx=80` ripartizioni longitudinali, `ny_top_free=18`, `ny_bottom_free=8`, `ny_web=2`, `nz_flange=2`, `nz_web=16`. Si tratta delle **impostazioni predefinite nello script**, non di una certificazione dei parametri usati per uno specifico file di risultati: eventuali override da linea di comando devono essere recuperati dall'esecuzione originale. Il carico e il vincolo sono letti attraverso l'adattatore del problema CSF–CUF, e non reinseriti indipendentemente nello script, per limitare incoerenze.
+
+### 5.2 Confronto delle tensioni
+
+Per il confronto delle tensioni, la documentazione del benchmark indica che le tensioni FEM3D sono ricavate dalle **derivate del campo di spostamento del singolo elemento H8**, con le proprietà costitutive dichiarate. Ai confini di elementi adiacenti sono conservati i valori dei due lati **senza media o smoothing**. Perciò possono esistere più valori di tensione alla stessa stazione longitudinale. Nel modello CUF le tensioni sono analogamente ricavate dalla deformazione del campo di spostamento approssimato e dalla legge costitutiva, senza media rispetto al FEM3D.
+
+L'osservazione qualitativa riportata nella documentazione disponibile è che la componente `τ_xy` del modello CSF–CUF segue spesso l'andamento centrale della dispersione FEM3D, soprattutto lontano dalle estremità. Ciò **non** significa che CUF calcoli una media delle tensioni FEM3D, né sostituisce un'analisi quantitativa degli scarti.
+
+### 5.3 Stessa sezione fisica, due rappresentazioni geometriche
+
+**La sezione a C del modello FEM3D è la stessa sezione fisica utilizzata in CSF–CUF.** Cambia soltanto il modo di rappresentarla per le esigenze delle due discretizzazioni:
+
+- **CSF–CUF:** il dominio della sezione è ripartito in **nove quadrilateri**, che costituiscono i domini di supporto dell'espansione trasversale L9 e dell'integrazione numerica sezionale.
+- **FEM3D in OpenSees:** la sezione a C è descritta, **per comodità di generazione della mesh volumetrica**, mediante **un unico poligono di contorno a otto vertici**. Su tale dominio si costruisce la discretizzazione con elementi solidi H8.
+
+Non c'è dunque un'incongruenza tra i modelli e non è necessario che il driver FEM3D accetti lo YAML a nove quadrilateri: i **domini L9 non sono la mesh FEM3D**. I nove quadrilateri e il poligono unico sono rappresentazioni diverse dello stesso dominio materiale. Questa equivalenza geometrica deve essere mantenuta in tutte le dimensioni, nelle proprietà materiali e nella posizione fisica di carichi e vincoli.
+
+La riproducibilità dei risultati richiede comunque di dichiarare, per ciascuna esecuzione, il file geometrico effettivamente usato, le opzioni della mesh e il file di output, senza confondere tale tracciabilità con un dubbio sull'identità della sezione.
+
+## 6. Criteri per un confronto scientificamente significativo
+
+Il confronto non deve essere ridotto al solo confronto grafico. Per ogni posizione o traiettoria campionata occorre dichiarare: punto fisico e sistema di coordinate, componente di spostamento/tensione, eventuale media impiegata, campionamento FEM3D (nodo, centro elemento o punto di integrazione), dato CUF, riferimento pubblicato se esistente e definizione dell'errore.
+
+Per il confronto si distinguono **scarto assoluto**, **scarto percentuale** (quando il riferimento non è prossimo allo zero) e differenze tra curve campionate. La scelta del denominatore e dei punti confrontati deve essere dichiarata.
+
+Vicino a valori di riferimento quasi nulli è preferibile riportare un errore assoluto o una normalizzazione globale appropriata, per evitare percentuali artificialmente elevate. Per le tensioni occorre distinguere **regioni interne regolari**, **bordo dell'incastro**, **estremità libera** e **intorno del carico puntuale**. Un picco vicino a una forza idealmente concentrata non è un indicatore affidabile, da solo, della convergenza del campo tensionale.
+
+### 6.1 Tabella dei risultati: dati non acquisiti
+
+| Quantità | Punto o traiettoria | CSF–CUF L9/E10 | FEM3D H8 | Riferimento Carrera–Petrolo | Scarto |
+|---|---|---|---|---|---|
+| Spostamento trasversale | da identificare | non disponibile | non disponibile | da estrarre | non calcolabile |
+| Spostamento longitudinale | da identificare | non disponibile | non disponibile | da estrarre | non calcolabile |
+| Tensione normale | traiettoria da identificare | non disponibile | non disponibile | da verificare | non calcolabile |
+| Tensione tangenziale `τ_xy` | traiettoria da identificare | non disponibile | non disponibile | da verificare | non calcolabile |
+
+Questa tabella è una dichiarazione dei **limiti documentali della versione presente**, non una tabella di risultati. Non sono stati forniti qui checkpoint numerici, serie dei grafici, tabelle del lavoro originale o gli output del FEM3D verificati. Pertanto non è possibile sostenere numericamente un determinato errore percentuale o riprodurre correttamente grafici con valori reali.
+
+### 6.2 Interpretazione provvisoria
+
+La separazione tra descrizione fisica CSF ed espansione CUF è esplicitamente visibile nell'organizzazione delle configurazioni. Il caso dimostra **a livello di impostazione del modello** come una base L9 esterna possa essere applicata ai domini CSF senza codificare nel caso stesso i vertici dei poligoni. L'accuratezza e l'efficacia numerica dell'approssimazione vanno tuttavia giudicate dai **risultati effettivi**, non dalla sola possibilità di costruire il modello.
+
+## 7. Conclusioni
+
+L'esperimento distingue tre oggetti: (i) **il problema fisico** della mensola a sezione C; (ii) **la sua soluzione CUF**, in cui una espansione L9 opera su nove domini di sezione forniti da CSF; (iii) **un riferimento FEM3D** volumetrico basato su elementi solidi H8 in OpenSees. CSF è il livello di descrizione della geometria e del materiale e di valutazione sezionale, non un'alternativa alla formulazione strutturale CUF.
+
+Il contributo che questo caso mette alla prova è la **separazione fra geometria/materiale, espansione trasversale e discretizzazione longitudinale**, con valutazione numerica dei contributi sezionali. La validazione quantitativa resta distinta: è necessario incorporare nel rapporto gli effettivi valori di spostamento e tensione, le condizioni di campionamento e la precisa provenienza del baseline solido.
+
+---
+
+# Appendice A — Configurazione completa del modello CSF
+
+Questo file è il modello fisico `c_section_chapter9_5_3_9L9_csf.yaml`. I commenti originali sono conservati. Le coordinate delle sezioni `S0` e `S1` definiscono due rappresentazioni identiche della stessa sezione, quindi la geometria è prismatica. La ripetizione completa è intenzionale: il lettore può verificare le nove corrispondenze senza dipendere da file esterni.
+
+```yaml
+# CSF model for the Carrera-Petrolo C-section benchmark.
+# Transverse partition reproduces the 9-L9 layout shown in Fig. 13(b).
+#
+# Version: v1 - 2026-10-10
+#
+# Changelog:
+# - Preserved the original C-section geometry and material.
+# - Replaced the single C-shaped polygon with 9 non-overlapping quadrilateral
+#   CSF polygons arranged as the 9 transverse L9 domains of Fig. 13(b).
+# - The internal flange split coordinates are reconstructed from the figure by
+#   equally subdividing the free flange portions:
+#       top free flange:    900 mm / 4 = 225 mm
+#       bottom free flange: 400 mm / 2 = 200 mm
+#   The 100 mm web-width corner domains are kept as separate polygons.
+#
+# Units: mm, N, MPa.
+#
+# Geometry:
+#   h = 1000 mm
+#   t = 100 mm
+#   long flange b2 = 1000 mm
+#   short flange b1 = 500 mm
+#   L = 20000 mm
+#
+# Material:
+#   E  = 75 GPa = 75000 MPa
+#   nu = 0.33
+#
+# Coordinate mapping:
+#   paper y (beam axis) -> CSF section station z
+#   paper x             -> CSF section y
+#   paper z             -> CSF section z-coordinate inside each polygon
+#
+# Section orientation:
+#   paper/section x positive to the right
+#   paper/section z positive upward
+#   web on the right
+#   opening toward the left
+#   long flange on top
+#
+# 9-L9 transverse partition (CSF y coordinates):
+#   top flange:    [-1000,-775], [-775,-550], [-550,-325], [-325,-100], [-100,0]
+#   web:           [-100,0] x z[-400,400]
+#   bottom flange: [-500,-300], [-300,-100], [-100,0]
+#
+# NOTE:
+# The paper shows the 9-L9 topology graphically but does not tabulate the
+# internal split coordinates. The equal subdivisions above are therefore a
+# geometric reconstruction of Fig. 13(b), not quoted numerical data.
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        # --- Top flange: 5 transverse domains ---
+        - name: top_1
+          weight: 75000.0
+          vertices:
+            - [-1000.0, 400.0]
+            - [-775.0,  400.0]
+            - [-775.0,  500.0]
+            - [-1000.0, 500.0]
+
+        - name: top_2
+          weight: 75000.0
+          vertices:
+            - [-775.0, 400.0]
+            - [-550.0, 400.0]
+            - [-550.0, 500.0]
+            - [-775.0, 500.0]
+
+        - name: top_3
+          weight: 75000.0
+          vertices:
+            - [-550.0, 400.0]
+            - [-325.0, 400.0]
+            - [-325.0, 500.0]
+            - [-550.0, 500.0]
+
+        - name: top_4
+          weight: 75000.0
+          vertices:
+            - [-325.0, 400.0]
+            - [-100.0, 400.0]
+            - [-100.0, 500.0]
+            - [-325.0, 500.0]
+
+        - name: top_web_corner
+          weight: 75000.0
+          vertices:
+            - [-100.0, 400.0]
+            - [0.0,    400.0]
+            - [0.0,    500.0]
+            - [-100.0, 500.0]
+
+        # --- Web: 1 transverse domain ---
+        - name: web
+          weight: 75000.0
+          vertices:
+            - [-100.0, -400.0]
+            - [0.0,    -400.0]
+            - [0.0,     400.0]
+            - [-100.0,  400.0]
+
+        # --- Bottom flange: 3 transverse domains ---
+        - name: bottom_1
+          weight: 75000.0
+          vertices:
+            - [-500.0, -500.0]
+            - [-300.0, -500.0]
+            - [-300.0, -400.0]
+            - [-500.0, -400.0]
+
+        - name: bottom_2
+          weight: 75000.0
+          vertices:
+            - [-300.0, -500.0]
+            - [-100.0, -500.0]
+            - [-100.0, -400.0]
+            - [-300.0, -400.0]
+
+        - name: bottom_web_corner
+          weight: 75000.0
+          vertices:
+            - [-100.0, -500.0]
+            - [0.0,    -500.0]
+            - [0.0,    -400.0]
+            - [-100.0, -400.0]
+
+    S1:
+      z: 20000.0
+      polygons:
+        # Same 9-domain partition: prismatic section.
+        - name: top_1
+          weight: 75000.0
+          vertices:
+            - [-1000.0, 400.0]
+            - [-775.0,  400.0]
+            - [-775.0,  500.0]
+            - [-1000.0, 500.0]
+
+        - name: top_2
+          weight: 75000.0
+          vertices:
+            - [-775.0, 400.0]
+            - [-550.0, 400.0]
+            - [-550.0, 500.0]
+            - [-775.0, 500.0]
+
+        - name: top_3
+          weight: 75000.0
+          vertices:
+            - [-550.0, 400.0]
+            - [-325.0, 400.0]
+            - [-325.0, 500.0]
+            - [-550.0, 500.0]
+
+        - name: top_4
+          weight: 75000.0
+          vertices:
+            - [-325.0, 400.0]
+            - [-100.0, 400.0]
+            - [-100.0, 500.0]
+            - [-325.0, 500.0]
+
+        - name: top_web_corner
+          weight: 75000.0
+          vertices:
+            - [-100.0, 400.0]
+            - [0.0,    400.0]
+            - [0.0,    500.0]
+            - [-100.0, 500.0]
+
+        - name: web
+          weight: 75000.0
+          vertices:
+            - [-100.0, -400.0]
+            - [0.0,    -400.0]
+            - [0.0,     400.0]
+            - [-100.0,  400.0]
+
+        - name: bottom_1
+          weight: 75000.0
+          vertices:
+            - [-500.0, -500.0]
+            - [-300.0, -500.0]
+            - [-300.0, -400.0]
+            - [-500.0, -400.0]
+
+        - name: bottom_2
+          weight: 75000.0
+          vertices:
+            - [-300.0, -500.0]
+            - [-100.0, -500.0]
+            - [-100.0, -400.0]
+            - [-300.0, -400.0]
+
+        - name: bottom_web_corner
+          weight: 75000.0
+          vertices:
+            - [-100.0, -500.0]
+            - [0.0,    -500.0]
+            - [0.0,    -400.0]
+            - [-100.0, -400.0]
+
+  shear_weight_laws:
+    - 'iso(0.33)'
+```
+
+## Lettura dei parametri del modello
+
+`CSF.sections.S0/S1` identifica le due sezioni fisiche di estremità; `z` è la **stazione lungo l'asse CSF**. `polygons` elenca le porzioni reali di materiale, `name` mantiene l'identità di ciascuna regione, `vertices` contiene coordinate 2D di sezione e `weight` fornisce il valore materiale impiegato dal modello. `shear_weight_laws` descrive il trattamento isotropo associato a `ν=0.33`. I domini non sono elementi solidi tridimensionali: rappresentano i supporti geometrici dell'espansione trasversale CUF.
+
+# Appendice B — Configurazione completa del problema
+
+```yaml
+# Version: Carrera Table 9.13 L9 problem v1 - 2026-10-10
+#
+# Changelog:
+# - Uses the 9-polygon CSF model reproducing the transverse partition of
+#   Carrera & Petrolo's 9-L9 C-section benchmark.
+# - Keeps the physical point load separated from the CUF case definition.
+#
+# Units: mm, N, MPa.
+
+model:
+  csf_yaml: ../models/c_section_chapter9_5_3_9L9_csf.yaml
+
+problem:
+  type: c_section_cantilever
+  force:
+    type: point
+    amplitude: -1.0
+    x: 20000.0
+    y: 0.0
+    z: -500.0
+```
+
+## Lettura dei parametri del problema
+
+`model.csf_yaml` identifica la descrizione geometrica e materiale riprodotta nell'appendice A. `problem.type: c_section_cantilever` seleziona l'adattatore che definisce la mensola e il suo incastro; `force.type: point` specifica un carico concentrato; `amplitude: -1.0` fornisce il valore con segno, in N; `x,y,z` sono **coordinate fisiche del punto di applicazione** in mm e non stazioni di interpolazione YAML. Il segno negativo si riferisce alla direzione della forza associata all'adattatore, qui globale z.
+
+# Appendice C — Configurazione completa del caso CUF E10
+
+```yaml
+# Version: Carrera Table 9.13 custom lagrangeL9 case v1 - 2026-10-10
+#
+# Changelog:
+# - Keeps geometry/load in a separate problem YAML.
+# - Loads lagrangeL9 from a local external Python file.
+# - Uses the 9-polygon CSF model through the problem definition.
+# - First development case for the L9 transverse expansion.
+#
+# NOTE:
+# lagrangeL9_v1 currently validates CSF domains and point location only.
+# value() and derivative() intentionally raise NotImplementedError, so this
+# case is not yet expected to complete a CUF solution.
+case:
+  name: c_section_table_9_13_lagrangeL9_v4_E10
+
+problem:
+  yaml: ../problems/c_section_cantilever_point_9L9.yaml
+  adapter: csf.cuf.adapters.problem.c_section_cantilever_point_load
+
+cuf:
+  # External transverse expansion. Relative path is resolved from this case YAML.
+  basis: ../expansions/lagrangeL9_v4.py
+  order: 2
+  basis_options:
+    domain_source: csf_polygons
+    mapping: isoparametric
+    connectivity: shared_points
+    boundary_tolerance: 1.0e-10
+    require_prismatic: true
+
+longitudinal:
+  method: finite_element
+  element_boundaries: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  basis: lagrange
+  order: 12
+  gauss_order: 15
+  material_polynomial_degree: 0
+
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 9
+
+solver:
+  correctionMITC: true
+  verifyMITCAssembly: true
+  equilibration:
+    iterations: [1,2,3,4,5]
+
+sampling:
+  stations: [0.0, 0.1, 1.0]
+  displacement_samples: 201
+  stress_grid: 41
+
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../output/c_section_table_9_13_lagrangeL9_v4_E10
+```
+
+## Lettura analitica dei parametri del caso
+
+| Percorso YAML | Funzione nel modello |
+|---|---|
+| `case.name` | identificatore descrittivo della configurazione |
+| `problem.yaml` | scelta del problema fisico dell'appendice B |
+| `problem.adapter` | codice che traduce la descrizione del problema in carico e vincoli |
+| `cuf.basis` | percorso del modulo indipendente dell'espansione L9 |
+| `cuf.order` | ordine polinomiale trasversale dichiarato: 2 |
+| `cuf.basis_options.domain_source` | costruzione dei domini L9 sui poligoni CSF |
+| `cuf.basis_options.mapping` | trasformazione isoparametrica quadrilatero–dominio naturale |
+| `cuf.basis_options.connectivity` | condivisione dei punti coincidenti fra domini |
+| `cuf.basis_options.boundary_tolerance` | tolleranza numerica per controlli geometrici/connettività |
+| `cuf.basis_options.require_prismatic` | richiede assenza di variazione sezionale lungo l'asse |
+| `longitudinal.method` | approssimazione lungo trave mediante elementi finiti |
+| `longitudinal.element_boundaries` | undici confini di dieci elementi, in coordinate normalizzate |
+| `longitudinal.basis` | famiglia delle forme longitudinali: Lagrange |
+| `longitudinal.order` | ordine longitudinale 12 |
+| `longitudinal.gauss_order` | quadratura longitudinale, ordine 15 |
+| `longitudinal.material_polynomial_degree` | grado di variazione longitudinale del materiale, zero |
+| `section_integration.method` | integrazione numerica fissa sui poligoni |
+| `section_integration.gauss_order` | parametro di quadratura sezionale, 9 |
+| `solver.correctionMITC` | attivazione della correzione MITC prevista dal motore |
+| `solver.verifyMITCAssembly` | richiesta di verifica dell'assemblaggio MITC |
+| `solver.equilibration.iterations` | valori delle iterazioni di equilibratura richiesti |
+| `sampling.stations` | stazioni di interrogazione/postprocessing |
+| `sampling.displacement_samples` | numero di campioni di spostamento richiesti |
+| `sampling.stress_grid` | risoluzione della griglia di campionamento delle tensioni |
+| `output.adapter` | componente per la scrittura/postprocesso dei risultati |
+| `output.directory` | directory destinazione dei dati numerici prodotti |
+
+**Precisazione sul commento storico nello YAML:** il commento sull'incompleta implementazione `lagrangeL9_v1` è rimasto nel file del caso, ma il campo esecutivo `cuf.basis` seleziona **`lagrangeL9_v4.py`**. Il commento non deve essere confuso con la versione di base effettivamente richiesta. L'esito dell'esecuzione va comunque verificato mediante checkpoint/log prodotti.
+
+# Appendice D — Definizione del riferimento solido e controlli di tracciabilità
+
+Il driver FEM3D consultato è identificato dalla dicitura `Driver v8 (2026-10-12)` e dichiara esplicitamente elementi **OpenSees `stdBrick` (H8)**. I suoi parametri predefiniti di discretizzazione sono:
+
+```python
+@dataclass(frozen=True)
+class MeshSettings:
+    nx: int = 80
+    ny_top_free: int = 18
+    ny_bottom_free: int = 8
+    ny_web: int = 2
+    nz_flange: int = 2
+    nz_web: int = 16
+```
+
+La catena di tracciabilità richiesta per ogni risultato è: (1) geometria/materiale effettivamente letti dal driver, (2) problema e carico effettivamente acquisiti, (3) opzioni mesh e loro eventuali override, (4) versione del codice, (5) file di uscita, (6) routine usata per la valutazione di tensioni e spostamenti. La rappresentazione FEM3D utilizza intenzionalmente **un unico poligono di contorno a otto vertici** per generare agevolmente la mesh OpenSees, anziché i nove quadrilateri utilizzati per L9. Il file geometrico e il comando concretamente impiegati vanno riportati per la riproducibilità. Questa appendice non riproduce le 872 righe del driver Python, perché esso è una implementazione del modello, non la definizione scientifica del modello stesso.
+
+# Riferimenti bibliografici e nota sulle fonti
+
+1. E. Carrera e M. Petrolo, *Refined beam elements with only displacement variables and plate/shell capabilities*, §4.3, figure 12 e 13. Dati editoriali completi da controllare nell'edizione originale prima della distribuzione accademica.
+2. G. Boscu, *Continuous Section Field (CSF)*, descrizione del quadro geometrico e dell'accoppiamento CUF. La presente versione del rapporto integra direttamente i parametri del caso e **non richiede collegamenti esterni per comprenderli**.
+
+**Nota di metodo.** Le appendici A–C riportano il contenuto dei tre YAML pubblicati e verificati il 14 ottobre 2026. La descrizione FEM3D è derivata dal driver OpenSees disponibile alla medesima data. Le interpretazioni e le questioni aperte sono distinte espressamente dai dati presenti nei file, per non confondere una configurazione verificabile con una validazione numerica completata.
