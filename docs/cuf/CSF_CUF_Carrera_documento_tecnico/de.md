@@ -5,7 +5,6 @@
 **Data:** 14 ottobre 2026  
 **Stato:** versione tecnica documentata; risultati quantitativi da integrare.
 
-> **Scopo del documento.** Rispondere anzitutto alla distinzione tra CSF, CSF–CUF e il collegamento con FEM3D, mostrando che cosa descrive ciascun modello, come vengono costruite le incognite e in quale punto entra CSF nella formulazione CUF. Illustrare poi il caso della mensola a sezione C e il confronto numerico. Il testo è comprensibile senza consultare un repository. I file di ingresso effettivamente consultati sono riprodotti integralmente in appendice. I risultati numerici non disponibili non vengono sostituiti da valori ipotetici.
 
 ## 1. I tre modelli: che cosa sono e come si collegano
 
