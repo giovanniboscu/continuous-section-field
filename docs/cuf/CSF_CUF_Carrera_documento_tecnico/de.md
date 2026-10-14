@@ -198,21 +198,13 @@ La trave è prismatica, con asse longitudinale identificato dalla coordinata fis
 
 Nel piano `(y,z)` la sezione ha l'anima a destra e l'apertura rivolta verso sinistra. I limiti sono: ala superiore `−1000 ≤ y ≤ 0`, `400 ≤ z ≤ 500`; anima `−100 ≤ y ≤ 0`, `−400 ≤ z ≤ 400`; ala inferiore `−500 ≤ y ≤ 0`, `−500 ≤ z ≤ −400`. L'unione dei tre rettangoli è senza sovrapposizioni di area.
 
-Una rappresentazione schematica, non in scala, è:
+Una rappresentazione  è:
 
-```text
- z ↑
-   +-------------------------------------+   z = +500  (ala superiore)
-   |                                     |
-   +---------------------------------+---+   z = +400
-                                     |   |
-                                     |   |   anima
-                                     |   |
-   +---------------+-----------------+---+   z = −400
-   |                                     |
-   +-------------------------------------+   z = −500  (ala inferiore)
-   ← apertura                            anima → y
-```
+
+![Partizione della sezione a C in nove quadrilateri](CSF_CUF_Carrera_assets/sezione_c_nove_domini.png)
+
+*Figura 1 — Contorno fisico e partizione sezionale nei nove domini CSF usati dall'espansione L9. Figura ricostruita direttamente dalle coordinate YAML riportate in questo documento, non riproduzione della figura del paper.*
+
 
 Le divisioni interne dei nove domini sono specificate al §3.2. Nel lavoro di riferimento la topologia 9-L9 è mostrata graficamente, **senza tabella delle coordinate dei tagli interni**: le suddivisioni riportate qui sono una ricostruzione geometrica e non numeri attribuiti agli autori.
 
