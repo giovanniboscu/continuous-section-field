@@ -18,6 +18,9 @@ La domanda preliminare è: **che cosa rappresentano CSF, CSF–CUF e FEM3D, e qu
 | **CSF–CUF** | Il **modello strutturale** che utilizza la formulazione CUF e interroga CSF per geometria e materiali | CSF + funzioni trasversali CUF + elementi longitudinali + carichi e vincoli | Sistema generale non vincolato a specifiche geometrie e cinematiche, assemblaggio della matrice di rigidezza e del vettore dei carichi, soluzione delle incognite generalizzate CUF, ricostruzione del campo tridimensionale degli spostamenti, delle deformazioni e delle tensioni. | Non è una seconda teoria costitutiva, né un FEM3D costruito per sezioni solide |
 | **FEM3D** | Modello tridimensionale indipendente di riferimento | Geometria, materiali, carichi, vincoli e mesh volumetrica | Spostamenti, deformazioni e tensioni | Riferimento per la validazione numerica di CSF–CUF |
 
+
+
+
 Il nome **CSF–CUF** indica quindi un *accoppiamento*: **CSF descrive il dominio fisico** e **CUF definisce l'approssimazione degli spostamenti e le equazioni di equilibrio**. FEM3D rappresenta, in questo documento, una **seconda soluzione numerica dello stesso problema fisico**, ottenuta mediante incognite e discretizzazione differenti rispetto a CSF–CUF.
 
 ### 1.2 Schema logico dell'esperimento
@@ -92,6 +95,17 @@ La configurazione di un'analisi CSF–CUF è organizzata in tre file YAML distin
 | **`case`** | Collega modello e problema, seleziona le espansioni trasversali, la discretizzazione longitudinale e i parametri di integrazione e soluzione. |
 
 Questa organizzazione permette di combinare differenti modelli fisici, problemi strutturali e approssimazioni numeriche senza modificare il nucleo della formulazione CUF.
+
+
+Nel caso numerico esaminato, i tre file di configurazione sono:
+
+| Configurazione | File YAML | Riferimento |
+|---|---|---|
+| **Model** | `c_section_chapter9_5_3_9L9_csf.yaml` | Appendice A |
+| **Problem** | `c_section_cantilever_point_9L9.yaml` | Appendice B |
+| **Case** | `c_section_table_9_13_lagrangeL9_v4_E10.yaml` | Appendice C |
+
+I tre file sono riportati integralmente nelle rispettive appendici e descritti nelle sezioni successive.
 
 
 La **formulazione strutturale rimane CUF**. La specificità dell'implementazione CSF–CUF è l'organizzazione del calcolo: geometria/materiale, espansione trasversale e discretizzazione longitudinale sono definiti in componenti distinti e collegati durante l'assemblaggio. La descrizione continua della sezione fornita da CSF entra direttamente nella rappresentazione dei nuclei sezionali CUF, senza richiedere la derivazione di espressioni specializzate per la specifica geometria, come nel caso della sezione a C.
@@ -285,7 +299,6 @@ L'approccio è quello standard CUF: la particolarità del lavoro è **da dove pr
 
 .
 
-Per una trattazione formale si rimanda al documento [CSF–CUF: Formulation for Directly Prescribed Variable Sections](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md).
 ### 4.2 Espansione trasversale L9
 
 Ogni quadrilatero fisico CSF viene associato a un dominio parametrico e riceve un'espansione **L9 con nove punti di interpolazione**, disposti su una griglia 3 × 3. Le funzioni e le loro derivate sono fornite dal modulo trasversale, mentre geometria e materiale provengono da CSF.
@@ -383,20 +396,18 @@ Per il confronto si distinguono **scarto assoluto**, **scarto percentuale** (qua
 
 Vicino a valori di riferimento quasi nulli è preferibile riportare un errore assoluto o una normalizzazione globale appropriata, per evitare percentuali artificialmente elevate. Per le tensioni occorre distinguere **regioni interne regolari**, **bordo dell'incastro**, **estremità libera** e **intorno del carico puntuale**. Un picco vicino a una forza idealmente concentrata non è un indicatore affidabile, da solo, della convergenza del campo tensionale.
 
-### 6.1 Tabella dei risultati: dati non acquisiti
 
-| Quantità | Punto o traiettoria | CSF–CUF L9/E10 | FEM3D H8 | Riferimento Carrera–Petrolo | Scarto |
-|---|---|---|---|---|---|
-| Spostamento trasversale | da identificare | non disponibile | non disponibile | da estrarre | non calcolabile |
-| Spostamento longitudinale | da identificare | non disponibile | non disponibile | da estrarre | non calcolabile |
-| Tensione normale | traiettoria da identificare | non disponibile | non disponibile | da verificare | non calcolabile |
-| Tensione tangenziale `τ_xy` | traiettoria da identificare | non disponibile | non disponibile | da verificare | non calcolabile |
+### 6.1 Presentazione dei risultati 
 
-Questa tabella è una dichiarazione dei **limiti documentali della versione presente**, non una tabella di risultati. Non sono stati forniti qui checkpoint numerici, serie dei grafici, tabelle del lavoro originale o gli output del FEM3D verificati. Pertanto non è possibile sostenere numericamente un determinato errore percentuale o riprodurre correttamente grafici con valori reali.
+I risultati del confronto CSF–CUF/FEM3D sono presentati mediante rappresentazioni grafiche degli spostamenti, delle deformazioni e delle tensioni, valutati in corrispondenza dei vertici di ciascun poligono della sezione CSF. Il campionamento comprende quindi numerosi punti distribuiti sull'intera sezione, mantenendo per entrambi i modelli le medesime posizioni fisiche e convenzioni di riferimento.
+
+Le rappresentazioni consentono di esaminare la corrispondenza tra le due soluzioni, evidenziando sia l'andamento complessivo dei campi sia le eventuali differenze locali.
+
+**Il modello CSF–CUF registra inoltre la soluzione come funzione continua dello spazio**, interrogabile per la valutazione puntuale degli spostamenti, delle deformazioni e delle tensioni in qualsiasi posizione del dominio fisico. Questa caratteristica consente verifiche numeriche mirate e confronti con FEM3D indipendentemente dalle griglie utilizzate per la rappresentazione grafica.
+
+I risultati sono organizzati per componente fisica e posizione di campionamento, distinguendo gli spostamenti dalle grandezze derivate.
 
 ### 6.2 Interpretazione provvisoria
-
-La separazione tra descrizione fisica CSF ed espansione CUF è esplicitamente visibile nell'organizzazione delle configurazioni. Il caso dimostra **a livello di impostazione del modello** come una base L9 esterna possa essere applicata ai domini CSF senza codificare nel caso stesso i vertici dei poligoni. L'accuratezza e l'efficacia numerica dell'approssimazione vanno tuttavia giudicate dai **risultati effettivi**, non dalla sola possibilità di costruire il modello.
 
 ## 7. Conclusioni
 
