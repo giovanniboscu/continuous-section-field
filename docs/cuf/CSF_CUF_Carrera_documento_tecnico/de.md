@@ -915,7 +915,7 @@ output:
 
 # Appendice D - Definizione del riferimento solido e controlli di tracciabilità
 
-Il driver FEM3D consultato è identificato dalla dicitura `Driver v8 (2026-10-12)` e dichiara esplicitamente elementi **OpenSees `stdBrick` (H8)**. I suoi parametri predefiniti di discretizzazione sono:
+Il driver FEM3D consultato è identificato dalla dicitura `run_c_section_table_9_13_fem3d.py`. I suoi parametri predefiniti di discretizzazione sono:
 
 ```python
 @dataclass(frozen=True)
