@@ -944,7 +944,7 @@ Il driver FEM3D consultato è identificato dalla dicitura `run_c_section_table_9
 ```python
 @dataclass(frozen=True)
 class MeshSettings:
-    nx: int = 80
+    nx: int = 200
     ny_top_free: int = 18
     ny_bottom_free: int = 8
     ny_web: int = 2
