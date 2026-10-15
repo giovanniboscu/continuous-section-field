@@ -418,11 +418,7 @@ Il contributo che questo caso mette alla prova è la **separazione fra geometria
 
 ## Scopo della selezione
 
-Presentare un confronto leggibile tra CSF–CUF e FEM3D lungo la trave, sui punti campionati ai vertici dei poligoni CSF, senza riprodurre indiscriminatamente l'intera galleria.
-
-### Confronto delle componenti di spostamento
-
-Confronto delle componenti di spostamento CSF–CUF e FEM3D, valutate lungo l'asse longitudinale della trave in corrispondenza dei vertici di alcuni dei nove poligoni che compongono la sezione CSF.
+Presentare un confronto leggibile tra CSF–CUF e FEM3D lungo la trave, sui punti campionati ai vertici dei poligoni CSF, senza riprodurre l'intera galleri
 
 
 ### Spostamento trasversale `u_z`
@@ -516,13 +512,11 @@ Affiancare l'altra componente di taglio longitudinale, utile per evidenziare la 
 2. **Tensioni:** `σ_xx`, `τ_xz` e `τ_xy`, con un testo che descriva le differenze effettivamente osservabili.
 3. **Deformazioni:** almeno `ε_xx`, eventualmente `γ_xz` se il confronto aggiunge informazione.
 
-I grafici rimanenti possono restare accessibili attraverso il README originale, evitando di sovraccaricare il rapporto principale.
-
-
 
 # Appendice A - Configurazione completa del modello CSF
 
-Questo file è il modello fisico `c_section_chapter9_5_3_9L9_csf.yaml`. I commenti originali sono conservati. Le coordinate delle sezioni `S0` e `S1` definiscono due rappresentazioni identiche della stessa sezione, quindi la geometria è prismatica. La ripetizione completa è intenzionale: il lettore può verificare le nove corrispondenze senza dipendere da file esterni.
+Questo file è il modello fisico `c_section_chapter9_5_3_9L9_csf.yaml`.
+Le coordinate delle sezioni `S0` e `S1` definiscono due rappresentazioni identiche della stessa sezione, quindi la geometria è prismatica.
 
 ```yaml
 # CSF model for the Carrera-Petrolo C-section benchmark.
@@ -918,6 +912,4 @@ La catena di tracciabilità richiesta per ogni risultato è: (1) geometria/mater
 
 # Riferimenti bibliografici e nota sulle fonti
 
-1. E. Carrera e M. Petrolo, *Refined beam elements with only displacement variables and plate/shell capabilities*, §4.3, figure 12 e 13. Dati editoriali completi da controllare nell'edizione originale prima della distribuzione accademica.
-
-**Nota di metodo.** Le appendici A–C riportano il contenuto dei tre YAML pubblicati e verificati il 14 ottobre 2026. La descrizione FEM3D è derivata dal driver OpenSees disponibile alla medesima data. Le interpretazioni e le questioni aperte sono distinte espressamente dai dati presenti nei file, per non confondere una configurazione verificabile con una validazione numerica completata.
+1. E. Carrera e M. Petrolo, *Refined beam elements with only displacement variables and plate/shell capabilities*, §4.3, figure 12 e 13. 
