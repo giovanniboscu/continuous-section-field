@@ -361,8 +361,7 @@ In questo caso viene utilizzata una funzione di forma longitudinale di Lagrange 
 
 ### 4.5 Scelte operative del caso
 
-L'espansione esterna è caricata da `lagrangeL9_v4.py`; la selezione dei domini avviene con `domain_source: csf_polygons`; la mappa è `isoparametric`; la connettività è `shared_points`; la tolleranza geometrica dichiarata è `1.0e-10`; `require_prismatic: true` impedisce l'uso inconsapevole con un caso non prismatico. Sono attivi i controlli/correzioni `correctionMITC: true` e `verifyMITCAssembly: true`, con iterazioni di equilibratura richieste `[1,2,3,4,5]`. Non si attribuisce qui a queste opzioni un effetto numerico specifico non verificato mediante i risultati del solutore.
-
+L'espansione esterna è caricata da `lagrangeL9_v4.py`; la selezione dei domini avviene con `domain_source: csf_polygons`; la mappa è `isoparametric`; la connettività è `shared_points`; la tolleranza geometrica dichiarata è `1.0e-10`; `require_prismatic: true` impedisce l'uso inconsapevole con un caso non prismatico. Sono attivi i controlli/correzioni `correctionMITC: true` e `verifyMITCAssembly: true`, con iterazioni di equilibratura richieste `[1,2,3,4,5]`. 
 Le stazioni di campionamento del file sono `[0.0,0.1,1.0]`, interpretate nel contesto dell'interfaccia come parametri longitudinali da verificare con il postprocessore; `displacement_samples: 201` e `stress_grid: 41` regolano il campionamento di uscita. Una griglia più densa di visualizzazione **non** equivale a una discretizzazione CUF più fine.
 
 ## 5.  Modello di riferimento FEM3D
