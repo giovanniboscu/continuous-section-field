@@ -760,7 +760,28 @@ In CSF–CUF, **la geometria e i materiali sono descritti tramite YAML, mentre l
 
 `force.type: point` specifica un carico concentrato; `amplitude: -1.0` ne fornisce il valore con segno, in N; `x`, `y`, `z` sono **coordinate fisiche del punto di applicazione** in mm e non stazioni di interpolazione YAML. Il segno negativo si riferisce alla direzione della forza associata all'adattatore, qui globale z.
 
-# Appendice C - Configurazione completa del caso CUF E10
+
+
+# Appendice C — Configurazione numerica dell'analisi
+
+Questa appendice descrive la configurazione numerica adottata per l'analisi della mensola a sezione C mediante CSF–CUF.
+
+La geometria e le proprietà dei materiali sono definite nel modello CSF descritto nell'appendice A, mentre i carichi e le condizioni al contorno sono gestiti dall'adattatore Python del problema, illustrato nell'appendice B.
+
+Il file YAML del caso riunisce questi elementi e specifica le scelte necessarie per costruire e risolvere il modello CUF.
+
+In particolare, la configurazione stabilisce:
+
+- **Il modello fisico:** il riferimento alla descrizione CSF della geometria e dei materiali.
+- **Il problema strutturale:** l'adattatore Python che implementa carichi e vincoli, insieme ai relativi parametri.
+- **L'approssimazione trasversale:** la famiglia di funzioni utilizzata per rappresentare il campo di spostamento sulla sezione e il relativo ordine di espansione.
+- **La discretizzazione longitudinale:** il numero di elementi finiti, l'ordine delle funzioni di forma e le impostazioni di integrazione numerica.
+- **Le opzioni di esecuzione:** i parametri che controllano la soluzione e la produzione dei risultati.
+
+Queste scelte sono indipendenti dalla descrizione fisica della sezione. È quindi possibile modificare l'approssimazione CUF o la discretizzazione longitudinale senza ridefinire la geometria, i materiali o l'implementazione Python del problema strutturale.
+
+Il file YAML riportato di seguito costituisce la configurazione effettivamente utilizzata nell'analisi. I commenti associati ai parametri ne spiegano il significato e consentono di riprodurre il caso numerico.
+
 
 ```yaml
 # CSF-CUF C-section cantilever benchmark
