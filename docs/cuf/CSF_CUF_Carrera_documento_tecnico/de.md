@@ -233,8 +233,6 @@ Una rappresentazione  è:
 *Figura 1 - Contorno fisico e partizione sezionale nei nove domini CSF usati dall'espansione L9. Figura ricostruita direttamente dalle coordinate YAML riportate in questo documento*
 
 
-Le divisioni interne dei nove domini sono specificate al §3.2. Nel lavoro di riferimento la topologia 9-L9 è mostrata graficamente, **senza tabella delle coordinate dei tagli interni**: le suddivisioni riportate qui sono una ricostruzione geometrica e non numeri attribuiti agli autori.
-
 ### 2.2 Materiale
 
 Si adotta elasticità lineare isotropa, con `E = 75000 MPa` e `ν = 0.33`. Il modulo di taglio corrispondente è circa **28.195,49 MPa**.
