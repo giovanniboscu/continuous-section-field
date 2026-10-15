@@ -17,7 +17,7 @@ La domanda preliminare è: **che cosa rappresentano CSF, CSF–CUF il l'uso del 
 |---|---|---|---|
 | **CSF - Continuous Section Field** | Il **modello fisico della sezione** lungo l'asse: domini geometrici, coordinate e proprietà materiali | Descrizione della geometria, lunghezza, stazioni e materiali | Modello autonomo per la descrizione continua di geometria e materiali lungo l’asse longitudinale, la generazione di geometrie e distribuzioni di materiali e il calcolo delle proprietà sezionali classiche, anche tramite integrazione con sectionproperties. Accessibile tramite interfaccia grafica, CLI e libreria Python |
 | **CSF–CUF** | Il **modello strutturale** che utilizza la formulazione CUF e interroga CSF per geometria e materiali | CSF + funzioni trasversali CUF + elementi longitudinali + carichi e vincoli | Sistema generale non vincolato a specifiche geometrie e cinematiche, assemblaggio della matrice di rigidezza e del vettore dei carichi, soluzione delle incognite generalizzate CUF, ricostruzione del campo tridimensionale degli spostamenti, delle deformazioni e delle tensioni. |
-| **FEM3D** | Modello tridimensionale indipendente di riferimento | Geometria, materiali, carichi, vincoli e mesh volumetrica | Spostamenti, deformazioni e tensioni |
+| **FEM3D** | Modello tridimensionale indipendente di riferimento, sviluppato con OpenSeesPy ed elementi solidi esaedrici H8 (stdBrick) | Geometria e materiali acquisiti da CSF, mesh volumetrica conforme, carichi e vincoli coerenti con CUF, analisi elastica lineare | Spostamenti, deformazioni e tensioni, ricavate per elemento senza smoothing |
 
 
 
