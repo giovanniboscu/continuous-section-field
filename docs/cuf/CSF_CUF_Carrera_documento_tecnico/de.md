@@ -752,7 +752,13 @@ problem:
 
 ## Lettura dei parametri del problema
 
-`model.csf_yaml` identifica la descrizione geometrica e materiale riprodotta nell'appendice A. `problem.type: c_section_cantilever` seleziona l'adattatore che definisce la mensola e il suo incastro; `force.type: point` specifica un carico concentrato; `amplitude: -1.0` fornisce il valore con segno, in N; `x,y,z` sono **coordinate fisiche del punto di applicazione** in mm e non stazioni di interpolazione YAML. Il segno negativo si riferisce alla direzione della forza associata all'adattatore, qui globale z.
+`model.csf_yaml` identifica la descrizione geometrica e materiale riprodotta nell'appendice A.
+
+`problem.type: c_section_cantilever` seleziona un **adattatore implementato in Python**, responsabile della definizione del problema strutturale, inclusi i carichi e le condizioni al contorno.
+
+In CSF–CUF, **la geometria e i materiali sono descritti tramite YAML, mentre la logica di applicazione dei carichi e dei vincoli è implementata in Python**. Questa separazione consente di riutilizzare lo stesso adattatore in più analisi, variando attraverso i file YAML i parametri del problema, senza dover riscrivere la relativa implementazione.
+
+`force.type: point` specifica un carico concentrato; `amplitude: -1.0` ne fornisce il valore con segno, in N; `x`, `y`, `z` sono **coordinate fisiche del punto di applicazione** in mm e non stazioni di interpolazione YAML. Il segno negativo si riferisce alla direzione della forza associata all'adattatore, qui globale z.
 
 # Appendice C - Configurazione completa del caso CUF E10
 
