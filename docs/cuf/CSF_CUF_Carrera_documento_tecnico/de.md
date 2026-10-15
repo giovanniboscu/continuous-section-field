@@ -202,11 +202,6 @@ Questo caso mette alla prova **due questioni distinte**:
 - **Accuratezza della soluzione:** con quella particolare espansione L9, la discretizzazione longitudinale scelta e le quadrature impiegate, quali differenze si ottengono rispetto a un riferimento FEM3D solido.
 
 
-### 1.7 Stato delle evidenze disponibili
-
-Le configurazioni permettono di documentare problema fisico, CSF, L9, discretizzazione longitudinale e impostazioni del riferimento solido. 
-
-**La geometria fisica della sezione a C è la medesima nei due modelli.** Per CSF–CUF è suddivisa in nove domini quadrilateri su cui opera l’espansione L9; per agevolare la costruzione della mesh solida in OpenSees, il modello FEM3D usa invece un unico poligono di contorno a otto vertici. Le due descrizioni geometriche hanno finalità numeriche differenti e non rappresentano due problemi strutturali diversi.
 
 ## 2. Problema strutturale
 
