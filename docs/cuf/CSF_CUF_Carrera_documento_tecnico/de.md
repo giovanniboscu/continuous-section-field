@@ -429,9 +429,9 @@ I risultati sono organizzati per componente fisica e posizione di campionamento,
 
 ## 7. Conclusioni
 
-L'esperimento distingue tre oggetti: (i) **il problema fisico** della mensola a sezione C; (ii) **la sua soluzione CUF**, in cui una espansione L9 opera su nove domini di sezione forniti da CSF; (iii) **un riferimento FEM3D** volumetrico basato su elementi solidi H8 in OpenSees. CSF è il livello di descrizione della geometria e del materiale e di valutazione sezionale.
+In CSF–CUF i nuclei sezionali sono valutati numericamente, mediante quadratura, interrogando CSF sulla geometria e sui materiali effettivi della sezione. La geometria diventa così un dato di ingresso del calcolo, senza richiedere derivazioni specifiche della formulazione: la cinematica, il principio dei lavori virtuali e la struttura generale della CUF restano invariati. Nessuna espressione sezionale specifica per la geometria deve essere derivata analiticamente o programmata.
 
-Il contributo che questo caso mette alla prova è la **separazione fra geometria/materiale, espansione trasversale e discretizzazione longitudinale**, con valutazione numerica dei contributi sezionali. 
+Il caso della mensola a sezione C ne costituisce un esempio concreto. La stessa espansione L9, definita in un modulo indipendente, opera sui nove domini forniti da CSF senza alcuna routine dedicata a questa geometria. **Cambiare sezione non richiede di modificare il codice della formulazione, ma soltanto di fornire una nuova descrizione CSF**, ferma restando la scelta di un'approssimazione trasversale adeguata al problema.
 
 # Selezione dei diagrammi CSF–CUF / FEM3D per il rapporto tecnico
 
