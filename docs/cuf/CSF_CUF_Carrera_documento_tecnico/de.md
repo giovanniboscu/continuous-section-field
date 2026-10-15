@@ -420,9 +420,6 @@ Il contributo che questo caso mette alla prova è la **separazione fra geometria
 
 Presentare un confronto leggibile tra CSF–CUF e FEM3D lungo la trave, sui punti campionati ai vertici dei poligoni CSF, senza riprodurre indiscriminatamente l'intera galleria.
 
-La galleria organizza i grafici per componente e in cinque parti (`part01`–`part05`). La selezione sotto, con **immagini incorporate**, è una **proposta editoriale**, fondata sull'inventario verificato dei file; non implica ancora una valutazione quantitativa delle sovrapposizioni o degli scarti delle curve. Prima dell'impaginazione definitiva occorre verificare, in ogni figura, quali vertici siano effettivamente contenuti in ciascuna parte.
-
-
 ### Confronto delle componenti di spostamento
 
 Confronto delle componenti di spostamento CSF–CUF e FEM3D, valutate lungo l'asse longitudinale della trave in corrispondenza dei vertici di alcuni dei nove poligoni che compongono la sezione CSF.
