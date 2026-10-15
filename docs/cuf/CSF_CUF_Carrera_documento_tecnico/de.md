@@ -57,7 +57,7 @@ Il nome **CSF–CUF** indica quindi un *accoppiamento*: **CSF descrive il domini
 
 **CSF alimenta entrambi i solutori**, CSF–CUF e FEM3D, fornendo una descrizione fisica comune e continua della geometria e dei materiali. I due solutori mantengono formulazioni strutturali e discretizzazioni numeriche indipendenti.
 
-### 1.3 CSF: un modello fisico, non una soluzione
+### 1.3 CSF: un modello fisico
 
 CSF è il **livello di rappresentazione della realtà fisica**. A una stazione longitudinale richiesta, restituisce il dominio della sezione, la sua geometria e le proprietà dei materiali. non sceglie la cinematica, non costruisce da solo una matrice di rigidezza e non risolve il problema di equilibrio.
 
