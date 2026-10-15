@@ -392,16 +392,9 @@ Non c'è dunque un'incongruenza tra i modelli e non è necessario che il driver 
 
 La riproducibilità dei risultati richiede comunque di dichiarare, per ciascuna esecuzione, il file geometrico effettivamente usato, le opzioni della mesh e il file di output, senza confondere tale tracciabilità con un dubbio sull'identità della sezione.
 
-## 6. Criteri per un confronto scientificamente significativo
-
-Il confronto non deve essere ridotto al solo confronto grafico. Per ogni posizione o traiettoria campionata occorre dichiarare: punto fisico e sistema di coordinate, componente di spostamento/tensione, eventuale media impiegata, campionamento FEM3D (nodo, centro elemento o punto di integrazione), dato CUF, riferimento pubblicato se esistente e definizione dell'errore.
-
-Per il confronto si distinguono **scarto assoluto**, **scarto percentuale** (quando il riferimento non è prossimo allo zero) e differenze tra curve campionate. La scelta del denominatore e dei punti confrontati deve essere dichiarata.
-
-Vicino a valori di riferimento quasi nulli è preferibile riportare un errore assoluto o una normalizzazione globale appropriata, per evitare percentuali artificialmente elevate. Per le tensioni occorre distinguere **regioni interne regolari**, **bordo dell'incastro**, **estremità libera** e **intorno del carico puntuale**. Un picco vicino a una forza idealmente concentrata non è un indicatore affidabile, da solo, della convergenza del campo tensionale.
 
 
-### 6.1 Presentazione dei risultati 
+### 6 Presentazione dei risultati 
 
 I risultati del confronto CSF–CUF/FEM3D sono presentati mediante rappresentazioni grafiche degli spostamenti, delle deformazioni e delle tensioni, valutati in corrispondenza dei vertici di ciascun poligono della sezione CSF. Il campionamento comprende quindi numerosi punti distribuiti sull'intera sezione, mantenendo per entrambi i modelli le medesime posizioni fisiche e convenzioni di riferimento.
 
