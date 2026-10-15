@@ -7,7 +7,7 @@
 
 ## 1. I tre modelli: che cosa sono e come si collegano
 
-La domanda preliminare è: **che cosa rappresentano CSF, CSF–CUF il l'uso del FEM3D, e quale relazione esiste tra loro?** 
+Ruolo di CSF, CSF–CUF e FEM3D e relazioni tra i tre approcci
 
 
 ### 1.1 La distinzione fondamentale
