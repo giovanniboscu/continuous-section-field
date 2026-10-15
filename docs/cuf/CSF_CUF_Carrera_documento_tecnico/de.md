@@ -237,7 +237,7 @@ Una rappresentazione  è:
 
 Si adotta elasticità lineare isotropa, con `E = 75000 MPa` e `ν = 0.33`. Il modulo di taglio corrispondente è circa **28.195,49 MPa**.
 
-Le unità sono coerentemente **mm, N, MPa**. Nel file CSF il valore `weight: 75000.0` compare in ciascun poligono e l'indicazione `shear_weight_laws: ['iso(0.33)']` specifica la legge isotropa con il coefficiente di Poisson adottato. Questi parametri sono interpretati dal collegamento CSF–CUF per il materiale di questo esperimento; `weight` non è una densità volumica.
+Le unità adottate sono coerentemente **mm, N, MPa**. Nel file CSF, il parametro `weight: 75000.0`, presente in ciascun poligono, rappresenta il **modulo elastico di Young \(E = 75\,000\) MPa** e non una densità volumica. La dichiarazione `shear_weight_laws: ['iso(0.33)']` specifica una legge costitutiva isotropa con **coefficiente di Poisson \(\nu = 0.33\)**. Questi parametri sono interpretati dal collegamento CSF–CUF per definire le proprietà elastiche del materiale utilizzato nell'esperimento.
 
 ### 2.3 Vincolo e forza
 
