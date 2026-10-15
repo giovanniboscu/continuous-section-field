@@ -504,11 +504,6 @@ Affiancare l'altra componente di taglio longitudinale, utile per evidenziare la 
 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/gamma_xz_along_boundary_part03.png)
 
-## Organizzazione proposta nel §6.1
-
-1. **Spostamenti:** `u_z` su più gruppi di vertici, poi `u_x` e `u_y`.
-2. **Tensioni:** `σ_xx`, `τ_xz` e `τ_xy`, con un testo che descriva le differenze effettivamente osservabili.
-3. **Deformazioni:** almeno `ε_xx`, eventualmente `γ_xz` se il confronto aggiunge informazione.
 
 
 # Appendice A - Configurazione completa del modello CSF
