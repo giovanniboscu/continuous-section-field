@@ -762,7 +762,7 @@ In CSF–CUF, **la geometria e i materiali sono descritti tramite YAML, mentre l
 
 
 
-# Appendice C — Configurazione numerica dell'analisi
+# Appendice C - Configurazione numerica dell'analisi
 
 Questa appendice descrive la configurazione numerica adottata per l'analisi della mensola a sezione C mediante CSF–CUF.
 
