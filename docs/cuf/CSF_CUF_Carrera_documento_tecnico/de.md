@@ -365,13 +365,43 @@ L'espansione esterna è caricata da `lagrangeL9_v4.py`; la selezione dei domini 
 
 Le stazioni di campionamento del file sono `[0.0,0.1,1.0]`, interpretate nel contesto dell'interfaccia come parametri longitudinali da verificare con il postprocessore; `displacement_samples: 201` e `stress_grid: 41` regolano il campionamento di uscita. Una griglia più densa di visualizzazione **non** equivale a una discretizzazione CUF più fine.
 
-## 5. Riferimento FEM3D
+## 5.  Modello di riferimento FEM3D
 
-### 5.1 Che cosa significa FEM3D in questo studio
+Modello tridimensionale con elementi solidi. Lo script di riferimento consultato impiega il solutore OpenSees con elementi esaedrici a **otto nodi** `stdBrick` (H8). Si tratta di una discretizzazione volumetrica fisica della sezione e dell'asse, diversa dal modello CUF a espansione trasversale e approssimazione unidimensionale lungo la trave.
 
-**Sì: FEM3D indica un modello tridimensionale con elementi solidi.** Lo script di riferimento consultato impiega il solutore OpenSees con elementi esaedrici a **otto nodi** `stdBrick` (H8). Si tratta di una discretizzazione volumetrica fisica della sezione e dell'asse, diversa dal modello CUF a espansione trasversale e approssimazione unidimensionale lungo la trave.
 
-Il driver dichiara, come impostazioni di default, `nx=80` ripartizioni longitudinali, `ny_top_free=18`, `ny_bottom_free=8`, `ny_web=2`, `nz_flange=2`, `nz_web=16`. Si tratta delle **impostazioni predefinite nello script**, non di una certificazione dei parametri usati per uno specifico file di risultati: eventuali override da linea di comando devono essere recuperati dall'esecuzione originale. Il carico e il vincolo sono letti attraverso l'adattatore del problema CSF–CUF, e non reinseriti indipendentemente nello script, per limitare incoerenze.
+
+Il confronto numerico è stato effettuato mediante un modello tridimensionale agli elementi finiti, realizzato con **OpenSeesPy**, utilizzando elementi solidi esaedrici a otto nodi (`stdBrick`, H8) e materiale elastico lineare isotropo (`ElasticIsotropic`).
+
+Il modello è generato mediante il driver [run_c_section_table_9_13_fem3d.py](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/fem3d/run_c_section_table_9_13_fem3d.py), versione v8 del 12 ottobre 2026, eseguito attraverso lo script [fem3dbaseline.sh](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/fem3dbaseline.sh).
+
+La geometria e le proprietà del materiale sono acquisite dal modello CSF, interrogando la sezione lungo l'asse longitudinale della trave. Il modello FEM3D utilizza gli stessi dati fisici di riferimento del problema CSF–CUF, consentendo di confrontare le due discretizzazioni senza introdurre una descrizione geometrica indipendente.
+
+La mesh è strutturata e conforme, suddivisa in tre regioni corrispondenti alla flangia superiore, all'anima e alla flangia inferiore della sezione a C, con nodi condivisi alle interfacce.
+
+La discretizzazione effettivamente adottata nella simulazione di riferimento è la seguente:
+
+| Regione o direzione | Suddivisioni |
+|---|---:|
+| Direzione longitudinale | 200 |
+| Estensione libera della flangia superiore | 18 |
+| Estensione libera della flangia inferiore | 8 |
+| Larghezza dell'anima | 2 |
+| Spessore delle flange | 2 |
+| Altezza libera dell'anima | 16 |
+
+La trave ha lunghezza $L = 20000\ \mathrm{mm}$. La forza concentrata $F_z = -1\ \mathrm{N}$ è applicata all'estremità libera, nel punto di coordinate CUF $(x,y,z) = (20000,0,-500)\ \mathrm{mm}$, corrispondente a un vertice della sezione a C.
+
+Tale punto coincide già con un nodo della discretizzazione FEM3D adottata; non sono pertanto necessarie suddivisioni aggiuntive per l'applicazione del carico. La forza è applicata direttamente al nodo corrispondente, senza ripartizione sui nodi adiacenti.
+
+Il vincolo di incastro è imposto sull'intera sezione iniziale della trave, annullando le tre componenti di spostamento dei nodi appartenenti alla sezione.
+
+L'analisi è statica lineare. Il sistema di riferimento e le unità fisiche sono coerenti con quelli adottati nel modello CSF–CUF (mm, N, MPa).
+
+Il sistema algebrico è risolto mediante OpenSees, utilizzando `UmfPack` e ordinamento `RCM`, con possibilità di ricorrere al solutore `SparseGeneral -piv` in caso di insuccesso.
+
+I risultati sono esportati in formato NPZ per le successive operazioni di confronto e post-elaborazione degli spostamenti e delle grandezze derivate.
+
 
 ### 5.2 Confronto delle tensioni
 
