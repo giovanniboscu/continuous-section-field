@@ -423,17 +423,6 @@ Per l'esecuzione con una iterazione di equilibratura (`eq1`), sono presenti due 
 Il file `.cuf.npz` costituisce il riferimento numerico per le successive operazioni di postprocessing, mentre il file `response_eq1.txt` consente di consultare la risposta testuale prodotta dal solutore.
 
 
-### 5.3 Stessa sezione fisica, due rappresentazioni geometriche
-
-**La sezione a C del modello FEM3D è la stessa sezione fisica utilizzata in CSF–CUF.** Cambia soltanto il modo di rappresentarla per le esigenze delle due discretizzazioni:
-
-- **CSF–CUF:** il dominio della sezione è ripartito in **nove quadrilateri**, che costituiscono i domini di supporto dell'espansione trasversale L9 e dell'integrazione numerica sezionale.
-- **FEM3D in OpenSees:** la sezione a C è descritta, **per comodità di generazione della mesh volumetrica**, mediante **un unico poligono di contorno a otto vertici**. Su tale dominio si costruisce la discretizzazione con elementi solidi H8.
-
-Non c'è dunque un'incongruenza tra i modelli e non è necessario che il driver FEM3D accetti lo YAML a nove quadrilateri: i **domini L9 non sono la mesh FEM3D**. I nove quadrilateri e il poligono unico sono rappresentazioni diverse dello stesso dominio materiale. Questa equivalenza geometrica deve essere mantenuta in tutte le dimensioni, nelle proprietà materiali e nella posizione fisica di carichi e vincoli.
-
-La riproducibilità dei risultati richiede comunque di dichiarare, per ciascuna esecuzione, il file geometrico effettivamente usato, le opzioni della mesh e il file di output, senza confondere tale tracciabilità con un dubbio sull'identità della sezione.
-
 
 ### Postprocessing e confronto con FEM3D
 
