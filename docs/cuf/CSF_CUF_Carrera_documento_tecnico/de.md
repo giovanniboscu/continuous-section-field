@@ -137,9 +137,9 @@ Per consentire l'impiego diretto della descrizione continua della sezione fornit
 Per una trattazione formale si rimanda al documento [CSF–CUF: Formulation for Directly Prescribed Variable Sections](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md).
 
 
----
+
 >Le espansioni trasversali CUF e le funzioni di forma longitudinali sono implementate come componenti Python indipendenti dalla descrizione fisica della sezione. Le rispettive funzioni e derivate vengono definite una sola volta e possono essere riutilizzate in differenti modelli geometrici e materiali, senza modificare la formulazione generale né il nucleo di assemblaggio CUF.
----
+
 
 ### 1.4 FEM3D: soluzione strutturale indipendente
 
@@ -245,9 +245,9 @@ I punti geometricamente coincidenti sui bordi dei domini adiacenti sono condivis
 Nella presente implementazione, il modulo L9 richiede che la sezione sia suddivisa in domini quadrilateri compatibili con la trasformazione isoparametrica adottata. Tale requisito è specifico dell'espansione trasversale utilizzata e non costituisce una limitazione generale della rappresentazione geometrica CSF o della formulazione CUF.
 
 
----
->L'espansione trasversale deve essere implementata in un modulo Python conforme a un'interfaccia prestabilita, che ne definisce le modalità di valutazione delle funzioni e delle relative derivate. Questa organizzazione consente di utilizzare la stessa espansione con differenti geometrie e distribuzioni materiali, indipendentemente dal modello fisico CSF.
----
+
+>L'espansione trasversale sono  implementata in un modulo Python conforme a un'interfaccia prestabilita, che ne definisce le modalità di valutazione delle funzioni e delle relative derivate. Questa organizzazione consente di utilizzare la stessa espansione con differenti geometrie e distribuzioni materiali, indipendentemente dal modello fisico CSF.
+
 
 ### 3.3 Dall'integrazione sezionale alla soluzione
 
@@ -446,7 +446,11 @@ Il file `.cuf.npz` costituisce il riferimento numerico per le successive operazi
 
 ### 7.3 Postprocessing e confronto con FEM3D
 
-Il postprocessing della soluzione CSF–CUF è effettuato mediante lo strumento `csf.cuf.tools.plot_strain_stress_boundary_v10`, che utilizza il checkpoint numerico `.cuf.npz` prodotto dal solutore e il modello CSF originale per la ricostruzione dei campi di spostamento, deformazione e tensione.
+Il postprocessing della soluzione CSF–CUF è effettuato mediante lo strumento 
+
+`csf.cuf.tools.plot_strain_stress_boundary_v10`
+
+che utilizza il checkpoint numerico `.cuf.npz` prodotto dal solutore e il modello CSF originale per la ricostruzione dei campi di spostamento, deformazione e tensione.
 
 Dalla directory `cuf/c-shape`, il postprocessing e il confronto con FEM3D vengono eseguiti mediante il comando:
 
