@@ -397,7 +397,7 @@ Il sistema algebrico è risolto mediante OpenSees, utilizzando `UmfPack` e ordin
 I risultati sono esportati in formato NPZ per le successive operazioni di confronto e post-elaborazione degli spostamenti e delle grandezze derivate.
 
 
-## 6. Esecuzione del processo
+## 6. Esecuzione del processo csf-cuf
 
 L'analisi CSF–CUF viene avviata dalla directory `continuous-section-field/cuf/c-shape` mediante il comando:
 
@@ -423,20 +423,32 @@ Per l'esecuzione con una iterazione di equilibratura (`eq1`), sono presenti due 
 Il file `.cuf.npz` costituisce il riferimento numerico per le successive operazioni di postprocessing, mentre il file `response_eq1.txt` consente di consultare la risposta testuale prodotta dal solutore.
 
 
-
 ### Postprocessing e confronto con FEM3D
 
-La ricostruzione e la rappresentazione dei risultati sono effettuate mediante lo strumento `csf.cuf.tools.plot_strain_stress_boundary_v10`, che utilizza il checkpoint numerico `.cuf.npz` prodotto dal solutore e la descrizione geometrica e materiale originale CSF.
+Il postprocessing della soluzione CSF–CUF è effettuato mediante lo strumento `csf.cuf.tools.plot_strain_stress_boundary_v10`, che utilizza il checkpoint numerico `.cuf.npz` prodotto dal solutore e il modello CSF originale per la ricostruzione dei campi di spostamento, deformazione e tensione.
 
-Il programma valuta gli spostamenti, le deformazioni e le tensioni lungo la trave, in corrispondenza dei vertici dei poligoni che costituiscono la sezione. I risultati sono rappresentati mediante grafici PNG distinti per componente e punto di campionamento.
+Dalla directory `cuf/c-shape`, il postprocessing e il confronto con FEM3D vengono eseguiti mediante il comando:
 
-I valori numerici utilizzati per generare i grafici possono essere esportati in un unico file CSV mediante l'opzione `--csv`. Il file contiene le coordinate dei punti campionati e tutte le componenti di spostamento, deformazione e tensione, consentendo di riprodurre le curve e di effettuare ulteriori analisi quantitative.
+```bash
+python3 -m csf.cuf.tools.plot_strain_stress_boundary_v10 \
+  --csf-yaml models/c_section_chapter9_5_3_9L9_csf.yaml \
+  --checkpoint output/c_section_table_9_13_lagrangeL9_v4_E10/c_section_table_9_13_lagrangeL9_v4_E10_eq1.cuf.npz \
+  --fem3d fem3d/c_section_table_9_13_a.npz \
+  --fem-stress-from-csf
+```
 
-Lo stesso strumento consente il **confronto diretto con una soluzione FEM3D**, fornita mediante l'opzione `--fem3d`. I risultati dei due modelli vengono sovrapposti nei grafici, mantenendo le medesime posizioni fisiche di campionamento. Il confronto comprende gli spostamenti e le deformazioni e può essere esteso alle tensioni FEM3D mediante l'opzione `--fem-stress-from-csf`, che applica la legge costitutiva del modello CSF, a condizione che le proprietà materiali siano coerenti.
+La valutazione viene eseguita lungo l'asse della trave, in corrispondenza dei vertici dei poligoni che definiscono la sezione trasversale. Ogni vertice mantiene la propria appartenenza al poligono, consentendo di distinguere i valori delle tensioni sui diversi lati delle interfacce. I campi ricostruiti sono rappresentati mediante grafici PNG, organizzati per componente e vertice.
 
-I dati FEM3D campionati sono inoltre salvati separatamente in formato NPZ e CSV, rendendo disponibili i valori numerici di entrambi i modelli per successive verifiche.
+I valori numerici utilizzati per la rappresentazione grafica sono disponibili anche in formato NPZ e possono essere esportati in un unico file CSV mediante l'opzione `--csv`. Il CSV raccoglie, per ciascun punto campionato, le coordinate, gli identificativi dei poligoni e dei vertici e tutte le componenti di spostamento, deformazione e tensione, consentendo di ricostruire le curve rappresentate nei grafici e di effettuare analisi quantitative indipendenti.
 
-### 6.2 Presentazione dei risultati 
+Il confronto con FEM3D viene effettuato nelle medesime posizioni fisiche di campionamento, valutando gli spostamenti e le deformazioni direttamente dagli elementi solidi H8. Le tensioni FEM3D vengono ricostruite applicando alle deformazioni la legge costitutiva definita dal modello CSF, purché la distribuzione fisica dei materiali sia coerente tra i due modelli.
+
+I risultati FEM3D campionati sono salvati separatamente in formato NPZ e CSV, rendendo disponibili i valori numerici utilizzati nel confronto.
+
+La procedura di postprocessing opera sulle soluzioni già calcolate, senza introdurre operazioni di regolarizzazione o riequilibratura dei campi di tensione.
+
+
+### 6.1 Presentazione dei risultati 
 
 I risultati del confronto CSF–CUF/FEM3D sono presentati mediante rappresentazioni grafiche degli spostamenti, delle deformazioni e delle tensioni, valutati in corrispondenza dei vertici di ciascun poligono della sezione CSF. Il campionamento comprende quindi numerosi punti distribuiti sull'intera sezione, mantenendo per entrambi i modelli le medesime posizioni fisiche e convenzioni di riferimento.
 
@@ -445,20 +457,14 @@ Le rappresentazioni consentono di esaminare la corrispondenza tra le due soluzio
 I risultati sono organizzati per componente fisica e posizione di campionamento, distinguendo gli spostamenti dalle grandezze derivate.
 
 
-## 7. Conclusioni
 
-In CSF–CUF i nuclei sezionali sono valutati numericamente, mediante quadratura, interrogando CSF sulla geometria e sui materiali effettivi della sezione. La geometria diventa così un dato di ingresso del calcolo, senza richiedere derivazioni specifiche della formulazione: la cinematica, il principio dei lavori virtuali e la struttura generale della CUF restano invariati. Nessuna espressione sezionale specifica per la geometria deve essere derivata analiticamente o programmata.
-
-Il caso della mensola a sezione C ne costituisce un esempio concreto. La stessa espansione L9, definita in un modulo indipendente, opera sui nove domini forniti da CSF senza alcuna routine dedicata a questa geometria. **Cambiare sezione non richiede di modificare il codice della formulazione, ma soltanto di fornire una nuova descrizione CSF**, ferma restando la scelta di un'approssimazione trasversale adeguata al problema.
 
 # Selezione dei diagrammi CSF–CUF / FEM3D per il rapporto tecnico
 
 **Caso:** `c_section_table_9_13_lagrangeL9_v4_E10_eq1`  
 **Fonte:** [Galleria originale dei 75 grafici](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/strain_stress_boundary/README.md)
 
-## Scopo della selezione
 
-Presentare un confronto leggibile tra CSF–CUF e FEM3D lungo la trave, sui punti campionati ai vertici dei poligoni CSF, senza riprodurre l'intera galleri
 
 
 ### Spostamento trasversale `u_z`
@@ -547,6 +553,12 @@ Affiancare l'altra componente di taglio longitudinale, utile per evidenziare la 
 [Apri il PNG originale](https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/c-shape/strain_stress_boundary/c_section_table_9_13_lagrangeL9_v4_E10_eq1/gamma_xz_along_boundary_part03.png)
 
 
+
+## 7. Conclusioni
+
+In CSF–CUF i nuclei sezionali sono valutati numericamente, mediante quadratura, interrogando CSF sulla geometria e sui materiali effettivi della sezione. La geometria diventa così un dato di ingresso del calcolo, senza richiedere derivazioni specifiche della formulazione: la cinematica, il principio dei lavori virtuali e la struttura generale della CUF restano invariati. Nessuna espressione sezionale specifica per la geometria deve essere derivata analiticamente o programmata.
+
+Il caso della mensola a sezione C ne costituisce un esempio concreto. La stessa espansione L9, definita in un modulo indipendente, opera sui nove domini forniti da CSF senza alcuna routine dedicata a questa geometria. **Cambiare sezione non richiede di modificare il codice della formulazione, ma soltanto di fornire una nuova descrizione CSF**, ferma restando la scelta di un'approssimazione trasversale adeguata al problema.
 
 # Appendice A - Configurazione completa del modello CSF
 
