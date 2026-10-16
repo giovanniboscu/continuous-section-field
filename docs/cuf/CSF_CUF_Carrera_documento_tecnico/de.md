@@ -4,6 +4,14 @@
 **Autore:** Giovanni Boscu  
 **Data:** 16 ottobre 2026  
 
+Il documento è organizzato in due parti, dedicate rispettivamente alla descrizione dei modelli e alla loro applicazione a un caso di riferimento.
+
+La **Parte I – Modelli e organizzazione del calcolo** presenta l'architettura complessiva del sistema, distinguendo il ruolo del modello fisico CSF, del modello strutturale CSF–CUF e del modello tridimensionale FEM3D. Vengono descritte le rispettive formulazioni, l'organizzazione delle componenti di calcolo e il procedimento che conduce dalla rappresentazione geometrica e materiale alla soluzione strutturale.
+
+La **Parte II – Applicazione al benchmark della mensola a sezione C** illustra un'applicazione concreta dei modelli descritti nella prima parte. Sono presentati il problema strutturale, le configurazioni numeriche, le procedure di esecuzione e riproducibilità e il confronto tra le soluzioni CSF–CUF e FEM3D, attraverso l'analisi dei campi di spostamento, deformazione e tensione.
+
+Le appendici riportano integralmente i file di configurazione utilizzati, consentendo di ricostruire il caso analizzato.
+
 ## Parte I - Modelli e organizzazione del calcolo
 
 Ruolo di CSF, CSF–CUF e FEM3D e relazioni tra i tre approcci.
