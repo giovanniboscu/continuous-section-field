@@ -246,7 +246,7 @@ Il carico dichiarato dal problema è una **forza concentrata di ampiezza −1 N 
 
 CSF descrive, stazione per stazione lungo la trave, **domini fisici** di sezione, vertici e caratteristiche materiali. Nell'esempio corrente le sezioni alle estremità `S0` e `S1` sono uguali; quindi non vi è variazione geometrica lungo l'asse. Il fatto di usare CSF per una trave prismatica è intenzionale: permette di testare l'accoppiamento con CUF evitando di aggiungere la complessità di una geometria rastremata.
 
-CSF **non sostituisce** la teoria CUF, **non** rappresenta un modello FEM3D e **non** determina da solo le incognite dello spostamento. Fornisce il supporto geometrico/materiale sul quale un'espansione trasversale può essere valutata e integrata.
+CSF fornisce il supporto geometrico/materiale sul quale un'espansione trasversale può essere valutata e integrata.
 
 ### 3.2 Nove domini quadrilateri
 
