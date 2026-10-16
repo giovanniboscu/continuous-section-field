@@ -194,7 +194,7 @@ FEM3D è un **secondo modello di soluzione**, costruito con elementi solidi trid
 
 Il contorno unico a otto vertici è usato **solo per comodità di generazione della mesh FEM3D**; descrive la stessa sezione a C che CSF–CUF suddivide in nove domini. Il confronto è indipendente rispetto alla discretizzazione degli spostamenti, non rispetto al problema fisico condiviso. 
 
-### 1.6 Che cosa viene verificato in questo benchmark
+## 2 Schema strutturale Che cosa viene verificato in questo benchmark
 
 Questo caso mette alla prova **due questioni distinte**:
 
@@ -202,8 +202,6 @@ Questo caso mette alla prova **due questioni distinte**:
 - **Accuratezza della soluzione:** con quella particolare espansione L9, la discretizzazione longitudinale scelta e le quadrature impiegate, quali differenze si ottengono rispetto a un riferimento FEM3D solido.
 
 
-
-## 2. Problema strutturale
 
 ### 2.1 Geometria e sistema di riferimento
 
