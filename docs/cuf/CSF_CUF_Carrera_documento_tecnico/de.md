@@ -380,8 +380,8 @@ La discretizzazione effettivamente adottata nella simulazione di riferimento è 
 | Direzione longitudinale | 200 |
 | Estensione libera della flangia superiore | 18 |
 | Estensione libera della flangia inferiore | 18 |
-| Larghezza dell'anima | 2 |
-| Spessore delle flange | 2 |
+| Larghezza dell'anima | 10 |
+| Spessore delle flange | 10 |
 | Altezza libera dell'anima | 18 |
 
 La trave ha lunghezza $L = 20000\ \mathrm{mm}$. La forza concentrata $F_z = -1\ \mathrm{N}$ è applicata all'estremità libera, nel punto di coordinate CUF $(x,y,z) = (20000,0,-500)\ \mathrm{mm}$, corrispondente a un vertice della sezione a C.
