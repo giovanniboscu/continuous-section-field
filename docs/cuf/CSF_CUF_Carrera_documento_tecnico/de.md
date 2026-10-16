@@ -439,13 +439,24 @@ Per l'esecuzione con una iterazione di equilibratura (`eq1`), sono presenti due 
 
 Il file `.cuf.npz` costituisce il riferimento numerico per le successive operazioni di postprocessing, mentre il file `response_eq1.txt` consente di consultare la risposta testuale prodotta dal solutore.
 
-### 6.1 Presentazione dei risultati 
+
+### Postprocessing e confronto con FEM3D
+
+La ricostruzione e la rappresentazione dei risultati sono effettuate mediante lo strumento `csf.cuf.tools.plot_strain_stress_boundary_v10`, che utilizza il checkpoint numerico `.cuf.npz` prodotto dal solutore e la descrizione geometrica e materiale originale CSF.
+
+Il programma valuta gli spostamenti, le deformazioni e le tensioni lungo la trave, in corrispondenza dei vertici dei poligoni che costituiscono la sezione. I risultati sono rappresentati mediante grafici PNG distinti per componente e punto di campionamento.
+
+I valori numerici utilizzati per generare i grafici possono essere esportati in un unico file CSV mediante l'opzione `--csv`. Il file contiene le coordinate dei punti campionati e tutte le componenti di spostamento, deformazione e tensione, consentendo di riprodurre le curve e di effettuare ulteriori analisi quantitative.
+
+Lo stesso strumento consente il **confronto diretto con una soluzione FEM3D**, fornita mediante l'opzione `--fem3d`. I risultati dei due modelli vengono sovrapposti nei grafici, mantenendo le medesime posizioni fisiche di campionamento. Il confronto comprende gli spostamenti e le deformazioni e può essere esteso alle tensioni FEM3D mediante l'opzione `--fem-stress-from-csf`, che applica la legge costitutiva del modello CSF, a condizione che le proprietà materiali siano coerenti.
+
+I dati FEM3D campionati sono inoltre salvati separatamente in formato NPZ e CSV, rendendo disponibili i valori numerici di entrambi i modelli per successive verifiche.
+
+### 6.2 Presentazione dei risultati 
 
 I risultati del confronto CSF–CUF/FEM3D sono presentati mediante rappresentazioni grafiche degli spostamenti, delle deformazioni e delle tensioni, valutati in corrispondenza dei vertici di ciascun poligono della sezione CSF. Il campionamento comprende quindi numerosi punti distribuiti sull'intera sezione, mantenendo per entrambi i modelli le medesime posizioni fisiche e convenzioni di riferimento.
 
 Le rappresentazioni consentono di esaminare la corrispondenza tra le due soluzioni, evidenziando sia l'andamento complessivo dei campi sia le eventuali differenze locali.
-
-**Il modello CSF–CUF registra inoltre la soluzione come funzione continua dello spazio**, interrogabile per la valutazione puntuale degli spostamenti, delle deformazioni e delle tensioni in qualsiasi posizione del dominio fisico. Questa caratteristica consente verifiche numeriche mirate e confronti con FEM3D indipendentemente dalle griglie utilizzate per la rappresentazione grafica.
 
 I risultati sono organizzati per componente fisica e posizione di campionamento, distinguendo gli spostamenti dalle grandezze derivate.
 
