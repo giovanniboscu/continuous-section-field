@@ -399,7 +399,7 @@ I risultati sono esportati in formato NPZ per le successive operazioni di confro
 
 ### 5.2 Confronto delle tensioni
 
-Per il confronto delle tensioni, la documentazione del benchmark indica che le tensioni FEM3D sono ricavate dalle **derivate del campo di spostamento del singolo elemento H8**, con le proprietà costitutive dichiarate. Ai confini di elementi adiacenti sono conservati i valori dei due lati **senza media o smoothing**. Perciò possono esistere più valori di tensione alla stessa stazione longitudinale. Nel modello CUF le tensioni sono analogamente ricavate dalla deformazione del campo di spostamento approssimato e dalla legge costitutiva, senza media rispetto al FEM3D.
+Le tensioni FEM3D sono ricavate dalle **derivate del campo di spostamento del singolo elemento H8**, con le proprietà costitutive dichiarate. Ai confini di elementi adiacenti sono conservati i valori dei due lati **senza media o smoothing**. Perciò possono esistere più valori di tensione alla stessa stazione longitudinale. Nel modello CUF le tensioni sono analogamente ricavate dalla deformazione del campo di spostamento approssimato e dalla legge costitutiva, senza media rispetto al FEM3D.
 
 L'osservazione qualitativa riportata nella documentazione disponibile è che la componente `τ_xy` del modello CSF–CUF segue spesso l'andamento centrale della dispersione FEM3D, soprattutto lontano dalle estremità. Ciò **non** significa che CUF calcoli una media delle tensioni FEM3D, né sostituisce un'analisi quantitativa degli scarti.
 
@@ -414,9 +414,32 @@ Non c'è dunque un'incongruenza tra i modelli e non è necessario che il driver 
 
 La riproducibilità dei risultati richiede comunque di dichiarare, per ciascuna esecuzione, il file geometrico effettivamente usato, le opzioni della mesh e il file di output, senza confondere tale tracciabilità con un dubbio sull'identità della sezione.
 
+## 6. Esecuzione del processo
 
+L'analisi CSF–CUF viene avviata dalla directory `continuous-section-field/cuf/c-shape` mediante il comando:
 
-### 6 Presentazione dei risultati 
+```bash
+csf-cuf cases/c_section_table_9_13_lagrangeL9_E10.yaml
+```
+
+Il comando esegue il processo di assemblaggio e soluzione del sistema strutturale secondo le configurazioni del modello fisico, del problema e dell'approssimazione numerica descritte nelle sezioni precedenti.
+
+I risultati dell'esecuzione sono disponibili nella directory:
+
+```text
+cuf/c-shape/output/c_section_table_9_13_lagrangeL9_v4_E10/
+```
+
+Per l'esecuzione con una iterazione di equilibratura (`eq1`), sono presenti due file:
+
+| File | Contenuto |
+|---|---|
+| `c_section_table_9_13_lagrangeL9_v4_E10_eq1.cuf.npz` | Archivio numerico della soluzione CUF, utilizzabile per la ricostruzione e il postprocessing dei campi di spostamento e delle grandezze derivate. |
+| `response_eq1.txt` | Risposta testuale dell'esecuzione, contenente i risultati e le informazioni diagnostiche registrate dal processo. |
+
+Il file `.cuf.npz` costituisce il riferimento numerico per le successive operazioni di postprocessing, mentre il file `response_eq1.txt` consente di consultare la risposta testuale prodotta dal solutore.
+
+### 6.1 Presentazione dei risultati 
 
 I risultati del confronto CSF–CUF/FEM3D sono presentati mediante rappresentazioni grafiche degli spostamenti, delle deformazioni e delle tensioni, valutati in corrispondenza dei vertici di ciascun poligono della sezione CSF. Il campionamento comprende quindi numerosi punti distribuiti sull'intera sezione, mantenendo per entrambi i modelli le medesime posizioni fisiche e convenzioni di riferimento.
 
