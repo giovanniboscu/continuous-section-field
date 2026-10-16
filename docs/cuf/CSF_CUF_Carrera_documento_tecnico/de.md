@@ -256,7 +256,6 @@ Nella presente implementazione, il modulo L9 richiede che la sezione sia suddivi
 
 >L'espansione trasversale sono  implementata in un modulo Python conforme a un'interfaccia prestabilita, che ne definisce le modalità di valutazione delle funzioni e delle relative derivate. Questa organizzazione consente di utilizzare la stessa espansione con differenti geometrie e distribuzioni materiali, indipendentemente dal modello fisico CSF.
 
-\clearpage
 
 ### 3.3 Dall’integrazione sezionale alla soluzione
 
