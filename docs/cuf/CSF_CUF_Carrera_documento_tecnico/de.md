@@ -6,7 +6,7 @@
 
 ## Parte I - Modelli e organizzazione del calcolo
 
-Ruolo di CSF, CSF–CUF e FEM3D e relazioni tra i tre approcci
+Ruolo di CSF, CSF–CUF e FEM3D e relazioni tra i tre approcci.
 
 
 ### 1.1 La distinzione fondamentale
@@ -56,34 +56,7 @@ Il nome **CSF–CUF** indica quindi un *accoppiamento*: **CSF descrive il domini
 
 **CSF alimenta entrambi i solutori**, CSF–CUF e FEM3D, fornendo una descrizione fisica comune e continua della geometria e dei materiali. I due solutori mantengono formulazioni strutturali e discretizzazioni numeriche indipendenti.
 
-### 1.3 CSF: modello fisico
-
-CSF è il **livello di rappresentazione della realtà fisica**. A una stazione longitudinale richiesta, restituisce il dominio della sezione, la sua geometria e le proprietà dei materiali. non sceglie la cinematica, non costruisce da solo una matrice di rigidezza e non risolve il problema di equilibrio.
-
-
-
-
-
-
-```
-      MODELLO CSF (descrizione fisica)
-      ┌──────────────────────────────────────┐
-      │ Stazioni lungo l'asse                │
-      │  └─ domini della sezione             │
-      │      ├─ vertici e contorni           │
-      │      ├─ materiali                    │
-      │      └─ variazioni longitudinali     │
-      └──────────────────┬───────────────────┘
-                         │ interrogazioni
-                         ▼
-            Geometria e materiali locali
-            disponibili al modello CUF
-```
-
-In questo caso CSF descrive una sezione prismatica a C suddivisa in nove quadrilateri fisici. **I quadrilateri non sono elementi solidi FEM3D**: costituiscono il supporto geometrico e materiale su cui CSF–CUF valuta la base L9 e gli integrali sezionali. La suddivisione in nove domini risponde alla particolare rappresentazione trasversale selezionata per questo benchmark; CSF, in sé, non impone L9.
-
-
-### 1.4 CSF–CUF: come viene utilizzata l'infrastruttura CSF nella CUF
+### 1.3 CSF–CUF: come viene utilizzata l'infrastruttura CSF nella CUF
 
 La configurazione di un'analisi CSF–CUF è organizzata in tre file di testo leggibili, nel formato YAML, che separano la descrizione fisica, la definizione del problema strutturale e le scelte di discretizzazione e soluzione numerica. Il contenuto e la struttura dei tre file sono riportati integralmente in appendice.
 
@@ -110,7 +83,6 @@ I tre file sono riportati integralmente nelle rispettive appendici e descritti n
 La **formulazione strutturale rimane CUF**. La specificità dell'implementazione CSF–CUF è l'organizzazione del calcolo: geometria/materiale, espansione trasversale e discretizzazione longitudinale sono definiti in componenti distinti e collegati durante l'assemblaggio. La descrizione continua della sezione fornita da CSF entra direttamente nella rappresentazione dei nuclei sezionali CUF, senza richiedere la derivazione di espressioni specializzate per la specifica geometria, come nel caso della sezione a C.
 
 
->Le espansioni trasversali CUF e le funzioni di forma longitudinali sono implementate come componenti Python indipendenti dalla descrizione fisica della sezione. Le rispettive funzioni e derivate vengono definite una sola volta e possono essere riutilizzate in differenti modelli geometrici e materiali, senza modificare la formulazione generale né il nucleo di assemblaggio CUF.
 
 
 
@@ -164,7 +136,12 @@ Per consentire l'impiego diretto della descrizione continua della sezione fornit
 
 Per una trattazione formale si rimanda al documento [CSF–CUF: Formulation for Directly Prescribed Variable Sections](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md).
 
-### 1.5 FEM3D: soluzione strutturale indipendente
+
+---
+>Le espansioni trasversali CUF e le funzioni di forma longitudinali sono implementate come componenti Python indipendenti dalla descrizione fisica della sezione. Le rispettive funzioni e derivate vengono definite una sola volta e possono essere riutilizzate in differenti modelli geometrici e materiali, senza modificare la formulazione generale né il nucleo di assemblaggio CUF.
+---
+
+### 1.4 FEM3D: soluzione strutturale indipendente
 
 FEM3D è un **secondo modello di soluzione**, costruito con elementi solidi tridimensionali H8 in OpenSees, nel quale gli spostamenti nodali costituiscono le incognite della discretizzazione volumetrica.
 
@@ -197,9 +174,29 @@ Il contorno unico a otto vertici è usato **solo per comodità di generazione de
 
 ### 2.1 Funzione del Continuous Section Field
 
-CSF descrive, stazione per stazione lungo la trave, **domini fisici** di sezione, vertici e caratteristiche materiali. Nell'esempio corrente le sezioni alle estremità `S0` e `S1` sono uguali; quindi non vi è variazione geometrica lungo l'asse. Il fatto di usare CSF per una trave prismatica è intenzionale: permette di testare l'accoppiamento con CUF evitando di aggiungere la complessità di una geometria rastremata.
+CSF è il **livello di rappresentazione della realtà fisica**. A una stazione longitudinale richiesta, restituisce il dominio della sezione, la sua geometria e le proprietà dei materiali. Non sceglie la cinematica, non costruisce da solo una matrice di rigidezza e non risolve il problema di equilibrio.
 
-CSF fornisce il supporto geometrico/materiale sul quale un'espansione trasversale può essere valutata e integrata.
+
+
+
+
+
+```
+      MODELLO CSF (descrizione fisica)
+      ┌──────────────────────────────────────┐
+      │ Stazioni lungo l'asse                │
+      │  └─ domini della sezione             │
+      │      ├─ vertici e contorni           │
+      │      ├─ materiali                    │
+      │      └─ variazioni longitudinali     │
+      └──────────────────┬───────────────────┘
+                         │ interrogazioni
+                         ▼
+            Geometria e materiali locali
+            disponibili al modello CUF
+```
+
+CSF fornisce il supporto geometrico e materiale sul quale un’espansione trasversale può essere valutata e integrata.
 
 ### 2.2 Significato dell'indipendenza geometria–approssimazione
 
@@ -247,8 +244,10 @@ I punti geometricamente coincidenti sui bordi dei domini adiacenti sono condivis
 
 Nella presente implementazione, il modulo L9 richiede che la sezione sia suddivisa in domini quadrilateri compatibili con la trasformazione isoparametrica adottata. Tale requisito è specifico dell'espansione trasversale utilizzata e non costituisce una limitazione generale della rappresentazione geometrica CSF o della formulazione CUF.
 
->L'espansione trasversale deve essere implementata in un modulo Python conforme a un'interfaccia prestabilita, che ne definisce le modalità di valutazione delle funzioni e delle relative derivate. Questa organizzazione consente di utilizzare la stessa espansione con differenti geometrie e distribuzioni materiali, indipendentemente dal modello fisico CSF.
 
+---
+>L'espansione trasversale deve essere implementata in un modulo Python conforme a un'interfaccia prestabilita, che ne definisce le modalità di valutazione delle funzioni e delle relative derivate. Questa organizzazione consente di utilizzare la stessa espansione con differenti geometrie e distribuzioni materiali, indipendentemente dal modello fisico CSF.
+---
 
 ### 3.3 Dall'integrazione sezionale alla soluzione
 
@@ -336,6 +335,8 @@ Il carico dichiarato dal problema è una **forza concentrata di ampiezza −1 N 
 ## 6. Configurazione numerica del benchmark
 
 ### 6.1 Partizione CSF in nove domini quadrilateri
+
+In questo caso CSF descriveuna sezione prismatica a C suddivisa in nove quadrilateri fisici. **I quadrilateri non sono elementi solidi FEM3D**: costituiscono il supporto geometrico e materiale su cui CSF–CUF valuta la base L9 e gli integrali sezionali. La suddivisione in nove domini corrisponde alla rappresentazione trasversale L9 selezionata per il benchmark.
 
 | Dominio CSF | Intervallo y (mm) | Intervallo z (mm) | Regione |
 |---|---|---|---|
