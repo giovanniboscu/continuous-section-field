@@ -4,7 +4,7 @@
 **Autore:** Giovanni Boscu  
 **Data:** 16 ottobre 2026  
 
-## Parte I — Modelli e organizzazione del calcolo
+## Parte I - Modelli e organizzazione del calcolo
 
 Ruolo di CSF, CSF–CUF e FEM3D e relazioni tra i tre approcci
 
@@ -287,7 +287,7 @@ La geometria e le proprietà del materiale sono acquisite dal modello CSF, inter
 
 La mesh è strutturata e conforme, suddivisa in tre regioni corrispondenti alla flangia superiore, all'anima e alla flangia inferiore della sezione a C, con nodi condivisi alle interfacce.
 
-## Parte II — Applicazione al benchmark della mensola a sezione C
+## Parte II - Applicazione al benchmark della mensola a sezione C
 
 ## 5. Benchmark: obiettivi e problema strutturale
 
