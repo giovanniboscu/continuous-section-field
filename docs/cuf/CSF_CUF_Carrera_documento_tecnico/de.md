@@ -576,9 +576,19 @@ Affiancare l'altra componente di taglio longitudinale, utile per evidenziare la 
 
 ## 9. Conclusioni
 
-In CSF–CUF i nuclei sezionali sono valutati numericamente, mediante quadratura, interrogando CSF sulla geometria e sui materiali effettivi della sezione. La geometria diventa così un dato di ingresso del calcolo, senza richiedere derivazioni specifiche della formulazione: la cinematica, il principio dei lavori virtuali e la struttura generale della CUF restano invariati. Nessuna espressione sezionale specifica per la geometria deve essere derivata analiticamente o programmata.
+### Interpretazione del confronto tra CSF–CUF e FEM3D
 
-Il caso della mensola a sezione C ne costituisce un esempio concreto. La stessa espansione L9, definita in un modulo indipendente, opera sui nove domini forniti da CSF senza alcuna routine dedicata a questa geometria. **Cambiare sezione non richiede di modificare il codice della formulazione, ma soltanto di fornire una nuova descrizione CSF**, ferma restando la scelta di un'approssimazione trasversale adeguata al problema.
+Il confronto evidenzia una corrispondenza molto stretta tra i campi di spostamento ottenuti mediante CSF–CUF e FEM3D, con andamenti e valori che risultano pressoché sovrapposti lungo la trave.
+
+Anche i campi di tensione mostrano una buona corrispondenza, pur richiedendo alcune considerazioni legate alle differenti modalità di rappresentazione dei risultati.
+
+Nel FEM3D le tensioni sono valutate sui singoli elementi finiti, senza operazioni di media o regolarizzazione nodale. Di conseguenza, in corrispondenza di uno stesso vertice geometrico condiviso da elementi adiacenti, possono essere presenti valori differenti della medesima componente di tensione. Questo comportamento è coerente con la formulazione agli elementi finiti, nella quale la continuità degli spostamenti non implica necessariamente quella delle tensioni.
+
+Nel CSF–CUF, invece, le tensioni derivano direttamente dal campo soluzione, attraverso le relazioni cinematiche e costitutive. È quindi coerente che i valori CSF–CUF si collochino frequentemente tra quelli restituiti dagli elementi FEM3D adiacenti. Tale comportamento non deriva da alcuna operazione di media dei risultati FEM3D, ma emerge dalla soluzione indipendente fornita dal CSF–CUF.
+
+La corrispondenza tra i risultati è complessivamente buona anche per le tensioni, sebbene siano osservabili scostamenti locali e, in alcuni casi, oscillazioni più marcate, soprattutto nelle regioni prossime ai vincoli. Queste differenze devono essere valutate distinguendo la variabilità interelementare delle tensioni FEM3D dalle effettive differenze tra i campi soluzione.
+
+Nel complesso, i risultati mostrano che la stretta corrispondenza riscontrata negli spostamenti si accompagna a una buona corrispondenza anche nelle tensioni, pur con le differenze locali evidenziate dai grafici.
 
 # Appendice A - Configurazione completa del modello CSF
 
