@@ -302,6 +302,8 @@ Questo caso mette alla prova **due questioni distinte**:
 
 La trave è prismatica, con asse longitudinale identificato dalla coordinata fisica **x** del modello CUF/FEM3D, nell'intervallo `0 ≤ x ≤ 20000 mm`. Il piano della sezione usa le coordinate fisiche **(y,z)**. Nel file CSF, per motivi legati all'interfaccia della libreria, la stazione longitudinale è indicata anch'essa come `z` del campo: questa **non** va confusa con la coordinata fisica trasversale `z`.
 
+\clearpage
+
 | Grandezza | Valore |
 |---|---:|
 | Lunghezza della mensola, L | 20.000 mm |
