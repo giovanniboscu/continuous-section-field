@@ -108,7 +108,7 @@ The **structural formulation remains CUF**. What distinguishes the CSF–CUF imp
                    │ CUF nuclei/contributions      │
                    └───────────────┬───────────────┘
                                    │
-        LONGITUDINAL ELEMENTS     │
+        LONGITUDINAL ELEMENTS      │
         ┌────────────────────────┐ │
         │ E10, order 12           ├─┤
         │ quadrature along x     │ │
