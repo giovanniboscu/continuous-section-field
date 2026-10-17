@@ -1,3 +1,5 @@
+# DRAFT
+
 # Reference C-section -  E. Carrera and M. Petrolo, *Refined beam elements with only displacement variables and plate/shell capabilities*
 
 The document is organized into two parts, devoted respectively to the description of the models and their application to a reference case.
