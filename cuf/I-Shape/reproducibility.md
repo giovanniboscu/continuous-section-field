@@ -22,7 +22,6 @@ pip install pypardiso
 pip show csfpy
 csf-cuf --help
 
-export MPLBACKEND=Agg
 
 cd cuf/I-Shape
 
