@@ -110,7 +110,7 @@ The **structural formulation remains CUF**. What distinguishes the CSF–CUF imp
                                    │
         LONGITUDINAL ELEMENTS      │
         ┌────────────────────────┐ │
-        │ E10, order 12           ├─┤
+        │ E10, order 12          ├─┤
         │ quadrature along x     │ │
         └────────────────────────┘ ▼
                        CUF ASSEMBLY
