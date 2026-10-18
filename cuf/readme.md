@@ -75,9 +75,10 @@ The following resources provide an introduction to CSF-CUF, its configuration, a
 
 - **[Architecture](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/architecture)** - The internal organization of CSF-CUF and the separation between the physical model, CUF formulation, and numerical solver.
 - **[Quick Start](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/quickstart)** - A practical introduction with ready-to-run examples.
-- **[YAML Configuration Reference](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/yaml_reference)** - How to define geometry, materials, loads, boundary conditions, CUF expansions, and solver settings.
 - **[What is YAML?](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/whatIsYAML.md)** - An introduction to YAML files and how they are used to describe and configure a CSF-CUF analysis.
-- 
+- **[YAML Configuration Reference](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/yaml_reference)** - How to define geometry, materials, loads, boundary conditions, CUF expansions, and solver settings.
+
+
 ---
 
 - **[Tutorials](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/tutorials/variable_material_t_section)**  
