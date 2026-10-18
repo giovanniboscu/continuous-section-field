@@ -204,7 +204,11 @@ The single eight-vertex outline is used **solely for convenience in generating t
 CSF is the **layer representing physical reality**. At a requested longitudinal station, it returns the sectional domain, its geometry, and material properties. It does not select the kinematics, build a stiffness matrix on its own, or solve the equilibrium problem.
 
 
-
+>
+> The complete framework CSF geometric representation,
+> numerical benchmarks and reproducibility guides, is available in the
+> [Continuous Section Field GitHub repository](https://github.com/giovanniboscu/continuous-section-field/).
+>
 
 
 
