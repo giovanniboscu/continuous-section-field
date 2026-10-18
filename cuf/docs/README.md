@@ -115,6 +115,10 @@ This should be the starting point for anyone implementing a completely new CUF t
 
 ---
 
+### [`C-Shape – Transverse Expansions`](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape/expansions)
+  Python implementations of the transverse CUF expansion functions used in the C-section benchmark, including custom polynomial bases defined for individual section polygons.
+
+
 ### [`scaled_lagrange_implementation_guide.md`](scaled_lagrange_implementation_guide.md)
 
 Detailed implementation guide for the `scaled_lagrange` transverse expansion.
