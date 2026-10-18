@@ -76,15 +76,15 @@ The following resources provide an introduction to CSF-CUF, its configuration, a
 
 ---
 
-- **[Tutorials](cuf/tutorials/)**  
+- **[Tutorials](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/tutorials/variable_material_t_section)**  
   Step-by-step examples covering geometry, material distribution,
   transverse expansions, loads, and boundary conditions.
 
-- **[I-Shape](cuf/I-Shape/)**  
+- **[I-Shape](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape)**  
   Numerical validation using prismatic and non-prismatic I-shaped
   beams, with comparisons against independent FEM3D solutions.
 
-- **[C-Shape](cuf/c-shape/)**  
+- **[C-Shape](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape)**  
   C-section benchmark based on the work of Carrera and Petrolo,
   demonstrating custom polygon-specific transverse expansions,
   Lagrange L9 approximation, and FEM3D comparisons.
