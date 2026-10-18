@@ -1,5 +1,14 @@
 # Reference C-section -  E. Carrera and M. Petrolo, *Refined beam elements with only displacement variables and plate/shell capabilities*
 
+## Overview
+
+This example demonstrates the flexibility of the CSF–CUF framework in defining **custom transverse expansions for individual polygons** of a cross-section.
+
+The application considers the C-shaped section presented by Erasmo Carrera and Marco Petrolo in *“Refined beam elements with only displacement variables and plate/shell capabilities”*.
+
+A custom Lagrange L9 expansion is used to illustrate how transverse approximation functions can be defined and assigned independently to each polygon through an external Python module, while the CSF geometry and CUF solver remain separate.
+
+The resulting displacement and stress fields are compared with an independent FEM3D reference solution.
 <p align="center">
 <img width="537" height="466" alt="Screenshot 2026-10-18 at 07 31 30" src="https://github.com/user-attachments/assets/af5dfe17-25a8-4b52-982e-f9fdac53dca0" />
 </p>
