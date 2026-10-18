@@ -1,7 +1,8 @@
 
 # CSF-CUF validation against Carrera and Giunta (2010)
 
-
+- **[Refined Beam Theories – Tables 9–10](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/refined_beam_theories_tables_9_10)**  
+  Numerical benchmark based on Tables 9 and 10 of Carrera and Giunta (2010), comparing CSF–CUF results with published reference values for the validation of refined beam models.
 ## What the validation demonstrates
 
 The current validation chain covers:
