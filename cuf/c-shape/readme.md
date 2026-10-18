@@ -1,5 +1,3 @@
-# DRAFT
-
 # Reference C-section -  E. Carrera and M. Petrolo, *Refined beam elements with only displacement variables and plate/shell capabilities*
 
 The document is organized into two parts, devoted respectively to the description of the models and their application to a reference case.
@@ -9,6 +7,17 @@ The document is organized into two parts, devoted respectively to the descriptio
 **Part II – Application to the C-section cantilever benchmark** illustrates a practical application of the models described in the first part. It presents the structural problem, the numerical configurations, the execution and reproducibility procedures, and the comparison between the CSF–CUF and FEM3D solutions through the analysis of displacement, strain, and stress fields.
 
 The appendices reproduce in full the configuration files used, allowing the analyzed case to be reconstructed.
+
+> **Reproducibility**
+>
+> The complete procedure for reproducing the C-section benchmark,
+> including the CSF–CUF analysis, the independent FEM3D baseline,
+> and the generation of displacement, strain, and stress comparison
+> plots, is documented in the
+> [C-section reproducibility guide](reproducibility.md).
+>
+> The guide provides Linux and Windows commands and the corresponding
+> execution scripts.
 
 ## Part I - Models and organization of the computation
 
@@ -481,6 +490,16 @@ The comparison with FEM3D is performed at the same physical sampling positions, 
 The sampled FEM3D results are saved separately in NPZ and CSV formats, making the numerical values used in the comparison available.
 
 The postprocessing procedure operates on the already computed solutions without introducing regularization or re-equilibration of the stress fields.
+
+### Reproducing the numerical results
+
+For a complete, step-by-step reproduction of the numerical
+results presented in this document, including the CSF–CUF solver,
+the FEM3D reference analysis, and all comparison plots, see the
+[C-section reproducibility guide](reproducibility.md).
+
+The guide includes the execution commands for Linux and Windows,
+as well as the available shell scripts for automated execution.
 
 ## 8. Presentation of results
 
