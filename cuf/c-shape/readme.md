@@ -1,7 +1,8 @@
 # Reference C-section -  E. Carrera and M. Petrolo, *Refined beam elements with only displacement variables and plate/shell capabilities*
 
+<p align="center">
 <img width="537" height="466" alt="Screenshot 2026-10-18 at 07 31 30" src="https://github.com/user-attachments/assets/af5dfe17-25a8-4b52-982e-f9fdac53dca0" />
-
+</p>
 The document is organized into two parts, devoted respectively to the description of the models and their application to a reference case.
 
 **Part I – Models and organization of the computation** presents the overall system architecture, distinguishing the roles of the CSF physical model, the CSF–CUF structural model, and the three-dimensional FEM3D model. Their respective formulations, the organization of the computational components, and the procedure leading from the geometric and material description to the structural solution are described.
