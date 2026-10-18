@@ -54,15 +54,6 @@ flowchart LR
 
 
 
----
-
-> [CSF–CUF quick start: prismatic rectangular beam](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/quickstart)
->
-> Minimal runnable example showing the basic CSF–CUF workflow with a prismatic rectangular section, a predefined torsion problem, and a basic CUF case.
-
----
-
-
 ## An open implementation
 
 This repository is open for a reason: it is meant to be explored, questioned, tested, and challenged.
@@ -77,11 +68,28 @@ The goal is not to impose a way of doing things, but to propose one. If somethin
 
 The following resources provide an introduction to CSF-CUF, its configuration, and its internal architecture.
 
-- **[What is YAML?](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/whatIsYAML.md)** — An introduction to YAML files and how they are used to describe and configure a CSF-CUF analysis.
-- **[Quick Start](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/quickstart)** — A practical introduction with ready-to-run examples.
-- **[YAML Configuration Reference](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/yaml_reference)** — How to define geometry, materials, loads, boundary conditions, CUF expansions, and solver settings.
+- **[What is YAML?](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/whatIsYAML.md)** - An introduction to YAML files and how they are used to describe and configure a CSF-CUF analysis.
+- **[Quick Start](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/quickstart)** - A practical introduction with ready-to-run examples.
+- **[YAML Configuration Reference](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/yaml_reference)** - How to define geometry, materials, loads, boundary conditions, CUF expansions, and solver settings.
 
-- **[Architecture](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/architecture)** — The internal organization of CSF-CUF and the separation between the physical model, CUF formulation, and numerical solver.
+- **[Architecture](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/architecture)** - The internal organization of CSF-CUF and the separation between the physical model, CUF formulation, and numerical solver.
+
+---
+
+- **[Tutorials](cuf/tutorials/)**  
+  Step-by-step examples covering geometry, material distribution,
+  transverse expansions, loads, and boundary conditions.
+
+- **[I-Shape](cuf/I-Shape/)**  
+  Numerical validation using prismatic and non-prismatic I-shaped
+  beams, with comparisons against independent FEM3D solutions.
+
+- **[C-Shape](cuf/c-shape/)**  
+  C-section benchmark based on the work of Carrera and Petrolo,
+  demonstrating custom polygon-specific transverse expansions,
+  Lagrange L9 approximation, and FEM3D comparisons.
+
+
 
 ### Mathematical Formulation of the CSF–CUF Coupling
 
