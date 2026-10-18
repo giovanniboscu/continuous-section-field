@@ -274,14 +274,8 @@ In the present implementation, the L9 module requires the section to be divided 
 
 ---
 
->The transverse expansion is implemented in a Python module conforming to a predefined interface, which specifies how the functions and their derivatives are evaluated. This organization allows the same expansion to be used with different geometries and material distributions, independently of the CSF physical model.
-
----
-
 > **Custom Transverse Expansion - Lagrange L9**
->
-> The C-section example uses a custom Lagrange L9 transverse expansion
-> defined through an external Python module.
+>The transverse expansion is implemented in a Python module conforming to a predefined interface, which specifies how the functions and their derivatives are evaluated. This organization allows the same expansion to be used with different geometries and material distributions, independently of the CSF physical model.
 >
 > The [Custom L9 Expansion Guide](expansions/readme.md) provides a
 > detailed architectural description of the implementation, including
