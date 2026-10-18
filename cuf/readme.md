@@ -1,14 +1,25 @@
-# Inside the CSF-CUF
+# What is CSF–CUF?
 
+Consider a structural beam with an I-shaped cross-section. In a conventional beam model, the structure is represented mainly through its longitudinal axis and a limited set of cross-sectional properties, such as area and bending stiffness. This approach is effective for describing the overall structural behavior, but it may not capture how individual parts of the cross-section deform.
 
-The implementation of CSF–CUF starts from a fundamental choice: **the beam cross-section is treated as a first-class object**, rather than being reduced in advance to a set of sectional properties or incorporated into a case-specific mathematical formulation.
+A three-dimensional finite-element model can describe these local effects in greater detail, but requires a discretization of the entire volume.
 
-Through the Continuous Section Field (CSF), geometry and material properties remain explicitly defined and accessible at any position along the beam. The CUF formulation can therefore evaluate the physical quantities it requires directly, wherever they are needed.
+The **Carrera Unified Formulation (CUF)** provides another approach. The structure is still modeled as a beam along its longitudinal direction, but its displacement field is described through mathematical functions defined over the cross-section.
 
-This approach removes the need to derive and symbolically integrate case-specific sectional expressions. The formulation remains unchanged, while the sectional contributions are evaluated numerically from the exact physical description.
+By choosing different functions and approximation orders, the same formulation can represent anything from simple beam behavior to more refined deformation patterns. CUF is therefore not a single beam theory, but a general framework for constructing beam models with different levels of refinement.
 
+This is where the **Continuous Section Field (CSF)** comes into play.
 
-The same separation principle applies to the numerical approximations. Both the transverse CUF expansion functions and the longitudinal finite-element shape functions remain symbolically defined, but become independent, reusable components rather than being embedded in the CUF core.
+CSF describes the actual physical cross-section of the beam: its geometry, its constituent regions, and its material properties. Unlike a description based only on a fixed set of sectional parameters, this information remains available at any position along the beam, even when its geometry or material distribution changes continuously.
+
+**CSF–CUF brings these two concepts together:**
+
+- **CSF** describes what the beam physically is.
+- **CUF** defines how its displacement field is approximated.
+- **The numerical solver** combines these descriptions to calculate displacements, strains, and stresses.
+
+The central idea is that the physical description of the beam and the mathematical approximation used to analyse it are two distinct things. They can be defined, modified, and refined independently.
+e transverse CUF expansion functions and the longitudinal finite-element shape functions remain symbolically defined, but become independent, reusable components rather than being embedded in the CUF core.
 
 In this way the solver  operates on independent descriptions of:
 
