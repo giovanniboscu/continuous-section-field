@@ -272,9 +272,22 @@ Geometrically coincident points on the boundaries of adjacent domains are shared
 In the present implementation, the L9 module requires the section to be divided into quadrilateral domains compatible with the adopted isoparametric transformation. This requirement is specific to the transverse expansion used and does not constitute a general limitation of the CSF geometric representation or the CUF formulation.
 
 
+---
 
 >The transverse expansion is implemented in a Python module conforming to a predefined interface, which specifies how the functions and their derivatives are evaluated. This organization allows the same expansion to be used with different geometries and material distributions, independently of the CSF physical model.
 
+---
+
+> **Custom Transverse Expansion - Lagrange L9**
+>
+> The C-section example uses a custom Lagrange L9 transverse expansion
+> defined through an external Python module.
+>
+> The [Custom L9 Expansion Guide](expansions/readme.md) provides a
+> detailed architectural description of the implementation, including
+> the CSF interfaces, CUF plugin integration, polygon connectivity,
+> basis functions, derivatives, and extension points for developing
+> polygon-specific transverse expansions.
 
 ### 3.3 From sectional integration to the solution
 
