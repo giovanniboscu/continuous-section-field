@@ -1,12 +1,5 @@
 # Inside the CSF-CUF
 
-> [I-Shape - Prismatic and Tapered Beam Comparison](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape/readme.md)  
-> Numerical validation case comparing CSF-CUF and 3D FEM solutions for both prismatic and continuously tapered I-shaped beams, using the same CUF formulation and solver settings while changing only the continuous cross-section geometry.
-
->
-> [CSF–CUF tutorial: non-prismatic variable-material T-section](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/tutorials/variable_material_t_section/README.md)  
-> Step-by-step tutorial showing how CSF describes continuously varying geometry and material properties and how these fields are used directly by the CUF solver for a non-prismatic T-section beam.
->
 
 The implementation of CSF–CUF starts from a fundamental choice: **the beam cross-section is treated as a first-class object**, rather than being reduced in advance to a set of sectional properties or incorporated into a case-specific mathematical formulation.
 
@@ -81,8 +74,8 @@ The following resources provide an introduction to CSF-CUF, its configuration, a
   transverse expansions, loads, and boundary conditions.
 
 - **[I-Shape](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape)**  
-  Numerical validation using prismatic and non-prismatic I-shaped
-  beams, with comparisons against independent FEM3D solutions.
+ Numerical validation case comparing CSF-CUF and 3D FEM solutions for both prismatic and continuously tapered I-shaped beams, using the same CUF formulation and solver settings while changing only the continuous cross-section geometry.
+
 
 - **[C-Shape](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape)**  
   C-section benchmark based on the work of Carrera and Petrolo,
