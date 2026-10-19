@@ -353,7 +353,7 @@ In the `(y,z)` plane, the section has the web on the right and the opening facin
 One representation is:
 
 
-![Partition of the C-section into nine quadrilaterals](CSF_CUF_Carrera_assets/sezione_c_nove_domini.png)
+![Partition of the C-section into nine quadrilaterals](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/c-shape/img/Figure_3.png)
 
 *Figure 1 - Physical outline and sectional partition into the nine CSF domains used by the L9 expansion. Figure reconstructed directly from the YAML coordinates reported in this document*
 
