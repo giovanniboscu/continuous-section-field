@@ -1010,36 +1010,121 @@ Those operations belong to subsequent steps of the CUF formulation.
 
 
 ---
-
 ## 8. Virtual work of the external loads
 
 The loading treatment remains the one defined by the CUF formulation.
 
 The distinction between surface loads and line loads is retained.
 
-The only geometric generalization is that the relevant sub-domain boundaries and application locations may depend on x through $\mathcal{S}(x)$.
+The geometric generalization is that the relevant sub-domain boundaries and load application locations may depend on the longitudinal coordinate $x$ through $\mathcal{S}(x)$.
+
+For surface loads, the physical surface measure must also account for the longitudinal evolution of the sectional boundary.
 
 Let
 
-$$ \Gamma_\phi^{k\pm}(x) $$
+$$
+\Gamma_\phi^{k\pm}(x)
+$$
 
-denote the positive or negative boundary of sub-domain k associated with transverse direction $\phi$.
+denote the positive or negative boundary of sub-domain $k$ associated with transverse direction $\phi$.
 
-The sectional load projections can therefore be written formally as functions of x.
+Let
 
-For example, a boundary projection coefficient has the structure
+$$
+\Sigma_p
+$$
 
-$$ { E_\tau^{k\phi\pm}(x) = \int_{\Gamma_\phi^{k\pm}(x)} F_\tau(y,z)\,d\Gamma. } $$
+denote the physical surface on which a prescribed traction vector acts.
 
-The corresponding line-load terms retain the CUF evaluation of $F_\tau$ at the load application point, whose transverse coordinates may now depend on x.
+The external virtual work of the surface traction is
+
+$$
+\delta L_p = \int_{\Sigma_p} \delta \mathbf{u}^{T} \mathbf{p} \, dA .
+$$
+
+For a longitudinally varying section, the physical surface element can be written as
+
+$$
+dA = \mu(x,y,z) \, d\Gamma \, dx .
+$$
+
+Here $\mu(x,y,z)$ is the geometric factor associated with the longitudinal evolution of the sectional boundary.
+
+For surfaces parallel to the longitudinal axis,
+
+$$
+\mu(x,y,z) = 1 .
+$$
+
+Accordingly, the surface-load contribution becomes
+
+$$
+\delta L_p =
+\int_0^l
+\int_{\Gamma_p(x)}
+\delta \mathbf{u}^{T}(x,y,z)\,
+\mathbf{p}(x,y,z)\,
+\mu(x,y,z)\,
+d\Gamma \, dx .
+$$
+
+Introducing the CUF virtual displacement expansion,
+
+$$
+\delta \mathbf{u}(x,y,z) = F_\tau(y,z)\,\delta \mathbf{u}_\tau(x) ,
+$$
+
+the generalized surface-load vector is defined as
+
+$$ { \mathbf{p}_\tau(x) = \int_{\Gamma_p(x)} F_\tau(y,z)\,\mathbf{p}(x,y,z)\,\mu(x,y,z)\,d\Gamma. } $$
+
+Therefore,
+
+$$ { \delta L_p = \int_0^l \delta\mathbf{u}_\tau^{T}(x)\,\mathbf{p}_\tau(x)\,dx. } $$
+
+If the traction is uniform over the selected sectional boundary at fixed $x$, the generalized load can be written as
+
+$$
+\mathbf{p}_\tau(x) = E_\tau^{k\phi\pm}(x)\,\mathbf{p}^{k\phi\pm}(x) .
+$$
+
+The corresponding geometrically consistent boundary projection coefficient is
+
+$$ { E_\tau^{k\phi\pm}(x) = \int_{\Gamma_\phi^{k\pm}(x)} F_\tau(y,z)\,\mu(x,y,z)\,d\Gamma. } $$
+
+For surfaces parallel to the longitudinal axis, this reduces to
+
+$$ { E_\tau^{k\phi\pm}(x) = \int_{\Gamma_\phi^{k\phi\pm}(x)} F_\tau(y,z)\,d\Gamma. } $$
+
+When the prescribed surface load is a normal pressure, the traction vector must also account for the outward unit normal to the actual three-dimensional surface.
+
+Using the convention of positive inward pressure,
+
+$$
+\mathbf{p}(x,y,z) = -p_n(x,y,z)\,\mathbf{n}(x,y,z) .
+$$
+
+Consequently, the longitudinal variation of the sectional geometry may affect both the physical surface measure and the direction of the applied traction.
+
+The corresponding line-load terms retain the CUF evaluation of $F_\tau$ at the load application point, whose transverse coordinates may depend on $x$.
 
 Accordingly,
 
-$$ { \delta L_{\mathrm{ext}} = \delta L_p+\delta L_l } $$
+$$
+\delta L_{\mathrm{ext}} = \delta L_p + \delta L_l
+$$
 
 is retained without introducing a new loading theory.
 
-As for the sectional stiffness coefficients, the required geometric quantities are obtained from $\mathcal{S}(x)$ and can be evaluated numerically.
+The implementation of surface loads must therefore obtain the geometric information required to evaluate the physical surface measure and, when necessary, the surface normal associated with the evolving sectional boundary.
+
+These quantities are determined from the longitudinal evolution of $\mathcal{S}(x)$, rather than from an isolated sectional state alone.
+
+CSF provides the geometric description of the loaded surface, while CUF retains responsibility for the transverse projection of the prescribed traction into generalized longitudinal load quantities.
+
+No modification of the CUF transverse approximation functions or fundamental nucleus is required.
+
+---
 
 ---
 
