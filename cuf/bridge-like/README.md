@@ -12,6 +12,37 @@ The example is **inspired by the bridge-like beam study** in Carrera, Petrolo an
 
 [![Transverse shear stress vector](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp)
 
+## Model architecture and computational workflow
+
+The bridge-like example follows the separation of responsibilities adopted by the CSF–CUF framework.
+
+**CSF (Continuous Section Field)** defines the physical model: cross-sectional geometry, longitudinal stations, and material properties. This description is independent of the structural approximation and can be inspected separately using `csf-actions`.
+
+**CUF (Carrera Unified Formulation)** defines the structural approximation and equilibrium problem. The solver uses the geometric and material information supplied by CSF together with the selected transverse expansion, longitudinal finite elements, loads, and constraints.
+
+The analysis is organized through three distinct YAML configuration levels:
+
+| Configuration | Responsibility |
+|---|---|
+| **Model** - `models/bridge_geometry.yaml` | Physical geometry and material properties |
+| **Problem** - `problems/bending.yaml` or `problems/torsion.yaml` | Applied loads and boundary conditions |
+| **Case** - `cases/*.yaml` | Model/problem selection, transverse approximation, longitudinal discretization, and numerical solution settings |
+
+The computational workflow follows this sequence:
+
+1. The case selects the CSF model and the structural problem.
+2. CSF provides the section geometry and material properties at the required integration locations.
+3. The CUF transverse expansion and longitudinal finite elements define the displacement approximation.
+4. The solver evaluates the sectional contributions, assembles the structural equations, and imposes loads and constraints.
+5. The numerical solution is used to reconstruct displacements, strains, and stresses.
+
+This organization allows the same physical model to be reused for bending and torsion without redefining its geometry or materials. Different numerical approximations can also be selected without changing the underlying physical description.
+
+**The CSF–CUF coupling does not introduce a new structural formulation:** the CUF kinematics and fundamental nuclei are retained, while CSF provides the physical geometric and material information required for their numerical evaluation.
+
+For a more detailed architectural discussion, see [Part I – Models and organization of the computation](../c-shape/readme.md#part-i---models-and-organization-of-the-computation).
+
+
 ## Geometry and material
 
 The physical description is in [`models/bridge_geometry.yaml`](models/bridge_geometry.yaml). It contains four connected regions:
@@ -90,35 +121,6 @@ bridge-like/
 
 Each **case** selects a loading problem, an approximation order, the longitudinal elements and the solver settings. The cross-section and loads do not need to be rewritten for each run.
 
-## Model architecture and computational workflow
-
-The bridge-like example follows the separation of responsibilities adopted by the CSF–CUF framework.
-
-**CSF (Continuous Section Field)** defines the physical model: cross-sectional geometry, longitudinal stations, and material properties. This description is independent of the structural approximation and can be inspected separately using `csf-actions`.
-
-**CUF (Carrera Unified Formulation)** defines the structural approximation and equilibrium problem. The solver uses the geometric and material information supplied by CSF together with the selected transverse expansion, longitudinal finite elements, loads, and constraints.
-
-The analysis is organized through three distinct YAML configuration levels:
-
-| Configuration | Responsibility |
-|---|---|
-| **Model** - `models/bridge_geometry.yaml` | Physical geometry and material properties |
-| **Problem** - `problems/bending.yaml` or `problems/torsion.yaml` | Applied loads and boundary conditions |
-| **Case** - `cases/*.yaml` | Model/problem selection, transverse approximation, longitudinal discretization, and numerical solution settings |
-
-The computational workflow follows this sequence:
-
-1. The case selects the CSF model and the structural problem.
-2. CSF provides the section geometry and material properties at the required integration locations.
-3. The CUF transverse expansion and longitudinal finite elements define the displacement approximation.
-4. The solver evaluates the sectional contributions, assembles the structural equations, and imposes loads and constraints.
-5. The numerical solution is used to reconstruct displacements, strains, and stresses.
-
-This organization allows the same physical model to be reused for bending and torsion without redefining its geometry or materials. Different numerical approximations can also be selected without changing the underlying physical description.
-
-**The CSF–CUF coupling does not introduce a new structural formulation:** the CUF kinematics and fundamental nuclei are retained, while CSF provides the physical geometric and material information required for their numerical evaluation.
-
-For a more detailed architectural discussion, see [Part I – Models and organization of the computation](../c-shape/readme.md#part-i---models-and-organization-of-the-computation).
 
 ### Documentation hierarchy
 
