@@ -45,8 +45,13 @@ $$
 
 The polygon pair `i` and corresponding vertex index `j` define the local geometry without creating an explicit sequence of intermediate sections.
 
-For this file, $\mathbf{r}_{i,j}^{S0} = \mathbf{r}_{i,j}^{S1}$, hence every polygon has the same shape at every admissible longitudinal position.
+For this file, the corresponding vertices in `S0` and `S1` have identical coordinates:
 
+$$
+\mathbf{r}_{i,j}^{S0} = \mathbf{r}_{i,j}^{S1}
+$$
+
+Therefore, every polygon retains the same geometry along the entire longitudinal domain, resulting in a **prismatic section**.
 ### Ordered vertices matter
 
 Each polygon is represented by an ordered vertex list in the local **two-dimensional sectional coordinate system**. CSF closes each polygon by joining its last vertex to its first. The ordering determines its oriented boundary and must remain consistent between reference sections; positive polygon area is expected. Correspondence is between the ordered polygons and their ordered vertices, not simply between unordered sets of points.
