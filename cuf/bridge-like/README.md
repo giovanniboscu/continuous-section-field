@@ -24,6 +24,25 @@ The initial and final sections are identical (at longitudinal positions 0 and 10
 
 The beam axis is **x**; **y** and **z** describe positions within the cross-section. For the coordinate conventions used by the solver, see the [coordinate guide](../docs/coordinate_systems.md).
 
+### Cross-section visualization
+
+![CSF bridge-like section model](img/csfsectionmodel.jpg)
+
+*CSF representation of the bridge-like cross-section defined in `models/bridge_geometry.yaml`.* This image illustrates the sectional layout; it does not replace verification of the geometry and material properties from the model input.
+
+### Inspecting and checking the section model
+
+Before executing the bending and torsion cases, the model can be inspected independently of the CUF solution. From `cuf/bridge-like/models/`, run:
+
+```bash
+csf-actions bridge_geometry.yaml action.yaml
+```
+
+The `csf-actions` workflow generates a visualization and reports section-level homogenized properties, including the section centroid, second moments, principal moments, radii of gyration and elastic section moduli. The numbers depend on the geometry, material weighting and configuration. Do not treat material-weighted values as purely geometric quantities without checking the tool's conventions.
+
+For the sample numerical output, an explanation of each quantity and the verification workflow, see **[Model definition and section verification](models/README.md)**. This check is complementary to, not a substitute for, the convergence checks of the CUF analyses below.
+
+
 ## Two loading problems
 
 Both analyses use the same geometry and the same **fully fixed conditions at the two beam ends**. What changes is the applied load.
@@ -42,7 +61,8 @@ For the **configuration contract** of `bending.yaml` and `torsion.yaml`, see the
 ```text
 bridge-like/
 ├── README.md                 # Model overview and documentation entry point
-├── models/                   # Cross-section and material
+├── models/                   # Cross-section, material, section checks and README.md
+├── img/                      # Cross-section illustration
 ├── problems/                 # Bending and torsion YAMLs, plus README.md
 ├── adapters/                 # Reusable load and support rules, plus README.md
 │   ├── loads/                # Load adapters and their README.md
@@ -58,11 +78,12 @@ Each **case** selects a loading problem, an approximation order, the longitudina
 
 ### Documentation hierarchy
 
-The documentation separates **the physical example**, **the YAML problem declarations**, and **the Python adapter implementations**. Follow the links in either direction; the specialized README files link back to the problem configuration and this overview.
+The documentation separates **the section model and its independent checks**, **the physical example**, **the YAML problem declarations**, and **the Python adapter implementations**. Follow the links in either direction; the specialized README files link back to the problem configuration and this overview.
 
 | Documentation | Responsibility |
 |---|---|
 | **This README** | Physical setup, analyses, numerical cases, running and viewing the results |
+| [`models/README.md`](models/README.md) | Geometry, material definition, csf-actions visualization and homogenized section properties |
 | [`problems/README.md`](problems/README.md) | Bending and torsion YAMLs: what is configured and how adapters are referenced |
 | [`adapters/README.md`](adapters/README.md) | Adapter architecture and separation from the CUF formulation |
 | [`adapters/loads/README.md`](adapters/loads/README.md) | Programming and verification guidance for load adapters |
