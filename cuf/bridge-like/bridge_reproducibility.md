@@ -275,7 +275,326 @@ python3 -m csf.cuf.tools.plot_strain_stress_boundary_v10 --help
 
 ---
 
-## 9. Shortest reproduction path
+## 9. Illustrated results: transverse maps and boundary plots
+
+The [complete N15 bending gallery](strain_stress_boundary/README.md) presents the results for **equilibration `eq1`**. The figures below are shown directly in this guide; click any image to open it individually at full size. These visualizations illustrate one numerical case, not an independent validation or an order-convergence proof.
+
+### 9.1 Transverse maps at x = 20
+
+Maps of the displacement, strain, and stress components over the cross-section. The shear-stress vector plot illustrates direction and magnitude in the section plane.
+
+#### shear stress vector transverse
+
+[![shear stress vector transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp)
+
+#### epsilon xx transverse
+
+[![epsilon xx transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_xx_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_xx_transverse.webp)
+
+#### epsilon yy transverse
+
+[![epsilon yy transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_yy_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_yy_transverse.webp)
+
+#### epsilon zz transverse
+
+[![epsilon zz transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_zz_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_zz_transverse.webp)
+
+#### gamma xy transverse
+
+[![gamma xy transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_xy_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_xy_transverse.webp)
+
+#### gamma xz transverse
+
+[![gamma xz transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_xz_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_xz_transverse.webp)
+
+#### gamma yz transverse
+
+[![gamma yz transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_yz_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_yz_transverse.webp)
+
+#### sigma xx transverse
+
+[![sigma xx transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_xx_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_xx_transverse.webp)
+
+#### sigma yy transverse
+
+[![sigma yy transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_yy_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_yy_transverse.webp)
+
+#### sigma zz transverse
+
+[![sigma zz transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_zz_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_zz_transverse.webp)
+
+#### tau xy transverse
+
+[![tau xy transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_xy_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_xy_transverse.webp)
+
+#### tau xz transverse
+
+[![tau xz transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_xz_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_xz_transverse.webp)
+
+#### tau yz transverse
+
+[![tau yz transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_yz_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_yz_transverse.webp)
+
+#### ux transverse
+
+[![ux transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/ux_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/ux_transverse.webp)
+
+#### uy transverse
+
+[![uy transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/uy_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/uy_transverse.webp)
+
+#### uz transverse
+
+[![uz transverse](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/uz_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/uz_transverse.webp)
+
+### 9.2 Longitudinal and boundary results
+
+Curves along the beam axis, sampled at selected cross-section vertices and boundary locations. Parts `01`–`04` refer to separate groups of plotted locations.
+
+#### epsilon xx along boundary part01
+
+[![epsilon xx along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_xx_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_xx_along_boundary_part01.webp)
+
+#### epsilon xx along boundary part02
+
+[![epsilon xx along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_xx_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_xx_along_boundary_part02.webp)
+
+#### epsilon xx along boundary part03
+
+[![epsilon xx along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_xx_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_xx_along_boundary_part03.webp)
+
+#### epsilon xx along boundary part04
+
+[![epsilon xx along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_xx_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_xx_along_boundary_part04.webp)
+
+#### epsilon yy along boundary part01
+
+[![epsilon yy along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_yy_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_yy_along_boundary_part01.webp)
+
+#### epsilon yy along boundary part02
+
+[![epsilon yy along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_yy_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_yy_along_boundary_part02.webp)
+
+#### epsilon yy along boundary part03
+
+[![epsilon yy along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_yy_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_yy_along_boundary_part03.webp)
+
+#### epsilon yy along boundary part04
+
+[![epsilon yy along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_yy_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_yy_along_boundary_part04.webp)
+
+#### epsilon zz along boundary part01
+
+[![epsilon zz along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_zz_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_zz_along_boundary_part01.webp)
+
+#### epsilon zz along boundary part02
+
+[![epsilon zz along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_zz_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_zz_along_boundary_part02.webp)
+
+#### epsilon zz along boundary part03
+
+[![epsilon zz along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_zz_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_zz_along_boundary_part03.webp)
+
+#### epsilon zz along boundary part04
+
+[![epsilon zz along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_zz_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/epsilon_zz_along_boundary_part04.webp)
+
+#### gamma xy along boundary part01
+
+[![gamma xy along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xy_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xy_along_boundary_part01.webp)
+
+#### gamma xy along boundary part02
+
+[![gamma xy along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xy_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xy_along_boundary_part02.webp)
+
+#### gamma xy along boundary part03
+
+[![gamma xy along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xy_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xy_along_boundary_part03.webp)
+
+#### gamma xy along boundary part04
+
+[![gamma xy along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xy_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xy_along_boundary_part04.webp)
+
+#### gamma xz along boundary part01
+
+[![gamma xz along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xz_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xz_along_boundary_part01.webp)
+
+#### gamma xz along boundary part02
+
+[![gamma xz along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xz_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xz_along_boundary_part02.webp)
+
+#### gamma xz along boundary part03
+
+[![gamma xz along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xz_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xz_along_boundary_part03.webp)
+
+#### gamma xz along boundary part04
+
+[![gamma xz along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xz_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_xz_along_boundary_part04.webp)
+
+#### gamma yz along boundary part01
+
+[![gamma yz along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_yz_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_yz_along_boundary_part01.webp)
+
+#### gamma yz along boundary part02
+
+[![gamma yz along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_yz_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_yz_along_boundary_part02.webp)
+
+#### gamma yz along boundary part03
+
+[![gamma yz along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_yz_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_yz_along_boundary_part03.webp)
+
+#### gamma yz along boundary part04
+
+[![gamma yz along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_yz_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/gamma_yz_along_boundary_part04.webp)
+
+#### sigma xx along boundary part01
+
+[![sigma xx along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_xx_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_xx_along_boundary_part01.webp)
+
+#### sigma xx along boundary part02
+
+[![sigma xx along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_xx_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_xx_along_boundary_part02.webp)
+
+#### sigma xx along boundary part03
+
+[![sigma xx along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_xx_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_xx_along_boundary_part03.webp)
+
+#### sigma xx along boundary part04
+
+[![sigma xx along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_xx_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_xx_along_boundary_part04.webp)
+
+#### sigma yy along boundary part01
+
+[![sigma yy along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_yy_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_yy_along_boundary_part01.webp)
+
+#### sigma yy along boundary part02
+
+[![sigma yy along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_yy_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_yy_along_boundary_part02.webp)
+
+#### sigma yy along boundary part03
+
+[![sigma yy along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_yy_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_yy_along_boundary_part03.webp)
+
+#### sigma yy along boundary part04
+
+[![sigma yy along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_yy_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_yy_along_boundary_part04.webp)
+
+#### sigma zz along boundary part01
+
+[![sigma zz along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_zz_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_zz_along_boundary_part01.webp)
+
+#### sigma zz along boundary part02
+
+[![sigma zz along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_zz_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_zz_along_boundary_part02.webp)
+
+#### sigma zz along boundary part03
+
+[![sigma zz along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_zz_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_zz_along_boundary_part03.webp)
+
+#### sigma zz along boundary part04
+
+[![sigma zz along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_zz_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/sigma_zz_along_boundary_part04.webp)
+
+#### tau xy along boundary part01
+
+[![tau xy along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xy_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xy_along_boundary_part01.webp)
+
+#### tau xy along boundary part02
+
+[![tau xy along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xy_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xy_along_boundary_part02.webp)
+
+#### tau xy along boundary part03
+
+[![tau xy along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xy_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xy_along_boundary_part03.webp)
+
+#### tau xy along boundary part04
+
+[![tau xy along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xy_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xy_along_boundary_part04.webp)
+
+#### tau xz along boundary part01
+
+[![tau xz along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xz_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xz_along_boundary_part01.webp)
+
+#### tau xz along boundary part02
+
+[![tau xz along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xz_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xz_along_boundary_part02.webp)
+
+#### tau xz along boundary part03
+
+[![tau xz along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xz_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xz_along_boundary_part03.webp)
+
+#### tau xz along boundary part04
+
+[![tau xz along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xz_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_xz_along_boundary_part04.webp)
+
+#### tau yz along boundary part01
+
+[![tau yz along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_yz_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_yz_along_boundary_part01.webp)
+
+#### tau yz along boundary part02
+
+[![tau yz along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_yz_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_yz_along_boundary_part02.webp)
+
+#### tau yz along boundary part03
+
+[![tau yz along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_yz_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_yz_along_boundary_part03.webp)
+
+#### tau yz along boundary part04
+
+[![tau yz along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_yz_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/tau_yz_along_boundary_part04.webp)
+
+#### ux along boundary part01
+
+[![ux along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/ux_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/ux_along_boundary_part01.webp)
+
+#### ux along boundary part02
+
+[![ux along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/ux_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/ux_along_boundary_part02.webp)
+
+#### ux along boundary part03
+
+[![ux along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/ux_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/ux_along_boundary_part03.webp)
+
+#### ux along boundary part04
+
+[![ux along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/ux_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/ux_along_boundary_part04.webp)
+
+#### uy along boundary part01
+
+[![uy along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uy_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uy_along_boundary_part01.webp)
+
+#### uy along boundary part02
+
+[![uy along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uy_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uy_along_boundary_part02.webp)
+
+#### uy along boundary part03
+
+[![uy along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uy_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uy_along_boundary_part03.webp)
+
+#### uy along boundary part04
+
+[![uy along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uy_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uy_along_boundary_part04.webp)
+
+#### uz along boundary part01
+
+[![uz along boundary part01](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uz_along_boundary_part01.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uz_along_boundary_part01.webp)
+
+#### uz along boundary part02
+
+[![uz along boundary part02](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uz_along_boundary_part02.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uz_along_boundary_part02.webp)
+
+#### uz along boundary part03
+
+[![uz along boundary part03](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uz_along_boundary_part03.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uz_along_boundary_part03.webp)
+
+#### uz along boundary part04
+
+[![uz along boundary part04](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uz_along_boundary_part04.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/uz_along_boundary_part04.webp)
+
+
+---
+
+## 10. Shortest reproduction path
 
 With the repository installed and from the benchmark directory:
 
@@ -292,7 +611,7 @@ Or replace the launcher with either/both explicit plotting commands in Section 8
 
 ---
 
-## 10. Reproducibility record
+## 11. Reproducibility record
 
 For each reported figure or table, retain:
 
