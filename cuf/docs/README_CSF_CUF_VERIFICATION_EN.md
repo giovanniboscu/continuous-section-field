@@ -50,35 +50,35 @@ It checks the **entire global `K`**, rather than individual CUF blocks. The KKT 
 
 Let
 
-\[
+```math
 D=K-K^T.
-\]
+```
 
 The acceptance metric is the **global relative asymmetry**:
 
-\[
+```math
 \boxed{\varepsilon_{\mathrm{sym}}=\frac{\|K-K^T\|_F}{\|K\|_F}}
-\]
+```
 
 where the Frobenius norm is
 
-\[
+```math
 \|A\|_F=\sqrt{\sum_{i,j}|A_{ij}|^2}.
-\]
+```
 
 Equivalently,
 
-\[
+```math
 \varepsilon_{\mathrm{sym}}
 =\sqrt{\frac{\sum_{i,j}|K_{ij}-K_{ji}|^2}
 {\sum_{i,j}|K_{ij}|^2}}.
-\]
+```
 
 A second, **informational** metric is also printed:
 
-\[
+```math
 \Delta_{\max}=\max_{i,j}|K_{ij}-K_{ji}|.
-\]
+```
 
 Only `relative` is compared with `rtol`; `maximum_abs` is **not an independent stop criterion**.
 
@@ -210,20 +210,20 @@ These two paths could be evaluated for identical physical data and compared on a
 
 For a fixed axial station `x`, domain `k`, constitutive indices `(m,n)`, derivatives `(phi,xi)`, and ordered CUF pair `(tau,s)`:
 
-\[
+```math
 J_{\tau,\phi\,s,\xi}^{mn,k}(x)
 =\int_{\Omega^k(x)}
 F_{\tau,\phi}(y,z)\,C_{mn}^k(x,y,z)\,
 F_{s,\xi}(y,z)\,d\Omega.
-\]
+```
 
 Compare the total across the same set of physical CSF domains:
 
-\[
+```math
 J_{\mathrm{matrix}}(x)
 \quad\text{versus}\quad
 J_{\mathrm{scalar}}(x)=\sum_k J_{\mathrm{domain}}^{k}(x).
-\]
+```
 
 Both paths must use **the same geometry, material carriers, coordinate conventions, indices, and derivative definitions**.
 
@@ -231,14 +231,14 @@ Both paths must use **the same geometry, material carriers, coordinate conventio
 
 An absolute-plus-relative criterion is preferable to dividing by a near-zero coefficient:
 
-\[
+```math
 \boxed{
 |J_{\mathrm{matrix}}-J_{\mathrm{scalar}}|
 \leq
 \mathrm{atol}
 +\mathrm{rtol}\,\max\bigl(|J_{\mathrm{matrix}}|,|J_{\mathrm{scalar}}|\bigr)
 }
-\]
+```
 
 Report also the raw absolute difference and a scale-normalized error. The `atol` and `rtol` values should be chosen from representative benchmark scales and numerical precision rather than being declared universal constants.
 
@@ -275,9 +275,9 @@ If this additional feature is implemented, a sensible design would be to provide
 
 For CUF block indices `(tau,s)`, a local reciprocity test would compare:
 
-\[
+```math
 K_{\tau s}\quad\text{with}\quad K_{s\tau}^{T}.
-\]
+```
 
 **An individual off-diagonal CUF block need not be symmetric by itself.** The property to test is the transposition between reciprocal blocks.
 
@@ -303,5 +303,4 @@ A broader validation strategy combines these internal checks with mesh/order con
 - Source: [`solver/engine.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/solver/engine.py) - global assembly and execution pipeline. The symmetry check described here was installed **locally**; it may not appear in the public branch.
 - Source: [`core/sectional.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/core/sectional.py) - existing sectional integration pathways and Gauss-order diagnostic.
 - Local patch utility: `apply_engine_symmetry_check.py`.
-
 
