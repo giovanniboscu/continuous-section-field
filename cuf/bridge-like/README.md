@@ -22,7 +22,21 @@ The physical description is in [`models/bridge_geometry.yaml`](models/bridge_geo
 
 The initial and final sections are identical (at longitudinal positions 0 and 100). The example uses a linear elastic material with Young's modulus **210 GPa** and Poisson's ratio **0.30**. The input values are consistent with metres, newtons and pascals; all quantities must remain in the same unit system.
 
-The beam axis is **x**; **y** and **z** describe positions within the cross-section. For the coordinate conventions used by the solver, see the [coordinate guide](../docs/coordinate_systems.md).
+### Coordinate systems: CSF and CUF
+
+**CSF and the CUF solver use different coordinate labels for the same physical directions.** In the CSF model, **`(X, Y)`** are the transverse section coordinates and **`Z`** is the longitudinal beam coordinate. In the CUF solver, **`x`** is longitudinal and **`(y, z)`** are transverse. Their correspondence is:
+
+| Physical direction | CSF | CUF solver |
+|---|---|---|
+| Longitudinal | `Z` | `x` |
+| First transverse | `X` | `y` |
+| Second transverse | `Y` | `z` |
+
+Thus **`(x, y, z)_CUF = (Z, X, Y)_CSF`**, with the same ordering correspondence for displacements: **`(u_x, u_y, u_z)_CUF = (u_Z, u_X, u_Y)_CSF`**. This mapping changes labels and component ordering; it does **not** reverse the physical directions. For this 100 m prismatic beam, longitudinal positions satisfy `x = Z`.
+
+When interpreting the `csf-actions` sectional report, note that **`SECTION SELECTED ANALYSIS @ z = 0.0`** identifies a longitudinal station in the CSF model (rendered as lowercase `z` by the reporting tool); it must not be mistaken for the **transverse** `z` coordinate of the CUF solver. Sectional quantities such as `Cx`, `Cy`, `Ix` and `Iy` refer to the CSF section axes.
+
+See the authoritative **[Coordinate Systems and Displacement Conventions](../docs/coordinate_systems.md)** for the complete definitions and displacement-evaluation convention. The [model verification documentation](models/README.md) explains how these axes apply to the `csf-actions` report.
 
 ### Cross-section visualization
 
