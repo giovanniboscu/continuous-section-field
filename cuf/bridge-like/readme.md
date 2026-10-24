@@ -1,5 +1,7 @@
 # Bridge-like Beam - Bending and Torsion
 
+
+
 ## Introduction
 
 This example studies a **100 m long, bridge-like beam** under two different loading conditions: bending and torsion. The aim is to show how a beam can be described once, analysed under different loads, and checked using increasingly detailed numerical approximations.
@@ -7,6 +9,10 @@ This example studies a **100 m long, bridge-like beam** under two different load
 The cross-section resembles a simplified bridge deck: a wide top slab, two inclined webs, and a lower slab. The same section is used along the entire length, so the beam is **prismatic**. This is a numerical example, not a design or safety assessment of a real bridge.
 
 The example is **inspired by the bridge-like beam study** in Carrera, Petrolo and Zappino (2012), which examines bending, torsion and stress distributions in a bridge-shaped section. The present files provide a separate numerical implementation and convergence study; they should not be understood as an exact reproduction of the paper’s discretization or published results. See [Reference](#reference) below.
+
+### Transverse Shear Stress Distribution
+
+[![Transverse shear stress vector](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp)
 
 ## Geometry and material
 
