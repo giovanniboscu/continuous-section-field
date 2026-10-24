@@ -76,12 +76,6 @@ csf-cuf bending_halfwave_legendre_N08.yaml       # run a CUF bending analysis
 
 ---
 
-
-
-➡️ [CSF–CUF framework and documentation](cuf/readme.md)
-
-
----
 ## CSF accepts two input files: geometry.yaml (cross-section definition) and actions.yaml (post-processing pipeline).
 
 geometry.yaml file 
