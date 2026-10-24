@@ -81,18 +81,19 @@ The following resources provide an introduction to CSF-CUF, its configuration, a
 
 ---
 
+
 - **[Tutorials](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/tutorials/variable_material_t_section)**  
-  Step-by-step examples covering geometry, material distribution,
-  transverse expansions, loads, and boundary conditions.
+  Step-by-step examples covering geometry, material distribution, transverse expansions, loads, and boundary conditions.
 
 - **[I-Shape](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape)**  
- Numerical validation case comparing CSF-CUF and 3D FEM solutions for both prismatic and continuously tapered I-shaped beams, using the same CUF formulation and solver settings while changing only the continuous cross-section geometry.
-
+  Numerical validation case comparing CSF-CUF and 3D FEM solutions for both prismatic and continuously tapered I-shaped beams, using the same CUF formulation and solver settings while changing only the continuous cross-section geometry.
 
 - **[C-Shape](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape)**  
-  C-section benchmark based on the work of Carrera and Petrolo,
-  demonstrating custom polygon-specific transverse expansions,
-  Lagrange L9 approximation, and FEM3D comparisons.
+  C-section benchmark based on the work of Carrera and Petrolo, demonstrating custom polygon-specific transverse expansions, Lagrange L9 approximation, and FEM3D comparisons.
+
+- **[Bridge-like](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/bridge-like)**  
+  Bridge-like beam example inspired by Carrera, Petrolo, and Zappino, illustrating the use of CSF as an independent library supplying geometry and material properties to a CUF-based structural solver. Bending and torsion analyses explore higher-order transverse approximations, numerical convergence, and stress distributions.
+
 
 
 
