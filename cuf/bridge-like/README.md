@@ -82,7 +82,6 @@ csf-actions bridge_geometry.yaml action.yaml
 
 The `csf-actions` workflow generates a visualization and reports section-level homogenized properties, including the section centroid, second moments, principal moments, radii of gyration and elastic section moduli. The numbers depend on the geometry, material weighting and configuration. Do not treat material-weighted values as purely geometric quantities without checking the tool's conventions.
 
-For the sample numerical output, an explanation of each quantity and the verification workflow, see **[Model definition and section verification](models/README.md)**. This check is complementary to, not a substitute for, the convergence checks of the CUF analyses below.
 
 
 ## Two loading problems
