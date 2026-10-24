@@ -122,11 +122,13 @@ Each **case** selects a loading problem, an approximation order, the longitudina
 
 The documentation separates **the section model and its independent checks**, **the physical example**, **the YAML problem declarations**, and **the Python adapter implementations**. Follow the links in either direction; the specialized README files link back to the problem configuration and this overview.
 
+
 | Documentation | Responsibility |
 |---|---|
 | **This README** | Physical setup, analyses, numerical cases, running and viewing the results |
 | [`models/README.md`](models/README.md) | Geometry, material definition, csf-actions visualization and homogenized section properties |
 | [`problems/README.md`](problems/README.md) | Bending and torsion YAMLs: what is configured and how adapters are referenced |
+| [`cases/README.md`](cases/README.md) | Comprehensive CUF case YAML configuration reference: available parameters, transverse expansions, longitudinal discretization, numerical integration, solver settings, sampling, output options and annotated configuration examples |
 | [`adapters/README.md`](adapters/README.md) | Adapter architecture and separation from the CUF formulation |
 | [`adapters/loads/README.md`](adapters/loads/README.md) | Programming and verification guidance for load adapters |
 | [`adapters/constraints/README.md`](adapters/constraints/README.md) | Programming and verification guidance for support/constraint adapters |
