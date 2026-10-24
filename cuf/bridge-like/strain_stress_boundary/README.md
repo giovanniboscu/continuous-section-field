@@ -1,6 +1,76 @@
-# CSF-CUF Bridge — Bending N15 Results
+# CSF-CUF Bridge - Bending N15 Results
 
 Numerical results for the N15 transverse Lagrange expansion, using the first equilibration (eq1).
+
+## Transverse Maps at x = 20
+
+### shear stress vector transverse
+
+[![shear stress vector transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp>)
+
+
+### epsilon xx transverse
+
+[![epsilon xx transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_xx_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_xx_transverse.webp>)
+
+### epsilon yy transverse
+
+[![epsilon yy transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_yy_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_yy_transverse.webp>)
+
+### epsilon zz transverse
+
+[![epsilon zz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_zz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_zz_transverse.webp>)
+
+### gamma xy transverse
+
+[![gamma xy transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_xy_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_xy_transverse.webp>)
+
+### gamma xz transverse
+
+[![gamma xz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_xz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_xz_transverse.webp>)
+
+### gamma yz transverse
+
+[![gamma yz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_yz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_yz_transverse.webp>)
+
+
+### sigma xx transverse
+
+[![sigma xx transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_xx_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_xx_transverse.webp>)
+
+### sigma yy transverse
+
+[![sigma yy transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_yy_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_yy_transverse.webp>)
+
+### sigma zz transverse
+
+[![sigma zz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_zz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_zz_transverse.webp>)
+
+### tau xy transverse
+
+[![tau xy transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_xy_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_xy_transverse.webp>)
+
+### tau xz transverse
+
+[![tau xz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_xz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_xz_transverse.webp>)
+
+### tau yz transverse
+
+[![tau yz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_yz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_yz_transverse.webp>)
+
+### ux transverse
+
+[![ux transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/ux_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/ux_transverse.webp>)
+
+### uy transverse
+
+[![uy transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/uy_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/uy_transverse.webp>)
+
+### uz transverse
+
+[![uz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/uz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/uz_transverse.webp>)
+
+
 
 ## Longitudinal and Boundary Results
 
@@ -244,68 +314,3 @@ Numerical results for the N15 transverse Lagrange expansion, using the first equ
 
 [![uz along boundary part04](<carrera_bridge_bending_scaled_lagrange_N15_eq1/uz_along_boundary_part04.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/uz_along_boundary_part04.webp>)
 
-## Transverse Maps at x = 20
-
-### epsilon xx transverse
-
-[![epsilon xx transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_xx_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_xx_transverse.webp>)
-
-### epsilon yy transverse
-
-[![epsilon yy transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_yy_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_yy_transverse.webp>)
-
-### epsilon zz transverse
-
-[![epsilon zz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_zz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/epsilon_zz_transverse.webp>)
-
-### gamma xy transverse
-
-[![gamma xy transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_xy_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_xy_transverse.webp>)
-
-### gamma xz transverse
-
-[![gamma xz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_xz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_xz_transverse.webp>)
-
-### gamma yz transverse
-
-[![gamma yz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_yz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/gamma_yz_transverse.webp>)
-
-### shear stress vector transverse
-
-[![shear stress vector transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp>)
-
-### sigma xx transverse
-
-[![sigma xx transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_xx_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_xx_transverse.webp>)
-
-### sigma yy transverse
-
-[![sigma yy transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_yy_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_yy_transverse.webp>)
-
-### sigma zz transverse
-
-[![sigma zz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_zz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/sigma_zz_transverse.webp>)
-
-### tau xy transverse
-
-[![tau xy transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_xy_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_xy_transverse.webp>)
-
-### tau xz transverse
-
-[![tau xz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_xz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_xz_transverse.webp>)
-
-### tau yz transverse
-
-[![tau yz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_yz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/tau_yz_transverse.webp>)
-
-### ux transverse
-
-[![ux transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/ux_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/ux_transverse.webp>)
-
-### uy transverse
-
-[![uy transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/uy_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/uy_transverse.webp>)
-
-### uz transverse
-
-[![uz transverse](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/uz_transverse.webp>)](<carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/uz_transverse.webp>)
