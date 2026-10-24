@@ -195,8 +195,6 @@ It produces plots along the beam at cross-section boundary points, as well as **
 
 ## Understanding the Result
 
-The main questions are straightforward: **Do the results change less as N increases?** **Do the five equilibration settings give nearly the same displacements and stresses?** **Where do bending and torsion produce different stress patterns?**
-
 This example is intended to make those comparisons reproducible. The saved outputs and plots are evidence to inspect, not a substitute for a documented convergence study or an independent reference calculation.
 
 ## Reference
