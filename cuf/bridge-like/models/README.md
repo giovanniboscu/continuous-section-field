@@ -35,14 +35,17 @@ Because the coordinates and polygon data are identical at both reference section
 
 In CSF, `S0` and `S1` are **boundary configurations for continuous interpolation**, not stations of a predefined mesh. At a longitudinal coordinate `z`, each vertex is evaluated from its corresponding endpoint vertices. For linear geometric interpolation, with
 
-\[
-\xi=\frac{z-z_0}{z_1-z_0},\qquad
-\mathbf r_{i,j}(z)=(1-\xi)\mathbf r_{i,j}^{S0}+\xi\mathbf r_{i,j}^{S1},
-\]
+$$
+\xi = \frac{z-z_0}{z_1-z_0}
+$$
 
-the polygon pair `i` and corresponding vertex index `j` define the local geometry without creating an explicit sequence of intermediate sections.
+$$
+\mathbf{r}_{i,j}(z) = (1-\xi)\mathbf{r}_{i,j}^{S0} + \xi\mathbf{r}_{i,j}^{S1}
+$$
 
-For this file, `\mathbf r_{i,j}^{S0}=\mathbf r_{i,j}^{S1}`, hence every polygon has the same shape at every admissible longitudinal position.
+The polygon pair `i` and corresponding vertex index `j` define the local geometry without creating an explicit sequence of intermediate sections.
+
+For this file, $\mathbf{r}_{i,j}^{S0} = \mathbf{r}_{i,j}^{S1}$, hence every polygon has the same shape at every admissible longitudinal position.
 
 ### Ordered vertices matter
 
