@@ -49,17 +49,15 @@ csf-cuf bending_halfwave_legendre_N08.yaml       # run a CUF bending analysis
 ---
 ### Illustrative example
 
->Three-dimensional representation of the tapered pole with localized degradation. Gray regions indicate the non-degraded portions. Weight in this model is the elastic modulus.
-
+> Transverse shear stress vector distribution in the bridge-like cross-section under bending loading, evaluated at x = 20 m.
 
 <p align="center">
-  <img alt="Three-dimensional representation " src="https://github.com/giovanniboscu/continuous-section-field/blob/main/actions-examples/degraded_pole/img/degraded_pole2.png" />
-
+  <a href="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/bridge-like/strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp">
+    <img width="75%" alt="Transverse shear stress vector distribution" src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/bridge-like/strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp" />
+  </a>
 </p>
 
-
->Full reproducible example: [`Tapered prestressed degraded concrete pole`](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/degraded_pole)
-
+> Full reproducible example: [`Bridge-like beam - Bending and Torsion`](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/bridge-like)
 ---
 
 **CSF combines:**
