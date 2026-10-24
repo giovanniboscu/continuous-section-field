@@ -1,0 +1,44 @@
+case:
+  name: carrera_bridge_bending_scaled_lagrange_N04
+problem:
+  yaml: ../problems/bending.yaml
+  adapter: ../adapters/bending.py
+cuf:
+  basis: scaled_lagrange
+  order: 04
+longitudinal:
+  method: finite_element
+  element_boundaries:
+  - 0.0
+  - 0.1
+  - 0.2
+  - 0.3
+  - 0.4
+  - 0.5
+  - 0.6
+  - 0.7
+  - 0.8
+  - 0.9
+  - 1.0
+  basis: lagrange
+  order: 6
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 8
+solver:
+  correctionMITC: true
+  verifyMITCAssembly: true
+  equilibration:
+    iterations: [1, 2, 3, 4, 5]
+sampling:
+  stations:
+  - 0.0
+  - 0.25
+  - 0.5
+  - 0.75
+  - 1.0
+  displacement_samples: 201
+  stress_grid: 51
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../output/bending_scaled_lagrange_N04

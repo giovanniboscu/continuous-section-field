@@ -1,0 +1,9 @@
+model:
+  csf_yaml: ../models/bridge_geometry.yaml
+problem:
+  type: uniform_surface
+  surface:
+    polygon_name: top_flange
+    edge_start_point_id: 11
+  components:
+    z: -10000.0

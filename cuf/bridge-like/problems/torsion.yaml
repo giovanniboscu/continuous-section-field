@@ -1,0 +1,5 @@
+model:
+  csf_yaml: ../models/bridge_geometry.yaml
+problem:
+  type: bridge_top_edge_torsion_uniform
+  amplitude: -100000.0

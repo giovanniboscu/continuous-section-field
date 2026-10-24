@@ -65,7 +65,7 @@ def write_outputs(
         "",
         "STATION RESPONSES",
         "-----------------",
-        "x/L       x [mm]             y [mm]               z [mm]               point         ux [mm]             uy [mm]             uz [mm]",
+        "x/L       x                  y                    z                    point         ux                  uy                  uz     ",
     ]
     for ratio in tuple(float(v) for v in case.sampling.stations):
         x = x0 + ratio * L

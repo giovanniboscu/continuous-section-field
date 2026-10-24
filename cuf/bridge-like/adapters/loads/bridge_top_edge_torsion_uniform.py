@@ -1,0 +1,307 @@
+"""Uniform opposite line loads at both TOP slab corners.
+Derived from the repository torsion_uniform adapter.
+"""
+from __future__ import annotations
+
+import math
+from typing import Any, Mapping
+
+import numpy as np
+
+from csf.cuf.numerics import all_vertices, transverse_bounds
+from csf.cuf.problem.point_bc import LinearConstraintSystem
+from csf.cuf.adapters.problem.constraints.transverse_supported_point_anchor import TransverseSupportedPointAnchorConstraints
+from csf.cuf.adapters.problem._load_vector import assemble_distributed_load_vector
+
+
+PROBLEM_TYPE = "bridge_top_edge_torsion_uniform"
+
+
+def _finite_float(value: Any, *, path: str) -> float:
+    """Convert one YAML scalar to a finite float with a precise error path."""
+
+    if isinstance(value, bool):
+        raise TypeError(f"{path} must be a finite number, got {value!r}")
+
+    try:
+        result = float(value)
+    except (TypeError, ValueError) as exc:
+        raise TypeError(
+            f"{path} must be a finite number, got {value!r}"
+        ) from exc
+
+    if not math.isfinite(result):
+        raise ValueError(f"{path} must be finite, got {value!r}")
+
+    return result
+
+
+def _has_vertex(section_provider: Any, x: float, point) -> bool:
+    """Confirm that a selected physical point is an actual current CSF vertex.
+
+    This is retained from the source half-wave adapter.  It prevents a future
+    change to the extrema-selection helper from silently turning the physical
+    vertex load into an interpolated or invented point load.
+    """
+
+    target_y, target_z = map(float, point)
+    scale = max(1.0, abs(target_y), abs(target_z))
+    tolerance = 1.0e-10 * scale
+
+    for y, z in all_vertices(section_provider, float(x)):
+        if math.isclose(
+            float(y), target_y, rel_tol=0.0, abs_tol=tolerance
+        ) and math.isclose(
+            float(z), target_z, rel_tol=0.0, abs_tol=tolerance
+        ):
+            return True
+
+    return False
+
+
+def moving_load_points(section_provider: Any, x: float):
+    """Return the same two moving CSF vertices as the half-wave torsion case.
+
+    The positive point is the leftmost vertex on the maximum-z boundary.  The
+    negative point is the rightmost vertex on the minimum-z boundary.  Ties are
+    resolved deterministically by the physical y coordinate.
+    """
+
+    x = float(x)
+    _, _, z_min, z_max = transverse_bounds(section_provider, x)
+    vertices = tuple(
+        (float(y), float(z)) for y, z in all_vertices(section_provider, x)
+    )
+
+    scale = max(1.0, abs(float(z_min)), abs(float(z_max)))
+    tolerance = 1.0e-10 * scale
+
+    top_vertices = [
+        (y, z)
+        for y, z in vertices
+        if math.isclose(z, float(z_max), rel_tol=0.0, abs_tol=tolerance)
+    ]
+    bottom_vertices = [
+        (y, z)
+        for y, z in vertices
+        if math.isclose(z, float(z_min), rel_tol=0.0, abs_tol=tolerance)
+    ]
+
+    if not top_vertices:
+        raise ValueError(
+            f"no CSF vertex found on maximum-z boundary at x={x}"
+        )
+    if not bottom_vertices:
+        raise ValueError(
+            f"no CSF vertex found on minimum-z boundary at x={x}"
+        )
+
+    point_plus = min(top_vertices, key=lambda point: point[0])
+    point_minus = max(top_vertices, key=lambda point: point[0])
+
+    if not _has_vertex(section_provider, x, point_plus):
+        raise ValueError(
+            f"positive load point is not a CSF vertex at x={x}: "
+            f"{point_plus}"
+        )
+    if not _has_vertex(section_provider, x, point_minus):
+        raise ValueError(
+            f"negative load point is not a CSF vertex at x={x}: "
+            f"{point_minus}"
+        )
+
+    return point_plus, point_minus
+
+
+class UniformTorsionalLinePairProjector:
+    """Project the uniform opposite force pair onto all CUF functions."""
+
+    def __init__(
+        self,
+        *,
+        section_provider: Any,
+        basis: Any,
+        x0: float,
+        x1: float,
+        amplitude: float,
+    ) -> None:
+        self.section_provider = section_provider
+        self.basis = basis
+        self.x0 = float(x0)
+        self.x1 = float(x1)
+        self.amplitude = float(amplitude)
+
+        if not (math.isfinite(self.x0) and math.isfinite(self.x1)):
+            raise ValueError("CSF longitudinal endpoints must be finite")
+        if self.x1 <= self.x0:
+            raise ValueError(
+                "CSF longitudinal domain must satisfy x1 > x0; "
+                f"got x0={self.x0!r}, x1={self.x1!r}"
+            )
+        if not math.isfinite(self.amplitude):
+            raise ValueError("problem.amplitude must be finite")
+
+        self._cache: dict[float, np.ndarray] = {}
+
+    def generalized_vector(self, x: float) -> np.ndarray:
+        """Return the complete uniform ``q_tau,z(x)`` vector."""
+
+        x = float(x)
+        cached = self._cache.get(x)
+        if cached is not None:
+            return cached
+
+        point_plus, point_minus = moving_load_points(
+            self.section_provider,
+            x,
+        )
+        y_plus, z_plus = point_plus
+        y_minus, z_minus = point_minus
+
+        values_plus = np.asarray(
+            [
+                self.basis.value(tau, y_plus, z_plus, x=x)
+                for tau in range(1, int(self.basis.size) + 1)
+            ],
+            dtype=float,
+        )
+        values_minus = np.asarray(
+            [
+                self.basis.value(tau, y_minus, z_minus, x=x)
+                for tau in range(1, int(self.basis.size) + 1)
+            ],
+            dtype=float,
+        )
+
+        # This is the only intended difference from TorsionalLinePairProjector
+        # in bending_torsion_halfwave.py.  No phase(x) multiplier is applied:
+        # the physical force-pair intensity is uniform over the full length.
+        values = self.amplitude * (values_plus - values_minus)
+
+        if not np.all(np.isfinite(values)):
+            raise ValueError(
+                "uniform torsional projection produced a non-finite "
+                f"generalized load vector at x={x}"
+            )
+
+        values.setflags(write=False)
+        self._cache[x] = values
+        return values
+
+
+class _ModeLineLoadField:
+    """Expose one tau entry through the scalar longitudinal load API."""
+
+    def __init__(self, projector: UniformTorsionalLinePairProjector, tau: int):
+        self.projector = projector
+        self.tau = int(tau)
+
+    def value(self, x: float) -> float:
+        return float(
+            self.projector.generalized_vector(float(x))[self.tau - 1]
+        )
+
+
+class UniformTorsionProblem:
+    """Complete uniform counterpart of the supplied half-wave torsion problem."""
+
+    def __init__(self, *, amplitude: float = 1.0) -> None:
+        self.amplitude = float(amplitude)
+        if not math.isfinite(self.amplitude):
+            raise ValueError("problem.amplitude must be finite")
+
+    def build_load_vector(
+        self,
+        *,
+        section_provider: Any,
+        basis: Any,
+        mesh: Any,
+        dof_layout: Any,
+        longitudinal_integrator: Any,
+        x0: float,
+        x1: float,
+    ):
+        """Build global-z generalized loads for every transverse mode."""
+
+        projector = UniformTorsionalLinePairProjector(
+            section_provider=section_provider,
+            basis=basis,
+            x0=float(x0),
+            x1=float(x1),
+            amplitude=self.amplitude,
+        )
+
+        fields = tuple(
+            _ModeLineLoadField(projector, tau)
+            for tau in range(1, int(basis.size) + 1)
+        )
+        load_vector = assemble_distributed_load_vector(
+            mesh=mesh,
+            dof_layout=dof_layout,
+            longitudinal_integrator=longitudinal_integrator,
+            component="z",
+            fields=fields,
+        )
+
+        return load_vector, projector
+
+    def build_constraints(
+        self,
+        *,
+        assembled: Any,
+        mesh: Any,
+        basis: Any,
+        longitudinal_integrator: Any,
+    ):
+        return TransverseSupportedPointAnchorConstraints().build_constraints(
+            assembled=assembled,
+            mesh=mesh,
+            basis=basis,
+            longitudinal_integrator=longitudinal_integrator,
+        )
+
+    def tracked_points(self, section_provider: Any, x: float):
+        """Expose the two physical load trajectories to output adapters."""
+
+        point_plus, point_minus = moving_load_points(
+            section_provider,
+            float(x),
+        )
+        return (
+            ("positive_corner", point_plus[0], point_plus[1]),
+            ("negative_corner", point_minus[0], point_minus[1]),
+        )
+
+
+def build_problem(problem_type: str, options: dict):
+    """Standard problem-adapter entry point used by the CSF-CUF loader."""
+
+    if problem_type != PROBLEM_TYPE:
+        raise ValueError(
+            f"unsupported problem.type: {problem_type!r}; expected "
+            f"{PROBLEM_TYPE!r}"
+        )
+    if not isinstance(options, Mapping):
+        raise TypeError("problem options must be a YAML mapping")
+
+    unsupported = sorted(str(key) for key in options if key != "amplitude")
+    if unsupported:
+        raise ValueError(
+            "uniform torsion problem contains unsupported option(s): "
+            f"{', '.join(unsupported)}; allowed: amplitude"
+        )
+
+    amplitude = _finite_float(
+        options.get("amplitude", 1.0),
+        path="problem.amplitude",
+    )
+    return UniformTorsionProblem(amplitude=amplitude)
+
+
+__all__ = (
+    "PROBLEM_TYPE",
+    "UniformTorsionProblem",
+    "UniformTorsionalLinePairProjector",
+    "build_problem",
+    "moving_load_points",
+)
