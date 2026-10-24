@@ -14,7 +14,6 @@ CSF_ACTIONS:
   stations:
     station_edge:
       - 0
-      - 100
   actions:  
     - plot_volume_3d:
         params:
