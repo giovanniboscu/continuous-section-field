@@ -8,9 +8,6 @@ The cross-section resembles a simplified bridge deck: a wide top slab, two incli
 
 The example is **inspired by the bridge-like beam study** in Carrera, Petrolo and Zappino (2012), which examines bending, torsion and stress distributions in a bridge-shaped section. The present files provide a separate numerical implementation and convergence study; they should not be understood as an exact reproduction of the paper's discretization or published results. See [Reference](#reference) below.
 
-### Transverse Shear Stress Distribution
-
-[![Transverse shear stress vector](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp)
 
 ## Model architecture and computational workflow
 
@@ -188,6 +185,12 @@ sh plot_traverse.sh
 ```
 
 It produces plots along the beam at cross-section boundary points, as well as **cross-section maps at x = 20 m**. The figures supplied with this example correspond to the first equilibration (`eq1`).
+
+#### Transverse Shear Stress Distribution
+
+[![Transverse shear stress vector](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp)](strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp)
+
+
 
 **[Open the complete results gallery](strain_stress_boundary/README.md)** - transverse maps first, followed by graphs along the beam. Each figure can be viewed individually.
 
