@@ -295,24 +295,6 @@ This can help localize where a discrepancy originates if the global symmetry tes
 
 A broader validation strategy combines these internal checks with mesh/order convergence, equilibrium residuals, manufactured or analytically tractable cases, and carefully specified independent FEM/3D benchmarks.
 
-## 7. Verify the local installation
-
-From the repository root, verify the syntax and review the installed source diff:
-
-```bash
-python3 -m py_compile src/csf/cuf/solver/engine.py
-git diff -- src/csf/cuf/solver/engine.py
-```
-
-Then run a known case and look for:
-
-```text
-[verification] global stiffness symmetry: relative=... maximum_abs=... rtol=...
-```
-
-To confirm that the environment override is read, launch the same case with `CSF_CUF_SYMMETRY_RTOL=1e-12` and verify that the log reports `rtol=1.0e-12`.
-
-**No additional code is required to use Sections 2 and 3 in an installation where the symmetry patch has been applied.** Section 4 describes future implementation work, not functionality delivered by this README.
 
 ---
 
@@ -322,4 +304,4 @@ To confirm that the environment override is read, launch the same case with `CSF
 - Source: [`core/sectional.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/core/sectional.py) - existing sectional integration pathways and Gauss-order diagnostic.
 - Local patch utility: `apply_engine_symmetry_check.py`.
 
-*Documentation updated: 24 October 2026.*
+
