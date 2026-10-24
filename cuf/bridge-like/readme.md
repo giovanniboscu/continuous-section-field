@@ -8,10 +8,6 @@ The cross-section resembles a simplified bridge deck: a wide top slab, two incli
 
 The example is **inspired by the bridge-like beam study** in Carrera, Petrolo and Zappino (2012), which examines bending, torsion and stress distributions in a bridge-shaped section. The present files provide a separate numerical implementation and convergence study; they should not be understood as an exact reproduction of the paper’s discretization or published results. See [Reference](#reference) below.
 
-![Cross-section sampling points](shear_wall_comparison/sampled_wall_midlines.png)
-
-*Sampling lines used to inspect the webs. Open the image for a closer view.*
-
 ## Geometry and material
 
 The physical description is in [`models/bridge_geometry.yaml`](models/bridge_geometry.yaml). It contains four connected regions:
@@ -45,7 +41,6 @@ bridge-like/
 ├── cases/                   # Numerical settings for each run
 ├── output/                  # Saved numerical solutions (selected runs)
 ├── strain_stress_boundary/  # Displacement, strain and stress figures
-├── shear_wall_comparison/   # Web shear results and sampled values
 ├── run_both.sh              # Run all available cases
 └── bridge_reproducibility.md
 ```
@@ -106,13 +101,7 @@ It produces plots along the beam at cross-section boundary points, as well as **
 
 **[Open the complete results gallery](strain_stress_boundary/README.md)** - transverse maps first, followed by graphs along the beam. Each figure can be viewed individually.
 
-The [`shear_wall_comparison/`](shear_wall_comparison/) folder also contains graphs and tabulated values for examining shear along the webs. For example:
-
-[![Shear flow along the webs](shear_wall_comparison/shear_flow_profiles.png)](shear_wall_comparison/shear_flow_profiles.png)
-
-*Click to open the full-resolution shear-flow plot.*
-
-## What to look for
+## Understanding the Result
 
 The main questions are straightforward: **Do the results change less as N increases?** **Do the five equilibration settings give nearly the same displacements and stresses?** **Where do bending and torsion produce different stress patterns?**
 
