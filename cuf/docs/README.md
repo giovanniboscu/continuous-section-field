@@ -47,21 +47,7 @@ The document explains the role of the structural problem adapter and the interfa
 
 This is the main reference when implementing a new structural problem.
 
----
 
-### [`README_CSF_CUF_VERIFICATION_EN.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/README_CSF_CUF_VERIFICATION_EN.md)
-
-Describes the **numerical verification and consistency checks of the CSF-CUF solver**, focusing on global stiffness symmetry and sectional coefficient accuracy.
-
-The document explains:
-
-* the implemented global stiffness symmetry check and its configurable tolerance;
-* the existing Gauss-order stability diagnostic for sectional `J` coefficients;
-* the proposed cross-check between matrix-family `J` coefficients and scalar `J_domain` integration;
-* the proposed block-level CUF reciprocity verification;
-* the distinction between algebraic consistency, numerical convergence, and independent physical validation.
-
-This is the main reference when verifying the numerical consistency of the CSF-CUF formulation, diagnosing stiffness assembly issues, or developing additional validation procedures.
 ---
 
 
@@ -167,47 +153,23 @@ The guide covers:
 
 It can also be used as a practical reference implementation when developing other advanced transverse expansions.
 
----
-
-## Recommended reading order
-
-For understanding the general CSF-CUF architecture:
-
-```text
-1. csf_problem.md
-2. csf_post.md
-```
-
-For developing a new transverse expansion:
-
-```text
-1. how_to_create_transverse_expansion.md
-2. scaled_lagrange_implementation_guide.md
-```
-
-The first document explains the general extension mechanism, while the second shows how that mechanism is applied to a complete hierarchical expansion.
 
 ---
 
-## Architectural separation
+### [`README_CSF_CUF_VERIFICATION_EN.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/README_CSF_CUF_VERIFICATION_EN.md)
 
-The documents in this directory follow the same fundamental separation of responsibilities:
+Describes the **numerical verification and consistency checks of the CSF-CUF solver**, focusing on global stiffness symmetry and sectional coefficient accuracy.
 
-```text
-CSF
-    physical geometry and material fields
+The document explains:
 
-Problem adapter
-    loads and boundary conditions
+* the implemented global stiffness symmetry check and its configurable tolerance;
+* the existing Gauss-order stability diagnostic for sectional `J` coefficients;
+* the proposed cross-check between matrix-family `J` coefficients and scalar `J_domain` integration;
+* the proposed block-level CUF reciprocity verification;
+* the distinction between algebraic consistency, numerical convergence, and independent physical validation.
 
-CUF expansion plugin
-    transverse approximation F_tau
+This is the main reference when verifying the numerical consistency of the CSF-CUF formulation, diagnosing stiffness assembly issues, or developing additional validation procedures.
 
-CUF solver
-    integration, assembly and algebraic solution
 
-Post-processing adapter
-    interpretation and validation of the physical solution
-```
 
 This separation allows new physical models, structural problems, transverse expansions, and post-processing procedures to be introduced without creating dedicated variants of the CUF solver.
