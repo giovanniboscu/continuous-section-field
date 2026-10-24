@@ -6,6 +6,8 @@ This example studies a **100 m long, bridge-like beam** under two different load
 
 The cross-section resembles a simplified bridge deck: a wide top slab, two inclined webs, and a lower slab. The same section is used along the entire length, so the beam is **prismatic**. This is a numerical example, not a design or safety assessment of a real bridge.
 
+The example is **inspired by the bridge-like beam study** in Carrera, Petrolo and Zappino (2012), which examines bending, torsion and stress distributions in a bridge-shaped section. The present files provide a separate numerical implementation and convergence study; they should not be understood as an exact reproduction of the paper’s discretization or published results. See [Reference](#reference) below.
+
 ![Cross-section sampling points](shear_wall_comparison/sampled_wall_midlines.png)
 
 *Sampling lines used to inspect the webs. Open the image for a closer view.*
@@ -115,3 +117,9 @@ The [`shear_wall_comparison/`](shear_wall_comparison/) folder also contains grap
 The main questions are straightforward: **Do the results change less as N increases?** **Do the five equilibration settings give nearly the same displacements and stresses?** **Where do bending and torsion produce different stress patterns?**
 
 This example is intended to make those comparisons reproducible. The saved outputs and plots are evidence to inspect, not a substitute for a documented convergence study or an independent reference calculation.
+
+## Reference
+
+E. Carrera, M. Petrolo and E. Zappino (2012), **“Performance of CUF Approach to Analyze the Structural Behavior of Slender Bodies,”** *Journal of Structural Engineering*, **138**(2), 285–297. [https://doi.org/10.1061/(ASCE)ST.1943-541X.0000402](https://doi.org/10.1061/%28ASCE%29ST.1943-541X.0000402).
+
+The bridge-like example is discussed in the paper’s **“Bridge-Like Section”** section (geometry in Figure 7; bending and torsion loads in Figure 8).
