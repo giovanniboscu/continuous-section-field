@@ -48,8 +48,12 @@ csf-cuf bending_halfwave_legendre_N08.yaml       # run a CUF bending analysis
 
 ---
 ### Illustrative example
-
-> Transverse shear stress vector distribution in the bridge-like cross-section under bending loading, evaluated at x = 20 m.
+> This example illustrates the use of CSF as an independent library
+> supplying continuous geometry and material properties to a structural
+> solver based on the Carrera Unified Formulation (CUF).
+>
+> The figure shows the transverse shear stress distribution in a
+> bridge-like cross-section under bending loading, evaluated at x = 20 m.
 
 <p align="center">
   <a href="https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/bridge-like/strain_stress_boundary/carrera_bridge_bending_scaled_lagrange_N15_eq1/transverse_x_20/shear_stress_vector_transverse.webp">
