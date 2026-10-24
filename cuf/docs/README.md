@@ -49,6 +49,22 @@ This is the main reference when implementing a new structural problem.
 
 ---
 
+### [`README_CSF_CUF_VERIFICATION_EN.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/README_CSF_CUF_VERIFICATION_EN.md)
+
+Describes the **numerical verification and consistency checks of the CSF-CUF solver**, focusing on global stiffness symmetry and sectional coefficient accuracy.
+
+The document explains:
+
+* the implemented global stiffness symmetry check and its configurable tolerance;
+* the existing Gauss-order stability diagnostic for sectional `J` coefficients;
+* the proposed cross-check between matrix-family `J` coefficients and scalar `J_domain` integration;
+* the proposed block-level CUF reciprocity verification;
+* the distinction between algebraic consistency, numerical convergence, and independent physical validation.
+
+This is the main reference when verifying the numerical consistency of the CSF-CUF formulation, diagnosing stiffness assembly issues, or developing additional validation procedures.
+---
+
+
 ### [`csf_post.md`](csf_post.md)
 
 Describes the **output and post-processing side of a CUF analysis**.
