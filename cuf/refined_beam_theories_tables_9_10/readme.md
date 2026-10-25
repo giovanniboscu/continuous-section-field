@@ -17,6 +17,8 @@ docs/model/csf_cuf_numerical_validation_carrera_giunta.md
 
 This README is intentionally focused on **reproducing the numerical results** from a clean repository checkout.
 
+**Note:** For the Maclaurin \(N=1\) cases, the CSF–CUF implementation does not apply the Poisson-locking constitutive correction adopted by Carrera and Giunta (2010).
+
 ---
 
 ## Validation structure
