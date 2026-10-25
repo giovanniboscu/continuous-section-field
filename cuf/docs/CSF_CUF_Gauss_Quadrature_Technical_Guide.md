@@ -1,7 +1,6 @@
 # CSF–CUF Gauss Quadrature: Transverse and Longitudinal Integration
 
 **Technical implementation guide and numerical verification protocol**  
-
 **Scope:** CSF–CUF solver, transverse-expansion plugins, polygonal-section integration, longitudinal finite-element integration, and the sectional `J`-coefficient Gauss-order diagnostic.  
 **Reference implementation:** Lagrange L9 v7.1 is included as an illustrative transverse expansion; the general order-selection procedure applies to all registered CUF bases.  
 
@@ -349,18 +348,13 @@ $$
 
 summed over all active CSF domains at the current $x$. The diagnostic recomputes the same families with newly generated physical Gauss points and weights.
 
-The principal relative metric is
+The TSV column `relative_fro` stores the following dimensionless relative error metric:
 
 $$
-\boxed{
-\texttt{relative\_fro}
-=\frac{\left\|J_t-J_b\right\|_F}
-       {\max\!\left(\left\|J_b\right\|_F,
-                     \left\|J_t\right\|_F\right)}
-}
+e_J = \frac{\lVert J_t - J_b \rVert_F}{\max\left(\lVert J_b \rVert_F,\,\lVert J_t \rVert_F\right)}
 $$
 
-with a result of zero if both reference and test family norms are zero.
+Here $e_J$ is the value recorded in `relative_fro`, $J_b$ is the baseline sectional matrix, and $J_t$ is the matrix computed at the candidate Gauss order. The implementation records a value of zero if both matrix norms are zero.
 
 **Note:** the denominator is the **maximum of the two Frobenius norms**, not simply the baseline norm. A zero or small metric indicates agreement **between those two numerical orders**; it does not, by itself, prove convergence to an exact analytical integral.
 
@@ -529,7 +523,7 @@ csf-cuf percorso/caso.yaml
 
 ---
 
-## 9. Scientific conclusion
+## 9. conclusion
 
 The quadrature-order selection architecture in the inspected CSF–CUF source is well separated: **each transverse basis declares a minimum**, the **solver selects the maximum of that minimum and the user request**, and **the integration backend executes the selected order**. The same maximum-rule principle is used longitudinally, with a polynomial-degree-based automatic minimum.
 
