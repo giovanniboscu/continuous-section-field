@@ -1030,57 +1030,91 @@ These files are numerical diagnostics; they are not the final physical displacem
 
 ---
 
-#### 11. Ill-conditioning warning and equilibration
+#### 11. KKT equilibration and solution diagnostics
 
-During the solution of the augmented KKT system, the solver evaluates its numerical conditioning.
+The augmented KKT system may contain coefficients with substantially different numerical magnitudes. Before solving the system, the solver can apply symmetric diagonal equilibration to improve its numerical scaling.
 
-If the original system is detected as poorly conditioned, the solver reports a warning such as:
-
-```text
-LinAlgWarning: Original KKT matrix is ill-conditioned
-(rcond=...):
-equilibration will be applied before the solve.
-```
-
-`rcond` is a reciprocal condition estimate. A very small value indicates that the algebraic system is numerically difficult to solve in its original scaling.
-
-The solver can then apply equilibration before factorization. The corresponding diagnostic block reports:
+The requested equilibration checkpoints are reported as:
 
 ```text
-[kkt-equilibration]
-iterations=...
-iterations_requested=...
-iterations_performed=...
-original_rcond=...
-equilibrated_rcond=...
-scale_min=...
-scale_max=...
+[kkt-equilibration] requested_iterations=1,2,3,4,5
 ```
 
-Equilibration rescales the algebraic equations to reduce their numerical imbalance before the direct solve.
-
-It does not change:
-
-* the CSF geometry;
-* the material field;
-* the CUF formulation;
-* the applied load;
-* the physical boundary conditions.
-
-The equilibration strategy and its parameters are configurable directly from the case YAML, as described above.
-
-The additional diagnostic:
+For each checkpoint, the solver reports the number of equilibration iterations actually performed and the range of accumulated scaling factors:
 
 ```text
-[matrix-diagnostic] equilibration-scales
-primal_min_median_max=(...)
-multiplier_min_median_max=(...)
+[kkt-equilibration] iterations=2 iterations_requested=2 iterations_performed=2 scale_min=... scale_max=...
 ```
 
-reports the scaling ranges applied respectively to the displacement unknowns and to the constraint multipliers.
+The fields have the following meanings:
 
-When reproducing the example, the actual conditioning estimates, scaling factors, and final solution diagnostics are reported directly by the solver.
+- `iterations`: identifies the current equilibration checkpoint.
+- `iterations_requested`: number of equilibration iterations requested for that checkpoint.
+- `iterations_performed`: number of iterations actually performed.
+- `scale_min` and `scale_max`: minimum and maximum accumulated diagonal scaling factors.
 
+Equilibration changes the numerical representation of the algebraic system, but not the underlying structural problem. In particular, it does not modify the CSF geometry, material properties, CUF formulation, applied loads, or physical boundary conditions.
+
+The solver also reports the scaling factors separately for the generalized displacement unknowns (primal variables) and the Lagrange multipliers:
+
+```text
+[matrix-diagnostic] equilibration-scales primal_min_median_max=(...) multiplier_min_median_max=(...)
+```
+
+These quantities provide the minimum, median, and maximum scaling factors for the two groups of unknowns.
+
+**Solution diagnostics**
+
+After each successful direct solve, the solver evaluates the computed solution against the original, unscaled KKT system and prints:
+
+```text
+[kkt-solution-diagnostic] iterations=2 relative_residual_inf=3.949847296216e-27 previous_iterations=1 relative_solution_change_2=9.318798317906e-12
+```
+
+The diagnostic contains two complementary measures.
+
+The first is the relative infinity-norm residual:
+
+$$
+\eta_\infty =
+\frac{\lVert Mx-b\rVert_\infty}
+{\lVert M\rVert_\infty\lVert x\rVert_\infty+\lVert b\rVert_\infty}
+$$
+
+where $M$ is the original KKT matrix, $b$ is its right-hand side, and $x$ is the computed solution expressed in the original coordinates.
+
+The field `relative_residual_inf` reports this quantity. It measures how closely the computed solution satisfies the original algebraic equations, relative to the numerical scale of the system.
+
+The second measure compares solutions obtained at consecutive equilibration checkpoints:
+
+$$
+\delta_2 =
+\frac{\lVert x_i-x_{i-1}\rVert_2}
+{\max\left(\lVert x_i\rVert_2,\lVert x_{i-1}\rVert_2,\varepsilon\right)}
+$$
+
+where $x_i$ and $x_{i-1}$ are the complete KKT solution vectors, including both generalized displacement unknowns and Lagrange multipliers, expressed in the original coordinates.
+
+The fields have the following meanings:
+
+- `iterations`: current equilibration checkpoint.
+- `relative_residual_inf`: relative infinity-norm residual of the original KKT system.
+- `previous_iterations`: preceding checkpoint used for comparison.
+- `relative_solution_change_2`: relative Euclidean-norm change between the two solutions.
+
+For the first checkpoint, no previous solution is available. The solver therefore reports:
+
+```text
+[kkt-solution-diagnostic] iterations=1 relative_residual_inf=... previous_iterations=none relative_solution_change_2=not_applicable
+```
+
+A small `relative_residual_inf` indicates that the original algebraic equations are satisfied to a small relative residual. A small `relative_solution_change_2` indicates that the complete KKT solution changes little between consecutive equilibration checkpoints.
+
+These measures are descriptive numerical diagnostics. They do not constitute an estimate of the matrix condition number, do not independently guarantee the accuracy of every solution component, and do not introduce an additional pass/fail criterion.
+
+In particular, the solver no longer reports the former `original_rcond` and `equilibrated_rcond` fields. The residual and solution-change diagnostics provide directly computed measures of algebraic consistency and stability across equilibration checkpoints.
+
+The separate verification of global stiffness-matrix symmetry remains unchanged and is independent of these KKT solution diagnostics.
 
 ---
 
