@@ -70,7 +70,7 @@ See the authoritative **[Coordinate Systems and Displacement Conventions](../doc
 
 ![CSF bridge-like section model](img/csfsectionmodel.jpg)
 
-*CSF representation of the bridge-like cross-section defined in `models/bridge_geometry.yaml`.* This image illustrates the sectional layout; it does not replace verification of the geometry and material properties from the model input.
+*CSF representation of the bridge-like cross-section defined in `models/bridge_geometry.yaml`.* This image illustrates the sectional layout.
 
 ### Inspecting and checking the section model
 
