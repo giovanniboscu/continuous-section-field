@@ -20,14 +20,15 @@ problem:
 
 cuf:
   # External transverse expansion. Relative path is resolved from this case YAML.
-  basis: ../expansions/lagrangeL9_v4.py
+  #basis: ../expansions/lagrangeL9_v4.py
+  basis: lagrangeL9
   order: 2
   basis_options:
     domain_source: csf_polygons
     mapping: isoparametric
     connectivity: shared_points
     boundary_tolerance: 1.0e-10
-    require_prismatic: true
+
 
 longitudinal:
   method: finite_element

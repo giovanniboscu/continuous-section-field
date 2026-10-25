@@ -1187,6 +1187,43 @@ def solve_case_runs(
         dof_layout=dof_layout,
     )
 
+    # Check the original assembled stiffness matrix, before constraints or solving.
+    # No symmetrization is performed.
+    from os import getenv
+    symmetry_rtol = float(getenv("CSF_CUF_SYMMETRY_RTOL", "1e-10"))
+    if not np.isfinite(symmetry_rtol) or symmetry_rtol < 0.0:
+        raise ValueError("CSF_CUF_SYMMETRY_RTOL must be finite and non-negative")
+    asymmetry = stiffness - stiffness.T
+    asymmetry.eliminate_zeros()
+    stiffness_norm = float(np.linalg.norm(stiffness.data))
+    asymmetry_norm = float(np.linalg.norm(asymmetry.data))
+    maximum_asymmetry = (
+        float(np.max(np.abs(asymmetry.data))) if asymmetry.nnz else 0.0
+    )
+    relative_asymmetry = (
+        asymmetry_norm / stiffness_norm
+        if stiffness_norm > 0.0
+        else (0.0 if asymmetry_norm == 0.0 else float("inf"))
+    )
+    del asymmetry
+    print(
+        "[verification] global stiffness symmetry: "
+        f"relative={relative_asymmetry:.6e} "
+        f"maximum_abs={maximum_asymmetry:.6e} "
+        f"rtol={symmetry_rtol:.1e}",
+        flush=True,
+    )
+    if (
+        not np.isfinite(stiffness_norm)
+        or not np.isfinite(asymmetry_norm)
+        or relative_asymmetry > symmetry_rtol
+    ):
+        raise RuntimeError(
+            "CSF-CUF assembled stiffness is not symmetric: "
+            f"relative={relative_asymmetry:.6e}, rtol={symmetry_rtol:.1e}; "
+            "no symmetrization has been applied"
+        )
+
     loads_started = time.perf_counter()
     load_vector, _problem_state = problem.build_load_vector(
         section_provider=section_provider,

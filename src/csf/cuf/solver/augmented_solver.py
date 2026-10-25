@@ -1,4 +1,3 @@
-# Version: CSF-CUF memory-adaptive direct solve v18 - 2026-09-19
 """
 Generic direct solver for an augmented linear-constraint system.
 
@@ -699,8 +698,6 @@ class AugmentedSparseLinearSolver:
                         "iterations=0 "
                         "iterations_requested=0 "
                         "iterations_performed=0 "
-                        "original_rcond=nan "
-                        "equilibrated_rcond=nan "
                         "scale_min=1.000000000000e+00 "
                         "scale_max=1.000000000000e+00",
                         flush=True,
@@ -813,8 +810,6 @@ class AugmentedSparseLinearSolver:
                         f"iterations={current_iteration} "
                         f"iterations_requested={current_iteration} "
                         f"iterations_performed={current_iteration} "
-                        "original_rcond=nan "
-                        "equilibrated_rcond=nan "
                         f"scale_min={float(np.min(accumulated_scale)):.12e} "
                         f"scale_max={float(np.max(accumulated_scale)):.12e}",
                         flush=True,
@@ -961,6 +956,41 @@ class AugmentedSparseLinearSolver:
             equation_term_scale,
         )
 
+    @staticmethod
+    def _relative_kkt_residual(
+        residuals: np.ndarray,
+        solution: np.ndarray,
+        rhs: np.ndarray,
+        matrix_infinity_norm: float,
+    ) -> float:
+        """Normwise backward-error indicator on the ORIGINAL KKT system.
+
+        Uses the infinity norm; no dense conversion or factorization is needed.
+        This is descriptive and is not an acceptance/rejection criterion.
+        """
+        residual_norm = float(np.linalg.norm(residuals, ord=np.inf))
+        solution_norm = float(np.linalg.norm(solution, ord=np.inf))
+        rhs_norm = float(np.linalg.norm(rhs, ord=np.inf))
+        denominator = matrix_infinity_norm * solution_norm + rhs_norm
+        if denominator == 0.0:
+            return 0.0 if residual_norm == 0.0 else float("inf")
+        return residual_norm / denominator
+
+    @staticmethod
+    def _original_kkt_infinity_norm(matrix) -> float:
+        """Maximum absolute row sum of the original sparse KKT matrix."""
+        row_sums = np.asarray(abs(matrix).sum(axis=1)).ravel()
+        return float(np.max(row_sums)) if row_sums.size else 0.0
+
+    @staticmethod
+    def _relative_solution_change(current: np.ndarray, previous: np.ndarray) -> float:
+        """Relative Euclidean difference of two solutions in original coordinates."""
+        current_norm = float(np.linalg.norm(current))
+        previous_norm = float(np.linalg.norm(previous))
+        difference_norm = float(np.linalg.norm(current - previous))
+        denominator = max(current_norm, previous_norm)
+        return difference_norm / denominator if denominator else 0.0
+
     def solve(
         self,
         system: AugmentedLinearConstraintSystem,
@@ -1013,6 +1043,17 @@ class AugmentedSparseLinearSolver:
             matrix,
             solution,
             rhs,
+        )
+
+        relative_residual = self._relative_kkt_residual(
+            residuals, solution, rhs, self._original_kkt_infinity_norm(matrix)
+        )
+        print(
+            "[kkt-solution-diagnostic] "
+            f"iterations={self.equilibration_iterations} "
+            f"relative_residual_inf={relative_residual:.12e} "
+            "relative_solution_change_2=not_applicable",
+            flush=True,
         )
 
         return AugmentedConstraintSolution(
@@ -1070,6 +1111,9 @@ class AugmentedSparseLinearSolver:
         self._print_structural_matrix_diagnostic(system)
 
         successful = 0
+        previous_solution = None
+        previous_iterations = None
+        matrix_infinity_norm = self._original_kkt_infinity_norm(matrix)
         for iterations, solution in self._direct_sparse_solve_many(
             matrix,
             rhs,
@@ -1097,6 +1141,29 @@ class AugmentedSparseLinearSolver:
                 )
                 continue
 
+            relative_residual = self._relative_kkt_residual(
+                residuals, solution, rhs, matrix_infinity_norm
+            )
+            if previous_solution is None:
+                change_text = "not_applicable"
+                previous_text = "none"
+            else:
+                change_text = (
+                    f"{self._relative_solution_change(solution, previous_solution):.12e}"
+                )
+                previous_text = str(previous_iterations)
+            print(
+                "[kkt-solution-diagnostic] "
+                f"iterations={iterations} "
+                f"relative_residual_inf={relative_residual:.12e} "
+                f"previous_iterations={previous_text} "
+                f"relative_solution_change_2={change_text}",
+                flush=True,
+            )
+            # Keep only one previous solution vector, not all checkpoint vectors.
+            # Copy before yielding so callers cannot alter the comparison baseline.
+            previous_solution = solution.copy()
+            previous_iterations = iterations
             successful += 1
             yield iterations, AugmentedConstraintSolution(
                 primal=q,

@@ -1,5 +1,10 @@
-# Version: CSF-CUF Lagrange L9 transverse expansion v7 - 2026-10-10
-# Revision-ID: f80c0937-274a-4835-b468-f3a4da1d1bf3
+# Version: CSF-CUF Lagrange L9 transverse expansion v7.1 - 2026-10-25
+# Base Revision-ID: f80c0937-274a-4835-b468-f3a4da1d1bf3
+# Local change v7.1:
+# - Precompute independent affine velocities for every quadrilateral corner.
+# - Interpolate geometric velocity at each natural point without finite differences.
+# - Preserve the isoparametric chain rule and validate affine vertex trajectories.
+# - Keep solver interfaces, transverse derivatives, and connectivity unchanged.
 # Changelog v7:
 # - Export exact natural-coordinate polynomials and affine CSF vertex trajectories.
 # - Keep the standard prismatic physical-polynomial export unchanged.
@@ -168,6 +173,10 @@ class LagrangeL9Basis(CUFBasis):
             point.occurrences for point in self._global_points
         )
 
+        # Cache the independent affine velocities of all four CSF vertices
+        # in each quadrilateral. These velocities are constant along x.
+        self._corner_velocities = self._precompute_corner_velocities()
+
         # The legacy polynomial checkpoint uses coefficients independent of x.
         # It must not be exported for a moving section.
         self._constant_geometry = self._geometry_is_constant_on_stations()
@@ -273,6 +282,48 @@ class LagrangeL9Basis(CUFBasis):
                     f"at x={x} for tau={point.tau}"
                 )
         return domains
+
+    def _precompute_corner_velocities(self) -> np.ndarray:
+        """Cache exact affine (dy/dx, dz/dx) for each quadrilateral corner.
+
+        Shape: (domain_count, 4, 2). Every corner has its own slope; the
+        velocity at any natural point is interpolated using the bilinear
+        geometric mapping. The supplied CSF section law must be affine along
+        the full longitudinal domain. Non-affine providers are rejected rather
+        than silently differentiated incorrectly.
+        """
+        start = np.asarray([d.vertices for d in self._domains], dtype=float)
+        end = np.asarray(
+            [d.vertices for d in self._domains_at_x(self._x1)], dtype=float
+        )
+        velocities = (end - start) / (self._x1 - self._x0)
+        if not np.all(np.isfinite(velocities)):
+            raise ValueError("lagrangeL9 CSF corner velocities are not finite")
+
+        # Verify the affine-trajectory contract against the CSF provider once.
+        # This protects the exact derivative if the provider changes later.
+        for fraction in (0.25, 0.5, 0.75):
+            x = self._x0 + fraction * (self._x1 - self._x0)
+            actual = np.asarray(
+                [d.vertices for d in self._domains_at_x(x)], dtype=float
+            )
+            expected = start + (x - self._x0) * velocities
+            scale = max(
+                1.0,
+                float(np.max(np.abs(start))),
+                float(np.max(np.abs(end))),
+                float(np.max(np.abs(actual))),
+            )
+            if not np.allclose(
+                actual, expected, rtol=0.0, atol=1.0e-10 * scale
+            ):
+                raise ValueError(
+                    "lagrangeL9 requires affine CSF corner trajectories over "
+                    f"the complete longitudinal domain; mismatch at x={x}"
+                )
+
+        velocities.setflags(write=False)
+        return velocities
 
     def _geometry_is_constant_on_stations(self) -> bool:
         # Guard a static polynomial export; not a condition on the solver.
@@ -497,10 +548,10 @@ class LagrangeL9Basis(CUFBasis):
     ) -> float:
         """dF/dx at fixed physical (y,z), including moving CSF geometry.
 
-        The isoparametric chain rule is analytical. CSF vertex velocities are
-        obtained by a centered (one-sided at endpoints) difference of the
-        provider's geometry values; no section interpolation is implemented
-        here. Shared-interface derivatives remain side-dependent.
+        The chain rule is analytical. The CSF corner velocities are computed
+        once from their affine endpoint trajectories. Their bilinear
+        interpolation provides the exact geometric velocity at each natural
+        point. Shared-interface derivatives remain side-dependent.
         """
         self._global_point(tau)
         x = self._effective_x(x)
@@ -527,22 +578,11 @@ class LagrangeL9Basis(CUFBasis):
             self._l9_shape_natural_derivatives(local_node, alpha, beta),
             dtype=float,
         )
-        step = 1.0e-5 * (self._x1 - self._x0)
-        xa = max(self._x0, x - step)
-        xb = min(self._x1, x + step)
-        if xb <= xa:
-            raise ValueError("lagrangeL9 cannot differentiate CSF geometry")
-        ga = np.asarray(
-            self._map_reference_to_physical(
-                self._domain(domain_id, x=xa).vertices, alpha, beta
-            ), dtype=float,
-        )
-        gb = np.asarray(
-            self._map_reference_to_physical(
-                self._domain(domain_id, x=xb).vertices, alpha, beta
-            ), dtype=float,
-        )
-        velocity = (gb - ga) / (xb - xa)
+        # Each corner has an independent, x-invariant slope. The local
+        # geometric velocity varies over the quadrilateral and is evaluated
+        # by the same bilinear shape functions as the physical mapping.
+        corner_shapes, _, _ = self._corner_shape_data(alpha, beta)
+        velocity = corner_shapes @ self._corner_velocities[domain_id - 1]
         natural_dx = -np.linalg.solve(jacobian, velocity)
         return float(shape_derivatives @ natural_dx)
 

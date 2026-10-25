@@ -1,0 +1,9 @@
+# Adapted from bending_halfwave.yaml: the original 'web' is now three polygons.
+model:
+  csf_yaml: ../models/t_noprismatic_6L9_csf.yaml
+problem:
+  type: surface_halfwave
+  surface:
+    polygon_name: web_bottom
+    edge_start_point_id: 0
+  amplitude: -10.0

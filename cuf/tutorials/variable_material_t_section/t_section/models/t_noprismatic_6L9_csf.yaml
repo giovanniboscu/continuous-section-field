@@ -1,0 +1,48 @@
+# Non-prismatic T-section: 3 flange + 3 web quadrilateral domains.
+# Units: mm, N, MPa. Each rectangle is counter-clockwise.
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        - name: flange_left
+          weight: 71700.0
+          vertices: [[-33.0, 50.0], [-12.5, 50.0], [-12.5, 75.0], [-33.0, 75.0]]
+        - name: flange_center
+          weight: 71700.0
+          vertices: [[-12.5, 50.0], [12.5, 50.0], [12.5, 75.0], [-12.5, 75.0]]
+        - name: flange_right
+          weight: 71700.0
+          vertices: [[12.5, 50.0], [33.0, 50.0], [33.0, 75.0], [12.5, 75.0]]
+        - name: web_bottom
+          weight: 71700.0
+          vertices: [[-12.5, -50.0], [12.5, -50.0], [12.5, -16.6666666667], [-12.5, -16.6666666667]]
+        - name: web_middle
+          weight: 71700.0
+          vertices: [[-12.5, -16.6666666667], [12.5, -16.6666666667], [12.5, 16.6666666667], [-12.5, 16.6666666667]]
+        - name: web_top
+          weight: 71700.0
+          vertices: [[-12.5, 16.6666666667], [12.5, 16.6666666667], [12.5, 50.0], [-12.5, 50.0]]
+    S1:
+      z: 1000.0
+      polygons:
+        - name: flange_left
+          weight: 71700.0
+          vertices: [[-23.5, 35.0], [-8.75, 35.0], [-8.75, 52.5], [-23.5, 52.5]]
+        - name: flange_center
+          weight: 71700.0
+          vertices: [[-8.75, 35.0], [8.75, 35.0], [8.75, 52.5], [-8.75, 52.5]]
+        - name: flange_right
+          weight: 71700.0
+          vertices: [[8.75, 35.0], [23.5, 35.0], [23.5, 52.5], [8.75, 52.5]]
+        - name: web_bottom
+          weight: 57360.0
+          vertices: [[-8.75, -35.0], [8.75, -35.0], [8.75, -11.6666666667], [-8.75, -11.6666666667]]
+        - name: web_middle
+          weight: 57360.0
+          vertices: [[-8.75, -11.6666666667], [8.75, -11.6666666667], [8.75, 11.6666666667], [-8.75, 11.6666666667]]
+        - name: web_top
+          weight: 57360.0
+          vertices: [[-8.75, 11.6666666667], [8.75, 11.6666666667], [8.75, 35.0], [-8.75, 35.0]]
+  shear_weight_laws:
+    - 'iso(0.3)'
