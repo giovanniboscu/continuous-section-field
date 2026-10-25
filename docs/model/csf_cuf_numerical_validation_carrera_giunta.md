@@ -364,13 +364,13 @@ continuous-section-field/cuf/refined_beam_theories_tables_9_10/
 
 A validation case is launched by passing its case YAML directly to `csf-cuf`.
 
-For example, the first Maclaurin case of **Table 9 — bending** is:
+For example, the first Maclaurin case of **Table 9 - bending** is:
 
 ```bash
 csf-cuf cases/table9/maclaurin_table9_N01.yaml
 ```
 
-The corresponding **Table 10 — torsion** case is:
+The corresponding **Table 10 - torsion** case is:
 
 ```bash
 csf-cuf cases/table10/maclaurin_table10_N01.yaml
