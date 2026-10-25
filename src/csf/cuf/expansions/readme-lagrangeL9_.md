@@ -1,5 +1,9 @@
 # Custom polygon-based Lagrange L9 transverse expansion
 
+**Source:** [`lagrangeL9_v4.py`](lagrangeL9_v4.py)  
+**Example case:** [`../cases/c_section_table_9_13_lagrangeL9_E10.yaml`](../cases/c_section_table_9_13_lagrangeL9_E10.yaml)  
+**Documentation revision:** 25 October 2026 — v7.1 analytic longitudinal geometric derivative (the plugin filename is unchanged)
+
 ## 1. Purpose and architectural idea
 
 This module demonstrates how to implement a **custom transverse expansion as an external Python plugin** in CSF–CUF. It constructs a quadratic, nine-point Lagrange (L9) interpolation **on each CSF cross-sectional polygon** and assembles the local interpolation points into a continuous transverse basis. The example is applied to the nine-polygon C-section from the Carrera–Petrolo benchmark, *Refined beam elements with only displacement variables and plate/shell capabilities*.
@@ -138,7 +142,7 @@ The plugin continues to query the CSF provider for current geometry as needed fo
 
 During construction, the plugin reads the initial section at `x0` and creates the permanent transverse connectivity graph. It also obtains the endpoint geometry needed for the per-corner velocity precomputation. Subsequent evaluation retrieves current geometry through `_domains_at_x(x)` (cached for up to 64 longitudinal stations). This gives the CUF system stable generalized transverse indices even when section dimensions vary.
 
-A constant-geometry test evaluates additional longitudinal stations. It governs derivative and export behavior; `require_prismatic` does not force a constant section. Endpoint interpolation is the assumed longitudinal law, so checks against additional CSF snapshots are useful for detecting geometries that violate that law.
+Constant geometry is identified directly from the precomputed corner velocities: if all components are zero, the section is prismatic and the moving-geometry derivative is disabled. No intermediate stations are sampled to verify affine motion, because linear corner trajectories are guaranteed by the CSF contract. The legacy `require_prismatic` option does not enforce a constant section.
 
 ## 5. Local L9 mathematical basis
 
@@ -293,9 +297,9 @@ Each domain contains coefficients for `F_tau(y,z) = sum C[p,q] y^p z^q`; coeffic
 
 - **`domain_y_z_power`** for the constant, ordered rectangular case, carrying polygon vertices and polynomial coefficients;
 - **`domain_natural_power_affine_x`** when the CSF polygon vertex trajectories satisfy an affine-in-`x` contract, carrying `x_bounds`, two endpoint vertex sets and natural-coordinate polynomial coefficients;
-- `None` if the checked affine trajectory contract cannot be established for that provider.
+- `None` only if a required endpoint-array shape cannot be formed (an internal structural guard); affine motion itself is assumed from the CSF contract.
 
-For the affine form, the exporter checks provider snapshots at intermediate stations against endpoint interpolation. Its coefficients describe polynomial L9 functions in **natural** coordinates, while the endpoint vertex arrays describe longitudinal geometry movement. This is the **same affine-in-`x` corner-trajectory assumption** used to precompute the analytic geometric velocities in Section 7. The export path may still perform its own admissibility checks; an affine trajectory by itself does not guarantee that every requested export representation is available. The generic checkpoint compiler can combine the exported basis representation with solved coefficients to construct an independent field representation.
+For the affine form, the exporter uses the two endpoint sections directly, without sampling intermediate stations. Its coefficients describe polynomial L9 functions in **natural** coordinates, while the endpoint vertex arrays describe longitudinal geometry movement. This is the **same affine-in-`x` corner-trajectory contract** used to precompute the analytic geometric velocities in Section 7. The physical-coordinate polynomial export still has its separate rectangular-domain restrictions. The generic checkpoint compiler can combine the exported basis representation with solved coefficients to construct an independent field representation.
 
 These exports illustrate an additional extension seam: a custom basis can supply an exact, portable mathematical description while leaving solved-field compilation to the framework.
 

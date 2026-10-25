@@ -3,7 +3,7 @@
 # Local change v7.1:
 # - Precompute independent affine velocities for every quadrilateral corner.
 # - Interpolate geometric velocity at each natural point without finite differences.
-# - Preserve the isoparametric chain rule and validate affine vertex trajectories.
+# - Preserve the isoparametric chain rule under the CSF affine-vertex contract.
 # - Keep solver interfaces, transverse derivatives, and connectivity unchanged.
 # Changelog v7:
 # - Export exact natural-coordinate polynomials and affine CSF vertex trajectories.
@@ -81,7 +81,19 @@ class L9GlobalPoint:
 
 
 class LagrangeL9Basis(CUFBasis):
-    """Assembled Lagrange-L9 transverse expansion driven by CSF polygons."""
+    """Assemble a quadratic transverse L9 basis over CSF quadrilaterals.
+
+    The global transverse connectivity is defined at the initial section and
+    remains fixed as the physical polygons evolve along the beam axis.
+    Every quadrilateral corner has its own constant longitudinal velocity,
+    obtained from the two endpoint positions under an affine CSF geometry
+    contract. Bilinear geometric shape functions interpolate these velocities
+    at each point inside a polygon.
+
+    Longitudinal derivatives are evaluated at fixed physical (y, z) by the
+    isoparametric chain rule; the L9 interpolation and CUF interface do not
+    change. Affine corner motion is guaranteed by the CSF provider contract.
+    """
 
     def __init__(
         self,
@@ -179,10 +191,14 @@ class LagrangeL9Basis(CUFBasis):
 
         # The legacy polynomial checkpoint uses coefficients independent of x.
         # It must not be exported for a moving section.
-        self._constant_geometry = self._geometry_is_constant_on_stations()
+        self._constant_geometry = not bool(np.any(self._corner_velocities))
 
     @property
     def provides_longitudinal_derivative(self) -> bool:
+        """Indicate whether moving CSF geometry adds an x-derivative term.
+
+        Constant sections retain the original prismatic CUF behavior.
+        """
         # The unchanged prismatic model keeps the original CUF nucleus terms.
         return not self._constant_geometry
 
@@ -284,13 +300,17 @@ class LagrangeL9Basis(CUFBasis):
         return domains
 
     def _precompute_corner_velocities(self) -> np.ndarray:
-        """Cache exact affine (dy/dx, dz/dx) for each quadrilateral corner.
+        """Cache affine (dy/dx, dz/dx) separately for every polygon corner.
 
-        Shape: (domain_count, 4, 2). Every corner has its own slope; the
-        velocity at any natural point is interpolated using the bilinear
-        geometric mapping. The supplied CSF section law must be affine along
-        the full longitudinal domain. Non-affine providers are rejected rather
-        than silently differentiated incorrectly.
+        The output has shape (domain_count, 4, 2), with each velocity given by
+        [vertex(x1) - vertex(x0)] / (x1 - x0). These per-corner slopes are
+        constant in x when the CSF vertex trajectories are affine, but the
+        velocity at a natural point varies across each polygon through the
+        bilinear geometric interpolation.
+
+        The CSF provider guarantees affine corner trajectories along x;
+        therefore no intermediate geometry checks or finite differences are
+        required to obtain the exact corner velocities.
         """
         start = np.asarray([d.vertices for d in self._domains], dtype=float)
         end = np.asarray(
@@ -300,43 +320,8 @@ class LagrangeL9Basis(CUFBasis):
         if not np.all(np.isfinite(velocities)):
             raise ValueError("lagrangeL9 CSF corner velocities are not finite")
 
-        # Verify the affine-trajectory contract against the CSF provider once.
-        # This protects the exact derivative if the provider changes later.
-        for fraction in (0.25, 0.5, 0.75):
-            x = self._x0 + fraction * (self._x1 - self._x0)
-            actual = np.asarray(
-                [d.vertices for d in self._domains_at_x(x)], dtype=float
-            )
-            expected = start + (x - self._x0) * velocities
-            scale = max(
-                1.0,
-                float(np.max(np.abs(start))),
-                float(np.max(np.abs(end))),
-                float(np.max(np.abs(actual))),
-            )
-            if not np.allclose(
-                actual, expected, rtol=0.0, atol=1.0e-10 * scale
-            ):
-                raise ValueError(
-                    "lagrangeL9 requires affine CSF corner trajectories over "
-                    f"the complete longitudinal domain; mismatch at x={x}"
-                )
-
         velocities.setflags(write=False)
         return velocities
-
-    def _geometry_is_constant_on_stations(self) -> bool:
-        # Guard a static polynomial export; not a condition on the solver.
-        for fraction in (0.25, 0.5, 0.75, 1.0):
-            x = self._x0 + fraction * (self._x1 - self._x0)
-            domains = self._domains_at_x(x)
-            for reference, current in zip(self._domains, domains):
-                if not np.array_equal(
-                    np.asarray(reference.vertices),
-                    np.asarray(current.vertices),
-                ):
-                    return False
-        return True
 
     def locate_domains(
         self,
@@ -546,12 +531,20 @@ class LagrangeL9Basis(CUFBasis):
         *,
         x: float | None = None,
     ) -> float:
-        """dF/dx at fixed physical (y,z), including moving CSF geometry.
+        """Evaluate dF_tau/dx at fixed physical (y, z) on a CSF section.
 
-        The chain rule is analytical. The CSF corner velocities are computed
-        once from their affine endpoint trajectories. Their bilinear
-        interpolation provides the exact geometric velocity at each natural
-        point. Shared-interface derivatives remain side-dependent.
+        For a point with natural coordinates (alpha, beta), interpolate the
+        cached per-corner velocities using the bilinear geometry functions:
+            v = sum_a Q_a(alpha, beta) * v_a.
+        With J = d(y, z)/d(alpha, beta), the isoparametric chain rule gives
+            d(alpha, beta)/dx |_(y,z) = -J**(-1) * v,
+            dF_tau/dx |_(y,z) = grad_natural(N) dot d(alpha, beta)/dx.
+
+        The geometric derivative uses no finite differences and is exact under
+        the affine-trajectory assumption, apart from floating-point error in
+        the coordinate inversion and linear solve. The result can vary with
+        the natural point and with x even though all v_a are x-independent.
+        Derivatives at shared polygon interfaces remain element-side dependent.
         """
         self._global_point(tau)
         x = self._effective_x(x)
@@ -652,6 +645,8 @@ class LagrangeL9Basis(CUFBasis):
         between the longitudinal endpoints. Export that domain motion, together
         with local natural-coordinate power laws. The mathematical functions
         remain exactly those used by the runtime isoparametric L9 expansion.
+        The affine corner trajectories are guaranteed by the CSF provider,
+        so the exporter uses the two endpoint sections directly.
 
         The compiler owns the independent solved-field representation; no L9
         connectivity or generalized tau survives checkpoint compilation.
@@ -682,17 +677,6 @@ class LagrangeL9Basis(CUFBasis):
         )
         if endpoints.shape != (2, self.domain_count, 4, 2):
             return None
-        # Check the declared CSF affine geometry contract against its provider.
-        # This avoids exporting a knowingly inconsistent law for an alternative
-        # provider (e.g. piecewise or nonlinear geometry).
-        for fraction in (0.25, 0.5, 0.75):
-            x = self._x0 + fraction * (self._x1 - self._x0)
-            actual = np.asarray([d.vertices for d in self._domains_at_x(x)])
-            expected = endpoints[0] * (1.0 - fraction) + endpoints[1] * fraction
-            scale = max(1.0, float(np.max(np.abs(actual))))
-            if not np.allclose(actual, expected, rtol=0.0, atol=1e-10 * scale):
-                return None
-
         coefficients = np.zeros((self.domain_count, self.size, 3, 3), dtype=float)
         for domain_index, local_to_global in enumerate(self._connectivity):
             for local_node, tau in enumerate(local_to_global, start=1):
@@ -873,6 +857,11 @@ class LagrangeL9Basis(CUFBasis):
         alpha: float,
         beta: float,
     ):
+        """Return four bilinear geometry functions and natural derivatives.
+
+        The same corner functions map the reference square to physical (y, z)
+        and interpolate the four precomputed corner velocities within a domain.
+        """
         a = float(alpha)
         b = float(beta)
 

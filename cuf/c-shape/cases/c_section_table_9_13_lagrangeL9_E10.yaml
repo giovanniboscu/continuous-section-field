@@ -19,8 +19,6 @@ problem:
   adapter: csf.cuf.adapters.problem.c_section_cantilever_point_load
 
 cuf:
-  # External transverse expansion. Relative path is resolved from this case YAML.
-  #basis: ../expansions/lagrangeL9_v4.py
   basis: lagrangeL9
   order: 2
   basis_options:
