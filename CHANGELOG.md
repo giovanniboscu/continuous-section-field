@@ -1,7 +1,19 @@
 # Changelog
 
+## v0.3.0
+
+* Added CSF-CUF C-shaped beam benchmarks with FEM3D comparisons and displacement, strain, and stress results.
+* Added bridge-like variable-section bending and torsion cases, including convergence analysis and shear-stress comparisons.
+* Added custom transverse expansion examples and documentation for the generalized expansion interface.
+* Integrated the Lagrange L9 transverse expansion into the library and refined its derivative evaluation for variable sections.
+* Extended numerical diagnostics with stiffness symmetry checks, KKT equilibration verification, and optional MITC assembly diagnostics.
+* Added displacement-difference visualization and expanded boundary-field post-processing.
+* Expanded technical documentation covering variable-section formulation, Gaussian quadrature, stress recovery, YAML configuration, and reproducibility workflows.
+
 ## v0.2.9
-* refactorized csf-cuf for externla expansion and extenrla shape function
+
+* Refactored CSF-CUF to support external transverse expansions and longitudinal shape functions.
+
 
 ## v0.2.5
 * Added CSF-CUF I-Shape cases.
