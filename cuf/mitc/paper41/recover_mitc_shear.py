@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Recover physical MITC shear stress at longitudinal nodes from v4 CUF checkpoints.
 
 For this *prismatic, isotropic* Section 4.1 benchmark only.
