@@ -86,10 +86,15 @@ The ON values for the finest triples remain around 1.06–1.08: the successive d
 ## 6. Archived numerical checks
 
 - **14/14 cases:** the archived logs report successful completion; the tip sample is present in each corresponding response file.
-- **Global assembled-stiffness symmetry:** all reported relative symmetry errors are below the configured `1e-10` threshold. See the exact per-run values in [`mitc_B2_full_audit.json`](mitc_tests/reports/mitc_B2_full_audit.json).
-- **KKT solve residuals:** logged residual metrics are included in the same audit. Small reported residuals indicate algebraic solve consistency, not the physical correctness of the model.
-- **MITC assembly checks:** {allchecks} reported `PASS` comparisons across all ON longitudinal elements, all for the **single CUF pair `(1,1)`**. They do **not** cover every CUF pair or establish an independent MITC patch test.
+- **Global assembled-stiffness symmetry:** all reported relative symmetry errors are below the configured `1e-10` threshold. See the per-run values in [`audit.json`](mitc_tests/reports/audit.json).
+- **KKT solve residuals:** the solver logs contain the KKT and equation residual diagnostics. Small reported residuals indicate algebraic solve consistency, not the physical correctness of the model.
+- **MITC assembly checks:** 127 reported `PASS` comparisons across all ON longitudinal elements, all for the **single CUF pair `(1,1)`**. They do **not** cover every CUF pair or establish an independent MITC patch test.
 - **Paired-input check:** matching OFF/ON cases have equal geometry references, material/problem references, transverse basis, longitudinal mesh, integration and sampling configurations; only case identity, output path, and MITC/diagnostic switches differ.
+
+These checks are performed on the **archived logs and results**, not by re-running the solver.
+
+
+
 
 These checks are performed on the **archived logs and results**, not by re-running the solver in this package preparation step.
 
