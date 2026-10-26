@@ -1,4 +1,4 @@
-# MITC B2 shear-locking convergence suite v02 (2026-10-11)
+# MITC B2 shear-locking convergence suite
 
 This extends the previous single-element B2 test to **1, 2, 4 and 8 longitudinal B2 elements**, each tested **MITC OFF and ON** (8 solver runs). It is designed to expose shear locking and assess convergence without changing CSF-CUF software sources.
 
