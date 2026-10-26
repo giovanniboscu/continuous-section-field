@@ -31,41 +31,31 @@ The linear Lagrange interpolation functions are
 N_1(\xi)=\frac{1-\xi}{2},\qquad N_2(\xi)=\frac{1+\xi}{2}.
 ```
 
-
-By the chain rule,
+By the chain rule, the axial derivative of each shape function is
 
 ```math
-\frac{dN_i}{dx}
+\frac{dN_i(\xi(x))}{dx}
 =
-\frac{dN_i}{d\xi}
-\frac{d\xi}{dx}
+\frac{dN_i}{d\xi}\frac{d\xi}{dx}.
 ```
 
-For a two-node B2 element with an affine longitudinal mapping,
+For the affine B2 mapping defined above,
 
 ```math
-\frac{d\xi}{dx}=\frac{2}{L_e}
+\frac{d\xi}{dx}=\frac{2}{L_e}.
 ```
 
-The longitudinal shape-function and derivative vectors are therefore
+Therefore the longitudinal shape-function and derivative vectors are
 
 ```math
-\mathbf N(\xi)
-=
-\begin{bmatrix}
-N_1(\xi) & N_2(\xi)
-\end{bmatrix}
+\mathbf N(\xi)=
+\begin{bmatrix}N_1(\xi)&N_2(\xi)\end{bmatrix}.
 ```
 
 ```math
-\mathbf D
-=
-\begin{bmatrix}
--\frac{1}{L_e} & \frac{1}{L_e}
-\end{bmatrix}
+\mathbf D=
+\begin{bmatrix}-\frac{1}{L_e}&\frac{1}{L_e}\end{bmatrix}.
 ```
-
-
 
 Thus `D` is constant, whereas `N(ξ)` varies linearly. `J_x` is the **longitudinal finite-element Jacobian**; it is not the CSF section-variation Jacobian.
 
@@ -263,22 +253,24 @@ where `c,d` are displacement components `x,y,z`, and `\mathcal T_{τs,cd}` is th
 
 Full longitudinal Gauss integration is used: **MITC is not a request to reduce the number of Gauss integration points.** The Gauss count and sectional quadrature settings are controlled separately by the case configuration. Exact numerical values of quadrature orders should be read from the specific YAML and corresponding solver log, not assumed from the derivation.
 
-## 8. Exact code correspondence in the inspected snapshot
+## 8. Correspondence with the CSF–CUF source code
 
-| Mathematical operation | Inspected implementation | What it performs |
+**Implementation reference.** The derivation is related to the public CSF–CUF implementation. The main source files are [`nucleus.py`](../../../src/csf/cuf/core/nucleus.py), [`element.py`](../../../src/csf/cuf/solver/element.py), [`longitudinal_tying_points.py`](../../../src/csf/cuf/solver/longitudinal_tying_points.py), and [`assembly.py`](../../../src/csf/cuf/solver/assembly.py). The correspondence described here concerns the mathematical operators and the assembly structure; it is **not** an independent numerical verification of every stiffness-matrix block.
+
+| Mathematical operation | Corresponding implementation | What it performs |
 |---|---|---|
-| Define the six 3D Voigt kinematic rows | `cuf/core/nucleus.py`, `FundamentalNucleusProvider._STRAIN_KINEMATICS` | Rows 1–6, including `γ_xz` = row 5 and `γ_xy` = row 6 |
+| Define the six 3D Voigt kinematic rows | `src/csf/cuf/core/nucleus.py`, `FundamentalNucleusProvider._STRAIN_KINEMATICS` | Rows 1–6, including `γ_xz` = row 5 and `γ_xy` = row 6 |
 | Enumerate weak-form terms | `FundamentalNucleusProvider.K_block_structure(...)` | Gives the `JSignature` and axial derivative orders for each component block |
-| Set B2 tying point | `cuf/solver/longitudinal_tying_points.py`, `LongitudinalTyingPointSelector` | `barlow` uses Gauss–Legendre points, hence `[0]` for degree 1 |
-| Sample `N` and `dN/dx` at tying point | `cuf/solver/element.py`, `_longitudinal_product_data` | Stores sample arrays for derivative orders 0 and 1 |
+| Set B2 tying point | `src/csf/cuf/solver/longitudinal_tying_points.py`, `LongitudinalTyingPointSelector` | `barlow` uses Gauss–Legendre points, hence `[0]` for degree 1 |
+| Sample `N` and `dN/dx` at tying point | `src/csf/cuf/solver/element.py`, `_longitudinal_product_data` | Stores sample arrays for derivative orders 0 and 1 |
 | Interpolate tying-point samples at quadrature point | `_longitudinal_product_data` | Computes `modified = weights @ values` |
 | Keep ordinary and shear-modified test/trial factors separate | `_longitudinal_product_data` | Indexes products by `(test_shear,trial_shear,test_order,trial_order)` |
 | Integrate sectional coefficients at each `x_g` | `_build_pair_batched` | Calls `sectional.J_batch(x=x, signatures=...)` |
 | Select which test/trial side is MITC-corrected | `_build_pair_batched` | Uses `signature.m in (5,6)` and `signature.n in (5,6)` |
 | Accumulate stiffness blocks | `_build_pair_batched` | Adds `scale * coefficient * shape_products[product_key]` for every term |
-| Assemble global matrix | `cuf/solver/assembly.py` | Scatters local component-pair blocks into global DOFs |
+| Assemble global matrix | `src/csf/cuf/solver/assembly.py` | Scatters local component-pair blocks into global DOFs |
 
-The crucial branch from `element.py`, abbreviated without changing its meaning, is:
+The relevant selection mechanism in `element.py`, abbreviated to emphasize the mathematical correspondence, is:
 
 ```python
 product_key = (
@@ -296,7 +288,7 @@ Here `scale = w_g J_x`; `coefficient = J_ℓ(x_g)`; and `shape_products[product_
 
 **Derived here:** the B2 kinematics, exact one-point assumed shear interpolation, a complete 6-row MITC strain operator for a section basis independent of `x`, weak-form stiffness, its sectional `J` factorization, two illustrative stiffness entries and its code-selection mechanism.
 
-**Checked against code structure:** the six Voigt rows, tying selector, corrected/uncorrected test/trial products, sectional `J_batch` call, and Gaussian accumulation. This is a **structural code correspondence**, not a term-by-term numerical equality test of all assembled matrices.
+**Mapped to the inspected implementation structure:** the six Voigt rows, tying selector, corrected/uncorrected test/trial products, sectional `J_batch` call, and Gaussian accumulation. This is a **structural code correspondence**, not a term-by-term numerical equality test of all assembled matrices.
 
 **Not established by this document:** detailed integration implementation for every CSF polygon, all domain-interface connectivity rules, nonlinear/geometrically exact behavior, arbitrary longitudinally varying transverse bases `F(x,y,z)`, general anisotropic material validation, or proof of absence of zero-energy modes. A numerical test that directly compares selected 2-by-2 nucleus entries against an independently evaluated quadrature would be the next level of verification.
 
