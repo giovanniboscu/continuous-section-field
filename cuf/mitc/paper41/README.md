@@ -1,4 +1,4 @@
-# MITC beam elements — Paper §4.1 benchmark (L9, B2/B3/B4)
+# MITC beam elements - Paper §4.1 benchmark (L9, B2/B3/B4)
 
 This example reproduces the **single-element square cantilever** of Section 4.1, Table 1 in Carrera, de Miguel and Pagani (2017), *Extension of MITC to higher-order beam models and shear locking analysis for compact, thin-walled and composite structures* ([DOI: 10.1002/nme.5588](https://doi.org/10.1002/nme.5588)). It compares ordinary full integration (**MITC OFF**) and mixed interpolation of transverse shear (**MITC ON**) for two-, three- and four-node longitudinal elements.
 
@@ -103,7 +103,7 @@ Here `γ_S = (γ_xy, γ_xz)^T`, `n` is the number of longitudinal nodes already 
 | B3 | Quadratic (3 nodes) | 2 | Linear |
 | B4 | Cubic (4 nodes) | 3 | Quadratic |
 
-For B2, with one tying point at the element center, the formula reduces immediately to `\bar γ_S(ξ)=γ_S(0)`: **the assumed shear is constant along that element**. This predicts equal recovered MITC shear at its two axial nodes—a feature directly testable against Table 1.
+For B2, with one tying point at the element center, the formula reduces immediately to `\bar γ_S(ξ)=γ_S(0)`: **the assumed shear is constant along that element**. This predicts equal recovered MITC shear at its two axial nodes-a feature directly testable against Table 1.
 
 ### How the correction enters stiffness
 
@@ -139,9 +139,9 @@ $$
 
 A [YAML file](https://yaml.org/spec/) is a human-readable, plain-text configuration file: it *declares data and choices*, rather than implementing numerical algorithms like a Python program. This benchmark keeps the physical model, physical problem, and structural approximation separate.
 
-1. **CSF geometry/material — [`models/mitc_paper41_square_csf.yaml`](models/mitc_paper41_square_csf.yaml).** Defines the square sectional polygon and its physical coordinates, the two end stations, and the material information. This is where the section and material belong—not where the MITC choice belongs.
-2. **Physical problem — [`problems/mitc_paper41_point.yaml`](problems/mitc_paper41_point.yaml).** Declares the beam model to load, the clamp at x=0, and the −z point load at x=L. The solver's Python **adapter** `csf.cuf.adapters.problem.c_section_cantilever_point_load` translates these physical conditions into the generalized force vector and constraints on the CUF unknowns. *Generalized* here means the physical load has been projected onto the transverse CUF functions and the longitudinal element functions; it is not a different physical force.
-3. **CUF execution case — for example [`cases/mitc_paper41_L9_B2_on.yaml`](cases/mitc_paper41_L9_B2_on.yaml).** Connects model and problem, selects the transverse L9 functions implemented in [`expansions/lagrangeL9_v4.py`](expansions/lagrangeL9_v4.py), chooses the longitudinal element order, and sets quadrature, MITC mode and output location.
+1. **CSF geometry/material - [`models/mitc_paper41_square_csf.yaml`](models/mitc_paper41_square_csf.yaml).** Defines the square sectional polygon and its physical coordinates, the two end stations, and the material information. This is where the section and material belong-not where the MITC choice belongs.
+2. **Physical problem - [`problems/mitc_paper41_point.yaml`](problems/mitc_paper41_point.yaml).** Declares the beam model to load, the clamp at x=0, and the −z point load at x=L. The solver's Python **adapter** `csf.cuf.adapters.problem.c_section_cantilever_point_load` translates these physical conditions into the generalized force vector and constraints on the CUF unknowns. *Generalized* here means the physical load has been projected onto the transverse CUF functions and the longitudinal element functions; it is not a different physical force.
+3. **CUF execution case - for example [`cases/mitc_paper41_L9_B2_on.yaml`](cases/mitc_paper41_L9_B2_on.yaml).** Connects model and problem, selects the transverse L9 functions implemented in [`expansions/lagrangeL9_v4.py`](expansions/lagrangeL9_v4.py), chooses the longitudinal element order, and sets quadrature, MITC mode and output location.
 
 **Two distinct orders:** `longitudinal.order: 1`, `2`, or `3` denotes the polynomial degree of B2, B3, or B4; the case's `cuf.order: 2` controls a *different, transverse expansion setting*. Do not interpret it as the number of longitudinal nodes.
 
@@ -186,7 +186,7 @@ The largest absolute difference is **0.000379 scaled units**, below **0.0005** (
 
 **Reproducibility check:** regenerating the CSV from archived checkpoints and comparing the 18 shear samples to the archived CSV passed with absolute tolerance `1e-8`. This checks numerical repeatability of the **post-processing**; comparison with the paper is a **separate** validation check. Detailed commands belong in [reproducibility.md](reproducibility.md).
 
-## 8. What the evidence supports—and what it does not
+## 8. What the evidence supports-and what it does not
 
 **Supported by this case:** for the *prismatic, isotropic, square cantilever with L9 transverse approximation*, CSF–CUF reproduces the paper's B2/B3/B4 displacements under full integration and MITC, and its nine published MITC nodal transverse-shear stress values under an explicitly defined assumed-strain recovery. Solver logs and archived checkpoints provide further reproducibility and numerical diagnostics.
 
@@ -196,13 +196,13 @@ This distinction matters: the benchmark provides a strong **published numerical 
 
 ## 9. Files and reproduction
 
-- [`reproducibility.md`](reproducibility.md) — environment, Linux/Windows commands, and expected results.
-- [`run_paper41.sh`](run_paper41.sh) — six solver runs (B2/B3/B4, MITC OFF/ON).
-- [`models/`](models/) and [`problems/`](problems/) — physical section/material and physical loading/constraints.
-- [`cases/`](cases/) and [`expansions/lagrangeL9_v4.py`](expansions/lagrangeL9_v4.py) — structural cases and transverse functions.
-- [`output/`](output/) — archived `response.txt` and `.cuf.npz` checkpoints.
-- [`logs/`](logs/) — solver logs for the six runs.
-- [`recover_mitc_shear.py`](recover_mitc_shear.py) — shear recovery from checkpoints, without rerunning the solver.
-- [`paper41_shear_comparison.csv`](paper41_shear_comparison.csv) — archived nodal shear comparison.
+- [`reproducibility.md`](reproducibility.md) - environment, Linux/Windows commands, and expected results.
+- [`run_paper41.sh`](run_paper41.sh) - six solver runs (B2/B3/B4, MITC OFF/ON).
+- [`models/`](models/) and [`problems/`](problems/) - physical section/material and physical loading/constraints.
+- [`cases/`](cases/) and [`expansions/lagrangeL9_v4.py`](expansions/lagrangeL9_v4.py) - structural cases and transverse functions.
+- [`output/`](output/) - archived `response.txt` and `.cuf.npz` checkpoints.
+- [`logs/`](logs/) - solver logs for the six runs.
+- [`recover_mitc_shear.py`](recover_mitc_shear.py) - shear recovery from checkpoints, without rerunning the solver.
+- [`paper41_shear_comparison.csv`](paper41_shear_comparison.csv) - archived nodal shear comparison.
 
 The core CSF–CUF solver is **not** included in the benchmark archive. To make a future rerun auditable, record the repository Git commit, Python environment and solver version, as described in the reproducibility guide.
