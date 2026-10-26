@@ -64,15 +64,17 @@ $$
 
 The six runs use **one element**, with `n=2` (B2, linear), `n=3` (B3, quadratic), or `n=4` (B4, cubic). Changing B2→B3→B4 changes the *polynomial order of the same single element*, not the number of elements or the CSF section.
 
+
 ### Where the transverse shear strain comes from
 
 Consider the transverse shear strain in the physical **x-z** plane. In small-strain elasticity, the engineering shear strain is
 
-$$
-\gamma_{xz}
-= \frac{\partial u_z}{\partial x}
-+ \frac{\partial u_x}{\partial z}.
-$$
+
+```math
+\gamma_{xz} = \frac{\partial u_z}{\partial x} + \frac{\partial u_x}{\partial z}
+```
+
+
 
 **Step 1 - Write the two displacement components.** Taking the x- and z-components of the CUF finite-element displacement field from Section 3 gives
 
@@ -160,11 +162,11 @@ Both `N_i` and `dN_i/dξ` in this last expression are evaluated at `ξ=ξ(x)`. F
 
 The other transverse shear component follows from the same steps, exchanging z with y:
 
-$$
-\gamma_{xy}
-= \frac{\partial u_y}{\partial x}
-+ \frac{\partial u_x}{\partial y}.
-$$
+
+```math
+\gamma_{xy} = \frac{\partial u_y}{\partial x} + \frac{\partial u_x}{\partial y}
+```
+
 
 **Keep the two geometrical roles separate.** The longitudinal Jacobian `J_x=dx/dξ` belongs to the one-dimensional finite-element interpolation and its change of integration coordinate. It is **not** a reference-to-physical *cross-sectional* mapping Jacobian. CSF continues to supply the sectional domains directly in physical `(y,z)` coordinates; the longitudinal Jacobian does not transform those domains.
 
