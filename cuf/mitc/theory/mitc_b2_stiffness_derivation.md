@@ -31,15 +31,41 @@ The linear Lagrange interpolation functions are
 N_1(\xi)=\frac{1-\xi}{2},\qquad N_2(\xi)=\frac{1+\xi}{2}.
 ```
 
+
 By the chain rule,
 
 ```math
-\frac{dN_i}{dx}=\frac{dN_i}{d\xi}\frac{d\xi}{dx},\qquad
-**Implementation examined.** The source snapshot supplied with the benchmark materials (`cuf(20261026-174052).zip`), particularly `cuf/core/nucleus.py`, `cuf/solver/element.py`, and `cuf/solver/longitudinal_tying_points.py`. This is a **snapshot review**, not an assertion that every line still matches the subsequently published Git commit. The numerical benchmarks separately test their own configurations.
-
-\mathbf N(\xi)=\begin{bmatrix}N_1&N_2\end{bmatrix},\qquad
-\mathbf D=\begin{bmatrix}-1/L_e&1/L_e\end{bmatrix}.
+\frac{dN_i}{dx}
+=
+\frac{dN_i}{d\xi}
+\frac{d\xi}{dx}
 ```
+
+For a two-node B2 element with an affine longitudinal mapping,
+
+```math
+\frac{d\xi}{dx}=\frac{2}{L_e}
+```
+
+The longitudinal shape-function and derivative vectors are therefore
+
+```math
+\mathbf N(\xi)
+=
+\begin{bmatrix}
+N_1(\xi) & N_2(\xi)
+\end{bmatrix}
+```
+
+```math
+\mathbf D
+=
+\begin{bmatrix}
+-\frac{1}{L_e} & \frac{1}{L_e}
+\end{bmatrix}
+```
+
+
 
 Thus `D` is constant, whereas `N(ξ)` varies linearly. `J_x` is the **longitudinal finite-element Jacobian**; it is not the CSF section-variation Jacobian.
 
