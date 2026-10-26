@@ -1,4 +1,4 @@
-# CSF–CUF: MITC shear-locking benchmark — rectangular cantilever
+# CSF–CUF: MITC shear-locking benchmark - rectangular cantilever
 
 This example compares an ordinary longitudinal two-node **B2** discretization (**MITC OFF**) with the MITC-corrected formulation (**MITC ON**). Both use the same physical geometry, load, transverse CUF expansion, and longitudinal mesh at each refinement level. Only the MITC assembly option and its companion diagnostic switch change.
 
@@ -44,7 +44,7 @@ In CSF–CUF, **CSF** supplies the actual section geometry and material fields a
 
 Configuration files are in [`models/`](models/), [`problems/`](problems/), and [`cases/`](cases/); their roles and links are explained in [the reproducibility guide](reproducibility.md#4-understand-the-three-yaml-layers).
 
-## 4. Results — 14 archived solver runs
+## 4. Results - 14 archived solver runs
 
 | B2 elements | OFF u_z [mm] | ON u_z [mm] | OFF vs EB [%] | ON vs EB [%] |
 |---:|---:|---:|---:|---:|
