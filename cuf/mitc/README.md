@@ -63,6 +63,21 @@ In the finite-element stiffness, **only the transverse-shear kinematic operators
 
 For the step-by-step beam formulation and the precise B2/B3/B4 benchmark, see [Paper §4.1 - README](paper41/README.md). For the general variable-section CSF–CUF model, see [the formal formulation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md).
 
+
+
+### Further study: MITC B2 stiffness derivation
+
+The preceding equations introduce the MITC correction at the
+kinematic level. To understand how this correction enters the
+CUF stiffness matrix, see the
+[MITC B2 stiffness nucleus derivation](theory/mitc_b2_stiffness_derivation.md).
+
+The document provides a step-by-step derivation of the two-node
+B2 element, from the CUF displacement field and MITC tying point
+to the sectional stiffness coefficients supplied by CSF and
+their correspondence with the Python assembly.
+
+
 ## 3. Two complementary numerical benchmarks
 
 | Benchmark | What changes | Primary question | Reference |
