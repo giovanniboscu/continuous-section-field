@@ -1,0 +1,63 @@
+CSF-CUF solver
+==============
+case                = mitc_locking_rect_B2_N02_on
+problem             = /home/giarrettu/github/release5/continuous-section-field/cuf/mitc/problems/mitc_locking_rect_conv_point.yaml
+CSF model           = /home/giarrettu/github/release5/continuous-section-field/cuf/mitc/models/mitc_locking_rect_conv_csf.yaml
+solver public output= u(x,y,z)
+CUF order           = 2
+longitudinal FE     = 2 explicit elements x order 1
+element boundaries  = 0, 0.5, 1 (normalized)
+longitudinal basis  = lagrange
+
+[quadrature] section Gauss requested = 9
+[quadrature] section Gauss effective = 9
+[quadrature] CUF basis minimum     = 3
+[quadrature] longitudinal degree estimate = 4
+[quadrature] longitudinal material varies = false
+[quadrature] longitudinal material degree = 0 (configured)
+[quadrature] longitudinal Gauss requested = 15
+[quadrature] longitudinal Gauss minimum   = 3
+[quadrature] longitudinal Gauss effective = 15
+[MITC] correctionMITC=True mitcDiagnostic=False verifyMITCAssembly=True
+[1/4] model/basis ready: domains from CSF, M=9
+[assembly] element 1/2 started: 81 CUF pairs
+[MITC assembly verify] element=0 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 1/2 tau=1/9 pairs=9/81 entries=324 elapsed=4.4s build_pair=4.4s scatter=0.0s
+[assembly] element 1/2 tau=9/9 pairs=81/81 entries=2916 elapsed=5.1s build_pair=5.1s scatter=0.0s
+[assembly] element 1/2 complete elapsed=5.1s build_pair=5.1s scatter=0.0s entries=2916
+[assembly] element 2/2 started: 81 CUF pairs
+[MITC assembly verify] element=1 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 2/2 tau=1/9 pairs=9/81 entries=3240 elapsed=4.9s build_pair=4.9s scatter=0.0s
+[assembly] element 2/2 tau=9/9 pairs=81/81 entries=5832 elapsed=5.7s build_pair=5.7s scatter=0.0s
+[assembly] element 2/2 complete elapsed=5.7s build_pair=5.7s scatter=0.0s entries=5832
+[assembly] triplets complete elapsed=10.9s entries=5832
+[assembly] COO->CSR complete elapsed=0.0s nnz=5103
+[verification] global stiffness symmetry: relative=1.450935e-16 maximum_abs=5.960464e-08 rtol=1.0e-10
+[CUF point load] physical force (N): (0, 0, -100)
+[CUF point load] application point (mm): (5000, 0, 0)
+[CUF point load] physical moment about origin (N mm): (-0, 500000, 0)
+[CUF point load] longitudinal FE: [2500, 5000], xi=1, local_nodes=2
+[CUF point load] shape checks: sum(N)=1, min(N)=-0, max(N)=1
+[CUF point load] generalized vector: total_dofs=81, nonzero=1, norm2=100, max_abs=100
+[CUF point load] omitted contributions (unavailable transverse DOFs): count=0, sum_abs=0
+[assembly] loads complete elapsed=0.0s
+[2/4] global assembly complete: DOFs=81
+[matrix-diagnostic] KKT shape=(108, 108) nnz=5157 abs_nonzero_min=4.102076707149e-29 abs_nonzero_max=6.605388766033e+08 frobenius=1.963148921336e+09 row_l2_min_median_max=(1.0, 72816873.78294581, 807715135.5432186)
+[kkt-equilibration] requested_iterations=5
+[diagnostic-v3] pre-spsolve checkpoint saved: matrix=/home/giarrettu/github/release5/continuous-section-field/cuf/mitc/diagnostics/kkt_checkpoint/kkt_matrix.npz rhs=/home/giarrettu/github/release5/continuous-section-field/cuf/mitc/diagnostics/kkt_checkpoint/rhs.npy shape=(108, 108) nnz=5157 data_dtype=float64 indices_dtype=int32 indptr_dtype=int32 rhs_dtype=float64 has_sorted_indices=True has_canonical_format=True
+[diagnostic-v3] SHA256 indptr=5df916132a5bd2b232845af8eb8c8781ad77f5f251e4fecdee82512d42fad3a4 indices=ed33198041470fa16e26fe4a883a53419b36980d2b8dd0b4dcc371471ef07a74 data=a319942c37583faabecff200ad3ed7f396a42340238b9346bec6a895cd7ae0cc rhs=06dd367e4caaaee0e144566cf46f3247085ab0adeb0a7036143a6dd649bd48ff
+[memory-solver] available=4.344GiB csr=0.000GiB dense=0.000GiB dense_incremental=0.000GiB sparse_factor_upper=0.000GiB sparse_incremental=0.000GiB selected=dense reason=dense-lower-estimated-physical-memory-peak
+[kkt-equilibration] iterations=5 iterations_requested=5 iterations_performed=5 scale_min=3.890906621765e-05 scale_max=9.845086965725e+03
+[matrix-diagnostic] equilibration-scales primal_min_median_max=(3.890906621764748e-05, 0.00011765240654438335, 0.0003018846170664773) multiplier_min_median_max=(1995.9473355328792, 3489.023748193826, 9845.08696572527)
+[kkt-solution-diagnostic] iterations=5 relative_residual_inf=1.052731582243e-21 relative_solution_change_2=not_applicable
+[3/4] solve complete
+[verification] residual mean = 4.038715e-09
+[verification] residual standard deviation = 4.960823e-08
+[verification] equation-term scale = 4.829420e+07
+[solution-checkpoint] saved=/home/giarrettu/github/release5/continuous-section-field/cuf/mitc/output/mitc_locking_rect_B2_N02_on/mitc_locking_rect_B2_N02_on.cuf.npz sha256=533bfadce02f5fbd8b634ea8f8be53e2ec1488d753d7e2d761af865a72230bfc
+[4/4] u(x,y,z) ready: elapsed=11.283 s
+written: /home/giarrettu/github/release5/continuous-section-field/cuf/mitc/output/mitc_locking_rect_B2_N02_on/response.txt
+
+continuous displacement field = READY
+output directory              = /home/giarrettu/github/release5/continuous-section-field/cuf/mitc/output/mitc_locking_rect_B2_N02_on
+  response.txt

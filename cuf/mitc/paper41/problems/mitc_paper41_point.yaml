@@ -1,0 +1,12 @@
+# Cantilever clamped at x=0, free tip point force Fz=-100 N at (x,y,z)=(1000,0,0).
+# Uses existing project problem adapter.
+model:
+  csf_yaml: ../models/mitc_paper41_square_csf.yaml
+problem:
+  type: c_section_cantilever
+  force:
+    type: point
+    amplitude: -100.0
+    x: 1000.0
+    y: 0.0
+    z: 0.0

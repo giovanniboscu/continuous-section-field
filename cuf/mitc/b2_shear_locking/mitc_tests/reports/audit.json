@@ -1,0 +1,134 @@
+{
+  "reference_EB_mm": -6.666666666666667,
+  "scope": "Archived-output audit, not an independent solver rerun or proof of MITC correctness",
+  "status": "PASS",
+  "issues": [],
+  "runs": [
+    {
+      "name": "mitc_locking_rect_B2_N01_off",
+      "n": 1,
+      "mode": "off",
+      "uz_mm": -0.00708709867183,
+      "error_vs_EB_pct": 99.89369351992255,
+      "symmetry_rel": 1.356067e-16,
+      "mitc_checks": 0
+    },
+    {
+      "name": "mitc_locking_rect_B2_N01_on",
+      "n": 1,
+      "mode": "on",
+      "uz_mm": -4.464409631396,
+      "error_vs_EB_pct": 33.033855529060006,
+      "symmetry_rel": 1.32068e-16,
+      "mitc_checks": 1
+    },
+    {
+      "name": "mitc_locking_rect_B2_N02_off",
+      "n": 2,
+      "mode": "off",
+      "uz_mm": -0.02823923201411,
+      "error_vs_EB_pct": 99.57641151978834,
+      "symmetry_rel": 1.474848e-16,
+      "mitc_checks": 0
+    },
+    {
+      "name": "mitc_locking_rect_B2_N02_on",
+      "n": 2,
+      "mode": "on",
+      "uz_mm": -5.323041674798,
+      "error_vs_EB_pct": 20.15437487803001,
+      "symmetry_rel": 1.450935e-16,
+      "mitc_checks": 2
+    },
+    {
+      "name": "mitc_locking_rect_B2_N04_off",
+      "n": 4,
+      "mode": "off",
+      "uz_mm": -0.1114444496211,
+      "error_vs_EB_pct": 98.3283332556835,
+      "symmetry_rel": 1.534641e-16,
+      "mitc_checks": 0
+    },
+    {
+      "name": "mitc_locking_rect_B2_N04_on",
+      "n": 4,
+      "mode": "on",
+      "uz_mm": -6.047428883127,
+      "error_vs_EB_pct": 9.288566753095004,
+      "symmetry_rel": 1.479621e-16,
+      "mitc_checks": 4
+    },
+    {
+      "name": "mitc_locking_rect_B2_N08_off",
+      "n": 8,
+      "mode": "off",
+      "uz_mm": -0.4238038764156,
+      "error_vs_EB_pct": 93.642941853766,
+      "symmetry_rel": 1.419771e-16,
+      "mitc_checks": 0
+    },
+    {
+      "name": "mitc_locking_rect_B2_N08_on",
+      "n": 8,
+      "mode": "on",
+      "uz_mm": -6.369662827233,
+      "error_vs_EB_pct": 4.455057591505001,
+      "symmetry_rel": 1.422169e-16,
+      "mitc_checks": 8
+    },
+    {
+      "name": "mitc_locking_rect_B2_N16_off",
+      "n": 16,
+      "mode": "off",
+      "uz_mm": -1.420063144753,
+      "error_vs_EB_pct": 78.69905282870499,
+      "symmetry_rel": 1.189903e-16,
+      "mitc_checks": 0
+    },
+    {
+      "name": "mitc_locking_rect_B2_N16_on",
+      "n": 16,
+      "mode": "on",
+      "uz_mm": -6.521743940253,
+      "error_vs_EB_pct": 2.173840896205008,
+      "symmetry_rel": 1.176439e-16,
+      "mitc_checks": 16
+    },
+    {
+      "name": "mitc_locking_rect_B2_N32_off",
+      "n": 32,
+      "mode": "off",
+      "uz_mm": -3.455746057952,
+      "error_vs_EB_pct": 48.163809130720004,
+      "symmetry_rel": 1.424493e-16,
+      "mitc_checks": 0
+    },
+    {
+      "name": "mitc_locking_rect_B2_N32_on",
+      "n": 32,
+      "mode": "on",
+      "uz_mm": -6.594881219087,
+      "error_vs_EB_pct": 1.076781713695003,
+      "symmetry_rel": 1.4184e-16,
+      "mitc_checks": 32
+    },
+    {
+      "name": "mitc_locking_rect_B2_N64_off",
+      "n": 64,
+      "mode": "off",
+      "uz_mm": -5.397726213944,
+      "error_vs_EB_pct": 19.034106790840006,
+      "symmetry_rel": 1.325898e-16,
+      "mitc_checks": 0
+    },
+    {
+      "name": "mitc_locking_rect_B2_N64_on",
+      "n": 64,
+      "mode": "on",
+      "uz_mm": -6.629802683146,
+      "error_vs_EB_pct": 0.552959752810005,
+      "symmetry_rel": 1.309603e-16,
+      "mitc_checks": 64
+    }
+  ]
+}

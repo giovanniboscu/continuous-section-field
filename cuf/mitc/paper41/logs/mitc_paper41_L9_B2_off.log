@@ -1,0 +1,57 @@
+CSF-CUF solver
+==============
+case                = mitc_paper41_L9_B2_off
+problem             = /home/giarrettu/github/release5/continuous-section-field/cuf/mitc2/problems/mitc_paper41_point.yaml
+CSF model           = /home/giarrettu/github/release5/continuous-section-field/cuf/mitc2/models/mitc_paper41_square_csf.yaml
+solver public output= u(x,y,z)
+CUF order           = 2
+longitudinal FE     = 1 explicit elements x order 1
+element boundaries  = 0, 1 (normalized)
+longitudinal basis  = lagrange
+
+[quadrature] section Gauss requested = 9
+[quadrature] section Gauss effective = 9
+[quadrature] CUF basis minimum     = 3
+[quadrature] longitudinal degree estimate = 4
+[quadrature] longitudinal material varies = false
+[quadrature] longitudinal material degree = 0 (configured)
+[quadrature] longitudinal Gauss requested = 15
+[quadrature] longitudinal Gauss minimum   = 3
+[quadrature] longitudinal Gauss effective = 15
+[MITC] correctionMITC=False mitcDiagnostic=False verifyMITCAssembly=False
+[1/4] model/basis ready: domains from CSF, M=9
+[assembly] element 1/1 started: 81 CUF pairs
+[assembly] element 1/1 tau=1/9 pairs=9/81 entries=324 elapsed=4.4s build_pair=4.4s scatter=0.0s
+[assembly] element 1/1 tau=9/9 pairs=81/81 entries=2914 elapsed=5.1s build_pair=5.1s scatter=0.0s
+[assembly] element 1/1 complete elapsed=5.1s build_pair=5.1s scatter=0.0s entries=2914
+[assembly] triplets complete elapsed=5.1s entries=2914
+[assembly] COO->CSR complete elapsed=0.0s nnz=2914
+[verification] global stiffness symmetry: relative=1.165320e-16 maximum_abs=9.546056e-09 rtol=1.0e-10
+[CUF point load] physical force (N): (0, 0, -100)
+[CUF point load] application point (mm): (1000, 0, 0)
+[CUF point load] physical moment about origin (N mm): (-0, 100000, 0)
+[CUF point load] longitudinal FE: [0, 1000], xi=1, local_nodes=2
+[CUF point load] shape checks: sum(N)=1, min(N)=-0, max(N)=1
+[CUF point load] generalized vector: total_dofs=54, nonzero=1, norm2=100, max_abs=100
+[CUF point load] omitted contributions (unavailable transverse DOFs): count=0, sum_abs=0
+[assembly] loads complete elapsed=0.0s
+[2/4] global assembly complete: DOFs=54
+[matrix-diagnostic] KKT shape=(81, 81) nnz=2968 abs_nonzero_min=2.594576181554e-13 abs_nonzero_max=1.321751437417e+08 frobenius=4.722942851371e+08 row_l2_min_median_max=(1.0, 24346615.843280032, 170315263.12826535)
+[kkt-equilibration] requested_iterations=5
+[diagnostic-v3] pre-spsolve checkpoint saved: matrix=/home/giarrettu/github/release5/continuous-section-field/cuf/mitc2/diagnostics/kkt_checkpoint/kkt_matrix.npz rhs=/home/giarrettu/github/release5/continuous-section-field/cuf/mitc2/diagnostics/kkt_checkpoint/rhs.npy shape=(81, 81) nnz=2968 data_dtype=float64 indices_dtype=int32 indptr_dtype=int32 rhs_dtype=float64 has_sorted_indices=True has_canonical_format=True
+[diagnostic-v3] SHA256 indptr=7fecb87c5300f93ff3d0ee6cfcd0fd25d489844e49722666b24d5bd324156c85 indices=2eeaaa6da8b3e147057c02e8b71032d469195fe56a37c8278f550411d3f390e8 data=a17255717a67b6b83b1ec73f098ad64b9a33d1207fc7aa4bfbb2a870117dadbd rhs=7519fffeee0afdc6d566e6adc99919a01f6a01ce0f60f0e34fa9e6ae3bc208c7
+[memory-solver] available=4.368GiB csr=0.000GiB dense=0.000GiB dense_incremental=0.000GiB sparse_factor_upper=0.000GiB sparse_incremental=0.000GiB selected=dense reason=dense-lower-estimated-physical-memory-peak
+[kkt-equilibration] iterations=5 iterations_requested=5 iterations_performed=5 scale_min=8.698114179369e-05 scale_max=6.408980714106e+03
+[matrix-diagnostic] equilibration-scales primal_min_median_max=(8.698114179368518e-05, 0.00023275773323792694, 0.0004128247582211107) multiplier_min_median_max=(1488.399869365881, 2546.990871096194, 6408.980714106467)
+[kkt-solution-diagnostic] iterations=5 relative_residual_inf=9.241550953607e-23 relative_solution_change_2=not_applicable
+[3/4] solve complete
+[verification] residual mean = -1.286313e-12
+[verification] residual standard deviation = 6.435343e-12
+[verification] equation-term scale = 5.831527e+03
+[solution-checkpoint] saved=/home/giarrettu/github/release5/continuous-section-field/cuf/mitc2/output/mitc_paper41_L9_B2_off/mitc_paper41_L9_B2_off.cuf.npz sha256=89d82f19e3ad9ad6b5ad5920bb2ec65c75e22d724ef7660da7fd21ef0134cb5b
+[4/4] u(x,y,z) ready: elapsed=5.580 s
+written: /home/giarrettu/github/release5/continuous-section-field/cuf/mitc2/output/mitc_paper41_L9_B2_off/response.txt
+
+continuous displacement field = READY
+output directory              = /home/giarrettu/github/release5/continuous-section-field/cuf/mitc2/output/mitc_paper41_L9_B2_off
+  response.txt

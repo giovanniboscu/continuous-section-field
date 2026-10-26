@@ -1,0 +1,213 @@
+CSF-CUF solver
+==============
+case                = mitc_locking_rect_B2_N32_on
+problem             = /home/giarrettu/github/release5/continuous-section-field/cuf/mitc/problems/mitc_locking_rect_conv_point.yaml
+CSF model           = /home/giarrettu/github/release5/continuous-section-field/cuf/mitc/models/mitc_locking_rect_conv_csf.yaml
+solver public output= u(x,y,z)
+CUF order           = 2
+longitudinal FE     = 32 explicit elements x order 1
+element boundaries  = 0, 0.03125, 0.0625, 0.09375, 0.125, 0.15625, 0.1875, 0.21875, 0.25, 0.28125, 0.3125, 0.34375, 0.375, 0.40625, 0.4375, 0.46875, 0.5, 0.53125, 0.5625, 0.59375, 0.625, 0.65625, 0.6875, 0.71875, 0.75, 0.78125, 0.8125, 0.84375, 0.875, 0.90625, 0.9375, 0.96875, 1 (normalized)
+longitudinal basis  = lagrange
+
+[quadrature] section Gauss requested = 9
+[quadrature] section Gauss effective = 9
+[quadrature] CUF basis minimum     = 3
+[quadrature] longitudinal degree estimate = 4
+[quadrature] longitudinal material varies = false
+[quadrature] longitudinal material degree = 0 (configured)
+[quadrature] longitudinal Gauss requested = 15
+[quadrature] longitudinal Gauss minimum   = 3
+[quadrature] longitudinal Gauss effective = 15
+[MITC] correctionMITC=True mitcDiagnostic=False verifyMITCAssembly=True
+[1/4] model/basis ready: domains from CSF, M=9
+[assembly] element 1/32 started: 81 CUF pairs
+[MITC assembly verify] element=0 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 1/32 tau=1/9 pairs=9/81 entries=324 elapsed=5.1s build_pair=5.1s scatter=0.0s
+[assembly] element 1/32 tau=9/9 pairs=81/81 entries=2916 elapsed=6.0s build_pair=6.0s scatter=0.0s
+[assembly] element 1/32 complete elapsed=6.0s build_pair=6.0s scatter=0.0s entries=2916
+[assembly] element 2/32 started: 81 CUF pairs
+[MITC assembly verify] element=1 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 2/32 tau=1/9 pairs=9/81 entries=3240 elapsed=5.3s build_pair=5.3s scatter=0.0s
+[assembly] element 2/32 tau=9/9 pairs=81/81 entries=5832 elapsed=6.2s build_pair=6.1s scatter=0.0s
+[assembly] element 2/32 complete elapsed=6.2s build_pair=6.1s scatter=0.0s entries=5832
+[assembly] element 3/32 started: 81 CUF pairs
+[MITC assembly verify] element=2 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 3/32 tau=1/9 pairs=9/81 entries=6156 elapsed=5.3s build_pair=5.3s scatter=0.0s
+[assembly] element 3/32 tau=9/9 pairs=81/81 entries=8748 elapsed=6.2s build_pair=6.1s scatter=0.0s
+[assembly] element 3/32 complete elapsed=6.2s build_pair=6.1s scatter=0.0s entries=8748
+[assembly] element 4/32 started: 81 CUF pairs
+[MITC assembly verify] element=3 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 4/32 tau=1/9 pairs=9/81 entries=9072 elapsed=5.3s build_pair=5.3s scatter=0.0s
+[assembly] element 4/32 tau=9/9 pairs=81/81 entries=11664 elapsed=6.2s build_pair=6.2s scatter=0.0s
+[assembly] element 4/32 complete elapsed=6.2s build_pair=6.2s scatter=0.0s entries=11664
+[assembly] element 5/32 started: 81 CUF pairs
+[MITC assembly verify] element=4 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 5/32 tau=1/9 pairs=9/81 entries=11988 elapsed=4.9s build_pair=4.9s scatter=0.0s
+[assembly] element 5/32 tau=9/9 pairs=81/81 entries=14580 elapsed=5.7s build_pair=5.7s scatter=0.0s
+[assembly] element 5/32 complete elapsed=5.7s build_pair=5.7s scatter=0.0s entries=14580
+[assembly] element 6/32 started: 81 CUF pairs
+[MITC assembly verify] element=5 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 6/32 tau=1/9 pairs=9/81 entries=14904 elapsed=4.9s build_pair=4.9s scatter=0.0s
+[assembly] element 6/32 tau=9/9 pairs=81/81 entries=17496 elapsed=5.7s build_pair=5.7s scatter=0.0s
+[assembly] element 6/32 complete elapsed=5.7s build_pair=5.7s scatter=0.0s entries=17496
+[assembly] element 7/32 started: 81 CUF pairs
+[MITC assembly verify] element=6 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 7/32 tau=1/9 pairs=9/81 entries=17820 elapsed=4.8s build_pair=4.8s scatter=0.0s
+[assembly] element 7/32 tau=9/9 pairs=81/81 entries=20412 elapsed=5.6s build_pair=5.6s scatter=0.0s
+[assembly] element 7/32 complete elapsed=5.6s build_pair=5.6s scatter=0.0s entries=20412
+[assembly] element 8/32 started: 81 CUF pairs
+[MITC assembly verify] element=7 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 8/32 tau=1/9 pairs=9/81 entries=20736 elapsed=5.0s build_pair=5.0s scatter=0.0s
+[assembly] element 8/32 tau=9/9 pairs=81/81 entries=23328 elapsed=6.1s build_pair=6.1s scatter=0.0s
+[assembly] element 8/32 complete elapsed=6.1s build_pair=6.1s scatter=0.0s entries=23328
+[assembly] element 9/32 started: 81 CUF pairs
+[MITC assembly verify] element=8 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 9/32 tau=1/9 pairs=9/81 entries=23652 elapsed=5.2s build_pair=5.2s scatter=0.0s
+[assembly] element 9/32 tau=9/9 pairs=81/81 entries=26244 elapsed=6.1s build_pair=6.0s scatter=0.0s
+[assembly] element 9/32 complete elapsed=6.1s build_pair=6.0s scatter=0.0s entries=26244
+[assembly] element 10/32 started: 81 CUF pairs
+[MITC assembly verify] element=9 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 10/32 tau=1/9 pairs=9/81 entries=26568 elapsed=5.1s build_pair=5.1s scatter=0.0s
+[assembly] element 10/32 tau=9/9 pairs=81/81 entries=29160 elapsed=6.0s build_pair=6.0s scatter=0.0s
+[assembly] element 10/32 complete elapsed=6.0s build_pair=6.0s scatter=0.0s entries=29160
+[assembly] element 11/32 started: 81 CUF pairs
+[MITC assembly verify] element=10 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 11/32 tau=1/9 pairs=9/81 entries=29484 elapsed=5.5s build_pair=5.5s scatter=0.0s
+[assembly] element 11/32 tau=9/9 pairs=81/81 entries=32076 elapsed=6.5s build_pair=6.5s scatter=0.0s
+[assembly] element 11/32 complete elapsed=6.5s build_pair=6.5s scatter=0.0s entries=32076
+[assembly] element 12/32 started: 81 CUF pairs
+[MITC assembly verify] element=11 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 12/32 tau=1/9 pairs=9/81 entries=32400 elapsed=6.0s build_pair=6.0s scatter=0.0s
+[assembly] element 12/32 tau=9/9 pairs=81/81 entries=34992 elapsed=6.9s build_pair=6.9s scatter=0.0s
+[assembly] element 12/32 complete elapsed=6.9s build_pair=6.9s scatter=0.0s entries=34992
+[assembly] element 13/32 started: 81 CUF pairs
+[MITC assembly verify] element=12 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 13/32 tau=1/9 pairs=9/81 entries=35316 elapsed=5.0s build_pair=5.0s scatter=0.0s
+[assembly] element 13/32 tau=9/9 pairs=81/81 entries=37908 elapsed=5.9s build_pair=5.9s scatter=0.0s
+[assembly] element 13/32 complete elapsed=5.9s build_pair=5.9s scatter=0.0s entries=37908
+[assembly] element 14/32 started: 81 CUF pairs
+[MITC assembly verify] element=13 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 14/32 tau=1/9 pairs=9/81 entries=38232 elapsed=5.8s build_pair=5.8s scatter=0.0s
+[assembly] element 14/32 tau=9/9 pairs=81/81 entries=40824 elapsed=6.9s build_pair=6.9s scatter=0.0s
+[assembly] element 14/32 complete elapsed=6.9s build_pair=6.9s scatter=0.0s entries=40824
+[assembly] element 15/32 started: 81 CUF pairs
+[MITC assembly verify] element=14 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 15/32 tau=1/9 pairs=9/81 entries=41148 elapsed=5.8s build_pair=5.8s scatter=0.0s
+[assembly] element 15/32 tau=9/9 pairs=81/81 entries=43740 elapsed=6.8s build_pair=6.8s scatter=0.0s
+[assembly] element 15/32 complete elapsed=6.8s build_pair=6.8s scatter=0.0s entries=43740
+[assembly] element 16/32 started: 81 CUF pairs
+[MITC assembly verify] element=15 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 16/32 tau=1/9 pairs=9/81 entries=44064 elapsed=5.7s build_pair=5.7s scatter=0.0s
+[assembly] element 16/32 tau=9/9 pairs=81/81 entries=46656 elapsed=6.4s build_pair=6.4s scatter=0.0s
+[assembly] element 16/32 complete elapsed=6.4s build_pair=6.4s scatter=0.0s entries=46656
+[assembly] element 17/32 started: 81 CUF pairs
+[MITC assembly verify] element=16 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 17/32 tau=1/9 pairs=9/81 entries=46980 elapsed=5.1s build_pair=5.1s scatter=0.0s
+[assembly] element 17/32 tau=9/9 pairs=81/81 entries=49572 elapsed=6.1s build_pair=6.1s scatter=0.0s
+[assembly] element 17/32 complete elapsed=6.1s build_pair=6.1s scatter=0.0s entries=49572
+[assembly] element 18/32 started: 81 CUF pairs
+[MITC assembly verify] element=17 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 18/32 tau=1/9 pairs=9/81 entries=49896 elapsed=5.7s build_pair=5.6s scatter=0.0s
+[assembly] element 18/32 tau=9/9 pairs=81/81 entries=52488 elapsed=6.6s build_pair=6.6s scatter=0.0s
+[assembly] element 18/32 complete elapsed=6.6s build_pair=6.6s scatter=0.0s entries=52488
+[assembly] element 19/32 started: 81 CUF pairs
+[MITC assembly verify] element=18 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 19/32 tau=1/9 pairs=9/81 entries=52812 elapsed=5.5s build_pair=5.5s scatter=0.0s
+[assembly] element 19/32 tau=9/9 pairs=81/81 entries=55404 elapsed=6.4s build_pair=6.4s scatter=0.0s
+[assembly] element 19/32 complete elapsed=6.4s build_pair=6.4s scatter=0.0s entries=55404
+[assembly] element 20/32 started: 81 CUF pairs
+[MITC assembly verify] element=19 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 20/32 tau=1/9 pairs=9/81 entries=55728 elapsed=5.1s build_pair=5.1s scatter=0.0s
+[assembly] element 20/32 tau=9/9 pairs=81/81 entries=58320 elapsed=6.0s build_pair=5.9s scatter=0.0s
+[assembly] element 20/32 complete elapsed=6.0s build_pair=5.9s scatter=0.0s entries=58320
+[assembly] element 21/32 started: 81 CUF pairs
+[MITC assembly verify] element=20 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 21/32 tau=1/9 pairs=9/81 entries=58644 elapsed=5.0s build_pair=5.0s scatter=0.0s
+[assembly] element 21/32 tau=9/9 pairs=81/81 entries=61236 elapsed=5.9s build_pair=5.9s scatter=0.0s
+[assembly] element 21/32 complete elapsed=5.9s build_pair=5.9s scatter=0.0s entries=61236
+[assembly] element 22/32 started: 81 CUF pairs
+[MITC assembly verify] element=21 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 22/32 tau=1/9 pairs=9/81 entries=61560 elapsed=5.5s build_pair=5.5s scatter=0.0s
+[assembly] element 22/32 tau=9/9 pairs=81/81 entries=64152 elapsed=6.5s build_pair=6.5s scatter=0.0s
+[assembly] element 22/32 complete elapsed=6.5s build_pair=6.5s scatter=0.0s entries=64152
+[assembly] element 23/32 started: 81 CUF pairs
+[MITC assembly verify] element=22 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 23/32 tau=1/9 pairs=9/81 entries=64476 elapsed=5.1s build_pair=5.1s scatter=0.0s
+[assembly] element 23/32 tau=9/9 pairs=81/81 entries=67068 elapsed=5.9s build_pair=5.9s scatter=0.0s
+[assembly] element 23/32 complete elapsed=5.9s build_pair=5.9s scatter=0.0s entries=67068
+[assembly] element 24/32 started: 81 CUF pairs
+[MITC assembly verify] element=23 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 24/32 tau=1/9 pairs=9/81 entries=67392 elapsed=4.9s build_pair=4.9s scatter=0.0s
+[assembly] element 24/32 tau=9/9 pairs=81/81 entries=69984 elapsed=5.8s build_pair=5.8s scatter=0.0s
+[assembly] element 24/32 complete elapsed=5.8s build_pair=5.8s scatter=0.0s entries=69984
+[assembly] element 25/32 started: 81 CUF pairs
+[MITC assembly verify] element=24 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 25/32 tau=1/9 pairs=9/81 entries=70308 elapsed=5.0s build_pair=5.0s scatter=0.0s
+[assembly] element 25/32 tau=9/9 pairs=81/81 entries=72900 elapsed=6.1s build_pair=6.1s scatter=0.0s
+[assembly] element 25/32 complete elapsed=6.1s build_pair=6.1s scatter=0.0s entries=72900
+[assembly] element 26/32 started: 81 CUF pairs
+[MITC assembly verify] element=25 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 26/32 tau=1/9 pairs=9/81 entries=73224 elapsed=5.4s build_pair=5.4s scatter=0.0s
+[assembly] element 26/32 tau=9/9 pairs=81/81 entries=75816 elapsed=6.4s build_pair=6.4s scatter=0.0s
+[assembly] element 26/32 complete elapsed=6.4s build_pair=6.4s scatter=0.0s entries=75816
+[assembly] element 27/32 started: 81 CUF pairs
+[MITC assembly verify] element=26 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 27/32 tau=1/9 pairs=9/81 entries=76140 elapsed=5.4s build_pair=5.4s scatter=0.0s
+[assembly] element 27/32 tau=9/9 pairs=81/81 entries=78732 elapsed=6.5s build_pair=6.5s scatter=0.0s
+[assembly] element 27/32 complete elapsed=6.5s build_pair=6.5s scatter=0.0s entries=78732
+[assembly] element 28/32 started: 81 CUF pairs
+[MITC assembly verify] element=27 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 28/32 tau=1/9 pairs=9/81 entries=79056 elapsed=5.3s build_pair=5.3s scatter=0.0s
+[assembly] element 28/32 tau=9/9 pairs=81/81 entries=81648 elapsed=6.2s build_pair=6.2s scatter=0.0s
+[assembly] element 28/32 complete elapsed=6.2s build_pair=6.2s scatter=0.0s entries=81648
+[assembly] element 29/32 started: 81 CUF pairs
+[MITC assembly verify] element=28 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 29/32 tau=1/9 pairs=9/81 entries=81972 elapsed=5.6s build_pair=5.6s scatter=0.0s
+[assembly] element 29/32 tau=9/9 pairs=81/81 entries=84564 elapsed=6.6s build_pair=6.6s scatter=0.0s
+[assembly] element 29/32 complete elapsed=6.6s build_pair=6.6s scatter=0.0s entries=84564
+[assembly] element 30/32 started: 81 CUF pairs
+[MITC assembly verify] element=29 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 30/32 tau=1/9 pairs=9/81 entries=84888 elapsed=5.2s build_pair=5.2s scatter=0.0s
+[assembly] element 30/32 tau=9/9 pairs=81/81 entries=87480 elapsed=6.1s build_pair=6.0s scatter=0.0s
+[assembly] element 30/32 complete elapsed=6.1s build_pair=6.0s scatter=0.0s entries=87480
+[assembly] element 31/32 started: 81 CUF pairs
+[MITC assembly verify] element=30 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 31/32 tau=1/9 pairs=9/81 entries=87804 elapsed=5.3s build_pair=5.3s scatter=0.0s
+[assembly] element 31/32 tau=9/9 pairs=81/81 entries=90396 elapsed=6.3s build_pair=6.3s scatter=0.0s
+[assembly] element 31/32 complete elapsed=6.3s build_pair=6.3s scatter=0.0s entries=90396
+[assembly] element 32/32 started: 81 CUF pairs
+[MITC assembly verify] element=31 pair=(1,1) blocks=9 max_abs=0.000000e+00 rel_F=0.000000e+00 worst_block=None status=PASS
+[assembly] element 32/32 tau=1/9 pairs=9/81 entries=90720 elapsed=5.1s build_pair=5.1s scatter=0.0s
+[assembly] element 32/32 tau=9/9 pairs=81/81 entries=93312 elapsed=6.0s build_pair=6.0s scatter=0.0s
+[assembly] element 32/32 complete elapsed=6.0s build_pair=6.0s scatter=0.0s entries=93312
+[assembly] triplets complete elapsed=198.6s entries=93312
+[assembly] COO->CSR complete elapsed=0.0s nnz=70713
+[verification] global stiffness symmetry: relative=1.418400e-16 maximum_abs=3.725290e-09 rtol=1.0e-10
+[CUF point load] physical force (N): (0, 0, -100)
+[CUF point load] application point (mm): (5000, 0, 0)
+[CUF point load] physical moment about origin (N mm): (-0, 500000, 0)
+[CUF point load] longitudinal FE: [4843.75, 5000], xi=1, local_nodes=2
+[CUF point load] shape checks: sum(N)=1, min(N)=-0, max(N)=1
+[CUF point load] generalized vector: total_dofs=891, nonzero=1, norm2=100, max_abs=100
+[CUF point load] omitted contributions (unavailable transverse DOFs): count=0, sum_abs=0
+[assembly] loads complete elapsed=0.0s
+[2/4] global assembly complete: DOFs=891
+[matrix-diagnostic] KKT shape=(918, 918) nnz=70767 abs_nonzero_min=4.102076707149e-29 abs_nonzero_max=4.230623617868e+07 frobenius=5.611483940647e+08 row_l2_min_median_max=(1.0, 8671368.836220076, 51148770.71140488)
+[kkt-equilibration] requested_iterations=5
+[diagnostic-v3] pre-spsolve checkpoint saved: matrix=/home/giarrettu/github/release5/continuous-section-field/cuf/mitc/diagnostics/kkt_checkpoint/kkt_matrix.npz rhs=/home/giarrettu/github/release5/continuous-section-field/cuf/mitc/diagnostics/kkt_checkpoint/rhs.npy shape=(918, 918) nnz=70767 data_dtype=float64 indices_dtype=int32 indptr_dtype=int32 rhs_dtype=float64 has_sorted_indices=True has_canonical_format=True
+[diagnostic-v3] SHA256 indptr=6d5f9c5c9c9c629737635262fc3d73b99bad563edb6466065f6d3b1f42e1e835 indices=c6d7fbc146e52b3fd08de5941e1ace22e10f7f3129c8eb883edfcb46b9a9d9d6 data=67368a381044399f1588aea9ab4c06f3c96da8d1f2d435a75b09ad64ab67a666 rhs=e2cc5757b393bcdad47f0beacb6f7744f92f39bdf3918cdac97da9144cf90742
+[memory-solver] available=3.917GiB csr=0.001GiB dense=0.006GiB dense_incremental=0.013GiB sparse_factor_upper=0.009GiB sparse_incremental=0.020GiB selected=dense reason=dense-lower-estimated-physical-memory-peak
+[kkt-equilibration] iterations=5 iterations_requested=5 iterations_performed=5 scale_min=1.537438687270e-04 scale_max=2.714996331694e+03
+[matrix-diagnostic] equilibration-scales primal_min_median_max=(0.00015374386872701455, 0.00043359109326337043, 0.0011099191027438685) multiplier_min_median_max=(588.8970540963103, 1027.1393302287527, 2714.996331694383)
+[kkt-solution-diagnostic] iterations=5 relative_residual_inf=1.097923507816e-19 relative_solution_change_2=not_applicable
+[3/4] solve complete
+[verification] residual mean = 1.415303e-09
+[verification] residual standard deviation = 9.419722e-09
+[verification] equation-term scale = 4.591308e+06
+[solution-checkpoint] saved=/home/giarrettu/github/release5/continuous-section-field/cuf/mitc/output/mitc_locking_rect_B2_N32_on/mitc_locking_rect_B2_N32_on.cuf.npz sha256=29055b67c6a0981610618fd755e344245eb1b666d307db3f17f5cc9c2aa88f53
+[4/4] u(x,y,z) ready: elapsed=199.158 s
+written: /home/giarrettu/github/release5/continuous-section-field/cuf/mitc/output/mitc_locking_rect_B2_N32_on/response.txt
+
+continuous displacement field = READY
+output directory              = /home/giarrettu/github/release5/continuous-section-field/cuf/mitc/output/mitc_locking_rect_B2_N32_on
+  response.txt

@@ -1,0 +1,36 @@
+# Carrera, de Miguel and Pagani (2017), Section 4.1, L9 square beam.
+# Coordinates and units: longitudinal x in mm; transverse y,z in mm.
+# The CSF sections are identical at x=0 and x=1000 (prismatic beam).
+# Young modulus E=75000 N/mm^2; shear law iso(0.33) specifies nu=0.33.
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+      - name: rectangle
+        weight: 75000.0
+        vertices:
+        - - -50.0
+          - -50.0
+        - - 50.0
+          - -50.0
+        - - 50.0
+          - 50.0
+        - - -50.0
+          - 50.0
+    S1:
+      z: 1000.0
+      polygons:
+      - name: rectangle
+        weight: 75000.0
+        vertices:
+        - - -50.0
+          - -50.0
+        - - 50.0
+          - -50.0
+        - - 50.0
+          - 50.0
+        - - -50.0
+          - 50.0
+  shear_weight_laws:
+  - iso(0.33)
