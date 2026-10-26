@@ -66,21 +66,109 @@ The six runs use **one element**, with `n=2` (B2, linear), `n=3` (B3, quadratic)
 
 ### Where the transverse shear strain comes from
 
-Take the z-directed transverse shear component. In small-strain elasticity,
+Consider the transverse shear strain in the physical **x-z** plane. In small-strain elasticity, the engineering shear strain is
 
 $$
-\gamma_{xz} = \frac{\partial u_z}{\partial x} + \frac{\partial u_x}{\partial z}.
+\gamma_{xz}
+= \frac{\partial u_z}{\partial x}
++ \frac{\partial u_x}{\partial z}.
 $$
 
-Inserting the boxed CUF field and differentiating **term by term** yields
+**Step 1 - Write the two displacement components.** Taking the x- and z-components of the CUF finite-element displacement field from Section 3 gives
 
 $$
-\gamma_{xz}(x,y,z) = \sum_{\tau=1}^{M}\sum_{i=1}^{n}
-\left[F_\tau(y,z)\frac{dN_i}{dx}\,q_{z,\tau i}
-+ \frac{\partial F_\tau}{\partial z}(y,z)\,N_i(\xi(x))\,q_{x,\tau i}\right].
+\begin{aligned}
+u_z(x,y,z)
+&= \sum_{\tau=1}^{M}\sum_{i=1}^{n}
+F_\tau(y,z)\,N_i(\xi(x))\,q_{z,\tau i}, \\
+u_x(x,y,z)
+&= \sum_{\tau=1}^{M}\sum_{i=1}^{n}
+F_\tau(y,z)\,N_i(\xi(x))\,q_{x,\tau i}.
+\end{aligned}
 $$
 
-Thus the ordinary transverse shear strain depends on both the **longitudinal derivative** of the finite-element interpolation and the **transverse derivative** of the CUF expansion. The equivalent `γ_xy` follows from `∂u_y/∂x + ∂u_x/∂y`. These are the two shear components to which MITC applies in this beam setting.
+The coefficients `q_{z,τi}` and `q_{x,τi}` are the z- and x-components of the nodal unknown vector `q_{τi}`. They are independent of the spatial coordinates when differentiating the interpolated field.
+
+**Step 2 - Differentiate each component.** The transverse functions `F_τ(y,z)` do not depend on x, while the longitudinal functions `N_i(ξ(x))` do not depend on z. Consequently,
+
+$$
+\begin{aligned}
+\frac{\partial u_z}{\partial x}
+&= \sum_{\tau=1}^{M}\sum_{i=1}^{n}
+F_\tau(y,z)\,
+\frac{dN_i(\xi(x))}{dx}\,q_{z,\tau i}, \\
+\frac{\partial u_x}{\partial z}
+&= \sum_{\tau=1}^{M}\sum_{i=1}^{n}
+\frac{\partial F_\tau(y,z)}{\partial z}\,
+N_i(\xi(x))\,q_{x,\tau i}.
+\end{aligned}
+$$
+
+Substituting these **two derivatives into the small-strain definition** gives
+
+$$
+\begin{aligned}
+\gamma_{xz}(x,y,z)
+={}& \sum_{\tau=1}^{M}\sum_{i=1}^{n}
+F_\tau(y,z)\,
+\frac{dN_i(\xi(x))}{dx}\,q_{z,\tau i} \\
+&+ \sum_{\tau=1}^{M}\sum_{i=1}^{n}
+\frac{\partial F_\tau(y,z)}{\partial z}\,
+N_i(\xi(x))\,q_{x,\tau i}.
+\end{aligned}
+$$
+
+**Step 3 - Convert the longitudinal derivative to the natural coordinate.** The element shape functions are defined in `ξ`, not directly in the physical axial coordinate `x`. The chain rule is therefore
+
+$$
+\frac{dN_i(\xi(x))}{dx}
+= \frac{dN_i}{d\xi}\,\frac{d\xi}{dx}.
+$$
+
+For the **straight, affine longitudinal element used in this benchmark**, let `x_a` and `x_b` denote its physical endpoints and `L_e=x_b-x_a` its length. With `-1 <= ξ <= 1`,
+
+$$
+\begin{aligned}
+x(\xi) &= \frac{x_a+x_b}{2}+\frac{L_e}{2}\,\xi, \\
+J_x &= \frac{dx}{d\xi}=\frac{L_e}{2}, \\
+\frac{d\xi}{dx} &= \frac{1}{J_x}=\frac{2}{L_e}.
+\end{aligned}
+$$
+
+Thus,
+
+$$
+\frac{dN_i(\xi(x))}{dx}
+= \frac{2}{L_e}\,\frac{dN_i}{d\xi}.
+$$
+
+**Step 4 - Obtain the shear strain evaluated by the ordinary CUF operator.** Substituting the chain-rule result into the expression from Step 2 yields
+
+$$
+\begin{aligned}
+\gamma_{xz}(x,y,z)
+={}& \sum_{\tau=1}^{M}\sum_{i=1}^{n}
+F_\tau(y,z)\,\frac{2}{L_e}\,
+\frac{dN_i}{d\xi}\,q_{z,\tau i} \\
+&+ \sum_{\tau=1}^{M}\sum_{i=1}^{n}
+\frac{\partial F_\tau(y,z)}{\partial z}\,
+N_i(\xi(x))\,q_{x,\tau i}.
+\end{aligned}
+$$
+
+Both `N_i` and `dN_i/dξ` in this last expression are evaluated at `ξ=ξ(x)`. For a non-affine longitudinal mapping, the general factor `1/J_x(ξ)` replaces `2/L_e`.
+
+The other transverse shear component follows from the same steps, exchanging z with y:
+
+$$
+\gamma_{xy}
+= \frac{\partial u_y}{\partial x}
++ \frac{\partial u_x}{\partial y}.
+$$
+
+**Keep the two geometrical roles separate.** The longitudinal Jacobian `J_x=dx/dξ` belongs to the one-dimensional finite-element interpolation and its change of integration coordinate. It is **not** a reference-to-physical *cross-sectional* mapping Jacobian. CSF continues to supply the sectional domains directly in physical `(y,z)` coordinates; the longitudinal Jacobian does not transform those domains.
+
+These are the two ordinary transverse shear-strain components subsequently modified by MITC at selected longitudinal tying points (Section 4).
 
 ## 4. MITC: change the shear interpolation, not the material
 
