@@ -43,22 +43,47 @@ $$
 \mathbf u(x,y,z)=\sum_{\tau=1}^{M}\sum_{i=1}^{n}F_\tau(y,z)N_i(x)\,\mathbf q_{\tau i}.
 $$
 
-**MITC - correction of the structural shear kinematics.** For example, the ordinary small-strain transverse shear is
+
+
+
+**MITC - replacement of transverse-shear strain operators using Barlow tying points.**
+
+In the standard CUF displacement formulation, transverse-shear strains are obtained directly from the derivatives of the approximated displacement field. For example,
 
 $$
 \gamma_{xz}=\frac{\partial u_z}{\partial x}+\frac{\partial u_x}{\partial z}.
 $$
 
-Rather than using this strain directly at every axial integration point, MITC samples it at tying points `ξ_m` and interpolates the samples:
+The MITC correction replaces the original discrete transverse-shear strain operators with assumed operators reconstructed from values evaluated at selected longitudinal points, known as **Barlow points (tying points)**.
+
+The assumed transverse-shear strain field is
 
 $$
 \bar{\boldsymbol\gamma}_S(\xi,y,z)
-=\sum_{m=1}^{n-1}\bar N_m(\xi)\,\boldsymbol\gamma_S(\xi_m,y,z),
+=\sum_{m=1}^{n-1}\bar N_m(\xi)\,
+\boldsymbol\gamma_S(\xi_m,y,z),
 \qquad
 \boldsymbol\gamma_S=(\gamma_{xy},\gamma_{xz})^T.
 $$
 
-Here `ξ` is the local longitudinal coordinate and `\bar N_m` are the interpolation functions associated with the tying points. B2 (two axial nodes) uses one tying point and **constant assumed shear**; B3 uses two and linear shear; B4 uses three and quadratic shear.
+Here, $\xi_m$ are the Barlow tying points and $\bar N_m$ are the interpolation functions associated with these points.
+
+For the longitudinal elements considered here:
+
+- **B2:** one Barlow point, $\xi=0$; constant assumed shear.
+- **B3:** two Barlow points, $\xi=\pm 1/\sqrt{3}$; linear assumed shear.
+- **B4:** three Barlow points, $\xi=0,\pm\sqrt{3/5}$; quadratic assumed shear.
+
+The fundamental operation is therefore a **selective replacement of the original transverse-shear strain operators by their Barlow-point interpolated counterparts** when assembling the element stiffness matrix.
+
+The original displacement approximation, the remaining strain operators, and the CSF sectional coefficients are retained. The corrected stiffness contributions are subsequently evaluated using the configured numerical integration scheme.
+
+Thus, MITC does not simply change the integration points: it changes the discrete representation of transverse-shear strains used in the stiffness formulation.
+
+
+
+
+
 
 In the finite-element stiffness, **only the transverse-shear kinematic operators are replaced by their MITC counterparts**. The sectional geometry and constitutive coefficients still come from CSF, and the corrected full stiffness integrand is evaluated with the configured quadrature. This distinction also matters for mixed constitutive terms: both sides of a shear coupling must use the consistent assumed-strain operator. The present two benchmarks use an isotropic material, so they **do not validate general anisotropic coupling**.
 
