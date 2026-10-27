@@ -238,7 +238,7 @@ Install `csf-cuf`:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-git clone https://github.com/giovanniboscu/continuous-section-field.git
+ git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 pip install --upgrade pip
 pip install -e .
