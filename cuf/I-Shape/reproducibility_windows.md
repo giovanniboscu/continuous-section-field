@@ -20,7 +20,7 @@ The commands below place the repository in your Windows user folder (`$env:USERP
 ```powershell
 cd "$env:USERPROFILE"
 
-git clone https://github.com/giovanniboscu/continuous-section-field.git
+git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
 cd "$env:USERPROFILE\continuous-section-field"
 
 py -3.12 -m venv venv
