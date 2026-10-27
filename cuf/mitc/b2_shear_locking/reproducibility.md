@@ -33,7 +33,7 @@ sudo apt-get install -y python3 python3-venv python3-pip git
 Clone and install the **complete** CSF–CUF solver from the [project repository](https://github.com/giovanniboscu/continuous-section-field):
 
 ```bash
-git clone https://github.com/giovanniboscu/continuous-section-field.git
+git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 python3 -m venv venv
 source venv/bin/activate
