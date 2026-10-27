@@ -4,7 +4,7 @@
 
 **The question.** A finite element computes displacements approximately and obtains strains by differentiating that approximation. How can we choose special sampling positions **before solving** the structural problem? And why does MITC use those positions to reconstruct the transverse shear strain?
 
-This note deliberately keeps three ideas separate: (1) mathematical points of improved derivative accuracy, (2) the *chosen* tying-point interpolation in MITC, and (3) its realization in CSF–CUF. The plots use known illustrative polynomials—not an exact elasticity solution or measured beam stresses.
+This note deliberately keeps three ideas separate: (1) mathematical points of improved derivative accuracy, (2) the *chosen* tying-point interpolation in MITC, and (3) its realization in CSF–CUF. The plots use known illustrative polynomials-not an exact elasticity solution or measured beam stresses.
 
 ## 1. Where did the ideas come from?
 
@@ -64,7 +64,7 @@ The derivative error vanishes at **$\xi=\pm1/\sqrt3$**. In this elementary case 
 
 ![Quadratic interpolation and derivative error](figures/interpolation_p2.png)
 
-### 3.3 Four displacement nodes: cubic interpolation — the crucial distinction
+### 3.3 Four displacement nodes: cubic interpolation - the crucial distinction
 
 The four-node longitudinal displacement interpolation used in Carrera's beam paper places nodes at $\xi=-1,-1/3,+1/3,+1$. For a degree-four test polynomial,
 
