@@ -1,5 +1,5 @@
 # DRAFT
-# MITC in CSF–CUF - formulation and validation benchmarks
+# MITC in CSF–CUF  formulation and validation benchmarks
 
 This directory documents the **Mixed Interpolation of Tensorial Components (MITC)** implementation in **CSF–CUF**. MITC is used here to reduce transverse **shear locking** in longitudinal beam finite elements without changing the physical cross-section supplied by CSF.
 
