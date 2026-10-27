@@ -16,7 +16,7 @@ Linux (Ubuntu/Debian) repository setup, from your working directory:
 sudo apt-get update
 sudo apt-get install -y git python3 python3-venv python3-pip
 
-git clone https://github.com/giovanniboscu/continuous-section-field.git
+git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 python3 -m venv venv
 source venv/bin/activate
