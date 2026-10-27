@@ -20,7 +20,7 @@ sudo apt-get install -y python3 python3-venv python3-pip git
 ## 2. Clone the repository
 
 ```bash
-git clone https://github.com/giovanniboscu/continuous-section-field.git
+git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 ```
 
@@ -207,7 +207,7 @@ Generates the plots in `plots_halfwave/{bending,torsion}_halfwave_legendre_N08/`
 sudo apt-get update
 sudo apt-get install -y python3 python3-venv python3-pip git
 
-git clone https://github.com/giovanniboscu/continuous-section-field.git
+git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 
 python3 -m venv venv
