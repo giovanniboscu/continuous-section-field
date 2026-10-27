@@ -259,6 +259,10 @@ For either shear component, first evaluate its ordinary CUF strain `γ_S(ξ_m,y,
 ```
 Here `γ_S = (γ_xy, γ_xz)^T`, `n` is the number of longitudinal nodes already defined, and `\bar N_m` are the interpolation functions through the `n−1` tying points. The overbar means **assumed/interpolated shear**, not a changed displacement field.
 
+**Why these tying points?** For a mathematical and historical
+explanation of their selection, see
+[From interpolation error to MITC](tying_points_origin.md).
+
 | Axial element | Nodal displacement interpolation | Shear tying points | Assumed shear order |
 |---|---|---:|---|
 | B2 | Linear (2 nodes) | 1 | Constant |
