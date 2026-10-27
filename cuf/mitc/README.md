@@ -76,14 +76,6 @@ For the longitudinal elements considered here:
 
 The fundamental operation is therefore a **selective replacement of the original transverse-shear strain operators by their Barlow-point interpolated counterparts** when assembling the element stiffness matrix.
 
-The original displacement approximation, the remaining strain operators, and the CSF sectional coefficients are retained. The corrected stiffness contributions are subsequently evaluated using the configured numerical integration scheme.
-
-Thus, MITC does not simply change the integration points: it changes the discrete representation of transverse-shear strains used in the stiffness formulation.
-
-
-
-
-
 
 In the finite-element stiffness, **only the transverse-shear kinematic operators are replaced by their MITC counterparts**. The sectional geometry and constitutive coefficients still come from CSF, and the corrected full stiffness integrand is evaluated with the configured quadrature. This distinction also matters for mixed constitutive terms: both sides of a shear coupling must use the consistent assumed-strain operator. The present two benchmarks use an isotropic material, so they **do not validate general anisotropic coupling**.
 
