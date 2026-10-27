@@ -9,7 +9,8 @@ Starting from a new system:
 sudo apt-get update
 sudo apt-get install -y python3 python3-venv python3-pip git
 
-git clone https://github.com/giovanniboscu/continuous-section-field.git
+git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
+
 cd continuous-section-field
 
 python3 -m venv venv
@@ -65,10 +66,11 @@ sudo apt-get install -y python3 python3-venv python3-pip git
 
 ---
 
-## 2. Clone the repository
+## 2.  the repository
 
 ```bash
-git clone https://github.com/giovanniboscu/continuous-section-field.git
+git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
+
 cd continuous-section-field
 ```
 
