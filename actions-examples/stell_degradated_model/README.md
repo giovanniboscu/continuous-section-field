@@ -8,6 +8,8 @@ The case should therefore be read as a reproducible workflow example, not as a c
 
 CLI command
 ```
+pwd
+continuous-section-field/actions-examples/stell_degradated_model
 csf-actions stell_degradated_model_s.yaml stell_degradated_model_action.yaml
 ```
 
