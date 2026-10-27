@@ -68,7 +68,7 @@ The following procedure starts from a clean clone of the public repository and r
 ## 1. Clone the repository
 
 ```bash
-git clone https://github.com/giovanniboscu/continuous-section-field.git
+git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 ```
 
@@ -376,7 +376,7 @@ The report contains separate CSF-CUF result tables for Table 9 and Table 10, ord
 A complete reproduction from a clean clone can therefore be summarized as:
 
 ```bash
-git clone https://github.com/giovanniboscu/continuous-section-field.git
+git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 
 python3 -m venv venv
