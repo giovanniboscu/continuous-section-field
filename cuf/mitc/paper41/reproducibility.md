@@ -1,4 +1,4 @@
-# MITC Paper §4.1 — reproducibility
+# MITC Paper §4.1 - reproducibility
 
 This guide reproduces the **six single-element L9 cantilever cases** from Carrera, de Miguel and Pagani (2017), §4.1, Table 1. It follows the command-first approach used by the project's bridge-like reproducibility guide. The full physical description and numerical comparisons are in [README.md](README.md).
 
@@ -84,7 +84,7 @@ The **CUF case** (e.g. [`cases/mitc_paper41_L9_B3_on.yaml`](cases/mitc_paper41_L
 | B3 ON / OFF | 3 | 2 | Linear assumed shear (ON) |
 | B4 ON / OFF | 4 | 3 | Quadratic assumed shear (ON) |
 
-## 4. Check the archived results — no solver run
+## 4. Check the archived results - no solver run
 
 To reproduce the shear comparison from the six supplied checkpoints:
 
@@ -113,7 +113,7 @@ PY
 
 For displacement, open each `output/<case>/response.txt`, locate the row `x/L = 1.00`, `point = center`, and read the `uz` value (mm). Compare with [README.md, Section 6](README.md#6-tip-displacement-comparison-with-table-1). Do **not** take the maximum displacement somewhere else in the cross-section.
 
-## 5. Rerun the six cases — solver required
+## 5. Rerun the six cases - solver required
 
 ```bash
 bash run_paper41.sh
