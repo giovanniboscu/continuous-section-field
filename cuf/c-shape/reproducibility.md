@@ -26,7 +26,7 @@ On Windows, install Python 3 and Git, make sure they are on `PATH`, and use Comm
 ## 2. Clone the repository
 
 ```bash
-git clone https://github.com/giovanniboscu/continuous-section-field.git
+git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 ```
 
