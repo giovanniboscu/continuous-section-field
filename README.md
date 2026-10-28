@@ -263,7 +263,7 @@ csf-actions geometry.yaml actions.yaml
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-git clone -depth 1  https://github.com/giovanniboscu/continuous-section-field.git
+git clone --depth 1  https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
 pip install -e .
 
