@@ -1,4 +1,11 @@
-# Version: CSF-CUF plot_strain_stress_boundary v14.2.2 - 2026-10-23
+# Version: CSF-CUF plot_strain_stress_boundary v14.2.7 - 2026-10-27
+# v14.2.7: Classify voids using polygon.weightabs from field.section(x).
+#          Absolute carrier != abs(polygon.weight). No endpoint fallback.
+#          Reuse bridge.field; load the CSF model once in transverse mode.
+#          Separate model loading from API-only sampling for regression tests.
+#          Export the actual section weightabs and void mask in the NPZ.
+# v14.2.4: Zero-absolute-weight cavities without third-party geometry dependencies.
+#          Polygon clipping, area subtraction and physical-point selection.
 # v14.2.2: Globally proportional vector density and length. Per-polygon direct
 #          arrow sampling with one physical step based on the full section.
 # v14.2.1: Initialize the material provider before polygon sampling; return local samples
@@ -10,7 +17,7 @@
 # v14.1: Gauss plot-mode compares only FEM integration points selected for plot trajectories.
 # v14: native OpenSees Gauss comparison + element-material boundary stresses.
 # v13 moving-domain and polygon-side handling remain unchanged.
-# Revision-ID: 7b59c6c7-d066-485d-b435-5c3b530de26d
+# Revision-ID: c0f0f7cb-4e40-459e-9272-ae5d830a2120
 #
 # Changelog v13:
 # - Recognize moving solved-field v5 through domain_vertices_at(x).
@@ -1418,7 +1425,7 @@ def _evaluate_cuf_state(field, provider, domain_lookup, domain_id: int, x: float
 
 
 def _sample_polygon_cells(field, provider, domain_lookup, domain_id: int, x: float,
-                          vertices, target_step: float):
+                          vertices, target_step: float, void_vertices=()):
     """Directly sample one CUF value per local polygon cell.
 
     The local grid is built from the polygon bounding box using an approximately
@@ -1426,6 +1433,13 @@ def _sample_polygon_cells(field, provider, domain_lookup, domain_id: int, x: flo
     positive area is represented, and the CUF state is evaluated at the
     centroid of that clipped cell. No interpolation is used.
     """
+    # Work with the existing polygon-rectangle clipping, without shapely.
+    # The positive-area material cell is the exterior intersection minus
+    # the zero-weight cavity intersections. No CUF evaluations occur in voids.
+    from matplotlib.path import Path as PolygonPath
+    exterior_path = PolygonPath(np.asarray(vertices, dtype=float))
+    cavity_paths = [PolygonPath(np.asarray(v, dtype=float)) for v in void_vertices]
+    local_voids = [np.asarray(v, dtype=float) for v in void_vertices]
     vertices = np.asarray(vertices, dtype=float)
     y_min, z_min = np.min(vertices, axis=0)
     y_max, z_max = np.max(vertices, axis=0)
@@ -1450,8 +1464,44 @@ def _sample_polygon_cells(field, provider, domain_lookup, domain_id: int, x: flo
             clipped = _clip_polygon_to_rectangle(vertices, rect)
             if len(clipped) < 3:
                 continue
-            _, centroid = _polygon_area_centroid(clipped)
-            y, z = float(centroid[0]), float(centroid[1])
+            exterior_area, exterior_center = _polygon_area_centroid(clipped)
+            # A clipped cavity must be subtracted only where it overlaps
+            # the exterior. In CSF, cavities are nested inside the exterior.
+            hole_area = 0.0
+            hole_moment = np.zeros(2, dtype=float)
+            for hole in local_voids:
+                clipped_hole = _clip_polygon_to_rectangle(hole, rect)
+                if len(clipped_hole) >= 3:
+                    area, center = _polygon_area_centroid(clipped_hole)
+                    hole_area += area
+                    hole_moment += area * center
+            physical_area = exterior_area - hole_area
+            area_tol = 1.0e-12 * max(1.0, exterior_area)
+            if physical_area <= area_tol:
+                continue
+            candidate = (exterior_area * exterior_center - hole_moment) / physical_area
+            def is_material(point):
+                return (exterior_path.contains_point(point) and
+                        not any(path.contains_point(point) for path in cavity_paths))
+            if not is_material(candidate):
+                # The centroid of a disconnected or ring-like cell can lie
+                # within a hole. Pick an actual material point instead.
+                ya, yb, za, zb = rect
+                candidate = None
+                for resolution in (3, 7, 15):
+                    for fz in (np.arange(resolution) + 0.5) / resolution:
+                        for fy in (np.arange(resolution) + 0.5) / resolution:
+                            point = (ya + fy*(yb-ya), za + fz*(zb-za))
+                            if is_material(point):
+                                candidate = point
+                                break
+                        if candidate is not None:
+                            break
+                    if candidate is not None:
+                        break
+                if candidate is None:
+                    raise ValueError(f"Unable to select physical sample in polygon {domain_id} at x={x:g}")
+            y, z = float(candidate[0]), float(candidate[1])
             u, eps, sigma = _evaluate_cuf_state(field, provider, domain_lookup, domain_id, x, y, z)
             mask[iz, iy] = True
             sample_y[iz, iy] = y
@@ -1475,18 +1525,68 @@ def _sample_polygon_cells(field, provider, domain_lookup, domain_id: int, x: flo
     }
 
 
-def recover_transverse_fields(npz_path: Path, csf_yaml: Path, x: float, grid: int, vector_grid: int = 60):
-    """Direct CUF sampling of the physical Y-Z section, polygon by polygon.
+def _section_absolute_weights(section) -> tuple[float, ...]:
+    """Read evaluated absolute carriers from a CSF Section, without inference.
 
-    A second, coarser set of independently evaluated polygon-local cells
-    supplies vector arrows at a uniform physical density based on the
-    complete section size. No field interpolation is performed.
+    ``section`` must be the object returned by ``csf_field.section(x)``.
+    CSF exposes ``weightabs`` separately from the algebraic ``weight`` used
+    for section composition.  In particular, ``abs(polygon.weight)`` is NOT
+    the absolute constitutive carrier.  No YAML access, endpoint queries,
+    reconstructed laws, guessed defaults, or near-zero thresholds belong here.
     """
-    from matplotlib.path import Path as PolygonPath
-    from csf.io.csf_reader import CSFReader
-    from csf.io.csf_issues import CSFIssues
+    weights = []
+    for domain_id, polygon in enumerate(section.polygons, start=1):
+        try:
+            raw = polygon.weightabs
+        except AttributeError as exc:
+            raise ValueError(
+                f"CSF polygon {domain_id} has no evaluated weightabs; "
+                "supply a Section returned by csf_field.section(x)"
+            ) from exc
+        if raw is None:
+            raise ValueError(
+                f"CSF polygon {domain_id} has weightabs=None; "
+                "an evaluated absolute carrier is required"
+            )
+        try:
+            weightabs = float(raw)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError(
+                f"CSF polygon {domain_id} has invalid weightabs={raw!r}"
+            ) from exc
+        if not math.isfinite(weightabs) or weightabs < 0.0:
+            raise ValueError(
+                f"CSF polygon {domain_id} has invalid weightabs={weightabs!r}; "
+                "expected a finite, nonnegative absolute carrier"
+            )
+        weights.append(weightabs)
+    return tuple(weights)
+
+
+def recover_transverse_fields(npz_path: Path, csf_yaml: Path, x: float, grid: int, vector_grid: int = 60):
+    """Load the two models through their public APIs, then sample the section.
+
+    The bridge owns CSF loading/validation and the constitutive provider.
+    There is deliberately no second CSFReader, raw YAML parsing, or checkpoint
+    decoding here.  Geometry and weights are obtained from its evaluated field.
+    """
     from csf.cuf.csf_bridge import CSFCUFModelBridge
     from csf.cuf.solver.compiled_field import CompiledDisplacementField
+
+    field = CompiledDisplacementField.load(npz_path)
+    bridge = CSFCUFModelBridge.from_yaml(csf_yaml)
+    return _sample_transverse_fields(field, bridge, x, grid, vector_grid)
+
+
+def _sample_transverse_fields(field, bridge, x: float, grid: int, vector_grid: int = 60):
+    """Sample already loaded CSF/CUF models using only their public APIs.
+
+    The evaluated Section is authoritative for current geometry, names and
+    absolute weights.  The bridge remains authoritative for constitutive
+    matrices; the compiled CUF field remains authoritative for displacement
+    and strain.  This routine performs no model-file I/O.
+    """
+    from matplotlib.path import Path as PolygonPath
 
     if grid < 2:
         raise ValueError("--transverse-grid must be >= 2")
@@ -1495,14 +1595,9 @@ def recover_transverse_fields(npz_path: Path, csf_yaml: Path, x: float, grid: in
     if not math.isfinite(x):
         raise ValueError("--transverse-x must be finite")
 
-    field = CompiledDisplacementField.load(npz_path)
-    bridge = CSFCUFModelBridge.from_yaml(csf_yaml)
     provider = bridge.constitutive_provider
-    result = CSFReader().read_file(str(csf_yaml))
-    if not result.ok or result.field is None:
-        raise ValueError(CSFIssues.format_report(result.issues))
-    csf_field = result.field
-    start, end = float(csf_field.s0.z), float(csf_field.s1.z)
+    csf_field = bridge.field
+    start, end = map(float, bridge.longitudinal_domain())
     if end <= start:
         raise ValueError("CSF longitudinal end must exceed its start")
     if not start <= x <= end:
@@ -1532,6 +1627,16 @@ def recover_transverse_fields(npz_path: Path, csf_yaml: Path, x: float, grid: in
     ]
     if any(len(vertices) < 3 for vertices in polygon_vertices):
         raise ValueError("Transverse maps require polygons with at least three vertices")
+    weightabs = _section_absolute_weights(section)
+    is_void = tuple(value == 0.0 for value in weightabs)
+    material_ids = [i for i, void in enumerate(is_void) if not void]
+    void_vertices = [polygon_vertices[i] for i, void in enumerate(is_void) if void]
+    if not material_ids:
+        raise ValueError("No nonzero-weight material polygons in this CSF section")
+    print(f"[transverse] section(x={x:g}) polygon.weightabs: "
+          f"{list(weightabs)}", flush=True)
+    print(f"[transverse] zero-absolute-weight void polygons: "
+          f"{[i+1 for i, void in enumerate(is_void) if void]}", flush=True)
     vertices_all = np.concatenate(polygon_vertices, axis=0)
     y_min, z_min = np.min(vertices_all, axis=0)
     y_max, z_max = np.max(vertices_all, axis=0)
@@ -1540,8 +1645,9 @@ def recover_transverse_fields(npz_path: Path, csf_yaml: Path, x: float, grid: in
 
     target_step = max(float(y_max - y_min), float(z_max - z_min)) / float(grid)
     polygon_cells = [
-        _sample_polygon_cells(field, provider, domain_lookup, pi, x, vertices, target_step)
-        for pi, vertices in enumerate(polygon_vertices, start=1)
+        _sample_polygon_cells(field, provider, domain_lookup, pi, x, polygon_vertices[pi-1],
+                              target_step, void_vertices=void_vertices)
+        for pi in (i+1 for i in material_ids)
     ]
 
     # The SAME physical arrow spacing applies throughout the full Y-Z section;
@@ -1549,8 +1655,9 @@ def recover_transverse_fields(npz_path: Path, csf_yaml: Path, x: float, grid: in
     section_span = max(float(y_max - y_min), float(z_max - z_min))
     vector_step = section_span / float(vector_grid)
     vector_cells = [
-        _sample_polygon_cells(field, provider, domain_lookup, pi, x, vertices, vector_step)
-        for pi, vertices in enumerate(polygon_vertices, start=1)
+        _sample_polygon_cells(field, provider, domain_lookup, pi, x, polygon_vertices[pi-1],
+                              vector_step, void_vertices=void_vertices)
+        for pi in (i+1 for i in material_ids)
     ]
 
     y_edges = np.linspace(y_min, y_max, grid + 1)
@@ -1569,9 +1676,15 @@ def recover_transverse_fields(npz_path: Path, csf_yaml: Path, x: float, grid: in
     boundary_tol = 64.0 * np.finfo(float).eps * max(
         1.0, float(np.max(np.abs(vertices_all)))
     )
-    for pi, vertices in enumerate(polygon_vertices, start=1):
+    void_mask = np.zeros((grid, grid), dtype=bool)
+    for vertices in void_vertices:
+        path = PolygonPath(np.vstack((vertices, vertices[0])), closed=True)
+        void_mask |= path.contains_points(transverse_points, radius=boundary_tol).reshape(grid, grid)
+    for pi in (i+1 for i in material_ids):
+        vertices = polygon_vertices[pi-1]
         path = PolygonPath(np.vstack((vertices, vertices[0])), closed=True)
         inside = path.contains_points(transverse_points, radius=-boundary_tol).reshape(grid, grid)
+        inside &= ~void_mask
         if np.any(inside & (polygon_index != 0)):
             raise ValueError(f"Overlapping CSF polygon interiors at x={x:g} (polygon {pi})")
         if not np.any(inside):
@@ -1593,7 +1706,10 @@ def recover_transverse_fields(npz_path: Path, csf_yaml: Path, x: float, grid: in
         "z_edges": z_edges,
         "polygon_index": polygon_index,
         "section_vertices": polygon_vertices,
+        "void_vertices": void_vertices,
         "polygon_names": [str(p.name) for p in polygons],
+        "polygon_weightabs": np.asarray(weightabs, dtype=float),
+        "polygon_is_void": np.asarray(is_void, dtype=bool),
         "displacement": displacement,
         "strain": strain,
         "stress": stress,
@@ -1613,8 +1729,12 @@ def save_transverse_npz(path: Path, samples):
     # persist exact per-polygon evaluation points used by all current plots.
     polygons = samples.get("polygon_cells") or []
     extra = {}
+    # Add authoritative section metadata without removing any legacy NPZ key.
+    if "polygon_weightabs" in samples:
+        extra["polygon_weightabs"] = np.asarray(samples["polygon_weightabs"], dtype=float)
+        extra["polygon_is_void"] = np.asarray(samples["polygon_is_void"], dtype=bool)
     if polygons:
-        extra = {
+        extra.update({
             "polygon_sample_domain": np.concatenate([
                 np.full(int(poly["mask"].sum()), poly["domain_id"], dtype=np.int32)
                 for poly in polygons
@@ -1634,7 +1754,7 @@ def save_transverse_npz(path: Path, samples):
             "polygon_sample_stress": np.concatenate([
                 poly["stress"][poly["mask"]] for poly in polygons
             ]),
-        }
+        })
     vector_cells = samples.get("vector_cells") or []
     if vector_cells:
         extra.update({
@@ -1706,6 +1826,9 @@ def save_transverse_map(samples, curve, output_dir: Path, dpi: int):
                 boundary = PolygonPatch(vertices, closed=True, fill=False, edgecolor="black", linewidth=0.8)
                 ax.add_patch(boundary)
                 mesh.set_clip_path(boundary)
+            for void in samples.get("void_vertices", ()):
+                ax.add_patch(PolygonPatch(void, closed=True, facecolor="white",
+                                          edgecolor="black", linewidth=0.9, zorder=10))
             verts_all = np.concatenate(all_vertices, axis=0)
             fig.colorbar(mesh, ax=ax, label=colorbar_label)
             ax.set_xlim(float(np.min(verts_all[:, 0])), float(np.max(verts_all[:, 0])))
@@ -1851,6 +1974,9 @@ def save_shear_stress_vector_transverse(samples, output_dir: Path, dpi: int, arr
                 quiver.set_clip_path(boundary)
                 count += len(rows)
 
+        for void in samples.get("void_vertices", ()):
+            ax.add_patch(PolygonPatch(void, closed=True, facecolor="white",
+                                      edgecolor="black", linewidth=0.9, zorder=10))
         fig.colorbar(mesh, ax=ax, label=r"$\sqrt{\tau_{xy}^2+\tau_{xz}^2}$")
         ax.set_xlim(float(y_min), float(y_max))
         ax.set_ylim(float(z_min), float(z_max))
@@ -2023,7 +2149,7 @@ def checkpoint_output_name(path: Path) -> str:
 
 def main():
     args = build_parser().parse_args()
-    print(f"[visualizer] v14.2.2: {Path(__file__).resolve()}", flush=True)
+    print(f"[visualizer] v14.2.7: {Path(__file__).resolve()}", flush=True)
     if args.max_vertices_per_plot < 1 or args.dpi < 1 or args.points < 2:
         raise ValueError("--points must be >=2 and --dpi / --max-vertices-per-plot >=1")
     if args.inward_offset is not None and (not math.isfinite(args.inward_offset) or args.inward_offset <= 0):
