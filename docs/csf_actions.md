@@ -2,7 +2,7 @@
 
 [CSF Actions Template - complete reference with all available actions](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/actions_template.yaml)
 
-> **[rectangle/](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/rectangle)  Complete worked example covering all available actions on a tapered rectangular section — plots, reports, solver exports, and three weight law alternatives. Run with `python3 -m csf.CSFActions geometry.yaml actions.yaml`.**
+> **[rectangle/](https://github.com/giovanniboscu/continuous-section-field/tree/main/actions-examples/rectangle)  Complete worked example covering all available actions on a tapered rectangular section - plots, reports, solver exports, and three weight law alternatives. Run with `python3 -m csf.CSFActions geometry.yaml actions.yaml`.**
 
 This document describes the **Actions YAML** contract implemented by `CSFActions.py` and provides **one worked YAML example per action**.
 
@@ -84,19 +84,19 @@ Plot-producing actions may create matplotlib figures. Display is **deferred** un
 
 Some actions require a `properties:` list (outside `params`). Allowed keys and meaning:
 
-- `A` — Total net cross-sectional area  
-- `Cx`, `Cy` — Centroid coordinates  
-- `Ix`, `Iy`, `Ixy` — Second moments and product of inertia  
-- `J` — Polar second moment (`Ix + Iy`)  
-- `I1`, `I2` — Principal second moments  
-- `rx`, `ry` — Radii of gyration  
-- `Wx`, `Wy` — Elastic section moduli  
-- `K_torsion` — Semi-empirical torsional stiffness approximation  
-- `Q_na` — First moment of area at neutral axis  
-- `J_sv_wall` — Saint-Venant torsion for open thin-walled walls  
-- `J_sv_cell` — Saint-Venant torsion for closed thin-walled cells (Bredt-like approach)  
-- `J_s_vroark` — Roark torsional indicator (equivalent-rectangle mapping) 
-- `J_s_vroark_fidelity` — Fidelity / reliability indicator for the Roark correction
+- `A` - Total net cross-sectional area  
+- `Cx`, `Cy` - Centroid coordinates  
+- `Ix`, `Iy`, `Ixy` - Second moments and product of inertia  
+- `J` - Polar second moment (`Ix + Iy`)  
+- `I1`, `I2` - Principal second moments  
+- `rx`, `ry` - Radii of gyration  
+- `Wx`, `Wy` - Elastic section moduli  
+- `K_torsion` - Semi-empirical torsional stiffness approximation  
+- `Q_na` - First moment of area at neutral axis  
+- `J_sv_wall` - Saint-Venant torsion for open thin-walled walls  
+- `J_sv_cell` - Saint-Venant torsion for closed thin-walled cells (Bredt-like approach)  
+- `J_s_vroark` - Roark torsional indicator (equivalent-rectangle mapping) 
+- `J_s_vroark_fidelity` - Fidelity / reliability indicator for the Roark correction
 
 ---
 
@@ -543,7 +543,7 @@ Export an **OpenSees Tcl geometry file** (sections + stations) intended for `for
 - Exactly one `*.tcl` path.
 - `stdout` is **not allowed**.
 
-**Parameters (`params:`)** — all **required**
+**Parameters (`params:`)** - all **required**
 
 | name | type | required | meaning |
 |---|---:|:---:|---|
@@ -585,9 +585,9 @@ Write a **SAP2000 template-pack text file** (copy/paste helper) derived from the
 
 | name | type | required | default | meaning |
 |---|---:|:---:|---:|---|
-| `n_intervals` | int | yes | — | Number of Lobatto intervals; stations = `n_intervals + 1`. |
-| `E_ref` | float | yes | — | Suggested Young’s modulus printed in the template header. |
-| `nu` | float | yes | — | Suggested Poisson ratio printed in the template header (also prints `G_ref`). |
+| `n_intervals` | int | yes | - | Number of Lobatto intervals; stations = `n_intervals + 1`. |
+| `E_ref` | float | yes | - | Suggested Young’s modulus printed in the template header. |
+| `nu` | float | yes | - | Suggested Poisson ratio printed in the template header (also prints `G_ref`). |
 | `material_name` | str | no | `"S355"` | Label used in SAP2000 copy/paste blocks. |
 | `mode` | str | no | `"BOTH"` | One of `CENTROIDAL_LINE`, `REFERENCE_LINE`, `BOTH`. |
 | `include_plot` | bool | no | `true` | If true, writes a PNG preview plot (file-only). |
