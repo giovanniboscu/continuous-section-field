@@ -1,6 +1,6 @@
 case:
   # Name of the numerical case.
-  # N08 refers to the order of the transverse CUF expansion.
+  # N02 refers to the order of the transverse CUF expansion.
   name: rectangular_prismatic_torsion_halfwave_legendre_N02
 
 problem:
