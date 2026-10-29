@@ -1,0 +1,32 @@
+# CSF-CUF Quick Start: visualization and section properties
+# Run with: csf-actions rectangular_prismatic_csf.yaml actions_colab.yaml
+CSF_ACTIONS:
+  stations:
+    ends: [0.0, 1000.0]
+  actions:
+    - plot_section_2d:
+        stations:
+          - ends
+        output:
+          - out/sections_S0_S1.png
+        show_ids: true
+        show_vertex_ids: false
+    - plot_properties:
+        output:
+          - out/section_properties.png
+        properties: [A, Ix, Iy]
+        params:
+          num_points: 80
+    - plot_weight:
+        output:
+          - out/material_variation.png
+        params:
+          num_points: 80
+    - section_selected_analysis:
+        stations:
+          - ends
+        output:
+          - out/section_properties.csv
+        properties: [A, Ix, Iy]
+        params:
+          fmt_display: ".6g"
