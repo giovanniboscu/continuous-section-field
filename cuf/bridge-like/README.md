@@ -8,7 +8,7 @@ Both configurations use fully clamped end sections.
 
 ![Bridge-like static schemes: uniform surface load and torsion](img/bridgeschema.jpg)
 
-[View the static schemes on GitHub](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/bridge-like/img/bridgeschema.jpg)
+
 
 ## Introduction
 
