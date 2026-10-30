@@ -1,5 +1,13 @@
 # CSF-CUF quick start
 
+
+### Static scheme and loading configuration
+
+![CSF-CUF torsion half-wave static scheme](img/torsion_halfwave_static_scheme.jpg)
+
+*Fixed-fixed rectangular beam subjected to a sinusoidal torsional line-load pair. Two opposite distributed line loads act in the global z direction at diagonally opposite section vertices. Their intensity follows a longitudinal half-wave, with an amplitude of 10 N/mm.*
+
+
 This Quick Start considers a **single one-dimensional beam member**. General assemblies of multiple connected members are outside the present implementation scope.
 
 The three elements introduced in this Quick Start - **the model**, **the problem**, and **the case** - form a **component composition** and should not be understood as consecutive steps in a processing pipeline. They are three distinct objects that are composed together to define a single analysis.
