@@ -8,6 +8,25 @@ The **model** describes the physical system, the **problem** defines how that sy
 
 The solver uses these objects together. None of them is an intermediate result produced by another: they are independent descriptions of different aspects of the same problem.
 
+
+>## Try it interactively in Google Colab
+>
+>You can run this Quick Start directly in Google Colab, without installing
+>CSF-CUF locally or writing Python code.
+>
+>[**Open the Interactive CSF-CUF Quick Start in Google Colab**](https://colab.research.google.com/github/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/quickstart_colab_interactive.ipynb)
+>
+>The notebook provides an interactive form to change the transverse CUF
+>order, longitudinal approximation order, material properties and
+>cross-section dimensions.
+>
+>It automatically runs the analysis and displays the CSF model,
+>section properties, CUF stress maps and structural response.
+
+The original YAML files remain unchanged.
+
+
+
 ```text
 .
 ├── models
