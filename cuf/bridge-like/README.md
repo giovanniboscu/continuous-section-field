@@ -1,5 +1,15 @@
 # Bridge-like Beam - Bending and Torsion
 
+### Static schemes and loading conditions
+
+The following figure illustrates the two structural problems considered in this example: uniform surface loading and torsion induced by opposite line loads along the top flange edges.
+
+Both configurations use fully clamped end sections.
+
+![Bridge-like static schemes: uniform surface load and torsion](img/bridgeschema.jpg)
+
+[View the static schemes on GitHub](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/bridge-like/img/bridgeschema.jpg)
+
 ## Introduction
 
 This example studies a **100 m long, bridge-like beam** under two different loading conditions: bending and torsion. The aim is to show how a beam can be described once, analysed under different loads, and checked using increasingly detailed numerical approximations.
