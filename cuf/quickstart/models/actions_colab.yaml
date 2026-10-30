@@ -1,9 +1,26 @@
+
 # CSF-CUF Quick Start: visualization and section properties
-# Run with: csf-actions rectangular_prismatic_csf.yaml actions_colab.yaml
+#
+# This configuration is used by csf-actions to visualize the CSF model
+# and inspect its geometric and material properties.
+#
+# Run from the directory containing the model and this actions file:
+#   csf-actions rectangular_prismatic_csf.yaml actions_colab.yaml
+#
+# All geometry and material information is obtained through the CSF API.
+# The actions do not perform a CUF structural analysis.
+
 CSF_ACTIONS:
+
+  # Named longitudinal stations, expressed in the model's length units (mm).
+  # The two ends correspond to the S0 and S1 sections of the Quick Start beam.
   stations:
     ends: [0.0, 1000.0]
+
   actions:
+
+    # Plot the actual cross-sectional geometry at both ends of the beam.
+    # Polygon identifiers are shown; vertex identifiers are hidden.
     - plot_section_2d:
         stations:
           - ends
@@ -11,17 +28,31 @@ CSF_ACTIONS:
           - out/sections_S0_S1.png
         show_ids: true
         show_vertex_ids: false
+
+    # Plot the variation of the geometric section properties along x.
+    # A  = cross-sectional area
+    # Ix = second moment of area about the x-axis (CSF convention)
+    # Iy = second moment of area about the y-axis (CSF convention)
+    # Sample the continuous section model at 80 longitudinal positions.
     - plot_properties:
         output:
           - out/section_properties.png
         properties: [A, Ix, Iy]
         params:
           num_points: 80
+
+    # Plot the longitudinal variation of the polygon weight.
+    # In this Quick Start model, weight represents Young's modulus E (MPa).
+    # This also illustrates material variation between S0 and S1.
     - plot_weight:
         output:
           - out/material_variation.png
         params:
           num_points: 80
+
+    # Export numerical section properties at the selected end stations.
+    # The CSV complements the plots with values for direct inspection.
+    # fmt_display controls the numeric formatting (six significant digits).
     - section_selected_analysis:
         stations:
           - ends
