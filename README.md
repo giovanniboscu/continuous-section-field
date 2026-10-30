@@ -56,6 +56,25 @@ The repository includes an open-source CUF implementation designed to keep the s
 
 See the [CSF–CUF documentation](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/readme.md) for details on the formulation, implementation, and available examples.
 
+
+
+**Try CSF-CUF interactively in Google Colab**
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/quickstart_colab_interactive.ipynb)
+
+Run a CUF structural analysis directly in your browser, without
+local installation or Python programming.
+
+The interactive Quick Start lets you modify cross-section geometry,
+material properties, transverse CUF expansion order, and longitudinal
+approximation order, then visualize the resulting section properties,
+stress distributions, and structural response.
+
+For the underlying model, problem, and case definitions, see the
+[CSF-CUF Quick Start documentation](cuf/quickstart/README.md).
+
+
+
 ```bash
 cd cuf/tutorials/variable_material_t_section/t_section/models/
 csf-actions t_noprismatic_csf.yaml action.yaml   # inspect the non-prismatic T-section
