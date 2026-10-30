@@ -1,35 +1,104 @@
+
 # CSF-CUF Quick Start: torsion half-wave problem
 #
 # This file defines the physical problem, not the numerical approximation.
 #
-# The CSF geometry and material model is defined separately in:
-#   ../models/rectangular_prismatic_csf.yaml
+# The Quick Start separates three responsibilities:
 #
-# The CUF transverse expansion and longitudinal approximation are
-# configured in:
-#   ../cases/torsion_halfwave_legendre_N02.yaml
+# 1. CSF MODEL: geometry and materials
 #
-# The Python implementation handling "torsion_halfwave" is selected
-# by the CSF-CUF problem-loading mechanism.
+#    ../models/rectangular_prismatic_csf.yaml
+#
+#    Defines the cross-section geometry, material properties and
+#    their possible variation along the longitudinal coordinate.
+#    These quantities are supplied through the continuous CSF API.
+#
+# 2. PHYSICAL PROBLEM: loads and boundary conditions
+#
+#    This YAML file selects the physical problem and supplies
+#    the parameters required by its implementation.
+#
+#    The corresponding Python adapter is:
+#
+#    https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/problem/torsion_halfwave.py
+#
+#    The adapter defines the torsional loading configuration:
+#    two opposite distributed line loads acting in the global
+#    z direction, with a sinusoidal distribution along x.
+#
+#    Both longitudinal ends are fully clamped.
+#
+#    The adapter is responsible for translating this physical
+#    problem into the loads and constraints used by the CUF solver.
+#
+# 3. NUMERICAL APPROXIMATION: CUF discretization
+#
+#    ../cases/torsion_halfwave_legendre_N02.yaml
+#
+#    Configures the transverse expansion and longitudinal
+#    approximation used to solve the selected physical problem.
+#
+#    Changing the approximation order does not require changing
+#    the physical problem or the CSF model.
+#
+# HOW THE PROBLEM IMPLEMENTATION IS SELECTED
+#
+# The "problem.type" value is an identifier recognized by the
+# CSF-CUF problem-loading mechanism.
+#
+# The corresponding Python adapter declares:
+#
+#    PROBLEM_TYPE = "torsion_halfwave"
+#
+# This identifier is not a Python filename.
 # No Python module is explicitly imported by this YAML file.
+#
+# The YAML provides configuration data; the Python adapter
+# provides the implementation of the physical problem.
+
 
 model:
 
   # Relative path to the CSF model.
+  #
   # Geometry, material properties and their longitudinal variation
   # are supplied through the CSF API.
+  #
+  # The problem adapter does not need to reproduce these definitions:
+  # it obtains the relevant geometric and material information
+  # through the model interfaces.
   csf_yaml: ../models/rectangular_prismatic_csf.yaml
+
 
 problem:
 
   # Problem identifier used by the CUF framework to select the
   # corresponding load and boundary-condition implementation.
   #
-  # This identifier is not a Python filename.
+  # This identifier must match the PROBLEM_TYPE declared by
+  # the Python problem adapter.
+  #
+  # It is not a Python filename or an import statement.
   type: torsion_halfwave
 
-  # Amplitude of the prescribed line load.
+  # Amplitude of the prescribed distributed line load.
+  #
   # Units: N/mm for this Quick Start model.
-  # The Python problem implementation determines how this amplitude
-  # is distributed and applied to the structural model.
+  #
+  # The Python adapter uses this value to define the intensity
+  # of the two opposite loads.
+  #
+  # Their longitudinal distribution follows a half sine wave:
+  #
+  #    q(x) = amplitude * sin(pi * (x - x0) / L)
+  #
+  # where:
+  #    x0 = initial longitudinal coordinate
+  #    L  = beam length
+  #
+  # The spatial application of the loads and the boundary
+  # conditions are defined by the Python adapter, not here.
+  #
+  # Changing this value changes the loading intensity without
+  # modifying the adapter or the CUF approximation.
   amplitude: 10.0
