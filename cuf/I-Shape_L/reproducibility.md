@@ -80,12 +80,6 @@ pip show csfpy
 csf-cuf --help
 ```
 
-To regenerate the FEM3D reference solution, OpenSeesPy is also required:
-
-```bash
-pip install openseespy
-```
-
 For headless Linux environments:
 
 ```bash
