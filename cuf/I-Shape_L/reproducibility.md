@@ -65,7 +65,7 @@ pip install --upgrade pip
 pip install -e .
 ```
 
-If required by the selected solver configuration:
+
 
 ```bash
 pip install pypardiso
