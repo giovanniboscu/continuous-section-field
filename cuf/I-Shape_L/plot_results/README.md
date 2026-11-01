@@ -12,6 +12,9 @@ The results are organized according to the type of representation:
 Each result is displayed directly in this page.  
 A direct link to the corresponding `.webp` file is also provided below each figure.
 
+> **Note on FEM3D results**  
+> The FEM3D curves shown here correspond to the raw, non-averaged element-wise results. No nodal smoothing or stress/strain averaging has been applied. Therefore, multiple traces may appear along the same geometric boundary when adjacent solid elements provide slightly different reconstructed values at shared locations. These differences are intentionally retained in order to preserve the original FEM3D output and avoid introducing additional post-processing into the comparison with the CSF-CUF solution.
+
 ---
 
 # 1. Longitudinal boundary results
