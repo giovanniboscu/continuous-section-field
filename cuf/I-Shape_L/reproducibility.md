@@ -336,6 +336,10 @@ The comparison includes:
 
 This is the script used to obtain the quantitative FEM3D/CSF-CUF equilibrium comparison reported for the tapered I-shaped benchmark.
 
+For the FEM3D mesh-convergence study and the reference mesh adopted in the subsequent comparisons, see:
+
+[FEM3D mesh-convergence criterion](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/FEM3Dmesh-convergence-criterion.md)
+
 ---
 
 ## 10. Complete reproduction sequence
