@@ -187,39 +187,13 @@ After the FEM3D analysis has completed, return to the main `I-Shape_L` directory
 cd ..
 ```
 
-Optionally verify the current directory:
-
-```bash
-pwd
-```
-
-The expected location is again:
-
-```text
-continuous-section-field/cuf/I-Shape_L
-```
-
-### Important working-directory requirement
-
-`startfem_tap.sh` is executed from:
-
-```text
-continuous-section-field/cuf/I-Shape_L/fem3d
-```
-
-whereas the post-processing launchers described below are executed from:
-
-```text
-continuous-section-field/cuf/I-Shape_L
-```
-
-Keeping these working directories unchanged avoids ambiguity in relative file paths used by the scripts.
 
 ---
 
 ## 7. Generate all comparison plots
 
 Once both the CSF-CUF and FEM3D solutions are available, remain in:
+
 
 ```text
 continuous-section-field/cuf/I-Shape_L
