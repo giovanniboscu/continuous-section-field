@@ -165,16 +165,12 @@ Columns: `x/L, x[mm], y[mm], z[mm], point, ux[mm], uy[mm], uz[mm]`.
 
 ## 7. Step 6 -Verify against the FEM3D (OpenSees) reference
 
-> Requires significantly more RAM than the previous steps: the 3D mesh has
-> **61,509 nodes / 54,000 `stdBrick` elements**. In low-RAM environments the
-> process may be terminated with `Killed` (OOM). This is a hardware
-> requirement, not a flaw in the tutorial.
->
-> **This step can be skipped.** The FEM3D reference results are already
-> included in the repository (`fem3d/output/*/`), pre-computed. Regenerating
-> them is only needed to verify the OpenSees solve itself; the CUF vs FEM3D
-> comparison in the next section can be run directly against the files
-> already shipped in the repo.
+ Requires significantly more RAM than the previous steps: the 3D mesh has
+ **61,509 nodes / 54,000 `stdBrick` elements**. In low-RAM environments the
+ process may be terminated with `Killed` (OOM). This is a hardware
+ requirement, not a flaw in the tutorial.
+
+
 
 ```bash
 cd fem3d
