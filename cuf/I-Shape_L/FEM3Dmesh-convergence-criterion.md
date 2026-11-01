@@ -118,17 +118,3 @@ S3 is selected because its displacement solution is already practically unchange
 
 The S4 mesh is therefore retained as a **verification mesh for the convergence assessment**, rather than as the production mesh used for the subsequent CUF–FEM3D comparisons.
 
-In summary:
-
-```text
-S3 -> adopted converged FEM3D reference mesh
-S4 -> additional refinement used to verify convergence
-```
-
-The subsequent comparison of
-
-```math
-\nabla \cdot \boldsymbol{\sigma}
-```
-
-between FEM3D and CUF must therefore be interpreted as a **strong-equilibrium diagnostic evaluated on a displacement-converged FEM solution**, and not as the criterion used to establish FEM mesh convergence.
