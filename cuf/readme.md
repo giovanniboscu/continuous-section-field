@@ -57,15 +57,17 @@ flowchart LR
 ```
 
 
+## An Independent and Open Project
 
-## An open implementation
+As I am not affiliated with an academic institution, I have been able to approach the implementation of the Carrera Unified Formulation with the freedom of an independent project, drawing on the published scientific literature and aiming to develop an open, educational, and verifiable tool.
+
+This independence is not intended as a departure from academic research, but as an opportunity to explore, understand, and implement a well-established scientific formulation, while making the resulting work accessible to others.
 
 This repository is open for a reason: it is meant to be explored, questioned, tested, and challenged.
 
 If you are a student, a researcher, or simply curious about how and why the method works, use it, experiment with it, and ask questions.
 
 The goal is not to impose a way of doing things, but to propose one. If something is unclear, if you think something could be improved, or if you have an idea for a different implementation, that is exactly the kind of interaction this project is meant to encourage.
-
 > **Note:** For a general description of the CSF–CUF architecture, formulation, and solver workflow, see the [CUF solver documentation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/cuf/readme.md).
 
 ## Documentation
