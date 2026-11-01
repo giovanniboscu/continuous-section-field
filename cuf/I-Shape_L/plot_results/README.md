@@ -183,3 +183,54 @@ All generated images are displayed directly below.
 ### sigma yy along perimeter
 
 <img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_5/perimeter/boundary/polygon_009/sigma_yy_along_perimeter.webp" alt="sigma yy along perimeter" width="100%">
+
+
+## `perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008`
+
+### epsilon xx along perimeter
+
+<img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008/epsilon_xx_along_perimeter.webp" alt="epsilon xx along perimeter" width="100%">
+
+### epsilon yy along perimeter
+
+<img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008/epsilon_yy_along_perimeter.webp" alt="epsilon yy along perimeter" width="100%">
+
+### epsilon zz along perimeter
+
+<img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008/epsilon_zz_along_perimeter.webp" alt="epsilon zz along perimeter" width="100%">
+
+### gamma xy along perimeter
+
+<img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008/gamma_xy_along_perimeter.webp" alt="gamma xy along perimeter" width="100%">
+
+### gamma xz along perimeter
+
+<img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008/gamma_xz_along_perimeter.webp" alt="gamma xz along perimeter" width="100%">
+
+### gamma yz along perimeter
+
+<img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008/gamma_yz_along_perimeter.webp" alt="gamma yz along perimeter" width="100%">
+
+### sigma xx along perimeter
+
+<img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008/sigma_xx_along_perimeter.webp" alt="sigma xx along perimeter" width="100%">
+
+### sigma yy along perimeter
+
+<img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008/sigma_yy_along_perimeter.webp" alt="sigma yy along perimeter" width="100%">
+
+### sigma zz along perimeter
+
+<img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008/sigma_zz_along_perimeter.webp" alt="sigma zz along perimeter" width="100%">
+
+### tau xy along perimeter
+
+<img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008/tau_xy_along_perimeter.webp" alt="tau xy along perimeter" width="100%">
+
+### tau xz along perimeter
+
+<img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008/tau_xz_along_perimeter.webp" alt="tau xz along perimeter" width="100%">
+
+### tau yz along perimeter
+
+<img src="https://raw.githubusercontent.com/giovanniboscu/continuous-section-field/main/cuf/I-Shape_L/plot_results/perimeters/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1/transverse_x_500/perimeter/boundary/polygon_008/tau_yz_along_perimeter.webp" alt="tau yz along perimeter" width="100%">
