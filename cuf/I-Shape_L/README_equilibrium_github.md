@@ -1,12 +1,267 @@
-# Strong-Equilibrium Diagnostic: FEM3D H8 vs CSF-CUF L9
+# CSF-CUF I-Shape_L Reproducibility
 
-## Scope
+This document provides a command-by-command guide to reproduce the I-shaped tapered-section analysis and the corresponding FEM3D/CSF-CUF comparison workflow contained in:
 
-This note summarizes the results obtained with `compare_fem3d_cuf_strong_equilibrium_v2.py` for the FEM3D H8 and CSF-CUF L9 solutions.
+```text
+cuf/I-Shape_L
+```
 
-The diagnostic evaluates, at the same physical H8 Gauss points, the three components of the stress-divergence residual:
+The workflow includes:
 
-$$
+- execution of the CSF-CUF tapered I-section case;
+- generation of the independent FEM3D reference solution;
+- generation of the comparison plots;
+- evaluation of the multi-section strong-equilibrium diagnostic.
+
+The commands below start from the repository root. After the installation prerequisites, all analysis commands are executed from:
+
+```text
+continuous-section-field/cuf/I-Shape_L
+```
+
+Linux/macOS examples use `python3`; on Windows, use `python` or `py -3` as appropriate.
+
+---
+
+## 1. System prerequisites
+
+On Ubuntu/Debian:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y python3 python3-venv python3-pip git
+```
+
+On Windows, install Python 3 and Git, make sure they are available on `PATH`, and use Command Prompt or PowerShell.
+
+Linux package-manager instructions do not apply to Windows.
+
+---
+
+## 2. Clone the repository
+
+```bash
+git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
+```
+
+---
+
+## 3. Virtual environment and package installation
+
+Create and activate a Python virtual environment:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Install the project:
+
+```bash
+pip install --upgrade pip
+pip install -e .
+```
+
+If required by the selected solver configuration:
+
+```bash
+pip install pypardiso
+```
+
+The installation registers the `csf-cuf` command.
+
+Verify the installation with:
+
+```bash
+pip show csfpy
+csf-cuf --help
+```
+
+To regenerate the FEM3D reference solution, OpenSeesPy is also required:
+
+```bash
+pip install openseespy
+```
+
+For headless Linux environments:
+
+```bash
+export MPLBACKEND=Agg
+```
+
+### Windows
+
+From Command Prompt:
+
+```cmd
+python -m venv venv
+venv\Scripts\activate.bat
+
+python -m pip install --upgrade pip
+python -m pip install -e .
+python -m pip install openseespy
+```
+
+Install `pypardiso` only where supported and required by the selected solver configuration.
+
+For headless plotting in Windows CMD:
+
+```cmd
+set MPLBACKEND=Agg
+```
+
+The virtual environment is assumed to remain active in the following steps.
+
+---
+
+## 4. Move to the I-Shape_L example
+
+From the repository root:
+
+```bash
+cd cuf/I-Shape_L
+```
+
+Verify the current working directory if necessary:
+
+```bash
+pwd
+```
+
+The expected directory is:
+
+```text
+continuous-section-field/cuf/I-Shape_L
+```
+
+All commands in the following sections are executed relative to this directory unless explicitly stated otherwise.
+
+---
+
+## 5. Run the CSF-CUF tapered I-section analysis
+
+From:
+
+```text
+continuous-section-field/cuf/I-Shape_L
+```
+
+execute:
+
+```bash
+csf-cuf cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
+```
+
+This is the CSF-CUF analysis used by the subsequent comparison and strong-equilibrium post-processing workflow.
+
+The case defines the tapered I-shaped configuration and uses the L9 transverse expansion associated with this benchmark.
+
+The generated CSF-CUF solution is subsequently read by the plotting and equilibrium-analysis scripts described below.
+
+---
+
+## 6. Generate the FEM3D reference solution
+
+The FEM3D model is contained in the `fem3d` subdirectory.
+
+Starting from:
+
+```text
+continuous-section-field/cuf/I-Shape_L
+```
+
+move into the FEM3D directory:
+
+```bash
+cd fem3d
+```
+
+The FEM3D reference analysis can then be launched with the command associated with the provided FEM3D case.
+
+Alternatively, under Linux, use the supplied launcher:
+
+```bash
+./startfem_tap.sh
+```
+
+The script generates the independent three-dimensional FEM reference solution required by the subsequent comparison tools.
+
+After the FEM3D analysis has completed, return to the main `I-Shape_L` directory:
+
+```bash
+cd ..
+```
+
+Optionally verify the current directory:
+
+```bash
+pwd
+```
+
+The expected location is again:
+
+```text
+continuous-section-field/cuf/I-Shape_L
+```
+
+### Important working-directory requirement
+
+`startfem_tap.sh` is executed from:
+
+```text
+continuous-section-field/cuf/I-Shape_L/fem3d
+```
+
+whereas the post-processing launchers described below are executed from:
+
+```text
+continuous-section-field/cuf/I-Shape_L
+```
+
+Keeping these working directories unchanged avoids ambiguity in relative file paths used by the scripts.
+
+---
+
+## 7. Generate all comparison plots
+
+Once both the CSF-CUF and FEM3D solutions are available, remain in:
+
+```text
+continuous-section-field/cuf/I-Shape_L
+```
+
+and execute:
+
+```bash
+./generate_all_plots.sh
+```
+
+This launcher generates the plots associated with the I-shaped tapered benchmark using the previously computed CSF-CUF and FEM3D results.
+
+The script should therefore be executed only after the required solution files have been generated or are already present.
+
+---
+
+## 8. Run the multi-section strong-equilibrium diagnostic
+
+Still from:
+
+```text
+continuous-section-field/cuf/I-Shape_L
+```
+
+execute:
+
+```bash
+./equilibrium_multisection_components.sh
+```
+
+This launcher evaluates the strong-equilibrium diagnostic over multiple beam sections.
+
+The diagnostic compares the FEM3D H8 and CSF-CUF L9 solutions at corresponding physical sampling locations and evaluates the three components of the stress-divergence residual:
+
+\[
 (\nabla\cdot\sigma)_x
 =
 \frac{\partial \sigma_{xx}}{\partial x}
@@ -14,9 +269,9 @@ $$
 \frac{\partial \tau_{xy}}{\partial y}
 +
 \frac{\partial \tau_{xz}}{\partial z},
-$$
+\]
 
-$$
+\[
 (\nabla\cdot\sigma)_y
 =
 \frac{\partial \tau_{xy}}{\partial x}
@@ -24,9 +279,11 @@ $$
 \frac{\partial \sigma_{yy}}{\partial y}
 +
 \frac{\partial \tau_{yz}}{\partial z},
-$$
+\]
 
-$$
+and
+
+\[
 (\nabla\cdot\sigma)_z
 =
 \frac{\partial \tau_{xz}}{\partial x}
@@ -34,24 +291,11 @@ $$
 \frac{\partial \tau_{yz}}{\partial y}
 +
 \frac{\partial \sigma_{zz}}{\partial z}.
-$$
+\]
 
-The reported quantity is an **element/domain-interior strong-equilibrium residual**. Finite differences are restricted to remain inside the same H8 element and the same CSF domain. Therefore, interface traction-jump terms are not included.
+The corresponding total residual norm is
 
-Both formulations are displacement-based and enforce equilibrium primarily in weak form. The present diagnostic is therefore intended as a local post-processing comparison, not as a proof of global strong-form equilibrium.
-
----
-
-## Sampling
-
-- Selected sections: **40**
-- Accepted Gauss samples: **34,560**
-- Longitudinal range: **$x/L \in [0.01,\,0.99]$**
-- Sampling: all available native H8 Gauss points on each selected $x$-plane
-
-For each section, statistics were computed for the nine individual stress-gradient terms, the three equilibrium residual components, and the total residual norm
-
-$$
+\[
 \|\nabla\cdot\sigma\|
 =
 \sqrt{
@@ -59,193 +303,134 @@ $$
 (\nabla\cdot\sigma)_y^2+
 (\nabla\cdot\sigma)_z^2
 }.
-$$
+\]
+
+The resulting comparison is an element/domain-interior strong-equilibrium diagnostic. It is a local post-processing measure and should not be interpreted as a proof of global strong-form equilibrium.
 
 ---
 
-## Main results
+## 9. Complete reproduction sequence
 
-The table below reports the median across the 40 sections of the per-section median absolute residual.
+After completing the installation prerequisites, the complete Linux workflow is:
 
-| Quantity | FEM3D H8 | CSF-CUF L9 | Sections with CUF residual < FEM residual |
-|---|---:|---:|---:|
-| $|(\nabla\cdot\sigma)_x|$ | $4.732120\times10^{-2}$ | $4.153161\times10^{-2}$ | 19 / 40 |
-| $|(\nabla\cdot\sigma)_y|$ | $5.713362\times10^{-3}$ | $5.544637\times10^{-3}$ | 8 / 40 |
-| $|(\nabla\cdot\sigma)_z|$ | $4.324394\times10^{-1}$ | $6.555127\times10^{-3}$ | **40 / 40** |
-| $\|\nabla\cdot\sigma\|$ | $4.357811\times10^{-1}$ | $4.387147\times10^{-2}$ | **38 / 40** |
+```bash
+cd continuous-section-field/cuf/I-Shape_L
 
-The total median residual is therefore approximately
+# 1. CSF-CUF analysis
+csf-cuf cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
 
-$$
-\frac{4.387147\times10^{-2}}
-     {4.357811\times10^{-1}}
-\approx 0.10,
-$$
+# 2. FEM3D reference
+cd fem3d
+./startfem_tap.sh
 
-so the CSF-CUF total interior strong-equilibrium residual is about **one order of magnitude smaller** than the FEM3D H8 value in this test.
+# 3. Return to I-Shape_L
+cd ..
+pwd
 
-This does **not** mean that CUF has a uniformly smaller residual in every equilibrium component. The result is strongly component-dependent.
+# 4. Generate CSF-CUF/FEM3D comparison plots
+./generate_all_plots.sh
 
----
+# 5. Run the multi-section strong-equilibrium diagnostic
+./equilibrium_multisection_components.sh
+```
 
-## Equilibrium in the $x$ direction
+After:
 
-For
+```bash
+cd ..
+pwd
+```
 
-$$
-\frac{\partial \sigma_{xx}}{\partial x}
-+
-\frac{\partial \tau_{xy}}{\partial y}
-+
-\frac{\partial \tau_{xz}}{\partial z}
-=0,
-$$
+the working directory must be:
 
-the median residuals are
+```text
+continuous-section-field/cuf/I-Shape_L
+```
 
-$$
-\mathrm{FEM3D}=4.732120\times10^{-2},
-\qquad
-\mathrm{CSF\text{-}CUF}=4.153161\times10^{-2}.
-$$
-
-The two values are of the same order of magnitude. CUF has the smaller residual in **19 of 40 sections**, so no systematic advantage is observed in this component.
-
-The median magnitudes of the three contributing terms are:
-
-| Term | FEM3D H8 | CSF-CUF L9 |
-|---|---:|---:|
-| $|\partial \sigma_{xx}/\partial x|$ | $5.599876\times10^{-2}$ | $5.658783\times10^{-2}$ |
-| $|\partial \tau_{xy}/\partial y|$ | $6.124195\times10^{-3}$ | $3.520627\times10^{-2}$ |
-| $|\partial \tau_{xz}/\partial z|$ | $6.326840\times10^{-3}$ | $5.004803\times10^{-2}$ |
-
-The final residual is therefore produced by a different balance among the individual terms in the two formulations.
+before executing the final two scripts.
 
 ---
 
-## Equilibrium in the $y$ direction
+## 10. Shortest reproduction path
 
-For
+If the repository and Python environment are already configured, execute:
 
-$$
-\frac{\partial \tau_{xy}}{\partial x}
-+
-\frac{\partial \sigma_{yy}}{\partial y}
-+
-\frac{\partial \tau_{yz}}{\partial z}
-=0,
-$$
+```bash
+cd continuous-section-field/cuf/I-Shape_L
 
-the median residuals are
+csf-cuf cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
 
-$$
-\mathrm{FEM3D}=5.713362\times10^{-3},
-\qquad
-\mathrm{CSF\text{-}CUF}=5.544637\times10^{-3}.
-$$
+cd fem3d
+./startfem_tap.sh
+cd ..
 
-The median values are almost identical. CUF has the smaller residual in only **8 of 40 sections**.
+./generate_all_plots.sh
+./equilibrium_multisection_components.sh
+```
 
-The contributing terms are also comparable:
+If the FEM3D reference solution has already been generated and the required files are still available, the FEM3D step may be skipped:
 
-| Term | FEM3D H8 | CSF-CUF L9 |
-|---|---:|---:|
-| $|\partial \tau_{xy}/\partial x|$ | $8.422499\times10^{-4}$ | $1.395665\times10^{-3}$ |
-| $|\partial \sigma_{yy}/\partial y|$ | $3.220613\times10^{-3}$ | $3.341999\times10^{-3}$ |
-| $|\partial \tau_{yz}/\partial z|$ | $1.767699\times10^{-3}$ | $2.759391\times10^{-3}$ |
+```bash
+cd continuous-section-field/cuf/I-Shape_L
 
-Thus, the $y$-equilibrium equation does not show a substantial global difference between the two methods.
+csf-cuf cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
+
+./generate_all_plots.sh
+./equilibrium_multisection_components.sh
+```
 
 ---
 
-## Equilibrium in the $z$ direction
+## Command summary — Linux
 
-The largest difference occurs for
+From a fresh Ubuntu/Debian installation:
 
-$$
-\frac{\partial \tau_{xz}}{\partial x}
-+
-\frac{\partial \tau_{yz}}{\partial y}
-+
-\frac{\partial \sigma_{zz}}{\partial z}
-=0.
-$$
+```bash
+sudo apt-get update
+sudo apt-get install -y python3 python3-venv python3-pip git
 
-The median residuals are
+git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
 
-$$
-\mathrm{FEM3D}=4.324394\times10^{-1},
-\qquad
-\mathrm{CSF\text{-}CUF}=6.555127\times10^{-3}.
-$$
+python3 -m venv venv
+source venv/bin/activate
 
-The CUF residual is smaller in **all 40 sections**.
+pip install --upgrade pip
+pip install -e .
+pip install pypardiso
+pip install openseespy
 
-The ratio of the two median values is approximately
+export MPLBACKEND=Agg
 
-$$
-\frac{6.555127\times10^{-3}}
-     {4.324394\times10^{-1}}
-\approx 1.5\times10^{-2}.
-$$
+cd cuf/I-Shape_L
 
-Thus, for this equilibrium component, the CSF-CUF residual is about **1.5% of the FEM3D H8 residual**.
+# CSF-CUF
+csf-cuf cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
 
-The difference is also visible in the individual stress-gradient terms:
+# FEM3D
+cd fem3d
+./startfem_tap.sh
 
-| Term | FEM3D H8 | CSF-CUF L9 |
-|---|---:|---:|
-| $|\partial \tau_{xz}/\partial x|$ | $2.524075\times10^{-1}$ | $2.388873\times10^{-2}$ |
-| $|\partial \tau_{yz}/\partial y|$ | $8.589188\times10^{-2}$ | $4.519739\times10^{-3}$ |
-| $|\partial \sigma_{zz}/\partial z|$ | $2.594481\times10^{-1}$ | $2.459691\times10^{-2}$ |
+# Return to I-Shape_L
+cd ..
 
-Therefore, the smaller CUF residual in the $z$ equation is not caused only by an accidental cancellation of large terms. The individual stress-gradient terms themselves are substantially smaller in the CUF reconstruction for this test.
+# Comparison plots
+./generate_all_plots.sh
 
----
+# Strong-equilibrium comparison
+./equilibrium_multisection_components.sh
+```
 
-## Overall interpretation
+The order is intentional:
 
-The results support the following statement:
+```text
+CSF-CUF
+   ↓
+FEM3D
+   ↓
+comparison plots
+   ↓
+multi-section strong-equilibrium diagnostic
+```
 
-> **In this element/domain-interior strong-equilibrium diagnostic, the CSF-CUF L9 solution exhibits a lower total local equilibrium residual than the FEM3D H8 solution over most of the beam. The difference is dominated by the $z$-equilibrium equation, while the $x$- and $y$-equilibrium equations are much more comparable.**
-
-In particular:
-
-- the total CUF residual is smaller in **38 of 40 sections**;
-- the $z$-equilibrium residual is smaller for CUF in **40 of 40 sections**;
-- the $x$-equilibrium residual does not show a systematic winner;
-- the $y$-equilibrium residual is very similar in magnitude between the two formulations.
-
-In the restricted sense measured by this diagnostic, the CSF-CUF solution can therefore be described as **more locally equilibrated overall**, but this statement should not be generalized to mean that CUF is universally more accurate or more correct than FEM3D.
-
----
-
-## Important limitations
-
-The comparison must be interpreted with the following qualifications:
-
-1. The diagnostic evaluates the strong-form residual only **inside elements/domains**.
-2. It does not include traction-jump contributions across H8 element interfaces or CSF domain interfaces.
-3. Both methods enforce equilibrium primarily through their weak formulations.
-4. FEM3D H8 and CSF-CUF L9 use very different spatial approximations, so a lower local residual does not by itself establish a globally superior method.
-5. For variable material properties, the constitutive field represented by CUF may remain continuous while the FEM3D brick model uses element-wise material values. This difference can affect local stress derivatives and must be kept in mind when interpreting the residuals.
-
----
-
-## Files generated by the diagnostic
-
-The run produces:
-
-- `equilibrium_component_points_all_sections.csv`
-- `equilibrium_component_sections_summary.csv`
-- `summary.txt`
-- `div_x_median_vs_x.png`
-- `div_y_median_vs_x.png`
-- `div_z_median_vs_x.png`
-- `div_norm_median_vs_x.png`
-- `equilibrium_x_terms_median_vs_x.png`
-- `equilibrium_y_terms_median_vs_x.png`
-- `equilibrium_z_terms_median_vs_x.png`
-- `residual_ratio_cuf_over_fem_vs_x.png`
-
-These files should be used together: the scalar summary provides the global picture, while the section-wise plots and CSV files show where along the beam the two formulations differ.
+Both numerical solutions must therefore exist before running the final comparison and equilibrium-analysis stages.
