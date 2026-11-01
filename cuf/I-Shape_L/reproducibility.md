@@ -235,6 +235,11 @@ This launcher generates the plots associated with the I-shaped tapered benchmark
 
 The script should therefore be executed only after the required solution files have been generated or are already present.
 
+The partial set of generated comparison plots can be viewed directly here:
+
+[View all generated plots](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/plot_results/README.md)
+
+
 ---
 
 ## 8. Run the multi-section equilibrium diagnostic
