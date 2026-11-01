@@ -1,0 +1,54 @@
+# CSF-CUF: tapered Carrera I-section, Lagrange L9 transverse expansion.
+# Derived from c_section_table_9_13_lagrangeL9_E10.yaml, retaining the
+# Carrera & Giunta 2010 I-section half-wave load and Navier end supports.
+# Place this file in cuf/cases/taper/.
+# Requires:
+#   cuf/models/carrera_i_shaped_taper80_l9.yaml
+#   cuf/problems/taper_table9_l9.yaml
+#   cuf/expansions/lagrangeL9_v4.py
+#   cuf/validation/surface_halfwave_multi.py
+#   cuf/validation/surface_halfwave_paper2010.py (existing adapter)
+
+case:
+  name: carrera_i_shaped_taper80_lagrangeL9_v4_web3
+
+problem:
+  yaml: ../../problems/taper_table9_l9_web3.yaml
+  adapter: ../../validation/surface_halfwave_multi.py
+
+cuf:
+  basis: lagrangeL9
+  order: 2
+  basis_options:
+    domain_source: csf_polygons
+    mapping: isoparametric
+    connectivity: shared_points
+    boundary_tolerance: 1.0e-10
+    require_prismatic: false  # Legacy option; ignored by lagrangeL9_v4.
+
+longitudinal:
+  method: finite_element
+  element_boundaries: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  basis: lagrange
+  order: 6
+  gauss_order: 15
+  material_polynomial_degree: 1
+
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 12
+
+solver:
+  correctionMITC: true
+  verifyMITCAssembly: true
+  equilibration:
+    iterations: [1, 2, 3, 4, 5]
+
+sampling:
+  stations: [0.0, 0.1, 1.0]
+  displacement_samples: 201
+  stress_grid: 41
+
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../../output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3

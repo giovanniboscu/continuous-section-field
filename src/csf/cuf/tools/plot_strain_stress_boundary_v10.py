@@ -1,4 +1,16 @@
-# Version: CSF-CUF plot_strain_stress_boundary v14.2.7 - 2026-10-27
+# Version: CSF-CUF plot_strain_stress_boundary v14.5.0 - 2026-10-31
+# v14.5.0: --transverse-perimeter-only skips all map sampling, export and rendering.
+#          The new switch implies perimeter mode and retains optional FEM3D overlays.
+#          Expanded CLI help documents modes, dependencies, examples and output files.
+#          Existing flags, recovery algorithms, plotted values and styles are unchanged.
+# v14.4.0: Optional FEM3D H8 overlays on fixed-x boundary and inward perimeters.
+#          Same coordinates, material-side recovery and scatter style as longitudinal plots.
+#          Separate FEM NPZ/CSV exports retain every element-side value without averaging.
+#          CUF-only perimeters, maps, longitudinal and Gauss recovery remain unchanged.
+# v14.3.0: Optional fixed-x perimeter strain/stress plots for each material polygon.
+#          Direct CSF/CUF API evaluation, including parallel-edge inward polygons.
+#          Independent NPZ/CSV exports; legacy modes and export schemas preserved.
+#          No raw YAML parsing, geometry repair, field interpolation or side averaging.
 # v14.2.7: Classify voids using polygon.weightabs from field.section(x).
 #          Absolute carrier != abs(polygon.weight). No endpoint fallback.
 #          Reuse bridge.field; load the CSF model once in transverse mode.
@@ -17,7 +29,7 @@
 # v14.1: Gauss plot-mode compares only FEM integration points selected for plot trajectories.
 # v14: native OpenSees Gauss comparison + element-material boundary stresses.
 # v13 moving-domain and polygon-side handling remain unchanged.
-# Revision-ID: c0f0f7cb-4e40-459e-9272-ae5d830a2120
+# Revision-ID: a9be16d2-afcf-4452-95f6-747b55c12993
 #
 # Changelog v13:
 # - Recognize moving solved-field v5 through domain_vertices_at(x).
@@ -96,12 +108,39 @@ Optional inward sampling:
     of the corresponding polygon vertex. Collinear boundary vertices use the same
     rule through the coincident inward edge normals, which gives the inward normal.
     The distance is expressed in the native transverse model units.
+
+Optional transverse perimeter sampling (v14.3.0):
+    --transverse-x X --transverse-perimeter preserves the existing maps and adds
+    six strain and six stress plots per material polygon, at fixed X, against
+    physical perimeter arc length. --transverse-perimeter-points controls density.
+    --transverse-inward-offset D adds a separate parallel-edge inward contour;
+    this is intentionally distinct from the legacy longitudinal --inward-offset.
+    Geometry, absolute weights and child exclusions are obtained only from CSF
+    APIs. See README.md for geometry safeguards, exports, and all CLI options.
+
+Optional FEM3D perimeter overlays (v14.4.0):
+    Adding --fem3d with --transverse-perimeter evaluates H8 displacement/strain
+    at the exact CUF boundary and inward coordinates. The longitudinal material
+    options also apply here: element material by default when available, or
+    --fem-stress-from-csf explicitly. Missing material never means zero stress.
+    CUF lines and orange FEM markers share the same axes and longitudinal style.
+    Multiple element-side values remain separate; maps and Gauss modes are unchanged.
+
+Optional perimeter-only mode (v14.5.0):
+    --transverse-x X --transverse-perimeter-only computes and saves only the
+    boundary and optional inward perimeters, including FEM3D when supplied.
+    It implies --transverse-perimeter; both flags may be given, with only mode
+    taking precedence. No map grids, map fields, map NPZ or map PNGs are produced.
+    Map grid settings are unused in this mode. --no-plots still saves perimeter
+    NPZ/CSV data. Files left by earlier runs are never deleted automatically.
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
+import json
+import warnings
 import math
 from pathlib import Path
 
@@ -621,7 +660,11 @@ class FEM3DH8:
                 self.ids = np.arange(len(conn), dtype=np.int64)
                 self.units = str(np.asarray(data["units"]).item()) if "units" in keys else "native"
                 self.source_schema = "legacy I-Shape H8 NPZ"
-                self.element_E = self.element_G = self.element_nu = None
+                material_keys = {"element_E", "element_G", "element_nu"}
+                if material_keys & keys and not material_keys.issubset(keys):
+                    raise ValueError("Incomplete FEM element material metadata")
+                for name in material_keys:
+                    setattr(self, name, np.asarray(data[name], dtype=float) if name in keys else None)
                 self.native_stresses = self.gauss_coordinates = self.gauss_natural = None
 
                 x0 = float(np.asarray(data["x0"]).reshape(-1)[0])
@@ -866,6 +909,52 @@ class FEM3DH8:
         if not found:
             raise ValueError(f"No FEM3D element contains point {tuple(point)}; check geometry and units")
         return found
+
+
+def check_material_consistency(fem, csf_yaml, output_dir, source):
+    """Compare constitutive laws at H8 centroids, not at boundary samples.
+
+    This checks the supplied CSF model, not the unknown CUF assembly material.
+    Spatial variation inside an element is deliberately excluded from this test.
+    """
+    from csf.cuf.csf_bridge import CSFCUFModelBridge
+    from matplotlib.path import Path as PolygonPath
+    report = dict(stress_source=source, location="H8 centroids", rtol=1e-8,
+                  limitation="CSF input is not evidence of CUF assembly material")
+    if fem.element_E is None:
+        report.update(status="unavailable", reason="FEM element material metadata absent")
+    else:
+        bridge = CSFCUFModelBridge.from_yaml(csf_yaml)
+        mismatch, unchecked = [], []
+        sections = {}
+        for i, (x, y, z) in enumerate(fem.coords.mean(axis=1)):
+            if x not in sections:
+                section = bridge.field.section(float(x))
+                sections[x] = [PolygonPath([(v.x, v.y) for v in p.vertices]) for p in section.polygons]
+            domains = [j for j, polygon in enumerate(sections[x]) if polygon.contains_point((y, z))]
+            if not domains:
+                unchecked.append(int(fem.ids[i]))
+                continue
+            actual = isotropic_element_C(fem.element_E[i], fem.element_G[i], fem.element_nu[i])
+            if any(not np.allclose(actual, bridge.constitutive_provider.matrix(
+                    x=x, y=y, z=z, domain_id=j + 1), rtol=1e-8, atol=1e-8) for j in domains):
+                mismatch.append(int(fem.ids[i]))
+        report.update(status="mismatch" if mismatch else ("incomplete" if unchecked else "consistent"),
+                      elements=len(fem.ids), mismatching_elements=len(mismatch),
+                      mismatching_element_ids=mismatch, unchecked_element_ids=unchecked)
+    target = Path(output_dir)
+    target.mkdir(parents=True, exist_ok=True)
+    (target / "fem_csf_material_consistency.json").write_text(json.dumps(report, indent=2))
+    message = f"FEM/CSF material check: {report['status']}; FEM stress source={source}."
+    if "mismatching_elements" in report:
+        message += f" Mismatching elements: {report['mismatching_elements']}/{report['elements']}; unchecked: {len(report['unchecked_element_ids'])}."
+    if source == "csf":
+        message += " Explicit CSF reconstruction: these are not stresses from the FEM element material."
+    if report['status'] != "consistent" or source == "csf":
+        warnings.warn(message + " See fem_csf_material_consistency.json. CUF assembly material is unverified.", RuntimeWarning)
+    else:
+        print(message, flush=True)
+    return report
 
 
 def isotropic_element_C(E: float, G: float, nu: float) -> np.ndarray:
@@ -2003,27 +2092,729 @@ def save_shear_stress_vector_transverse(samples, output_dir: Path, dpi: int, arr
         plt.close(fig)
 
 
+# -----------------------------------------------------------------------------
+# Fixed-x polygon-perimeter recovery (additive to all legacy plotting modes).
+# -----------------------------------------------------------------------------
+
+
+def _perimeter_tolerance(vertices: np.ndarray) -> float:
+    """Return a dimensional tolerance without assuming any physical unit system."""
+    scale = max(float(np.ptp(vertices, axis=0).max()),
+                float(np.abs(vertices).max()), np.finfo(float).tiny)
+    return 128.0 * np.finfo(float).eps * scale
+
+
+def _perimeter_cross(a, b):
+    """Two-dimensional cross product, also accepting arrays of vectors."""
+    return a[..., 0] * b[..., 1] - a[..., 1] * b[..., 0]
+
+
+def _perimeter_segments_meet(a, b, c, d, tol: float) -> bool:
+    """Detect segment crossings, collinear overlaps and endpoint contacts."""
+    if np.any(np.maximum(a, b) < np.minimum(c, d) - tol) or np.any(
+        np.maximum(c, d) < np.minimum(a, b) - tol
+    ):
+        return False
+    ab, cd = b - a, d - c
+    lab, lcd = float(np.linalg.norm(ab)), float(np.linalg.norm(cd))
+    if min(lab, lcd) <= tol:
+        raise ValueError("Cannot intersect a degenerate perimeter segment")
+    s1, s2 = _perimeter_cross(ab, c - a) / lab, _perimeter_cross(ab, d - a) / lab
+    t1, t2 = _perimeter_cross(cd, a - c) / lcd, _perimeter_cross(cd, b - c) / lcd
+    return not ((s1 > tol and s2 > tol) or (s1 < -tol and s2 < -tol)
+                or (t1 > tol and t2 > tol) or (t1 < -tol and t2 < -tol))
+
+
+def _perimeter_point_segment_distance(point, a, b) -> float:
+    edge = b - a
+    length = float(np.linalg.norm(edge))
+    unit = edge / length
+    projected = np.clip(np.dot(point - a, unit), 0.0, length)
+    return float(np.linalg.norm(point - (a + projected * unit)))
+
+
+def _perimeter_locations(points, vertices, tol: float) -> np.ndarray:
+    """Classify points as exterior (-1), on the boundary (0), or interior (1).
+
+    Boundary classification is explicit: no point is shifted to choose a side.
+    Work in a translated frame to reduce cancellation at large coordinates.
+    """
+    origin = vertices[0]
+    q = np.asarray(points, dtype=float).reshape(-1, 2) - origin
+    p = vertices - origin
+    inside = np.zeros(len(q), dtype=bool)
+    boundary = np.zeros(len(q), dtype=bool)
+    for a, b in zip(p, np.roll(p, -1, axis=0)):
+        edge = b - a
+        length = float(np.linalg.norm(edge))
+        unit = edge / length
+        t = np.clip((q - a) @ unit, 0.0, length)
+        distance = np.linalg.norm(q - (a + t[:, None] * unit), axis=1)
+        boundary |= distance <= tol
+        if edge[1] != 0.0:
+            crosses = (a[1] > q[:, 1]) != (b[1] > q[:, 1])
+            x_cross = a[0] + (q[:, 1] - a[1]) * edge[0] / edge[1]
+            inside ^= crosses & (q[:, 0] < x_cross)
+    return np.where(boundary, 0, np.where(inside, 1, -1))
+
+
+def _validated_perimeter_ring(vertices, *, label: str):
+    """Validate a finite simple ring without reordering or deleting CSF vertices."""
+    p = np.asarray(vertices, dtype=float)
+    if p.ndim != 2 or p.shape[1] != 2 or len(p) < 3 or not np.isfinite(p).all():
+        raise ValueError(f"{label}: expected at least three finite (y,z) vertices")
+    p = p.copy()
+    tol = _perimeter_tolerance(p)
+    edges = np.roll(p, -1, axis=0) - p
+    lengths = np.linalg.norm(edges, axis=1)
+    if np.any(lengths <= tol):
+        raise ValueError(f"{label}: zero-length or numerically unresolved edge")
+    # A forward collinear vertex is retained; a folded-back adjacent edge is not.
+    units = edges / lengths[:, None]
+    if np.any(np.linalg.norm(units + np.roll(units, 1, axis=0), axis=1)
+              <= 128.0 * np.finfo(float).eps):
+        raise ValueError(f"{label}: adjacent edges reverse direction")
+    span = float(np.ptp(p, axis=0).max())
+    local = (p - p[0]) / span
+    area2 = float(np.sum(_perimeter_cross(local, np.roll(local, -1, axis=0))))
+    if abs(area2) <= 256.0 * np.finfo(float).eps:
+        raise ValueError(f"{label}: zero or numerically unresolved signed area")
+    for i in range(len(p)):
+        for j in range(i + 1, len(p)):
+            if j == i + 1 or (i == 0 and j == len(p) - 1):
+                continue
+            if _perimeter_segments_meet(p[i], p[(i + 1) % len(p)],
+                                        p[j], p[(j + 1) % len(p)], tol):
+                raise ValueError(f"{label}: self-intersection or nonadjacent edge contact")
+    return p, lengths, (1.0 if area2 > 0.0 else -1.0), tol
+
+
+def inward_polygon_perimeter(vertices, distance: float) -> np.ndarray:
+    """Construct a parallel-edge inward polygon with mitered corners.
+
+    Each supporting edge line moves by ``distance`` in its inward normal
+    direction. Adjacent offset lines intersect at the new vertex. Unlike the
+    legacy longitudinal bisector shift, distance is measured NORMAL TO EDGES.
+    Original vertex order and collinear vertices are retained.
+
+    Only a valid single ring with the same edge correspondence is returned.
+    Collapse, edge reversal, self-contact, splitting, and insufficient clearance
+    are rejected, never repaired, clipped, rounded or silently rescaled.
+    """
+    distance = float(distance)
+    if not math.isfinite(distance) or distance <= 0.0:
+        raise ValueError("Transverse inward distance must be positive and finite")
+    p, lengths, orientation, tol = _validated_perimeter_ring(
+        vertices, label="Original inward polygon")
+    if distance <= tol:
+        raise ValueError("Transverse inward distance is below geometric resolution")
+    edges = np.roll(p, -1, axis=0) - p
+    units = edges / lengths[:, None]
+    normals = orientation * np.column_stack((-units[:, 1], units[:, 0]))
+    previous = np.roll(normals, 1, axis=0)
+    denominator = 1.0 + np.einsum("ij,ij->i", previous, normals)
+    if np.any(denominator <= 128.0 * np.finfo(float).eps):
+        raise ValueError("Transverse inward corner has no stable miter intersection")
+    inset = p + distance * (previous + normals) / denominator[:, None]
+    inset, _, new_orientation, inset_tol = _validated_perimeter_ring(
+        inset, label="Inward polygon (no automatic topology repair)")
+    tol = max(tol, inset_tol)
+    new_edges = np.roll(inset, -1, axis=0) - inset
+    if new_orientation != orientation or np.any(np.einsum("ij,ij->i", new_edges, units) <= tol):
+        raise ValueError("Transverse inward offset collapses or reverses an edge; no topology change is allowed")
+    if np.any(_perimeter_locations(inset, p, tol) != 1):
+        raise ValueError("Transverse inward polygon is not strictly inside the original polygon")
+    # Check entire segments, not only vertices or plotted sample points.
+    for a, b in zip(inset, np.roll(inset, -1, axis=0)):
+        for c, d in zip(p, np.roll(p, -1, axis=0)):
+            if _perimeter_segments_meet(a, b, c, d, tol):
+                raise ValueError("Transverse inward edge meets the original boundary")
+            clearance = min(_perimeter_point_segment_distance(a, c, d),
+                            _perimeter_point_segment_distance(b, c, d),
+                            _perimeter_point_segment_distance(c, a, b),
+                            _perimeter_point_segment_distance(d, a, b))
+            if clearance < distance - 8.0 * tol:
+                raise ValueError("Transverse inward offset loses clearance to a nonlocal edge; no topology change is allowed")
+    return inset
+
+
+def sample_polygon_perimeter(vertices, points: int = 201):
+    """Sample every edge in order, retaining every vertex and closing the loop.
+
+    ``points`` is a minimum target including closure. With perimeter P, every
+    edge is divided into ceil(edge_length / (P / (points-1))) intervals. Thus
+    no interval exceeds P/(points-1), and corners are never skipped. Values
+    of strain and stress are NOT interpolated by this geometry-only routine.
+    """
+    if isinstance(points, bool) or not isinstance(points, (int, np.integer)) or points < 2:
+        raise ValueError("--transverse-perimeter-points must be an integer >= 2")
+    p, lengths, _, _ = _validated_perimeter_ring(vertices, label="Sampled perimeter")
+    perimeter = float(np.sum(lengths))
+    if not math.isfinite(perimeter) or perimeter <= 0.0:
+        raise ValueError("Non-finite or zero perimeter length")
+    maximum_step = perimeter / (int(points) - 1)
+    cumulative = np.r_[0.0, np.cumsum(lengths)]
+    yz, arc, edge_ids, fractions, vertex_ids = [], [], [], [], []
+    for i, length in enumerate(lengths):
+        intervals = max(1, int(math.ceil(float(length) / maximum_step)))
+        t = np.arange(intervals, dtype=float) / intervals
+        yz.append(p[i] + t[:, None] * (p[(i + 1) % len(p)] - p[i]))
+        arc.append(cumulative[i] + t * length)
+        edge_ids.extend([i] * intervals)
+        fractions.extend(t)
+        vertex_ids.extend([i] + [-1] * (intervals - 1))
+    return {
+        "vertices": p,
+        "yz": np.vstack((*yz, p[0][None, :])),
+        "s": np.r_[np.concatenate(arc), perimeter],
+        "edge_index": np.asarray(edge_ids + [len(p) - 1], dtype=np.int32),
+        "edge_fraction": np.asarray(fractions + [1.0]),
+        "vertex_index": np.asarray(vertex_ids + [0], dtype=np.int32),
+        "vertex_s": cumulative,
+        "perimeter_length": perimeter,
+        "target_points": int(points),
+    }
+
+
+def _validate_perimeter_material_path(vertices, excluded_vertices, *, polygon_index: int):
+    """Ensure the whole contour avoids the direct children reported by CSF.
+
+    Child topology comes exclusively from bridge.section_provider.domains(x).
+    No containment hierarchy is inferred from names, weights or model files.
+    """
+    for child_index, raw_child in enumerate(excluded_vertices):
+        child, _, _, child_tol = _validated_perimeter_ring(
+            raw_child, label=f"CSF polygon {polygon_index} excluded child {child_index}")
+        tol = max(child_tol, _perimeter_tolerance(vertices))
+        if np.any(_perimeter_locations(vertices, child, tol) >= 0):
+            raise ValueError(f"Polygon {polygon_index}: perimeter enters or touches an excluded CSF child; material side is not reassigned")
+        for a, b in zip(vertices, np.roll(vertices, -1, axis=0)):
+            for c, d in zip(child, np.roll(child, -1, axis=0)):
+                if _perimeter_segments_meet(a, b, c, d, tol):
+                    raise ValueError(f"Polygon {polygon_index}: perimeter crosses or touches an excluded CSF child; no clipping is performed")
+
+
+def _sample_transverse_perimeter_fields(field, bridge, x: float, points: int = 201,
+                                        inward_offset: float | None = None):
+    """Recover fixed-x strain/stress from loaded CSF/CUF public APIs only.
+
+    One-sided derivatives are selected with the existing checkpoint-domain
+    mapping. Inward contours retain the material identity of their original
+    polygon. Zero-absolute-weight polygons are recorded but not evaluated,
+    consistently with the existing transverse maps.
+    """
+    x = float(x)
+    if not math.isfinite(x):
+        raise ValueError("--transverse-x must be finite")
+    if isinstance(points, bool) or not isinstance(points, (int, np.integer)) or points < 2:
+        raise ValueError("--transverse-perimeter-points must be an integer >= 2")
+    if inward_offset is not None:
+        inward_offset = float(inward_offset)
+        if not math.isfinite(inward_offset) or inward_offset <= 0.0:
+            raise ValueError("--transverse-inward-offset must be positive and finite")
+    start, end = map(float, bridge.longitudinal_domain())
+    if not (math.isfinite(start) and math.isfinite(end) and start < end and start <= x <= end):
+        raise ValueError(f"Invalid transverse station x={x:g} for CSF interval [{start:g}, {end:g}]")
+    scale = max(1.0, abs(start), abs(end), abs(float(field.x_start)), abs(float(field.x_end)))
+    if not np.allclose((field.x_start, field.x_end), (start, end), rtol=0.0,
+                       atol=64.0 * np.finfo(float).eps * scale):
+        raise ValueError("CUF checkpoint and CSF longitudinal intervals differ")
+    csf_field = bridge.field
+    section = csf_field.section(x)
+    polygons = tuple(section.polygons)
+    weights = _section_absolute_weights(section)
+    if not polygons or not any(w > 0.0 for w in weights):
+        raise ValueError("No material polygon available for transverse perimeter recovery")
+    lookup = validate_checkpoint_domain_lookups(field, csf_field, (start, x))[x]
+    # The public adapter supplies excluded children without raw YAML access.
+    domains = tuple(bridge.section_provider.domains(x))
+    domains_by_id = {int(domain.domain_id): domain for domain in domains}
+    if len(domains) != len(polygons) or set(domains_by_id) != set(range(1, len(polygons) + 1)):
+        raise ValueError("CSF section and public domain provider have inconsistent polygon identities")
+    section_vertices = [np.asarray([(v.x, v.y) for v in poly.vertices], dtype=float)
+                        for poly in polygons]
+    modes = (("boundary", 0.0),) + ((("inward", inward_offset),) if inward_offset is not None else ())
+    datasets = []
+    # Validate every requested contour before making a field evaluation.
+    for mode, distance in modes:
+        contours = []
+        for pi, (polygon, original, weight) in enumerate(zip(polygons, section_vertices, weights), 1):
+            if weight == 0.0:
+                continue
+            domain = domains_by_id[pi]
+            reported = np.asarray(domain.vertices, dtype=float)
+            if reported.shape != original.shape or not np.array_equal(reported, original):
+                raise ValueError(f"Public CSF domain {pi} geometry differs from section(x)")
+            try:
+                vertices = (inward_polygon_perimeter(original, distance)
+                            if mode == "inward" else original.copy())
+                sampled = sample_polygon_perimeter(vertices, points)
+                _validate_perimeter_material_path(sampled["vertices"], domain.excluded_vertices,
+                                                  polygon_index=pi)
+            except ValueError as exc:
+                raise ValueError(f"{mode} perimeter, polygon {pi}, x={x:g}: {exc}") from exc
+            sampled.update(polygon_index=pi, polygon_name=str(polygon.name),
+                           checkpoint_domain_index=(-1 if lookup is None else int(lookup[pi])))
+            contours.append(sampled)
+        datasets.append({"mode": mode, "inward_offset": float(distance), "contours": contours})
+    provider = bridge.constitutive_provider
+    for dataset in datasets:
+        for contour in dataset["contours"]:
+            pi = contour["polygon_index"]
+            count = len(contour["s"])
+            displacement = np.empty((count, 3))
+            strain = np.empty((count, 6))
+            stress = np.empty((count, 6))
+            for i, (y, z) in enumerate(contour["yz"]):
+                displacement[i], strain[i], stress[i] = _evaluate_cuf_state(
+                    field, provider, lookup, pi, x, float(y), float(z))
+            contour.update(displacement=displacement, strain=strain, stress=stress)
+    void_ids = [i + 1 for i, w in enumerate(weights) if w == 0.0]
+    print(f"[perimeter] x={x:g}; material polygons={len(polygons) - len(void_ids)}; "
+          f"skipped zero-weightabs polygons={void_ids}; target points={points}", flush=True)
+    return {
+        "x": x, "x_over_L": (x - start) / (end - start),
+        "section_vertices": section_vertices,
+        "polygon_names": [str(p.name) for p in polygons],
+        "polygon_weightabs": np.asarray(weights, dtype=float),
+        "polygon_is_void": np.asarray([w == 0.0 for w in weights], dtype=bool),
+        "datasets": datasets,
+    }
+
+
+def _sample_fem_transverse_perimeter_fields(fem, samples, bridge, *, stress_source="none"):
+    """Attach native H8 samples at the existing CUF perimeter coordinates.
+
+    The established longitudinal recovery chooses the polygon side and retains
+    every containing element on that side. No averaging, snapping to Gauss
+    points, nearest-element fallback or interpolation of stored stresses occurs.
+    All datasets are validated before the input sample dictionary is updated.
+    """
+    if stress_source not in ("none", "csf", "element"):
+        raise ValueError(f"Unknown FEM perimeter stress source: {stress_source!r}")
+    if stress_source == "element" and any(
+        getattr(fem, key, None) is None for key in ("element_E", "element_G", "element_nu")
+    ):
+        raise ValueError("--fem-stress-from-element requires FEM NPZ element_E, element_G and element_nu metadata")
+    provider = bridge.constitutive_provider if stress_source == "csf" else None
+    csf_field = bridge.field
+    pending = []
+    total = 0
+    for dataset in samples["datasets"]:
+        for contour in dataset["contours"]:
+            geometry = []
+            for index, (y, z) in enumerate(contour["yz"]):
+                geometry.append({
+                    "polygon_index": int(contour["polygon_index"]),
+                    "polygon_name": str(contour["polygon_name"]),
+                    "checkpoint_domain_index": int(contour["checkpoint_domain_index"]),
+                    "sample_index": index,
+                    "vertex_index": int(contour["vertex_index"][index]),
+                    "edge_index": int(contour["edge_index"][index]),
+                    "edge_fraction": float(contour["edge_fraction"][index]),
+                    "x": float(samples["x"]), "x_over_L": float(samples["x_over_L"]),
+                    "y": float(y), "z": float(z), "s": float(contour["s"][index]),
+                    "s_over_perimeter": float(contour["s"][index] / contour["perimeter_length"]),
+                    "perimeter_length": float(contour["perimeter_length"]),
+                })
+            try:
+                rows = recover_fem_boundary(
+                    fem, geometry, csf_field, provider, stress_source=stress_source,
+                )
+            except (ValueError, np.linalg.LinAlgError) as exc:
+                raise ValueError(
+                    f"FEM3D {dataset['mode']} perimeter, polygon {contour['polygon_index']}, "
+                    f"x={samples['x']:g}: {exc}"
+                ) from exc
+            counts = np.zeros(len(geometry), dtype=np.int64)
+            for row in rows:
+                index = int(row["sample_index"])
+                if not 0 <= index < len(geometry):
+                    raise RuntimeError("FEM recovery returned an invalid perimeter sample index")
+                expected = geometry[index]
+                for key in ("polygon_index", "x", "y", "z", "s"):
+                    if row[key] != expected[key]:
+                        raise RuntimeError(f"FEM recovery changed perimeter coordinate/identity {key}")
+                for key, shape in (("displacement", (3,)), ("strain", (6,)), ("stress", (6,))):
+                    value = np.asarray(row[key], dtype=float)
+                    if value.shape != shape:
+                        raise ValueError(f"Invalid FEM {key} shape in polygon {contour['polygon_index']}")
+                    if key == "stress" and stress_source == "none":
+                        if not np.isnan(value).all():
+                            raise ValueError("Unrecovered FEM stress must be explicitly unavailable (NaN)")
+                    elif not np.isfinite(value).all():
+                        raise ValueError(f"Non-finite FEM {key} at perimeter sample {index}, element {row['element_id']}")
+                counts[index] += 1
+            if np.any(counts == 0):
+                raise ValueError(f"FEM3D does not cover every sample of polygon {contour['polygon_index']}")
+            pending.append((dataset, contour, rows))
+            total += len(rows)
+    for dataset, contour, rows in pending:
+        contour["fem_rows"] = rows
+        dataset["fem_stress_source"] = stress_source
+    samples["fem_units"] = str(fem.units)
+    samples["fem_source_schema"] = str(fem.source_schema)
+    print(f"[perimeter] FEM3D: {total} unaveraged element-side samples; "
+          f"stress material={stress_source}; exact CUF coordinates", flush=True)
+    return samples
+
+
+def recover_transverse_perimeter_fields(npz_path: Path, csf_yaml: Path, x: float,
+                                         points: int = 201, inward_offset: float | None = None,
+                                         *, fem=None, fem_stress_source: str = "none"):
+    """Load through public APIs, then recover CUF and optional FEM perimeters."""
+    from csf.cuf.csf_bridge import CSFCUFModelBridge
+    from csf.cuf.solver.compiled_field import CompiledDisplacementField
+
+    field = CompiledDisplacementField.load(npz_path)
+    bridge = CSFCUFModelBridge.from_yaml(csf_yaml)
+    samples = _sample_transverse_perimeter_fields(field, bridge, x, points, inward_offset)
+    if fem is not None:
+        _sample_fem_transverse_perimeter_fields(fem, samples, bridge, stress_source=fem_stress_source)
+    return samples
+
+
+def _recover_transverse_maps_and_perimeters(npz_path, csf_yaml, x, grid, vector_grid,
+                                           perimeter_points, inward_offset,
+                                           *, fem=None, fem_stress_source: str = "none"):
+    """Share one CSF/CUF load with the maps and both perimeter recoveries."""
+    from csf.cuf.csf_bridge import CSFCUFModelBridge
+    from csf.cuf.solver.compiled_field import CompiledDisplacementField
+
+    field = CompiledDisplacementField.load(npz_path)
+    bridge = CSFCUFModelBridge.from_yaml(csf_yaml)
+    # Reject invalid perimeter geometry before the more expensive map sampling.
+    perimeters = _sample_transverse_perimeter_fields(field, bridge, x, perimeter_points, inward_offset)
+    if fem is not None:
+        _sample_fem_transverse_perimeter_fields(fem, perimeters, bridge, stress_source=fem_stress_source)
+    maps = _sample_transverse_fields(field, bridge, x, grid, vector_grid)
+    return maps, perimeters
+
+
+def _perimeter_export_arrays(samples, dataset):
+    """Build explicit, pickle-free arrays for exactly the points used in plots."""
+    contours = dataset["contours"]
+    strain_names = [c[0] for c in CURVES if c[2] == "strain"]
+    stress_names = [c[0] for c in CURVES if c[2] == "stress"]
+    counts = np.asarray([len(c["s"]) for c in contours], dtype=np.int64)
+    total = int(counts.sum())
+    arrays = {
+        "format": np.array("csf_cuf_transverse_perimeter"), "format_version": np.array(1),
+        "coordinate_system": np.array("CUF"), "section_x": np.array(samples["x"]),
+        "mode": np.array(dataset["mode"]), "offset_distance": np.array(dataset["inward_offset"]),
+        "strain_components": np.asarray(strain_names), "stress_components": np.asarray(stress_names),
+        "polygon_names": np.asarray(samples["polygon_names"]),
+        "polygon_weightabs": samples["polygon_weightabs"], "polygon_is_void": samples["polygon_is_void"],
+        "section_vertices_yz": np.concatenate(samples["section_vertices"]),
+        "section_vertex_offsets": np.r_[0, np.cumsum([len(v) for v in samples["section_vertices"]])],
+        "contour_polygon_index": np.asarray([c["polygon_index"] for c in contours], dtype=np.int32),
+        "contour_vertices_yz": np.concatenate([c["vertices"] for c in contours]),
+        "contour_vertex_offsets": np.r_[0, np.cumsum([len(c["vertices"]) for c in contours])],
+        "contour_sample_offsets": np.r_[0, np.cumsum(counts)],
+        "target_points": np.asarray([c["target_points"] for c in contours], dtype=np.int64),
+        "x": np.full(total, samples["x"]), "x_over_L": np.full(total, samples["x_over_L"]),
+    }
+    for key, dtype in (("polygon_index", np.int32), ("checkpoint_domain_index", np.int32),
+                       ("polygon_name", str), ("perimeter_length", float)):
+        # Build string arrays with inferred width, never np.full(..., dtype=str).
+        arrays[key] = np.concatenate([np.asarray([c[key]] * len(c["s"]), dtype=dtype) for c in contours])
+    for key in ("s", "edge_index", "edge_fraction", "vertex_index", "displacement", "strain", "stress"):
+        arrays[key] = np.concatenate([c[key] for c in contours])
+    yz = np.concatenate([c["yz"] for c in contours])
+    arrays.update(y=yz[:, 0], z=yz[:, 1],
+                  s_over_perimeter=arrays["s"] / arrays["perimeter_length"],
+                  sample_index=np.concatenate([np.arange(n, dtype=np.int64) for n in counts]))
+    return arrays
+
+
+def save_transverse_perimeter_data(samples, dataset, output_dir: Path):
+    """Save independent NPZ and CSV outputs; never change a legacy export schema."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    arrays = _perimeter_export_arrays(samples, dataset)
+    npz_path = output_dir / "sampled_perimeter_fields.npz"
+    csv_path = output_dir / "sampled_perimeter_fields.csv"
+    np.savez_compressed(npz_path, **arrays)
+    columns = ("polygon_index", "polygon_name", "checkpoint_domain_index", "sample_index",
+               "vertex_index", "edge_index", "edge_fraction", "x", "x_over_L", "y", "z",
+               "s", "s_over_perimeter", "perimeter_length")
+    with csv_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["mode", "inward_offset", *columns, "ux", "uy", "uz",
+                         *arrays["strain_components"], *arrays["stress_components"]])
+        for i in range(len(arrays["s"])):
+            writer.writerow([dataset["mode"], dataset["inward_offset"],
+                             *(arrays[k][i] for k in columns), *arrays["displacement"][i],
+                             *arrays["strain"][i], *arrays["stress"][i]])
+    return npz_path, csv_path
+
+
+def _fem_perimeter_export_arrays(samples, dataset):
+    """Build a separate FEM schema with explicit CUF sample correspondence.
+
+    A sample can have multiple rows at an H8 interface. The pair
+    (polygon_index, sample_index) points to the unchanged CUF dataset;
+    element_id identifies the unaveraged FEM side for that same point.
+    """
+    if "fem_stress_source" not in dataset:
+        raise ValueError("No FEM recovery is attached to this perimeter dataset")
+    contours = dataset["contours"]
+    if any("fem_rows" not in contour for contour in contours):
+        raise ValueError("Incomplete FEM perimeter dataset")
+    rows = [row for contour in contours for row in contour["fem_rows"]]
+    if not rows:
+        raise ValueError("Cannot export an empty FEM perimeter dataset")
+    # Reuse authoritative section/contour geometry, not an independently rebuilt model.
+    reference = _perimeter_export_arrays(samples, dataset)
+    metadata = ("coordinate_system", "section_x", "mode", "offset_distance",
+                "strain_components", "stress_components", "polygon_names",
+                "polygon_weightabs", "polygon_is_void", "section_vertices_yz",
+                "section_vertex_offsets", "contour_polygon_index", "contour_vertices_yz",
+                "contour_vertex_offsets", "target_points")
+    arrays = {key: reference[key] for key in metadata}
+    arrays.update(
+        format=np.array("csf_cuf_fem3d_transverse_perimeter"), format_version=np.array(1),
+        stress_source=np.array(dataset["fem_stress_source"]),
+        fem_units=np.array(samples["fem_units"]),
+        fem_source_schema=np.array(samples["fem_source_schema"]),
+        field_source=np.array("Native H8 displacement/strain at exact CUF perimeter coordinates; unaveraged"),
+        cuf_contour_sample_offsets=reference["contour_sample_offsets"],
+        contour_record_offsets=np.r_[0, np.cumsum([len(c["fem_rows"]) for c in contours])],
+    )
+    integers = ("polygon_index", "checkpoint_domain_index", "sample_index", "vertex_index",
+                "edge_index", "element_id")
+    floats = ("edge_fraction", "x", "x_over_L", "y", "z", "s", "s_over_perimeter", "perimeter_length")
+    for key in integers:
+        arrays[key] = np.asarray([r[key] for r in rows], dtype=np.int64)
+    for key in floats + ("displacement", "strain", "stress"):
+        arrays[key] = np.asarray([r[key] for r in rows], dtype=float)
+    arrays["polygon_name"] = np.asarray([r["polygon_name"] for r in rows], dtype=str)
+    return arrays
+
+
+def save_fem_transverse_perimeter_data(samples, dataset, output_dir: Path):
+    """Persist every FEM element-side value without modifying the CUF exports."""
+    arrays = _fem_perimeter_export_arrays(samples, dataset)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    npz_path = output_dir / "sampled_fem3d_perimeter_fields.npz"
+    csv_path = output_dir / "sampled_fem3d_perimeter_fields.csv"
+    np.savez_compressed(npz_path, **arrays)
+    columns = ("polygon_index", "polygon_name", "checkpoint_domain_index", "sample_index",
+               "vertex_index", "edge_index", "edge_fraction", "x", "x_over_L", "y", "z",
+               "s", "s_over_perimeter", "perimeter_length", "element_id")
+    with csv_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["mode", "inward_offset", "stress_source", *columns, "ux", "uy", "uz",
+                         *arrays["strain_components"], *arrays["stress_components"]])
+        for i in range(len(arrays["s"])):
+            writer.writerow([dataset["mode"], dataset["inward_offset"], dataset["fem_stress_source"],
+                             *(arrays[k][i] for k in columns), *arrays["displacement"][i],
+                             *arrays["strain"][i], *arrays["stress"][i]])
+    return npz_path, csv_path
+
+
+def save_transverse_perimeter_plot(samples, dataset, contour, curve, output_dir: Path, dpi: int):
+    """Plot one strain/stress component against physical perimeter arc length."""
+    name, component, kind, ylabel, title = curve
+    if kind not in ("strain", "stress"):
+        raise ValueError("Transverse perimeter plots support strain and stress components only")
+    fig, ax = plt.subplots(figsize=(10.4, 4.8), constrained_layout=True)
+    try:
+        s = contour["s"]
+        ax.plot(s, contour[kind][:, component], linewidth=1.1, label="CSF-CUF")
+        fem_rows = contour.get("fem_rows")
+        fem_source = dataset.get("fem_stress_source", "none")
+        if fem_rows is not None and (kind != "stress" or fem_source != "none"):
+            # Keep the longitudinal legend, marker size, color, opacity and z-order.
+            label = ("FEM3D (" + fem_source + " material)" if kind == "stress"
+                     else "FEM3D (H8 displacement/strain)")
+            ax.scatter([row["s"] for row in fem_rows], curve_values(fem_rows, kind, component),
+                       s=7, color="tab:orange", alpha=0.65, label=label, zorder=3)
+        elif fem_rows is not None and kind == "stress":
+            ax.text(0.03, 0.04, "FEM3D stress unavailable: no material source selected",
+                    transform=ax.transAxes, fontsize=8.5)
+        ax.axhline(0.0, linewidth=0.7)
+        ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.6)
+        for value in contour["vertex_s"]:
+            ax.axvline(value, linewidth=0.5, linestyle=":", alpha=0.35)
+        length = contour["perimeter_length"]
+        ax.set_xlim(-0.015 * length, 1.015 * length)
+        ax.set_xlabel("s: distance along polygon perimeter (native section units)")
+        ax.set_ylabel(ylabel)
+        # A second axis ties the unwrapped contour to the original CSF identities.
+        vertex_axis = ax.secondary_xaxis("top")
+        n = len(contour["vertices"])
+        # Thin labels by physical spacing, not vertex count, so thin-section
+        # corners do not overlap. Every corner line and exported index remains.
+        indices = [0]
+        minimum_gap = 0.09 * length
+        for i in range(1, n):
+            if (contour["vertex_s"][i] - contour["vertex_s"][indices[-1]] >= minimum_gap
+                    and length - contour["vertex_s"][i] >= minimum_gap):
+                indices.append(i)
+        indices.append(n)
+        vertex_axis.set_xticks(contour["vertex_s"][indices])
+        vertex_axis.set_xticklabels([f"V{i}" if i < n else "V0 (close)" for i in indices], fontsize=8)
+        location = ("original boundary" if dataset["mode"] == "boundary"
+                    else f"inward parallel-edge polygon, d={dataset['inward_offset']:g}")
+        ax.set_title(f"{title} | polygon {contour['polygon_index']}: {contour['polygon_name']}\n"
+                     f"x={samples['x']:g}; {location}", fontsize=11, pad=30)
+        ax.legend(loc="best", fontsize=8)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        path = output_dir / f"{name}_along_perimeter.png"
+        fig.savefig(path, dpi=dpi, bbox_inches="tight", pad_inches=0.10)
+        return path
+    finally:
+        plt.close(fig)
+
+
+def _transverse_perimeter_directory(dataset) -> str:
+    """Avoid collisions between distinct inward distances in new output paths."""
+    if dataset["mode"] == "boundary":
+        return "boundary"
+    if dataset["mode"] != "inward":
+        raise ValueError("Unknown transverse perimeter dataset mode")
+    tag = repr(float(dataset["inward_offset"]))
+    if tag.endswith(".0"):
+        tag = tag[:-2]
+    return "inward_" + tag.replace("-", "m").replace("+", "").replace(".", "p")
+
+
+def save_transverse_perimeters(samples, output_dir: Path, dpi: int, *, no_plots: bool = False):
+    """Persist every contour dataset before rendering the twelve component plots."""
+    targets = []
+    for dataset in samples["datasets"]:
+        directory = _transverse_perimeter_directory(dataset)
+        target = output_dir / directory
+        for path in save_transverse_perimeter_data(samples, dataset, target):
+            print(f"[ok] {path}", flush=True)
+        if "fem_stress_source" in dataset:
+            for path in save_fem_transverse_perimeter_data(samples, dataset, target):
+                print(f"[ok] {path}", flush=True)
+        targets.append((dataset, target))
+    if not no_plots:
+        _plot_transverse_perimeter_datasets(samples, targets, dpi)
+
+
+def _plot_transverse_perimeter_datasets(samples, targets, dpi: int):
+    """Render already persisted datasets, without rewriting numerical exports."""
+    for dataset, target in targets:
+        for contour in dataset["contours"]:
+            polygon_dir = target / f"polygon_{contour['polygon_index']:03d}"
+            for curve in CURVES:
+                if curve[2] in ("strain", "stress"):
+                    save_transverse_perimeter_plot(samples, dataset, contour, curve, polygon_dir, dpi)
+            print(f"[perimeter] 12 strain/stress plots: {polygon_dir}", flush=True)
+
+
+def _transverse_perimeters_enabled(args) -> bool:
+    """Recognize either opt-in flag, including older programmatic namespaces."""
+    return bool(getattr(args, "transverse_perimeter", False)
+                or getattr(args, "transverse_perimeter_only", False))
+
+
+def _validate_transverse_perimeter_arguments(args):
+    """Keep new options opt-in and reject combinations that would be ignored."""
+    enabled = _transverse_perimeters_enabled(args)
+    points = getattr(args, "transverse_perimeter_points", None)
+    distance = getattr(args, "transverse_inward_offset", None)
+    if not enabled and (points is not None or distance is not None):
+        raise ValueError("--transverse-perimeter-points and --transverse-inward-offset require "
+                         "--transverse-perimeter or --transverse-perimeter-only")
+    if enabled and args.transverse_x is None:
+        flag = ("--transverse-perimeter-only" if getattr(args, "transverse_perimeter_only", False)
+                else "--transverse-perimeter")
+        raise ValueError(f"{flag} requires the existing --transverse-x station")
+    if points is not None and points < 2:
+        raise ValueError("--transverse-perimeter-points must be >= 2")
+    if distance is not None and (not math.isfinite(distance) or distance <= 0.0):
+        raise ValueError("--transverse-inward-offset must be positive and finite")
+
+
 def run_transverse_mode(args, checkpoints: list[Path], output_root: Path):
-    """CUF-only transverse section maps; do not run the longitudinal plot loop."""
-    if args.transverse_grid < 2:
-        raise ValueError("--transverse-grid must be >= 2")
-    if args.transverse_vector_grid < 1:
-        raise ValueError("--transverse-vector-grid must be >= 1")
+    """Run CUF maps and/or CUF/FEM perimeters, never the longitudinal loop."""
+    _validate_transverse_perimeter_arguments(args)
+    perimeter_only = bool(getattr(args, "transverse_perimeter_only", False))
+    # Unused map densities must not trigger map validation or grid allocation.
+    if not perimeter_only:
+        if args.transverse_grid < 2:
+            raise ValueError("--transverse-grid must be >= 2")
+        if args.transverse_vector_grid < 1:
+            raise ValueError("--transverse-vector-grid must be >= 1")
     if not math.isfinite(args.transverse_x):
         raise ValueError("--transverse-x must be finite")
-    if (args.fem3d is not None or args.fem_stress_from_csf
-            or args.inward_offset is not None or args.csv is not None):
+    if args.inward_offset is not None or args.csv is not None:
         raise ValueError(
-            "--transverse-x is CUF-only and cannot be combined with "
-            "--fem3d, --fem-stress-from-csf, --inward-offset or --csv"
+            "--transverse-x cannot be combined with --inward-offset or --csv; "
+            "use --transverse-inward-offset for perimeters (CSV is saved automatically)"
         )
+    if (args.fem_stress_from_csf or args.fem_stress_from_element) and args.fem3d is None:
+        raise ValueError("--fem-stress-from-* requires --fem3d")
+    if args.fem3d is not None and not _transverse_perimeters_enabled(args):
+        raise ValueError("--transverse-x with --fem3d requires --transverse-perimeter "
+                         "or --transverse-perimeter-only; maps remain CUF-only")
+    if args.fem3d is not None and args.stress_mode in ("gauss", "both"):
+        raise ValueError(
+            "FEM transverse perimeters require --stress-mode auto or boundary; "
+            "Gauss comparison is a separate longitudinal mode and cannot use the same perimeter coordinates"
+        )
+    fem = FEM3DH8(args.fem3d) if args.fem3d is not None else None
+    if fem is not None:
+        check_material_consistency(fem, args.csf_yaml, args.output_dir,
+                                   "csf" if args.fem_stress_from_csf else
+                                   "element" if fem.element_E is not None else "none")
+    # Apply the same stress-source selection as the longitudinal boundary branch.
+    if args.fem_stress_from_element:
+        source = "element"
+    elif args.fem_stress_from_csf:
+        source = "csf"
+    elif fem is not None and fem.element_E is not None:
+        source = "element"
+    else:
+        source = "none"
+    if source == "element" and (fem is None or fem.element_E is None):
+        raise ValueError("--fem-stress-from-element requires FEM NPZ element_E, element_G and element_nu metadata")
+    if fem is not None:
+        print(f"[perimeter] FEM3D overlay enabled; stress material={source}", flush=True)
+        if source == "none":
+            print("[perimeter] FEM strain is available; FEM stress is unavailable without material metadata. "
+                  "Use --fem-stress-from-csf only when the CSF law is the intended reference.", flush=True)
 
     x_tag = f"{args.transverse_x:.12g}".replace("-", "m").replace("+", "").replace(".", "p")
     for checkpoint in checkpoints:
-        samples = recover_transverse_fields(
-            checkpoint, args.csf_yaml, args.transverse_x, args.transverse_grid,
-            vector_grid=args.transverse_vector_grid,
-        )
+        if perimeter_only:
+            # Use the existing independent loader: no map recovery/export calls.
+            perimeters = recover_transverse_perimeter_fields(
+                checkpoint, args.csf_yaml, args.transverse_x,
+                points=getattr(args, "transverse_perimeter_points", None) or 201,
+                inward_offset=getattr(args, "transverse_inward_offset", None),
+                fem=fem, fem_stress_source=source,
+            )
+            case_output_dir = (
+                output_root / checkpoint_output_name(checkpoint) / f"transverse_x_{x_tag}"
+            )
+            print(f"[transverse] x={perimeters['x']:g}; perimeter-only: "
+                  "map sampling, map NPZ and map PNGs skipped; "
+                  "--transverse-grid and --transverse-vector-grid are unused", flush=True)
+            # Persist all CUF/FEM datasets before any perimeter PNG rendering.
+            save_transverse_perimeters(
+                perimeters, case_output_dir / "perimeter", args.dpi, no_plots=args.no_plots,
+            )
+            print(f"[transverse] output directory: {case_output_dir}", flush=True)
+            continue
+        perimeters = None
+        if getattr(args, "transverse_perimeter", False):
+            samples, perimeters = _recover_transverse_maps_and_perimeters(
+                checkpoint, args.csf_yaml, args.transverse_x, args.transverse_grid,
+                args.transverse_vector_grid,
+                getattr(args, "transverse_perimeter_points", None) or 201,
+                getattr(args, "transverse_inward_offset", None),
+                fem=fem, fem_stress_source=source,
+            )
+        else:
+            samples = recover_transverse_fields(
+                checkpoint, args.csf_yaml, args.transverse_x, args.transverse_grid,
+                vector_grid=args.transverse_vector_grid,
+            )
         case_output_dir = (
             output_root / checkpoint_output_name(checkpoint) / f"transverse_x_{x_tag}"
         )
@@ -2039,6 +2830,11 @@ def run_transverse_mode(args, checkpoints: list[Path], output_root: Path):
             case_output_dir / "sampled_transverse_fields.npz", samples
         )
         print(f"[ok] {sampled_path}", flush=True)
+        if perimeters is not None:
+            # Save both contour datasets before ANY map/perimeter PNG rendering.
+            save_transverse_perimeters(
+                perimeters, case_output_dir / "perimeter", args.dpi, no_plots=True,
+            )
         if not args.no_plots:
             for curve in CURVES:
                 path = save_transverse_map(samples, curve, case_output_dir, args.dpi)
@@ -2046,82 +2842,197 @@ def run_transverse_mode(args, checkpoints: list[Path], output_root: Path):
             save_shear_stress_vector_transverse(
                 samples, case_output_dir, args.dpi, args.transverse_vector_grid
             )
+            if perimeters is not None:
+                targets = [
+                    (dataset, case_output_dir / "perimeter" / _transverse_perimeter_directory(dataset))
+                    for dataset in perimeters["datasets"]
+                ]
+                _plot_transverse_perimeter_datasets(perimeters, targets, args.dpi)
         print(f"[transverse] output directory: {case_output_dir}", flush=True)
 
 
 def build_parser():
+    """Describe all supported workflows without loading any model for --help."""
     parser = argparse.ArgumentParser(
-        description=("Compare CSF-CUF with native OpenSees stdBrick FEM3D results. "
-                     "Boundary stresses are reconstructed at polygon vertices; "
-                     "Gauss stresses are compared at original integration points."),
-        epilog=("EXAMPLES:\n"
-                "  Boundary, element material: --stress-mode boundary --fem-stress-from-element\n"
-                "  Boundary, CSF material:     --stress-mode boundary --fem-stress-from-csf\n"
-                "  Gauss plots (fast):         --stress-mode gauss --gauss-sampling plot --points 201\n"
-                "  Exhaustive Gauss audit:     --stress-mode gauss --gauss-sampling all\n"
-                "  Both comparisons:           --stress-mode both --fem-stress-from-element\n"
-                "  Export without PNGs:        --no-plots\n"
-                "Gauss mode requires an updated stdBrick FEM NPZ containing "
-                "gauss_stresses_opensees and physical Gauss point coordinates. "
-                "All geometry, axes, loads, units and material regions must match."),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=(
+            "CSF-CUF field postprocessor v14.5.0\n"
+            "Evaluate existing CUF checkpoints; optionally compare native FEM3D H8 fields.\n"
+            "Choose longitudinal traces, fixed-x section maps, or polygon perimeters.\n"
+            "Geometry comes from CSF APIs at the requested x, never from direct YAML parsing."
+        ),
+        epilog="""WORKFLOW SELECTION
+  No --transverse-x:
+    Longitudinal boundary/inward traces and/or native Gauss comparison, as selected
+    by --stress-mode. Boundary: 3 displacement, 6 strain and 6 stress components.
+  --transverse-x X:
+    CUF maps only: 15 scalar PNGs and one shear-vector PNG, plus map NPZ data.
+  --transverse-x X --transverse-perimeter:
+    Keep all maps; add 6 strain + 6 stress PNGs for each material polygon perimeter.
+  --transverse-x X --transverse-perimeter-only:
+    Perimeters ONLY: do not compute map grids/fields or write map NPZ/PNG files.
+    Implies --transverse-perimeter; supplying both flags is allowed, and ONLY wins.
+    --transverse-grid and --transverse-vector-grid are unused (including their bounds).
+  Add --transverse-inward-offset D to either perimeter workflow:
+    Keep the original contour and add a separate inward contour and 12 PNGs per polygon.
+  Add --fem3d FEM.npz to either perimeter workflow:
+    Overlay FEM on the SAME plots (CUF line, orange FEM scatter), not a second PNG set.
+  Add --no-plots:
+    Save numerical results but skip ALL PNGs. This flag alone does NOT skip map
+    calculation; combine it with --transverse-perimeter-only for perimeter data only.
+
+REQUIRED COMBINATIONS AND SCOPE
+  * Each perimeter flag requires --transverse-x X; X is a physical longitudinal
+    coordinate, not x/L, and must be finite and inside the matching CSF/CUF domain.
+  * --transverse-perimeter-points and --transverse-inward-offset require either
+    --transverse-perimeter or --transverse-perimeter-only.
+  * With --transverse-x, FEM requires one of those perimeter flags. Maps stay CUF-only.
+  * Transverse FEM accepts --stress-mode auto or boundary, NOT gauss or both.
+    auto here never starts Gauss sampling, even if the FEM checkpoint has Gauss data.
+    Without FEM, --stress-mode does not select transverse outputs.
+  * --fem-stress-from-element and --fem-stress-from-csf are mutually exclusive and
+    require --fem3d. Gauss-only mode does not accept either reconstruction option.
+  * --transverse-x rejects --inward-offset and --csv. Use --transverse-inward-offset;
+    perimeter CSV files are automatic. Longitudinal inward is a different geometry.
+  * --points and --vertices apply to longitudinal/targeted Gauss sampling, not to
+    perimeter density. --max-vertices-per-plot does not group perimeter figures.
+    --gauss-sampling has no effect on transverse maps or perimeters.
+
+FEM STRESS SOURCES
+  Default with --fem3d: use element material when element_E, element_G and element_nu
+  exist. Otherwise compare FEM strain only; FEM stress is unavailable (NaN in exports,
+  explicitly labelled on stress plots), never assumed zero.
+  --fem-stress-from-element: require those metadata; use each element's isotropic law.
+  --fem-stress-from-csf: use the CSF constitutive matrix at the actual point and side.
+  Boundary/perimeter FEM stresses are reconstructed from H8 displacement derivatives,
+  NOT native Gauss stresses projected to the contour. Multiple element-side values
+  remain separate. CUF and FEM use exactly the same physical perimeter coordinates;
+  there is no nodal averaging, nearest-Gauss substitution or map interpolation.
+  Longitudinal Gauss mode instead compares native OpenSees stresses with CUF stresses
+  at the original integration coordinates. --gauss-sampling plot selects a subset;
+  all visits every point. Both require native Gauss stresses and coordinate metadata.
+
+PERIMETER SAMPLING AND INWARD GEOMETRY
+  The horizontal axis s is physical arc length along each closed polygon contour,
+  starting at its first CSF vertex and following CSF vertex order. Each polygon
+  keeps its material-side identity, including coincident interfaces.
+  N = --transverse-perimeter-points is a minimum target including loop closure.
+  For perimeter P, h = P/(N-1); each edge of length ell uses ceil(ell/h) intervals.
+  All vertices are retained; the actual count may exceed N. N >= 2; default: 201.
+  Strain and stress are evaluated directly at every sample. Engineering shear strains
+  are gamma_yz, gamma_xz, gamma_xy; component order is xx, yy, zz, yz, xz, xy.
+  --transverse-inward-offset D is a positive finite NORMAL EDGE distance in native
+  section units. Adjacent shifted edge lines meet at sharp (miter) corners; this is
+  not a centroid scaling, rounded buffer or the longitudinal vertex-bisector offset.
+  Boundary and inward contours have their own arc lengths and separate output folders.
+  Collapsed/self-intersecting contours or paths crossing excluded CSF children fail
+  explicitly: no silent clipping, topology repair or automatic offset reduction.
+  Zero-absolute-weight polygons are excluded using evaluated CSF weightabs.
+
+OUTPUTS
+  Root: --output-dir/<checkpoint basename without .cuf.npz>/
+  Longitudinal boundary: sampled_boundary_fields.npz and component PNGs; optional
+    CUF boundary CSV via --csv. Inward adds separately named NPZ/PNGs. FEM adds NPZ/CSV.
+  Native Gauss: gauss/sampled_gauss_native_comparison.npz and .csv, plus stress PNGs.
+  Transverse: transverse_x_<X>/sampled_transverse_fields.npz and 16 map PNGs, unless ONLY.
+  Perimeters: transverse_x_<X>/perimeter/boundary/ and, when requested, inward_<D>/:
+    sampled_perimeter_fields.npz and .csv (CUF, all material polygons in that contour);
+    sampled_fem3d_perimeter_fields.npz and .csv (only when --fem3d is supplied);
+    polygon_<NNN>/<component>_along_perimeter.png (12 per polygon per contour).
+  Perimeter data are saved before rendering. No map NPZ exists for a fresh ONLY run.
+  No unit conversion or automatic stress scaling is performed. Check axes, units,
+  loads, geometry and material regions before interpreting a CUF/FEM comparison.
+  Existing output files are NOT deleted: old maps remain if you reuse a directory.
+  Use a fresh output root to isolate a run. Same checkpoint basenames can collide.
+
+COMPLETE EXAMPLES (replace illustrative paths, X and D with your model values)
+  Longitudinal CUF boundary and inward:
+    python %(prog)s --csf-yaml model.yaml --checkpoint result.cuf.npz \\
+      --points 201 --inward-offset 0.1 --output-dir longitudinal
+  Longitudinal FEM boundary with the element material:
+    python %(prog)s --csf-yaml model.yaml --checkpoint result.cuf.npz \\
+      --fem3d fem.npz --stress-mode boundary --fem-stress-from-element
+  Native Gauss comparison (add --stress-mode both for a separate boundary comparison):
+    python %(prog)s --csf-yaml model.yaml --checkpoint result.cuf.npz \\
+      --fem3d fem_with_gauss.npz --stress-mode gauss --gauss-sampling plot
+  Maps only:
+    python %(prog)s --csf-yaml model.yaml --checkpoint result.cuf.npz \\
+      --transverse-x 5 --transverse-grid 120 --transverse-vector-grid 60
+  Maps PLUS CUF/FEM perimeters:
+    python %(prog)s --csf-yaml model.yaml --checkpoint result.cuf.npz \\
+      --fem3d fem.npz --transverse-x 5 --transverse-perimeter
+  Perimeters ONLY, with FEM and inward (no map computations):
+    python %(prog)s --csf-yaml model.yaml --checkpoint result.cuf.npz \\
+      --fem3d fem.npz --transverse-x 5 --transverse-perimeter-only \\
+      --transverse-perimeter-points 201 --transverse-inward-offset 0.1 \\
+      --output-dir perimeter_only
+  Perimeter-only CUF/FEM data, with the CSF material and no figures:
+    python %(prog)s --csf-yaml model.yaml --checkpoint result.cuf.npz \\
+      --fem3d fem.npz --transverse-x 5 --transverse-perimeter-only \\
+      --fem-stress-from-csf --no-plots --output-dir perimeter_data
+  All matching checkpoints (the SAME CSF model must match every checkpoint):
+    python %(prog)s --csf-yaml model.yaml --cuf-output-root output \\
+      --transverse-x 5 --transverse-perimeter-only --output-dir batch_perimeters
+
+For installed modules, replace 'python <script>.py' with
+'python -m csf.cuf.tools.<installed_script_name>' using the filename without .py.
+--help does not open model/checkpoint files. See README.md for NPZ schemas and APIs.
+""",
+        formatter_class=lambda prog: argparse.RawDescriptionHelpFormatter(
+            prog, width=100, max_help_position=34),
     )
-    inputs = parser.add_argument_group("input files")
-    inputs.add_argument("--csf-yaml",type=Path,required=True,
-                        help="Six-polygon (or other matching) CSF section YAML used by the CUF checkpoint.")
-    inputs.add_argument("--cuf-output-root",type=Path,default=Path("output"),
-                        help="Directory scanned recursively for *.cuf.npz (default: ./output).")
-    inputs.add_argument("--checkpoint",type=Path,default=None,
-                        help="Single CUF .cuf.npz checkpoint; overrides --cuf-output-root scan.")
-    inputs.add_argument("--fem3d",type=Path,default=None,
-                        help="Native stdBrick FEM3D NPZ with H8 mesh/displacements; for Gauss mode it must also contain OpenSees native stresses.")
-    methods = parser.add_argument_group("comparison methods")
-    methods.add_argument("--stress-mode",choices=("auto","boundary","gauss","both"),default="auto",
-                         help=("auto (default): both if --fem3d has native Gauss stresses, else boundary. "
-                               "boundary: sampled CSF polygon vertices; gauss: actual OpenSees integration points; "
-                               "both: separate boundary and Gauss outputs. gauss/both require --fem3d with native Gauss stresses."))
+    inputs = parser.add_argument_group("input files and checkpoint discovery")
+    inputs.add_argument("--csf-yaml", type=Path, required=True, metavar="MODEL.yaml",
+                        help="Required matching CSF model, loaded through CSF APIs. No geometry is reconstructed by parsing YAML in this tool.")
+    inputs.add_argument("--cuf-output-root", type=Path, default=Path("output"), metavar="DIR",
+                        help="Recursively scan DIR for *.cuf.npz; default: ./output. Used only when --checkpoint is omitted. All cases must match the same CSF model.")
+    inputs.add_argument("--checkpoint", type=Path, default=None, metavar="CASE.cuf.npz",
+                        help="One existing CUF checkpoint; overrides the recursive --cuf-output-root scan. Filename must end with .cuf.npz.")
+    inputs.add_argument("--fem3d", type=Path, default=None, metavar="FEM.npz",
+                        help="Optional H8/stdBrick reference for longitudinal or perimeter overlays. Supports standardized v1 and legacy I-Shape displacement NPZ. Native Gauss mode needs additional Gauss metadata.")
+    methods = parser.add_argument_group("FEM comparison and stress reconstruction")
+    methods.add_argument("--stress-mode", choices=("auto", "boundary", "gauss", "both"), default="auto",
+                         help="Longitudinal: auto (default) chooses both if FEM has native Gauss stresses, else boundary; gauss/both require that data. Transverse FEM: only auto/boundary; either selects same-point perimeter recovery, never Gauss.")
     source = methods.add_mutually_exclusive_group()
-    source.add_argument("--fem-stress-from-csf",action="store_true",
-                        help="Boundary only: FEM H8 strains times continuously varying CSF constitutive matrix AT EACH VERTEX. Different from the slice-midpoint material assigned to each OpenSees element.")
-    source.add_argument("--fem-stress-from-element",action="store_true",
-                        help="Boundary only: FEM H8 strains times the exact E/G/nu assigned to the containing OpenSees element (piecewise constant per longitudinal FEM slice). Default when element material metadata exists.")
+    source.add_argument("--fem-stress-from-csf", action="store_true",
+                        help="Longitudinal/perimeter FEM stress = H8 strain times the CSF constitutive matrix at the exact point and polygon side. Requires --fem3d; not available in Gauss-only mode.")
+    source.add_argument("--fem-stress-from-element", action="store_true",
+                        help="Longitudinal/perimeter FEM stress from the element's exact E/G/nu metadata (required). Default when metadata exist. Requires --fem3d; not available in Gauss-only mode.")
     methods.add_argument("--gauss-sampling", choices=("plot", "all"), default="plot",
-                         help=("plot (default): evaluate CUF only at the nearest true FEM Gauss point "
-                               "INSIDE EACH POLYGON for each selected vertex trace and requested x-station. "
-                               "This does NOT extrapolate native FEM stresses to the vertex; "
-                               "the distance from each vertex is exported. "
-                               "all: compare every native Gauss point (very slow and memory intensive)."))
-    transverse_args = parser.add_argument_group("CUF-only transverse section maps")
-    transverse_args.add_argument(
-        "--transverse-x", type=float, default=None,
-        help="Physical longitudinal x for direct-sampled Y-Z section maps; replaces comparisons",
-    )
-    transverse_args.add_argument(
-        "--transverse-grid", type=int, default=120,
-        help="Approximate cells across the largest section dimension for direct transverse fields (default: 120)",
-    )
-    transverse_args.add_argument(
-        "--transverse-vector-grid", type=int, default=60,
-        help="Approximate arrows along the longest side of the complete section (default: 60); consistent physical spacing and arrow length",
-    )
-    sampling = parser.add_argument_group("boundary and targeted Gauss plotting")
-    sampling.add_argument("--points",type=int,default=201,
-                          help="Boundary: number of vertex x-stations including ends. "
-                               "Gauss plot: target x-stations snapped to existing FEM Gauss x-planes (default: 201).")
-    sampling.add_argument("--vertices",choices=("unique","all"),default="all",
-                          help="all (default): retain each polygon-side vertex; unique: merge coincident points (not recommended for interface stresses).")
-    sampling.add_argument("--inward-offset",type=float,default=None,
-                          help="Also recover a point this distance inside each polygon vertex, in native section units; boundary results are retained.")
-    outputs = parser.add_argument_group("outputs")
-    outputs.add_argument("--output-dir",type=Path,default=Path("strain_stress_boundary"),
-                         help="Root directory for per-checkpoint NPZ, CSV and PNG outputs (default: ./strain_stress_boundary).")
-    outputs.add_argument("--csv",type=Path,default=None,
-                         help="Additional optional CSV path for CUF boundary samples; Gauss CSV is always saved in Gauss mode.")
-    outputs.add_argument("--no-plots",action="store_true",
-                         help="Save numerical NPZ/CSV samples only; skip every PNG figure (useful to test the pipeline).")
-    outputs.add_argument("--dpi",type=int,default=220,help="Resolution of PNG plots (default: 220).")
-    outputs.add_argument("--max-vertices-per-plot",type=int,default=8,
-                         help="Maximum polygon vertex panels per boundary PNG page (default: 8).")
+                         help="Native Gauss only: plot (default) selects actual near-vertex Gauss points inside each polygon at nearest available x planes; all compares every point (costly). Actual coordinates and offsets are exported; no extrapolation to vertices.")
+    transverse_args = parser.add_argument_group("fixed-x section and CUF maps")
+    transverse_args.add_argument("--transverse-x", type=float, default=None, metavar="X",
+                                help="Finite physical longitudinal x for a Y-Z section. Bypasses longitudinal/Gauss processing. By default computes maps; add --transverse-perimeter for maps+perimeters or --transverse-perimeter-only to skip maps entirely.")
+    transverse_args.add_argument("--transverse-grid", type=int, default=120, metavar="N",
+                                help="Approximate map cells across the largest section dimension; N >= 2, default: 120. Does not control perimeter sampling; unused with --transverse-perimeter-only.")
+    transverse_args.add_argument("--transverse-vector-grid", type=int, default=60, metavar="N",
+                                help="Approximate shear arrows along the longest section dimension; N >= 1, default: 60. One global physical spacing. Unused with --transverse-perimeter-only.")
+    perimeter_args = parser.add_argument_group("polygon perimeters and optional same-plot FEM3D")
+    perimeter_args.add_argument("--transverse-perimeter", action="store_true",
+                               help="With --transverse-x, retain maps and add 6 strain + 6 stress plots per material polygon along physical arc length. Optional --fem3d overlays those plots. Disabled by default.")
+    perimeter_args.add_argument("--transverse-perimeter-only", action="store_true",
+                               help="With --transverse-x, enable perimeters and skip ALL map sampling, map exports and map figures. Implies --transverse-perimeter; may be combined with it (only wins). FEM and inward are supported. Disabled by default.")
+    perimeter_args.add_argument("--transverse-perimeter-points", type=int, default=None, metavar="N",
+                               help="Minimum target samples per closed contour, including closure; N >= 2, effective default: 201. Requires either perimeter flag. Preserves every vertex, so actual count may exceed N.")
+    perimeter_args.add_argument("--transverse-inward-offset", type=float, default=None, metavar="D",
+                               help="Add an inward polygon at positive finite NORMAL EDGE distance D in native section units, keeping boundary results. Requires either perimeter flag. Different from longitudinal --inward-offset.")
+    sampling = parser.add_argument_group("longitudinal boundary and targeted Gauss sampling")
+    sampling.add_argument("--points", type=int, default=201, metavar="N",
+                          help="N >= 2, default: 201. Boundary: longitudinal stations including endpoints; Gauss plot: target stations snapped to actual Gauss x planes. Does not control perimeters.")
+    sampling.add_argument("--vertices", choices=("unique", "all"), default="all",
+                          help="all (default) retains polygon-side vertex identities; unique merges coincident longitudinal/Gauss traces (not recommended at material interfaces). Perimeters always retain every polygon identity.")
+    sampling.add_argument("--inward-offset", type=float, default=None, metavar="D",
+                          help="Longitudinal boundary/both only: also sample D > 0 along each vertex's internal bisector, in native section units. Keeps boundary results. Incompatible with --transverse-x and Gauss-only mode.")
+    outputs = parser.add_argument_group("outputs and rendering")
+    outputs.add_argument("--output-dir", type=Path, default=Path("strain_stress_boundary"), metavar="DIR",
+                         help="Root for per-checkpoint outputs; default: ./strain_stress_boundary. Perimeters live under transverse_x_<X>/perimeter/{boundary,inward_<D>}. Existing unrelated files are not removed.")
+    outputs.add_argument("--csv", type=Path, default=None, metavar="PATH",
+                         help="Optional extra CUF longitudinal boundary CSV: a .csv path for one checkpoint, otherwise a directory. Not accepted with --transverse-x. Perimeter, FEM and Gauss CSVs are automatic.")
+    outputs.add_argument("--no-plots", action="store_true",
+                         help="Skip every PNG while preserving numerical recovery and NPZ/CSV exports. Does NOT skip map calculations; use --transverse-perimeter-only to exclude maps. Disabled by default.")
+    outputs.add_argument("--dpi", type=int, default=220, metavar="N",
+                         help="PNG resolution; N >= 1, default: 220. Applies to every enabled plot.")
+    outputs.add_argument("--max-vertices-per-plot", type=int, default=8, metavar="N",
+                         help="N >= 1, default: 8. Maximum vertex panels per longitudinal/targeted Gauss PNG page. Does not group perimeter plots: one component/polygon/contour per PNG.")
     return parser
 
 
@@ -2149,7 +3060,8 @@ def checkpoint_output_name(path: Path) -> str:
 
 def main():
     args = build_parser().parse_args()
-    print(f"[visualizer] v14.2.7: {Path(__file__).resolve()}", flush=True)
+    _validate_transverse_perimeter_arguments(args)
+    print(f"[visualizer] v14.5.0: {Path(__file__).resolve()}", flush=True)
     if args.max_vertices_per_plot < 1 or args.dpi < 1 or args.points < 2:
         raise ValueError("--points must be >=2 and --dpi / --max-vertices-per-plot >=1")
     if args.inward_offset is not None and (not math.isfinite(args.inward_offset) or args.inward_offset <= 0):
@@ -2161,6 +3073,10 @@ def main():
         run_transverse_mode(args, checkpoints, args.output_dir.expanduser().resolve())
         return
     fem = FEM3DH8(args.fem3d) if args.fem3d is not None else None
+    if fem is not None:
+        check_material_consistency(fem, args.csf_yaml, args.output_dir,
+                                   "csf" if args.fem_stress_from_csf else
+                                   "element" if fem.element_E is not None else "none")
     mode = args.stress_mode
     if mode == "auto":
         mode = "both" if fem is not None and fem.native_stresses is not None else "boundary"

@@ -1,0 +1,17 @@
+# Carrera I-section: unchanged tapered geometry and original surface half-wave
+# traction, applied to three quadrilateral L9 domains forming the bottom
+# face. Place this file in cuf/problems/.
+
+model:
+  csf_yaml: ../models/carrera_i_shaped_taper80_l9_web3.yaml
+
+problem:
+  type: surface_halfwave_transverse_supported
+  surfaces:
+    - polygon_name: bottom_flange_left
+      edge_start_point_id: 0
+    - polygon_name: bottom_flange_center
+      edge_start_point_id: 0
+    - polygon_name: bottom_flange_right
+      edge_start_point_id: 0
+  amplitude: -1.0

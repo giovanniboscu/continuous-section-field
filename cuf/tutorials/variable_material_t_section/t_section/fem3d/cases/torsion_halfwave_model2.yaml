@@ -7,9 +7,9 @@ problem:
   yaml: ../problems/torsion_halfwave.yaml
 
 mesh:
-  longitudinal_divisions: 120
+  longitudinal_divisions: 100
   web_width_divisions: 12
-  web_height_divisions: 36
+  web_height_divisions: 30
   flange_overhang_divisions: 12
   flange_thickness_divisions: 9
   load_gauss_order: 4

@@ -1,0 +1,147 @@
+# Variable-section Carrera I-shaped benchmark, adapted for Lagrange L9.
+# Original: carrera_i_shaped_taper80.yaml
+# Nine non-overlapping four-vertex CSF domains: 3 top flange + 3 web + 3 bottom flange.
+# The L9 connectivity is shared and constant; only the CSF geometry varies in x.
+# Web clear height changes from 100 mm at S0 to 20 mm at S1 (80% reduction).
+# Flange width and thickness remain exactly as in the original taper model.
+# The prismatic reference model is not modified.
+# Units: mm, N, MPa. E = 71700 MPa, nu = 0.3.
+
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        - name: top_flange_left
+          weight: 71700.0
+          vertices:
+            - [-33, 50]
+            - [-12.5, 50]
+            - [-12.5, 75]
+            - [-33, 75]
+        - name: top_flange_center
+          weight: 71700.0
+          vertices:
+            - [-12.5, 50]
+            - [12.5, 50]
+            - [12.5, 75]
+            - [-12.5, 75]
+        - name: top_flange_right
+          weight: 71700.0
+          vertices:
+            - [12.5, 50]
+            - [33, 50]
+            - [33, 75]
+            - [12.5, 75]
+        - name: web_bottom
+          weight: 71700.0
+          vertices:
+            - [-12.5, -50]
+            - [12.5, -50]
+            - [12.5, -16.666666666666668]
+            - [-12.5, -16.666666666666668]
+        - name: web_middle
+          weight: 71700.0
+          vertices:
+            - [-12.5, -16.666666666666668]
+            - [12.5, -16.666666666666668]
+            - [12.5, 16.666666666666668]
+            - [-12.5, 16.666666666666668]
+        - name: web_top
+          weight: 71700.0
+          vertices:
+            - [-12.5, 16.666666666666668]
+            - [12.5, 16.666666666666668]
+            - [12.5, 50]
+            - [-12.5, 50]
+        - name: bottom_flange_left
+          weight: 71700.0
+          vertices:
+            - [-33, -75]
+            - [-12.5, -75]
+            - [-12.5, -50]
+            - [-33, -50]
+        - name: bottom_flange_center
+          weight: 71700.0
+          vertices:
+            - [-12.5, -75]
+            - [12.5, -75]
+            - [12.5, -50]
+            - [-12.5, -50]
+        - name: bottom_flange_right
+          weight: 71700.0
+          vertices:
+            - [12.5, -75]
+            - [33, -75]
+            - [33, -50]
+            - [12.5, -50]
+
+    S1:
+      z: 1000
+      polygons:
+        - name: top_flange_left
+          weight: 71700.0
+          vertices:
+            - [-33, 10]
+            - [-12.5, 10]
+            - [-12.5, 35]
+            - [-33, 35]
+        - name: top_flange_center
+          weight: 71700.0
+          vertices:
+            - [-12.5, 10]
+            - [12.5, 10]
+            - [12.5, 35]
+            - [-12.5, 35]
+        - name: top_flange_right
+          weight: 71700.0
+          vertices:
+            - [12.5, 10]
+            - [33, 10]
+            - [33, 35]
+            - [12.5, 35]
+        - name: web_bottom
+          weight: 51700.0
+          vertices:
+            - [-12.5, -10]
+            - [12.5, -10]
+            - [12.5, -3.3333333333333335]
+            - [-12.5, -3.3333333333333335]
+        - name: web_middle
+          weight: 51700.0
+          vertices:
+            - [-12.5, -3.3333333333333335]
+            - [12.5, -3.3333333333333335]
+            - [12.5, 3.3333333333333335]
+            - [-12.5, 3.3333333333333335]
+        - name: web_top
+          weight: 51700.0
+          vertices:
+            - [-12.5, 3.3333333333333335]
+            - [12.5, 3.3333333333333335]
+            - [12.5, 10]
+            - [-12.5, 10]
+        - name: bottom_flange_left
+          weight: 71700.0
+          vertices:
+            - [-33, -35]
+            - [-12.5, -35]
+            - [-12.5, -10]
+            - [-33, -10]
+        - name: bottom_flange_center
+          weight: 71700.0
+          vertices:
+            - [-12.5, -35]
+            - [12.5, -35]
+            - [12.5, -10]
+            - [-12.5, -10]
+        - name: bottom_flange_right
+          weight: 71700.0
+          vertices:
+            - [12.5, -35]
+            - [33, -35]
+            - [33, -10]
+            - [12.5, -10]
+
+  shear_weight_laws:
+    - 'iso(0.3)'
