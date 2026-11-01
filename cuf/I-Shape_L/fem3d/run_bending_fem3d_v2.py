@@ -510,24 +510,61 @@ def solve_opensees(
         if np.any(f != 0.0):
             ops.load(nid, float(f[0]), float(f[1]), float(f[2]))
 
-    ops.system("UmfPack")
-    ops.numberer("RCM")
-    ops.constraints("Plain")
-    ops.integrator("LoadControl", 1.0)
-    ops.algorithm("Linear")
-    ops.analysis("Static")
-    ok = ops.analyze(1)
-    if ok != 0:
+    # Try several linear equation solvers without changing the physical model.
+    #
+    # A failure here occurs while solving K u = f, before any nonlinear
+    # iteration is relevant.  With very fine meshes some sparse solvers can
+    # become numerically fragile even when the model itself is unchanged.
+    #
+    # The sequence below therefore retries the *same* static problem with
+    # different LinearSOE implementations.  The OpenSees domain, elements,
+    # loads and constraints are not rebuilt or modified.
+    solver_attempts = [
+        ("UmfPack", ("UmfPack",)),
+        ("Mumps", ("Mumps",)),
+        ("SparseGeneral-piv", ("SparseGeneral", "-piv")),
+    ]
+
+    ok = -1
+    solver_used = None
+    attempt_messages = []
+
+    for solver_name, system_args in solver_attempts:
         ops.wipeAnalysis()
-        ops.system("SparseGeneral", "-piv")
-        ops.numberer("RCM")
-        ops.constraints("Plain")
-        ops.integrator("LoadControl", 1.0)
-        ops.algorithm("Linear")
-        ops.analysis("Static")
-        ok = ops.analyze(1)
-    if ok != 0:
-        raise RuntimeError(f"OpenSees static analysis failed with code {ok}")
+
+        try:
+            ops.system(*system_args)
+            ops.numberer("RCM")
+            ops.constraints("Plain")
+            ops.integrator("LoadControl", 1.0)
+            ops.algorithm("Linear")
+            ops.analysis("Static")
+
+            print(f"OpenSees solver attempt: {solver_name}")
+            ok = ops.analyze(1)
+
+        except Exception as exc:
+            ok = -999
+            msg = f"{solver_name}: unavailable/error while configuring or solving: {exc}"
+            attempt_messages.append(msg)
+            print(msg)
+            continue
+
+        if ok == 0:
+            solver_used = solver_name
+            print(f"OpenSees solver succeeded: {solver_name}")
+            break
+
+        msg = f"{solver_name}: analyze returned {ok}"
+        attempt_messages.append(msg)
+        print(f"OpenSees solver failed: {msg}")
+
+    if ok != 0 or solver_used is None:
+        details = "; ".join(attempt_messages)
+        raise RuntimeError(
+            "OpenSees static analysis failed with all linear solvers. "
+            f"Attempts: {details}"
+        )
 
     u = np.asarray(
         [ops.nodeDisp(i) for i in range(1, mesh.nodes.shape[0] + 1)], dtype=float
@@ -548,6 +585,7 @@ def solve_opensees(
         centerline,
         axial_gauge_shift,
         axial_gauge_residual,
+        solver_used,
     )
 
 
@@ -595,6 +633,7 @@ def main() -> None:
         centerline = _centerline_nodes(mesh)
         axial_gauge_shift = math.nan
         axial_gauge_residual = math.nan
+        solver_used = "mesh-only"
     else:
         (
             u,
@@ -604,6 +643,7 @@ def main() -> None:
             centerline,
             axial_gauge_shift,
             axial_gauge_residual,
+            solver_used,
         ) = solve_opensees(
             mesh, element_E, element_nu, args.amplitude, x0, x1
         )
@@ -633,6 +673,7 @@ def main() -> None:
         axial_gauge_centerline_nodes=centerline,
         axial_gauge_shift=np.asarray(axial_gauge_shift),
         axial_gauge_residual=np.asarray(axial_gauge_residual),
+        opensees_solver=np.asarray(solver_used),
         amplitude=np.asarray(args.amplitude),
         x0=np.asarray(x0),
         x1=np.asarray(x1),
@@ -648,6 +689,7 @@ def main() -> None:
     print(f"nu range    : {element_nu.min():.12e} .. {element_nu.max():.12e}")
     print(f"sum Fz      : {loads[:, 2].sum():.12e}")
     if u.size:
+        print(f"solver      : {solver_used}")
         print(f"axial gauge : mean={axial_gauge_residual:.12e} shift={axial_gauge_shift:.12e}")
         i = int(np.argmin(u[:, 2]))
         print(f"min uz      : {u[i, 2]:.12e} at {mesh.nodes[i]}")
