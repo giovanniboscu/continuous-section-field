@@ -11,13 +11,6 @@ The comparison is intentionally organized around a common physical problem. Geom
 
 The complete execution sequence is documented in [reproducibility.md](reproducibility.md). The FEM3D mesh-selection procedure is documented separately in [FEM3Dmesh-convergence-criterion.md](FEM3Dmesh-convergence-criterion.md), while the strong-equilibrium comparison is developed in [FEM3D-CUF-equilibrium-report.md](FEM3D%E2%80%93CUF-equilibrium-report.md). The graphical post-processing results are collected in [plot_results/README.md](plot_results/README.md).
 
----
-
-> ## reproducibility
->The complete procedure required to reproduce the benchmark, including the CSF-CUF analysis, the FEM3D reference solution, the post-processing steps, and the generation of the comparison plots, is documented in:
->
->[`reproducibility.md`](reproducibility.md)
->
 
 ---
 
