@@ -33,5 +33,7 @@ CSF_ACTIONS:
         stations:
           - station_edge
         properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy]
-   
+    - plot_weight:
+        output:
+          - stdout
 
