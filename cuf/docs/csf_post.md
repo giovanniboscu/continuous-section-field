@@ -147,7 +147,7 @@ problem.type = ...
 
 STATION RESPONSES
 -----------------
-x/L x [mm] y [mm] z [mm] point ux [mm] uy [mm] uz [mm]
+x/L x      y      z      point ux      uy      uz     
 ```
 
 Each subsequent line is one displacement evaluation.
