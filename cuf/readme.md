@@ -90,11 +90,16 @@ The following resources provide an introduction to CSF-CUF, its configuration, a
 - **[I-Shape](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape)**  
   Numerical validation case comparing CSF-CUF and 3D FEM solutions for both prismatic and continuously tapered I-shaped beams, using the same CUF formulation and solver settings while changing only the continuous cross-section geometry.
 
+- **[I-Shape_L](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape_L)**  
+  Numerical benchmark designed to compare the stress-field reconstruction and local equilibrium accuracy of CSF-CUF and FEM3D under identical physical conditions. The test considers a continuously tapered I-shaped member with longitudinally varying material properties, subject to the same loading and boundary conditions. Beyond displacement comparisons, the study evaluates the strong-form equilibrium residuals of both formulations at common physical sampling points, providing a quantitative assessment of their ability to reproduce locally equilibrated stress fields. The benchmark includes FEM3D mesh-convergence verification, stress-recovery methodology, detailed numerical results, and reproducible post-processing procedures.
+
+
 - **[C-Shape](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/c-shape)**  
   C-section benchmark based on the work of Carrera and Petrolo, demonstrating custom polygon-specific transverse expansions, Lagrange L9 approximation, and FEM3D comparisons.
 
 - **[Bridge-like](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/bridge-like)**  
   Bridge-like beam example inspired by Carrera, Petrolo, and Zappino, illustrating the use of CSF as an independent library supplying geometry and material properties to a CUF-based structural solver. Bending and torsion analyses explore higher-order transverse approximations, numerical convergence, and stress distributions.
+
 
 
 
