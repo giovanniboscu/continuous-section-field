@@ -435,6 +435,20 @@ The complete graphical organization is documented in
 
 The FEM3D curves shown there use the raw element-wise results without nodal smoothing or stress/strain averaging. Multiple FEM3D traces can therefore occur at the same geometric boundary when adjacent solid elements return different native values. Those differences are intentionally preserved rather than hidden by post-processing.
 
+
+### 6.4 Stress recovery and strong-form equilibrium methodology
+
+The stress fields compared in this benchmark are reconstructed from the numerical displacement solutions using two independent kinematic descriptions: the Lagrange L9 CSF-CUF expansion and the three-dimensional H8 finite-element approximation.
+
+The technical documentation traces both stress-recovery procedures, from the stored solution coefficients and nodal displacements to displacement gradients, strains, constitutive matrices, and stress components.
+
+It also distinguishes the stress evaluation used for graphical visualization from the pointwise reconstruction employed in the strong-form equilibrium assessment. In the latter, both formulations are evaluated at the same physical sampling coordinates before computing stress derivatives and equilibrium residuals.
+
+The complete methodology, source-code references, and verification plan are documented in:
+
+**[Stress Recovery and Strong-Form Equilibrium Assessment](stress_recovery_equilibrium_outline.md)**.
+
+
 ---
 
 ## 7. Results obtained
