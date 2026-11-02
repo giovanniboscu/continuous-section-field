@@ -1,9 +1,9 @@
-# CSF–CUF problem adapters - complete reference
+# CSF–CUF problem adapters — complete reference
 
 **Bidirectional reference: from a YAML adapter to its physical load and constraints, and from a desired load/constraint to the correct adapter.**
 
 
-**Inventory:** 7 complete/legacy problem adapter modules, implementing **8 distinct `problem.type` values** (one of which has two explicitly selected loading modes); **6 directly selectable load-side modules** (supporting 7 types); **4 directly selectable constraint-side modules**; and auxiliary implementations. Every `.py` file in the supplied `adapters/problem` tree is accounted for in [§8](#8-complete-source-inventory).
+**Inventory:** **7 standard complete/legacy problem adapter modules** implementing **8 standard `problem.type` values** (one of which has two explicitly selected loading modes), **6 directly selectable standard load-side modules** (supporting 7 types), **4 directly selectable standard constraint-side modules**, and auxiliary implementations. **Additionally, 1 verified custom complete adapter** defines **1 custom `problem.type`**, `surface_halfwave_transverse_supported`. Standard-module coverage is complete for the supplied `adapters/problem` tree [§8](#8-complete-source-inventory); the custom adapter is described in [§4.9](#49-custom-surface_halfwave_transverse_supported).
 
 ## Contents
 
@@ -16,6 +16,7 @@
 7. [Working configuration patterns](#7-working-configuration-patterns)
 8. [Complete source inventory](#8-complete-source-inventory)
 9. [Verification, naming rules, and known limits](#9-verification-naming-rules-and-known-limits)
+10. [Custom adapters in validation directories](#10-custom-adapters-in-validation-directories)
 
 ---
 
@@ -56,14 +57,14 @@ problems/example.yaml ──> model.csf_yaml + problem.type + load parameters
 The **case YAML has exactly two supported adapter-selection modes**:
 
 ```yaml
-# Mode A: complete (legacy) adapter - the module supplies both contributions
+# Mode A: complete (legacy) adapter — the module supplies both contributions
 problem:
   yaml: ../problems/torsion.yaml
   adapter: csf.cuf.adapters.problem.torsion_halfwave
 ```
 
 ```yaml
-# Mode B: explicit composition - one module for each contribution
+# Mode B: explicit composition — one module for each contribution
 problem:
   yaml: ../problems/torsion.yaml
   load_adapter: csf.cuf.adapters.problem.loads.torsion_halfwave
@@ -72,7 +73,7 @@ problem:
 
 `problem.adapter` **cannot** coexist with `problem.load_adapter` or `problem.constraint_adapter`. In mode B, **both** split keys are mandatory. The loader calls `build_problem(problem_type, options)` on both selected modules, composes the resulting objects, and passes the composite problem to the solver. The load-side object also provides the optional `tracked_points` for post-processing. [Source: `case.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/case.py), [source: `problem_api.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/problem/problem_api.py).
 
-Adapter references can be **importable module names** (as in this reference) or relative/absolute `.py` paths, resolved relative to the case YAML directory. A Python file is directly selectable only if it defines the required module-level **`build_problem(...)`** function.
+Adapter references can be **importable module names** (as in this reference) or relative/absolute `.py` paths, resolved relative to the case YAML directory. A Python file is directly selectable only if it defines the required module-level **`build_problem(...)`** function. A **custom complete adapter** follows the *same load + constraints interface* and uses `problem.adapter` (not the split-adapter keys); it can reside outside `src/csf/cuf/adapters/problem/`. For the verified example, the case YAML selects `../../validation/surface_halfwave_multi.py`. See [§4.9](#49-custom-surface_halfwave_transverse_supported) and [§10](#10-custom-adapters-in-validation-directories).
 
 **Coordinate convention:** solver longitudinal coordinate `x`, physical cross-sectional coordinates `(y,z)`, displacement `(u_x,u_y,u_z)`. Let `x0`, `x1` denote beam endpoints, `L = x1 − x0`, `F_τ(y,z;x)` a transverse CUF basis function, and `N_i(x)` a longitudinal interpolation function. Examples use consistent units; if the geometry is in `mm` and forces in `N`, traction is `N/mm²` and longitudinal line-force intensity is `N/mm`.
 
@@ -93,8 +94,9 @@ Adapter references can be **importable module names** (as in this reference) or 
 | Sinusoidal distributed transverse loading of **all the lowest-`z` boundary segments** | `carrera_bending_bottom_surface_halfwave` | `bending_torsion_halfwave` | Transverse supports at both ends + integrated axial gauge | `amplitude` | [§4.6](#46-carrera_bending_bottom_surface_halfwave) |
 | **Uniform global-z traction on one named physical CSF lateral surface** | `uniform_surface` | `uniform_surface` | Transverse supports at both ends + axial point anchor | `surface.polygon_name, edge_start_point_id, components.z` | [§4.7](#47-uniform_surface) |
 | **Sinusoidal global-z traction on one named physical CSF lateral surface** | `surface_halfwave` | `surface_halfwave` | Both ends fully clamped | `surface.polygon_name, edge_start_point_id, amplitude` | [§4.8](#48-surface_halfwave) |
+| **Sinusoidal global-z traction on one OR MULTIPLE independently named CSF edges** | `surface_halfwave_transverse_supported` | **Custom**: `../../validation/surface_halfwave_multi.py` (case-relative) | Both ends transversely supported + integral axial gauge | Exactly one of `surface` / `surfaces`, plus required `amplitude` | [§4.9](#49-custom-surface_halfwave_transverse_supported) |
 
-**Selection distinctions:** `carrera_torsion_halfwave` and `torsion_halfwave` describe related half-wave loads but **different constraints and load-point evaluation rules**. `carrera_bending_bottom_surface_halfwave` finds **all minimum-`z` boundary segments** automatically; `surface_halfwave` requires an **explicit polygon edge** and uses the real inclined surface measure. The parameter named `amplitude` has **different physical units** in line-force and surface-traction adapters.
+**Selection distinctions:** `carrera_torsion_halfwave` and `torsion_halfwave` describe related half-wave loads but **different constraints and load-point evaluation rules**. `carrera_bending_bottom_surface_halfwave` finds **all minimum-`z` boundary segments** automatically; `surface_halfwave` requires an **explicit polygon edge** and uses the real inclined surface measure. The **custom** `surface_halfwave_transverse_supported` supports *one or multiple explicit edges* and imposes *transverse supports*, not the full end clamps of the standard `surface_halfwave`. The parameter named `amplitude` has **different physical units** in line-force and surface-traction adapters.
 
 ### 2.2 I know the support I want: what is the constraint adapter?
 
@@ -104,6 +106,7 @@ Adapter references can be **importable module names** (as in this reference) or 
 | Full end clamps with **end-node-specific** transverse basis sizes | `constraints.full_clamp_node_dependent` | `double_clamped_point_load` | [§5.2](#52-full_clamp_node_dependent) |
 | `u_y=u_z=0` on both ends + **axial point anchor** `u_x(x0,0,0)=0` | `constraints.transverse_supported_point_anchor` | `torsion_uniform`, `uniform_surface` | [§5.3](#53-transverse_supported_point_anchor) |
 | `u_y=u_z=0` on both ends + **integrated axial gauge** | `constraints.transverse_supported_integrated_axial` | Both `carrera_*` types in `bending_torsion_halfwave` | [§5.4](#54-transverse_supported_integrated_axial) |
+| `u_y=u_z=0` on both ends + **integrated axial gauge, implemented internally by a custom adapter** | *Not selected separately*: `../../validation/surface_halfwave_multi.py` is one **complete adapter** | Custom `surface_halfwave_transverse_supported` | [§4.9](#49-custom-surface_halfwave_transverse_supported) |
 | Full clamp **only at the start** `x0` | *Not directly selectable as `constraint_adapter`* (`FullStartSectionClamp` has no `build_problem`) | `c_section_cantilever` | [§5.5](#55-full_start_section_clamp-helper-only) |
 
 **Split composition:** any of the six selectable load-side modules can be paired syntactically with any of the four selectable constraint-side modules, because the latter accept and ignore `problem.type` and `options`. This is **API compatibility, not a mechanical guarantee** of well-posedness or of equivalence to a reference benchmark. The original pairs in the tables above identify the code's historical behavior.
@@ -112,7 +115,7 @@ Adapter references can be **importable module names** (as in this reference) or 
 
 ## 3. Choose by YAML name or complete adapter (forward lookup)
 
-This is the exact dispatch map. `problem.type` goes into the **problem YAML**; the Python import goes into the **case YAML**.
+This is the exact dispatch map. `problem.type` goes into the **problem YAML**; the Python import or case-relative custom file path goes into the **case YAML**. Entries without the `Custom` label belong to the standard Python package.
 
 | `problem.type` in problem YAML | Complete `problem.adapter` (package prefix `csf.cuf.adapters.problem.`) | Load implementation | Constraint implementation |
 |---|---|---|---|
@@ -124,8 +127,9 @@ This is the exact dispatch map. `problem.type` goes into the **problem YAML**; t
 | `carrera_bending_bottom_surface_halfwave` | `bending_torsion_halfwave` | Carrera minimum-`z` boundary half-wave | `constraints.transverse_supported_integrated_axial.TransverseSupportedIntegratedAxialConstraints` |
 | `uniform_surface` | `uniform_surface` | Real-surface global-z uniform traction | `constraints.transverse_supported_point_anchor.TransverseSupportedPointAnchorConstraints` |
 | `surface_halfwave` | `surface_halfwave` | Real-surface global-z half-wave traction (delegates to `loads.surface_halfwave`) | `constraints.full_clamp.FullClampConstraints` |
+| **Custom:** `surface_halfwave_transverse_supported` | **Case-relative file:** `../../validation/surface_halfwave_multi.py` | Independently projects one/multiple real-surface global-z half-wave tractions and sums them | **Internal**: both-end `u_y=u_z=0` + integrated mean axial displacement gauge |
 
-No `problem.type` is registered globally by name alone. The selected module's `build_problem(type, options)` determines whether the specified string is accepted. For example, `bending_torsion_halfwave.py` accepts two types; `torsion_halfwave.py` accepts only one. There is **no automatic filename-to-type inference**.
+No `problem.type` is registered globally by name alone. The selected module's `build_problem(type, options)` determines whether the specified string is accepted. For example, `bending_torsion_halfwave.py` accepts two types; `torsion_halfwave.py` accepts only one. There is **no automatic filename-to-type inference**. The custom adapter is recognized because its file is explicitly selected via `problem.adapter` and declares `PROBLEM_TYPE = "surface_halfwave_transverse_supported"`; it is **not** a built-in `problem.type` of the standard `surface_halfwave` module.
 
 ---
 
@@ -146,11 +150,11 @@ The tables list **problem YAML parameters**; the common `model.csf_yaml` and `pr
 
 | Problem YAML key | Required | Default | Meaning / checks |
 |---|---|---|---|
-| `force.type` | Yes | - | Exactly `point` |
-| `force.amplitude` | Yes | - | Physical concentrated `P_z` in force units (`N` if using N/mm), signed; finite numerical value |
-| `force.x` | Yes | - | Absolute longitudinal application coordinate; inside `[x0,x1]`; may lie **between** FE nodes |
-| `force.y` | Yes | - | Physical cross-section `y` position |
-| `force.z` | Yes | - | Physical cross-section `z` position |
+| `force.type` | Yes | — | Exactly `point` |
+| `force.amplitude` | Yes | — | Physical concentrated `P_z` in force units (`N` if using N/mm), signed; finite numerical value |
+| `force.x` | Yes | — | Absolute longitudinal application coordinate; inside `[x0,x1]`; may lie **between** FE nodes |
+| `force.y` | Yes | — | Physical cross-section `y` position |
+| `force.z` | Yes | — | Physical cross-section `z` position |
 
 The adapter evaluates transverse `F_τ(y,z;x)` at the force position, then distributes the resulting generalized force through the longitudinal **FE shape functions of the containing element**. `force.x` is **not required to coincide with a node** (unlike the distinct helper `loads.point_force_global_z`). Unknown `force.*` keys are rejected.
 
@@ -172,10 +176,10 @@ problem:
 
 | Problem YAML key | Required | Default | Meaning / checks |
 |---|---|---|---|
-| `force.type` | Yes | - | Exactly `area` |
-| `force.x`, `force.y`, `force.z` | Yes | - | **Centroid** of patch in global physical coordinates |
-| `force.width` | Yes | - | Patch extent **along longitudinal `x`**; positive |
-| `force.height` | Yes | - | Patch extent **along transverse `y`**; positive |
+| `force.type` | Yes | — | Exactly `area` |
+| `force.x`, `force.y`, `force.z` | Yes | — | **Centroid** of patch in global physical coordinates |
+| `force.width` | Yes | — | Patch extent **along longitudinal `x`**; positive |
+| `force.height` | Yes | — | Patch extent **along transverse `y`**; positive |
 | `force.fx` | No | `0.0` | **Total** resultant global-x force, not pressure |
 | `force.fy` | No | `0.0` | **Total** resultant global-y force, not pressure |
 | `force.fz` | No | `0.0` | **Total** resultant global-z force, not pressure |
@@ -211,9 +215,9 @@ problem:
 
 | Problem YAML key | Required | Default | Meaning / checks |
 |---|---|---|---|
-| `x_fraction` | Yes | - | Finite longitudinal fraction in `[0,1]`; `x_p=x0+x_fraction·L` |
-| `point.y` | Yes | - | Physical transverse `y` coordinate of the point |
-| `point.z` | Yes | - | Physical transverse `z` coordinate of the point |
+| `x_fraction` | Yes | — | Finite longitudinal fraction in `[0,1]`; `x_p=x0+x_fraction·L` |
+| `point.y` | Yes | — | Physical transverse `y` coordinate of the point |
+| `point.z` | Yes | — | Physical transverse `z` coordinate of the point |
 | `components.x` | At least one of x/y/z | Omitted = `0` | Total physical **point force** along global `x` |
 | `components.y` | At least one of x/y/z | Omitted = `0` | Total physical **point force** along global `y` |
 | `components.z` | At least one of x/y/z | Omitted = `0` | Total physical **point force** along global `z` |
@@ -365,9 +369,9 @@ Validation behavior is the same as [§4.5](#45-carrera_torsion_halfwave): unknow
 
 | Problem YAML key | Required | Default | Meaning / checks |
 |---|---|---|---|
-| `surface.polygon_name` | Yes | - | Non-empty **S0 CSF polygon name** as known to `inspect_section_entities` |
-| `surface.edge_start_point_id` | Yes | - | **Zero-based** index of the first polygon vertex of the edge; integer `>=0`; end vertex is next vertex cyclically |
-| `components.z` | Yes | - | Signed uniform **global-z traction** per **real** surface area (`N/mm²` with N/mm), finite, not boolean |
+| `surface.polygon_name` | Yes | — | Non-empty **S0 CSF polygon name** as known to `inspect_section_entities` |
+| `surface.edge_start_point_id` | Yes | — | **Zero-based** index of the first polygon vertex of the edge; integer `>=0`; end vertex is next vertex cyclically |
+| `components.z` | Yes | — | Signed uniform **global-z traction** per **real** surface area (`N/mm²` with N/mm), finite, not boolean |
 
 The specified polygon edge must be **horizontal within S0 and S1**, i.e. its endpoints have equal `z` in each end section (an edge parallel to global `y`). It may change width, transverse position, and **height between S0 and S1**. Homologous polygon vertex indices describe the evolving edge. Only `components.z` is supported; **`components.x` and `.y` are rejected**. The applied direction is fixed global `z`, not the local surface normal.
 
@@ -404,9 +408,9 @@ All top-level problem keys except `surface` and `components` are rejected; unsup
 
 | Problem YAML key | Required | Default | Meaning / checks |
 |---|---|---|---|
-| `surface.polygon_name` | Yes | - | Non-empty name of a CSF polygon at S0 |
-| `surface.edge_start_point_id` | Yes | - | Zero-based index of the first vertex of the selected edge, integer `>=0` |
-| `amplitude` | Yes | - | Signed **global-z traction amplitude** per real surface area (`N/mm²`), finite, not boolean |
+| `surface.polygon_name` | Yes | — | Non-empty name of a CSF polygon at S0 |
+| `surface.edge_start_point_id` | Yes | — | Zero-based index of the first vertex of the selected edge, integer `>=0` |
+| `amplitude` | Yes | — | Signed **global-z traction amplitude** per real surface area (`N/mm²`), finite, not boolean |
 
 Geometry selection and real surface integration are the same as in [§4.7](#47-uniform_surface), but the traction follows the first sine half-wave:
 
@@ -429,6 +433,121 @@ problem:
 ```
 
 `surface` and `amplitude` are the **only** accepted top-level problem options. `amplitude` is mandatory: there is **no default value** in this adapter. `loads.surface_halfwave.build_problem` delegates to the legacy composed factory but is still load-side usable, because a split problem consumes only its `build_load_vector` and `tracked_points`.
+
+---
+
+### 4.9 **Custom** `surface_halfwave_transverse_supported`
+
+**Source:** `surface_halfwave_multi.py`, supplied separately from the standard-library archive.  
+**Location referenced by the case:** `../../validation/surface_halfwave_multi.py` (relative to the **case YAML directory**; `validation/` is not the standard adapter package).  
+**Case selection:** `problem.adapter: ../../validation/surface_halfwave_multi.py`  
+**Problem discriminator:** `problem.type: surface_halfwave_transverse_supported` (`PROBLEM_TYPE` in the Python file).  
+**Classification:** **custom complete problem adapter**: a single Python object supplies **both `build_load_vector(...)` and `build_constraints(...)`**. It does not import another problem or validation adapter; it uses the normal CSF–CUF interfaces (`assemble_distributed_load_vector`, `LinearConstraintSystem`).
+
+#### Physical model: loads + constraints
+
+**Loads — one or multiple independently selected CSF lateral faces.** On each selected edge, the adapter imposes the **same signed traction in global `z`**, with a first half-wave along the beam:
+
+\[
+ t_z(x)=A\sin\!\left(\frac{\pi(x-x_0)}{L}\right),\qquad L=x_1-x_0.
+\]
+
+Here `A` is `problem.amplitude` (traction/area: `N/mm²` for an N–mm model). At `x0` and `x1` the traction is zero; at midspan it equals `A`. Thus `amplitude: -1.0` means a negative global-`z` traction between the ends. A **shared** amplitude is used for all entries; there are no separate amplitudes per surface.
+
+Each `polygon_name` identifies a CSF polygon at the start section; `edge_start_point_id` is the **zero-based index of the first vertex** of one of its boundary edges. The edge joins vertex `i` to `(i+1) mod n`, and its homologous endpoints are tracked along `x`. The selections are **independent**: edges need not be adjacent, collinear, ordered, at the same elevation, or even on the same polygon. Repeating the same selector **intentionally adds the same load again**.
+
+**Surface geometry and CUF projection.** Every selected edge must be horizontal **within each end section** (its two vertices have the same global `z` at `x0` and at `x1`). The end elevations may differ, producing an inclined ruled face. For edge `k`, the adapter obtains its physical transverse width `|dy|` at each integration station, performs **Gauss–Legendre quadrature across that width**, evaluates the transverse basis `F_τ(y,z;x)` at the actual coordinates, and multiplies by the real-surface inclination factor
+
+\[
+ s_k=\sqrt{1+\left(\frac{z_{k,1}-z_{k,0}}{L}\right)^2}.
+\]
+
+The generalized transverse force for mode `τ` is therefore assembled as
+
+\[
+ q_{\tau z}(x)=A\sin\!\left(\frac{\pi(x-x_0)}{L}\right)
+ \sum_{k\in\mathrm{selected}} s_k\int_{y_{k,-}(x)}^{y_{k,+}(x)}F_\tau(y,z_k(x);x)\,dy,
+\]
+
+where the transverse integration limits represent the selected edge's physical width (with nonnegative measure regardless of vertex ordering). The mode-wise forces are subsequently integrated along the longitudinal finite elements by `assemble_distributed_load_vector(...)` into the **global `z` load-vector components**. Contributions from different selected surfaces are summed **before** longitudinal assembly; no fictitious merged edge is constructed.
+
+**Constraints — transverse supports at both ends, plus axial gauge.** The adapter sets **every CUF generalized amplitude** of `u_y` and `u_z` to zero at both `x0` and `x1`, while leaving the axial amplitudes free except for one mean-displacement condition:
+
+\[
+ u_y(x_0)=u_z(x_0)=u_y(x_1)=u_z(x_1)=0
+ \quad\text{(coefficient-wise for every mode)},
+\]
+
+\[
+ \frac{1}{L}\int_{x_0}^{x_1}u_x(x,0,0)\,dx=0.
+\]
+
+The second equation removes the remaining rigid axial translation. **`(y,z)=(0,0)` is the transverse evaluation point for the gauge**, not the location of the applied surface load. It uses the actual possibly `x`-dependent CUF basis and longitudinal FE interpolation. For `n=basis.size` modes, `build_constraints(...)` constructs a linear homogeneous system of **`4n+1` rows**. This is *not* a full clamp and *not* an axial point anchor; the gauge fixes a longitudinal mean rather than one endpoint value.
+
+#### Exact problem YAML schema
+
+| YAML key (inside `problem:`) | Required | Default | Accepted form / significance |
+|---|---|---|---|
+| `type` | Yes | — | Exactly `surface_halfwave_transverse_supported` |
+| `surface` | **One of `surface` or `surfaces`** | — | One edge selector mapping; mutually exclusive with `surfaces` |
+| `surfaces` | **One of `surface` or `surfaces`** | — | Nonempty list of edge selector mappings; mutually exclusive with `surface` |
+| `surface.polygon_name` or `surfaces[].polygon_name` | Yes for each selector | — | Nonblank CSF polygon name |
+| `surface.edge_start_point_id` or `surfaces[].edge_start_point_id` | Yes for each selector | — | Integer `>= 0` (boolean rejected), valid vertex index in that polygon |
+| `amplitude` | **Yes** | **No default** | Finite signed number (`N/mm²` for N–mm units), applied to *every* selected edge |
+
+Validation rejects unknown top-level options, unknown/missing selector keys, simultaneous `surface` and `surfaces`, empty `surfaces`, invalid polygon names/edge indexes, and non-horizontal end edges. The Python factory accepts **exactly** `surface`, `surfaces`, and `amplitude` as its options; `type` is extracted by the problem loader. The selected geometry must, of course, exist in the referenced CSF model.
+
+**Example — three independent bottom-flange edges (your configuration):**
+
+```yaml
+# problems/bending.yaml — physical model and its load/support definition
+model:
+  csf_yaml: ../models/model.yaml  # replace with the model used by this case
+problem:
+  type: surface_halfwave_transverse_supported
+  surfaces:
+    - polygon_name: bottom_flange_left
+      edge_start_point_id: 0
+    - polygon_name: bottom_flange_center
+      edge_start_point_id: 0
+    - polygon_name: bottom_flange_right
+      edge_start_point_id: 0
+  amplitude: -1.0
+```
+
+```yaml
+# cases/example.yaml — choose this custom file as a COMPLETE adapter
+problem:
+  yaml: ../problems/bending.yaml
+  adapter: ../../validation/surface_halfwave_multi.py
+```
+
+In this example, all three physical surfaces carry `-1.0 sin(π(x−x0)/L)` traction in the global `z` direction. The adapter sums the three surface load vectors, applies transverse supports at the beam ends and the mean-axial gauge, then returns both contributions to the CUF solver. The two file paths are examples relative to the folders implied by their comments; keep the actual `model.csf_yaml` and `problem.yaml` paths consistent with the repository case layout.
+
+**Single-edge alternative** (same custom adapter, same supports):
+
+```yaml
+problem:
+  type: surface_halfwave_transverse_supported
+  surface:
+    polygon_name: bottom_flange_left
+    edge_start_point_id: 0
+  amplitude: -1.0
+```
+
+**Comparison with the standard `surface_halfwave`**:
+
+| Property | Standard `surface_halfwave` [§4.8](#48-surface_halfwave) | **Custom** `surface_halfwave_transverse_supported` |
+|---|---|---|
+| File selection in case | `csf.cuf.adapters.problem.surface_halfwave` | `../../validation/surface_halfwave_multi.py` |
+| Problem `type` | `surface_halfwave` | `surface_halfwave_transverse_supported` |
+| Surface selectors | `surface` (one) | `surface` (one) **or** `surfaces` (one or more) |
+| Traction law and direction | Sinusoidal half-wave, global `z` | Sinusoidal half-wave, global `z` on **every selected edge** |
+| Real surface measure | Included | Included **separately for every edge** |
+| End supports | **Full clamps**, all components | **Transverse supports** `u_y=u_z=0`, plus **mean axial gauge** |
+| Adapter mechanism | Standard complete adapter | **Custom self-contained complete adapter** |
+
+The custom implementation is *not* selected using `problem.load_adapter` or `problem.constraint_adapter`: it provides both contributions internally. A module-level `build_problem(type, options)` is its public loader entry point. `tracked_points(...)` reports the true endpoints of each loaded edge (with numbered names when multiple surfaces are selected), useful for post-processing.
 
 ---
 
@@ -584,7 +703,7 @@ This keeps the same torsional loading and the same full clamps. It is the explic
 ### 7.3 Change just the constraints (a deliberately different problem)
 
 ```yaml
-# cases/torsion_supported.yaml - keep the same torsion problem YAML
+# cases/torsion_supported.yaml — keep the same torsion problem YAML
 problem:
   yaml: ../problems/torsion.yaml
   load_adapter: csf.cuf.adapters.problem.loads.torsion_halfwave
@@ -633,6 +752,24 @@ They are different load distributions; their original complete adapters also hav
 | `problem.type: uniform_surface` with `amplitude: -1` | `uniform_surface` expects `components.z` | Use `components: {z: -1.0}` |
 | `force.type: area` with `amplitude` instead of `fz` | C-section area factory rejects it | Use the patch geometry and **total** resultant `fx/fy/fz` |
 | `double_clamped_point_load` with absolute `x` | `x_fraction` is required | Supply normalized `x_fraction` and transverse `point.y/z` |
+| `surface_halfwave_transverse_supported` selected with the **standard** `surface_halfwave` Python module | Standard factory rejects the custom problem type | Set the complete `adapter: ../../validation/surface_halfwave_multi.py` in the case YAML |
+| Custom `surface_halfwave_transverse_supported` with **both** `surface` and `surfaces` | Custom factory rejects ambiguous selection | Supply **exactly one** of the two keys |
+| Custom `surface_halfwave_transverse_supported` with per-edge amplitudes | Custom factory accepts **one shared** `amplitude` only | Use one top-level signed `amplitude` for all selected edges |
+
+---
+
+### 7.6 Complete **custom** adapter from a validation directory
+
+A custom problem adapter follows **Mode A**, just like any standard complete adapter, but its file is selected by a **relative path from the case YAML directory**:
+
+```yaml
+# case YAML
+problem:
+  yaml: ../problems/bending.yaml
+  adapter: ../../validation/surface_halfwave_multi.py
+```
+
+Its problem YAML supplies `type: surface_halfwave_transverse_supported`, `amplitude`, and **exactly one** of `surface` (one edge) or `surfaces` (a nonempty list). The selected file contributes **both loads and constraints**, so do not pair it with `load_adapter` or `constraint_adapter`. For the three-bottom-flange-edge configuration, use the complete two-file examples in [§4.9](#49-custom-surface_halfwave_transverse_supported).
 
 ---
 
@@ -680,7 +817,7 @@ They are different load distributions; their original complete adapters also hav
 | [`transverse_supported_integrated_axial.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/problem/constraints/transverse_supported_integrated_axial.py) | Split constraint | **Yes** | Both-end transverse supports + integrated axial gauge |
 | [`transverse_supported_point_anchor.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/problem/constraints/transverse_supported_point_anchor.py) | Split constraint | **Yes** | Both-end transverse supports + physical axial point anchor |
 
-**Inventory total: 8 + 10 + 7 = 25 `.py` files**, including two `__init__.py` package markers, plus one separate source README, [`README_double_clamped_point_load.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/problem/README_double_clamped_point_load.md).
+**Standard inventory total: 8 + 10 + 7 = 25 `.py` files**, including two `__init__.py` package markers, plus one separate source README, [`README_double_clamped_point_load.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/problem/README_double_clamped_point_load.md). **Additional custom source verified:** `surface_halfwave_multi.py` (selected in a case as `../../validation/surface_halfwave_multi.py`); it is **outside** the standard 25-file inventory. See [§4.9](#49-custom-surface_halfwave_transverse_supported).
 
 ---
 
@@ -689,12 +826,12 @@ They are different load distributions; their original complete adapters also hav
 ### 9.1 Verification performed against the supplied code
 
 - Enumerated **all `.py` modules** under `adapters/problem` in the uploaded archive; reconciled their role with the code's actual `build_problem(...)` entry points.
-- Checked the exact **`problem.type` dispatch strings** in all seven complete adapters (eight strings in total).
+- Checked the exact **`problem.type` dispatch strings** in all seven standard complete adapters (eight strings in total), and separately inspected the custom `surface_halfwave_transverse_supported` source. Executed isolated custom-factory checks (single/multiple edges and rejected invalid options), sample physical edge projection checks, and constraint-matrix construction checks with minimal interface stubs; this does not constitute a full solver run.
 - Read the **parameter parsing/validation code**, the actual `build_load_vector` implementations, and the actual `build_constraints` implementations; distinguished defaults from required options and physical force from surface traction.
 - Executed factory-construction checks for **all 8 complete problem types**, both `c_section_cantilever` load modes, the **6 load modules** (7 supported type dispatches), and the **4 constraint modules**; verified their corresponding method contracts.
 - Checked and executed both **complete** and **split** case YAML adapter-selection patterns through the supplied `load_case`, `load_problem`, `load_problem_adapter`, and `compose_problem` contracts.
 
-**Verification boundary:** the uploaded ZIP contains the CUF Python tree but not the whole external `csf` package and not a benchmark model. These are **source/interface and YAML-loader checks**, **not complete CSF–CUF numerical benchmark runs**. The reference describes the behavior implemented in the supplied snapshot, rather than claiming full-solver validation for every possible physical load/constraint pairing.
+**Verification boundary:** the uploaded ZIP contains the CUF Python tree but not the whole external `csf` package and not a benchmark model. The separately supplied custom adapter has been **read and checked against the loader interface**, but not run in a full CSF–CUF benchmark here. These are **source/interface and YAML-loader checks**, **not complete CSF–CUF numerical benchmark runs**. The reference describes the behavior implemented in the supplied snapshot, rather than claiming full-solver validation for every possible physical load/constraint pairing.
 
 ### 9.2 Parameter names are not interchangeable
 
@@ -711,6 +848,8 @@ They are different load distributions; their original complete adapters also hav
 | `problem.force.x` | Physical absolute longitudinal `x` in a C-section point/area load |
 | `problem.x_fraction` | Normalized longitudinal fraction (`0..1`) in `double_clamped_point_load` |
 | `problem.surface.edge_start_point_id` | **Zero-based polygon vertex index**, not a longitudinal node or mesh edge ID |
+| `problem.surfaces[]` | **Custom only**: nonempty list of independent edge selectors in `surface_halfwave_transverse_supported`; one global `amplitude` is shared |
+| `problem.adapter: ../../validation/surface_halfwave_multi.py` | **Custom complete adapter path relative to the case YAML directory**; the Python file contributes **both** load and constraints |
 
 ### 9.3 Especially important limitations
 
@@ -721,6 +860,7 @@ They are different load distributions; their original complete adapters also hav
 5. **Point and area helpers are not themselves valid `load_adapter` modules** without `build_problem` factories; the C-section root module composes them with a start clamp.
 6. **Importability of a module does not imply validity as an adapter**; `load_problem_adapter` requires the callable factory. Conversely, an adapter can accept multiple `problem.type` strings.
 7. **`full_clamp` and the transverse-support implementations use `basis.size`**, while `full_clamp_node_dependent` explicitly uses end-node-specific transverse sizes. For segmented/node-dependent CUF configurations, verify that the chosen support implementation matches the active DOF layout.
+8. **The custom multi-surface adapter is a complete problem, not a drop-in load-only module.** Its half-wave traction is applied to independently resolved physical CSF edges, and its integral axial gauge is built into the same Python file. Edge geometry must be horizontal within both end sections; arbitrary sloping cross-sectional edges are not supported by that implementation.
 
 ### 9.4 Source navigation
 
@@ -729,5 +869,19 @@ They are different load distributions; their original complete adapters also hav
 - [Case YAML loader: legacy vs split adapters](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/case.py)
 - [Runner: actual adapter loading and construction](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/__main__.py)
 - [Numerical load assembly helper](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/problem/_load_vector.py)
+
+## 10. Custom adapters in validation directories
+
+The standard adapter modules live under `src/csf/cuf/adapters/problem/`. A **custom adapter** instead lives in an example/validation directory and is chosen by an explicit file path in the case YAML. It can implement **both loads and constraints** in one file without modifying the CUF library:
+
+```yaml
+problem:
+  yaml: ../problems/bending.yaml
+  adapter: ../../validation/surface_halfwave_multi.py
+```
+
+The path `../../validation/surface_halfwave_multi.py` is the **exact case-relative adapter reference supplied for this example**. It is not a Python import name or a globally registered type. The target file must exist at that relative location when the case is loaded. This reference does not assume an unverified repository-root absolute location for the `validation/` directory.
+
+**Verified custom adapter:** `surface_halfwave_multi.py`, with `PROBLEM_TYPE = "surface_halfwave_transverse_supported"` and `build_problem(...)`. It defines `SurfaceHalfWaveMultipleEdges` and directly implements the two solver-side methods `build_load_vector(...)` (half-wave global-`z` traction on one or multiple physical surface edges) and `build_constraints(...)` (transverse end supports plus integral axial gauge). See the comprehensive mechanics, parameter schema, and examples in [§4.9](#49-custom-surface_halfwave_transverse_supported).
 
 **Reference rule:** Given any `problem.type`, use [§3](#3-choose-by-yaml-name-or-complete-adapter-forward-lookup) to find its complete adapter and original boundary conditions; use [§4](#4-complete-adapter-reference-and-exact-yaml-parameters) for accepted YAML parameters; use [§5](#5-constraint-adapters-and-support-conditions) and [§6](#6-reusable-load-side-adapters-and-valid-pairings) if you want to construct a different `loads + constraints` problem. Given a desired physical force or support, start with the reverse indexes in [§2](#2-choose-by-physical-behavior-reverse-lookup).
