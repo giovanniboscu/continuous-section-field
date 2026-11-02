@@ -13,6 +13,26 @@ The complete execution sequence is documented in [reproducibility.md](reproducib
 
 ---
 
+### Geometric and material variation along the tapered I-section
+
+The following figure summarizes the geometric and material evolution of the tapered I-shaped beam along the longitudinal coordinate \(z\).
+
+The upper plots show the variation of the main sectional geometric properties, including the cross-sectional area \(A\), the second moments of area \(I_x\) and \(I_y\), and the polar quantity \(I_p\). These quantities decrease along the beam as a direct consequence of the prescribed tapering between the initial section at \(z=0\) and the final section at \(z=1000\).
+
+The three-dimensional view shows how the physical cross-section evolves continuously between the two end stations. The color scale represents the longitudinal variation of the material property assigned to the polygons: the flange material remains constant, whereas the web property decreases linearly from \(71700\) at \(z=0\) to \(51700\) at \(z=1000\).
+
+The two sectional views explicitly show the geometry prescribed at the end stations:
+
+- **\(S_0\), \(z=0\)**: initial I-shaped section;
+- **\(S_1\), \(z=1000\)**: tapered final section.
+
+The lower plots report the material-property evolution separately for the three physical polygons. The top and bottom flanges remain constant at \(71700\), while the web varies linearly from \(71700\) to \(51700\). Therefore, both the geometric tapering and the material variation are prescribed continuously along the same structural member.
+
+![Geometric properties, tapered geometry, end sections, and polygon material-property distributions](img/I-SectionPlotPropertiesComposite.jpg)
+
+[Open the full-size figure](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/img/I-SectionPlotPropertiesComposite.jpg)
+
+
 ## 2. Structural problem
 
 The benchmark is a simply supported, tapered I-shaped member of length
