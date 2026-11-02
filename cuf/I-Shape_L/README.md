@@ -33,6 +33,56 @@ The lower plots report the material-property evolution separately for the three 
 [Open the full-size figure](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/img/I-SectionPlotPropertiesComposite.jpg)
 
 
+### Equivalent cross-sectional representations
+
+The two geometric YAML files used in this benchmark describe the **same physical tapered I-shaped beam**.
+
+They differ only in the way the cross-section is partitioned for numerical purposes.
+
+The compact model,
+
+[`models/carrera_i_shaped_taper80.yaml`](models/carrera_i_shaped_taper80.yaml),
+
+uses the three natural physical regions of the section:
+
+- top flange,
+- web,
+- bottom flange.
+
+This representation is used as the geometric input for the FEM3D model. It provides the most direct description of the physical cross-section and therefore minimizes unnecessary intermediate geometric subdivisions when generating the three-dimensional finite-element mesh.
+
+The second model,
+
+[`models/carrera_i_shaped_taper80_l9_web3.yaml`](models/carrera_i_shaped_taper80_l9_web3.yaml),
+
+represents the **same geometry, tapering law, and material distribution**, but subdivides the section into nine domains in order to support the Lagrange L9 transverse representation adopted in the CSF-CUF model.
+
+In particular, the three physical regions are repartitioned as:
+
+- 3 domains in the top flange,
+- 3 domains in the web,
+- 3 domains in the bottom flange.
+
+This repartition does not define a different structural model. The external geometry, end sections, longitudinal tapering, material variation, loads, and boundary conditions remain unchanged.
+
+The distinction is therefore purely numerical:
+
+```text
+same physical I-shaped beam
+        |
+        +-- 3-domain representation  -> FEM3D
+        |
+        +-- 9-domain representation  -> CSF-CUF Lagrange L9
+```
+
+The following two views show the nine-domain representation at the two end stations:
+
+![L9-compatible section at z=0](img/<S0_IMAGE_NAME>)
+
+![L9-compatible section at z=1000](img/<S1_IMAGE_NAME>)
+
+The subdivision changes the internal representation of the cross-section, not the physical element being analysed.
+
 ## 2. Structural problem
 
 The benchmark is a simply supported, tapered I-shaped member of length
