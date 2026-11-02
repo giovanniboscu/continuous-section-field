@@ -1,488 +1,746 @@
 # CSF-CUF post-processing
 
-The CSF-CUF solver computes a displacement field over the beam. The output adapter is the final layer that decides **where to evaluate that solved field** and **how to write the results**.
+## From the solved CUF field to physical displacement samples
 
-For the standard adapter, using post-processing requires only two choices in the case YAML:
+The CSF-CUF solver computes a physical displacement field over the beam. The standard output adapter is the final layer that decides **where that already-solved field is evaluated** and **how the selected values are written to disk**.
 
-1. the longitudinal stations to sample;
-2. the output directory.
-
-The standard implementation is:
+The standard implementation documented here is:
 
 ```text
 src/csf/cuf/adapters/output/post.py
 ```
 
-It evaluates the physical displacement field `u(x, y, z)` at four points of the current CSF cross-section and writes the values to `response.txt`.
+and it is selected in a case YAML with:
+
+```yaml
+output:
+  adapter: csf.cuf.adapters.output.post
+```
+
+A representative case is:
+
+```text
+cuf/I-Shape_L/cases/taper/
+carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
+```
+
+which contains:
+
+```yaml
+sampling:
+  stations: [0.0, 0.1, 1.0]
+  displacement_samples: 201
+  stress_grid: 41
+
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../../output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3
+```
+
+The central idea is:
+
+```text
+CSF physical section at x      solved CUF displacement field
+          |                               |
+          v                               v
+   physical coordinates              u(x,y,z)
+          |                               |
+          +---------------+---------------+
+                          |
+                          v
+                 standard post-processor
+                          |
+                          v
+                    response.txt
+```
+
+The output adapter does **not** solve the structural problem again. It does **not** assemble a stiffness matrix, modify the CUF approximation, or reconstruct the generalized CUF coefficient vector manually. It receives the solved physical displacement field and evaluates it at selected physical points.
 
 ---
 
-## 1. The basic idea
+# Part I - Position of `post.py` in the CSF-CUF workflow
 
-A CSF-CUF analysis can be viewed as the following sequence:
+## 1. Separation of responsibilities
+
+The post-processing layer follows the same separation of responsibilities used throughout CSF-CUF:
 
 ```text
-CSF physical model
-       |
-       v
-CUF analysis
-       |
-       v
-solved displacement field u(x,y,z)
-       |
-       v
-output adapter
-       |
-       v
-response.txt
+CSF  -> defines the current physical cross-section
+CUF  -> provides the solved displacement field
+post -> selects physical sampling points and writes results
 ```
 
-The output adapter acts **after** the system has been solved.
+More explicitly:
 
-It does not need to know how the CUF stiffness matrix was assembled, how the generalized degrees of freedom were numbered, or which transverse expansion was used. It receives a solved physical field and evaluates it directly at physical coordinates.
+- **CSF** answers: *where is the material at longitudinal coordinate `x`?*
+- **CUF** answers: *what is the displacement at physical point `(x,y,z)`?*
+- **`post.py`** answers: *which physical points should be reported, and in which output file?*
 
-This is the main post-processing interface:
+This distinction is important for non-prismatic models. The standard adapter does not keep a second copy of the geometry. At every requested longitudinal station it queries the active CSF section again.
 
-```python
+Therefore, if the section changes with `x`, the sampled coordinates change with it.
+
+---
+
+## 2. The physical field is the interface
+
+The standard adapter works with the public displacement evaluator:
+
+```text
 u(x, y, z)
 ```
 
-It returns the three displacement components at the requested physical point:
+which returns the three displacement components:
 
 ```text
 [ux, uy, uz]
 ```
 
+Conceptually, the CUF reconstruction has already taken place before the output adapter evaluates the solution.
+
+For a generic CUF expansion,
+
+$$\mathbf{u}(x,y,z) = \sum_{\tau} F_{\tau}(y,z)\,\mathbf{u}_{\tau}(x),$$
+
+where:
+
+- $F_{\tau}(y,z)$ are the transverse expansion functions;
+- $\mathbf{u}_{\tau}(x)$ are the longitudinal generalized displacement functions;
+- $\mathbf{u}(x,y,z)$ is the reconstructed physical displacement vector.
+
+`post.py` does not need to know which transverse basis produced that field. It simply evaluates the final physical function:
+
+```python
+vec = np.asarray(u(x, y, z), dtype=float)
+```
+
+and writes:
+
+```text
+vec[0] -> ux
+vec[1] -> uy
+vec[2] -> uz
+```
+
+This is why the same output adapter can be used with different CUF transverse expansions, provided that the solved result exposes the same physical displacement-field interface.
+
 ---
 
-# Part I - Using the standard post-processor
+# Part II - YAML configuration
 
-## 2. Minimal configuration
+## 3. Complete sampling/output block
 
-In the case YAML, add a `sampling` block and an `output` block:
+A case can contain:
 
 ```yaml
 sampling:
-  stations: [0.00, 0.25, 0.50, 0.75, 1.00]
+  stations: [0.0, 0.1, 1.0]
+  displacement_samples: 201
+  stress_grid: 41
 
 output:
   adapter: csf.cuf.adapters.output.post
-  directory: ../output/my_case
+  directory: ../../output/my_case
 ```
 
-For the standard output adapter documented here, `sampling.stations` is the longitudinal sampling control used to generate `response.txt`.
+The `sampling` block and the `output` block play different roles.
 
-### `sampling.stations`
+The `sampling` block defines sampling-related values that are parsed from the case YAML. The `output` block selects the internal output module and defines where its files are written.
 
-Each value is a normalized longitudinal position.
+For the current standard adapter, the parameters are used as follows:
+
+| YAML key | Role | Parsed from the case YAML | Used directly inside `post.py` |
+|---|---|---:|---:|
+| `sampling.stations` | normalized longitudinal stations at which the response is evaluated | **Yes** | **Yes** |
+| `sampling.displacement_samples` | general displacement-sampling setting stored in the case configuration | **Yes** | **No** |
+| `sampling.stress_grid` | general stress-grid setting stored in the case configuration | **Yes** | **No** |
+| `output.adapter` | selects the internal Python output module | **Yes** | **No** |
+| `output.directory` | defines the output destination; exposed to the adapter as `case.output_dir` | **Yes** | **Yes** |
+
+The distinction for `output.adapter` is simple: it is not a numerical control used by `post.py`. It tells the case execution logic which internal output module must be loaded. Once `csf.cuf.adapters.output.post` has been selected, the module itself operates on the solved field and the case data described below.
+
+The presence of:
+
+```yaml
+displacement_samples: 201
+stress_grid: 41
+```
+
+in a case does **not** mean that the standard `csf.cuf.adapters.output.post` module creates 201 displacement samples or a 41 x 41 stress grid.
+
+The current standard adapter reads:
+
+```python
+case.sampling.stations
+```
+
+and writes selected **displacements only**.
+
+---
+
+## 4. `sampling.stations`
+
+The longitudinal stations are normalized coordinates.
 
 For example:
 
 ```yaml
-stations: [0.00, 0.25, 0.50, 0.75, 1.00]
+sampling:
+  stations: [0.0, 0.1, 1.0]
 ```
 
 means:
 
-| station | physical meaning |
-| ---: | --- |
-| `0.00` | start of the solved beam |
-| `0.25` | one quarter of the beam length |
-| `0.50` | mid-span |
-| `0.75` | three quarters of the beam length |
-| `1.00` | end of the solved beam |
+| value | physical location |
+|---:|---|
+| `0.0` | beginning of the solved beam interval |
+| `0.1` | 10% of the solved beam interval |
+| `1.0` | end of the solved beam interval |
 
-Every station **must** lie in the closed interval `[0.0, 1.0]`. The case loader rejects an empty station list or any value outside that interval. If `sampling.stations` is omitted, the current loader uses `[0.0, 0.5]`; for reproducible tutorial and validation cases, an explicit station list is recommended.
-
-### `output.adapter`
-
-```yaml
-adapter: csf.cuf.adapters.output.post
-```
-
-selects the standard CSF-CUF output adapter.
-
-### `output.directory`
-
-```yaml
-directory: ../output/my_case
-```
-
-selects the directory in which the adapter writes its result file. A relative output directory is resolved relative to the directory containing the case YAML.
-
----
-
-## 3. Run the case
-
-Run the CUF case normally, for example:
-
-```bash
-csf-cuf cases/my_case.yaml
-```
-
-At the end of the analysis, the output adapter creates:
-
-```text
-<output directory>/response.txt
-```
-
-and reports the written path in the terminal:
-
-```text
-written: <output directory>/response.txt
-```
-
-No separate post-processing command is required for the standard adapter.
-
----
-
-## 4. Read `response.txt`
-
-The file begins with a short header:
-
-```text
-CSF-CUF RESPONSE
-======================
-problem.type = ...
-
-STATION RESPONSES
------------------
-x/L x      y      z      point ux      uy      uz     
-```
-
-Each subsequent line is one displacement evaluation.
-
-The columns are:
-
-| column | meaning |
-| --- | --- |
-| `x/L` | normalized longitudinal station requested in the YAML |
-| `x` | physical longitudinal coordinate |
-| `y` | physical cross-sectional coordinate |
-| `z` | physical cross-sectional coordinate |
-| `point` | name of the sampled cross-sectional point |
-| `ux` | displacement component along global `x` |
-| `uy` | displacement component along global `y` |
-| `uz` | displacement component along global `z` |
-
-The current standard adapter writes the coordinate and displacement column labels as `[mm]`. The model and the interpretation of the output should therefore use the same length convention as the CUF examples for which this adapter is intended. If a different unit convention is required, use a customized output adapter with appropriate labels.
-
-For every requested longitudinal station, the standard adapter writes **four rows**, one for each cross-sectional sampling point.
-
-Therefore, if the YAML contains five stations:
-
-```yaml
-stations: [0.00, 0.25, 0.50, 0.75, 1.00]
-```
-
-the station-response table contains twenty displacement evaluations.
-
----
-
-# Part II - Understanding the sampling
-
-## 5. From a normalized station to the physical coordinate
-
-The adapter first obtains the solved longitudinal interval from the displacement field:
+The adapter obtains:
 
 ```python
 x0 = float(u.x_start)
 x1 = float(u.x_end)
-```
-
-The solved beam length is:
-
-```text
 L = x1 - x0
 ```
 
-A station value `r` from the YAML is converted into a physical coordinate using:
+and converts every normalized station $r$ into the physical coordinate
 
-```text
-x = x0 + r L
-```
+$$x = x_0 + rL.$$
 
-For example, `r = 0.50` means the midpoint of the solved longitudinal interval.
+Thus, for `r = 0.1`,
 
-This is why the same normalized station list can be used for beams of different lengths.
+$$x = x_0 + 0.1L.$$
+
+The same normalized station list can therefore be used for beams having different physical lengths.
 
 ---
 
-## 6. The cross-section is queried at every station
+## 5. `output.adapter`
 
-Once the physical longitudinal coordinate `x` is known, the adapter asks the section provider for the **current CSF section at that position**:
+The line
+
+```yaml
+output:
+  adapter: csf.cuf.adapters.output.post
+```
+
+selects the internal Python module used for this output step:
+
+```text
+csf.cuf.adapters.output.post
+```
+
+Its implementation is located at:
+
+```text
+src/csf/cuf/adapters/output/post.py
+```
+
+`output.adapter` therefore answers one question only:
+
+```text
+Which internal output module must be used for this case?
+```
+
+It is not a sampling parameter and it is not read by `post.py` to decide where or how many points to evaluate. By the time `post.py` is executed, this module has already been selected.
+
+The parameters that affect the behavior of this module are taken from the case and from the solved objects passed to its entry point. In particular, the standard adapter directly uses `case.sampling.stations` and `case.output_dir`.
+
+The module exposes the output entry point:
+
+```python
+def write_outputs(
+    u,
+    model_bridge,
+    case,
+    problem_definition,
+    *,
+    equilibration_iterations=None,
+):
+    ...
+```
+
+The structural solution is already available when this function is called.
+
+---
+
+## 6. `output.directory`
+
+The destination directory is obtained from:
+
+```python
+Path(case.output_dir)
+```
+
+and created if it does not already exist:
+
+```python
+out.mkdir(parents=True, exist_ok=True)
+```
+
+For example:
+
+```yaml
+output:
+  directory: ../../output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3
+```
+
+defines the directory in which the response file is written after the case path has been resolved by the case loader.
+
+---
+
+# Part III - How the current CSF section is sampled
+
+## 7. The section is queried independently at every station
+
+Once the physical longitudinal coordinate `x` is known, the adapter asks the active section provider for the current CSF domains:
 
 ```python
 model_bridge.section_provider.domains(float(x))
 ```
 
-The vertices of all returned sectional domains are collected, and the current cross-sectional limits are determined:
+For every returned domain, it reads the physical vertices:
+
+```python
+for domain in section_provider.domains(float(x)):
+    for y, z in domain.vertices:
+        vertices.append((float(y), float(z)))
+```
+
+It then computes:
 
 ```text
 ymin, ymax
 zmin, zmax
 ```
 
-This operation is repeated independently at every longitudinal station.
+from those vertices.
 
-Consequently, the sampling points follow a section whose geometry changes along `x`. The post-processor does not freeze the geometry at one reference section.
+The operation is repeated for every requested station.
 
-This is particularly important for non-prismatic CSF models.
+Therefore:
 
----
+$$\Omega = \Omega(x)$$
 
-## 7. The four standard cross-sectional points
+is respected naturally by the sampling procedure. The geometry used at `x = 0.1 L` is the geometry returned by the CSF model at `x = 0.1 L`; the geometry used at `x = L` is the geometry returned at `x = L`.
 
-The standard adapter defines four named points from the current section geometry.
+No frozen reference cross-section is used by the adapter.
 
-| point | physical coordinates used by the adapter |
-| --- | --- |
-| `center` | `(0, 0)` |
-| `plus` | `(ymin, zmax)` |
-| `minus` | `(y_bottom_right, zmin)` |
-| `bottom_mid` | `(0, zmin)` |
-
-Here `y_bottom_right` is the largest `y` coordinate among the section vertices lying on the minimum-`z` boundary.
-
-### `center`
-
-```text
-(y,z) = (0,0)
-```
-
-This is the origin of the cross-sectional coordinate system.
-
-It is meaningful when the section is defined with the expected centered coordinate convention.
-
-### `plus`
-
-```text
-(y,z) = (ymin,zmax)
-```
-
-This point combines the minimum `y` coordinate and maximum `z` coordinate of the current section.
-
-The name `plus` is a sampling label. It should not be interpreted as meaning that both coordinates are positive.
-
-### `minus`
-
-First, the adapter finds all vertices on the current minimum-`z` boundary. Among them, it selects the one with the largest `y` coordinate:
-
-```text
-y_bottom_right = maximum y on z = zmin
-```
-
-The sampled point is then:
-
-```text
-(y,z) = (y_bottom_right,zmin)
-```
-
-Again, `minus` is a sampling label rather than a statement about the signs of the coordinates.
-
-### `bottom_mid`
-
-```text
-(y,z) = (0,zmin)
-```
-
-This samples the minimum-`z` level on the cross-sectional centerline `y = 0`.
+This is particularly important for tapered and otherwise variable-section models.
 
 ---
 
-## 8. Why the bottom boundary uses a tolerance
+## 8. The four standard cross-sectional points
 
-Section coordinates are floating-point values. A vertex that mathematically lies on `z = zmin` can therefore differ from another value by a very small numerical amount.
+For every requested station, the current implementation evaluates four named physical points:
 
-The adapter uses a small absolute tolerance when identifying vertices on the minimum-`z` boundary.
+```python
+points = (
+    ("center",     0.0,            0.0),
+    ("plus",       ymin,           zmax),
+    ("minus",      bottom_right_y, zmin),
+    ("bottom_mid", 0.0,            zmin),
+)
+```
 
-Its scale is based on the current section coordinates:
+Their definitions are:
+
+| point | coordinates `(y,z)` | construction |
+|---|---|---|
+| `center` | `(0,0)` | cross-sectional coordinate origin |
+| `plus` | `(ymin,zmax)` | minimum `y`, maximum `z` of current section bounds |
+| `minus` | `(bottom_right_y,zmin)` | largest `y` among vertices on the minimum-`z` boundary |
+| `bottom_mid` | `(0,zmin)` | centerline at the minimum-`z` level |
+
+These names are sampling labels. In particular, `plus` and `minus` do not define the signs of the coordinates.
+
+---
+
+## 9. How `bottom_right_y` is found
+
+The adapter first determines the minimum cross-sectional coordinate:
+
+```text
+zmin
+```
+
+It then identifies all section vertices lying on that lower boundary.
+
+Because vertex coordinates are floating-point values, the comparison uses the tolerance
+
+$$\text{tol} = 10^{-10} \max\left(1,|z_{\min}|,|z_{\max}|\right).$$
+
+In code:
 
 ```python
 scale = max(1.0, abs(zmin), abs(zmax))
 tol = 1.0e-10 * scale
 ```
 
-A vertex is treated as belonging to the bottom boundary when its `z` coordinate is numerically equal to `zmin` within that tolerance.
+The bottom vertices satisfy, numerically,
 
-This tolerance is only used to identify the bottom boundary. It does not modify the CSF geometry.
+$$z \simeq z_{\min}.$$
+
+Among those vertices, the adapter selects the largest `y` coordinate:
+
+```python
+bottom_right_y = max(bottom_vertices, key=lambda point: point[0])[0]
+```
+
+and defines:
+
+```text
+minus = (bottom_right_y, zmin)
+```
+
+The tolerance is used only to identify the lower boundary. It does not modify the CSF geometry.
 
 ---
 
-## 9. What happens at each station
+# Part IV - Complete operation at one station
 
-For every value in `case.sampling.stations`, the standard adapter performs the same sequence:
+## 10. Step-by-step sequence
+
+For one normalized station $r$, the standard adapter performs the following operations.
+
+### Step 1 - Convert the normalized station to `x`
+
+$$x=x_0+rL.$$
+
+### Step 2 - Query the current CSF section
+
+```python
+section_provider.domains(x)
+```
+
+### Step 3 - Collect the physical section vertices
+
+```text
+(y1,z1), (y2,z2), ..., (yn,zn)
+```
+
+### Step 4 - Compute the current section bounds
+
+```text
+ymin, ymax, zmin, zmax
+```
+
+### Step 5 - Identify the lower-boundary right vertex
+
+```text
+bottom_right_y
+```
+
+### Step 6 - Construct the four physical sampling points
+
+```text
+center
+plus
+minus
+bottom_mid
+```
+
+### Step 7 - Evaluate the solved CUF field
+
+For every point:
+
+```python
+vec = np.asarray(u(x, y, z), dtype=float)
+```
+
+### Step 8 - Write the three displacement components
+
+```text
+ux, uy, uz
+```
+
+The complete logical chain is therefore:
 
 ```text
 normalized station r
         |
         v
-physical coordinate x = x0 + r L
+x = x0 + r L
         |
         v
-query current CSF section at x
+current CSF section Omega(x)
         |
         v
-obtain current section bounds
+current physical section bounds
         |
         v
-construct center / plus / minus / bottom_mid
+four physical sampling points
         |
         v
-evaluate u(x,y,z) at each point
+u(x,y,z)
         |
         v
-write ux, uy, uz to response.txt
+ux, uy, uz
+        |
+        v
+response file
 ```
-
-In compact Python form, the core operation is equivalent to:
-
-```python
-for ratio in case.sampling.stations:
-    x = x0 + float(ratio) * L
-
-    # obtain the current section geometry at x
-    ...
-
-    for name, y, z in points:
-        vec = np.asarray(u(x, y, z), dtype=float)
-        # write vec[0], vec[1], vec[2]
-```
-
-The important point is that the output adapter asks for the **physical solution at physical coordinates**.
 
 ---
 
-# Part III - When the standard adapter is appropriate
+# Part V - Output files
 
-## 10. Intended section convention
+## 11. Standard analysis: `response.txt`
 
-The standard sampling rule is intended for **centered sections** in which:
+When `write_outputs(...)` is called without an equilibration iteration number, the adapter writes:
 
-- the origin `(y,z) = (0,0)` has the expected geometric meaning;
-- the minimum-`z` boundary is a meaningful lower boundary of the section;
-- the four predefined sampling locations are useful physical points for the analysis.
+```text
+response.txt
+```
 
-The implementation is suitable, for example, for centered:
+The beginning of the file is:
+
+```text
+CSF-CUF RESPONSE
+======================
+problem.type = <problem type>
+
+STATION RESPONSES
+-----------------
+x/L x y z point ux uy uz
+```
+
+Every following row contains one physical displacement evaluation.
+
+The columns are:
+
+| column | meaning |
+|---|---|
+| `x/L` | normalized station requested by the case |
+| `x` | corresponding physical longitudinal coordinate |
+| `y` | physical cross-sectional coordinate |
+| `z` | physical cross-sectional coordinate |
+| `point` | sampling label: `center`, `plus`, `minus`, `bottom_mid` |
+| `ux` | displacement component along `x` |
+| `uy` | displacement component along `y` |
+| `uz` | displacement component along `z` |
+
+The current implementation does not append a unit symbol to these column names. The values therefore follow the unit system used consistently by the model and analysis.
+
+For `N` requested stations, the file contains:
+
+$$4N$$
+
+displacement rows, because four cross-sectional points are sampled at each station.
+
+For example:
+
+```yaml
+stations: [0.0, 0.1, 1.0]
+```
+
+produces:
+
+$$4 \times 3 = 12$$
+
+station-response rows.
+
+---
+
+## 12. Equilibration outputs: `response_eqN.txt`
+
+The same adapter can also be called with an equilibration iteration identifier.
+
+If:
+
+```text
+equilibration_iterations = N
+```
+
+is supplied, the output file becomes:
+
+```text
+response_eqN.txt
+```
+
+For example:
+
+```text
+response_eq1.txt
+response_eq2.txt
+response_eq3.txt
+```
+
+The sampling procedure is otherwise the same: the adapter evaluates the physical displacement field at the same named cross-sectional points and requested longitudinal stations.
+
+This makes the response files directly comparable across equilibration iterations.
+
+---
+
+# Part VI - What `displacement_samples` and `stress_grid` do not mean here
+
+## 13. `displacement_samples` is not consumed by this adapter
+
+A case may contain:
+
+```yaml
+displacement_samples: 201
+```
+
+but the current standard `post.py` implementation does not read this value.
+
+It does not internally create 201 longitudinal displacement samples.
+
+Its longitudinal sampling is controlled by:
+
+```yaml
+sampling:
+  stations: [...]
+```
+
+because the implemented loop is over:
+
+```python
+case.sampling.stations
+```
+
+This distinction prevents two different concepts from being mixed:
+
+```text
+sampling configuration available in the case
+                versus
+sampling actually consumed by this output adapter
+```
+
+---
+
+## 14. `stress_grid` is not consumed by this adapter
+
+Likewise, a case may contain:
+
+```yaml
+stress_grid: 41
+```
+
+but the standard `csf.cuf.adapters.output.post` module does not generate a stress grid and does not reconstruct stresses.
+
+The module evaluates only:
+
+```text
+u(x,y,z)
+```
+
+and reports:
+
+```text
+ux, uy, uz
+```
+
+A stress-oriented post-processing workflow must use the appropriate stress reconstruction/sampling implementation rather than assuming that `post.py` uses `stress_grid` automatically.
+
+---
+
+## 15. Why the distinction matters
+
+Consider again:
+
+```yaml
+sampling:
+  stations: [0.0, 0.1, 1.0]
+  displacement_samples: 201
+  stress_grid: 41
+
+output:
+  adapter: csf.cuf.adapters.output.post
+```
+
+For the standard adapter documented here, the effective operation is:
+
+```text
+stations -> used to create response.txt / response_eqN.txt
+```
+
+while:
+
+```text
+displacement_samples -> not read by post.py
+stress_grid          -> not read by post.py
+```
+
+The values may still be useful to other components or workflows that share the same case definition, but they are not controls of this specific adapter.
+
+---
+
+# Part VII - Applicability of the four-point convention
+
+## 16. Intended geometry convention
+
+The standard point rule is designed for centered sections for which:
+
+- `(y,z) = (0,0)` has the expected physical meaning;
+- the minimum-`z` boundary represents the lower boundary of interest;
+- the four predefined points are meaningful for the analysis.
+
+It is suitable, for example, for centered:
 
 - rectangular sections;
 - T-sections;
 - I / double-T sections;
-- corresponding sections whose geometry varies along `x`.
+- corresponding variable sections whose geometry changes along `x`.
 
-The geometry may be non-prismatic. At every station, the bounds are recomputed from the current CSF section.
+The geometry may be non-prismatic because the section bounds are recomputed independently at each station.
 
 ---
 
-## 11. When to use a custom output adapter instead
+## 17. When a custom output adapter is preferable
 
-The standard four-point convention is intentionally simple. It is not a universal sampling rule for every possible CSF geometry.
+The four-point rule is not a universal geometric sampling definition.
 
-A custom adapter should be preferred when the section is, for example:
+A custom adapter is appropriate when the section is:
 
-- translated with respect to the expected `(0,0)` origin;
+- translated relative to the expected origin;
 - disconnected;
 - highly irregular;
-- defined so that `zmin` is not the boundary of physical interest;
-- better described by named geometric entities or another problem-specific sampling rule;
-- required to produce quantities other than the four standard displacement samples.
+- better described through named boundaries or features;
+- required to be sampled at other physical locations;
+- required to produce quantities other than the standard displacement rows.
 
-The rule is simple:
+The decision belongs to post-processing, not to the CUF solver.
 
-> If `center`, `plus`, `minus`, and `bottom_mid` are not physically meaningful for the section being studied, define the sampling rule explicitly in a custom output adapter.
-
-Do not force an arbitrary geometry into the standard convention.
+The structural formulation remains unchanged; only the rule used to interrogate the already-solved field changes.
 
 ---
 
-# Part IV - Why the post-processor is independent of the CUF expansion
+# Part VIII - The output-adapter contract
 
-## 12. The solved field is the interface
+## 18. Inputs used by the standard adapter
 
-The standard adapter does not read the generalized CUF coefficient vector directly.
-
-Instead, it evaluates:
+The current entry point receives:
 
 ```python
-u(x, y, z)
+write_outputs(
+    u,
+    model_bridge,
+    case,
+    problem_definition,
+    *,
+    equilibration_iterations=None,
+)
 ```
 
-The reconstruction of the CUF field is therefore handled before the output adapter sees the result.
+The arguments are used as follows:
 
-Conceptually:
+| argument | role |
+|---|---|
+| `u` | solved physical displacement field; provides `x_start`, `x_end`, and `u(x,y,z)` |
+| `model_bridge` | provides the active CSF `section_provider` |
+| `case` | provides `sampling.stations` and the resolved output directory |
+| `problem_definition` | provides `problem_type` for the response header |
+| `equilibration_iterations` | selects `response.txt` or `response_eqN.txt` |
+
+The standard adapter therefore requires only a small, explicit interface:
 
 ```text
-CUF generalized solution
-        |
-        v
-physical displacement field u(x,y,z)
-        |
-        v
-output adapter
-```
-
-This keeps the post-processing rule independent of the internal indexing of the transverse basis.
-
-The same output logic can therefore be used with different CUF transverse expansions, provided that the solved result exposes the same physical displacement-field interface.
-
----
-
-## 13. The section geometry is also queried through an interface
-
-The output adapter does not need its own independent copy of the section geometry.
-
-For the standard sampling rule it obtains the current sectional domains through:
-
-```python
-model_bridge.section_provider.domains(float(x))
-```
-
-and reads their physical vertices.
-
-Therefore the two pieces of information needed by the adapter come from the active analysis itself:
-
-```text
-current CSF section at x       solved CUF field
-          |                         |
-          v                         v
-     physical (y,z)  +        u(x,y,z)
-          |                         |
-          +------------+------------+
-                       |
-                       v
-                 response.txt
-```
-
-This avoids duplicating the geometry inside the post-processing code.
-
----
-
-# Part V - The output-adapter contract
-
-## 14. Entry point
-
-An output adapter is exposed through the function:
-
-```python
-def write_outputs(u, model_bridge, case, problem_definition):
-    ...
-```
-
-The standard adapter uses the arguments as follows.
-
-| argument | role in the standard adapter |
-| --- | --- |
-| `u` | solved physical displacement field; also provides `x_start` and `x_end` |
-| `model_bridge` | provides access to the current CSF section through `section_provider` |
-| `case` | provides the resolved output directory and sampling stations |
-| `problem_definition` | provides the problem type written in the file header |
-
-### Interfaces used by the standard adapter
-
-```python
 u.x_start
 u.x_end
-u(x, y, z)
+u(x,y,z)
 
 model_bridge.section_provider.domains(x)
 
@@ -492,449 +750,285 @@ case.output_dir
 problem_definition.problem_type
 ```
 
-The standard adapter does not require access to the CUF assembly internals.
+It does not need the internal CUF matrix assembly or generalized-DOF numbering.
 
 ---
 
-## 15. Output-file creation
+## 19. Return value
 
-The resolved output directory is obtained from:
-
-```python
-Path(case.output_dir)
-```
-
-The adapter creates the directory if necessary:
-
-```python
-out.mkdir(parents=True, exist_ok=True)
-```
-
-and writes:
+After writing the file, the adapter prints:
 
 ```text
-response.txt
+written: <path>
 ```
 
-The adapter returns the generated path as a tuple:
+and returns the generated path as a tuple:
 
 ```python
 return (path,)
 ```
 
-This is the complete output of the current standard post-processor.
+This is the complete file output of the current standard `post.py` implementation for each call.
 
 ---
 
-# Part VI - Writing a custom post-processor
+# Part IX - Worked example: tapered I-section
 
-## 16. When customization is useful
+## 20. Case configuration
 
-A custom output adapter is useful when you want to change **how an already solved CUF field is interpreted**, without changing the CUF formulation or solver.
-
-Typical reasons include:
-
-- sampling different physical points;
-- following a particular boundary of the current CSF section;
-- extracting one displacement component only;
-- writing a problem-specific table;
-- comparing selected values with an external reference;
-- producing a file format required by another analysis or plotting script.
-
-The custom adapter remains outside the CUF solver core.
-
----
-
-## 17. Minimal custom adapter
-
-The following is a minimal example that evaluates the displacement at the cross-sectional origin for every requested station and writes the values to a text file.
-
-```python
-from pathlib import Path
-
-import numpy as np
-
-
-def write_outputs(u, model_bridge, case, problem_definition):
-    del model_bridge
-    del problem_definition
-
-    x0 = float(u.x_start)
-    x1 = float(u.x_end)
-    length = x1 - x0
-
-    out = Path(case.output_dir)
-    out.mkdir(parents=True, exist_ok=True)
-
-    path = out / "center_response.txt"
-
-    lines = [
-        "x/L x ux uy uz",
-    ]
-
-    for ratio in tuple(float(v) for v in case.sampling.stations):
-        x = x0 + ratio * length
-        vec = np.asarray(u(x, 0.0, 0.0), dtype=float)
-
-        lines.append(
-            f"{ratio:.6f} {x:.12e} "
-            f"{vec[0]:.12e} {vec[1]:.12e} {vec[2]:.12e}"
-        )
-
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"written: {path}")
-
-    return (path,)
-```
-
-The important operation is still:
-
-```python
-u(x, y, z)
-```
-
-Everything around it simply chooses points and organizes the output.
-
----
-
-## 18. Querying the current section in a custom adapter
-
-When the sampling position depends on the current cross-section, query the section provider at the same longitudinal coordinate:
-
-```python
-domains = tuple(model_bridge.section_provider.domains(float(x)))
-```
-
-For example, the standard adapter obtains all domain vertices with:
-
-```python
-vertices = []
-
-for domain in model_bridge.section_provider.domains(float(x)):
-    for y, z in domain.vertices:
-        vertices.append((float(y), float(z)))
-```
-
-From those physical coordinates, a custom adapter can construct the sampling rule required by the problem.
-
-The key methodological point is:
-
-> Derive sampling locations from the current CSF section whenever the geometry itself determines where the physical quantity should be evaluated.
-
-This is what allows a post-processing rule to follow a non-prismatic section correctly.
-
----
-
-## 19. Selecting a custom adapter in the case YAML
-
-The current loader accepts an output adapter in **two forms**:
-
-1. an importable Python module name;
-2. a Python file path.
-
-Both forms use the same `output.adapter` YAML key.
-
-### Option A - importable module
-
-If the adapter is importable as:
-
-```text
-my_project.my_post
-```
-
-use:
-
-```yaml
-output:
-  adapter: my_project.my_post
-  directory: ../output/my_case
-```
-
-### Option B - Python file
-
-A standalone `.py` file can also be selected directly:
-
-```yaml
-output:
-  adapter: ../adapters/my_post.py
-  directory: ../output/my_case
-```
-
-Relative adapter file paths are resolved relative to the directory containing the case YAML. Absolute paths are also accepted.
-
-In both cases, the loaded adapter must provide a callable:
-
-```python
-def write_outputs(u, model_bridge, case, problem_definition):
-    ...
-```
-
-If `write_outputs` is missing or is not callable, the runner stops with an error.
-
-Keep the CUF solver unchanged; only the output adapter changes.
-
----
-
-# Part VII - Recommended methodology
-
-## 20. Start with the simplest useful output
-
-When creating a new analysis, first ask:
-
-**Which physical displacement values do I actually need to inspect?**
-
-If the four standard points are sufficient, use:
-
-```yaml
-output:
-  adapter: csf.cuf.adapters.output.post
-```
-
-and only choose the required longitudinal stations.
-
-Do not create a custom post-processor unless the physical question requires a different sampling rule or output format.
-
----
-
-## 21. Add stations progressively
-
-For a first check, a small station set is usually easier to inspect:
+The tapered I-section case contains:
 
 ```yaml
 sampling:
-  stations: [0.00, 0.50, 1.00]
-```
-
-Once the result is understood, increase the longitudinal resolution when needed:
-
-```yaml
-sampling:
-  stations: [0.00, 0.10, 0.20, 0.30, 0.40, 0.50,
-             0.60, 0.70, 0.80, 0.90, 1.00]
-```
-
-The sampling stage evaluates the already solved physical field. Changing this list changes where results are reported; it does not redefine the CUF approximation itself.
-
----
-
-## 22. Verify that the predefined points match the geometry
-
-Before interpreting `center`, `plus`, `minus`, or `bottom_mid`, check that their definitions make physical sense for the section.
-
-For a centered T- or I-section, for example, the origin and the minimum-`z` boundary can naturally support this convention.
-
-For an unusual geometry, first determine which physical points are meaningful, then encode those points in a custom adapter.
-
-This separates two questions that should not be mixed:
-
-```text
-How is the CUF solution computed?
-
-            versus
-
-Where do I want to inspect that solution?
-```
-
-The first belongs to the analysis model. The second belongs to post-processing.
-
----
-
-## 23. Let CSF provide geometry and CUF provide the field
-
-A robust custom post-processing rule should keep these responsibilities separate:
-
-```text
-CSF -> where is the current physical section?
-CUF -> what is the solved displacement at this physical point?
-post.py -> which points do I want to report, and in what format?
-```
-
-This is the central methodology of the output layer.
-
-Avoid recreating the section geometry independently inside the adapter when the required location can be obtained from the current CSF section.
-
-Avoid reconstructing the displacement from generalized CUF coefficients when the public physical field `u(x,y,z)` already provides the required value.
-
----
-
-# Part VIII - Troubleshooting
-
-## 24. `response.txt` is not created
-
-Check that the case contains an output adapter and directory:
-
-```yaml
-output:
-  adapter: csf.cuf.adapters.output.post
-  directory: ../output/my_case
-```
-
-Also verify that the CUF analysis reaches the output stage successfully.
-
-When the adapter runs, it prints:
-
-```text
-written: .../response.txt
-```
-
----
-
-## 25. A requested station is outside the beam
-
-The adapter converts each station using:
-
-```text
-x = x0 + r L
-```
-
-The case definition requires normalized values from `0.0` to `1.0`. A value outside this interval is rejected while the case YAML is loaded, before the CUF solve starts.
-
----
-
-## 26. The section is reported as empty
-
-The standard adapter requires sectional domains at every requested `x`.
-
-If the section provider returns no vertices, the adapter raises an error identifying the physical longitudinal coordinate.
-
-Check that:
-
-- the station lies within the valid solved interval;
-- the CSF model defines a section at that location;
-- the section provider returns the expected domains.
-
----
-
-## 27. The sampled points are not physically meaningful
-
-This is not a reason to modify the CUF solver.
-
-It means that the standard sampling convention does not match the geometry.
-
-Create a custom output adapter and define the required points from the current CSF section.
-
----
-
-## 28. The displacement component is not the one you need
-
-The physical evaluator returns all three components:
-
-```python
-vec = np.asarray(u(x, y, z), dtype=float)
-
-ux = vec[0]
-uy = vec[1]
-uz = vec[2]
-```
-
-A custom adapter can report only the component required by the analysis or combine the components into another derived output.
-
----
-
-# Part IX - Quick reference
-
-## 29. Standard YAML
-
-```yaml
-sampling:
-  stations: [0.00, 0.25, 0.50, 0.75, 1.00]
+  stations: [0.0, 0.1, 1.0]
+  displacement_samples: 201
+  stress_grid: 41
 
 output:
   adapter: csf.cuf.adapters.output.post
-  directory: ../output/my_case
+  directory: ../../output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3
 ```
 
-## 30. Standard output
+For `post.py`, the active sampling list is:
 
 ```text
-<output directory>/response.txt
+r = 0.0, 0.1, 1.0
 ```
 
-## 31. Standard sampled points
+Let the solved interval be:
 
-```text
-center     -> (0, 0)
-plus       -> (ymin, zmax)
-minus      -> (largest y on zmin, zmin)
-bottom_mid -> (0, zmin)
-```
+$$[x_0,x_1], \qquad L=x_1-x_0.$$
 
-## 32. Physical-field evaluation
+The three physical coordinates are then:
 
-```python
-u(x, y, z)
-```
+$$x^{(1)}=x_0,$$
 
-returns:
+$$x^{(2)}=x_0+0.1L,$$
 
-```text
-[ux, uy, uz]
-```
+$$x^{(3)}=x_1.$$
 
-## 33. Current-section query
+At each one of these coordinates the adapter performs a new call to:
 
 ```python
 model_bridge.section_provider.domains(x)
 ```
 
-## 34. Custom-adapter entry point
+so the tapered geometry is evaluated at the actual station.
+
+For every station, four points are then constructed from the current section and passed to:
 
 ```python
-def write_outputs(u, model_bridge, case, problem_definition):
+u(x, y, z)
+```
+
+The final standard response therefore contains 12 displacement evaluations:
+
+```text
+3 stations x 4 cross-sectional points = 12 rows
+```
+
+This example shows the intended CSF-CUF separation particularly clearly:
+
+```text
+taper law / variable geometry
+          |
+          v
+        CSF
+          |
+          v
+current section Omega(x)
+          |
+          +--------------------+
+                               |
+CUF solved field u(x,y,z) -----+
+                               |
+                               v
+                           post.py
+                               |
+                               v
+                         response.txt
+```
+
+The taper is not reimplemented in `post.py`. The adapter simply asks CSF for the physical section that exists at each requested `x`.
+
+---
+
+# Part X - Reading the implementation
+
+## 21. `_bounds(...)`
+
+The helper:
+
+```python
+def _bounds(section_provider, x: float):
     ...
 ```
 
----
+has one geometric purpose: derive the quantities needed by the four-point sampling convention from the current physical section.
 
-# 35. Final checklist
+It:
 
-For standard post-processing:
+1. obtains all current sectional domains at `x`;
+2. collects their vertices;
+3. computes `ymin`, `ymax`, `zmin`, `zmax`;
+4. identifies vertices on the minimum-`z` boundary;
+5. returns the largest `y` value on that boundary.
 
-- [ ] choose the longitudinal `sampling.stations`;
-- [ ] select `csf.cuf.adapters.output.post`;
-- [ ] set `output.directory`;
-- [ ] run the case;
-- [ ] open `response.txt`;
-- [ ] interpret four rows for each requested station;
-- [ ] verify that the four predefined points are meaningful for the section.
-
-For custom post-processing:
-
-- [ ] keep the CUF solver unchanged;
-- [ ] implement `write_outputs(...)`;
-- [ ] use `u(x,y,z)` for physical displacement values;
-- [ ] query the current CSF section when geometry determines the sampling position;
-- [ ] write outputs under `case.output_dir`;
-- [ ] return the generated path or paths;
-- [ ] select the custom module through `output.adapter`.
-
----
-
-## 36. Summary
-
-The standard CSF-CUF post-processing workflow is deliberately small:
+The return values are:
 
 ```text
-choose stations
-      |
-      v
-run the CUF case
-      |
-      v
-query the current CSF section at each station
-      |
-      v
-evaluate u(x,y,z) at four physical points
-      |
-      v
-write response.txt
+ymin, ymax, zmin, zmax, bottom_right_y
 ```
 
-The output layer does not need to understand the internal CUF algebra. Its job is to connect two physical interfaces:
+If the section contains no vertices, it raises an error identifying `x`.
 
-1. **the current CSF section**, which determines where relevant cross-sectional points are located;
-2. **the solved CUF displacement field `u(x,y,z)`**, which gives the response at those physical points.
+If no lower-boundary vertex can be identified, it also raises an explicit error.
 
-Use the standard adapter when its four-point convention matches the section. When it does not, keep the same methodology and replace only the sampling/output logic with a custom `write_outputs(...)` adapter.
+---
 
-This keeps geometry, structural solution, and result interpretation separate and makes the post-processing layer simple to use, inspect, and extend.
+## 22. `write_outputs(...)`
+
+The main function performs four tasks:
+
+```text
+1. determine the solved longitudinal interval
+2. create/select the output file
+3. loop over case.sampling.stations
+4. evaluate u(x,y,z) at four points and write the rows
+```
+
+In compact form, its core is equivalent to:
+
+```python
+for ratio in case.sampling.stations:
+    x = x0 + float(ratio) * L
+
+    ymin, ymax, zmin, zmax, bottom_right_y = _bounds(
+        model_bridge.section_provider,
+        x,
+    )
+
+    points = (
+        ("center", 0.0, 0.0),
+        ("plus", ymin, zmax),
+        ("minus", bottom_right_y, zmin),
+        ("bottom_mid", 0.0, zmin),
+    )
+
+    for name, y, z in points:
+        vec = np.asarray(u(x, y, z), dtype=float)
+        # write x/L, x, y, z, name, ux, uy, uz
+```
+
+This compact loop contains the complete physical logic of the standard adapter.
+
+---
+
+# Part XI - Methodological summary
+
+## 23. The correct reading of `post.py`
+
+The standard CSF-CUF output adapter should be read as a **physical sampling layer**.
+
+It is not a second solver and it is not a stress-recovery module.
+
+Its job is:
+
+$$\boxed{ \text{current CSF geometry} + \text{solved CUF displacement field} \longrightarrow \text{selected physical displacement samples} }$$
+
+The three responsibilities remain separate:
+
+```text
+CSF
+  defines Omega(x) and therefore the physical sampling coordinates
+
+CUF
+  provides the solved field u(x,y,z)
+
+post.py
+  chooses four points at each requested station and writes ux, uy, uz
+```
+
+For variable-section problems this separation is particularly useful: the output adapter automatically follows the geometry because it queries the CSF section at the same longitudinal coordinate at which the displacement field is evaluated.
+
+---
+
+# Part XII - Quick reference
+
+## 24. Standard YAML
+
+```yaml
+sampling:
+  stations: [0.0, 0.1, 1.0]
+  displacement_samples: 201
+  stress_grid: 41
+
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../../output/my_case
+```
+
+For this adapter:
+
+```text
+stations             -> used
+displacement_samples -> not used by post.py
+stress_grid          -> not used by post.py
+```
+
+---
+
+## 25. Standard sampled points
+
+```text
+center     = (0, 0)
+plus       = (ymin, zmax)
+minus      = (bottom_right_y, zmin)
+bottom_mid = (0, zmin)
+```
+
+with all geometric bounds evaluated from the **current CSF section at the requested x**.
+
+---
+
+## 26. Standard output
+
+Normal call:
+
+```text
+<output directory>/response.txt
+```
+
+Equilibration call:
+
+```text
+<output directory>/response_eqN.txt
+```
+
+Columns:
+
+```text
+x/L  x  y  z  point  ux  uy  uz
+```
+
+---
+
+## 27. Source references
+
+Standard output adapter:
+
+```text
+https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/output/post.py
+```
+
+Representative tapered I-section case:
+
+```text
+https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
+```
+
+Documentation location:
+
+```text
+cuf/docs/csf_post.md
+```
