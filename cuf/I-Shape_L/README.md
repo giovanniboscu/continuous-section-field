@@ -316,6 +316,20 @@ The corresponding problem adapter is
 
 It provides the half-wave surface traction, its projection onto the CUF transverse functions, and the end constraints described in Section 2.
 
+The custom adapter [`validation/surface_halfwave_multi.py`](validation/surface_halfwave_multi.py) defines the complete CSF-CUF physical problem, including surface loads and boundary conditions. The FEM3D model reproduces the same static scheme.
+
+| Component | Physical definition |
+|---|---|
+| **Load** | Half-wave surface traction, \(t_z(x)=A\sin(\pi(x-x_0)/L)\), with \(A=-1.0\) |
+| **Loaded surface** | Entire bottom flange (3 independent edges in CSF-CUF; corresponding bottom faces in FEM3D) |
+| **End constraints** | \(u_y=u_z=0\) at both ends; axial displacement \(u_x\) remains free |
+| **Axial gauge** | \(\frac{1}{L}\int_{x_0}^{x_1}u_x(x,0,0)\,dx=0\), eliminating rigid axial translation |
+
+Both formulations implement the same physical loads and constraints, using their respective numerical discretizations.
+
+For the complete adapter formulation, load integration, constraint implementation, and CUF–FEM3D correspondence, see **[Surface Half-Wave: CSF-CUF and FEM3D Reference](I-Shape_L_surface_halfwave_CUF_FEM3D_reference.md)**.
+
+
 ### 4.3 CSF-CUF case
 
 The comparison case is
