@@ -16,7 +16,7 @@ The **model** describes the physical system, the **problem** defines how that sy
 
 The solver uses these objects together. None of them is an intermediate result produced by another: they are independent descriptions of different aspects of the same problem.
 
-
+---
 >## Try it interactively in Google Colab
 >
 >You can run this Quick Start directly in Google Colab, without installing
@@ -30,6 +30,11 @@ The solver uses these objects together. None of them is an intermediate result p
 >
 >It automatically runs the analysis and displays the CSF model,
 >section properties, CUF stress maps and structural response.
+
+>
+>The Colab notebook is a convenience layer; the repository remains the reference environment. If the Colab runtime changes, run the quickstart locally
+>
+---
 
 The original YAML files remain unchanged.
 
