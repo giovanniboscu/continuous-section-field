@@ -1,4 +1,4 @@
-# CSF–CUF problem adapters — complete reference
+# CSF–CUF problem adapters - complete reference
 
 **Bidirectional reference: from a YAML adapter to its physical load and constraints, and from a desired load/constraint to the correct adapter.**
 
@@ -57,14 +57,14 @@ problems/example.yaml ──> model.csf_yaml + problem.type + load parameters
 The **case YAML has exactly two supported adapter-selection modes**:
 
 ```yaml
-# Mode A: complete (legacy) adapter — the module supplies both contributions
+# Mode A: complete (legacy) adapter - the module supplies both contributions
 problem:
   yaml: ../problems/torsion.yaml
   adapter: csf.cuf.adapters.problem.torsion_halfwave
 ```
 
 ```yaml
-# Mode B: explicit composition — one module for each contribution
+# Mode B: explicit composition - one module for each contribution
 problem:
   yaml: ../problems/torsion.yaml
   load_adapter: csf.cuf.adapters.problem.loads.torsion_halfwave
@@ -150,11 +150,11 @@ The tables list **problem YAML parameters**; the common `model.csf_yaml` and `pr
 
 | Problem YAML key | Required | Default | Meaning / checks |
 |---|---|---|---|
-| `force.type` | Yes | — | Exactly `point` |
-| `force.amplitude` | Yes | — | Physical concentrated `P_z` in force units (`N` if using N/mm), signed; finite numerical value |
-| `force.x` | Yes | — | Absolute longitudinal application coordinate; inside `[x0,x1]`; may lie **between** FE nodes |
-| `force.y` | Yes | — | Physical cross-section `y` position |
-| `force.z` | Yes | — | Physical cross-section `z` position |
+| `force.type` | Yes | - | Exactly `point` |
+| `force.amplitude` | Yes | - | Physical concentrated `P_z` in force units (`N` if using N/mm), signed; finite numerical value |
+| `force.x` | Yes | - | Absolute longitudinal application coordinate; inside `[x0,x1]`; may lie **between** FE nodes |
+| `force.y` | Yes | - | Physical cross-section `y` position |
+| `force.z` | Yes | - | Physical cross-section `z` position |
 
 The adapter evaluates transverse `F_τ(y,z;x)` at the force position, then distributes the resulting generalized force through the longitudinal **FE shape functions of the containing element**. `force.x` is **not required to coincide with a node** (unlike the distinct helper `loads.point_force_global_z`). Unknown `force.*` keys are rejected.
 
@@ -176,10 +176,10 @@ problem:
 
 | Problem YAML key | Required | Default | Meaning / checks |
 |---|---|---|---|
-| `force.type` | Yes | — | Exactly `area` |
-| `force.x`, `force.y`, `force.z` | Yes | — | **Centroid** of patch in global physical coordinates |
-| `force.width` | Yes | — | Patch extent **along longitudinal `x`**; positive |
-| `force.height` | Yes | — | Patch extent **along transverse `y`**; positive |
+| `force.type` | Yes | - | Exactly `area` |
+| `force.x`, `force.y`, `force.z` | Yes | - | **Centroid** of patch in global physical coordinates |
+| `force.width` | Yes | - | Patch extent **along longitudinal `x`**; positive |
+| `force.height` | Yes | - | Patch extent **along transverse `y`**; positive |
 | `force.fx` | No | `0.0` | **Total** resultant global-x force, not pressure |
 | `force.fy` | No | `0.0` | **Total** resultant global-y force, not pressure |
 | `force.fz` | No | `0.0` | **Total** resultant global-z force, not pressure |
@@ -215,9 +215,9 @@ problem:
 
 | Problem YAML key | Required | Default | Meaning / checks |
 |---|---|---|---|
-| `x_fraction` | Yes | — | Finite longitudinal fraction in `[0,1]`; `x_p=x0+x_fraction·L` |
-| `point.y` | Yes | — | Physical transverse `y` coordinate of the point |
-| `point.z` | Yes | — | Physical transverse `z` coordinate of the point |
+| `x_fraction` | Yes | - | Finite longitudinal fraction in `[0,1]`; `x_p=x0+x_fraction·L` |
+| `point.y` | Yes | - | Physical transverse `y` coordinate of the point |
+| `point.z` | Yes | - | Physical transverse `z` coordinate of the point |
 | `components.x` | At least one of x/y/z | Omitted = `0` | Total physical **point force** along global `x` |
 | `components.y` | At least one of x/y/z | Omitted = `0` | Total physical **point force** along global `y` |
 | `components.z` | At least one of x/y/z | Omitted = `0` | Total physical **point force** along global `z` |
@@ -369,9 +369,9 @@ Validation behavior is the same as [§4.5](#45-carrera_torsion_halfwave): unknow
 
 | Problem YAML key | Required | Default | Meaning / checks |
 |---|---|---|---|
-| `surface.polygon_name` | Yes | — | Non-empty **S0 CSF polygon name** as known to `inspect_section_entities` |
-| `surface.edge_start_point_id` | Yes | — | **Zero-based** index of the first polygon vertex of the edge; integer `>=0`; end vertex is next vertex cyclically |
-| `components.z` | Yes | — | Signed uniform **global-z traction** per **real** surface area (`N/mm²` with N/mm), finite, not boolean |
+| `surface.polygon_name` | Yes | - | Non-empty **S0 CSF polygon name** as known to `inspect_section_entities` |
+| `surface.edge_start_point_id` | Yes | - | **Zero-based** index of the first polygon vertex of the edge; integer `>=0`; end vertex is next vertex cyclically |
+| `components.z` | Yes | - | Signed uniform **global-z traction** per **real** surface area (`N/mm²` with N/mm), finite, not boolean |
 
 The specified polygon edge must be **horizontal within S0 and S1**, i.e. its endpoints have equal `z` in each end section (an edge parallel to global `y`). It may change width, transverse position, and **height between S0 and S1**. Homologous polygon vertex indices describe the evolving edge. Only `components.z` is supported; **`components.x` and `.y` are rejected**. The applied direction is fixed global `z`, not the local surface normal.
 
@@ -408,9 +408,9 @@ All top-level problem keys except `surface` and `components` are rejected; unsup
 
 | Problem YAML key | Required | Default | Meaning / checks |
 |---|---|---|---|
-| `surface.polygon_name` | Yes | — | Non-empty name of a CSF polygon at S0 |
-| `surface.edge_start_point_id` | Yes | — | Zero-based index of the first vertex of the selected edge, integer `>=0` |
-| `amplitude` | Yes | — | Signed **global-z traction amplitude** per real surface area (`N/mm²`), finite, not boolean |
+| `surface.polygon_name` | Yes | - | Non-empty name of a CSF polygon at S0 |
+| `surface.edge_start_point_id` | Yes | - | Zero-based index of the first vertex of the selected edge, integer `>=0` |
+| `amplitude` | Yes | - | Signed **global-z traction amplitude** per real surface area (`N/mm²`), finite, not boolean |
 
 Geometry selection and real surface integration are the same as in [§4.7](#47-uniform_surface), but the traction follows the first sine half-wave:
 
@@ -446,7 +446,7 @@ problem:
 
 #### Physical model: loads + constraints
 
-**Loads — one or multiple independently selected CSF lateral faces.** On each selected edge, the adapter imposes the **same signed traction in global `z`**, with a first half-wave along the beam:
+**Loads - one or multiple independently selected CSF lateral faces.** On each selected edge, the adapter imposes the **same signed traction in global `z`**, with a first half-wave along the beam:
 
 \[
  t_z(x)=A\sin\!\left(\frac{\pi(x-x_0)}{L}\right),\qquad L=x_1-x_0.
@@ -471,7 +471,7 @@ The generalized transverse force for mode `τ` is therefore assembled as
 
 where the transverse integration limits represent the selected edge's physical width (with nonnegative measure regardless of vertex ordering). The mode-wise forces are subsequently integrated along the longitudinal finite elements by `assemble_distributed_load_vector(...)` into the **global `z` load-vector components**. Contributions from different selected surfaces are summed **before** longitudinal assembly; no fictitious merged edge is constructed.
 
-**Constraints — transverse supports at both ends, plus axial gauge.** The adapter sets **every CUF generalized amplitude** of `u_y` and `u_z` to zero at both `x0` and `x1`, while leaving the axial amplitudes free except for one mean-displacement condition:
+**Constraints - transverse supports at both ends, plus axial gauge.** The adapter sets **every CUF generalized amplitude** of `u_y` and `u_z` to zero at both `x0` and `x1`, while leaving the axial amplitudes free except for one mean-displacement condition:
 
 \[
  u_y(x_0)=u_z(x_0)=u_y(x_1)=u_z(x_1)=0
@@ -488,19 +488,19 @@ The second equation removes the remaining rigid axial translation. **`(y,z)=(0,0
 
 | YAML key (inside `problem:`) | Required | Default | Accepted form / significance |
 |---|---|---|---|
-| `type` | Yes | — | Exactly `surface_halfwave_transverse_supported` |
-| `surface` | **One of `surface` or `surfaces`** | — | One edge selector mapping; mutually exclusive with `surfaces` |
-| `surfaces` | **One of `surface` or `surfaces`** | — | Nonempty list of edge selector mappings; mutually exclusive with `surface` |
-| `surface.polygon_name` or `surfaces[].polygon_name` | Yes for each selector | — | Nonblank CSF polygon name |
-| `surface.edge_start_point_id` or `surfaces[].edge_start_point_id` | Yes for each selector | — | Integer `>= 0` (boolean rejected), valid vertex index in that polygon |
+| `type` | Yes | - | Exactly `surface_halfwave_transverse_supported` |
+| `surface` | **One of `surface` or `surfaces`** | - | One edge selector mapping; mutually exclusive with `surfaces` |
+| `surfaces` | **One of `surface` or `surfaces`** | - | Nonempty list of edge selector mappings; mutually exclusive with `surface` |
+| `surface.polygon_name` or `surfaces[].polygon_name` | Yes for each selector | - | Nonblank CSF polygon name |
+| `surface.edge_start_point_id` or `surfaces[].edge_start_point_id` | Yes for each selector | - | Integer `>= 0` (boolean rejected), valid vertex index in that polygon |
 | `amplitude` | **Yes** | **No default** | Finite signed number (`N/mm²` for N–mm units), applied to *every* selected edge |
 
 Validation rejects unknown top-level options, unknown/missing selector keys, simultaneous `surface` and `surfaces`, empty `surfaces`, invalid polygon names/edge indexes, and non-horizontal end edges. The Python factory accepts **exactly** `surface`, `surfaces`, and `amplitude` as its options; `type` is extracted by the problem loader. The selected geometry must, of course, exist in the referenced CSF model.
 
-**Example — three independent bottom-flange edges (your configuration):**
+**Example - three independent bottom-flange edges (your configuration):**
 
 ```yaml
-# problems/bending.yaml — physical model and its load/support definition
+# problems/bending.yaml - physical model and its load/support definition
 model:
   csf_yaml: ../models/model.yaml  # replace with the model used by this case
 problem:
@@ -516,7 +516,7 @@ problem:
 ```
 
 ```yaml
-# cases/example.yaml — choose this custom file as a COMPLETE adapter
+# cases/example.yaml - choose this custom file as a COMPLETE adapter
 problem:
   yaml: ../problems/bending.yaml
   adapter: ../../validation/surface_halfwave_multi.py
@@ -703,7 +703,7 @@ This keeps the same torsional loading and the same full clamps. It is the explic
 ### 7.3 Change just the constraints (a deliberately different problem)
 
 ```yaml
-# cases/torsion_supported.yaml — keep the same torsion problem YAML
+# cases/torsion_supported.yaml - keep the same torsion problem YAML
 problem:
   yaml: ../problems/torsion.yaml
   load_adapter: csf.cuf.adapters.problem.loads.torsion_halfwave
