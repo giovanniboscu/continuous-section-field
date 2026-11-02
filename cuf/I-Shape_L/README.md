@@ -13,6 +13,14 @@ The complete execution sequence is documented in [reproducibility.md](reproducib
 
 ---
 
+> ## reproducibility
+>The complete procedure required to reproduce the benchmark, including the CSF-CUF analysis, the FEM3D reference solution, the post-processing steps, and the generation of the comparison plots, is documented in:
+>
+>[`reproducibility.md`](reproducibility.md)
+>
+
+---
+
 ### Geometric and material variation along the tapered I-section
 
 The following figure summarizes the geometric and material evolution of the tapered I-shaped beam along the longitudinal coordinate \(z\).
