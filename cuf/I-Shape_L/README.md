@@ -82,6 +82,24 @@ The following two views show the nine-domain representation at the two end stati
 
 The subdivision changes the internal representation of the cross-section, not the physical element being analysed.
 
+
+### Visualizing the two geometric representations
+
+From the `models` directory, the compact three-domain geometry can be inspected with:
+
+```bash
+csf-actions carrera_i_shaped_taper80.yaml action.yaml
+```
+
+The L9-compatible nine-domain representation can be inspected with:
+
+```bash
+csf-actions carrera_i_shaped_taper80_l9_web3.yaml action.yaml
+```
+
+The first command displays the compact physical representation used as the geometric basis for the FEM3D model, while the second displays the equivalent nine-domain decomposition adopted for the CSF-CUF Lagrange L9 representation.
+
+
 ## 2. Structural problem
 
 The benchmark is a simply supported, tapered I-shaped member of length
