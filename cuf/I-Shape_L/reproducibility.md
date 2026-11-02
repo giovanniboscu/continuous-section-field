@@ -1,4 +1,3 @@
-# DRAFT
 
 # CSF-CUF I-Shape_L Reproducibility
 
