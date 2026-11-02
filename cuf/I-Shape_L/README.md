@@ -9,7 +9,15 @@ This scenario compares two independent numerical descriptions of the same struct
 
 The comparison is intentionally organized around a common physical problem. Geometry, material variation, loading, and support conditions are defined first. Only after the structural problem is clear are the two numerical models introduced.
 
-The complete execution sequence is documented in [reproducibility.md](reproducibility.md). The FEM3D mesh-selection procedure is documented separately in [FEM3Dmesh-convergence-criterion.md](FEM3Dmesh-convergence-criterion.md), while the strong-equilibrium comparison is developed in [FEM3D-CUF-equilibrium-report.md](FEM3D%E2%80%93CUF-equilibrium-report.md). The graphical post-processing results are collected in [plot_results/README.md](plot_results/README.md).
+### Supporting documentation
+
+The complete execution sequence is documented in [`reproducibility.md`](reproducibility.md).
+
+Additional benchmark documentation is available in the following files:
+
+- [`FEM3Dmesh-convergence-criterion.md`](FEM3Dmesh-convergence-criterion.md) - FEM3D mesh-refinement and mesh-selection procedure.
+- [`FEM3D-CUF-equilibrium-report.md`](FEM3D%E2%80%93CUF-equilibrium-report.md) - detailed strong-equilibrium comparison between FEM3D and CSF-CUF.
+- [`plot_results/README.md`](plot_results/README.md) - graphical post-processing workflow and comparison plots.
 
 
 ---
