@@ -77,9 +77,8 @@ same physical I-shaped beam
 
 The following two views show the nine-domain representation at the two end stations:
 
-![L9-compatible section at z=0](img/<S0_IMAGE_NAME>)
 
-![L9-compatible section at z=1000](img/<S1_IMAGE_NAME>)
+![L9-compatible CSF sectional decomposition at the two end stations](img/I-Sectioncuf.jpg)
 
 The subdivision changes the internal representation of the cross-section, not the physical element being analysed.
 
