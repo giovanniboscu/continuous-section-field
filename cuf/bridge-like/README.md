@@ -195,6 +195,20 @@ The plotting tool reconstructs the displacements, strains and stresses from a sa
 sh plot_traverse.sh
 ```
 
+```bash
+python3 -m csf.cuf.tools.plot_strain_stress_boundary_v10 --csf-yaml models/bridge_geometry.yaml --checkpoint  output/bending_scaled_lagrange_N15/carrera_bridge_bending_scaled_lagrange_N15_eq1.cuf.npz --transverse-x 20   --transverse-grid 120   --transverse-vector-grid 50
+```
+
+```bash
+python3 -m csf.cuf.tools.plot_strain_stress_boundary_v10 --csf-yaml models/bridge_geometry.yaml --checkpoint  output/torsion_scaled_lagrange_N10/carrera_bridge_torsion_scaled_lagrange_N10_eq1.cuf.npz --transverse-x 20   --transverse-grid 120   --transverse-vector-grid 50
+```
+
+```bash
+python3 -m csf.cuf.tools.plot_strain_stress_boundary_v10 --csf-yaml models/bridge_geometry.yaml --checkpoint  output/bending_scaled_lagrange_N15/carrera_bridge_bending_scaled_lagrange_N15_eq1.cuf.npz
+```
+
+
+
 It produces plots along the beam at cross-section boundary points, as well as **cross-section maps at x = 20 m**. The figures supplied with this example correspond to the first equilibration (`eq1`).
 
 #### Transverse Shear Stress Distribution
