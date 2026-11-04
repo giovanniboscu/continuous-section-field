@@ -36,15 +36,19 @@ https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf
 
 **Start here.** No prior knowledge of CUF is required to execute a case.
 
-1. **Interactive, no installation** — run the Quick Start in Google Colab:
+1. **Interactive, no installation** - run the Quick Start in Google Colab:
    https://colab.research.google.com/github/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/quickstart_colab_interactive.ipynb
 
-2. **Local execution** — follow the Quick Start README:
+2. **Local execution** - follow the Quick Start README:
    https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/README.md
 
-3. **Understanding the YAML configuration** — the YAML reference explains how
+3. **Understanding the YAML configuration** - the YAML reference explains how
    a physical problem is translated into model, problem, and case files:
    https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/yaml_reference
+   
+5. **Run a CUF analysis and post-process the results** - follow the complete CLI and post-processing guide:
+
+   https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/CSF-CUF-CLI-Post-processingGuide.md
 
 ---
 
@@ -88,21 +92,21 @@ For the original theoretical background, see the references cited in the
 
 ## 5. If you want to extend the framework
 
-- **New transverse expansion** — guide:
+- **New transverse expansion** - guide:
   https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/how_to_create_transverse_expansion.md
 
-- **New longitudinal basis** — plugin contract and API:
+- **New longitudinal basis** - plugin contract and API:
   https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/LongitudinalBasisPlugins.md
 
 
-- **New loads or boundary conditions** — adapter concept and interface:
+- **New loads or boundary conditions** - adapter concept and interface:
   https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/csf_problem.md
 
 - **Complete adapter reference** (predefined adapters, load-side and
   constraint-side modules, reverse lookup):
   https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/problem-adapters-reference.md
 
-- **Scaled Lagrange basis** — implementation guide:
+- **Scaled Lagrange basis** - implementation guide:
   https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/scaled_lagrange_implementation_guide.md
 
 ---
@@ -111,17 +115,17 @@ For the original theoretical background, see the references cited in the
 
 Each benchmark has a defined scope and a documented comparison protocol.
 
-- **I-Shape** — CSF-CUF vs FEM3D for prismatic and tapered I-beams:
+- **I-Shape** - CSF-CUF vs FEM3D for prismatic and tapered I-beams:
   https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape
 
-- **I-Shape_L** — local strong-equilibrium comparison (converged FEM3D
+- **I-Shape_L** - local strong-equilibrium comparison (converged FEM3D
   reference, 40 sections, 66,560 Gauss samples):
   https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape_L
 
-- **C-Shape** — benchmark based on Carrera and Petrolo:
+- **C-Shape** - benchmark based on Carrera and Petrolo:
   https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/C-Shape
 
-- **Bridge-like** — CSF as an independent library for a bridge-type beam:
+- **Bridge-like** - CSF as an independent library for a bridge-type beam:
   https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/bridge-like
 
 Each benchmark directory contains its own README with the problem
