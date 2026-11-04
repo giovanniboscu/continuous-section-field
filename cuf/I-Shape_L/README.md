@@ -164,17 +164,19 @@ Accordingly, the beam axis is denoted by `x` in the FEM3D and comparison post-pr
 
 ### 2.2 Static scheme: supports
 
-The same transverse support condition is imposed at both beam ends:
+Both end sections are subject to a transverse end-section restraint,
 
 $$
 u_y = 0,
 \qquad
-u_z = 0.
+u_z = 0,
 $$
 
-The longitudinal displacement remains free. A single axial gauge condition is introduced only to remove the remaining rigid longitudinal translation. In the CSF-CUF implementation this is imposed through the mean axial gauge defined by the problem adapter; the FEM3D model applies the equivalent treatment and subsequently shifts the axial displacement field so that the same gauge is satisfied.
+applied over the complete end sections. The longitudinal displacement remains free. This restraint differs from a classical point- or line-supported simple support because the transverse deformation of the entire end section is suppressed.
 
-The important physical point is therefore that the two end sections are **transversely supported**, while axial deformation is not suppressed by the support model.
+A single axial gauge condition is introduced only to remove the remaining rigid longitudinal translation. In the CSF-CUF implementation this is imposed through the mean axial gauge defined by the problem adapter; the FEM3D model applies the equivalent treatment and subsequently shifts the axial displacement field so that the same gauge is satisfied.
+
+Because the complete end sections are transversely restrained, localized three-dimensional stress gradients may develop near the beam ends. These end effects are relevant when interpreting stress derivatives and strong-equilibrium residuals evaluated close to the restrained sections.
 
 ### 2.3 Static scheme: load
 
