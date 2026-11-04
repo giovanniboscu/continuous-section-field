@@ -601,7 +601,7 @@ CSF physical field
 
 The field plots provide the direct spatial comparison, while the strong-equilibrium analysis adds an independent diagnostic based on the reconstructed stress divergence.
 
-The results show that the two formulations reproduce the same structural problem while retaining their distinct numerical character. The equilibrium diagnostic is particularly informative: the first two equilibrium equations remain broadly comparable, while the third equation and the resulting total residual show a substantially lower residual for the CSF-CUF stress field over almost the entire member.
+The two formulations are constructed to represent the same physical structural problem while retaining different numerical approximations. The strong-equilibrium analysis provides an additional diagnostic of the reconstructed stress fields: the first two equilibrium components are of comparable order, while the third component and the total stress-divergence residual are substantially lower for the CSF-CUF reconstruction over most of the analyzed sections. These residuals are absolute and not normalized by a characteristic stress or length scale; therefore, they should be interpreted as measures of how closely the reconstructed stress fields satisfy the local differential equilibrium equations, rather than as standalone indicators of overall solution accuracy.
 
 ---
 
