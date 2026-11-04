@@ -526,7 +526,7 @@ See [`plot_results/README.md`](plot_results/README.md) for the complete collecti
 
 ### 7.3 Strong-equilibrium comparison
 
-The local equilibrium comparison evaluates the three components of the stress-divergence residual over 40 longitudinal sections:
+In the absence of body forces, the local equilibrium equation is $\nabla \cdot \boldsymbol{\sigma} = \mathbf{0}$. The local equilibrium comparison evaluates the three components of the stress-divergence residual over 40 longitudinal sections:
 
 $$
 r_x =
