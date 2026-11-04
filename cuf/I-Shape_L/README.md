@@ -531,6 +531,8 @@ See [`plot_results/README.md`](plot_results/README.md) for the complete collecti
 In the absence of body forces, the local equilibrium equation is $\nabla \cdot \boldsymbol{\sigma} = \mathbf{0}$. The local equilibrium comparison evaluates the three components of the stress-divergence residual over 40 longitudinal sections:
 Because the complete end sections are transversely restrained, localized three-dimensional end effects may influence the normal and shear stress gradients near the supports. These gradients enter directly into the strong-equilibrium residuals defined below. The interpretation of the residual statistics therefore depends on the longitudinal locations of the 40 sampled sections, in particular on whether sections close to the restrained ends are included.
 
+The strong-equilibrium diagnostic uses 40 nominally equally spaced longitudinal target locations over the interval $0.01 \leq x/L \leq 0.99$. Each target is mapped to the nearest available native H8 Gauss-point $x$-plane, so the actual sampled section coordinates are determined by the FEM3D Gauss-point locations.
+
 
 $$
 r_x =
