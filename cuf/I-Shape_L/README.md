@@ -126,6 +126,26 @@ The structural problem combines three ingredients that must be kept distinct:
 3. the **static scheme**, consisting of the applied surface traction and the end constraints.
 
 These ingredients are common to the CSF-CUF and FEM3D analyses.
+### Boundary conditions
+
+The support conditions are defined so that both end sections are constrained only in the transverse directions. Specifically, the transverse displacements are set to zero at $x=x_0$ and $x=x_1$,
+
+$$
+u_y = 0, \qquad u_z = 0,
+$$
+
+for all CUF transverse amplitudes, while the longitudinal displacement $u_x$ remains unconstrained at the beam ends. This preserves the axial deformability of the member and avoids introducing an artificial longitudinal restraint.
+
+The remaining rigid-body translation along the beam axis is removed through a single mean axial gauge condition,
+
+$$
+\frac{1}{L}\int_{x_0}^{x_1} u_x(x,0,0)\,dx = 0,
+$$
+
+evaluated using the actual $x$-dependent transverse basis at the sectional point $(y,z)=(0,0)$.
+
+The resulting static scheme therefore corresponds to two transversely supported end sections with free axial deformation, while only the uniform rigid longitudinal translation is suppressed. In the CSF-CUF formulation, these constraints are implemented in [`surface_halfwave_multi.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/validation/surface_halfwave_multi.py).
+
 
 ### 2.1 Coordinate convention
 
