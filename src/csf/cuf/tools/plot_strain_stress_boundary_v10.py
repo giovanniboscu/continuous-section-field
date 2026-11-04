@@ -1,4 +1,9 @@
-# Version: CSF-CUF plot_strain_stress_boundary v14.5.0 - 2026-10-31
+# Version: CSF-CUF plot_strain_stress_boundary v14.6.0 - 2026-11-03
+# v14.6.0: Per-figure CSV companions are written by default under figure_csv/.
+#          Every CSV uses the PNG basename, preserves the exact figure/panel grouping,
+#          contains the numerical samples represented by that figure, and records extrema.
+#          --no-plots keeps the same per-figure CSV grouping; --no-figure-csv disables it.
+#          Minimal CSV preamble identifies the corresponding PNG unambiguously.
 # v14.5.0: --transverse-perimeter-only skips all map sampling, export and rendering.
 #          The new switch implies perimeter mode and retains optional FEM3D overlays.
 #          Expanded CLI help documents modes, dependencies, examples and output files.
@@ -29,7 +34,7 @@
 # v14.1: Gauss plot-mode compares only FEM integration points selected for plot trajectories.
 # v14: native OpenSees Gauss comparison + element-material boundary stresses.
 # v13 moving-domain and polygon-side handling remain unchanged.
-# Revision-ID: a9be16d2-afcf-4452-95f6-747b55c12993
+# Revision-ID: 3d473863-6913-41ef-86fc-17b62bec99a8
 #
 # Changelog v13:
 # - Recognize moving solved-field v5 through domain_vertices_at(x).
@@ -1029,11 +1034,130 @@ def curve_values(selected, kind: str, index: int):
     return np.asarray([row[kind][index] for row in selected], dtype=float)
 
 
+FIGURE_CSV_DIRNAME = "figure_csv"
+FIGURE_CSV_DESCRIPTION = "Numerical data corresponding to this figure."
+
+
+def figure_csv_path(figure_path: Path) -> Path:
+    """Return the dedicated CSV companion path for one PNG figure."""
+    figure_path = Path(figure_path)
+    return figure_path.parent / FIGURE_CSV_DIRNAME / f"{figure_path.stem}.csv"
+
+
+def _is_finite_scalar(value) -> bool:
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
+def _append_panel_extrema(rows, *, value_key: str = "value"):
+    """Append one minimum and maximum record for every panel represented in rows.
+
+    Extrema are taken across all visible series in that panel, matching the user's
+    interpretation of one plotted panel as one graph. The copied source row retains
+    the series, coordinates, polygon/point identity and other location metadata.
+    """
+    result = []
+    panel_order = []
+    grouped = {}
+    for row in rows:
+        item = dict(row)
+        item.setdefault("record_type", "sample")
+        panel = item.get("panel_id", 1)
+        if panel not in grouped:
+            grouped[panel] = []
+            panel_order.append(panel)
+        grouped[panel].append(item)
+    for panel in panel_order:
+        panel_rows = grouped[panel]
+        result.extend(panel_rows)
+        finite = [row for row in panel_rows if _is_finite_scalar(row.get(value_key))]
+        if not finite:
+            continue
+        minimum = min(finite, key=lambda row: float(row[value_key]))
+        maximum = max(finite, key=lambda row: float(row[value_key]))
+        for record_type, source in (("minimum", minimum), ("maximum", maximum)):
+            summary = dict(source)
+            summary["record_type"] = record_type
+            result.append(summary)
+    return result
+
+
+def _write_figure_csv(figure_path: Path, columns, rows) -> Path:
+    """Write a minimal, self-identifying numerical companion for one figure."""
+    figure_path = Path(figure_path)
+    target = figure_csv_path(figure_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    columns = list(columns)
+    with target.open("w", newline="", encoding="utf-8") as handle:
+        handle.write(f"# figure: {figure_path.name}\n")
+        handle.write(f"# description: {FIGURE_CSV_DESCRIPTION}\n")
+        writer = csv.DictWriter(handle, fieldnames=columns, extrasaction="ignore")
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({key: row.get(key, "") for key in columns})
+    print(f"[ok] {target}", flush=True)
+    return target
+
+
+def save_curve_figure_csv(point_ids, rows, curve, figure_path: Path,
+                          fem_rows=None, fem_stress=False):
+    """Write the numerical counterpart of one longitudinal boundary figure/page."""
+    name, index, kind, _, _ = curve
+    displayed_fem = fem_rows is not None and (kind != "stress" or fem_stress)
+    records = []
+    for panel_id, point_id in enumerate(point_ids, 1):
+        panel_title = point_id.replace("_", " ")
+        panel_rows = []
+        for row in select_rows(rows, point_id):
+            panel_rows.append({
+                "record_type": "sample", "panel_id": panel_id, "panel_title": panel_title,
+                "series": "CSF-CUF", "component": name, "kind": kind,
+                "point": row["point"], "polygon_index": row["polygon_index"],
+                "polygon_name": row["polygon_name"], "vertex_index": row["vertex_index"],
+                "vertex_aliases": row["vertex_aliases"], "element_id": "", "stress_source": "",
+                "x": row["x"], "x_over_L": row["x_over_L"], "y": row["y"], "z": row["z"],
+                "value": row[kind][index],
+            })
+        if displayed_fem:
+            reference = select_rows(fem_rows, point_id)
+            if reference:
+                label = ("FEM3D (" + str(reference[0].get("stress_source", "recovered")) + " material)"
+                         if kind == "stress" else "FEM3D (H8 displacement/strain)")
+                for row in reference:
+                    panel_rows.append({
+                        "record_type": "sample", "panel_id": panel_id, "panel_title": panel_title,
+                        "series": label, "component": name, "kind": kind,
+                        "point": row["point"], "polygon_index": row["polygon_index"],
+                        "polygon_name": row["polygon_name"], "vertex_index": row["vertex_index"],
+                        "vertex_aliases": row["vertex_aliases"], "element_id": row.get("element_id", ""),
+                        "stress_source": row.get("stress_source", ""),
+                        "x": row["x"], "x_over_L": row["x_over_L"], "y": row["y"], "z": row["z"],
+                        "value": row[kind][index],
+                    })
+        records.extend(_append_panel_extrema(panel_rows))
+    columns = (
+        "record_type", "panel_id", "panel_title", "series", "component", "kind", "point",
+        "polygon_index", "polygon_name", "vertex_index", "vertex_aliases", "element_id",
+        "stress_source", "x", "x_over_L", "y", "z", "value",
+    )
+    return _write_figure_csv(figure_path, columns, records)
+
+
 def save_curve_plot(
     point_ids, rows, curve, output_dir: Path, dpi: int, fem_rows=None, fem_stress=False,
     *, filename_suffix: str = "", location_title: str = "CSF polygon vertices",
+    render: bool = True, figure_csv: bool = True,
 ):
     name, index, kind, ylabel, title = curve
+    output_dir.mkdir(parents=True, exist_ok=True)
+    path = output_dir / f"{name}_along_boundary{filename_suffix}.png"
+    if figure_csv:
+        save_curve_figure_csv(point_ids, rows, curve, path, fem_rows, fem_stress)
+    if not render:
+        return path
+
     nrows = math.ceil(len(point_ids) / 2)
     fig, axes = plt.subplots(
         nrows,
@@ -1076,9 +1200,6 @@ def save_curve_plot(
     fig.suptitle(f"{title} along {location_title}", fontsize=15)
     fig.supxlabel("s = (x - x0) / L")
     fig.supylabel(ylabel)
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-    path = output_dir / f"{name}_along_boundary{filename_suffix}.png"
     fig.savefig(path, dpi=dpi, bbox_inches="tight", pad_inches=0.10)
     plt.close(fig)
     return path
@@ -1323,9 +1444,42 @@ def recover_gauss_native_comparison(fem, cuf_checkpoint: Path, csf_yaml: Path, *
     return rows
 
 
+def _save_gauss_figure_csv(figure_path: Path, rows, comp_idx: int, comp: str, panels):
+    """Write the exact visible Gauss comparison samples for one figure/page."""
+    records = []
+    plot_mode = bool(rows and "point" in rows[0])
+    for panel_id, (panel_title, chosen) in enumerate(panels, 1):
+        panel_rows = []
+        for row in chosen:
+            common = {
+                "record_type": "sample", "panel_id": panel_id, "panel_title": panel_title,
+                "component": comp, "polygon_index": row["polygon_index"],
+                "polygon_name": row["polygon_name"], "element_id": row["element_id"],
+                "gauss_index": row["gauss_index"], "point": row.get("point", ""),
+                "vertex_index": row.get("vertex_index", ""), "target_y": row.get("target_y", ""),
+                "target_z": row.get("target_z", ""),
+                "transverse_offset": row.get("transverse_offset", ""),
+                "x": row["x"], "x_over_L": row["x_over_L"], "y": row["y"], "z": row["z"],
+            }
+            fem = dict(common)
+            fem.update(series="OpenSees native Gauss", value=row["stress_fem"][comp_idx])
+            cuf = dict(common)
+            cuf.update(series=("CUF at same Gauss points" if plot_mode
+                               else "CUF at FEM Gauss points"),
+                       value=row["stress_cuf"][comp_idx])
+            panel_rows.extend((fem, cuf))
+        records.extend(_append_panel_extrema(panel_rows))
+    columns = (
+        "record_type", "panel_id", "panel_title", "series", "component", "point",
+        "polygon_index", "polygon_name", "element_id", "gauss_index", "vertex_index",
+        "target_y", "target_z", "transverse_offset", "x", "x_over_L", "y", "z", "value",
+    )
+    return _write_figure_csv(figure_path, columns, records)
+
+
 def save_gauss_comparison(output_dir: Path, rows, dpi: int, *, no_plots: bool,
-                          max_vertices_per_plot: int = 8):
-    """Save exact native Gauss values; plot-mode draws vertex-associated traces."""
+                          max_vertices_per_plot: int = 8, figure_csv: bool = True):
+    """Save exact native Gauss values and per-figure numerical companions."""
     output_dir.mkdir(parents=True, exist_ok=True)
     keys = ("element_id", "gauss_index", "polygon_index", "polygon_name",
             "x", "y", "z", "x_over_L")
@@ -1334,14 +1488,14 @@ def save_gauss_comparison(output_dir: Path, rows, dpi: int, *, no_plots: bool,
                 "transverse_offset")
     records = {key: np.asarray([r[key] for r in rows]) for key in keys}
     for col in ("stress_fem", "stress_cuf", "stress_difference", "strain_cuf"):
-        records[col] = np.asarray([r[col] for r in rows],dtype=float)
+        records[col] = np.asarray([r[col] for r in rows], dtype=float)
     records["stress_components"] = np.asarray(
         ["sigma_xx", "sigma_yy", "sigma_zz", "tau_yz", "tau_xz", "tau_xy"])
     records["stress_fem_source"] = np.asarray("OpenSees native stdBrick Gauss stresses")
     records["stress_cuf_source"] = np.asarray("CUF strain times CSF constitutive matrix at the same point")
     path = output_dir / "sampled_gauss_native_comparison.npz"
     np.savez_compressed(path, **records)
-    print(f"[ok] {path} ({len(rows)} native Gauss points)",flush=True)
+    print(f"[ok] {path} ({len(rows)} native Gauss points)", flush=True)
     csv_path = output_dir / "sampled_gauss_native_comparison.csv"
     with csv_path.open("w", newline="") as out:
         writer = csv.writer(out)
@@ -1351,66 +1505,83 @@ def save_gauss_comparison(output_dir: Path, rows, dpi: int, *, no_plots: bool,
         for row in rows:
             writer.writerow([row[k] for k in keys] + list(row["stress_fem"])
                             + list(row["stress_cuf"]) + list(row["stress_difference"]))
-    print(f"[ok] {csv_path}",flush=True)
-    if no_plots:
-        return
-    # Native Gauss traces corresponding to the vertex panels from the boundary
-    # visualizer; points are nearby *interior* Gauss positions, never the vertices.
+    print(f"[ok] {csv_path}", flush=True)
+
     if rows and "point" in rows[0]:
         trace_ids = list(dict.fromkeys(row["point"] for row in rows))
         for comp_idx, comp in enumerate(records["stress_components"]):
             for page_start in range(0, len(trace_ids), max_vertices_per_plot):
-                page_ids = trace_ids[page_start:page_start+max_vertices_per_plot]
-                nrows = math.ceil(len(page_ids)/2)
-                fig, axes = plt.subplots(nrows, 2, figsize=(13.4, 3.4*nrows),
+                page_ids = trace_ids[page_start:page_start + max_vertices_per_plot]
+                filename = (f"{comp}_along_gauss_part{1 + page_start // max_vertices_per_plot:02d}.png"
+                            if len(trace_ids) > max_vertices_per_plot else f"{comp}_along_gauss.png")
+                figure_path = output_dir / filename
+                panels = []
+                for point_id in page_ids:
+                    selected = sorted((r for r in rows if r["point"] == point_id),
+                                      key=lambda r: r["x_over_L"])
+                    panels.append((point_id.replace("_", " "), selected))
+                if figure_csv:
+                    _save_gauss_figure_csv(figure_path, rows, comp_idx, str(comp), panels)
+                if no_plots:
+                    continue
+                nrows = math.ceil(len(page_ids) / 2)
+                fig, axes = plt.subplots(nrows, 2, figsize=(13.4, 3.4 * nrows),
                                          constrained_layout=True, sharex=True)
-                for ax in np.ravel(axes)[len(page_ids):]:
+                axes = np.atleast_1d(axes).ravel()
+                for ax in axes[len(page_ids):]:
                     ax.set_visible(False)
-                for ax, point_id in zip(np.ravel(axes),page_ids):
-                    selected = sorted((r for r in rows if r["point"]==point_id),
+                for ax, point_id in zip(axes, page_ids):
+                    selected = sorted((r for r in rows if r["point"] == point_id),
                                       key=lambda r: r["x_over_L"])
                     t = [r["x_over_L"] for r in selected]
-                    ax.scatter(t,[r["stress_fem"][comp_idx] for r in selected],s=9,
-                               label="OpenSees native Gauss",alpha=.8)
-                    ax.scatter(t,[r["stress_cuf"][comp_idx] for r in selected],s=9,
-                               label="CUF at same Gauss points",alpha=.8)
+                    ax.scatter(t, [r["stress_fem"][comp_idx] for r in selected], s=9,
+                               label="OpenSees native Gauss", alpha=.8)
+                    ax.scatter(t, [r["stress_cuf"][comp_idx] for r in selected], s=9,
+                               label="CUF at same Gauss points", alpha=.8)
                     max_dist = max(r["transverse_offset"] for r in selected)
-                    ax.set_title(f"{point_id.replace('_',' ')} (offset <= {max_dist:.3g})")
-                    ax.grid(True,alpha=.25)
+                    ax.set_title(f"{point_id.replace('_', ' ')} (offset <= {max_dist:.3g})")
+                    ax.grid(True, alpha=.25)
                     ax.legend(fontsize=7)
                 fig.suptitle(f"{comp}: nearest native Gauss points to CSF plotted vertices")
                 fig.supxlabel("s=(x-x0)/L (actual FEM Gauss stations)")
                 fig.supylabel(comp)
-                filename=(f"{comp}_along_gauss_part{1+page_start//max_vertices_per_plot:02d}.png"
-                          if len(trace_ids)>max_vertices_per_plot else f"{comp}_along_gauss.png")
-                fig.savefig(output_dir/filename,dpi=dpi)
+                fig.savefig(figure_path, dpi=dpi)
                 plt.close(fig)
         return
+
     polygon_ids = sorted(set(row["polygon_index"] for row in rows))
     for comp_idx, comp in enumerate(records["stress_components"]):
-        ncols=2
-        nrows=math.ceil(len(polygon_ids)/ncols)
-        fig, axes=plt.subplots(nrows,ncols,figsize=(13,3.6*nrows),
-                               constrained_layout=True,sharex=True)
-        for ax in np.ravel(axes)[len(polygon_ids):]:
+        figure_path = output_dir / f"{comp}_along_gauss.png"
+        panels = []
+        for pi in polygon_ids:
+            chosen = [r for r in rows if r["polygon_index"] == pi]
+            panels.append((f"polygon {pi}: {chosen[0]['polygon_name']}", chosen))
+        if figure_csv:
+            _save_gauss_figure_csv(figure_path, rows, comp_idx, str(comp), panels)
+        if no_plots:
+            continue
+        ncols = 2
+        nrows = math.ceil(len(polygon_ids) / ncols)
+        fig, axes = plt.subplots(nrows, ncols, figsize=(13, 3.6 * nrows),
+                                 constrained_layout=True, sharex=True)
+        axes = np.atleast_1d(axes).ravel()
+        for ax in axes[len(polygon_ids):]:
             ax.set_visible(False)
-        for ax, pi in zip(np.ravel(axes),polygon_ids):
-            chosen=[r for r in rows if r["polygon_index"]==pi]
-            x=[r["x_over_L"] for r in chosen]
-            fem=[r["stress_fem"][comp_idx] for r in chosen]
-            cuf=[r["stress_cuf"][comp_idx] for r in chosen]
-            ax.scatter(x,cuf,s=5,alpha=.4,label="CUF at FEM Gauss points")
-            ax.scatter(x,fem,s=5,alpha=.4,label="OpenSees native Gauss stresses")
+        for ax, pi in zip(axes, polygon_ids):
+            chosen = [r for r in rows if r["polygon_index"] == pi]
+            x = [r["x_over_L"] for r in chosen]
+            fem_values = [r["stress_fem"][comp_idx] for r in chosen]
+            cuf_values = [r["stress_cuf"][comp_idx] for r in chosen]
+            ax.scatter(x, cuf_values, s=5, alpha=.4, label="CUF at FEM Gauss points")
+            ax.scatter(x, fem_values, s=5, alpha=.4, label="OpenSees native Gauss stresses")
             ax.set_title(f"polygon {pi}: {chosen[0]['polygon_name']}")
-            ax.grid(True,alpha=.25)
+            ax.grid(True, alpha=.25)
             ax.legend(fontsize=7)
         fig.suptitle(f"{comp}: exact Gauss point comparison (no averaging)")
         fig.supxlabel("s = (x - x0)/L")
         fig.supylabel(comp)
-        fig.savefig(output_dir / f"{comp}_along_gauss.png",dpi=dpi)
+        fig.savefig(figure_path, dpi=dpi)
         plt.close(fig)
-
-
 
 
 def _clip_polygon_to_rectangle(vertices, bounds):
@@ -1882,11 +2053,64 @@ def save_transverse_npz(path: Path, samples):
     return path
 
 
-def save_transverse_map(samples, curve, output_dir: Path, dpi: int):
+def _save_transverse_map_figure_csv(samples, curve, figure_path: Path):
+    """Write direct samples represented in one scalar transverse map."""
+    name, component, kind, _, _ = curve
+    records = []
+    polygons = samples.get("polygon_cells") or []
+    if polygons:
+        for poly in polygons:
+            pi = int(poly["domain_id"])
+            polygon_name = samples["polygon_names"][pi - 1]
+            values = poly[kind][:, :, component]
+            for iz, iy in np.argwhere(poly["mask"]):
+                value = values[iz, iy]
+                if not np.isfinite(value):
+                    continue
+                records.append({
+                    "record_type": "sample", "panel_id": 1, "panel_title": "section",
+                    "series": "CSF-CUF", "component": name, "kind": kind,
+                    "polygon_index": pi, "polygon_name": polygon_name,
+                    "x": samples["x"], "x_over_L": samples["x_over_L"],
+                    "y": poly["sample_y"][iz, iy], "z": poly["sample_z"][iz, iy],
+                    "value": value,
+                })
+    else:
+        values = samples[kind][:, :, component]
+        polygon_index = samples["polygon_index"]
+        y_edges, z_edges = samples["y_edges"], samples["z_edges"]
+        y_centers = 0.5 * (y_edges[:-1] + y_edges[1:])
+        z_centers = 0.5 * (z_edges[:-1] + z_edges[1:])
+        for iz, iy in np.argwhere(np.isfinite(values) & (polygon_index != 0)):
+            pi = int(polygon_index[iz, iy])
+            records.append({
+                "record_type": "sample", "panel_id": 1, "panel_title": "section",
+                "series": "CSF-CUF", "component": name, "kind": kind,
+                "polygon_index": pi, "polygon_name": samples["polygon_names"][pi - 1],
+                "x": samples["x"], "x_over_L": samples["x_over_L"],
+                "y": y_centers[iy], "z": z_centers[iz], "value": values[iz, iy],
+            })
+    records = _append_panel_extrema(records)
+    columns = (
+        "record_type", "panel_id", "panel_title", "series", "component", "kind",
+        "polygon_index", "polygon_name", "x", "x_over_L", "y", "z", "value",
+    )
+    return _write_figure_csv(figure_path, columns, records)
+
+
+def save_transverse_map(samples, curve, output_dir: Path, dpi: int, *,
+                        render: bool = True, figure_csv: bool = True):
     """Plot direct cell samples polygon by polygon, with no interpolation."""
     from matplotlib.patches import Polygon as PolygonPatch
 
     name, component, kind, colorbar_label, title = curve
+    output_dir.mkdir(parents=True, exist_ok=True)
+    path = output_dir / f"{name}_transverse.png"
+    if figure_csv:
+        _save_transverse_map_figure_csv(samples, curve, path)
+    if not render:
+        return path
+
     polygons = samples.get("polygon_cells")
     if polygons:
         finite_list = []
@@ -1929,8 +2153,6 @@ def save_transverse_map(samples, curve, output_dir: Path, dpi: int):
                 f"{title} on Y-Z section at x={samples['x']:g} "
                 f"(s={samples['x_over_L']:.5g})"
             )
-            output_dir.mkdir(parents=True, exist_ok=True)
-            path = output_dir / f"{name}_transverse.png"
             fig.savefig(path, dpi=dpi, bbox_inches="tight", pad_inches=0.10)
             return path
         finally:
@@ -1975,22 +2197,15 @@ def save_transverse_map(samples, curve, output_dir: Path, dpi: int):
             f"{title} on Y-Z section at x={samples['x']:g} "
             f"(s={samples['x_over_L']:.5g})"
         )
-        output_dir.mkdir(parents=True, exist_ok=True)
-        path = output_dir / f"{name}_transverse.png"
         fig.savefig(path, dpi=dpi, bbox_inches="tight", pad_inches=0.10)
         return path
     finally:
         plt.close(fig)
 
 
-def save_shear_stress_vector_transverse(samples, output_dir: Path, dpi: int, arrow_grid: int = 60):
-    """Display transverse shear traction with globally scaled direct CUF arrows.
-
-    Every polygon receives the same *physical* vector sampling step, based on
-    the entire section extent. For narrow polygons, their local cells still
-    contain at least one row/column. Both color and vector samples come from
-    direct analytical CUF field evaluations, with no interpolation.
-    """
+def save_shear_stress_vector_transverse(samples, output_dir: Path, dpi: int, arrow_grid: int = 60,
+                                         *, render: bool = True, figure_csv: bool = True):
+    """Display transverse shear traction with globally scaled direct CUF arrows."""
     from matplotlib.patches import Polygon as PolygonPatch
 
     if arrow_grid < 1:
@@ -2005,7 +2220,6 @@ def save_shear_stress_vector_transverse(samples, output_dir: Path, dpi: int, arr
     y_max, z_max = np.max(vertices_all, axis=0)
     section_span = max(float(y_max - y_min), float(z_max - z_min))
     spacing = float(samples["vector_step"])
-    # One physical size for all arrows; polygon subdivisions do not rescale them.
     arrow_length = min(0.70 * spacing, 0.032 * section_span)
     arrow_width = min(0.0022, 0.060 / float(arrow_grid))
 
@@ -2018,6 +2232,52 @@ def save_shear_stress_vector_transverse(samples, output_dir: Path, dpi: int, arr
         raise ValueError("No finite shear stress samples for the vector map")
     peak = max(float(np.max(a)) for a in finite)
     threshold = peak * 1.0e-6
+    output_dir.mkdir(parents=True, exist_ok=True)
+    path = output_dir / "shear_stress_vector_transverse.png"
+
+    if figure_csv:
+        records = []
+        for poly, vectors, magnitude in zip(polygons, vector_cells, scalar_values):
+            pi = int(poly["domain_id"])
+            polygon_name = samples["polygon_names"][pi - 1]
+            tau_y = poly["stress"][:, :, 5]
+            tau_z = poly["stress"][:, :, 4]
+            for iz, iy in np.argwhere(poly["mask"] & np.isfinite(magnitude)):
+                records.append({
+                    "record_type": "sample", "panel_id": 1, "panel_title": "section",
+                    "series": "shear magnitude", "data_role": "color_field",
+                    "polygon_index": pi, "polygon_name": polygon_name,
+                    "x": samples["x"], "x_over_L": samples["x_over_L"],
+                    "y": poly["sample_y"][iz, iy], "z": poly["sample_z"][iz, iy],
+                    "tau_xy": tau_y[iz, iy], "tau_xz": tau_z[iz, iy],
+                    "value": magnitude[iz, iy],
+                })
+            v_stress = vectors["stress"]
+            v_tau_y = v_stress[:, :, 5]
+            v_tau_z = v_stress[:, :, 4]
+            v_magnitude = np.hypot(v_tau_y, v_tau_z)
+            selection = (vectors["mask"] & np.isfinite(v_tau_y) & np.isfinite(v_tau_z)
+                         & (v_magnitude > threshold))
+            for iz, iy in np.argwhere(selection):
+                records.append({
+                    "record_type": "sample", "panel_id": 1, "panel_title": "section",
+                    "series": "shear vector", "data_role": "vector_arrow",
+                    "polygon_index": pi, "polygon_name": polygon_name,
+                    "x": samples["x"], "x_over_L": samples["x_over_L"],
+                    "y": vectors["sample_y"][iz, iy], "z": vectors["sample_z"][iz, iy],
+                    "tau_xy": v_tau_y[iz, iy], "tau_xz": v_tau_z[iz, iy],
+                    "value": v_magnitude[iz, iy],
+                })
+        records = _append_panel_extrema(records)
+        columns = (
+            "record_type", "panel_id", "panel_title", "series", "data_role",
+            "polygon_index", "polygon_name", "x", "x_over_L", "y", "z",
+            "tau_xy", "tau_xz", "value",
+        )
+        _write_figure_csv(path, columns, records)
+
+    if not render:
+        return path
 
     fig, ax = plt.subplots(figsize=(9.5, 6.4), constrained_layout=True)
     try:
@@ -2038,8 +2298,6 @@ def save_shear_stress_vector_transverse(samples, output_dir: Path, dpi: int, arr
             ax.add_patch(boundary)
             mesh.set_clip_path(boundary)
 
-            # The arrow grid is defined by physical dimensions of the WHOLE
-            # section and independently sampled inside this polygon.
             v_stress = vectors["stress"]
             tau_y = v_stress[:, :, 5]
             tau_z = v_stress[:, :, 4]
@@ -2079,8 +2337,6 @@ def save_shear_stress_vector_transverse(samples, output_dir: Path, dpi: int, arr
         if peak == 0:
             ax.text(0.5, 0.98, "Zero shear stress: no directions to display",
                     transform=ax.transAxes, ha="center", va="top", fontsize=8)
-        output_dir.mkdir(parents=True, exist_ok=True)
-        path = output_dir / "shear_stress_vector_transverse.png"
         fig.savefig(path, dpi=dpi, bbox_inches="tight", pad_inches=0.10)
         print(
             f"[transverse] shear vector arrows={count}; "
@@ -2612,11 +2868,64 @@ def save_fem_transverse_perimeter_data(samples, dataset, output_dir: Path):
     return npz_path, csv_path
 
 
-def save_transverse_perimeter_plot(samples, dataset, contour, curve, output_dir: Path, dpi: int):
-    """Plot one strain/stress component against physical perimeter arc length."""
+def save_transverse_perimeter_figure_csv(samples, dataset, contour, curve,
+                                         output_dir: Path):
+    """Write the numerical counterpart of one perimeter component figure."""
+    name, component, kind, _, _ = curve
+    if kind not in ("strain", "stress"):
+        raise ValueError("Transverse perimeter figure CSV supports strain/stress only")
+    figure_path = Path(output_dir) / f"{name}_along_perimeter.png"
+    panel_title = f"polygon {contour['polygon_index']}: {contour['polygon_name']}"
+    records = []
+    for i, (s, yz) in enumerate(zip(contour["s"], contour["yz"])):
+        records.append({
+            "record_type": "sample", "panel_id": 1, "panel_title": panel_title,
+            "series": "CSF-CUF", "component": name, "kind": kind,
+            "polygon_index": contour["polygon_index"], "polygon_name": contour["polygon_name"],
+            "sample_index": i, "vertex_index": contour["vertex_index"][i],
+            "edge_index": contour["edge_index"][i], "edge_fraction": contour["edge_fraction"][i],
+            "element_id": "", "stress_source": "",
+            "x": samples["x"], "x_over_L": samples["x_over_L"],
+            "y": yz[0], "z": yz[1], "s": s,
+            "s_over_perimeter": s / contour["perimeter_length"],
+            "perimeter_length": contour["perimeter_length"],
+            "value": contour[kind][i, component],
+        })
+    fem_rows = contour.get("fem_rows")
+    fem_source = dataset.get("fem_stress_source", "none")
+    if fem_rows is not None and (kind != "stress" or fem_source != "none"):
+        label = ("FEM3D (" + fem_source + " material)" if kind == "stress"
+                 else "FEM3D (H8 displacement/strain)")
+        for row in fem_rows:
+            records.append({
+                "record_type": "sample", "panel_id": 1, "panel_title": panel_title,
+                "series": label, "component": name, "kind": kind,
+                "polygon_index": row["polygon_index"], "polygon_name": row["polygon_name"],
+                "sample_index": row["sample_index"], "vertex_index": row["vertex_index"],
+                "edge_index": row["edge_index"], "edge_fraction": row["edge_fraction"],
+                "element_id": row.get("element_id", ""), "stress_source": row.get("stress_source", ""),
+                "x": row["x"], "x_over_L": row["x_over_L"], "y": row["y"], "z": row["z"],
+                "s": row["s"], "s_over_perimeter": row["s_over_perimeter"],
+                "perimeter_length": row["perimeter_length"], "value": row[kind][component],
+            })
+    records = _append_panel_extrema(records)
+    columns = (
+        "record_type", "panel_id", "panel_title", "series", "component", "kind",
+        "polygon_index", "polygon_name", "sample_index", "vertex_index", "edge_index",
+        "edge_fraction", "element_id", "stress_source", "x", "x_over_L", "y", "z",
+        "s", "s_over_perimeter", "perimeter_length", "value",
+    )
+    return _write_figure_csv(figure_path, columns, records)
+
+
+def save_transverse_perimeter_plot(samples, dataset, contour, curve, output_dir: Path, dpi: int,
+                                   *, figure_csv: bool = True):
+    """Plot one perimeter component and, by default, its same-basename CSV companion."""
     name, component, kind, ylabel, title = curve
     if kind not in ("strain", "stress"):
         raise ValueError("Transverse perimeter plots support strain and stress components only")
+    if figure_csv:
+        save_transverse_perimeter_figure_csv(samples, dataset, contour, curve, output_dir)
     fig, ax = plt.subplots(figsize=(10.4, 4.8), constrained_layout=True)
     try:
         s = contour["s"]
@@ -2679,8 +2988,9 @@ def _transverse_perimeter_directory(dataset) -> str:
     return "inward_" + tag.replace("-", "m").replace("+", "").replace(".", "p")
 
 
-def save_transverse_perimeters(samples, output_dir: Path, dpi: int, *, no_plots: bool = False):
-    """Persist every contour dataset before rendering the twelve component plots."""
+def save_transverse_perimeters(samples, output_dir: Path, dpi: int, *, no_plots: bool = False,
+                               figure_csv: bool = True):
+    """Persist contour datasets and preserve one CSV companion per planned figure."""
     targets = []
     for dataset in samples["datasets"]:
         directory = _transverse_perimeter_directory(dataset)
@@ -2691,18 +3001,31 @@ def save_transverse_perimeters(samples, output_dir: Path, dpi: int, *, no_plots:
             for path in save_fem_transverse_perimeter_data(samples, dataset, target):
                 print(f"[ok] {path}", flush=True)
         targets.append((dataset, target))
-    if not no_plots:
-        _plot_transverse_perimeter_datasets(samples, targets, dpi)
+    if no_plots:
+        if figure_csv:
+            for dataset, target in targets:
+                for contour in dataset["contours"]:
+                    polygon_dir = target / f"polygon_{contour['polygon_index']:03d}"
+                    for curve in CURVES:
+                        if curve[2] in ("strain", "stress"):
+                            save_transverse_perimeter_figure_csv(
+                                samples, dataset, contour, curve, polygon_dir,
+                            )
+    else:
+        _plot_transverse_perimeter_datasets(samples, targets, dpi, figure_csv=figure_csv)
 
 
-def _plot_transverse_perimeter_datasets(samples, targets, dpi: int):
-    """Render already persisted datasets, without rewriting numerical exports."""
+def _plot_transverse_perimeter_datasets(samples, targets, dpi: int, *, figure_csv: bool = True):
+    """Render already persisted datasets, optionally writing the per-figure CSV companions."""
     for dataset, target in targets:
         for contour in dataset["contours"]:
             polygon_dir = target / f"polygon_{contour['polygon_index']:03d}"
             for curve in CURVES:
                 if curve[2] in ("strain", "stress"):
-                    save_transverse_perimeter_plot(samples, dataset, contour, curve, polygon_dir, dpi)
+                    save_transverse_perimeter_plot(
+                        samples, dataset, contour, curve, polygon_dir, dpi,
+                        figure_csv=figure_csv,
+                    )
             print(f"[perimeter] 12 strain/stress plots: {polygon_dir}", flush=True)
 
 
@@ -2798,6 +3121,7 @@ def run_transverse_mode(args, checkpoints: list[Path], output_root: Path):
             # Persist all CUF/FEM datasets before any perimeter PNG rendering.
             save_transverse_perimeters(
                 perimeters, case_output_dir / "perimeter", args.dpi, no_plots=args.no_plots,
+                figure_csv=not args.no_figure_csv,
             )
             print(f"[transverse] output directory: {case_output_dir}", flush=True)
             continue
@@ -2834,20 +3158,27 @@ def run_transverse_mode(args, checkpoints: list[Path], output_root: Path):
             # Save both contour datasets before ANY map/perimeter PNG rendering.
             save_transverse_perimeters(
                 perimeters, case_output_dir / "perimeter", args.dpi, no_plots=True,
+                figure_csv=not args.no_figure_csv,
             )
-        if not args.no_plots:
-            for curve in CURVES:
-                path = save_transverse_map(samples, curve, case_output_dir, args.dpi)
+        for curve in CURVES:
+            path = save_transverse_map(
+                samples, curve, case_output_dir, args.dpi,
+                render=not args.no_plots, figure_csv=not args.no_figure_csv,
+            )
+            if not args.no_plots:
                 print(f"[ok] {path}", flush=True)
-            save_shear_stress_vector_transverse(
-                samples, case_output_dir, args.dpi, args.transverse_vector_grid
+        save_shear_stress_vector_transverse(
+            samples, case_output_dir, args.dpi, args.transverse_vector_grid,
+            render=not args.no_plots, figure_csv=not args.no_figure_csv,
+        )
+        if perimeters is not None and not args.no_plots:
+            targets = [
+                (dataset, case_output_dir / "perimeter" / _transverse_perimeter_directory(dataset))
+                for dataset in perimeters["datasets"]
+            ]
+            _plot_transverse_perimeter_datasets(
+                perimeters, targets, args.dpi, figure_csv=False,
             )
-            if perimeters is not None:
-                targets = [
-                    (dataset, case_output_dir / "perimeter" / _transverse_perimeter_directory(dataset))
-                    for dataset in perimeters["datasets"]
-                ]
-                _plot_transverse_perimeter_datasets(perimeters, targets, args.dpi)
         print(f"[transverse] output directory: {case_output_dir}", flush=True)
 
 
@@ -2855,7 +3186,7 @@ def build_parser():
     """Describe all supported workflows without loading any model for --help."""
     parser = argparse.ArgumentParser(
         description=(
-            "CSF-CUF field postprocessor v14.5.0\n"
+            "CSF-CUF field postprocessor v14.6.0\n"
             "Evaluate existing CUF checkpoints; optionally compare native FEM3D H8 fields.\n"
             "Choose longitudinal traces, fixed-x section maps, or polygon perimeters.\n"
             "Geometry comes from CSF APIs at the requested x, never from direct YAML parsing."
@@ -2876,9 +3207,13 @@ def build_parser():
     Keep the original contour and add a separate inward contour and 12 PNGs per polygon.
   Add --fem3d FEM.npz to either perimeter workflow:
     Overlay FEM on the SAME plots (CUF line, orange FEM scatter), not a second PNG set.
+  Figure CSV companions are ON by default:
+    Every planned PNG has figure_csv/<same-basename>.csv with the exact visible samples
+    and per-panel extrema. --no-plots skips PNG rendering but keeps the same CSV grouping.
+    Use --no-figure-csv to disable these companions explicitly.
   Add --no-plots:
-    Save numerical results but skip ALL PNGs. This flag alone does NOT skip map
-    calculation; combine it with --transverse-perimeter-only for perimeter data only.
+    Save numerical results and figure CSVs but skip ALL PNGs. This flag alone does NOT
+    skip map calculation; combine it with --transverse-perimeter-only for perimeter data only.
 
 REQUIRED COMBINATIONS AND SCOPE
   * Each perimeter flag requires --transverse-x X; X is a physical longitudinal
@@ -2933,6 +3268,8 @@ OUTPUTS
   Longitudinal boundary: sampled_boundary_fields.npz and component PNGs; optional
     CUF boundary CSV via --csv. Inward adds separately named NPZ/PNGs. FEM adds NPZ/CSV.
   Native Gauss: gauss/sampled_gauss_native_comparison.npz and .csv, plus stress PNGs.
+  Figure companions: every planned PNG has figure_csv/<same-basename>.csv in the PNG
+    directory. These remain grouped identically under --no-plots; --no-figure-csv disables them.
   Transverse: transverse_x_<X>/sampled_transverse_fields.npz and 16 map PNGs, unless ONLY.
   Perimeters: transverse_x_<X>/perimeter/boundary/ and, when requested, inward_<D>/:
     sampled_perimeter_fields.npz and .csv (CUF, all material polygons in that contour);
@@ -3028,7 +3365,9 @@ For installed modules, replace 'python <script>.py' with
     outputs.add_argument("--csv", type=Path, default=None, metavar="PATH",
                          help="Optional extra CUF longitudinal boundary CSV: a .csv path for one checkpoint, otherwise a directory. Not accepted with --transverse-x. Perimeter, FEM and Gauss CSVs are automatic.")
     outputs.add_argument("--no-plots", action="store_true",
-                         help="Skip every PNG while preserving numerical recovery and NPZ/CSV exports. Does NOT skip map calculations; use --transverse-perimeter-only to exclude maps. Disabled by default.")
+                         help="Skip every PNG while preserving numerical recovery, existing exports and the default per-figure CSV grouping. Does NOT skip map calculations; use --transverse-perimeter-only to exclude maps. Disabled by default.")
+    outputs.add_argument("--no-figure-csv", action="store_true",
+                         help="Disable the default figure_csv/<PNG-basename>.csv companions. Independent of --no-plots; use both flags to suppress both rendered figures and their per-figure CSV datasets.")
     outputs.add_argument("--dpi", type=int, default=220, metavar="N",
                          help="PNG resolution; N >= 1, default: 220. Applies to every enabled plot.")
     outputs.add_argument("--max-vertices-per-plot", type=int, default=8, metavar="N",
@@ -3061,7 +3400,7 @@ def checkpoint_output_name(path: Path) -> str:
 def main():
     args = build_parser().parse_args()
     _validate_transverse_perimeter_arguments(args)
-    print(f"[visualizer] v14.5.0: {Path(__file__).resolve()}", flush=True)
+    print(f"[visualizer] v14.6.0: {Path(__file__).resolve()}", flush=True)
     if args.max_vertices_per_plot < 1 or args.dpi < 1 or args.points < 2:
         raise ValueError("--points must be >=2 and --dpi / --max-vertices-per-plot >=1")
     if args.inward_offset is not None and (not math.isfinite(args.inward_offset) or args.inward_offset <= 0):
@@ -3136,18 +3475,24 @@ def main():
             if inward_rows is not None:
                 tag=offset_tag(args.inward_offset)
                 save_npz(case_dir/f"sampled_boundary_fields_inward_{tag}.npz",inward_rows)
-            if not args.no_plots:
-                page_size=args.max_vertices_per_plot
-                pages=[ids[i:i+page_size] for i in range(0,len(ids),page_size)]
-                for curve in CURVES:
-                    for j, page in enumerate(pages,1):
-                        suffix=f"_part{j:02d}" if len(pages)>1 else ""
-                        save_curve_plot(page,rows,curve,case_dir,args.dpi,fem_rows,source!="none",filename_suffix=suffix)
-                        if inward_rows is not None:
-                            save_curve_plot(page,inward_rows,curve,case_dir,args.dpi,
-                                            fem_inward_rows,source!="none",
-                                            filename_suffix=f"_inward_{tag}{suffix}",
-                                            location_title=f"CSF polygon inward points (offset={args.inward_offset:g})")
+            page_size=args.max_vertices_per_plot
+            pages=[ids[i:i+page_size] for i in range(0,len(ids),page_size)]
+            for curve in CURVES:
+                for j, page in enumerate(pages,1):
+                    suffix=f"_part{j:02d}" if len(pages)>1 else ""
+                    save_curve_plot(
+                        page,rows,curve,case_dir,args.dpi,fem_rows,source!="none",
+                        filename_suffix=suffix, render=not args.no_plots,
+                        figure_csv=not args.no_figure_csv,
+                    )
+                    if inward_rows is not None:
+                        save_curve_plot(
+                            page,inward_rows,curve,case_dir,args.dpi,
+                            fem_inward_rows,source!="none",
+                            filename_suffix=f"_inward_{tag}{suffix}",
+                            location_title=f"CSF polygon inward points (offset={args.inward_offset:g})",
+                            render=not args.no_plots, figure_csv=not args.no_figure_csv,
+                        )
             if args.csv is not None:
                 csv_root=args.csv.expanduser().resolve()
                 if len(checkpoints)==1 and csv_root.suffix.lower()==".csv":
@@ -3163,7 +3508,8 @@ def main():
                 vertices=args.vertices,sampling=args.gauss_sampling)
             save_gauss_comparison(case_dir/"gauss",gauss_rows,args.dpi,
                                   no_plots=args.no_plots,
-                                  max_vertices_per_plot=args.max_vertices_per_plot)
+                                  max_vertices_per_plot=args.max_vertices_per_plot,
+                                  figure_csv=not args.no_figure_csv)
     print(f"[ok] comparisons completed: {output_root}",flush=True)
 
 
