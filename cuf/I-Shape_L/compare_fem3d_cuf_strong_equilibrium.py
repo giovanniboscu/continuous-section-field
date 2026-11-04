@@ -238,6 +238,16 @@ def stats_abs(values):
         float(np.max(a)),
     )
 
+def local_section_height(csf_field, x):
+    """Return the total local section height in the FEM global-z direction."""
+    sec = csf_field.section(float(x))
+    zvals = []
+    for poly in sec.polygons:
+        zvals.extend(float(v.y) for v in poly.vertices)
+    if not zvals:
+        raise ValueError(f"No section vertices available at x={x}")
+    return max(zvals) - min(zvals)
+
 def select_planes(all_x, targets):
     all_x = np.asarray(sorted(set(float(v) for v in all_x)), dtype=float)
     chosen = []
@@ -254,6 +264,16 @@ def main():
     ap.add_argument("--xmin", type=float, default=0.01)
     ap.add_argument("--xmax", type=float, default=0.99)
     ap.add_argument("--fd-fraction", type=float, default=1e-3)
+    ap.add_argument(
+        "--end-exclusion-heights",
+        type=float,
+        default=1.0,
+        help=(
+            "For the additional interior-only statistics, exclude sections whose "
+            "distance from either beam end is <= this multiple of the local total "
+            "section height. The full 40-section statistics are always retained."
+        ),
+    )
     ap.add_argument("--output-dir", default="diagnostics/equilibrium_multisection_components")
     args = ap.parse_args()
 
@@ -261,6 +281,8 @@ def main():
         raise ValueError("--sections must be >= 2")
     if not (0.0 <= args.xmin < args.xmax <= 1.0):
         raise ValueError("Require 0 <= xmin < xmax <= 1")
+    if args.end_exclusion_heights < 0.0:
+        raise ValueError("--end-exclusion-heights must be >= 0")
 
     outdir = Path(args.output_dir)
     outdir.mkdir(parents=True, exist_ok=True)
@@ -350,7 +372,14 @@ def main():
                 + [ct[k] for k in term_names]
             )
 
-        row = [si, xp, (xp-x0)/L, len(cand), accepted]
+        h_local = local_section_height(csf_field, xp)
+        end_distance = min(xp - x0, x1 - xp)
+        interior_one_h = end_distance > args.end_exclusion_heights * h_local
+
+        row = [
+            si, xp, (xp-x0)/L, len(cand), accepted,
+            h_local, end_distance, 1.0 if interior_one_h else 0.0,
+        ]
         for k in term_names:
             row += list(stats_abs(fem_values[k]))
             row += list(stats_abs(cuf_values[k]))
@@ -385,7 +414,10 @@ def main():
         w.writerows(point_rows)
 
     stat_names = ["median","mean","rms","max"]
-    sec_header = ["section_index","x","x_over_L","candidate_points","accepted_points"]
+    sec_header = [
+        "section_index","x","x_over_L","candidate_points","accepted_points",
+        "local_section_height","distance_to_nearest_end","interior_by_height",
+    ]
     for k in term_names:
         for prefix in ("fem","cuf"):
             for s in stat_names:
@@ -407,6 +439,10 @@ def main():
     summary.append(f"accepted Gauss samples = {len(point_rows)}")
     summary.append(f"x/L range = [{args.xmin:.6g}, {args.xmax:.6g}]")
     summary.append("sampling = ALL available native H8 Gauss points on every selected x-plane")
+    summary.append(
+        f"interior-only exclusion = distance to nearest end <= "
+        f"{args.end_exclusion_heights:g} x local total section height"
+    )
     summary.append("")
 
     for eq in ("div_x","div_y","div_z","div_norm"):
@@ -420,6 +456,32 @@ def main():
             f"| sections with CUF residual < FEM residual: {lower}/{len(sec)}"
         )
 
+    summary.append("")
+    interior_mask = sec[:, col["interior_by_height"]] > 0.5
+    n_interior = int(np.sum(interior_mask))
+    n_excluded = int(len(sec) - n_interior)
+    summary.append(
+        f"Interior-only statistics: exclude sections within "
+        f"{args.end_exclusion_heights:g} local section height(s) of either restrained end"
+    )
+    summary.append(
+        f"interior sections = {n_interior}/{len(sec)} | excluded end-region sections = {n_excluded}"
+    )
+    if n_interior:
+        for eq in ("div_x","div_y","div_z","div_norm"):
+            fcol = col[f"fem_{eq}_median"]
+            ccol = col[f"cuf_{eq}_median"]
+            fm = np.nanmedian(sec[interior_mask, fcol])
+            cm = np.nanmedian(sec[interior_mask, ccol])
+            lower = int(np.sum(sec[interior_mask, ccol] < sec[interior_mask, fcol]))
+            ratio = cm / fm if np.isfinite(fm) and fm != 0.0 else np.nan
+            summary.append(
+                f"INTERIOR {eq:8s}: FEM={fm:.6e} CUF={cm:.6e} "
+                f"| CUF/FEM={ratio:.6e} "
+                f"| sections with CUF residual < FEM residual: {lower}/{n_interior}"
+            )
+    else:
+        summary.append("INTERIOR: no sections remain after end-region exclusion")
     summary.append("")
     summary.append("Nine derivative terms: median across sections of per-section median |term|")
     for k in [
