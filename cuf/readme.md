@@ -1,5 +1,14 @@
 # What is CSF–CUF?
 
+---
+> **New to CSF-CUF?** This page describes what the framework is. For a guided
+> path through the repository — what to read, in which order, depending on
+> whether you want to run an analysis, understand the architecture, study the
+> theory, extend the framework, or reproduce a benchmark — start here:
+> [Navigating CSF-CUF: a reading guide](Nav.md)
+
+---
+
 Consider a structural beam with an I-shaped cross-section. In a conventional beam model, the structure is represented mainly through its longitudinal axis and a limited set of cross-sectional properties, such as area and bending stiffness. This approach is effective for describing the overall structural behavior, but it may not capture how individual parts of the cross-section deform.
 
 A three-dimensional finite-element model can describe these local effects in greater detail, but requires a discretization of the entire volume.
