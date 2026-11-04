@@ -19,9 +19,9 @@ corresponding to
 49,920 stdBrick elements.
 ```
 
-The subsequent S4 refinement changed the minimum vertical displacement by only approximately `0.021%`; S3 is therefore adopted as the converged FEM3D reference mesh.
+The subsequent S4 refinement changed the minimum vertical displacement by only approximately `0.021%`; S3 is therefore adopted as the FEM3D reference mesh.
 
-The present analysis compares the local strong-equilibrium residuals reconstructed from this FEM3D solution with those obtained from the CUF solution.
+The present analysis compares the local strong-equilibrium residuals reconstructed from this FEM3D solution with those obtained from the CSF-CUF solution.
 
 ---
 
@@ -72,6 +72,8 @@ r_x^2+r_y^2+r_z^2
 }.
 ```
 
+The residuals reported here are absolute stress-divergence quantities. They are not normalized by a characteristic stress or length scale and should therefore be interpreted as diagnostics of local satisfaction of the differential equilibrium equations, rather than as direct measures of overall solution accuracy.
+
 ---
 
 ## 3. Sampling
@@ -80,64 +82,108 @@ The equilibrium diagnostic is evaluated on:
 
 ```text
 40 longitudinal sections
-x/L range = 0.01 ... 0.99
-1,664 Gauss samples per section
-66,560 accepted samples in total
+nominal x/L range = 0.01 ... 0.99
+864 accepted Gauss samples per section
+34,560 accepted samples in total
 ```
 
-All available native H8 Gauss samples on each selected section are retained.
+The 40 longitudinal target locations are nominally equally spaced over the interval
 
-The analysis therefore covers the complete sampled cross-section at every longitudinal station.
+```math
+0.01 \leq x/L \leq 0.99.
+```
+
+Each target location is mapped to the nearest available native H8 Gauss-point `x`-plane. The actual sampled longitudinal coordinates therefore follow the FEM3D Gauss-point locations.
+
+All available accepted native H8 Gauss samples on each selected section are retained, so that the diagnostic covers the complete sampled cross-section at every longitudinal station.
+
+An interior subset is also defined by retaining only sections whose distance from the nearest restrained end is greater than one local total section height. With this criterion:
+
+```text
+31 interior sections are retained
+9 end-region sections are excluded from the interior subset
+```
+
+The complete 40-section statistics and the 31-section interior statistics are both reported below.
 
 ---
 
 ## 4. Global comparison
 
-The median residual across the 40 sections is:
+The median residuals across all 40 sampled sections are:
 
-| Residual | FEM3D | CUF | CUF/FEM3D | Sections with CUF < FEM3D |
+| Residual | FEM3D | CSF-CUF | CSF-CUF / FEM3D | Sections with CSF-CUF < FEM3D |
 |---|---:|---:|---:|---:|
-| `div_x` | 5.3352e-02 | 4.1116e-02 | 0.771 | 20 / 40 |
-| `div_y` | 5.7306e-03 | 5.8279e-03 | 1.017 | 6 / 40 |
-| `div_z` | 4.4731e-01 | 6.6136e-03 | 0.0148 | 40 / 40 |
-| `div_norm` | 4.4867e-01 | 4.4685e-02 | 0.0996 | 38 / 40 |
+| `div_x` | 4.732120e-02 | 4.153161e-02 | 0.878 | 19 / 40 |
+| `div_y` | 5.713362e-03 | 5.544637e-03 | 0.970 | 8 / 40 |
+| `div_z` | 4.324394e-01 | 6.555127e-03 | 0.0152 | 40 / 40 |
+| `div_norm` | 4.357811e-01 | 4.387147e-02 | 0.1007 | 38 / 40 |
 
-The total CUF equilibrium residual is therefore approximately
+For the total residual norm,
 
 ```math
-\frac{r_{\mathrm{norm}}^{CUF}}
-     {r_{\mathrm{norm}}^{FEM}}
-\simeq 0.10.
+\frac{r_{\mathrm{norm}}^{CSF-CUF}}
+     {r_{\mathrm{norm}}^{FEM3D}}
+\simeq 0.1007.
 ```
 
 Equivalently,
 
 ```math
-r_{\mathrm{norm}}^{FEM}
+r_{\mathrm{norm}}^{FEM3D}
 \simeq
-10.0\,
-r_{\mathrm{norm}}^{CUF}.
+9.93\,
+r_{\mathrm{norm}}^{CSF-CUF}.
 ```
 
-The dominant difference is associated with the third equilibrium equation.
-
-For `div_z`,
+The largest separation occurs in the third equilibrium equation. For `div_z`,
 
 ```math
-\frac{r_z^{CUF}}
-     {r_z^{FEM}}
-\simeq 0.0148,
+\frac{r_z^{CSF-CUF}}
+     {r_z^{FEM3D}}
+\simeq 0.0152,
 ```
 
-which corresponds to a FEM3D residual approximately
+corresponding to a median FEM3D residual approximately
+
+```text
+66.0 times
+```
+
+the CSF-CUF value.
+
+CSF-CUF gives the lower `div_z` residual in all 40 analyzed sections.
+
+### 4.1 Interior-section comparison
+
+For the 31-section interior subset, the median residuals are:
+
+| Residual | FEM3D | CSF-CUF | CSF-CUF / FEM3D | Sections with CSF-CUF < FEM3D |
+|---|---:|---:|---:|---:|
+| `div_x` | 7.556536e-02 | 3.910764e-02 | 0.518 | 19 / 31 |
+| `div_y` | 6.271576e-03 | 6.469343e-03 | 1.032 | 8 / 31 |
+| `div_z` | 5.196062e-01 | 6.796170e-03 | 0.0131 | 31 / 31 |
+| `div_norm` | 5.210142e-01 | 4.478623e-02 | 0.0860 | 31 / 31 |
+
+For the total residual norm,
 
 ```math
-67.6
+\frac{r_{\mathrm{norm}}^{CSF-CUF}}
+     {r_{\mathrm{norm}}^{FEM3D}}
+\simeq 0.0860.
 ```
 
-times larger than the CUF residual.
+The CSF-CUF reconstruction gives the lower total strong-equilibrium residual in all 31 interior sections.
 
-CUF gives the lower `div_z` residual in all 40 analyzed sections.
+The largest separation remains in the third equilibrium equation, for which
+
+```math
+\frac{r_z^{CSF-CUF}}
+     {r_z^{FEM3D}}
+\simeq 0.0131.
+```
+
+The interior-section results therefore strengthen the same trend observed over the full set of sampled sections. Away from the restrained end regions, the CSF-CUF reconstruction gives the lower total strong-equilibrium residual in all 31 interior sections, indicating closer local satisfaction of the differential equilibrium equations in the smooth interior region of the member.
 
 ---
 
@@ -155,36 +201,63 @@ r_x
 \frac{\partial \tau_{xz}}{\partial z}.
 ```
 
-The median magnitudes of the individual terms are:
+The median magnitudes of the individual terms across the 40 sections are:
 
-| Term | FEM3D | CUF |
+| Term | FEM3D | CSF-CUF |
 |---|---:|---:|
-| `dσxx/dx` | 5.9501e-02 | 5.9534e-02 |
-| `dτxy/dy` | 6.4520e-03 | 3.6012e-02 |
-| `dτxz/dz` | 6.3079e-03 | 5.6352e-02 |
+| `dσxx/dx` | 5.599876e-02 | 5.658783e-02 |
+| `dτxy/dy` | 6.124195e-03 | 3.520627e-02 |
+| `dτxz/dz` | 6.326840e-03 | 5.004803e-02 |
 
-The longitudinal normal-stress derivative is essentially identical in magnitude:
+The longitudinal normal-stress derivative has nearly the same median magnitude in the two formulations:
 
 ```math
 \left|
 \frac{\partial \sigma_{xx}}{\partial x}
-\right|_{FEM}
+\right|_{FEM3D}
 \approx
 \left|
 \frac{\partial \sigma_{xx}}{\partial x}
-\right|_{CUF}.
+\right|_{CSF-CUF}.
 ```
 
-The transverse shear derivative terms are larger individually in the CUF solution.
+The two transverse shear-gradient terms are individually larger in the CSF-CUF reconstruction.
 
-The equilibrium residual, however, results from the signed sum of the three terms. The CUF median residual remains lower overall:
+The equilibrium residual depends on the signed sum of the three derivative terms. Across all 40 sections, the median residuals are
 
 ```text
-FEM3D : 5.3352e-02
-CUF   : 4.1116e-02
+FEM3D  : 4.732120e-02
+CSF-CUF: 4.153161e-02
 ```
 
-The two solutions alternate along the beam in this component: CUF gives the smaller residual in 20 of the 40 sections.
+with a CSF-CUF/FEM3D ratio of approximately
+
+```text
+0.878.
+```
+
+CSF-CUF gives the lower `div_x` residual in
+
+```text
+19 / 40 sections.
+```
+
+For the interior subset, the median residuals become
+
+```text
+FEM3D  : 7.556536e-02
+CSF-CUF: 3.910764e-02
+```
+
+with
+
+```math
+\frac{r_x^{CSF-CUF}}
+     {r_x^{FEM3D}}
+\simeq 0.518.
+```
+
+CSF-CUF gives the lower `div_x` residual in 19 of the 31 interior sections.
 
 ---
 
@@ -202,28 +275,53 @@ r_y
 \frac{\partial \tau_{yz}}{\partial z}.
 ```
 
-The derivative terms are:
+The median magnitudes of the derivative terms across all 40 sections are:
 
-| Term | FEM3D | CUF |
+| Term | FEM3D | CSF-CUF |
 |---|---:|---:|
-| `dτxy/dx` | 9.5208e-04 | 1.4594e-03 |
-| `dσyy/dy` | 3.3281e-03 | 3.5291e-03 |
-| `dτyz/dz` | 1.7799e-03 | 2.9952e-03 |
+| `dτxy/dx` | 8.422499e-04 | 1.395665e-03 |
+| `dσyy/dy` | 3.220613e-03 | 3.341999e-03 |
+| `dτyz/dz` | 1.767699e-03 | 2.759391e-03 |
 
-The resulting median residuals are
+The resulting median residuals across all sections are
 
 ```text
-FEM3D : 5.7306e-03
-CUF   : 5.8279e-03
+FEM3D  : 5.713362e-03
+CSF-CUF: 5.544637e-03
 ```
 
-The two values differ by only about
+giving
 
 ```math
-1.7\%.
+\frac{r_y^{CSF-CUF}}
+     {r_y^{FEM3D}}
+\simeq 0.970.
 ```
 
-The second equilibrium equation therefore shows essentially the same residual level for the two formulations, with FEM3D slightly lower.
+The two formulations therefore give essentially the same residual level in the second equilibrium equation, with a difference of approximately `3%` in the global median.
+
+CSF-CUF gives the lower `div_y` residual in
+
+```text
+8 / 40 sections.
+```
+
+For the 31-section interior subset,
+
+```text
+FEM3D  : 6.271576e-03
+CSF-CUF: 6.469343e-03
+```
+
+and
+
+```math
+\frac{r_y^{CSF-CUF}}
+     {r_y^{FEM3D}}
+\simeq 1.032.
+```
+
+The interior median values are therefore also essentially equivalent, with FEM3D slightly lower.
 
 ---
 
@@ -241,38 +339,67 @@ r_z
 \frac{\partial \sigma_{zz}}{\partial z}.
 ```
 
-The median magnitudes of the individual terms are:
+The median magnitudes of the individual terms across all 40 sections are:
 
-| Term | FEM3D | CUF | FEM3D/CUF |
+| Term | FEM3D | CSF-CUF | FEM3D / CSF-CUF |
 |---|---:|---:|---:|
-| `dτxz/dx` | 2.5931e-01 | 2.3221e-02 | 11.2 |
-| `dτyz/dy` | 8.6845e-02 | 4.6665e-03 | 18.6 |
-| `dσzz/dz` | 2.6861e-01 | 2.4179e-02 | 11.1 |
+| `dτxz/dx` | 2.524075e-01 | 2.388873e-02 | 10.6 |
+| `dτyz/dy` | 8.589188e-02 | 4.519739e-03 | 19.0 |
+| `dσzz/dz` | 2.594481e-01 | 2.459691e-02 | 10.5 |
 
-All three derivative terms are substantially smaller in the CUF solution.
+All three derivative terms have substantially lower median magnitudes in the CSF-CUF reconstruction.
 
-The resulting residual is
+The resulting median residual across all 40 sections is
 
 ```text
-FEM3D : 4.4731e-01
-CUF   : 6.6136e-03
+FEM3D  : 4.324394e-01
+CSF-CUF: 6.555127e-03
 ```
 
 with
 
 ```math
-\frac{r_z^{CUF}}
-     {r_z^{FEM}}
-\simeq 1.48\times10^{-2}.
+\frac{r_z^{CSF-CUF}}
+     {r_z^{FEM3D}}
+\simeq 1.52\times10^{-2}.
 ```
 
-The CUF residual is lower in every analyzed section:
+Equivalently, the FEM3D median `div_z` residual is approximately
+
+```text
+66.0 times
+```
+
+the CSF-CUF value.
+
+CSF-CUF gives the lower `div_z` residual in
 
 ```text
 40 / 40 sections.
 ```
 
-This component is the main source of the difference between the total FEM3D and CUF equilibrium residuals.
+For the interior subset,
+
+```text
+FEM3D  : 5.196062e-01
+CSF-CUF: 6.796170e-03
+```
+
+giving
+
+```math
+\frac{r_z^{CSF-CUF}}
+     {r_z^{FEM3D}}
+\simeq 1.31\times10^{-2}.
+```
+
+CSF-CUF gives the lower `div_z` residual in all
+
+```text
+31 / 31 interior sections.
+```
+
+The third equilibrium component therefore remains the principal source of separation between the total FEM3D and CSF-CUF strong-equilibrium residuals.
 
 ---
 
@@ -280,123 +407,170 @@ This component is the main source of the difference between the total FEM3D and 
 
 The total residual exhibits a clear longitudinal evolution.
 
-At the beginning of the beam:
+At the first sampled section,
 
 ```text
-x/L = 0.010
-
-FEM3D div_norm = 4.6102e-02
-CUF   div_norm = 3.9507e-02
-CUF/FEM3D      = 0.857
+x/L = 0.009858
 ```
 
-Moving towards the central region, the difference grows progressively.
+the median total residuals are
+
+```text
+FEM3D   div_norm = 4.393e-02
+CSF-CUF div_norm = 4.060e-02
+```
+
+so the two values are initially of comparable magnitude.
+
+Moving along the beam, the FEM3D residual increases substantially while the CSF-CUF residual remains much lower over the central portion.
 
 At approximately
 
 ```text
-x/L = 0.615
+x/L = 0.615142
 ```
 
 the values are
 
 ```text
-FEM3D div_norm = 7.3214e-01
-CUF   div_norm = 1.6683e-02
+FEM3D   div_norm = 7.107e-01
+CSF-CUF div_norm = 1.580e-02
 ```
 
-giving
+giving approximately
 
 ```math
-\frac{CUF}{FEM3D}
-\simeq 0.0228.
+\frac{CSF-CUF}{FEM3D}
+\simeq 0.0222.
 ```
 
 The FEM3D residual is therefore approximately
 
-```math
-44
+```text
+45 times
 ```
 
-times larger at this station.
+the CSF-CUF residual at this station.
 
-After the central region, the CUF residual increases again towards the final end of the beam, while the FEM3D residual decreases.
+Further towards the final end, the FEM3D residual decreases while the CSF-CUF residual increases.
 
 At
 
 ```text
-x/L = 0.940
+x/L = 0.940142
 ```
 
 the values are
 
 ```text
-FEM3D = 2.2203e-01
-CUF   = 1.2478e-01
+FEM3D   div_norm = 1.729e-01
+CSF-CUF div_norm = 1.215e-01
 ```
 
-and CUF remains lower.
+and CSF-CUF remains lower.
 
-Only the final two sampled sections reverse the ordering:
+The ordering reverses only in the final two sampled sections:
 
-| `x/L` | FEM3D `div_norm` | CUF `div_norm` | CUF/FEM3D |
+| `x/L` | FEM3D `div_norm` | CSF-CUF `div_norm` | CSF-CUF / FEM3D |
 |---:|---:|---:|---:|
-| 0.9649 | 1.2013e-01 | 1.3025e-01 | 1.084 |
-| 0.9899 | 1.09496e-01 | 1.37862e-01 | 1.259 |
+| 0.965142 | 8.478e-02 | 1.313e-01 | 1.55 |
+| 0.990142 | 8.541e-02 | 1.342e-01 | 1.57 |
 
-Therefore CUF gives the smaller total strong-equilibrium residual in
+Therefore, over the complete 40-section set,
 
 ```text
-38 of the 40 sections.
+CSF-CUF < FEM3D in div_norm for 38 / 40 sections.
+```
+
+For the 31-section interior subset,
+
+```text
+CSF-CUF < FEM3D in div_norm for 31 / 31 sections.
 ```
 
 ---
+
 ## 9. FEM3D reference-mesh result
 
-The strong-equilibrium analysis is performed on the converged S3 FEM3D reference mesh.
+The strong-equilibrium analysis is performed on the S3 FEM3D reference mesh.
 
-The resulting median residuals are:
+The resulting median residuals across all 40 sections are:
 
-| Residual | FEM3D | CUF |
+| Residual | FEM3D | CSF-CUF |
 |---|---:|---:|
-| `div_x` | 5.3352e-02 | 4.1116e-02 |
-| `div_y` | 5.7306e-03 | 5.8279e-03 |
-| `div_z` | 4.4731e-01 | 6.6136e-03 |
-| `div_norm` | 4.4867e-01 | 4.4685e-02 |
+| `div_x` | 4.732120e-02 | 4.153161e-02 |
+| `div_y` | 5.713362e-03 | 5.544637e-03 |
+| `div_z` | 4.324394e-01 | 6.555127e-03 |
+| `div_norm` | 4.357811e-01 | 4.387147e-02 |
 
-The main result is:
+The corresponding interior-section values are:
+
+| Residual | FEM3D | CSF-CUF |
+|---|---:|---:|
+| `div_x` | 7.556536e-02 | 3.910764e-02 |
+| `div_y` | 6.271576e-03 | 6.469343e-03 |
+| `div_z` | 5.196062e-01 | 6.796170e-03 |
+| `div_norm` | 5.210142e-01 | 4.478623e-02 |
+
+The main section-count results are:
 
 ```text
-CUF < FEM3D in div_norm for 38 / 40 sections
-CUF < FEM3D in div_z    for 40 / 40 sections
+All sections:
+CSF-CUF < FEM3D in div_norm for 38 / 40 sections
+CSF-CUF < FEM3D in div_z    for 40 / 40 sections
+
+Interior sections:
+CSF-CUF < FEM3D in div_norm for 31 / 31 sections
+CSF-CUF < FEM3D in div_z    for 31 / 31 sections
 ```
 
-For the third equilibrium equation,
+For the third equilibrium equation over all 40 sections,
 
 ```math
-\frac{r_z^{CUF}}{r_z^{FEM}}
-\simeq 1.48\times10^{-2},
+\frac{r_z^{CSF-CUF}}
+     {r_z^{FEM3D}}
+\simeq 1.52\times10^{-2},
 ```
 
-so the FEM3D residual is approximately 67.6 times larger than the CUF residual in the median comparison.
+while for the interior subset,
 
-The converged FEM3D reference solution therefore confirms a substantially lower CUF strong-equilibrium residual over almost the entire beam.
+```math
+\frac{r_z^{CSF-CUF}}
+     {r_z^{FEM3D}}
+\simeq 1.31\times10^{-2}.
+```
+
+The strong-equilibrium diagnostic therefore shows a substantially lower CSF-CUF residual in the third equilibrium component and in the total residual norm over most of the sampled beam and throughout the defined interior subset.
+
+These residuals remain absolute, unnormalized strong-form diagnostics and are not used as standalone measures of overall structural-solution accuracy.
 
 ---
 
 ## 10. Summary
 
-The FEM3D reference solution is computed using the converged S3 mesh, consisting of 49,920 `stdBrick` elements. The local equilibrium analysis is evaluated over 40 longitudinal sections and 66,560 native Gauss samples.
+The FEM3D reference solution is computed using the S3 mesh, consisting of `49,920 stdBrick` elements. The local strong-equilibrium analysis is evaluated over 40 longitudinal sections and `34,560` accepted native H8 Gauss samples.
 
-The comparison between FEM3D and CUF gives the following results:
+The 40 target sections cover the nominal interval
 
-- for the first equilibrium equation, FEM3D and CUF show comparable residual levels; the median CUF residual is about 23% lower, with CUF giving the lower value in 20 of the 40 sections;
-- for the second equilibrium equation, the two formulations give essentially the same residual level, with a difference of about 1.7%;
-- the main difference occurs in the third equilibrium equation: CUF gives the lower residual in all 40 sections, and the median FEM3D residual is approximately 67.6 times larger than the CUF value;
-- considering the complete equilibrium residual, the median CUF `div_norm` is approximately one tenth of the FEM3D value;
-- CUF gives the lower `div_norm` in 38 of the 40 analyzed sections;
-- the two sections in which the FEM3D `div_norm` is lower are located at the final end of the beam.
+```math
+0.01 \leq x/L \leq 0.99,
+```
 
-The three equilibrium equations therefore show two distinct behaviors. The first and second equations give residuals of comparable magnitude for FEM3D and CUF, while the third equation clearly separates the two solutions.
+with each target mapped to the nearest native H8 Gauss-point plane.
 
-This third component dominates the total equilibrium residual and determines the overall difference between the two formulations. As a result, the CUF stress field exhibits a substantially lower local equilibrium residual over almost the entire beam, with an approximately tenfold reduction in the median total residual and a 67.6-fold reduction in the median residual of the third equilibrium equation.
+An additional interior subset retains 31 sections located farther than one local total section height from either restrained end.
+
+The comparison gives the following results:
+
+- for the first equilibrium equation, FEM3D and CSF-CUF remain of comparable order over the complete set, with a median CSF-CUF/FEM3D ratio of approximately `0.878`; over the interior subset this ratio decreases to approximately `0.518`;
+- for the second equilibrium equation, the two formulations give essentially the same median residual level, with ratios of approximately `0.970` over all sections and `1.032` over the interior subset;
+- the largest separation occurs in the third equilibrium equation: CSF-CUF gives the lower `div_z` residual in all 40 sampled sections and in all 31 interior sections;
+- the median `div_z` CSF-CUF/FEM3D ratio is approximately `0.0152` over all sections and `0.0131` over the interior subset;
+- considering the complete equilibrium residual, CSF-CUF gives the lower `div_norm` in 38 of the 40 sampled sections and in all 31 interior sections;
+- the median total-residual CSF-CUF/FEM3D ratio is approximately `0.1007` over all sections and `0.0860` over the interior subset.
+
+The first two equilibrium components therefore remain broadly comparable between the two formulations, whereas the third component clearly separates the reconstructed stress fields.
+
+The interior-section results strengthen the same trend observed over the complete set. Away from the restrained end regions, the CSF-CUF stress reconstruction gives the lower total strong-equilibrium residual in all 31 sampled interior sections.
+
+The reported residuals quantify local satisfaction of the differential equilibrium equations. Because they are absolute and unnormalized, they should not be interpreted as direct standalone measures of the overall accuracy of either structural solution.
