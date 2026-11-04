@@ -143,6 +143,14 @@ x = L
 
 No additional boundary conditions need to be specified in the problem YAML because they are already part of the predefined `torsion_halfwave` problem adapter.
 
+
+
+> **Loads and constraints:** implemented in problem adapters, separate from the CUF core. To modify them or select a different adapter, see the [adapter concept and interface](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/csf_problem.md) and the [adapter reference](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/problem-adapters-reference.md).
+
+
+
+
+
 ## Case
 
 The numerical analysis case is defined in:
