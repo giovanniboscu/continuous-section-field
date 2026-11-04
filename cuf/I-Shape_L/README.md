@@ -111,7 +111,7 @@ The first command displays the compact physical representation used as the geome
 
 ## 2. Structural problem
 
-The benchmark is a simply supported, tapered I-shaped member of length
+The benchmark is a tapered I-shaped member of length
 
 $$
 L = 1000\ \mathrm{mm}.
@@ -129,13 +129,13 @@ These ingredients are common to the CSF-CUF and FEM3D analyses.
 
 ### Boundary conditions
 
-The same physical support conditions are imposed in the CSF-CUF and FEM3D models. At both beam ends, the transverse displacements are constrained,
+The same transverse end-section restraint is imposed in the CSF-CUF and FEM3D models. At both beam ends, the transverse displacements are constrained over the complete end section,
 
 $$
 u_y = 0, \qquad u_z = 0,
 $$
 
-while the longitudinal displacement $u_x$ remains physically free. In the CSF-CUF formulation, the remaining rigid-body translation along the beam axis is removed directly through the mean axial gauge condition
+while the longitudinal displacement $u_x$ remains physically free. This boundary condition is a full transverse restraint of the end sections and should not be interpreted as a classical point- or line-supported simple support. Because the transverse motion of the complete end sections is suppressed, localized three-dimensional end effects may develop near the restrained sections. In the CSF-CUF formulation, the remaining rigid-body translation along the beam axis is removed directly through the mean axial gauge condition
 
 $$
 \frac{1}{L}\int_{x_0}^{x_1} u_x(x,0,0)\,dx = 0.
