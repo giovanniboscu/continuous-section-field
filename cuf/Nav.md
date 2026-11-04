@@ -47,7 +47,6 @@ https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf
    https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/yaml_reference
    
 5. **Run a CUF analysis and post-process the results** - follow the complete CLI and post-processing guide:
-
    https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/CSF-CUF-CLI-Post-processingGuide.md
 
 ---
