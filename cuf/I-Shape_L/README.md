@@ -586,6 +586,8 @@ The third equilibrium component shows the largest separation. CSF-CUF gives the 
 
 Considering the complete residual norm, CSF-CUF gives the lower value in 38 of the 40 analyzed sections and in all 31 interior sections. The median CSF-CUF/FEM3D ratio is approximately `0.1007` over all sections and `0.0860` over the interior subset.
 
+The interior-section results strengthen the same trend observed over the full set of sampled sections. Away from the restrained end regions, the CSF-CUF reconstruction gives the lower total strong-equilibrium residual in all 31 interior sections, with a median CSF-CUF/FEM3D ratio of approximately `0.086`. This indicates a closer local satisfaction of the differential equilibrium equations by the CSF-CUF stress reconstruction in the smooth interior region of the member.
+
 The full component-by-component analysis, including the longitudinal evolution of each residual, is given in
 
 [`FEM3D-CUF-equilibrium-report.md`](FEM3D%E2%80%93CUF-equilibrium-report.md).
