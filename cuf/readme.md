@@ -28,7 +28,7 @@ CSF describes the actual physical cross-section of the beam: its geometry, its c
 - **The numerical solver** combines these descriptions to calculate displacements, strains, and stresses.
 
 The central idea is that the physical description of the beam and the mathematical approximation used to analyse it are two distinct things. They can be defined, modified, and refined independently.
-e transverse CUF expansion functions and the longitudinal finite-element shape functions remain symbolically defined, but become independent, reusable components rather than being embedded in the CUF core.
+The transverse CUF expansion functions and the longitudinal finite-element shape functions remain symbolically defined, but become independent, reusable components rather than being embedded in the CUF core.
 
 In this way the solver  operates on independent descriptions of:
 
