@@ -530,10 +530,9 @@ See [`plot_results/README.md`](plot_results/README.md) for the complete collecti
 
 ### 7.3 Strong-equilibrium comparison
 
-In the absence of body forces, the local equilibrium equation is $\nabla \cdot \boldsymbol{\sigma} = \mathbf{0}$. The local equilibrium comparison evaluates the three components of the stress-divergence residual over 40 longitudinal sections:
-Because the complete end sections are transversely restrained, localized three-dimensional end effects may influence the normal and shear stress gradients near the supports. These gradients enter directly into the strong-equilibrium residuals defined below. The interpretation of the residual statistics therefore depends on the longitudinal locations of the 40 sampled sections, in particular on whether sections close to the restrained ends are included.
+In the absence of body forces, the local equilibrium equation is $\nabla \cdot \boldsymbol{\sigma} = \mathbf{0}$. The local equilibrium comparison evaluates the three components of the stress-divergence residual over 40 longitudinal sections.
 
-The strong-equilibrium diagnostic uses 40 nominally equally spaced longitudinal target locations over the interval $0.01 \leq x/L \leq 0.99$. Each target is mapped to the nearest available native H8 Gauss-point $x$-plane, so the actual sampled section coordinates are determined by the FEM3D Gauss-point locations.
+The strong-equilibrium diagnostic uses 40 nominally equally spaced longitudinal target locations over the interval $0.01 \leq x/L \leq 0.99$. Each target is mapped to the nearest available native H8 Gauss-point $x$-plane, so the actual sampled section coordinates are determined by the FEM3D Gauss-point locations. In addition to the statistics over all 40 sections, an interior subset is evaluated by excluding sections located within one local total section height of either restrained end. This criterion excludes 9 sections and retains 31 interior sections.
 
 
 $$
@@ -563,20 +562,29 @@ r_z =
 \frac{\partial \sigma_{zz}}{\partial z}.
 $$
 
-The reported median residuals are:
+The reported median residuals over all 40 sections are:
 
 | Residual | FEM3D | CSF-CUF | CSF-CUF / FEM3D |
 |---|---:|---:|---:|
-| `div_x` | 5.3352e-02 | 4.1116e-02 | 0.771 |
-| `div_y` | 5.7306e-03 | 5.8279e-03 | 1.017 |
-| `div_z` | 4.4731e-01 | 6.6136e-03 | 0.0148 |
-| `div_norm` | 4.4867e-01 | 4.4685e-02 | 0.0996 |
+| `div_x` | 4.7321e-02 | 4.1532e-02 | 0.878 |
+| `div_y` | 5.7134e-03 | 5.5446e-03 | 0.970 |
+| `div_z` | 4.3244e-01 | 6.5551e-03 | 0.0152 |
+| `div_norm` | 4.3578e-01 | 4.3871e-02 | 0.1007 |
 
-The first equilibrium equation gives residuals of comparable order, with the median CSF-CUF value about 23% lower. The second equation is essentially equivalent between the two formulations, with a difference of about 1.7% and a slightly lower FEM3D median residual.
+Over the 31-section interior subset, the median residuals are:
 
-The third equilibrium equation produces the clearest separation. CSF-CUF gives the lower `div_z` residual in all 40 analyzed sections, and the median FEM3D value is approximately `67.6` times the CSF-CUF value.
+| Residual | FEM3D | CSF-CUF | CSF-CUF / FEM3D |
+|---|---:|---:|---:|
+| `div_x` | 7.5565e-02 | 3.9108e-02 | 0.518 |
+| `div_y` | 6.2716e-03 | 6.4693e-03 | 1.032 |
+| `div_z` | 5.1961e-01 | 6.7962e-03 | 0.0131 |
+| `div_norm` | 5.2101e-01 | 4.4786e-02 | 0.0860 |
 
-Considering the complete residual norm, the median CSF-CUF value is approximately one tenth of the FEM3D value. CSF-CUF gives the lower total strong-equilibrium residual in 38 of the 40 analyzed sections. The two sections in which FEM3D is lower are located close to the final end of the member.
+The first two equilibrium components remain of comparable order between the two formulations, although the interior subset gives a lower median `div_x` for CSF-CUF and nearly equal median `div_y` values.
+
+The third equilibrium component shows the largest separation. CSF-CUF gives the lower `div_z` residual in all 40 analyzed sections and in all 31 interior sections.
+
+Considering the complete residual norm, CSF-CUF gives the lower value in 38 of the 40 analyzed sections and in all 31 interior sections. The median CSF-CUF/FEM3D ratio is approximately `0.1007` over all sections and `0.0860` over the interior subset.
 
 The full component-by-component analysis, including the longitudinal evolution of each residual, is given in
 
