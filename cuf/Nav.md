@@ -129,21 +129,21 @@ definition, the reference solution, and the comparison methodology.
 
 ---
 
+
 ## 7. Where to find what
 
 | If you are looking for...                          | Go to...                                                      |
 |----------------------------------------------------|---------------------------------------------------------------|
-| Run a case without installing anything             | Quick Start (Colab)                                           |
-| Run a case locally                                 | Quick Start README                                            |
-| Understand model / problem / case                  | Quick Start README, YAML reference                            |
-| Understand the architecture                        | `docs/architecture/`                                          |
-| Understand loads and boundary conditions           | `docs/csf_problem.md`                                         |
-| Find an existing adapter for a load or support     | `docs/problem-adapters-reference.md`                          |
-| Write a new transverse expansion                   | `docs/how_to_create_transverse_expansion.md`                  |
-| Understand the variable-section extension          | `docs/model/csf_cuf_formal_variable_section_extension.md`     |
-| Reproduce a benchmark                              | `cuf/I-Shape`, `cuf/I-Shape_L`, `cuf/C-Shape`, `cuf/bridge-like` |
-| See a complete tutorial                            | `cuf/tutorials/variable_material_t_section`                   |
-
+| Run a case without installing anything             | [Quick Start (Colab)](https://github.com/giovanniboscu/continuous-section-field#quick-start-colab) |
+| Run a case locally                                 | [Quick Start README](https://github.com/giovanniboscu/continuous-section-field#readme) |
+| Understand model / problem / case                  | [Quick Start README](https://github.com/giovanniboscu/continuous-section-field#readme), [YAML reference](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/yaml_reference.md) |
+| Understand the architecture                        | [`docs/architecture/`](https://github.com/giovanniboscu/continuous-section-field/tree/main/docs/architecture) |
+| Understand loads and boundary conditions           | [`docs/csf_problem.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csf_problem.md) |
+| Find an existing adapter for a load or support     | [`docs/problem-adapters-reference.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/problem-adapters-reference.md) |
+| Write a new transverse expansion                   | [`docs/how_to_create_transverse_expansion.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/how_to_create_transverse_expansion.md) |
+| Understand the variable-section extension          | [`docs/model/csf_cuf_formal_variable_section_extension.md`](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/csf_cuf_formal_variable_section_extension.md) |
+| Reproduce a benchmark                              | [`cuf/I-Shape`](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape), [`cuf/I-Shape_L`](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape_L), [`cuf/C-Shape`](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/C-Shape), [`cuf/bridge-like`](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/bridge-like) |
+| See a complete tutorial                            | [`cuf/tutorials/variable_material_t_section`](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/tutorials/variable_material_t_section) |
 ---
 
 ## A note on scope
