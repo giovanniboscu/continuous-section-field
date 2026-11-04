@@ -91,6 +91,10 @@ For the original theoretical background, see the references cited in the
 - **New transverse expansion** — guide:
   https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/how_to_create_transverse_expansion.md
 
+- **New longitudinal basis** — plugin contract and API:
+  https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/LongitudinalBasisPlugins.md
+
+
 - **New loads or boundary conditions** — adapter concept and interface:
   https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/csf_problem.md
 
