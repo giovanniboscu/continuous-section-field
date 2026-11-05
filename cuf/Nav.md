@@ -36,17 +36,19 @@ https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf
 
 **Start here.** No prior knowledge of CUF is required to execute a case.
 
-1. **Interactive, no installation** - run the Quick Start in Google Colab:
+1. **Interactive, no installation** - run the Quick Start in Google Colab:  
    https://colab.research.google.com/github/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/quickstart_colab_interactive.ipynb
 
-2. **Local execution** - follow the Quick Start README:
+2. **Local execution** - follow the Quick Start README:  
    https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/README.md
 
-3. **Understanding the YAML configuration** - the YAML reference explains how
-   a physical problem is translated into model, problem, and case files:
+3. **Understanding the YAML configuration** - the YAML reference explains how a physical problem is translated into model, problem, and case files:  
    https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/yaml_reference
-   
-5. **Run a CUF analysis and post-process the results** - follow the complete CLI and post-processing guide:
+
+4. **Understanding solver equilibration settings** - for details on the `solver.equilibration.iterations` parameter and the meaning of the `eq1`, `eq2`, ..., `eqN` solutions, see:  
+   https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/CSF_CUF_solver_equilibration_iterations.md
+
+5. **Run a CUF analysis and post-process the results** - follow the complete CLI and post-processing guide:  
    https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/CSF-CUF-CLI-Post-processingGuide.md
 
 ---
