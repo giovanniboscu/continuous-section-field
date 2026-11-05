@@ -139,10 +139,6 @@ $$
 
 while the longitudinal displacement $u_x$ remains physically free. This boundary condition is a full transverse restraint of the end sections and should not be interpreted as a classical point- or line-supported simple support. Because the transverse motion of the complete end sections is suppressed, localized three-dimensional end effects may develop near the restrained sections. In the CSF-CUF formulation, the remaining rigid-body translation along the beam axis is removed directly through the mean axial gauge condition
 
-$$
-\frac{1}{L}\int_{x_0}^{x_1} u_x(x,0,0)\,dx = 0.
-$$
-
 In the FEM3D OpenSees implementation, the same physical condition is reproduced in two steps. First, all nodes belonging to the two end sections are constrained only in the transverse directions, so that $u_y=u_z=0$ while $u_x$ remains free. Since this leaves a rigid axial translation mode and would make the linear system singular, a single temporary constraint on $u_x$ is applied to one node on the beam centerline, selected near the mid-span. This constraint is purely numerical and does not represent an additional physical support. After the OpenSees solution is obtained, the corresponding arbitrary axial reference is removed by computing the mean longitudinal displacement along the centerline and subtracting it from the complete $u_x$ field. The final FEM3D displacement field therefore satisfies the same mean axial gauge used in the CSF-CUF model,
 
 $$
