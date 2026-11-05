@@ -156,7 +156,7 @@ All the supplied case configurations use **10 longitudinal elements**, with a La
 
 Each case also requests **five equilibration settings**, identified as `eq1` to `eq5`. These give a second check: results from different equilibration settings should be compared to see whether the computed physical response is sensitive to the numerical solution procedure.
 
-> iterations: [1, 2, 3, 4, 5] defines the matrix-equilibration levels used to solve the same CUF system. Each value indicates how many successive equilibration sweeps are applied before solving. Comparing the resulting eq1–`eq5` solutions provides a direct check of the numerical >  > stability of the linear system: if the results remain essentially unchanged, the solution is insensitive to the equilibration level.
+> iterations: [1, 2, 3, 4, 5] defines the matrix-equilibration levels used to solve the same CUF system. Each value indicates how many successive equilibration sweeps are applied before solving. Comparing the resulting eq1–`eq5` solutions provides a direct check of the numerical   > stability of the linear system: if the results remain essentially unchanged, the solution is insensitive to the equilibration level.
 
 **The two checks answer different questions:** changing `N` tests convergence with approximation order; comparing `eq1`–`eq5` tests sensitivity to equilibration. Neither check alone proves that every stress value is accurate.
 
