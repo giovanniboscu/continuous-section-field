@@ -345,10 +345,10 @@ The adapter defines the half-wave surface traction, its projection onto the CUF 
 
 | Component | Physical definition |
 |---|---|
-| **Load** | Half-wave surface traction, \(t_z(x)=A\sin(\pi(x-x_0)/L)\), with \(A=-1.0\) |
+| **Load** | Half-wave surface traction, $t_z(x)=A\sin(\pi(x-x_0)/L)$, with $A=-1.0$ |
 | **Loaded surface** | Entire bottom boundary, represented by 3 lower-flange edges in CSF-CUF and by the corresponding bottom faces in FEM3D |
-| **End constraints** | \(u_y=u_z=0\) at both ends; axial displacement \(u_x\) remains free |
-| **Axial gauge** | \(\frac{1}{L}\int_{x_0}^{x_1}u_x(x,0,0)\,dx=0\), eliminating rigid axial translation |
+| **End constraints** | $u_y=u_z=0$ at both ends; axial displacement $u_x$ remains free |
+| **Axial gauge** | $\frac{1}{L}\int_{x_0}^{x_1}u_x(x,0,0)\,dx=0$, eliminating rigid axial translation |
 
 Both formulations therefore implement the same physical loading and constraint conditions through their respective numerical discretizations.
 
