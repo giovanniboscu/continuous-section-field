@@ -160,6 +160,8 @@ Each case also requests **five equilibration settings**, identified as `eq1` to 
 
 **The two checks answer different questions:** changing `N` tests convergence with approximation order; comparing `eq1`–`eq5` tests sensitivity to equilibration. Neither check alone proves that every stress value is accurate.
 
+For details on the equilibration sweep parameter, see the [CSF-CUF solver equilibration iterations documentation](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/CSF_CUF_solver_equilibration_iterations.md).
+
 ## Running an analysis
 
 With the package installed and the `csf-cuf` command available, change to `cuf/bridge-like` and run, for example:
