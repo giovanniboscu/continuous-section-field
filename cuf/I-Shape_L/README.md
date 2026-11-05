@@ -321,11 +321,11 @@ The two files must therefore be read as two representations of the same physical
 
 ### 4.2 Physical problem
 
-The CSF-CUF problem is defined in
+The CSF-CUF problem configuration is defined in
 
 [`problems/taper_table9_l9_web3.yaml`](problems/taper_table9_l9_web3.yaml).
 
-It links the nine-domain CSF geometry to the physical loading definition and identifies the three lower flange edges that together form the loaded bottom surface:
+This file associates the nine-domain CSF geometry with the problem adapter and identifies the three lower-flange edges on which the surface traction is applied:
 
 ```text
 bottom_flange_left
@@ -333,26 +333,26 @@ bottom_flange_center
 bottom_flange_right
 ```
 
+Together, these three edges represent the complete loaded bottom boundary of the physical section.
+
 The common traction amplitude is `-1.0`.
 
 The corresponding problem adapter is
 
 [`validation/surface_halfwave_multi.py`](validation/surface_halfwave_multi.py).
 
-It provides the half-wave surface traction, its projection onto the CUF transverse functions, and the end constraints described in Section 2.
-
-The custom adapter [`validation/surface_halfwave_multi.py`](validation/surface_halfwave_multi.py) defines the complete CSF-CUF physical problem, including surface loads and boundary conditions. The FEM3D model reproduces the same static scheme.
+The adapter defines the half-wave surface traction, its projection onto the CUF transverse functions, and the end constraints described in Section 2. The FEM3D model reproduces the same physical loading and support conditions using its own three-dimensional discretization.
 
 | Component | Physical definition |
 |---|---|
 | **Load** | Half-wave surface traction, \(t_z(x)=A\sin(\pi(x-x_0)/L)\), with \(A=-1.0\) |
-| **Loaded surface** | Entire bottom flange (3 independent edges in CSF-CUF; corresponding bottom faces in FEM3D) |
+| **Loaded surface** | Entire bottom boundary, represented by 3 lower-flange edges in CSF-CUF and by the corresponding bottom faces in FEM3D |
 | **End constraints** | \(u_y=u_z=0\) at both ends; axial displacement \(u_x\) remains free |
 | **Axial gauge** | \(\frac{1}{L}\int_{x_0}^{x_1}u_x(x,0,0)\,dx=0\), eliminating rigid axial translation |
 
-Both formulations implement the same physical loads and constraints, using their respective numerical discretizations.
+Both formulations therefore implement the same physical loading and constraint conditions through their respective numerical discretizations.
 
-For the complete adapter formulation, load integration, constraint implementation, and CUF–FEM3D correspondence, see **[Surface Half-Wave: CSF-CUF and FEM3D Reference](I-Shape_L_surface_halfwave_CUF_FEM3D_reference.md)**.
+For the complete adapter formulation, load integration, constraint implementation, and CSF-CUF–FEM3D correspondence, see **[Surface Half-Wave: CSF-CUF and FEM3D Reference](I-Shape_L_surface_halfwave_CUF_FEM3D_reference.md)**.*.
 
 
 ### 4.3 CSF-CUF case
