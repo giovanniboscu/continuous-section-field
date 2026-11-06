@@ -356,3 +356,35 @@ plus         y = -50     z =  50
 minus        y =  50     z = -50
 bottom_mid_
 ```
+
+## Stress maps and CSV post-processing
+
+After the CUF analysis has been completed, the stress field can be evaluated on a selected transverse section and exported as both graphical maps and CSV data.
+
+From the `cuf/quickstart/` directory, for example, the following command evaluates the section at `x = 500 mm`:
+
+```bash
+python -m csf.cuf.tools.plot_strain_stress_boundary_v10 \
+  --csf-yaml models/rectangular_prismatic_csf.yaml \
+  --cuf-output-root output/torsion_halfwave_legendre_N08/ \
+  --transverse-x 500 \
+  --transverse-grid 50 \
+  --output-dir stress_maps \
+  --dpi 100
+```
+
+The main options are:
+
+- `--csf-yaml`: CSF model used for the analysis;
+- `--cuf-output-root`: directory containing the CUF results to post-process;
+- `--transverse-x`: physical longitudinal coordinate of the section to evaluate;
+- `--transverse-grid`: sampling resolution used over the cross-section;
+- `--output-dir`: destination directory for the generated post-processing results;
+- `--dpi`: resolution of the generated figures.
+
+The command reconstructs the strain and stress fields on the selected cross-section and writes the resulting stress maps together with the corresponding CSV data in the selected output directory.
+
+For the complete description of the available post-processing options, generated files, stress components, CSV structure, and advanced usage, see:
+
+[**CSF-CUF CLI Post-processing Guide**](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/CSF-CUF-CLI-Post-processingGuide.md)
+
