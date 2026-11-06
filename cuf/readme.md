@@ -4,7 +4,7 @@
 > **New to CSF-CUF?** This page describes what the framework is. For a guided
 > path through the repository — what to read, in which order, depending on
 > whether you want to run an analysis, understand the architecture, study the
-> theory, extend the framework, or reproduce a benchmark — start here:
+> theory, extend the framework, or reproduce a benchmark - start here:
 > [Navigating CSF-CUF: a reading guide](Nav.md)
 
 ---
