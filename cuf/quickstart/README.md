@@ -388,3 +388,56 @@ For the complete description of the available post-processing options, generated
 
 [**CSF-CUF CLI Post-processing Guide**](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/CSF-CUF-CLI-Post-processingGuide.md)
 
+
+## Further Reading and Useful Links
+
+This quick start is intentionally minimal. The following resources are useful if you want to explore the CSF-CUF workflow in more detail, without turning this guide into a theoretical manual.
+
+### Repository resources
+
+- **CSF-CUF repository**  
+  Main entry point for the code, examples, and documentation:  
+  https://github.com/giovanniboscu/continuous-section-field
+
+- **Quick start README**  
+  The reference document for this guide, including installation, YAML input files, and the first torsion example:  
+  https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/quickstart/README.md
+
+- **CUF framework documentation**  
+  Overview of the CSF-CUF architecture, the separation between physical model, transverse expansion, longitudinal approximation, and numerical solution:  
+  https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf
+
+- **Tutorial: variable-material T-section**  
+  Step-by-step example showing how a continuous section field can describe non-prismatic geometry and spatially varying material properties:  
+  https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/tutorials/variable_material_t_section
+
+- **I-shape validation case**  
+  Comparison between CSF-CUF and 3D FEM results for prismatic and tapered I-beams:  
+  https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape
+
+- **Refined beam theories benchmark tables**  
+  Reproduction of the Carrera & Giunta benchmark results for bending and torsion, with increasing CUF expansion orders:  
+  https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/refined_beam_theories_tables_9_10
+
+- **Coordinate systems and displacement conventions**  
+  Reference for the coordinate systems, sign conventions, and displacement components used in the examples:  
+  https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/coordinate_systems.md
+
+### Theoretical background
+
+- **Carrera, E., & Giunta, G. (2010).**  
+  *Refined Beam Theories Based on a Unified Formulation.*  
+  International Journal of Applied Mechanics, 2(1), 117-143.  
+  https://doi.org/10.1142/S1758825110000500
+
+  This is the canonical reference for the Carrera Unified Formulation (CUF). It is cited by the repository and is useful for understanding the mathematical basis behind the transverse expansion order and the choice of cross-sectional functions used in the `cases/*.yaml` files.
+
+### Suggested reading path
+
+1. Run the quick start example and inspect the three YAML files.
+2. Change only the transverse CUF order in the `cases/*.yaml` file and compare the results.
+3. Follow the variable-material T-section tutorial to see how the continuous section field is used in a more general setting.
+4. Compare with the I-shape validation case to see how CSF-CUF results relate to 3D FEM solutions.
+5. Consult Carrera & Giunta (2010) for the theoretical formulation.
+
+> If any repository link changes, browse from the main repository page and follow the `cuf/` directory structure.
