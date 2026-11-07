@@ -223,7 +223,7 @@ Still from:
 continuous-section-field/cuf/I-Shape_L
 ```
 
-execute:
+on linux execute:
 
 ```bash
 ./equilibrium_multisection_components.sh
