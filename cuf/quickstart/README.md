@@ -28,13 +28,12 @@ The solver uses these objects together. None of them is an intermediate result p
 | **Longitudinal approximation** | Approximation of the field *along the axis*, controlled by `longitudinal.method`, `basis`, `order`, `element_boundaries`. |
 | **Order N** | Free parameter fixing the number of transverse expansion terms; higher = more degrees of freedom and more local detail. |
 | **TE / LE / Legendre** | Families of transverse expansion functions: Taylor (simple polynomials), Lagrange (interpolation on sub-domains), Legendre (orthogonal polynomials, often "scaled"). |
-| **Scaled Legendre** | Rescaled Legendre variant on the section domain; used in the Quick Start with N=8. Difference from pure Legendre to be checked in the repo. |
+| **Scaled Legendre** | Rescaled Legendre variant on the section domain; used in the Quick Start with N=8. |
 | **Lagrange (longitudinal)** | Nodal C0 basis used by `finite_element`; with order 6, one element has 7 nodes. |
 | **Half-wave** | Sinusoidal load along the axis: zero at both ends, maximum at mid-span. |
 | **Fundamental nucleus** | Compact CUF matrix expression independent of geometry, order N or mesh: the solver queries the model through the nuclei. |
 | **ESL / LW / component-wise** | Through-thickness detail levels: Equivalent Single Layer (one field), Layer-Wise (one per layer), component-wise (one per structural component). |
 | **Station response** | Table evaluating the continuous CUF field at selected axial and cross-section points. |
-| **Convergence analysis** | Systematic increase of N and/or mesh until a quantity of interest stabilizes within tolerance. |
 
 ---
 >## Try it interactively in Google Colab
@@ -492,9 +491,8 @@ This quick start is intentionally minimal. The following resources are useful if
 ### Suggested reading path
 
 1. Run the quick start example and inspect the three YAML files.
-2. Change only the transverse CUF order in the `cases/*.yaml` file and compare the results.
-3. Follow the variable-material T-section tutorial to see how the continuous section field is used in a more general setting.
-4. Compare with the I-shape validation case to see how CSF-CUF results relate to 3D FEM solutions.
-5. Consult Carrera & Giunta (2010) for the theoretical formulation.
+2. Follow the variable-material T-section tutorial to see how the continuous section field is used in a more general setting.
+3. Compare with the I-shape validation case to see how CSF-CUF results relate to 3D FEM solutions.
+4. Consult Carrera & Giunta (2010) for the theoretical formulation.
 
 > If any repository link changes, browse from the main repository page and follow the `cuf/` directory structure.
