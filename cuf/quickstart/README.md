@@ -16,6 +16,26 @@ The **model** describes the physical system, the **problem** defines how that sy
 
 The solver uses these objects together. None of them is an intermediate result produced by another: they are independent descriptions of different aspects of the same problem.
 
+## Glossary (read this first if you are new to CUF)
+
+| Term | One-line definition |
+|---|---|
+| **CSF** (Continuous Section Field) | Continuous description of cross-section geometry and material along the axis, independent of the CUF approximation. |
+| **CUF** (Carrera Unified Formulation) | Hierarchical framework that generates structural theories of arbitrary order for beams, plates and shells. |
+| **Model / Problem / Case** | Three independent descriptions (physics, constraints+loads, numerical approximation) composed by the solver, not a pipeline. |
+| **Adapter** | Module implementing loads and constraints of a specific problem (e.g. `torsion_halfwave`), separate from the CUF core. |
+| **Transverse expansion** | Approximation of the displacement field *over the cross-section* (or through the thickness), controlled by `cuf.basis` and `cuf.order`. |
+| **Longitudinal approximation** | Approximation of the field *along the axis*, controlled by `longitudinal.method`, `basis`, `order`, `element_boundaries`. |
+| **Order N** | Free parameter fixing the number of transverse expansion terms; higher = more degrees of freedom and more local detail. |
+| **TE / LE / Legendre** | Families of transverse expansion functions: Taylor (simple polynomials), Lagrange (interpolation on sub-domains), Legendre (orthogonal polynomials, often "scaled"). |
+| **Scaled Legendre** | Rescaled Legendre variant on the section domain; used in the Quick Start with N=8. Difference from pure Legendre to be checked in the repo. |
+| **Lagrange (longitudinal)** | Nodal C0 basis used by `finite_element`; with order 6, one element has 7 nodes. |
+| **Half-wave** | Sinusoidal load along the axis: zero at both ends, maximum at mid-span. |
+| **Fundamental nucleus** | Compact CUF matrix expression independent of geometry, order N or mesh: the solver queries the model through the nuclei. |
+| **ESL / LW / component-wise** | Through-thickness detail levels: Equivalent Single Layer (one field), Layer-Wise (one per layer), component-wise (one per structural component). |
+| **Station response** | Table evaluating the continuous CUF field at selected axial and cross-section points. |
+| **Convergence analysis** | Systematic increase of N and/or mesh until a quantity of interest stabilizes within tolerance. |
+
 ---
 >## Try it interactively in Google Colab
 >
@@ -312,6 +332,23 @@ The solver writes the results below:
 output/torsion_halfwave_legendre_N08
 ```
 
+## Common errors and troubleshooting
+
+| Symptom / message | Likely cause | Fix |
+|---|---|---|
+| YAML not parsed, indentation error | Mixed spaces/tabs, wrongly nested keys | Use spaces only, check indentation of `model:`, `problem:`, `cuf:`, `longitudinal:` blocks |
+| `FileNotFoundError` on model or problem | Wrong relative path | Paths in YAML are relative to their location: run from `cuf/quickstart/` or fix `csf_yaml`/`yaml` |
+| Solver fails because `pypardiso` is missing | Optional dependency not installed | `pip install pypardiso` as in the Quick Start |
+| Same results when changing N | Editing the wrong file, or not passing the right case | The command starts from the case: `csf-cuf cases/....yaml`; check you saved the case actually used |
+| Displacements explode / no convergence | N too high for the mesh, or BC not as you think | Lower N, verify the `torsion_halfwave` adapter is the expected one (fixed-fixed) |
+| Anomalous shear stresses on the section | Too coarse transverse sampling in post-processing | Increase `--transverse-grid` in the post-processing command |
+| Inconsistent units (wrong orders of magnitude) | Mixing mm/N/MPa with other units | Adopt a consistent system: mm, N, MPa=N/mm², N/mm for line loads |
+| Longitudinal order not supported | Longitudinal basis other than Lagrange | The Quick Start declares Lagrange as the only implemented C0 longitudinal basis: use it |
+| Colab case gives different results from local | Colab runtime changed, or different repo version | The repo is the reference environment: re-run locally with the same version |
+
+**Note**: this table is built on behaviours documented in the Quick Start and on typical YAML+Python framework errors. Exact messages should be verified by running the repo.
+
+
 ## Next step
 
 To understand how these components fit together within the overall CSF-CUF architecture, continue with:
@@ -387,6 +424,26 @@ The command reconstructs the strain and stress fields on the selected cross-sect
 For the complete description of the available post-processing options, generated files, stress components, CSV structure, and advanced usage, see:
 
 [**CSF-CUF CLI Post-processing Guide**](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/CSF-CUF-CLI-Post-processingGuide.md)
+
+## Theory to code bridge
+
+| Concept (theory) | Where it lives in the Quick Start | What to look at |
+|---|---|---|
+| Independent physical model | `models/rectangular_prismatic_csf.yaml` | length, 100x100 section, rectangle polygon, weight: 71700, Poisson 0.3 |
+| Problem = constraints + loads | `problems/torsion_halfwave.yaml` | type: torsion_halfwave, amplitude: 10.0, fixed-fixed BC in the adapter |
+| Adapter separate from core | `adapter: csf.cuf.adapters.problem.torsion_halfwave` in the case | See `csf_problem.md` and `problem-adapters-reference.md` |
+| Transverse expansion | `cuf:` block in the case | basis: scaled_legendre, order: 8 |
+| Longitudinal approximation | `longitudinal:` block in the case | method: finite_element, element_boundaries: [0.00, 1.00], basis: lagrange, order: 6 |
+| Composition (not a pipeline) | Quick Start README | case -> problem -> model chain, with the explicit note that it is not a pipeline |
+| Continuous field evaluated at points | STATION RESPONSES output | Columns x/L, x[mm], y, z, point, ux, uy, uz |
+| Sampling points | Rectangular case output | center (0,0), plus (-50,50), minus (50,-50), bottom_mid |
+| Stress post-processing | `python -m csf.cuf.tools.plot_strain_stress_boundary_v10` command | --transverse-x 500, --transverse-grid 50, --output-dir stress_maps |
+| Theoretical basis | Carrera & Giunta (2010) | Canonical reference for expansion order and section functions |
+| Validation against 3D FEM | `cuf/I-Shape` case | CSF-CUF vs 3D FEM for prismatic and tapered I-beams |
+| Increasing-order benchmarks | `cuf/refined_beam_theories_tables_9_10` | Reproduction of Carrera & Giunta results as N varies |
+
+**Bridge phrase to remember**: theory tells you why order N matters; the code tells you where it is set (`cuf.order`) and where its effect is seen (station responses and stress maps). Without the bridge, neither is enough.
+
 
 
 ## Further Reading and Useful Links
