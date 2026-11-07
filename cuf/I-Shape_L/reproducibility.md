@@ -240,7 +240,7 @@ python compare_fem3d_cuf_strong_equilibrium.py `
   --xmax 0.99 `
   --output-dir diagnostics/equilibrium_multisection_components
 
-``
+```
 
 
 
