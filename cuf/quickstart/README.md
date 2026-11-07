@@ -16,12 +16,12 @@ The **model** describes the physical system, the **problem** defines how that sy
 
 The solver uses these objects together. None of them is an intermediate result produced by another: they are independent descriptions of different aspects of the same problem.
 
-## Glossary (read this first if you are new to CUF)
+## Glossary (read this first if you are new to CUF and CSF)
 
 | Term | One-line definition |
 |---|---|
-| **CSF** (Continuous Section Field) | Continuous description of cross-section geometry and material along the axis, independent of the CUF approximation. |
 | **CUF** (Carrera Unified Formulation) | Hierarchical framework that generates structural theories of arbitrary order for beams, plates and shells. |
+| **CSF** (Continuous Section Field) | Continuous description of cross-section geometry and material along the axis, independent of the CUF approximation. |
 | **Model / Problem / Case** | Three independent descriptions (physics, constraints+loads, numerical approximation) composed by the solver, not a pipeline. |
 | **Adapter** | Module implementing loads and constraints of a specific problem (e.g. `torsion_halfwave`), separate from the CUF core. |
 | **Transverse expansion** | Approximation of the displacement field *over the cross-section* (or through the thickness), controlled by `cuf.basis` and `cuf.order`. |
