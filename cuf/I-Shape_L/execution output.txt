@@ -1,0 +1,267 @@
+csf-cuf cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
+CSF-CUF solver
+==============
+case                = carrera_i_shaped_taper80_lagrangeL9_v4_web3
+problem             = /home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/problems/taper_table9_l9_web3.yaml
+CSF model           = /home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/models/carrera_i_shaped_taper80_l9_web3.yaml
+solver public output= u(x,y,z)
+CUF order           = 2
+longitudinal FE     = 10 explicit elements x order 6
+element boundaries  = 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 (normalized)
+longitudinal basis  = lagrange
+
+equilibration sweep = 1, 2, 3, 4, 5
+
+[quadrature] section Gauss requested = 12
+[quadrature] section Gauss effective = 12
+[quadrature] CUF basis minimum     = 3
+[quadrature] longitudinal degree estimate = 15
+[quadrature] longitudinal material varies = true
+[quadrature] longitudinal material degree = 1 (configured)
+[quadrature] longitudinal Gauss requested = 15
+[quadrature] longitudinal Gauss minimum   = 8
+[quadrature] longitudinal Gauss effective = 15
+[MITC] correctionMITC=True mitcDiagnostic=False verifyMITCAssembly=True
+[1/4] model/basis ready: domains from CSF, M=57
+[assembly] element 1/10 started: 3249 CUF pairs
+[MITC assembly verify] element=0 pair=(1,1) blocks=9 max_abs=4.656613e-10 rel_F=7.093509e-17 worst_block=(0, 0) status=PASS
+[assembly] element 1/10 tau=1/57 pairs=57/3249 entries=3969 elapsed=233.2s build_pair=233.2s scatter=0.0s
+[assembly] element 1/10 tau=10/57 pairs=570/3249 entries=52920 elapsed=244.4s build_pair=244.2s scatter=0.1s
+[assembly] element 1/10 tau=20/57 pairs=1140/3249 entries=103194 elapsed=257.2s build_pair=256.9s scatter=0.3s
+[assembly] element 1/10 tau=30/57 pairs=1710/3249 entries=164052 elapsed=270.1s build_pair=269.7s scatter=0.4s
+[assembly] element 1/10 tau=40/57 pairs=2280/3249 entries=211680 elapsed=282.8s build_pair=282.2s scatter=0.6s
+[assembly] element 1/10 tau=50/57 pairs=2850/3249 entries=261954 elapsed=294.8s build_pair=294.1s scatter=0.7s
+[assembly] element 1/10 tau=57/57 pairs=3249/3249 entries=289737 elapsed=303.3s build_pair=302.5s scatter=0.8s
+[assembly] element 1/10 complete elapsed=303.3s build_pair=302.5s scatter=0.8s entries=289737
+[assembly] element 2/10 started: 3249 CUF pairs
+[MITC assembly verify] element=1 pair=(1,1) blocks=9 max_abs=4.656613e-10 rel_F=7.274013e-17 worst_block=(0, 0) status=PASS
+[assembly] element 2/10 tau=1/57 pairs=57/3249 entries=293706 elapsed=248.4s build_pair=248.4s scatter=0.0s
+[assembly] element 2/10 tau=10/57 pairs=570/3249 entries=342657 elapsed=259.4s build_pair=259.2s scatter=0.1s
+[assembly] element 2/10 tau=20/57 pairs=1140/3249 entries=392931 elapsed=271.8s build_pair=271.5s scatter=0.3s
+[assembly] element 2/10 tau=30/57 pairs=1710/3249 entries=453789 elapsed=284.1s build_pair=283.7s scatter=0.4s
+[assembly] element 2/10 tau=40/57 pairs=2280/3249 entries=501417 elapsed=295.9s build_pair=295.4s scatter=0.6s
+[assembly] element 2/10 tau=50/57 pairs=2850/3249 entries=551691 elapsed=307.7s build_pair=307.0s scatter=0.7s
+[assembly] element 2/10 tau=57/57 pairs=3249/3249 entries=579474 elapsed=316.3s build_pair=315.6s scatter=0.8s
+[assembly] element 2/10 complete elapsed=316.3s build_pair=315.6s scatter=0.8s entries=579474
+[assembly] element 3/10 started: 3249 CUF pairs
+[MITC assembly verify] element=2 pair=(1,1) blocks=9 max_abs=4.656613e-10 rel_F=9.123033e-17 worst_block=(0, 0) status=PASS
+[assembly] element 3/10 tau=1/57 pairs=57/3249 entries=583443 elapsed=251.3s build_pair=251.3s scatter=0.0s
+[assembly] element 3/10 tau=10/57 pairs=570/3249 entries=632394 elapsed=262.9s build_pair=262.7s scatter=0.1s
+[assembly] element 3/10 tau=20/57 pairs=1140/3249 entries=682668 elapsed=275.4s build_pair=275.1s scatter=0.3s
+[assembly] element 3/10 tau=30/57 pairs=1710/3249 entries=743526 elapsed=288.0s build_pair=287.6s scatter=0.4s
+[assembly] element 3/10 tau=40/57 pairs=2280/3249 entries=791154 elapsed=300.3s build_pair=299.7s scatter=0.6s
+[assembly] element 3/10 tau=50/57 pairs=2850/3249 entries=841428 elapsed=312.9s build_pair=312.2s scatter=0.7s
+[assembly] element 3/10 tau=57/57 pairs=3249/3249 entries=869211 elapsed=321.3s build_pair=320.5s scatter=0.8s
+[assembly] element 3/10 complete elapsed=321.3s build_pair=320.5s scatter=0.8s entries=869211
+[assembly] element 4/10 started: 3249 CUF pairs
+[MITC assembly verify] element=3 pair=(1,1) blocks=9 max_abs=6.984919e-10 rel_F=1.072931e-16 worst_block=(0, 0) status=PASS
+[assembly] element 4/10 tau=1/57 pairs=57/3249 entries=873180 elapsed=236.3s build_pair=236.2s scatter=0.0s
+[assembly] element 4/10 tau=10/57 pairs=570/3249 entries=922131 elapsed=247.3s build_pair=247.2s scatter=0.1s
+[assembly] element 4/10 tau=20/57 pairs=1140/3249 entries=972405 elapsed=259.2s build_pair=258.9s scatter=0.3s
+[assembly] element 4/10 tau=30/57 pairs=1710/3249 entries=1033263 elapsed=270.8s build_pair=270.4s scatter=0.4s
+[assembly] element 4/10 tau=40/57 pairs=2280/3249 entries=1080891 elapsed=282.5s build_pair=282.0s scatter=0.5s
+[assembly] element 4/10 tau=50/57 pairs=2850/3249 entries=1131165 elapsed=294.5s build_pair=293.8s scatter=0.7s
+[assembly] element 4/10 tau=57/57 pairs=3249/3249 entries=1158948 elapsed=302.6s build_pair=301.8s scatter=0.7s
+[assembly] element 4/10 complete elapsed=302.6s build_pair=301.8s scatter=0.7s entries=1158948
+[assembly] element 5/10 started: 3249 CUF pairs
+[MITC assembly verify] element=4 pair=(1,1) blocks=9 max_abs=2.328306e-10 rel_F=3.737448e-17 worst_block=(0, 0) status=PASS
+[assembly] element 5/10 tau=1/57 pairs=57/3249 entries=1162917 elapsed=228.4s build_pair=228.3s scatter=0.0s
+[assembly] element 5/10 tau=10/57 pairs=570/3249 entries=1211868 elapsed=239.6s build_pair=239.4s scatter=0.1s
+[assembly] element 5/10 tau=20/57 pairs=1140/3249 entries=1262142 elapsed=250.5s build_pair=250.2s scatter=0.3s
+[assembly] element 5/10 tau=30/57 pairs=1710/3249 entries=1323000 elapsed=261.9s build_pair=261.5s scatter=0.4s
+[assembly] element 5/10 tau=40/57 pairs=2280/3249 entries=1370628 elapsed=273.1s build_pair=272.6s scatter=0.5s
+[assembly] element 5/10 tau=50/57 pairs=2850/3249 entries=1420902 elapsed=284.5s build_pair=283.9s scatter=0.6s
+[assembly] element 5/10 tau=57/57 pairs=3249/3249 entries=1448685 elapsed=292.1s build_pair=291.4s scatter=0.7s
+[assembly] element 5/10 complete elapsed=292.1s build_pair=291.4s scatter=0.7s entries=1448685
+[assembly] element 6/10 started: 3249 CUF pairs
+[MITC assembly verify] element=5 pair=(1,1) blocks=9 max_abs=2.328306e-10 rel_F=6.814857e-17 worst_block=(0, 0) status=PASS
+[assembly] element 6/10 tau=1/57 pairs=57/3249 entries=1452654 elapsed=228.9s build_pair=228.9s scatter=0.0s
+[assembly] element 6/10 tau=10/57 pairs=570/3249 entries=1501605 elapsed=238.7s build_pair=238.6s scatter=0.1s
+[assembly] element 6/10 tau=20/57 pairs=1140/3249 entries=1551879 elapsed=249.5s build_pair=249.2s scatter=0.2s
+[assembly] element 6/10 tau=30/57 pairs=1710/3249 entries=1612737 elapsed=260.4s build_pair=260.0s scatter=0.3s
+[assembly] element 6/10 tau=40/57 pairs=2280/3249 entries=1660365 elapsed=272.2s build_pair=271.7s scatter=0.5s
+[assembly] element 6/10 tau=50/57 pairs=2850/3249 entries=1710639 elapsed=284.5s build_pair=283.9s scatter=0.6s
+[assembly] element 6/10 tau=57/57 pairs=3249/3249 entries=1738422 elapsed=293.1s build_pair=292.4s scatter=0.7s
+[assembly] element 6/10 complete elapsed=293.1s build_pair=292.4s scatter=0.7s entries=1738422
+[assembly] element 7/10 started: 3249 CUF pairs
+[MITC assembly verify] element=6 pair=(1,1) blocks=9 max_abs=2.328306e-10 rel_F=8.462402e-17 worst_block=(0, 0) status=PASS
+[assembly] element 7/10 tau=1/57 pairs=57/3249 entries=1742391 elapsed=242.6s build_pair=242.6s scatter=0.0s
+[assembly] element 7/10 tau=10/57 pairs=570/3249 entries=1791342 elapsed=254.5s build_pair=254.3s scatter=0.1s
+[assembly] element 7/10 tau=20/57 pairs=1140/3249 entries=1841616 elapsed=267.1s build_pair=266.8s scatter=0.3s
+[assembly] element 7/10 tau=30/57 pairs=1710/3249 entries=1902474 elapsed=280.7s build_pair=280.2s scatter=0.4s
+[assembly] element 7/10 tau=40/57 pairs=2280/3249 entries=1950102 elapsed=293.3s build_pair=292.7s scatter=0.6s
+[assembly] element 7/10 tau=50/57 pairs=2850/3249 entries=2000376 elapsed=305.6s build_pair=304.9s scatter=0.7s
+[assembly] element 7/10 tau=57/57 pairs=3249/3249 entries=2028159 elapsed=314.8s build_pair=314.0s scatter=0.8s
+[assembly] element 7/10 complete elapsed=314.8s build_pair=314.0s scatter=0.8s entries=2028159
+[assembly] element 8/10 started: 3249 CUF pairs
+[MITC assembly verify] element=7 pair=(1,1) blocks=9 max_abs=4.656613e-10 rel_F=9.747302e-17 worst_block=(1, 1) status=PASS
+[assembly] element 8/10 tau=1/57 pairs=57/3249 entries=2032128 elapsed=257.4s build_pair=257.4s scatter=0.0s
+[assembly] element 8/10 tau=10/57 pairs=570/3249 entries=2081079 elapsed=268.3s build_pair=268.2s scatter=0.1s
+[assembly] element 8/10 tau=20/57 pairs=1140/3249 entries=2131353 elapsed=280.8s build_pair=280.5s scatter=0.3s
+[assembly] element 8/10 tau=30/57 pairs=1710/3249 entries=2192211 elapsed=293.3s build_pair=292.9s scatter=0.4s
+[assembly] element 8/10 tau=40/57 pairs=2280/3249 entries=2239839 elapsed=305.8s build_pair=305.2s scatter=0.6s
+[assembly] element 8/10 tau=50/57 pairs=2850/3249 entries=2290113 elapsed=318.4s build_pair=317.7s scatter=0.7s
+[assembly] element 8/10 tau=57/57 pairs=3249/3249 entries=2317896 elapsed=327.5s build_pair=326.7s scatter=0.8s
+[assembly] element 8/10 complete elapsed=327.5s build_pair=326.7s scatter=0.8s entries=2317896
+[assembly] element 9/10 started: 3249 CUF pairs
+[MITC assembly verify] element=8 pair=(1,1) blocks=9 max_abs=4.656613e-10 rel_F=9.573007e-17 worst_block=(0, 0) status=PASS
+[assembly] element 9/10 tau=1/57 pairs=57/3249 entries=2321865 elapsed=252.0s build_pair=252.0s scatter=0.0s
+[assembly] element 9/10 tau=10/57 pairs=570/3249 entries=2370816 elapsed=264.6s build_pair=264.4s scatter=0.2s
+[assembly] element 9/10 tau=20/57 pairs=1140/3249 entries=2421090 elapsed=278.2s build_pair=277.9s scatter=0.3s
+[assembly] element 9/10 tau=30/57 pairs=1710/3249 entries=2481948 elapsed=290.7s build_pair=290.2s scatter=0.5s
+[assembly] element 9/10 tau=40/57 pairs=2280/3249 entries=2529576 elapsed=304.3s build_pair=303.7s scatter=0.6s
+[assembly] element 9/10 tau=50/57 pairs=2850/3249 entries=2579850 elapsed=317.4s build_pair=316.7s scatter=0.7s
+[assembly] element 9/10 tau=57/57 pairs=3249/3249 entries=2607633 elapsed=327.5s build_pair=326.6s scatter=0.9s
+[assembly] element 9/10 complete elapsed=327.5s build_pair=326.6s scatter=0.9s entries=2607633
+[assembly] element 10/10 started: 3249 CUF pairs
+[MITC assembly verify] element=9 pair=(1,1) blocks=9 max_abs=4.656613e-10 rel_F=9.960071e-17 worst_block=(0, 0) status=PASS
+[assembly] element 10/10 tau=1/57 pairs=57/3249 entries=2611602 elapsed=259.8s build_pair=259.8s scatter=0.0s
+[assembly] element 10/10 tau=10/57 pairs=570/3249 entries=2660553 elapsed=271.8s build_pair=271.7s scatter=0.1s
+[assembly] element 10/10 tau=20/57 pairs=1140/3249 entries=2710827 elapsed=285.6s build_pair=285.3s scatter=0.3s
+[assembly] element 10/10 tau=30/57 pairs=1710/3249 entries=2771685 elapsed=298.7s build_pair=298.2s scatter=0.4s
+[assembly] element 10/10 tau=40/57 pairs=2280/3249 entries=2819313 elapsed=311.9s build_pair=311.3s scatter=0.6s
+[assembly] element 10/10 tau=50/57 pairs=2850/3249 entries=2869587 elapsed=325.0s build_pair=324.3s scatter=0.7s
+[assembly] element 10/10 tau=57/57 pairs=3249/3249 entries=2897370 elapsed=334.3s build_pair=333.4s scatter=0.8s
+[assembly] element 10/10 complete elapsed=334.3s build_pair=333.4s scatter=0.8s entries=2897370
+[assembly] triplets complete elapsed=3132.8s entries=2897370
+[assembly] COO->CSR complete elapsed=0.1s nnz=2844153
+[verification] global stiffness symmetry: relative=7.912697e-17 maximum_abs=4.656613e-09 rtol=1.0e-10
+[assembly] loads complete elapsed=3.8s
+[2/4] global assembly complete: DOFs=10431
+[matrix-diagnostic] KKT shape=(10660, 10660) nnz=2844731 abs_nonzero_min=6.318513518337e-19 abs_nonzero_max=2.409975643138e+07 frobenius=9.902747231537e+08 row_l2_min_median_max=(0.1575489881702494, 5238835.012944104, 37764627.84536875)
+[kkt-equilibration] requested_iterations=1,2,3,4,5
+[diagnostic-v3] pre-spsolve checkpoint saved: matrix=/home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/diagnostics/kkt_checkpoint/kkt_matrix.npz rhs=/home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/diagnostics/kkt_checkpoint/rhs.npy shape=(10660, 10660) nnz=2844731 data_dtype=float64 indices_dtype=int32 indptr_dtype=int32 rhs_dtype=float64 has_sorted_indices=True has_canonical_format=True
+[diagnostic-v3] SHA256 indptr=6aa4e6cd17306993f2a2d9201de0a41d50ce76331208e004dfe1e2ebb4effd26 indices=fd151df52f886bde83a3c5072b9a54c4119f5de9d05ec3934f90574191b6d323 data=59aab76a6e48997e80ec76c8a9bd341469e5f371c705634dd9200c0846f1d54c rhs=74e479a84553bad428840fba1c6f15a014ef48b610cd65b7dc18e162cdca2cf1
+[memory-solver] available=3.318GiB csr=0.032GiB dense=0.847GiB dense_incremental=1.694GiB sparse_factor_upper=1.271GiB sparse_incremental=2.573GiB selected=dense reason=dense-lower-estimated-physical-memory-peak
+[kkt-equilibration] iterations=1 iterations_requested=1 iterations_performed=1 scale_min=2.037012402959e-04 scale_max=5.557189302262e+00
+[matrix-diagnostic] equilibration-scales primal_min_median_max=(0.00020370124029590905, 0.0005509038915023978, 0.0027748637824412396) multiplier_min_median_max=(1.0, 1.0, 5.557189302262113)
+[kkt-solution-diagnostic] iterations=1 relative_residual_inf=5.337745226524e-20 previous_iterations=none relative_solution_change_2=not_applicable
+[3/4] solve complete: equilibration_iterations=1
+[verification] residual mean = -1.032271e-12
+[verification] residual standard deviation = 2.062640e-09
+[verification] equation-term scale = 4.041626e+05
+[solution-checkpoint] saved=/home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz sha256=67b2b69b6522e52d37dc1dbb505b6381e69f435a24d22fae5e7b54971a438705
+written: /home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/response_eq1.txt
+[memory-solver] available=3.278GiB csr=0.032GiB dense=0.847GiB dense_incremental=1.694GiB sparse_factor_upper=1.271GiB sparse_incremental=2.573GiB selected=dense reason=dense-lower-estimated-physical-memory-peak
+[kkt-equilibration] iterations=2 iterations_requested=2 iterations_performed=2 scale_min=2.037012402959e-04 scale_max=6.939412109997e+02
+[matrix-diagnostic] equilibration-scales primal_min_median_max=(0.00020370124029590905, 0.0005509038915023978, 0.0028576125284567487) multiplier_min_median_max=(18.983625849266954, 26.32224797665906, 693.9412109997467)
+[kkt-solution-diagnostic] iterations=2 relative_residual_inf=5.290922899989e-20 previous_iterations=1 relative_solution_change_2=5.974608529860e-12
+[3/4] solve complete: equilibration_iterations=2
+[verification] residual mean = 2.126571e-11
+[verification] residual standard deviation = 2.051181e-09
+[verification] equation-term scale = 4.041626e+05
+[solution-checkpoint] saved=/home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq2.cuf.npz sha256=11a50e36285598fb2e6c687bd9e18481dd1202aea4fb2e9f337089d570e4ceee
+written: /home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/response_eq2.txt
+[memory-solver] available=3.262GiB csr=0.032GiB dense=0.847GiB dense_incremental=1.694GiB sparse_factor_upper=1.271GiB sparse_incremental=2.573GiB selected=dense reason=dense-lower-estimated-physical-memory-peak
+[kkt-equilibration] iterations=3 iterations_requested=3 iterations_performed=3 scale_min=2.037012402959e-04 scale_max=7.754546846488e+03
+[matrix-diagnostic] equilibration-scales primal_min_median_max=(0.00020370124029590905, 0.0005509038915023978, 0.002857612528456749) multiplier_min_median_max=(82.02587223892615, 132.77425351572364, 7754.54684648849)
+[kkt-solution-diagnostic] iterations=3 relative_residual_inf=4.916345913748e-20 previous_iterations=2 relative_solution_change_2=6.220062720701e-12
+[3/4] solve complete: equilibration_iterations=3
+[verification] residual mean = 2.269176e-11
+[verification] residual standard deviation = 1.941213e-09
+[verification] equation-term scale = 4.041626e+05
+[solution-checkpoint] saved=/home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq3.cuf.npz sha256=31b2d499b058f0676618ad7ebff85f527051610f943ec24b84ac4ab2f6f327a5
+written: /home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/response_eq3.txt
+[memory-solver] available=3.281GiB csr=0.032GiB dense=0.847GiB dense_incremental=1.694GiB sparse_factor_upper=1.271GiB sparse_incremental=2.573GiB selected=dense reason=dense-lower-estimated-physical-memory-peak
+[kkt-equilibration] iterations=4 iterations_requested=4 iterations_performed=4 scale_min=2.037012402959e-04 scale_max=2.592228589576e+04
+[matrix-diagnostic] equilibration-scales primal_min_median_max=(0.00020370124029590905, 0.0005509038915023978, 0.002857612528456749) multiplier_min_median_max=(170.50483665747507, 298.2011503734936, 25922.285895763798)
+[kkt-solution-diagnostic] iterations=4 relative_residual_inf=5.934718839691e-20 previous_iterations=3 relative_solution_change_2=2.213435372988e-12
+[3/4] solve complete: equilibration_iterations=4
+[verification] residual mean = 2.149247e-11
+[verification] residual standard deviation = 1.995454e-09
+[verification] equation-term scale = 4.041626e+05
+[solution-checkpoint] saved=/home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq4.cuf.npz sha256=c103d224b51ea3808763e77cd01153e95cefeaab48f91107cd9f68bc17d28577
+written: /home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/response_eq4.txt
+[memory-solver] available=3.263GiB csr=0.032GiB dense=0.847GiB dense_incremental=1.694GiB sparse_factor_upper=1.271GiB sparse_incremental=2.573GiB selected=dense reason=dense-lower-estimated-physical-memory-peak
+[kkt-equilibration] iterations=5 iterations_requested=5 iterations_performed=5 scale_min=2.037012402959e-04 scale_max=4.739491319723e+04
+[matrix-diagnostic] equilibration-scales primal_min_median_max=(0.00020370124029590905, 0.0005509038915023978, 0.002857612528456749) multiplier_min_median_max=(245.82702529907505, 446.89658662368976, 47394.91319722729)
+[kkt-solution-diagnostic] iterations=5 relative_residual_inf=5.150455920337e-20 previous_iterations=4 relative_solution_change_2=4.553533233563e-12
+[3/4] solve complete: equilibration_iterations=5
+[verification] residual mean = 9.856069e-12
+[verification] residual standard deviation = 2.017408e-09
+[verification] equation-term scale = 4.041626e+05
+[solution-checkpoint] saved=/home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq5.cuf.npz sha256=00941391e0c3e100220a977b63e21d6734a301f684be062a39768bbcb0ede9ab
+written: /home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/response_eq5.txt
+[4/4] 5 u(x,y,z) fields ready: elapsed=3245.430 s
+
+continuous displacement fields = READY (5/5)
+successful equilibration       = 1, 2, 3, 4, 5
+output directory              = /home/giarrettu/github/release8/continuous-section-field/cuf/I-Shape_L/output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3
+  response_eq1.txt
+  response_eq2.txt
+  response_eq3.txt
+  response_eq4.txt
+  response_eq5.txt
+
+
+python3 compare_fem3d_cuf_strong_equilibrium.py   --fem fem3d/output/fem3d_taper.npz   --cuf output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz   --csf models/carrera_i_shaped_taper80_l9_web3.yaml   --sections 40   --xmin 0.01   --xmax 0.99   --output-dir diagnostics/equilibrium_multisection_components
+[01/40] x/L=0.009858 points= 864 TOTAL F/C=4.393e-02/4.060e-02 div_x=3.914e-02/4.027e-02 div_y=5.091e-04/1.202e-03 div_z=6.694e-03/2.864e-03
+[02/40] x/L=0.034858 points= 864 TOTAL F/C=4.851e-02/4.150e-02 div_x=3.515e-02/4.099e-02 div_y=1.171e-03/1.486e-03 div_z=3.462e-02/2.726e-03
+[03/40] x/L=0.059858 points= 864 TOTAL F/C=6.493e-02/4.230e-02 div_x=2.897e-02/4.199e-02 div_y=1.008e-03/1.477e-03 div_z=6.286e-02/2.383e-03
+[04/40] x/L=0.084858 points= 864 TOTAL F/C=9.034e-02/4.304e-02 div_x=2.474e-02/4.286e-02 div_y=8.449e-04/1.335e-03 div_z=9.021e-02/2.362e-03
+[05/40] x/L=0.109858 points= 864 TOTAL F/C=1.178e-01/4.349e-02 div_x=2.114e-02/4.333e-02 div_y=7.896e-04/1.344e-03 div_z=1.177e-01/2.359e-03
+[06/40] x/L=0.134858 points= 864 TOTAL F/C=1.461e-01/4.384e-02 div_x=1.755e-02/4.365e-02 div_y=6.873e-04/1.247e-03 div_z=1.459e-01/2.369e-03
+[07/40] x/L=0.159858 points= 864 TOTAL F/C=1.760e-01/4.479e-02 div_x=1.367e-02/4.354e-02 div_y=7.691e-04/1.241e-03 div_z=1.752e-01/2.655e-03
+[08/40] x/L=0.184858 points= 864 TOTAL F/C=2.064e-01/4.552e-02 div_x=9.511e-03/4.319e-02 div_y=7.659e-04/1.350e-03 div_z=2.060e-01/3.100e-03
+[09/40] x/L=0.209858 points= 864 TOTAL F/C=2.370e-01/4.606e-02 div_x=5.299e-03/4.255e-02 div_y=1.078e-03/1.556e-03 div_z=2.369e-01/3.451e-03
+[10/40] x/L=0.234858 points= 864 TOTAL F/C=2.684e-01/4.638e-02 div_x=3.590e-03/4.201e-02 div_y=1.348e-03/1.910e-03 div_z=2.682e-01/3.865e-03
+[11/40] x/L=0.259858 points= 864 TOTAL F/C=3.000e-01/4.669e-02 div_x=5.221e-03/4.133e-02 div_y=1.803e-03/2.198e-03 div_z=2.999e-01/4.246e-03
+[12/40] x/L=0.284858 points= 864 TOTAL F/C=3.314e-01/4.621e-02 div_x=7.795e-03/4.174e-02 div_y=2.392e-03/2.546e-03 div_z=3.314e-01/4.774e-03
+[13/40] x/L=0.309858 points= 864 TOTAL F/C=3.636e-01/4.589e-02 div_x=9.686e-03/3.992e-02 div_y=2.733e-03/2.916e-03 div_z=3.631e-01/5.105e-03
+[14/40] x/L=0.334858 points= 864 TOTAL F/C=3.956e-01/4.544e-02 div_x=1.359e-02/3.911e-02 div_y=3.156e-03/3.135e-03 div_z=3.950e-01/5.406e-03
+[15/40] x/L=0.359858 points= 864 TOTAL F/C=4.284e-01/4.390e-02 div_x=1.910e-02/3.704e-02 div_y=3.603e-03/3.326e-03 div_z=4.276e-01/5.604e-03
+[16/40] x/L=0.384858 points= 864 TOTAL F/C=4.599e-01/4.208e-02 div_x=2.556e-02/3.490e-02 div_y=3.931e-03/3.463e-03 div_z=4.585e-01/5.792e-03
+[17/40] x/L=0.409858 points= 864 TOTAL F/C=4.911e-01/4.005e-02 div_x=3.301e-02/3.207e-02 div_y=4.457e-03/3.913e-03 div_z=4.891e-01/5.934e-03
+[18/40] x/L=0.434858 points= 864 TOTAL F/C=5.210e-01/3.795e-02 div_x=4.007e-02/2.875e-02 div_y=5.027e-03/4.361e-03 div_z=5.196e-01/6.168e-03
+[19/40] x/L=0.459858 points= 864 TOTAL F/C=5.519e-01/3.644e-02 div_x=4.859e-02/2.499e-02 div_y=5.553e-03/4.656e-03 div_z=5.492e-01/6.280e-03
+[20/40] x/L=0.484858 points= 864 TOTAL F/C=5.837e-01/3.281e-02 div_x=5.724e-02/2.106e-02 div_y=5.874e-03/5.230e-03 div_z=5.814e-01/6.445e-03
+[21/40] x/L=0.515142 points= 864 TOTAL F/C=6.278e-01/2.866e-02 div_x=7.051e-02/1.634e-02 div_y=6.056e-03/5.859e-03 div_z=6.248e-01/6.665e-03
+[22/40] x/L=0.540142 points= 864 TOTAL F/C=6.535e-01/2.377e-02 div_x=7.955e-02/1.314e-02 div_y=6.272e-03/6.469e-03 div_z=6.483e-01/6.796e-03
+[23/40] x/L=0.565142 points= 864 TOTAL F/C=6.846e-01/2.027e-02 div_x=8.554e-02/8.847e-03 div_y=6.516e-03/6.924e-03 div_z=6.722e-01/6.989e-03
+[24/40] x/L=0.590142 points= 864 TOTAL F/C=6.963e-01/1.751e-02 div_x=9.108e-02/5.890e-03 div_y=6.677e-03/7.359e-03 div_z=6.846e-01/7.396e-03
+[25/40] x/L=0.615142 points= 864 TOTAL F/C=7.107e-01/1.580e-02 div_x=9.566e-02/2.755e-03 div_y=7.043e-03/7.721e-03 div_z=6.953e-01/7.574e-03
+[26/40] x/L=0.640142 points= 864 TOTAL F/C=7.231e-01/2.102e-02 div_x=9.968e-02/8.090e-03 div_y=7.599e-03/8.086e-03 div_z=7.050e-01/7.768e-03
+[27/40] x/L=0.665142 points= 864 TOTAL F/C=7.232e-01/2.746e-02 div_x=1.030e-01/1.595e-02 div_y=7.995e-03/8.254e-03 div_z=7.160e-01/8.262e-03
+[28/40] x/L=0.690142 points= 864 TOTAL F/C=7.126e-01/3.525e-02 div_x=1.056e-01/2.449e-02 div_y=8.335e-03/8.626e-03 div_z=7.045e-01/8.527e-03
+[29/40] x/L=0.715142 points= 864 TOTAL F/C=6.948e-01/4.240e-02 div_x=1.070e-01/3.267e-02 div_y=8.420e-03/8.988e-03 div_z=6.863e-01/8.832e-03
+[30/40] x/L=0.740142 points= 864 TOTAL F/C=6.710e-01/5.156e-02 div_x=1.075e-01/4.216e-02 div_y=8.604e-03/9.465e-03 div_z=6.645e-01/9.291e-03
+[31/40] x/L=0.765142 points= 864 TOTAL F/C=6.433e-01/5.862e-02 div_x=1.074e-01/5.272e-02 div_y=8.843e-03/9.790e-03 div_z=6.358e-01/9.690e-03
+[32/40] x/L=0.790142 points= 864 TOTAL F/C=6.069e-01/6.743e-02 div_x=1.062e-01/6.132e-02 div_y=8.965e-03/1.005e-02 div_z=6.013e-01/9.917e-03
+[33/40] x/L=0.815142 points= 864 TOTAL F/C=5.631e-01/7.421e-02 div_x=1.040e-01/7.064e-02 div_y=8.329e-03/1.003e-02 div_z=5.575e-01/1.049e-02
+[34/40] x/L=0.840142 points= 864 TOTAL F/C=5.088e-01/8.406e-02 div_x=1.003e-01/7.837e-02 div_y=8.028e-03/9.872e-03 div_z=5.032e-01/1.072e-02
+[35/40] x/L=0.865142 points= 864 TOTAL F/C=4.431e-01/9.280e-02 div_x=9.358e-02/9.009e-02 div_y=7.822e-03/9.382e-03 div_z=4.372e-01/1.068e-02
+[36/40] x/L=0.890142 points= 864 TOTAL F/C=3.647e-01/1.033e-01 div_x=8.585e-02/1.012e-01 div_y=7.222e-03/7.480e-03 div_z=3.584e-01/1.045e-02
+[37/40] x/L=0.915142 points= 864 TOTAL F/C=2.738e-01/1.137e-01 div_x=7.557e-02/1.087e-01 div_y=6.605e-03/7.059e-03 div_z=2.672e-01/8.684e-03
+[38/40] x/L=0.940142 points= 864 TOTAL F/C=1.729e-01/1.215e-01 div_x=6.256e-02/1.190e-01 div_y=7.227e-03/9.324e-03 div_z=1.645e-01/8.884e-03
+[39/40] x/L=0.965142 points= 864 TOTAL F/C=8.478e-02/1.313e-01 div_x=4.605e-02/1.285e-01 div_y=8.020e-03/9.613e-03 div_z=5.406e-02/1.056e-02
+[40/40] x/L=0.990142 points= 864 TOTAL F/C=8.541e-02/1.342e-01 div_x=1.842e-02/1.309e-01 div_y=4.719e-03/9.923e-03 div_z=3.674e-02/1.423e-02
+
+Multi-section decomposition of all equilibrium equations
+============================================================================================
+sections = 40
+accepted Gauss samples = 34560
+x/L range = [0.01, 0.99]
+sampling = ALL available native H8 Gauss points on every selected x-plane
+
+div_x   : median across sections FEM=4.732120e-02 CUF=4.153161e-02 | sections with CUF residual < FEM residual: 19/40
+div_y   : median across sections FEM=5.713362e-03 CUF=5.544637e-03 | sections with CUF residual < FEM residual: 8/40
+div_z   : median across sections FEM=4.324394e-01 CUF=6.555127e-03 | sections with CUF residual < FEM residual: 40/40
+div_norm: median across sections FEM=4.357811e-01 CUF=4.387147e-02 | sections with CUF residual < FEM residual: 38/40
+
+Nine derivative terms: median across sections of per-section median |term|
+  dsigmaxx_dx    FEM=5.599876e-02 CUF=5.658783e-02
+  dtauxy_dy      FEM=6.124195e-03 CUF=3.520627e-02
+  dtauxz_dz      FEM=6.326840e-03 CUF=5.004803e-02
+  dtauxy_dx      FEM=8.422499e-04 CUF=1.395665e-03
+  dsigmayy_dy    FEM=3.220613e-03 CUF=3.341999e-03
+  dtauyz_dz      FEM=1.767699e-03 CUF=2.759391e-03
+  dtauxz_dx      FEM=2.524075e-01 CUF=2.388873e-02
+  dtauyz_dy      FEM=8.589188e-02 CUF=4.519739e-03
+  dsigmazz_dz    FEM=2.594481e-01 CUF=2.459691e-02
+============================================================================================
+Saved: diagnostics/equilibrium_multisection_components/equilibrium_component_points_all_sections.csv
+Saved: diagnostics/equilibrium_multisection_components/equilibrium_component_sections_summary.csv
+Saved: diagnostics/equilibrium_multisection_components/summary.txt
+Output directory: diagnostics/equilibrium_multisection_components
+
+
