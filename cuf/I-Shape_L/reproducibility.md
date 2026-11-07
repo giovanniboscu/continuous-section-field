@@ -229,6 +229,21 @@ execute:
 ./equilibrium_multisection_components.sh
 ```
 
+on windows
+```bash
+python compare_fem3d_cuf_strong_equilibrium.py `
+  --fem fem3d/output/fem3d_taper.npz `
+  --cuf output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz `
+  --csf models/carrera_i_shaped_taper80_l9_web3.yaml `
+  --sections 40 `
+  --xmin 0.01 `
+  --xmax 0.99 `
+  --output-dir diagnostics/equilibrium_multisection_components
+
+``
+
+
+
 This launcher evaluates the equilibrium quantities over multiple beam sections and generates the data required for the FEM3D/CSF-CUF equilibrium comparison.
 
 The diagnostic evaluates the three components of the stress-divergence residual:
