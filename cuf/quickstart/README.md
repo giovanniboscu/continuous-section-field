@@ -16,24 +16,28 @@ The **model** describes the physical system, the **problem** defines how that sy
 
 The solver uses these objects together. None of them is an intermediate result produced by another: they are independent descriptions of different aspects of the same problem.
 
+
 ## Glossary (read this first if you are new to CUF and CSF)
 
 | Term | One-line definition |
 |---|---|
-| **CUF** (Carrera Unified Formulation) | Hierarchical framework that generates structural theories of arbitrary order for beams, plates and shells. |
-| **CSF** (Continuous Section Field) | Continuous description of cross-section geometry and material along the axis, independent of the CUF approximation. |
-| **Model / Problem / Case** | Three independent descriptions (physics, constraints+loads, numerical approximation) composed by the solver, not a pipeline. |
-| **Adapter** | Module implementing loads and constraints of a specific problem (e.g. `torsion_halfwave`), separate from the CUF core. |
-| **Transverse expansion** | Approximation of the displacement field *over the cross-section* (or through the thickness), controlled by `cuf.basis` and `cuf.order`. |
-| **Longitudinal approximation** | Approximation of the field *along the axis*, controlled by `longitudinal.method`, `basis`, `order`, `element_boundaries`. |
-| **Order N** | Free parameter fixing the number of transverse expansion terms; higher = more degrees of freedom and more local detail. |
-| **TE / LE / Legendre** | Families of transverse expansion functions: Taylor (simple polynomials), Lagrange (interpolation on sub-domains), Legendre (orthogonal polynomials, often "scaled"). |
-| **Scaled Legendre** | Rescaled Legendre variant on the section domain; used in the Quick Start with N=8. |
-| **Lagrange (longitudinal)** | Nodal C0 basis used by `finite_element`; with order 6, one element has 7 nodes. |
-| **Half-wave** | Sinusoidal load along the axis: zero at both ends, maximum at mid-span. |
-| **Fundamental nucleus** | Compact CUF matrix expression independent of geometry, order N or mesh: the solver queries the model through the nuclei. |
-| **ESL / LW / component-wise** | Through-thickness detail levels: Equivalent Single Layer (one field), Layer-Wise (one per layer), component-wise (one per structural component). |
-| **Station response** | Table evaluating the continuous CUF field at selected axial and cross-section points. |
+| **CUF** (Carrera Unified Formulation) | Hierarchical framework for generating structural theories of arbitrary approximation order for beams, plates, and shells. |
+| **CSF** (Continuous Section Field) | Continuous description of cross-section geometry and material properties along the beam axis, independent of the CUF numerical approximation. |
+| **Model / Problem / Case** | Three distinct descriptions of the physical system, applied loads and constraints, and numerical approximation, composed together to define a single analysis. |
+| **Adapter** | Software module implementing the loads and boundary conditions of a specific structural problem (e.g. `torsion_halfwave`), independently of the CUF core. |
+| **Transverse expansion** | Representation of the displacement field over the beam cross-section using a selected family of expansion functions, configured through the `cuf` block. |
+| **Longitudinal approximation** | Approximation of the displacement field along the beam axis, configured through `longitudinal.method`, `basis`, `order`, and `element_boundaries`. |
+| **Order N** | Parameter controlling the transverse approximation order or resolution according to the selected expansion family; specified by `cuf.order`, independently of `longitudinal.order`. |
+| **TE / LE / Legendre** | Families of transverse approximation functions: Taylor polynomial expansions (TE), Lagrange interpolations (LE), and Legendre polynomial expansions. |
+| **Scaled Legendre** | Legendre-based transverse expansion using scaled cross-section coordinates; employed with `cuf.order: 8` in this Quick Start. |
+| **Lagrange (longitudinal)** | Nodal polynomial basis providing C0 continuity between longitudinal finite elements; an element of polynomial order 6 has 7 nodes. |
+| **Half-wave** | Sinusoidal longitudinal load distribution, zero at both beam ends and reaching its maximum magnitude at mid-span. |
+| **Fundamental nucleus** | Basic matrix building block of CUF whose formal structure is independent of the transverse approximation order; its coefficients depend on the physical model and selected approximation functions. |
+| **ESL / LW / component-wise** | Structural modeling approaches based on equivalent single-layer (ESL), layer-wise (LW), or individual structural-component representations. |
+| **CSF station** | Axial location where cross-section geometry and material data are specified to construct the continuous physical model. |
+| **Station response** | Evaluation of the reconstructed displacement field at selected longitudinal positions and physical cross-section points; distinct from the CSF stations defining the model. |
+| **Degrees of freedom (DOFs)** | Independent unknown coefficients of the discretized displacement field, determined by the transverse expansion, longitudinal approximation, and continuity constraints. |
+
 
 ---
 >## Try it interactively in Google Colab
