@@ -331,22 +331,6 @@ The solver writes the results below:
 output/torsion_halfwave_legendre_N08
 ```
 
-## Common errors and troubleshooting
-
-| Symptom / message | Likely cause | Fix |
-|---|---|---|
-| YAML not parsed, indentation error | Mixed spaces/tabs, wrongly nested keys | Use spaces only, check indentation of `model:`, `problem:`, `cuf:`, `longitudinal:` blocks |
-| `FileNotFoundError` on model or problem | Wrong relative path | Paths in YAML are relative to their location: run from `cuf/quickstart/` or fix `csf_yaml`/`yaml` |
-| Solver fails because `pypardiso` is missing | Optional dependency not installed | `pip install pypardiso` as in the Quick Start |
-| Same results when changing N | Editing the wrong file, or not passing the right case | The command starts from the case: `csf-cuf cases/....yaml`; check you saved the case actually used |
-| Displacements explode / no convergence | N too high for the mesh, or BC not as you think | Lower N, verify the `torsion_halfwave` adapter is the expected one (fixed-fixed) |
-| Anomalous shear stresses on the section | Too coarse transverse sampling in post-processing | Increase `--transverse-grid` in the post-processing command |
-| Inconsistent units (wrong orders of magnitude) | Mixing mm/N/MPa with other units | Adopt a consistent system: mm, N, MPa=N/mm², N/mm for line loads |
-| Longitudinal order not supported | Longitudinal basis other than Lagrange | The Quick Start declares Lagrange as the only implemented C0 longitudinal basis: use it |
-| Colab case gives different results from local | Colab runtime changed, or different repo version | The repo is the reference environment: re-run locally with the same version |
-
-**Note**: this table is built on behaviours documented in the Quick Start and on typical YAML+Python framework errors. Exact messages should be verified by running the repo.
-
 
 ## Next step
 
