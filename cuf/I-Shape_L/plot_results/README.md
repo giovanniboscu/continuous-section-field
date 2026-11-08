@@ -195,10 +195,10 @@ All **87 WebP figures included in this archive** are directly visible in the fol
 
 | Group | Figures | Open gallery |
 |---|---:|---|
-| Longitudinal curves — H20 and CSF–CUF | 42 | [View all figures](galleries/longitudinal.md) |
+| Longitudinal curves - H20 and CSF–CUF | 42 | [View all figures](galleries/longitudinal.md) |
 | Cross-sectional maps at x = 500 mm | 16 | [View all figures](galleries/transverse_x500.md) |
-| Perimeter plots — polygon 001 at x = 500 mm | 12 | [View all figures](galleries/perimeter_polygon_001.md) |
-| Perimeter plots — polygon 005 at x = 500 mm | 12 | [View all figures](galleries/perimeter_polygon_005.md) |
+| Perimeter plots - polygon 001 at x = 500 mm | 12 | [View all figures](galleries/perimeter_polygon_001.md) |
+| Perimeter plots - polygon 005 at x = 500 mm | 12 | [View all figures](galleries/perimeter_polygon_005.md) |
 | Selected figures and examples | 5 | [View all figures](galleries/examples.md) |
 | **Total** | **87** | |
 
