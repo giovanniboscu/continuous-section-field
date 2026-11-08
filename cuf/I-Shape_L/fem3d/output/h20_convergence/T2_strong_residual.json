@@ -1,0 +1,32 @@
+{
+  "file": "fem3d/output/h20_convergence/T2_h20.npz",
+  "elements_total": 768,
+  "elements_sampled": 768,
+  "gauss": 1,
+  "diff_parent_step": 0.0001,
+  "sampling_fraction": 1.0,
+  "units": "MPa/mm (N/mm^3)",
+  "volume_weighted": true,
+  "metrics": {
+    "x": {
+      "rms": 0.0836308466462397,
+      "median_abs": 0.014345965173314906,
+      "max_abs": 0.8277898423213655
+    },
+    "y": {
+      "rms": 0.020457082120972553,
+      "median_abs": 0.0021950938414174092,
+      "max_abs": 0.1701843492468147
+    },
+    "z": {
+      "rms": 0.021174281079172592,
+      "median_abs": 0.0026881348978713797,
+      "max_abs": 0.1659930098748685
+    },
+    "norm": {
+      "rms": 0.08866206008711328,
+      "median_abs": 0.017502960570078975,
+      "max_abs": 0.8410998073662047
+    }
+  }
+}

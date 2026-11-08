@@ -1,474 +1,233 @@
+# Chapter III - Reproducing the Tapered I-Section Study
+## From physical inputs to numerical results and figures
 
-# CSF-CUF I-Shape_L Reproducibility
+A reproducible numerical study requires more than an image of its result. The geometry, material law, applied load, discretization, solution files and evaluation method must be specified well enough for an independent reader to repeat the calculation. This chapter provides the complete command-line sequence for the H20 and CSF-CUF models.
 
-This document provides a command-by-command guide to reproduce the I-shaped tapered-section analysis and the corresponding FEM3D/CSF-CUF comparison workflow contained in:
+### Working vocabulary
 
-```text
-cuf/I-Shape_L
-```
+| Term | Meaning |
+|---|---|
+| **Model YAML** | The text file describing the section geometry and elastic properties. |
+| **Problem YAML** | The text file defining the supports and applied load for CUF. |
+| **Case YAML** | The text file choosing the CUF expansion, longitudinal discretization and solver settings. |
+| **NPZ** | A compressed NumPy archive containing solved fields or recovered numerical samples. |
+| **Driver** | A Python program that builds, solves or evaluates a specific numerical model. |
+| **Post-processing** | Recovering and plotting displacements, strains, stresses or equilibrium measures from saved results. |
+| **Common-point comparison** | Evaluating the two numerical solutions at precisely the same physical coordinates. |
 
-The workflow includes:
+The commands below use **Linux or another system with a bash-compatible shell**. They are executed from `continuous-section-field/cuf/I-Shape_L` unless otherwise indicated. A complete run of the structural solvers can be expensive. The supplied solved checkpoints permit the comparison and plotting stages to be executed independently.
 
-- execution of the CSF-CUF tapered I-section case;
-- generation of the independent FEM3D reference solution;
-- generation of the comparison plots;
-- evaluation of the multi-section strong-equilibrium diagnostic.
+## 1. Prepare the environment
 
-The commands below start from the repository root. After the installation prerequisites, all analysis commands are executed from:
-
-```text
-continuous-section-field/cuf/I-Shape_L
-```
-
-Linux/macOS examples use `python3`; on Windows, use `python` or `py -3` as appropriate.
-
----
-
-## 1. System prerequisites
-
-On Ubuntu/Debian:
+From a clone of the project, activate a suitable Python environment and install the project and numerical dependencies:
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y python3 python3-venv python3-pip git
-```
-
-On Windows, install Python 3 and Git, make sure they are available on `PATH`, and use Command Prompt or PowerShell.
-
-Linux package-manager instructions do not apply to Windows.
-
----
-
-## 2. Clone the repository
-
-```bash
-git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
 cd continuous-section-field
-```
-
----
-
-## 3. Virtual environment and package installation
-
-Create and activate a Python virtual environment:
-
-```bash
 python3 -m venv venv
 source venv/bin/activate
+python3 -m pip install --upgrade pip
+python3 -m pip install -e .
+python3 -m pip install numpy scipy pyyaml matplotlib
+export MPLBACKEND=Agg
+cd cuf/I-Shape_L
 ```
 
-Install the project:
+The source includes the `csf-cuf` command and the CSF Python modules. The three-dimensional reference documented here uses the SciPy backend. OpenSeesPy is optional and is not needed to reproduce the reported numerical values.
+
+Check that the main entry points are available:
 
 ```bash
-pip install --upgrade pip
-pip install -e .
-```
-
-
-
-```bash
-pip install pypardiso
-```
-
-The installation registers the `csf-cuf` command.
-
-Verify the installation with:
-
-```bash
-pip show csfpy
 csf-cuf --help
+python3 fem3d/run_bending_fem3d_h20.py --self-test
+python3 compare_fem3d_h20_cuf_equilibrium.py --version
+python3 -m csf.cuf.tools.plot_strain_stress_boundary_v10 --help
 ```
 
-For headless Linux environments:
+The equilibrium comparator should identify its version as **`H20-CUF same-point comparison v3 (section-bin regression fix)`**. The plotting module is the H20-capable `plot_strain_stress_boundary_v10` source installed under `src/csf/cuf/tools/`.
 
-```bash
-export MPLBACKEND=Agg
-```
+## 2. Understand the input files
 
-### Windows
+The reference model is described by a small set of readable text files.
 
-From Command Prompt:
+| File | Role |
+|---|---|
+| [`models/carrera_i_shaped_taper80.yaml`](models/carrera_i_shaped_taper80.yaml) | Physical section with three material regions; input to the H20 mesh driver. |
+| [`models/carrera_i_shaped_taper80_l9_web3.yaml`](models/carrera_i_shaped_taper80_l9_web3.yaml) | Equivalent section divided into nine quadrilateral CUF domains. |
+| [`problems/taper_table9_l9_web3.yaml`](problems/taper_table9_l9_web3.yaml) | Applied half-wave traction on the three lower CUF edges. |
+| [`cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml`](cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml) | L9 transverse functions, ten longitudinal elements, integration and solver settings. |
 
-```cmd
-python -m venv venv
-venv\Scripts\activate.bat
+The H20 solver creates its own quadratic solid discretization from the three-region physical model. The CUF solver uses the nine-domain model. Both operate on the same beam geometry, with the same support conditions and loading law.
 
-python -m pip install --upgrade pip
-python -m pip install -e .
-python -m pip install openseespy
-```
+The source modules required for the H20 run are placed together in `fem3d/`: `run_h20_convergence.py`, `run_bending_fem3d_h20.py`, `run_bending_fem3d_v2.py`, `h20_scipy_solver.py` and `h20_strong_residual.py`. They must remain in that directory because the driver imports its sibling modules. The model and case YAML files remain in their existing subdirectories.
 
-Install `pypardiso` only where supported and required by the selected solver configuration.
+## 3. Produce the CSF-CUF solution
 
-For headless plotting in Windows CMD:
-
-```cmd
-set MPLBACKEND=Agg
-```
-
-The virtual environment is assumed to remain active in the following steps.
-
----
-
-## 4. Move to the I-Shape_L example
-
-From the repository root:
-
-```bash
-cd cuf/I-Shape_L
-```
-
-Verify the current working directory if necessary:
-
-```bash
-pwd
-```
-
-The expected directory is:
-
-```text
-continuous-section-field/cuf/I-Shape_L
-```
-
-All commands in the following sections are executed relative to this directory unless explicitly stated otherwise.
-
----
-
-## 5. Run the CSF-CUF tapered I-section analysis
-
-From:
-
-```text
-continuous-section-field/cuf/I-Shape_L
-```
-
-execute:
+The case file selects the nine L9 domains and ten longitudinal finite elements, each using polynomial order six. To solve the case:
 
 ```bash
 csf-cuf cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
 ```
 
-This is the CSF-CUF analysis used by the subsequent comparison and strong-equilibrium post-processing workflow.
-
-The case defines the tapered I-shaped configuration and uses the L9 transverse expansion associated with this benchmark.
-
-The generated CSF-CUF solution is subsequently read by the plotting and equilibrium-analysis scripts described below.
-
----
-
-## 6. Generate the FEM3D reference solution
-
-The FEM3D model is contained in the `fem3d` subdirectory.
-
-Starting from:
+The case writes several checkpoints. The reference used in this study is:
 
 ```text
-continuous-section-field/cuf/I-Shape_L
+output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/
+  carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz
 ```
 
-move into the FEM3D directory:
+This checkpoint stores the coefficients needed to reconstruct the CUF displacement field at physical points. It can be reused for all later comparisons and plots; a second solver execution is not required.
+
+## 4. Produce the H20 reference and convergence series
+
+The H20 driver first builds the three-dimensional mesh, assigns elastic properties to the elements, integrates the bottom surface load, and solves the elastic system. The convergence program repeats the process on six progressively refined meshes.
 
 ```bash
-cd fem3d
+python3 fem3d/run_h20_convergence.py \
+  models/carrera_i_shaped_taper80.yaml \
+  --backend scipy \
+  --profile quick \
+  --amplitude -1.0 \
+  --max-elements 0 \
+  --residual-gauss 1 \
+  --tol-pct 0.1 \
+  --output-dir fem3d/output/h20_convergence
 ```
 
-Under Linux, generate the FEM3D reference solution with:
+The output directory contains the solved mesh checkpoints `T0_h20.npz`, `T1_h20.npz`, `T2_h20.npz`, `T3_h20.npz`, `T4_h20.npz` and `T6_h20.npz`, together with per-level logs and residual summaries. The driver also generates two compact tables: `convergence.csv` and `convergence.md`.
 
-```bash
-./startfem_tap.sh
-```
-
-The script generates the independent three-dimensional FEM reference solution required by the subsequent comparison tools.
-
-After the FEM3D analysis has completed, return to the main `I-Shape_L` directory:
-
-```bash
-cd ..
-```
-
-
----
-
-## 7. Generate all comparison plots
-
-Once both the CSF-CUF and FEM3D solutions are available, remain in:
-
+**The reference for the comparative study is:**
 
 ```text
-continuous-section-field/cuf/I-Shape_L
+fem3d/output/h20_convergence/T4_h20.npz
 ```
 
-and execute:
+In the supplied T4 solution, the checkpoint records **3,072 elements, 16,081 nodes**, a minimum $u_z$ of **-1.71702156 mm**, and a total nodal load of approximately **-42,050.505066 N**. The [convergence chapter](FEM3Dmesh-convergence-criterion.md) explains the mesh selection and the exact calculation of the relative change.
+
+The program reuses solved checkpoints by default. To repeat all solves explicitly, add `--force`. To inspect mesh geometry without solving, use the separate H20 driver's `--mesh-only` option.
+
+## 5. Draw the convergence curves
+
+The following operation uses the saved solutions and residual JSON files. It does **not** rerun the finite-element system:
 
 ```bash
-./generate_all_plots.sh
+python3 fem3d/plot_h20_convergence.py
 ```
 
-This launcher generates the plots associated with the I-shaped tapered benchmark using the previously computed CSF-CUF and FEM3D results.
-
-The script should therefore be executed only after the required solution files have been generated or are already present.
-
-The partial set of generated comparison plots can be viewed directly here:
-
-[View all generated plots](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/plot_results/README.md)
-
-
----
-
-## 8. Run the multi-section equilibrium diagnostic
-
-Still from:
+Three PNG files are written to:
 
 ```text
-continuous-section-field/cuf/I-Shape_L
+fem3d/output/h20_convergence/figures/
+  min_uz_vs_mesh.png
+  relative_change_vs_mesh.png
+  interior_residual_vs_mesh.png
 ```
 
-on linux execute:
+The first chart tracks minimum vertical displacement, the second shows its relative change, and the third shows the one-point-per-element interior equilibrium diagnostic.
+
+## 6. Compare interior equilibrium at identical physical points
+
+Once the two reference checkpoints exist, the common-point comparator evaluates H20 and CUF on the same integration points inside each H20 element. The command below reproduces the reported full T4 comparison:
 
 ```bash
-./equilibrium_multisection_components.sh
+PYTHONPATH=../../src python3 compare_fem3d_h20_cuf_equilibrium.py \
+  --fem fem3d/output/h20_convergence/T4_h20.npz \
+  --cuf output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz \
+  --csf models/carrera_i_shaped_taper80_l9_web3.yaml \
+  --max-elements 0 \
+  --gauss 2 \
+  --sections 40 \
+  --output-dir diagnostics/h20_vs_cuf_T4_v3
 ```
 
-on windows
+`--max-elements 0` means that **all** H20 elements are examined. `--gauss 2` means that two interior sample positions are used in each local coordinate direction, or **eight points per element**. Thus 3,072 elements generate **24,576 common physical points**. `--sections 40` groups their results into 40 longitudinal intervals without changing the underlying sample positions.
+
+The output includes `summary.json`, `summary.md`, `h20_cuf_common_points.csv`, `h20_cuf_sections.csv`, and PNG graphs of the three equilibrium equations and their combined norm. The CSV files are generated on demand and do not need to be distributed with a compact source package.
+
+For a quick preliminary calculation one may choose a positive `--max-elements` value. That is a **subsample**, not the full-volume reference used in this book. The equations and numerical interpretation are developed in [the equilibrium chapter](FEM3D-H20-CUF-equilibrium.md), Part I.
+
+## 7. Compare external and interface tractions
+
+A second program checks the force transmitted through the lower loaded surface, the free external surfaces, and the physical web-flange interfaces:
+
 ```bash
-python compare_fem3d_cuf_strong_equilibrium.py `
-  --fem fem3d/output/fem3d_taper.npz `
-  --cuf output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz `
-  --csf models/carrera_i_shaped_taper80_l9_web3.yaml `
-  --sections 40 `
-  --xmin 0.01 `
-  --xmax 0.99 `
-  --output-dir diagnostics/equilibrium_multisection_components
-
+PYTHONPATH=../../src python3 compare_fem3d_h20_cuf_surface_equilibrium.py \
+  --fem fem3d/output/h20_convergence/T4_h20.npz \
+  --cuf output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz \
+  --csf models/carrera_i_shaped_taper80_l9_web3.yaml \
+  --load-amplitude -1.0 \
+  --face-gauss 2 \
+  --domain-nx 40 \
+  --sections 40 \
+  --max-faces 0 \
+  --output-dir diagnostics/h20_vs_cuf_T4_surfaces
 ```
 
+Here `--face-gauss 2` evaluates each quadratic face at four Gaussian sample positions. The script includes the inclined physical face area in the integration and checks the loaded-surface resultant against the nodal force array.
 
+To verify the generated numerical tables independently:
 
-This launcher evaluates the equilibrium quantities over multiple beam sections and generates the data required for the FEM3D/CSF-CUF equilibrium comparison.
-
-The diagnostic evaluates the three components of the stress-divergence residual:
-
-```math
-(\nabla\cdot\sigma)_x
-=
-\frac{\partial \sigma_{xx}}{\partial x}
-+
-\frac{\partial \tau_{xy}}{\partial y}
-+
-\frac{\partial \tau_{xz}}{\partial z}
+```bash
+python3 verify_h20_cuf_surface_outputs.py \
+  diagnostics/h20_vs_cuf_T4_surfaces
 ```
 
-```math
-(\nabla\cdot\sigma)_y
-=
-\frac{\partial \tau_{xy}}{\partial x}
-+
-\frac{\partial \sigma_{yy}}{\partial y}
-+
-\frac{\partial \tau_{yz}}{\partial z}
+The verifier recomputes weighted surface statistics from the generated CSV files and checks the load integral. The expected successful completion is `ALL TESTS PASS`. Surface forces and physical material interfaces are explained in [the equilibrium chapter](FEM3D-H20-CUF-equilibrium.md), Part II.
+
+## 8. Generate longitudinal, cross-sectional and perimeter plots
+
+The plotting module reconstructs displacement, strain and stress from the saved CUF checkpoint. When supplied with the H20 checkpoint, it also overlays the FEM result on longitudinal curves and polygon-perimeter curves. Cross-sectional color maps show the CUF fields.
+
+The provided launcher uses the H20-capable module name `csf.cuf.tools.plot_strain_stress_boundary_v10`:
+
+```bash
+bash generate_all_plots_H20_CUF.sh
 ```
 
-and
+By default it generates longitudinal plots and transverse/perimeter plots at **$x=250$, $500$ and $750$ mm** under `plot_results/all_H20_CUF/`. To restrict the stations or set a different output directory, use environment variables:
 
-```math
-(\nabla\cdot\sigma)_z
-=
-\frac{\partial \tau_{xz}}{\partial x}
-+
-\frac{\partial \tau_{yz}}{\partial y}
-+
-\frac{\partial \sigma_{zz}}{\partial z}.
+```bash
+STATIONS='500' OUT='plot_results/H20_selected' \
+  bash generate_all_plots_H20_CUF.sh
 ```
 
-The corresponding total residual norm is
+The program writes PNG figures and, by default, the corresponding numerical CSV files. Each figure CSV has the same base name as its PNG under a sibling `figure_csv/` directory. Some sampled fields are also saved in NPZ form. [The plotting chapter](plot_results/README.md) explains how to read these outputs and how to identify a physical point on a closed sectional perimeter.
 
-```math
-\|\nabla\cdot\sigma\|
-=
-\sqrt{
-(\nabla\cdot\sigma)_x^2
-+
-(\nabla\cdot\sigma)_y^2
-+
-(\nabla\cdot\sigma)_z^2
-}.
+Before any figure is created, the launcher checks that the FEM checkpoint contains 20-node elements and the displacement and material arrays needed for H20 reconstruction. It records the validated element and node counts in the run log.
+
+The plotting launcher requires the H20 plotting module to be installed at its stated Python import path. An unavailable plotting module is an explicit error; the script does not silently substitute another reader.
+
+## 9. Check reference-file identity
+
+The source comparison records SHA-256 checksums for its inputs. These identify the precise checkpoints behind the results in the book. On the supplied saved dataset, the command
+
+```bash
+sha256sum \
+  fem3d/output/h20_convergence/T4_h20.npz \
+  output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz \
+  models/carrera_i_shaped_taper80_l9_web3.yaml
 ```
 
----
-
-## 9. Compare FEM3D and CSF-CUF equilibrium results
-
-After the multi-section data have been generated, remain in:
+produces the following recorded hashes, in the same order:
 
 ```text
-continuous-section-field/cuf/I-Shape_L
+525444c97c7614ded0263c7475372f3c7a564127e1418912b424bb4e421251c1
+67b2b69b6522e52d37dc1dbb505b6381e69f435a24d22fae5e7b54971a438705
+66ef4fc835f426a645f949f41d28e2225dd0a2556b9b84a1446f954ca0a300b5
 ```
 
-and execute:
+A fresh solve may produce different binary hashes because of software versions and numerical representation. For an independently regenerated run, compare the **physical and numerical results**, not only the file hashes.
 
-```bash
-python3 compare_fem3d_cuf_strong_equilibrium.py
-```
+## 10. Order of execution and expected outputs
 
-On Windows:
+| Stage | Command or program | Main output |
+|---|---|---|
+| Physical input | Read model, problem and case YAML | Defined geometry, materials, supports and load |
+| CUF solve | `csf-cuf ...yaml` | `eq1.cuf.npz` checkpoint |
+| H20 solve and refinement | `fem3d/run_h20_convergence.py` | `T4_h20.npz`, convergence table and JSON diagnostics |
+| Convergence figures | `fem3d/plot_h20_convergence.py` | Three PNG plots |
+| Common-point equilibrium | `compare_fem3d_h20_cuf_equilibrium.py` | Interior equilibrium tables and PNG plots |
+| Physical-surface equilibrium | `compare_fem3d_h20_cuf_surface_equilibrium.py` | Surface statistics, sampled data and PNG plots |
+| Independent surface verification | `verify_h20_cuf_surface_outputs.py` | Pass/fail confirmation |
+| Displacement/strain/stress plots | `generate_all_plots_H20_CUF.sh` | Longitudinal, sectional and perimeter PNG plots |
 
-```cmd
-python compare_fem3d_cuf_strong_equilibrium.py
-```
-
-The script reads the FEM3D and CSF-CUF equilibrium data generated by the previous analysis and produces the direct comparison between the two formulations.
-
-The comparison includes:
-
-- the first equilibrium residual, `div_x`;
-- the second equilibrium residual, `div_y`;
-- the third equilibrium residual, `div_z`;
-- the total residual norm, `div_norm`;
-- the evolution of the residuals along the selected beam sections;
-- the FEM3D/CUF residual ratios.
-
-This is the script used to obtain the quantitative FEM3D/CSF-CUF equilibrium comparison reported for the tapered I-shaped benchmark.
-
-For the FEM3D mesh-convergence study and the reference mesh adopted in the subsequent comparisons, see:
-
-[FEM3D mesh-convergence criterion](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/FEM3Dmesh-convergence-criterion.md)
-
----
-
-## 10. Complete reproduction sequence
-
-After completing the installation prerequisites, the complete Linux workflow is:
-
-```bash
-cd continuous-section-field/cuf/I-Shape_L
-
-# 1. CSF-CUF analysis
-csf-cuf cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
-
-# 2. FEM3D reference solution
-cd fem3d
-./startfem_tap.sh
-
-# 3. Return to I-Shape_L
-cd ..
-
-# 4. Generate CSF-CUF/FEM3D comparison plots
-./generate_all_plots.sh
-
-# 5. Generate multi-section equilibrium data
-./equilibrium_multisection_components.sh
-
-# 6. Compare FEM3D and CSF-CUF equilibrium results
-python3 compare_fem3d_cuf_strong_equilibrium.py
-```
-
-The execution sequence is therefore:
-
-```text
-CSF-CUF analysis
-       |
-       v
-FEM3D reference solution
-       |
-       v
-comparison plots
-       |
-       v
-multi-section equilibrium data
-       |
-       v
-FEM3D / CSF-CUF equilibrium comparison
-```
-
----
-
-## 11. Shortest reproduction path
-
-If the repository and Python environment are already configured:
-
-```bash
-cd continuous-section-field/cuf/I-Shape_L
-
-csf-cuf cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
-
-cd fem3d
-./startfem_tap.sh
-cd ..
-
-./generate_all_plots.sh
-./equilibrium_multisection_components.sh
-python3 compare_fem3d_cuf_strong_equilibrium.py
-```
-
-If the FEM3D reference solution is already available:
-
-```bash
-cd continuous-section-field/cuf/I-Shape_L
-
-csf-cuf cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
-
-./generate_all_plots.sh
-./equilibrium_multisection_components.sh
-python3 compare_fem3d_cuf_strong_equilibrium.py
-```
-
----
-
-## Command summary - Linux
-
-From a fresh Ubuntu/Debian installation:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y python3 python3-venv python3-pip git
-
-git clone --depth 1 https://github.com/giovanniboscu/continuous-section-field.git
-cd continuous-section-field
-
-python3 -m venv venv
-source venv/bin/activate
-
-pip install --upgrade pip
-pip install -e .
-pip install pypardiso
-pip install openseespy
-
-export MPLBACKEND=Agg
-
-cd cuf/I-Shape_L
-
-# CSF-CUF
-csf-cuf cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
-
-# FEM3D
-cd fem3d
-./startfem_tap.sh
-cd ..
-
-# Comparison plots
-./generate_all_plots.sh
-
-# Multi-section equilibrium data
-./equilibrium_multisection_components.sh
-
-# FEM3D / CSF-CUF equilibrium comparison
-python3 compare_fem3d_cuf_strong_equilibrium.py
-```
-
-The complete analysis chain is:
-
-```text
-CSF-CUF
-   |
-   v
-FEM3D
-   |
-   v
-comparison plots
-   |
-   v
-multi-section equilibrium data
-   |
-   v
-FEM3D / CSF-CUF equilibrium comparison
-```
+Each step reads the results of preceding steps through documented files rather than through an interactive plotting session. That separation allows the numerical solve, the equilibrium diagnostics, and the graphical presentation to be repeated independently.

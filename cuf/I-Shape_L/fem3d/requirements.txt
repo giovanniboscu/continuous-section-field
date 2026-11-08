@@ -1,0 +1,4 @@
+numpy
+scipy
+pyyaml  # required only for QA-only fixture scripts
+# openseespy  # optional, only after verify_h20_backends.py passes

@@ -1,0 +1,5 @@
+SciPy residual_inf=1.44633e-10 support_reaction_z=42050.5050656
+element=20NodeBrick nodes=4201 elements=768 solver=scipy-spsolve
+loads Fz=-42050.5050656 N; min Jacobian sampled=168.87487
+min uz=-1.71462687387 mm axial gauge residual=0 mm
+saved fem3d/output/h20_convergence/T2_h20.npz

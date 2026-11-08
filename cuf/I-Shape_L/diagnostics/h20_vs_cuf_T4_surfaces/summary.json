@@ -1,0 +1,325 @@
+{
+  "version": "H20-CUF physical-surface comparison v1 (2026-11-07)",
+  "input": {
+    "fem": "fem3d/output/h20_convergence/T4_h20.npz",
+    "cuf": "output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz",
+    "csf": "models/carrera_i_shaped_taper80_l9_web3.yaml",
+    "fem_sha256": "525444c97c7614ded0263c7475372f3c7a564127e1418912b424bb4e421251c1",
+    "cuf_sha256": "67b2b69b6522e52d37dc1dbb505b6381e69f435a24d22fae5e7b54971a438705",
+    "csf_sha256": "66ef4fc835f426a645f949f41d28e2225dd0a2556b9b84a1446f954ca0a300b5"
+  },
+  "configuration": {
+    "face_gauss_per_direction": 2,
+    "epsilon_mm": 1e-05,
+    "load_amplitude_mpa": -1.0,
+    "domain_nx": 40,
+    "max_faces": 0,
+    "mesh_jumps": false
+  },
+  "mesh": {
+    "H20_elements": 3072,
+    "external_faces": 2432,
+    "material_faces": 384,
+    "other_internal_faces": 7616,
+    "bottom_faces_expected": 384,
+    "cuf_domain_seams": 8
+  },
+  "groups": {
+    "loaded_bottom": {
+      "points": 1536,
+      "area_mm2": 66052.7788968791,
+      "units": "MPa",
+      "metric": "surface-area-weighted RMS of traction vector error/jump",
+      "values": {
+        "fem_error": {
+          "x": {
+            "rms": 0.07074721117345865,
+            "mean_abs": 0.051959804304835946,
+            "max_abs": 0.34655409047447727
+          },
+          "y": {
+            "rms": 0.060479588687959655,
+            "mean_abs": 0.04731050718078705,
+            "max_abs": 0.13243143464392232
+          },
+          "z": {
+            "rms": 0.06144192145567907,
+            "mean_abs": 0.052171621119148,
+            "max_abs": 0.17358755423799796
+          },
+          "norm": {
+            "rms": 0.11152604291757404,
+            "mean_abs": 0.10369996158372756,
+            "max_abs": 0.36440869647042434
+          }
+        },
+        "cuf_error": {
+          "x": {
+            "rms": 0.43616538016029177,
+            "mean_abs": 0.33182912643141127,
+            "max_abs": 1.7793660560670785
+          },
+          "y": {
+            "rms": 0.1697822918404192,
+            "mean_abs": 0.13241315973561432,
+            "max_abs": 0.3937296466965772
+          },
+          "z": {
+            "rms": 0.12846241210297152,
+            "mean_abs": 0.1123245619666098,
+            "max_abs": 0.228549404529219
+          },
+          "norm": {
+            "rms": 0.4853543620863738,
+            "mean_abs": 0.42019286371690584,
+            "max_abs": 1.7799028818248404
+          }
+        }
+      },
+      "cuf_over_fem": 4.35193744339236,
+      "cuf_reduction_percent": -335.193744339236,
+      "resultant_N": {
+        "fem_error": [
+          26.94471434701582,
+          4.168216814195644e-08,
+          -420.4735327000486
+        ],
+        "cuf_error": [
+          140.34346144180492,
+          1.4820014489907996e-08,
+          -2607.445847169243
+        ]
+      },
+      "resultant_target_N": [
+        0.0,
+        0.0,
+        -42050.50488693638
+      ]
+    },
+    "free_external": {
+      "points": 7680,
+      "area_mm2": 368118.3526778501,
+      "units": "MPa",
+      "metric": "surface-area-weighted RMS of traction vector error/jump",
+      "values": {
+        "fem_error": {
+          "x": {
+            "rms": 0.8785593602983188,
+            "mean_abs": 0.3030393051505276,
+            "max_abs": 7.391629806744052
+          },
+          "y": {
+            "rms": 0.2387843234544529,
+            "mean_abs": 0.07609372826125754,
+            "max_abs": 1.7915104262871162
+          },
+          "z": {
+            "rms": 0.23601621782322965,
+            "mean_abs": 0.07457238628553346,
+            "max_abs": 1.505151861593059
+          },
+          "norm": {
+            "rms": 0.9405254689645434,
+            "mean_abs": 0.3514105316572736,
+            "max_abs": 7.448108264582324
+          }
+        },
+        "cuf_error": {
+          "x": {
+            "rms": 0.9945246900167755,
+            "mean_abs": 0.5260423283047854,
+            "max_abs": 7.458814068748104
+          },
+          "y": {
+            "rms": 0.28356120997484435,
+            "mean_abs": 0.12670229993037155,
+            "max_abs": 1.6763032475782158
+          },
+          "z": {
+            "rms": 0.24160125545636502,
+            "mean_abs": 0.10055963589778037,
+            "max_abs": 1.6607520912202747
+          },
+          "norm": {
+            "rms": 1.0620063490834002,
+            "mean_abs": 0.5946336871657267,
+            "max_abs": 7.473251311942644
+          }
+        }
+      },
+      "cuf_over_fem": 1.1291627756264797,
+      "cuf_reduction_percent": -12.91627756264797,
+      "resultant_N": {
+        "fem_error": [
+          95.06455328540672,
+          -7.645826481912685e-08,
+          -1481.1522714940347
+        ],
+        "cuf_error": [
+          101.69063173511866,
+          -1.2244498249418083e-07,
+          -2281.130651787986
+        ]
+      }
+    },
+    "material_interface": {
+      "points": 1536,
+      "area_mm2": 50039.984012787194,
+      "units": "MPa",
+      "metric": "surface-area-weighted RMS of traction vector error/jump",
+      "values": {
+        "fem_jump": {
+          "x": {
+            "rms": 2.4206481670073945,
+            "mean_abs": 1.224413985320144,
+            "max_abs": 11.68856674424691
+          },
+          "y": {
+            "rms": 0.33926493978955924,
+            "mean_abs": 0.17106684481647597,
+            "max_abs": 1.275710715422496
+          },
+          "z": {
+            "rms": 0.5506913807489684,
+            "mean_abs": 0.25403519870507885,
+            "max_abs": 2.177196059207017
+          },
+          "norm": {
+            "rms": 2.5055736358442706,
+            "mean_abs": 1.3371855300540099,
+            "max_abs": 11.720790143827191
+          }
+        },
+        "cuf_jump": {
+          "x": {
+            "rms": 2.4508785301436085,
+            "mean_abs": 1.6202666014200389,
+            "max_abs": 11.13027030676768
+          },
+          "y": {
+            "rms": 0.23702099772176435,
+            "mean_abs": 0.15617246327905268,
+            "max_abs": 0.7252756042755005
+          },
+          "z": {
+            "rms": 0.5198877540593407,
+            "mean_abs": 0.32897030992914,
+            "max_abs": 1.8316273740002973
+          },
+          "norm": {
+            "rms": 2.5165984581773824,
+            "mean_abs": 1.7319645565733037,
+            "max_abs": 11.159724705313797
+          }
+        }
+      },
+      "cuf_over_fem": 1.0044001190687006,
+      "cuf_reduction_percent": -0.44001190687006364
+    },
+    "cuf_domain_interfaces": {
+      "points": 1280,
+      "area_mm2": 200044.42825971835,
+      "units": "MPa",
+      "metric": "surface-area-weighted RMS of traction vector error/jump",
+      "values": {
+        "cuf": {
+          "x": {
+            "rms": 1.0235799700209187,
+            "mean_abs": 0.6328024861940399,
+            "max_abs": 3.6327738449686433
+          },
+          "y": {
+            "rms": 0.22761978647942369,
+            "mean_abs": 0.1380571875769955,
+            "max_abs": 0.6806441197884139
+          },
+          "z": {
+            "rms": 0.24478553062806266,
+            "mean_abs": 0.15117508500804366,
+            "max_abs": 0.7070340875617123
+          },
+          "norm": {
+            "rms": 1.0767760576042846,
+            "mean_abs": 0.7304618328710226,
+            "max_abs": 3.6487660217505096
+          }
+        }
+      }
+    },
+    "supported_end": {
+      "points": 512,
+      "area_mm2": 9600.0,
+      "units": "MPa",
+      "metric": "surface-area-weighted RMS of traction vector error/jump",
+      "values": {
+        "fem_traction": {
+          "x": {
+            "rms": 0.10946146146553866,
+            "mean_abs": 0.05047010703322113,
+            "max_abs": 1.667125281304549
+          },
+          "y": {
+            "rms": 2.082130245866803,
+            "mean_abs": 1.1598071853066971,
+            "max_abs": 10.569274708020084
+          },
+          "z": {
+            "rms": 6.166761184662887,
+            "mean_abs": 4.4531719818756805,
+            "max_abs": 22.76074279150047
+          },
+          "norm": {
+            "rms": 6.509699814965691,
+            "mean_abs": 4.918959300175363,
+            "max_abs": 23.679229064511265
+          }
+        },
+        "cuf_traction": {
+          "x": {
+            "rms": 0.08512470754823791,
+            "mean_abs": 0.03432856427030051,
+            "max_abs": 1.4055317495454036
+          },
+          "y": {
+            "rms": 2.0717509486536914,
+            "mean_abs": 1.184148125954057,
+            "max_abs": 10.001110284907641
+          },
+          "z": {
+            "rms": 6.077535515519623,
+            "mean_abs": 4.380570585559984,
+            "max_abs": 21.977956725380746
+          },
+          "norm": {
+            "rms": 6.421513540551402,
+            "mean_abs": 4.842451175016468,
+            "max_abs": 22.684686185140954
+          }
+        }
+      },
+      "resultant_N": {
+        "fem_traction": [
+          0.042314620508118926,
+          -2.9049705923861642e-08,
+          42750.45102600653
+        ],
+        "cuf_traction": [
+          -0.06073711010270306,
+          5.8737145043619154e-08,
+          42053.47762137585
+        ]
+      }
+    }
+  },
+  "checks": {
+    "bottom_resultant_from_npz_N": -42050.50506557737,
+    "bottom_resultant_from_surface_quadrature_N": [
+      0.0,
+      0.0,
+      -42050.50488693638
+    ],
+    "CUF_9_domain_interfaces_are_separate_from_FEM_3_region_interfaces": true,
+    "supported_end_faces_are_NOT_treated_as_traction_free": true,
+    "load_resultant_relative_difference": 4.24824825611711e-09
+  }
+}

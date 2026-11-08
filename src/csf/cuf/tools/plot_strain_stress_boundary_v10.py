@@ -1,4 +1,4 @@
-# Version: CSF-CUF plot_strain_stress_boundary v14.6.0 - 2026-11-03
+# Version: CSF-CUF plot_strain_stress_boundary v14.6.0 H20 extension v2 - 2026-11-07
 # v14.6.0: Per-figure CSV companions are written by default under figure_csv/.
 #          Every CSV uses the PNG basename, preserves the exact figure/panel grouping,
 #          contains the numerical samples represented by that figure, and records extrema.
@@ -916,6 +916,158 @@ class FEM3DH8:
         return found
 
 
+
+class FEM3DH20(FEM3DH8):
+    """Native 20-node serendipity bricks, with one-sided, unsmoothed recovery.
+
+    Nodes 0..7 are ordered as in H8, followed by edge midpoints
+    (0,1),(1,2),(2,3),(3,0),(4,5),(5,6),(6,7),(7,4),
+    (0,4),(1,5),(2,6),(3,7).  Both shape and derivative use this convention.
+    """
+    EDGES = ((0,1),(1,2),(2,3),(3,0),(4,5),(5,6),
+             (6,7),(7,4),(0,4),(1,5),(2,6),(3,7))
+
+    def __init__(self, path):
+        from scipy.spatial import cKDTree
+        path = Path(path).expanduser().resolve()
+        with np.load(path, allow_pickle=False) as data:
+            keys = set(data.files)
+            if {"nodes", "elements", "displacement"}.issubset(keys):
+                coords = np.asarray(data["nodes"], dtype=float)
+                conn = np.asarray(data["elements"])
+                disp = np.asarray(data["displacement"], dtype=float)
+                source = "H20 nodes/elements/displacement"
+            elif {"coordinates", "connectivity", "displacements"}.issubset(keys):
+                coords = np.asarray(data["coordinates"], dtype=float)
+                conn = np.asarray(data["connectivity"])
+                disp = np.asarray(data["displacements"], dtype=float)
+                base = int(np.asarray(data["connectivity_index_base"]).item()) if "connectivity_index_base" in keys else 0
+                if base not in (0,1):
+                    raise ValueError("H20 connectivity_index_base must be 0 or 1")
+                conn = conn - base
+                source = "H20 coordinates/connectivity/displacements"
+            else:
+                raise ValueError("Unsupported H20 NPZ keys: " + ", ".join(sorted(keys)))
+            if not np.issubdtype(conn.dtype, np.integer):
+                raise ValueError("H20 connectivity must contain integers")
+            if coords.ndim != 2 or coords.shape[1] != 3 or disp.shape != coords.shape:
+                raise ValueError("H20 coordinates and displacements must be (nodes,3)")
+            if conn.ndim != 2 or conn.shape[1] != 20 or len(conn) == 0:
+                raise ValueError("H20 connectivity must have shape (elements,20)")
+            if conn.min() < 0 or conn.max() >= len(coords):
+                raise ValueError("H20 connectivity indices outside node array")
+            if not np.isfinite(coords).all() or not np.isfinite(disp).all():
+                raise ValueError("Nonfinite H20 mesh or displacement")
+            self.ids = np.asarray(data["element_ids"]) if "element_ids" in keys else np.arange(len(conn))
+            self.units = str(np.asarray(data["units"]).item()) if "units" in keys else "native"
+            materials = ("element_E", "element_G", "element_nu")
+            if any(k in keys for k in materials) and not all(k in keys for k in materials):
+                raise ValueError("Incomplete H20 element material metadata")
+            for k in materials:
+                setattr(self,k,np.asarray(data[k],dtype=float) if k in keys else None)
+            self.native_stresses = self.gauss_coordinates = self.gauss_natural = None
+        self.source_schema = source
+        if self.ids.shape != (len(conn),) or len(np.unique(self.ids)) != len(conn):
+            raise ValueError("H20 element ids must be unique")
+        if self.element_E is not None:
+            for a in (self.element_E,self.element_G,self.element_nu):
+                if a.shape != (len(conn),) or not np.isfinite(a).all():
+                    raise ValueError("Invalid H20 element material metadata")
+            if np.any(self.element_E <= 0) or np.any(self.element_G <= 0) or np.any(self.element_nu <= -1) or np.any(self.element_nu >= .5):
+                raise ValueError("Invalid H20 E/G/nu values")
+            if not np.allclose(self.element_G,self.element_E/(2*(1+self.element_nu)),rtol=1e-8):
+                raise ValueError("H20 E/G/nu are inconsistent")
+        self.coords,self.disp = coords[conn],disp[conn]
+        self.low,self.high = self.coords.min(axis=1),self.coords.max(axis=1)
+        self.centers = self.coords[:,:8].mean(axis=1)
+        self.tol = 1e-9*max(1.,float(np.ptp(coords,axis=0).max()))
+        self.rectangular_prisms = np.zeros(len(conn),dtype=bool)
+        self.transverse_boxes = np.column_stack((self.low[:,1],self.high[:,1],self.low[:,2],self.high[:,2]))
+        self.tree = cKDTree(self.centers)
+        self.radius = float(np.linalg.norm(self.high-self.low,axis=1).max())
+        self.domain_cache = {}
+        # Validate the specified interpolation convention against actual midside positions.
+        edges = np.asarray(self.EDGES)
+        midpoints = .5*(self.coords[:,edges[:,0]]+self.coords[:,edges[:,1]])
+        mismatch = np.linalg.norm(self.coords[:,8:]-midpoints,axis=2)
+        scale = np.maximum(1.,np.linalg.norm(self.high-self.low,axis=1))
+        bad = np.where(np.max(mismatch,axis=1) > 1e-6*scale)[0]
+        if len(bad):
+            raise ValueError(f"H20 midside ordering/geometry mismatch in element {int(bad[0])}; expected standard 8-corner/12-edge convention")
+        for idx in range(min(len(conn), 50)):
+            _,d=self.shape(np.zeros(3))
+            jac=self.coords[idx].T@d
+            if np.linalg.det(jac)<=0:
+                raise ValueError(f"Invalid H20 Jacobian in element {int(self.ids[idx])}; check node ordering")
+        print(f"FEM3D: {len(conn)} H20 elements; schema={source}; native units={self.units}; no unit conversion")
+
+    @classmethod
+    def shape(cls, q):
+        r,s,t = map(float,q)
+        qv=np.asarray((r,s,t))
+        n=np.zeros(20)
+        d=np.zeros((20,3))
+        for i,(a,b,c) in enumerate(cls.SIGNS):
+            factors=1+np.asarray((a,b,c))*qv
+            linear=a*r+b*s+c*t-2
+            n[i]=factors.prod()*linear/8
+            for j,sign in enumerate((a,b,c)):
+                others=np.prod(np.delete(factors,j))
+                d[i,j]=sign*others*(linear+factors[j])/8
+        for k,(i,j) in enumerate(cls.EDGES,8):
+            va,vb=cls.SIGNS[i],cls.SIGNS[j]
+            axis=int(np.flatnonzero(va!=vb)[0]); other=[ax for ax in range(3) if ax!=axis]
+            a,b=other
+            fa=1+va[a]*qv[a]; fb=1+va[b]*qv[b]
+            n[k]=(1-qv[axis]**2)*fa*fb/4
+            d[k,axis]=-qv[axis]*fa*fb/2
+            d[k,a]=(1-qv[axis]**2)*va[a]*fb/4
+            d[k,b]=(1-qv[axis]**2)*va[b]*fa/4
+        return n,d
+
+    def intersects_polygon_side(self, element, polygon_index, section, csf_field, *, x=None):
+        # Same geometric CSF-side test as H8, but use eight H20 corner nodes,
+        # not the twelve additional midside nodes, when extracting end faces.
+        from matplotlib.path import Path as PolygonPath
+        polygon=section.polygons[int(polygon_index)-1]
+        verts=[(v.x,v.y) for v in polygon.vertices]
+        if x is not None:
+            corner=self.coords[element,:8]
+            xa=float(np.min(corner[:,0])); xb=float(np.max(corner[:,0]))
+            if xb>xa:
+                f=(float(x)-xa)/(xb-xa)
+                start=corner[np.isclose(corner[:,0],xa,rtol=0,atol=self.tol)]
+                end=corner[np.isclose(corner[:,0],xb,rtol=0,atol=self.tol)]
+                if len(start)==4 and len(end)==4:
+                    # The tapered I-section has rectangular transverse H20 faces.
+                    ya=(1-f)*float(start[:,1].min())+f*float(end[:,1].min())
+                    yb=(1-f)*float(start[:,1].max())+f*float(end[:,1].max())
+                    za=(1-f)*float(start[:,2].min())+f*float(end[:,2].min())
+                    zb=(1-f)*float(start[:,2].max())+f*float(end[:,2].max())
+                    if yb>ya and zb>za:
+                        return self._positive_polygon_rectangle_overlap(verts,(ya,yb,za,zb))
+        # Fallback: use material-side point at element center only if unambiguous.
+        return self.domain(element,csf_field)==int(polygon_index)
+
+
+def load_fem3d(path):
+    """Dispatch on connectivity width while retaining the original H8 path."""
+    with np.load(path,allow_pickle=False) as data:
+        keys=set(data.files)
+        key="elements" if "elements" in keys else "connectivity" if "connectivity" in keys else None
+        if key is None:
+            raise ValueError("FEM checkpoint has no elements/connectivity array")
+        conn=np.asarray(data[key])
+        if conn.ndim!=2:
+            raise ValueError("FEM connectivity must be a 2D array")
+        width=conn.shape[1]
+    if width==8:
+        return FEM3DH8(path)
+    if width==20:
+        return FEM3DH20(path)
+    raise ValueError(f"Unsupported FEM element with {width} nodes; expected H8 or H20")
+
+
 def check_material_consistency(fem, csf_yaml, output_dir, source):
     """Compare constitutive laws at H8 centroids, not at boundary samples.
 
@@ -1124,7 +1276,7 @@ def save_curve_figure_csv(point_ids, rows, curve, figure_path: Path,
             reference = select_rows(fem_rows, point_id)
             if reference:
                 label = ("FEM3D (" + str(reference[0].get("stress_source", "recovered")) + " material)"
-                         if kind == "stress" else "FEM3D (H8 displacement/strain)")
+                         if kind == "stress" else "FEM3D (native displacement/strain)")
                 for row in reference:
                     panel_rows.append({
                         "record_type": "sample", "panel_id": panel_id, "panel_title": panel_title,
@@ -1179,7 +1331,7 @@ def save_curve_plot(
         if fem_rows is not None and (kind != "stress" or fem_stress):
             reference = select_rows(fem_rows, point_id)
             label = ("FEM3D (" + str(reference[0].get("stress_source", "recovered")) + " material)"
-                     if kind == "stress" else "FEM3D (H8 displacement/strain)")
+                     if kind == "stress" else "FEM3D (native displacement/strain)")
             ax.scatter([r["x_over_L"] for r in reference],
                        curve_values(reference, kind, index), s=7, color="tab:orange",
                        alpha=0.65, label=label, zorder=3)
@@ -2895,7 +3047,7 @@ def save_transverse_perimeter_figure_csv(samples, dataset, contour, curve,
     fem_source = dataset.get("fem_stress_source", "none")
     if fem_rows is not None and (kind != "stress" or fem_source != "none"):
         label = ("FEM3D (" + fem_source + " material)" if kind == "stress"
-                 else "FEM3D (H8 displacement/strain)")
+                 else "FEM3D (native displacement/strain)")
         for row in fem_rows:
             records.append({
                 "record_type": "sample", "panel_id": 1, "panel_title": panel_title,
@@ -2935,7 +3087,7 @@ def save_transverse_perimeter_plot(samples, dataset, contour, curve, output_dir:
         if fem_rows is not None and (kind != "stress" or fem_source != "none"):
             # Keep the longitudinal legend, marker size, color, opacity and z-order.
             label = ("FEM3D (" + fem_source + " material)" if kind == "stress"
-                     else "FEM3D (H8 displacement/strain)")
+                     else "FEM3D (native displacement/strain)")
             ax.scatter([row["s"] for row in fem_rows], curve_values(fem_rows, kind, component),
                        s=7, color="tab:orange", alpha=0.65, label=label, zorder=3)
         elif fem_rows is not None and kind == "stress":
@@ -3080,7 +3232,7 @@ def run_transverse_mode(args, checkpoints: list[Path], output_root: Path):
             "FEM transverse perimeters require --stress-mode auto or boundary; "
             "Gauss comparison is a separate longitudinal mode and cannot use the same perimeter coordinates"
         )
-    fem = FEM3DH8(args.fem3d) if args.fem3d is not None else None
+    fem = load_fem3d(args.fem3d) if args.fem3d is not None else None
     if fem is not None:
         check_material_consistency(fem, args.csf_yaml, args.output_dir,
                                    "csf" if args.fem_stress_from_csf else
@@ -3325,13 +3477,13 @@ For installed modules, replace 'python <script>.py' with
     inputs.add_argument("--checkpoint", type=Path, default=None, metavar="CASE.cuf.npz",
                         help="One existing CUF checkpoint; overrides the recursive --cuf-output-root scan. Filename must end with .cuf.npz.")
     inputs.add_argument("--fem3d", type=Path, default=None, metavar="FEM.npz",
-                        help="Optional H8/stdBrick reference for longitudinal or perimeter overlays. Supports standardized v1 and legacy I-Shape displacement NPZ. Native Gauss mode needs additional Gauss metadata.")
+                        help="Optional H8/stdBrick or H20 reference for longitudinal or perimeter overlays. Supports standardized v1 and legacy I-Shape displacement NPZ. Native Gauss mode needs additional Gauss metadata.")
     methods = parser.add_argument_group("FEM comparison and stress reconstruction")
     methods.add_argument("--stress-mode", choices=("auto", "boundary", "gauss", "both"), default="auto",
                          help="Longitudinal: auto (default) chooses both if FEM has native Gauss stresses, else boundary; gauss/both require that data. Transverse FEM: only auto/boundary; either selects same-point perimeter recovery, never Gauss.")
     source = methods.add_mutually_exclusive_group()
     source.add_argument("--fem-stress-from-csf", action="store_true",
-                        help="Longitudinal/perimeter FEM stress = H8 strain times the CSF constitutive matrix at the exact point and polygon side. Requires --fem3d; not available in Gauss-only mode.")
+                        help="Longitudinal/perimeter FEM stress = FEM strain times the CSF constitutive matrix at the exact point and polygon side. Requires --fem3d; not available in Gauss-only mode.")
     source.add_argument("--fem-stress-from-element", action="store_true",
                         help="Longitudinal/perimeter FEM stress from the element's exact E/G/nu metadata (required). Default when metadata exist. Requires --fem3d; not available in Gauss-only mode.")
     methods.add_argument("--gauss-sampling", choices=("plot", "all"), default="plot",
@@ -3400,7 +3552,7 @@ def checkpoint_output_name(path: Path) -> str:
 def main():
     args = build_parser().parse_args()
     _validate_transverse_perimeter_arguments(args)
-    print(f"[visualizer] v14.6.0: {Path(__file__).resolve()}", flush=True)
+    print(f"[visualizer] v14.6.0 + H20 overlay: {Path(__file__).resolve()}", flush=True)
     if args.max_vertices_per_plot < 1 or args.dpi < 1 or args.points < 2:
         raise ValueError("--points must be >=2 and --dpi / --max-vertices-per-plot >=1")
     if args.inward_offset is not None and (not math.isfinite(args.inward_offset) or args.inward_offset <= 0):
@@ -3411,7 +3563,7 @@ def main():
         checkpoints = discover_checkpoints(args.cuf_output_root, args.checkpoint)
         run_transverse_mode(args, checkpoints, args.output_dir.expanduser().resolve())
         return
-    fem = FEM3DH8(args.fem3d) if args.fem3d is not None else None
+    fem = load_fem3d(args.fem3d) if args.fem3d is not None else None
     if fem is not None:
         check_material_consistency(fem, args.csf_yaml, args.output_dir,
                                    "csf" if args.fem_stress_from_csf else
