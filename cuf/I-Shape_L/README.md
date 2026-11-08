@@ -39,7 +39,7 @@ An I-shaped beam consists of a vertical web connecting two horizontal flanges. T
 | Web thickness | 25 | 25 |
 | Clear web height | 100 | 20 |
 | Total section height | 150 | 70 |
-| Sectional area | 5,800 mm$^2$ | 3,800 mm$^2$ |
+| Sectional area | 5,800 mm² | 3,800 mm² |
 
 Only the web's clear height changes. Writing $\xi=x/L$, its height is
 
