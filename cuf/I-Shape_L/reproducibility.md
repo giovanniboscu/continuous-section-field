@@ -60,40 +60,56 @@ The H20 solver creates its own quadratic solid discretization from the three-reg
 
 The source modules required for the H20 run are placed together in `fem3d/`: `run_h20_convergence.py`, `run_bending_fem3d_h20.py`, `run_bending_fem3d_v2.py`, `h20_scipy_solver.py` and `h20_strong_residual.py`. They must remain in that directory because the driver imports its sibling modules. The model and case YAML files remain in their existing subdirectories.
 
+
 ## 3. Produce the CSF-CUF solution
 
-The case file selects the nine L9 domains and ten longitudinal finite elements, each using polynomial order six. To solve the case:
+The case file selects the nine L9 domains and ten longitudinal finite elements, each using polynomial order six.
+
+To solve the case, run from `cuf/I-Shape_L`:
 
 ```bash
 csf-cuf cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml
 ```
 
-The case writes several checkpoints. The reference used in this study is:
+The solver produces five equilibration checkpoints, from `eq1` to `eq5`, using the same numerical discretization.
+
+### 3.1 Verify the stability of the CSF-CUF solution
+
+The stability of the saved solution with respect to the solver-equilibration iterations is evaluated using the [CUF checkpoint stability verification script](verify_cuf_eq_stability.py).
+
+Run:
+
+```bash
+python3 verify_cuf_eq_stability.py
+```
+
+The script compares `eq1` with each subsequent checkpoint (`eq2`–`eq5`) and also compares consecutive checkpoints.
+
+The verification includes:
+
+- Displacement components \(u_x\), \(u_y\), and \(u_z\) at the sampled physical points.
+- Available displacement coefficients stored in the `.cuf.npz` checkpoints.
+- Maximum absolute differences and RMS differences between solutions.
+- Numerical stability assessment using specified absolute and relative tolerances.
+
+The generated reports are available in the [CSF-CUF checkpoint stability diagnostics](diagnostics/cuf_eq_stability/):
+
+- [Stability verification report](diagnostics/cuf_eq_stability/summary.md)
+- [Detailed numerical results](diagnostics/cuf_eq_stability/summary.csv)
+
+These results document the variation of the numerical solution as the solver-equilibration iterations increase.
+
+### 3.2 Reference checkpoint
+
+The reference used for the subsequent FEM3D H20 versus CSF-CUF comparisons is `eq1`:
 
 ```text
 output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/
   carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz
 ```
 
-This checkpoint stores the coefficients needed to reconstruct the CUF displacement field at physical points. It can be reused for all later comparisons and plots; a second solver execution is not required.
+This checkpoint stores the data needed to reconstruct the CUF displacement field at physical points. It can be reused for all subsequent comparisons and plots without executing the structural solver again.
 
-## 4. Produce the H20 reference and convergence series
-
-The H20 driver first builds the three-dimensional mesh, assigns elastic properties to the elements, integrates the bottom surface load, and solves the elastic system. The convergence program repeats the process on six progressively refined meshes.
-
-```bash
-python3 fem3d/run_h20_convergence.py \
-  models/carrera_i_shaped_taper80.yaml \
-  --backend scipy \
-  --profile quick \
-  --amplitude -1.0 \
-  --max-elements 0 \
-  --residual-gauss 1 \
-  --tol-pct 0.1 \
-  --output-dir fem3d/output/h20_convergence
-```
-
-The output directory contains the solved mesh checkpoints `T0_h20.npz`, `T1_h20.npz`, `T2_h20.npz`, `T3_h20.npz`, `T4_h20.npz` and `T6_h20.npz`, together with per-level logs and residual summaries. The driver also generates two compact tables: `convergence.csv` and `convergence.md`.
 
 **The reference for the comparative study is:**
 
