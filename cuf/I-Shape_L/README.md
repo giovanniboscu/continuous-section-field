@@ -1,5 +1,3 @@
-# DRAFT
-
 # A Tapered I-Shaped Member
 ## A reproducible investigation of three-dimensional equilibrium: CSF–CUF versus H20 FEM
 
