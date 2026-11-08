@@ -37,7 +37,7 @@ The CSF–CUF implementation also demonstrates how continuously varying geometry
 
 The detailed definition of the CSF–CUF model, including geometry, material distributions, YAML configuration files, transverse and longitudinal approximations, applied loads, and boundary conditions, is presented in:
 
-**[Part I – CSF–CUF Model and Organization of the Analysis](Part-I-CSF-CUF-Model.md)**
+**[CSF–CUF Model and Organization of the Analysis](Part-I-CSF-CUF-Model.md)**
 
 The following sections document the numerical experiments, convergence studies, and comparisons of displacement fields, internal equilibrium residuals, and surface and interface traction conditions.
 
