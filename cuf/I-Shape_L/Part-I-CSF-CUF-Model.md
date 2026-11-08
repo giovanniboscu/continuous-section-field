@@ -1,5 +1,3 @@
-CSF-CUF Model and Organization of the Analysis
-
 ## Tapered I-shaped beam with a variable web material
 
 This chapter describes the **CSF-CUF structural model** adopted in the `I-Shape_L` benchmark. It identifies the files required to reconstruct the model, explains the geometry and material fields supplied by CSF, and documents the transverse and longitudinal approximations, applied load, boundary conditions, and execution settings.
