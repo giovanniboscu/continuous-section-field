@@ -9,9 +9,11 @@
 
 ---
 
-Consider a structural beam with an I-shaped cross-section. In a conventional beam model, the structure is represented mainly through its longitudinal axis and a limited set of cross-sectional properties, such as area and bending stiffness. This approach is effective for describing the overall structural behavior, but it may not capture how individual parts of the cross-section deform.
+CSF-CUF is a framework for building refined beam models in which the physical description of the structure and the mathematical approximation used to analyse it are kept rigorously separate. Its distinguishing feature is precisely this separation: the cross-section is not reduced to a fixed set of sectional parameters, but is described as a continuous physical field along the beam, while the displacement field is constructed independently through the Carrera Unified Formulation. The two descriptions are defined, modified and refined on their own terms, and only combined at the level of the numerical solver.
 
-A three-dimensional finite-element model can describe these local effects in greater detail, but requires a discretization of the entire volume.
+To see why this matters, consider a structural beam with an I-shaped cross-section. In a conventional beam model, the structure is represented mainly through its longitudinal axis and a limited set of cross-sectional properties, such as area and bending stiffness. This approach is effective for describing the overall structural behavior, but it may not capture how individual parts of the cross-section deform.
+
+A three-dimensional finite-element model can describe these local effects in greater detail, but requires a discretization of the entire volume..
 
 The **Carrera Unified Formulation (CUF)** provides another approach. The structure is still modeled as a beam along its longitudinal direction, but its displacement field is described through mathematical functions defined over the cross-section.
 
