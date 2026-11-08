@@ -1,4 +1,4 @@
-# CSF–CUF
+# CSF-CUF
 
 ---
 > **New to CSF-CUF?** This page describes what the framework is. For a guided
