@@ -1,7 +1,45 @@
 # A Tapered I-Shaped Member
-## A reproducible study with a three-dimensional H20 model and CSF-CUF
+## A reproducible investigation of three-dimensional equilibrium: CSF–CUF versus H20 FEM
 
-This chapter studies the elastic response of a beam whose cross-section and material properties change along its length. Two numerical methods solve the same physical problem: a three-dimensional model made of twenty-node solid elements and a beam model based on the Carrera Unified Formulation (CUF) and the Continuous Section Field (CSF). Their solutions are examined through displacement, stress equilibrium inside the body, and the forces transmitted across its surfaces.
+### Purpose and scope
+
+The objective of this project is to establish a **fully open and reproducible numerical benchmark** for evaluating the accuracy and mechanical consistency of two different structural formulations applied to the same three-dimensional linear-elastic problem.
+
+The selected structure is an I-shaped beam whose cross-sectional geometry and material properties vary continuously along its longitudinal axis. This configuration provides a demanding test of the numerical methods because both geometric variation and material heterogeneity influence the displacement and stress fields.
+
+Two independent numerical models are investigated:
+
+- **CSF–CUF:** a beam formulation based on the Carrera Unified Formulation (CUF), coupled with the Continuous Section Field (CSF), which provides the physical geometry and material properties directly to the sectional integration procedures.
+- **FEM3D H20:** a three-dimensional finite-element formulation using twenty-node hexahedral solid elements, providing an independent volumetric discretization of the same physical problem.
+
+Both models adopt equivalent geometry, material properties, applied loads, and boundary conditions.
+
+### Main investigation
+
+The central objective is to determine **how accurately each numerical solution reproduces the structural response and satisfies the governing equations of three-dimensional elasticity**.
+
+The investigation is organized around four complementary aspects:
+
+1. **Displacement response:** comparison of the displacement fields and their convergence under numerical refinement.
+2. **Internal equilibrium:** evaluation of the strong-form equilibrium residuals obtained from the spatial derivatives of the reconstructed stress fields.
+3. **External surface equilibrium:** verification of the traction conditions on free and loaded surfaces.
+4. **Internal interface equilibrium:** verification of traction continuity across material interfaces and sectional domain boundaries.
+
+The comparison is performed at corresponding physical locations, using consistent definitions of the mechanical quantities and their numerical residuals.
+
+This approach allows the analysis to distinguish agreement in global structural response from the local satisfaction of equilibrium. It also provides a direct assessment of how the different approximations and discretizations influence the reconstructed stress fields.
+
+### Reproducibility and model documentation
+
+A further objective is to make every stage of the investigation independently verifiable. The physical descriptions, numerical configurations, execution procedures, post-processing scripts, and resulting numerical data are provided in the repository.
+
+The CSF–CUF implementation also demonstrates how continuously varying geometry and material properties can be incorporated into a CUF analysis while retaining a clear separation between the physical model, transverse expansion, longitudinal discretization, and structural solver.
+
+The detailed definition of the CSF–CUF model, including geometry, material distributions, YAML configuration files, transverse and longitudinal approximations, applied loads, and boundary conditions, is presented in:
+
+**[Part I – CSF–CUF Model and Organization of the Analysis](Part-I-CSF-CUF-Model.md)**
+
+The following sections document the numerical experiments, convergence studies, and comparisons of displacement fields, internal equilibrium residuals, and surface and interface traction conditions.
 
 ### Glossary: the terms used in this study
 
