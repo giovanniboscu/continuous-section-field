@@ -59,6 +59,8 @@ The following sections document the numerical experiments, convergence studies, 
 | **Traction** | Force per unit area transmitted through a surface, calculated as $\mathbf t=\boldsymbol\sigma\mathbf n$. |
 | **RMS** | Root-mean-square, a weighted measure of the typical magnitude of a collection of numerical values. |
 | **Physical interface** | A shared surface between two material regions, here the junction between web and flange. |
+| **T4 (FEM3D H20)** | Reference mesh refinement level, containing 3,072 twenty-node hexahedral elements and 16,081 nodes. |
+| **eq1 (CSF–CUF)** | First solver-equilibration checkpoint of the CSF–CUF L9 analysis, used as the reference solution for comparison with H20. |
 
 All dimensions are in **mm**, forces in **N**, stresses and elastic moduli in **MPa**. Longitudinal position is denoted by $x$; $y$ and $z$ lie in the cross-sectional plane. The full length is $L=1000$ mm.
 
