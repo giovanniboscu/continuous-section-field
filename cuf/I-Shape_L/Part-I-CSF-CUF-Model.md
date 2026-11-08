@@ -1,4 +1,4 @@
-# Part I - CSF-CUF Model and Organization of the Analysis
+CSF-CUF Model and Organization of the Analysis
 
 ## Tapered I-shaped beam with a variable web material
 
