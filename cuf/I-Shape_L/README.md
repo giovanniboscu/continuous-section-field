@@ -138,7 +138,15 @@ The finite-element stiffness uses **3 x 3 x 3 Gauss integration**. The distribut
 
 The selected reference is **mesh T4**, containing **3,072 H20 elements and 16,081 nodes**. The full mesh sequence and the criterion used to select this reference are developed in [the mesh-convergence chapter](FEM3Dmesh-convergence-criterion.md).
 
-### 2.2 The CSF-CUF L9 model
+### 2.2 What has converged
+
+The FEM3D H20 convergence study refines the beam from 48 to 4,608 elements. The last two levels give minimum displacements of **-1.717022 mm** (T4) and **-1.717182 mm** (T6), a change of **0.00933%**. Both T4 and T6 meet the specified **0.1% successive-change criterion**.
+
+![Minimum vertical displacement across the H20 mesh sequence](fem3d/output/h20_convergence/figures/min_uz_vs_mesh.webp)
+
+This verifies stabilization of a particular global displacement at the chosen transverse resolution. The interior stress-divergence indicators do not show the same convergence pattern; a separate refinement study is needed to establish their asymptotic behavior. The criteria, the exact meshes and the evidence are presented in [FEM3D H20 mesh convergence](FEM3Dmesh-convergence-criterion.md).
+
+### 2.3 The CSF-CUF L9 model
 
 In this model, the CSF supplies the geometry and material properties of any requested cross-section. CUF approximates three-dimensional displacement using functions over that section, coupled to unknown quantities varying along the longitudinal axis. The section is divided into **nine quadrilateral domains**: three in the upper flange, three in the web, and three in the lower flange.
 
@@ -148,7 +156,7 @@ The CSF domain boundaries within a single material are numerical subdivisions. T
 
 The input case is [`cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml`](cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml). It defines five solver-equilibration checkpoints. **The comparison presented here uses `eq1`.** These checkpoints are solver settings, not a sequence of refined meshes.
 
-### 2.3 Model correspondence
+### 2.4 Model correspondence
 
 | Feature | FEM3D H20 | CSF-CUF L9 |
 |---|---|---|
@@ -223,15 +231,7 @@ H20 has the lower external traction error in this test. The two models have near
 
 The difference from the interior results is informative: a stress field can satisfy its differential equations well inside a region while approximating its boundary tractions less accurately. See [the equilibrium chapter](FEM3D-H20-CUF-equilibrium.md), Part II, for the definitions and complete results.
 
-## 7. What has converged
-
-The FEM3D H20 convergence study refines the beam from 48 to 4,608 elements. The last two levels give minimum displacements of **-1.717022 mm** (T4) and **-1.717182 mm** (T6), a change of **0.00933%**. Both T4 and T6 meet the specified **0.1% successive-change criterion**.
-
-![Minimum vertical displacement across the H20 mesh sequence](fem3d/output/h20_convergence/figures/min_uz_vs_mesh.webp)
-
-This verifies stabilization of a particular global displacement at the chosen transverse resolution. The interior stress-divergence indicators do not show the same convergence pattern; a separate refinement study is needed to establish their asymptotic behavior. The criteria, the exact meshes and the evidence are presented in [FEM3D H20 mesh convergence](FEM3Dmesh-convergence-criterion.md).
-
-## 8. Reading and reproducing the study
+## 7. Reading and reproducing the study
 
 This chapter is the entry point to a small technical book. Each following chapter deals with one part of the calculation.
 
@@ -247,7 +247,7 @@ The numerical results are also available as generated Markdown reports: [H20 con
 
 The reference inputs are saved under [`fem3d/output/h20_convergence/`](fem3d/output/h20_convergence/) and [`output/taper/`](output/taper/). The comparison statistics are recorded in `diagnostics/h20_vs_cuf_T4_v3/summary.json` and `diagnostics/h20_vs_cuf_T4_surfaces/summary.json`.
 
-## 9. Closing interpretation
+## 8. Closing interpretation
 
 The two methods give almost identical displacement fields for an I-section whose geometry and web stiffness both vary significantly. In the selected reference pair, CSF-CUF has a **15.7% lower volume-weighted RMS of interior stress divergence**, while H20 reproduces the external traction conditions more accurately. Their physical-interface traction jumps are nearly equal.
 
