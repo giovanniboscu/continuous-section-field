@@ -128,6 +128,11 @@ The traction vanishes at the ends and reaches its largest magnitude at midspan. 
 
 The CUF surface loading is defined in [`problems/taper_table9_l9_web3.yaml`](problems/taper_table9_l9_web3.yaml). Its three named lower edges together form the single loaded bottom face.
 
+![Structural scheme, boundary conditions and distributed loading](img/staticchema.jpg)
+
+*Figure. Static scheme of the tapered I-shaped member, showing the transverse displacement constraints at both ends and the sinusoidal traction applied to the lower surface.*
+
+
 ## 2. Two numerical descriptions of the same beam
 
 ### 2.1 The three-dimensional H20 model
