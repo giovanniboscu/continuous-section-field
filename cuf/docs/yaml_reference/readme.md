@@ -102,7 +102,7 @@ The documentation is organized into three complementary references:
 
 - **[Case Configuration](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/yaml_reference/case_configuration.md)** - Describes the numerical case configuration, including transverse CUF expansions, built-in and external basis plugins, longitudinal approximation and element partitioning, quadrature, solver settings, and adapter selection.
 
-- **[Problem Configuration](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/yaml_reference/problem_configuration.md)** - Describes how a structural problem references the CSF geometry and material model, specifies physical loads, and interacts with the selected load and constraint adapters.
+- **[Problem Configuration](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/problem-adapters-reference.md)** - Describes how a structural problem references the CSF geometry and material model, specifies physical loads, and interacts with the selected load and constraint adapters.
 
 - **[Output Configuration](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/docs/yaml_reference/output_configuration.md)** - Describes result sampling, output adapters, exported data, displacement fields, stresses, and numerical diagnostics.
 
