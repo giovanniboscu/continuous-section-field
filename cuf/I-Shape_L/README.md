@@ -68,7 +68,7 @@ An I-shaped beam consists of a vertical web connecting two horizontal flanges. T
 
 ![Geometry, endpoint cross-sections and elastic properties of the tapered member](img/I-SectionPlotPropertiesComposite.jpg)
 
-*Figure 1. Geometry and longitudinal variation of the cross-sectional properties. The lower panels show the three-dimensional member and the end sections, including the material distribution.*
+*Figure 1. Static scheme of the tapered I-shaped member, showing the transverse displacement constraints at both ends, the sinusoidal traction applied to the lower surface and the linear variation of Young’s modulus E in the web (flanges: constant E).*
 
 ### 1.1 Geometry
 
