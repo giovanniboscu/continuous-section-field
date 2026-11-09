@@ -94,7 +94,7 @@ CSF-CUF enhances the operational generality of the CUF framework by providing ge
 
 ## YAML Configuration Reference
 
-The [CSF-CUF YAML Configuration Reference](docs/yaml_reference/readme.md) describes how to translate a physical structural problem and the corresponding numerical modelling choices into the configuration files used by the solver.
+The [CSF-CUF YAML Configuration Reference](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/docs/yaml_reference/readme.md) describes how to translate a physical structural problem and the corresponding numerical modelling choices into the configuration files used by the solver.
 
 The configuration follows the separation of responsibilities adopted throughout CSF-CUF: geometry and materials are provided by CSF, the physical problem defines loads and boundary conditions, and the numerical case selects the CUF expansion, longitudinal finite-element approximation, integration settings, and output processing.
 
