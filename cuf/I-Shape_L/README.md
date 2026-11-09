@@ -93,7 +93,11 @@ $$
 V=\int_0^L A(x)\,dx=4{,}800{,}000\quad\mathrm{mm}^3.
 $$
 
-The physical geometry is defined in [`models/carrera_i_shaped_taper80.yaml`](models/carrera_i_shaped_taper80.yaml). The corresponding nine-domain representation for CUF is given in [`models/carrera_i_shaped_taper80_l9_web3.yaml`](models/carrera_i_shaped_taper80_l9_web3.yaml). The two YAML files describe the same solid member; their divisions serve different numerical purposes.
+The physical geometry is defined in [`models/carrera_i_shaped_taper80.yaml`](models/carrera_i_shaped_taper80.yaml). The corresponding nine-domain representation for CUF is given in [`models/carrera_i_shaped_taper80_l9_web3.yaml`]. 
+This models is used by the FEM3D driver to generate the three-dimensional finite element mesh
+
+
+(models/carrera_i_shaped_taper80_l9_web3.yaml). The two YAML files describe the same solid member; their divisions serve different numerical purposes.
 
 ### 1.2 Material
 
