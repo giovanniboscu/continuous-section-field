@@ -1,5 +1,5 @@
 # A Tapered I-Shaped Member
-## A reproducible investigation of three-dimensional equilibrium: CSF–CUF versus H20 FEM
+## A reproducible investigation of three-dimensional equilibrium: CSF-CUF versus H20 FEM
 
 ### Purpose and scope
 
@@ -9,7 +9,7 @@ The selected structure is an I-shaped beam whose cross-sectional geometry and ma
 
 Two independent numerical models are investigated:
 
-- **CSF–CUF:** a beam formulation based on the Carrera Unified Formulation (CUF), coupled with the Continuous Section Field (CSF), which provides the physical geometry and material properties directly to the sectional integration procedures.
+- **CSF-CUF:** a beam formulation based on the Carrera Unified Formulation (CUF), coupled with the Continuous Section Field (CSF), which provides the physical geometry and material properties directly to the sectional integration procedures.
 - **FEM3D H20:** a three-dimensional finite-element formulation using twenty-node hexahedral solid elements, providing an independent volumetric discretization of the same physical problem.
 
 Both models adopt equivalent geometry, material properties, applied loads, and boundary conditions.
@@ -33,11 +33,11 @@ This approach allows the analysis to distinguish agreement in global structural 
 
 A further objective is to make every stage of the investigation independently verifiable. The physical descriptions, numerical configurations, execution procedures, post-processing scripts, and resulting numerical data are provided in the repository.
 
-The CSF–CUF implementation also demonstrates how continuously varying geometry and material properties can be incorporated into a CUF analysis while retaining a clear separation between the physical model, transverse expansion, longitudinal discretization, and structural solver.
+The CSF-CUF implementation also demonstrates how continuously varying geometry and material properties can be incorporated into a CUF analysis while retaining a clear separation between the physical model, transverse expansion, longitudinal discretization, and structural solver.
 
-The detailed definition of the CSF–CUF model, including geometry, material distributions, YAML configuration files, transverse and longitudinal approximations, applied loads, and boundary conditions, is presented in:
+The detailed definition of the CSF-CUF model, including geometry, material distributions, YAML configuration files, transverse and longitudinal approximations, applied loads, and boundary conditions, is presented in:
 
-**[CSF–CUF Model and Organization of the Analysis](Part-I-CSF-CUF-Model.md)**
+**[CSF-CUF Model and Organization of the Analysis](Part-I-CSF-CUF-Model.md)**
 
 The following sections document the numerical experiments, convergence studies, and comparisons of displacement fields, internal equilibrium residuals, and surface and interface traction conditions.
 
@@ -58,7 +58,7 @@ The following sections document the numerical experiments, convergence studies, 
 | **RMS** | Root-mean-square, a weighted measure of the typical magnitude of a collection of numerical values. |
 | **Physical interface** | A shared surface between two material regions, here the junction between web and flange. |
 | **T4 (FEM3D H20)** | Reference mesh refinement level, containing 3,072 twenty-node hexahedral elements and 16,081 nodes. |
-| **eq1 (CSF–CUF)** | First solver-equilibration checkpoint of the CSF–CUF L9 analysis, used as the reference solution for comparison with H20. |
+| **eq1 (CSF-CUF)** | First solver-equilibration checkpoint of the CSF-CUF L9 analysis, used as the reference solution for comparison with H20. |
 
 All dimensions are in **mm**, forces in **N**, stresses and elastic moduli in **MPa**. Longitudinal position is denoted by $x$; $y$ and $z$ lie in the cross-sectional plane. The full length is $L=1000$ mm.
 
