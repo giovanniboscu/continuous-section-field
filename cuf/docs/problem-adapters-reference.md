@@ -1,4 +1,4 @@
-# CSF–CUF problem adapters - complete reference
+# CSF-CUF problem adapters - complete reference
 
 **Bidirectional reference: from a YAML adapter to its physical load and constraints, and from a desired load/constraint to the correct adapter.**
 
@@ -39,7 +39,7 @@ problems/example.yaml ──> model.csf_yaml + problem.type + load parameters
             ├── Loads:       build_load_vector() ──> f
             └── Constraints: build_constraints()  ──> C u = g
                                               │
-                                      CSF–CUF solver
+                                      CSF-CUF solver
 ```
 
 **The distinction between the two YAML files is essential:**
@@ -86,7 +86,7 @@ Adapter references can be **importable module names** (as in this reference) or 
 | Required physical loading | `problem.type` | Complete adapter (`csf.cuf.adapters.problem.…`) | Original constraints | Parameters | Detail |
 |---|---|---|---|---|---|
 | Concentrated **global-z** force at an **arbitrary longitudinal position** on a C-section cantilever | `c_section_cantilever` + `force.type: point` | `c_section_cantilever_point_load` | Fully clamped at `x0` | `force.amplitude, x, y, z` | [§4.1](#41-c_section_cantilever-point-or-area) |
-| **Rectangular surface patch** with resultant `fx,fy,fz` (patch lies in `x–y` at constant `z`) | `c_section_cantilever` + `force.type: area` | `c_section_cantilever_point_load` | Fully clamped at `x0` | `force.x,y,z,width,height,fx,fy,fz` | [§4.1](#41-c_section_cantilever-point-or-area) |
+| **Rectangular surface patch** with resultant `fx,fy,fz` (patch lies in `x-y` at constant `z`) | `c_section_cantilever` + `force.type: area` | `c_section_cantilever_point_load` | Fully clamped at `x0` | `force.x,y,z,width,height,fx,fy,fz` | [§4.1](#41-c_section_cantilever-point-or-area) |
 | Concentrated physical point force with **any x/y/z components**, at normalized longitudinal position | `double_clamped_point_load` | `double_clamped_point_load` | Fully clamped at both ends, node-dependent CUF basis sizes | `x_fraction, point.y,point.z, components.x/y/z` | [§4.2](#42-double_clamped_point_load) |
 | Opposite global-z **torsional line-load pair**, **uniform** over `x` | `torsion_uniform` | `torsion_uniform` | Transverse supports at both ends + axial point anchor | `amplitude` | [§4.3](#43-torsion_uniform) |
 | Opposite global-z **torsional line-load pair**, **sinusoidal half-wave**, fully fixed ends | `torsion_halfwave` | `torsion_halfwave` | Both ends fully clamped | `amplitude` | [§4.4](#44-torsion_halfwave) |
@@ -184,7 +184,7 @@ problem:
 | `force.fy` | No | `0.0` | **Total** resultant global-y force, not pressure |
 | `force.fz` | No | `0.0` | **Total** resultant global-z force, not pressure |
 
-The patch lies in a **constant-`z` physical `x–y` surface**; at least one resultant component must be nonzero. The adapter distributes the specified resultant vector over area `width × height`, integrates through the FE longitudinal elements crossed by the patch, and checks that its `y` extent is covered by CSF polygon boundary edges at the sampled `x` positions. The whole patch must fit inside the beam's longitudinal domain. Unknown force keys are rejected.
+The patch lies in a **constant-`z` physical `x-y` surface**; at least one resultant component must be nonzero. The adapter distributes the specified resultant vector over area `width × height`, integrates through the FE longitudinal elements crossed by the patch, and checks that its `y` extent is covered by CSF polygon boundary edges at the sampled `x` positions. The whole patch must fit inside the beam's longitudinal domain. Unknown force keys are rejected.
 
 ```yaml
 # problems/c_section_patch.yaml
@@ -442,7 +442,7 @@ problem:
 **Location referenced by the case:** `../../validation/surface_halfwave_multi.py` (relative to the **case YAML directory**; `validation/` is not the standard adapter package).  
 **Case selection:** `problem.adapter: ../../validation/surface_halfwave_multi.py`  
 **Problem discriminator:** `problem.type: surface_halfwave_transverse_supported` (`PROBLEM_TYPE` in the Python file).  
-**Classification:** **custom complete problem adapter**: a single Python object supplies **both `build_load_vector(...)` and `build_constraints(...)`**. It does not import another problem or validation adapter; it uses the normal CSF–CUF interfaces (`assemble_distributed_load_vector`, `LinearConstraintSystem`).
+**Classification:** **custom complete problem adapter**: a single Python object supplies **both `build_load_vector(...)` and `build_constraints(...)`**. It does not import another problem or validation adapter; it uses the normal CSF-CUF interfaces (`assemble_distributed_load_vector`, `LinearConstraintSystem`).
 
 #### Physical model: loads + constraints
 
@@ -452,11 +452,11 @@ problem:
  t_z(x)=A\sin\!\left(\frac{\pi(x-x_0)}{L}\right),\qquad L=x_1-x_0.
 \]
 
-Here `A` is `problem.amplitude` (traction/area: `N/mm²` for an N–mm model). At `x0` and `x1` the traction is zero; at midspan it equals `A`. Thus `amplitude: -1.0` means a negative global-`z` traction between the ends. A **shared** amplitude is used for all entries; there are no separate amplitudes per surface.
+Here `A` is `problem.amplitude` (traction/area: `N/mm²` for an N-mm model). At `x0` and `x1` the traction is zero; at midspan it equals `A`. Thus `amplitude: -1.0` means a negative global-`z` traction between the ends. A **shared** amplitude is used for all entries; there are no separate amplitudes per surface.
 
 Each `polygon_name` identifies a CSF polygon at the start section; `edge_start_point_id` is the **zero-based index of the first vertex** of one of its boundary edges. The edge joins vertex `i` to `(i+1) mod n`, and its homologous endpoints are tracked along `x`. The selections are **independent**: edges need not be adjacent, collinear, ordered, at the same elevation, or even on the same polygon. Repeating the same selector **intentionally adds the same load again**.
 
-**Surface geometry and CUF projection.** Every selected edge must be horizontal **within each end section** (its two vertices have the same global `z` at `x0` and at `x1`). The end elevations may differ, producing an inclined ruled face. For edge `k`, the adapter obtains its physical transverse width `|dy|` at each integration station, performs **Gauss–Legendre quadrature across that width**, evaluates the transverse basis `F_τ(y,z;x)` at the actual coordinates, and multiplies by the real-surface inclination factor
+**Surface geometry and CUF projection.** Every selected edge must be horizontal **within each end section** (its two vertices have the same global `z` at `x0` and at `x1`). The end elevations may differ, producing an inclined ruled face. For edge `k`, the adapter obtains its physical transverse width `|dy|` at each integration station, performs **Gauss-Legendre quadrature across that width**, evaluates the transverse basis `F_τ(y,z;x)` at the actual coordinates, and multiplies by the real-surface inclination factor
 
 \[
  s_k=\sqrt{1+\left(\frac{z_{k,1}-z_{k,0}}{L}\right)^2}.
@@ -493,7 +493,7 @@ The second equation removes the remaining rigid axial translation. **`(y,z)=(0,0
 | `surfaces` | **One of `surface` or `surfaces`** | - | Nonempty list of edge selector mappings; mutually exclusive with `surface` |
 | `surface.polygon_name` or `surfaces[].polygon_name` | Yes for each selector | - | Nonblank CSF polygon name |
 | `surface.edge_start_point_id` or `surfaces[].edge_start_point_id` | Yes for each selector | - | Integer `>= 0` (boolean rejected), valid vertex index in that polygon |
-| `amplitude` | **Yes** | **No default** | Finite signed number (`N/mm²` for N–mm units), applied to *every* selected edge |
+| `amplitude` | **Yes** | **No default** | Finite signed number (`N/mm²` for N-mm units), applied to *every* selected edge |
 
 Validation rejects unknown top-level options, unknown/missing selector keys, simultaneous `surface` and `surfaces`, empty `surfaces`, invalid polygon names/edge indexes, and non-horizontal end edges. The Python factory accepts **exactly** `surface`, `surfaces`, and `amplitude` as its options; `type` is extracted by the problem loader. The selected geometry must, of course, exist in the referenced CSF model.
 
@@ -633,7 +633,7 @@ The following **six** modules each expose `build_problem(type, options)` and ret
 | Source | Class / role | Limitation |
 |---|---|---|
 | [`loads/point_force_global_z_point.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/problem/loads/point_force_global_z_point.py) | `PointForceGlobalZPoint`: concentrated global-z load, **arbitrary longitudinal `x`** via FE shapes | Used internally by C-section root adapter; **no module-level `build_problem`** |
-| [`loads/point_force_global_z_area.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/problem/loads/point_force_global_z_area.py) | `PointForceGlobalZArea`: rectangular `x–y` patch with vector **total force** resultants | Used internally by C-section root adapter; **no module-level `build_problem`** |
+| [`loads/point_force_global_z_area.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/problem/loads/point_force_global_z_area.py) | `PointForceGlobalZArea`: rectangular `x-y` patch with vector **total force** resultants | Used internally by C-section root adapter; **no module-level `build_problem`** |
 | [`loads/point_force_global_z.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/problem/loads/point_force_global_z.py) | `PointForceGlobalZ`: global-z point load whose `force.x` **must match exactly one longitudinal FE node** | Class-only **legacy/alternative** implementation; **no `build_problem`**; not used by the C-section root adapter |
 | [`constraints/point_force_global_z.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/problem/constraints/point_force_global_z.py) | Contains a `PointForceGlobalZ` **load class despite its `constraints/` location** | **Not a constraint adapter** and **no `build_problem`**; do not choose as `constraint_adapter` |
 | [`constraints/full_start_section_clamp.py`](https://github.com/giovanniboscu/continuous-section-field/blob/main/src/csf/cuf/adapters/problem/constraints/full_start_section_clamp.py) | `FullStartSectionClamp` | Actual C-section constraint implementation; **no `build_problem`** |
@@ -831,7 +831,7 @@ Its problem YAML supplies `type: surface_halfwave_transverse_supported`, `amplit
 - Executed factory-construction checks for **all 8 complete problem types**, both `c_section_cantilever` load modes, the **6 load modules** (7 supported type dispatches), and the **4 constraint modules**; verified their corresponding method contracts.
 - Checked and executed both **complete** and **split** case YAML adapter-selection patterns through the supplied `load_case`, `load_problem`, `load_problem_adapter`, and `compose_problem` contracts.
 
-**Verification boundary:** the uploaded ZIP contains the CUF Python tree but not the whole external `csf` package and not a benchmark model. The separately supplied custom adapter has been **read and checked against the loader interface**, but not run in a full CSF–CUF benchmark here. These are **source/interface and YAML-loader checks**, **not complete CSF–CUF numerical benchmark runs**. The reference describes the behavior implemented in the supplied snapshot, rather than claiming full-solver validation for every possible physical load/constraint pairing.
+**Verification boundary:** the uploaded ZIP contains the CUF Python tree but not the whole external `csf` package and not a benchmark model. The separately supplied custom adapter has been **read and checked against the loader interface**, but not run in a full CSF-CUF benchmark here. These are **source/interface and YAML-loader checks**, **not complete CSF-CUF numerical benchmark runs**. The reference describes the behavior implemented in the supplied snapshot, rather than claiming full-solver validation for every possible physical load/constraint pairing.
 
 ### 9.2 Parameter names are not interchangeable
 
