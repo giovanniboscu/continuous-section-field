@@ -4,7 +4,7 @@
 
 The purpose of this formulation is to introduce **a continuous physical field of geometry and material properties as a primary mathematical object in the Carrera Unified Formulation (CUF)**. The Continuous Section Field (CSF) supplies this object independently of the choice of CUF expansion, longitudinal discretization, and solution method. The contribution is the **coupling of that physical field to the CUF variational and nuclear operators**; it is not the mere adoption of longitudinally dependent expansion functions.
 
-The physical member is described by a continuous sectional state, denoted by
+The physical member is described by a prescribed continuous sectional state, denoted by
 
 ```math
 \mathcal{S}(x), \qquad 0 \leq x \leq L.
@@ -26,6 +26,8 @@ In this notation $x$ is the longitudinal coordinate, $y,z$ are transverse physic
 \Omega(x)=\bigcup_{k=1}^{N_\Omega}\Omega^k(x).
 ```
 
+The CSF field is **prescribed input data**, not an unknown of the structural boundary-value problem. Its role is to define the physical member at every admissible longitudinal station. Continuity here refers to the sectional description along the axis wherever the geometry varies smoothly; it does not require material coefficients to be continuous across interfaces between distinct sub-domains. The CSF representation may be analytical or numerical, provided that its domains, material values and relevant geometric measures can be evaluated with the regularity required by the variational operations.
+
 The two physical dependencies are independent in principle: the domains $\Omega^k(x)$ describe evolving geometry, while $\mathbf C^k(x,y,z)$ describes evolving and possibly heterogeneous material. Neither is inferred from the CUF displacement approximation.
 
 The mathematical objective is to carry both physical fields through sectional integration, the principle of virtual displacements, the fundamental nuclei, generalized loading, and field reconstruction. **The CSF description is therefore an input to the mathematical formulation, not merely a preprocessing convention.**
@@ -34,13 +36,13 @@ The direct mathematical consequences are distinct. A change in $\Omega^k(x)$ cha
 
 The formulation also admits transverse CUF functions $F_\tau(x,y,z)$ whose *physical evaluation* changes with the section. Their longitudinal derivatives are included to make the variational derivation consistent with that choice. This is a **kinematic completion of the CSF-CUF coupling**, rather than its defining purpose. The case $F_{\tau,x}=0$ is retained as a valid specialization.
 
-No numerical example, external-paper comparison, or particular longitudinal solution technique is introduced in this document.
+The development is self-contained and leaves the longitudinal solution technique unspecified.
 
 ---
 
 ## 2. The continuous geometry-material field and its interface to CUF
 
-At a requested station $x$, the CSF supplies $\mathcal S(x)$ and hence the physical integration domains, the constitutive entries at physical points, and the boundaries on which loads or interface conditions act. The resulting fields need not be given in closed analytical form: they need to be evaluable at the stations and points required by the variational formulation.
+At a requested station $x$, the **prescribed** CSF supplies $\mathcal S(x)$ and hence the physical integration domains, the constitutive entries at physical points, and the boundaries on which loads or interface conditions act. The resulting fields need not be given in closed analytical form: they need to be evaluable at the stations and points required by the variational formulation. A geometric/material interpolation, an analytic description or a suitable numerical representation may provide these queries. **That representation is not an additional CUF unknown**, and choosing it does not alter the generic nuclear operator. It must, however, provide the physical derivatives and boundary measures needed by the particular kinematic and loading choices.
 
 For each sub-domain, the constitutive matrix is a spatial field
 
@@ -77,7 +79,9 @@ This separation is mathematical rather than merely organizational: the operator-
 
 ---
 
-## 3. Kinematic approximation
+## 3. CUF kinematic representation and the role of longitudinal basis dependence
+
+The physical geometry and constitutive field have already been defined by $\mathcal S(x)$ independently of the displacement approximation. The following kinematic representation supplies the CUF test and trial functions with which those prescribed fields will be coupled; it does not define or replace the CSF object.
 
 The displacement field is written as
 
@@ -98,13 +102,13 @@ q_{z\tau}(x)
 
 The functions $F_\tau(x,y,z)$ describe the CUF sectional approximation, while the generalized amplitudes $\mathbf{q}_\tau(x)$ remain one-dimensional unknowns.
 
-This is the kinematic generalization required when the selected basis evolves with the physical section, compared with the restricted choice
+This form is appropriate when the selected sectional basis is represented in physical coordinates and evolves along the beam. The more restricted choice is
 
 ```math
 F_\tau = F_\tau(y,z).
 ```
 
-When the chosen $F_\tau$ depends also on $x$, its longitudinal derivative must be retained explicitly. The continuous geometry-material field remains the primary input of the formulation.
+When the chosen $F_\tau$ depends also on $x$, its longitudinal derivative must be retained explicitly. This derivative is a physical-coordinate derivative at fixed $y,z$; for a basis generated using local sectional coordinates, its evaluation must consistently account for the evolving local mapping. Such local derivative transformations do not require prescribing a beam-wide geometric mapping as the definition of CSF. **Neither the changing integration domain nor the variable material field alone implies a nonzero $F_{\tau,x}$.**
 
 ---
 
@@ -252,11 +256,11 @@ C_{13} & C_{23} & C_{33} & 0 & 0 & 0 \\
 \end{bmatrix}^{k}.
 ```
 
-Each entry may depend on $x$, $y$, and $z$.
+Each entry may depend on $x$, $y$, and $z$. The displayed block structure is a **constitutive assumption for the explicit nine operators**: it permits coupling among the three normal strains but omits normal–shear and shear–shear off-diagonal couplings. The variational construction and the $\mathbf H^{ab}_{\tau s}$ matrices below remain valid for a general symmetric constitutive matrix; a fully populated matrix leads to additional terms in the individual nine operator blocks. Small-displacement, small-strain linear elasticity is assumed throughout.
 
 ---
 
-## 7. Divergence field of the stresses
+## 7. Reconstructed stress divergence and local equilibrium
 
 The local three-dimensional equilibrium field is the divergence of the stress tensor,
 
@@ -299,7 +303,9 @@ In the presence of body forces $\mathbf{b}$, the strong local equilibrium condit
 \nabla \cdot \boldsymbol{\sigma} + \mathbf{b} = \mathbf{0}.
 ```
 
-This divergence field is distinct from the generalized one-dimensional operator obtained later by the principle of virtual work. The former is a reconstructed three-dimensional field; the latter is the governing CUF operator acting on the generalized amplitudes.
+The divergence is evaluated **after reconstruction** of the three-dimensional strain and stress fields from the solved generalized amplitudes. It therefore belongs explicitly to the reconstruction and local-equilibrium assessment identified in Section 14. Within a material sub-domain, the strong residual is $\mathbf r+\mathbf b$; at interfaces, the corresponding traction-jump condition is an additional local-equilibrium requirement. The derivatives of $\mathbf C^k$ and of the reconstructed kinematic fields must be evaluated consistently wherever classical derivatives exist.
+
+The divergence field is distinct from the generalized one-dimensional operator obtained later by the principle of virtual work: the CUF equations enforce equilibrium in a projected variational sense and **do not, by themselves, imply pointwise vanishing of the reconstructed three-dimensional residual**. This distinction gives the divergence field an independent verification role.
 
 ---
 
@@ -355,6 +361,8 @@ J_{\tau,\alpha\,s,\beta}^{mn}(x)
 =
 \sum_{k=1}^{N_\Omega} J_{\tau,\alpha\,s,\beta}^{mn,k}(x).
 ```
+
+For the remainder of this document, the superscript $k$ always denotes a **sub-domain coefficient**, while the same symbol without $k$ denotes its assembled value. The indices $\tau$ and $s$ identify test and trial expansions; they are not summed in the definition of one fixed nuclear block. Only in the explicit final operators (Section 16) will the compact shorthand $J^{mn}_{\alpha\beta}$ be used, with those indices held implicit and the zero label $0$ standing for the no-derivative label $\varnothing$.
 
 The derivative labels refer to derivatives of the expansion functions inside the sectional integral. Importantly, the coefficient also depends on the independently supplied **physical domain** $\Omega^k(x)$ and **constitutive field** $C_{mn}^k(x,y,z)$. Both are provided by $\mathcal S(x)$, while the factors $F_{\tau,\alpha}$ and $F_{s,\beta}$ are supplied by the selected CUF expansion. Thus each coefficient is the mathematical coupling between physical information and kinematic approximation.
 
@@ -482,6 +490,8 @@ These nine blocks constitute the weak fundamental nucleus associated with the pr
 ---
 
 ## 11. Matrix operator form
+
+Section 10 expands the nine weak blocks so that each constitutive and displacement coupling can be inspected individually. The equivalent matrix representation here collects those same terms into four sectional matrices and is suited to concise variational statements and numerical assembly. It does **not** introduce a second physical or constitutive model.
 
 Define the $6 \times 3$ matrices
 
@@ -668,7 +678,7 @@ Then the governing generalized equations are
 \tau = 1,\ldots,M.
 ```
 
-The formulation separates the following responsibilities:
+The formulation separates the following responsibilities. In particular, the local divergence defined in Section 7 is evaluated from the **reconstructed** stress field, not inferred directly from the one-dimensional equilibrium equation:
 
 1. **CSF physical description**: provides $\Omega^k(x)$, $\partial\Omega^k(x)$, and $\mathbf{C}^k(x,y,z)$;
 2. **CUF expansion family**: provides $F_\tau(x,y,z)$ and its derivatives with respect to $x$, $y$, and $z$;
@@ -699,7 +709,7 @@ and all coefficient families containing $x$-derivatives of the expansion functio
 
 ## 16. Explicit form of the nine assembled fundamental nuclear operators
 
-The final result of the formulation is the complete $3\times3$ CUF fundamental nucleus. This section presents **all nine operators in strong longitudinal form**, using the physical-domain sectional coefficients introduced in Section 9. These equations are consequences of the weak form in Sections 10–12. They do not impose a longitudinal solution technique. The point of displaying the nine operators is to make the **destination of the continuous physical field** explicit: the geometry and the constitutive coefficients supplied by $\mathcal S(x)$ determine every sectional $J$ appearing in them, while the chosen CUF functions determine the differentiated kinematic factors.
+The final result of the formulation is the complete $3\times3$ CUF fundamental nucleus. This section presents **all nine operators in strong longitudinal form**, using the physical-domain sectional coefficients introduced in Section 9. Their explicit expressions are obtained by the weak-to-strong conversion established in Sections 10–12 and verified in Section 16.2. They do not impose a longitudinal solution technique. The point of displaying the nine operators is to make the **destination of the continuous physical field** explicit: the geometry and the constitutive coefficients supplied by $\mathcal S(x)$ determine every sectional $J$ appearing in them, while the chosen CUF functions determine the differentiated kinematic factors.
 
 ### 16.1 Conventions and coefficient origin
 
@@ -745,7 +755,58 @@ K_{ij}^{\tau s}.
 
 The geometry changes the integration region; the material changes the integrand; the selected expansion supplies its values and derivatives. The longitudinal differential structure follows from the variational derivation and does not depend on any particular section shape or constitutive law.
 
-### 16.2 Diagonal operators
+### 16.2 Derivation of an axial operator from the weak form
+
+To verify the passage from the complete weak nucleus to the differential operators, consider the axial–axial block for a fixed pair $(\tau,s)$. Let $v(x)$ be its trial amplitude and $\delta w(x)$ the corresponding test amplitude. The terms of Section 10.1 give
+
+```math
+\begin{aligned}
+\mathcal B_{xx}^{\tau s}(\delta w,v)
+=\int_0^L\big[&\delta w\,(J^{11}_{xx}+J^{55}_{zz}+J^{66}_{yy})v
++\delta w\,J^{11}_{x0}v'\\
+&+\delta w'\,J^{11}_{0x}v
++\delta w'\,J^{11}_{00}v'\big]\,dx.
+\end{aligned}
+```
+
+This expression follows directly from the longitudinal product rule: each $\mathcal D_B[\delta w]\mathcal D_A[v]$ generates the four products $B_{,x}A_{,x}\delta wv$, $B_{,x}A\delta wv'$, $BA_{,x}\delta w'v$ and $BA\delta w'v'$. Every $J$ is an integral over the actual domains $\Omega^k(x)$ weighted by $C^k_{mn}(x,y,z)$.
+
+Integrating by parts only the terms containing the derivative of the test amplitude gives
+
+```math
+\begin{aligned}
+\mathcal B_{xx}^{\tau s}(\delta w,v)
+={}&\int_0^L\delta w\,\Big[
+(J^{11}_{xx}+J^{55}_{zz}+J^{66}_{yy})v
++J^{11}_{x0}v'\\
+&\qquad-\partial_x\big(J^{11}_{0x}v+J^{11}_{00}v'\big)
+\Big]\,dx\\
+&+\Big[\delta w\,(J^{11}_{0x}v+J^{11}_{00}v')\Big]_{0}^{L}.
+\end{aligned}
+```
+
+Consequently, the axial operator is
+
+```math
+\begin{aligned}
+K_{xx}^{\tau s}[v]={}&
+(J^{11}_{xx}+J^{55}_{zz}+J^{66}_{yy})v
++J^{11}_{x0}v'\\
+&-\partial_x\big(J^{11}_{0x}v+J^{11}_{00}v'\big).
+\end{aligned}
+```
+
+The boundary contribution is the corresponding generalized end action. The **same integration-by-parts rule** applies to the remaining eight blocks, whether they contain zero, one or two derivatives of the longitudinal test and trial amplitudes. The compact conversion rule is
+
+```math
+K_{ij}^{\tau s}[v]
+=H_{ij}^{00}v+H_{ij}^{01}v'
+-\partial_x\big(H_{ij}^{10}v+H_{ij}^{11}v'\big).
+```
+
+The correspondence between the nine blocks in the weak and strong forms is therefore explicit: for each displacement pair $(i,j)$, identify its four coefficients $H_{ij}^{ab}$, with $a=1$ meaning differentiation of the test amplitude and $b=1$ meaning differentiation of the trial amplitude, and apply the conversion rule above. The operators below provide the fully expanded resulting expressions.
+
+### 16.3 Diagonal operators
 
 **Axial–axial block**
 
@@ -780,7 +841,7 @@ K_{zz}^{\tau s}[v]={}&
 \end{aligned}
 ```
 
-### 16.3 Axial–transverse coupling operators
+### 16.4 Axial–transverse coupling operators
 
 **Axial $x$–transverse $y$ block**
 
@@ -826,7 +887,7 @@ K_{zx}^{\tau s}[v]={}&
 \end{aligned}
 ```
 
-### 16.4 Transverse–transverse coupling operators
+### 16.5 Transverse–transverse coupling operators
 
 **Transverse $y$–transverse $z$ block**
 
@@ -842,7 +903,7 @@ K_{zy}^{\tau s}[v]
 =\left(J^{23}_{zy}+J^{44}_{yz}\right)v.
 ```
 
-### 16.5 Assembled nuclear system
+### 16.6 Assembled nuclear system
 
 Collecting the nine operators gives
 
