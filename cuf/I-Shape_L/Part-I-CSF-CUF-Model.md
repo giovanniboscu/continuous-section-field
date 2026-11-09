@@ -136,10 +136,7 @@ The model assumes **linear isotropic elasticity**, with the polygon `weight` fie
 
 The web material law is
 
-$$
-E_{\mathrm{web}}(x) = 71700\ \mathrm{MPa}
- - 20000\ \mathrm{MPa}\,\frac{x}{L}.
-$$
+$$E_{\text{web}}(x) = 71700\,\text{MPa} - 20000\,\text{MPa}\,\frac{x}{L}$$
 
 The CSF declaration `shear_weight_laws: ['iso(0.3)']` establishes the isotropic relation between Young's modulus and shear modulus:
 
