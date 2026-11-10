@@ -325,7 +325,7 @@ The traction direction is not rotated with the taper. The documented integral of
 
 ## 4.2. Independent numerical representations
 
-The reference solid model uses twenty-node hexahedral finite elements (H20). Its three-dimensional displacement interpolation is defined directly over the discretized volume, with $3\times3\times3$ Gauss integration for the stiffness. The bottom-surface traction is integrated over quadratic element faces. The reported H20 solutions use the SciPy sparse-solver backend. In this implementation the web modulus assigned to each solid element is evaluated at its longitudinal midpoint.
+The reference solid model uses twenty-node hexahedral finite elements (H20). Its three-dimensional displacement interpolation is defined directly over the discretized volume, with $3\times3\times3$ Gauss integration for the stiffness. The bottom-surface traction is integrated over quadratic element faces. The reported H20 solutions use the SciPy sparse-solver backend. In this implementation the web modulus assigned to each solid element is evaluated at its longitudinal midpoint. This is a piecewise-constant elementwise approximation of the prescribed linear material law, whereas CSF-CUF evaluates the material at its sectional and longitudinal integration stations. The models share the same physical constitutive law but not an identical numerical sampling of that law.
 
 The CSF-CUF model instead obtains the physical sectional domains and constitutive values from CSF at the requested integration stations. Its transverse displacement approximation uses nine-node Lagrange functions (L9) over nine connected quadrilateral domains: three for the upper flange, three for the web and three for the lower flange. The shared displacement nodes provide continuity across numerical domain boundaries. The documented configuration has 57 transverse functions and ten longitudinal finite elements of polynomial order six; it uses longitudinal Gauss order 15, sectional Gauss order 12 and a mixed-interpolation-of-tensorial-components (MITC) correction.
 
@@ -333,26 +333,43 @@ The two models use different geometric subdivisions of the *same physical solid*
 
 ## 4.3. Selection of the numerical reference
 
-A comparison between numerical methods is meaningful only when the selected solutions have been checked for discretization sensitivity. For H20, the repository documents a six-level mesh sequence, T0 through T6, with 48 to 4608 solid elements. Let $u_i$ denote the minimum nodal $z$-displacement at refinement level $i$. The relative change from the preceding level is defined by
+A comparison between numerical methods is meaningful only when the selected solutions have been checked for discretization sensitivity. For H20, the repository documents a mesh-refinement sequence, with reported element counts ranging from 48 to 4,608; the exact list of level labels and meshes is retained in the repository report. Let $u_z^{\mathrm{T4}}$ and $u_z^{\mathrm{T6}}$ denote the reported minimum nodal transverse displacements for the two selected H20 meshes. The direct relative difference between these two results, using T4 as denominator, is
 
 ```math
-\delta_i=100\frac{|u_i-u_{i-1}|}{|u_{i-1}|}\quad\text{percent}.
+\\delta_{\mathrm{T4,T6}}=100\frac{\left|u_z^{\mathrm{T6}}-u_z^{\mathrm{T4}}\right|}{\left|u_z^{\mathrm{T4}}\right|}.
 ```
 
-The prescribed selection threshold is $0.1\%$. The two final reported levels are:
+The comparison is summarized below. The reported values are rounded; the relative difference computed from these rounded values is approximately 0.00932%.
 
-| H20 level | Elements | Nodes | Minimum $u_z$ (mm) | Change from previous level |
-|---|---:|---:|---:|---:|
-| T4 | 3,072 | 16,081 | -1.717022 | 0.002104% |
-| T6 | 4,608 | 24,001 | -1.717182 | 0.009327% |
+| H20 mesh | Elements | Nodes | Minimum $u_z$ (mm) |
+|---|---:|---:|---:|
+| T4 | 3,072 | 16,081 | -1.717022 |
+| T6 | 4,608 | 24,001 | -1.717182 |
 
-Both satisfy the criterion, and T4 is selected as the displacement reference. The test establishes stabilization of this particular global displacement at the selected transverse mesh resolution. It does not establish convergence of all reconstructed stress derivatives. The full sequence and its separate stress-equilibrium diagnostics are documented in the [H20 mesh-convergence study](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/FEM3Dmesh-convergence-criterion.md).
+The direct T4–T6 difference is below the stated 0.1% displacement criterion, supporting the selection of T4 as the H20 displacement reference. This comparison is **not** presented as a consecutive-level convergence ratio. The full refinement sequence, its exact labels and the level-to-level values should be taken from the [H20 mesh-convergence study](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/FEM3Dmesh-convergence-criterion.md). Stabilization of a displacement extremum does not alone establish convergence of reconstructed stress gradients.
 
-The CSF-CUF comparison uses the saved solver-equilibration checkpoint `eq1`. Additional checkpoints (`eq2` through `eq5`) are examined by a dedicated stability verification script. These checkpoints describe solver-equilibration iterations and **must not be interpreted as a transverse or longitudinal mesh-refinement sequence**. The [reproducibility guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/reproducibility.md) identifies the reference files and the separate checkpoint-stability check.
+The CUF solution selected for comparison is the first solver-equilibration checkpoint, `eq1`. Its stability is documented by a direct comparison with the subsequent checkpoints `eq2`–`eq5`, rather than inferred from their mere existence. The [checkpoint-stability report](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/diagnostics/cuf_eq_stability/summary.md) reports **PASS** for every tested comparison, both against `eq1` and between successive checkpoints. The acceptance rule is defined for each compared response component or saved coefficient array by
+
+```math
+\max |b-a|\leq 10^{-9}+10^{-8}\max(\max|a|,\max|b|),
+```
+
+where $a$ and $b$ denote the two arrays being compared, and the maxima are taken over their respective entries. The absolute term has the native units of the compared data (mm for the displacement and physical displacement-coefficient arrays). For each comparison with `eq1`, the maximum difference among the reconstructed displacement components is at most $2.000011\times10^{-12}$ mm; the maximum difference in the available `solved_nodal_domain_natural_coefficients` arrays is at most $7.565282\times10^{-12}$ in their reported native units. The report explicitly marks the separate DOF-coefficient comparison as **not evaluated**. These results establish stability, under the stated tolerance, for the **sampled displacements and available saved coefficient arrays**. They are not a transverse-basis or longitudinal-mesh convergence study.
+
+| Comparison against `eq1` | Maximum sampled displacement difference (mm) | Maximum available saved-coefficient difference | Report result |
+|---|---:|---:|---|
+| `eq2` | $2.000011\times10^{-12}$ | $7.565282\times10^{-12}$ | PASS |
+| `eq3` | $1.869707\times10^{-12}$ | $6.947110\times10^{-12}$ | PASS |
+| `eq4` | $1.899980\times10^{-12}$ | $6.572298\times10^{-12}$ | PASS |
+| `eq5` | $1.700029\times10^{-12}$ | $6.401546\times10^{-12}$ | PASS |
+
+The numerical reference and the checkpoint comparison thus address different questions: H20 refinement checks sensitivity of a selected displacement extremum to the solid mesh, while the CUF checkpoint test checks the reported equilibration stability of a fixed numerical approximation.
 
 ## 4.4. Displacement and equilibrium comparisons
 
-The two reference solutions, H20 T4 and CSF-CUF `eq1`, are reconstructed at the same 24,576 interior physical points: eight sample points in each of the 3072 H20 elements. The reported root-mean-square (RMS) displacement differences are $2.830\times10^{-5}$ mm for $u_x$, $4.742\times10^{-6}$ mm for $u_y$, and $3.6839\times10^{-4}$ mm for $u_z$. Thus the independently constructed models give closely matching displacement fields at the comparison points.
+The two selected solutions, H20 T4 and CSF-CUF `eq1`, are reconstructed at the same 24,576 interior physical points: eight sample points in each of the 3,072 H20 elements. The diagnostic uses common Jacobian-weighted physical-volume contributions at these points; consequently, both methods are assessed with the same spatial sampling and weighting. The reported root-mean-square (RMS) displacement differences are $2.830\times10^{-5}$ mm for $u_x$, $4.742\times10^{-6}$ mm for $u_y$, and $3.6839\times10^{-4}$ mm for $u_z$. Thus the independently constructed models give closely matching displacement fields at the comparison points.
+
+Three complementary tests are used. Displacement differences assess agreement in the reconstructed kinematic response. The interior divergence residual assesses local differential equilibrium within material regions. Surface traction errors and interface traction jumps assess boundary and transmission conditions. These quantities answer different mechanical questions and must be interpreted separately.
 
 Displacement agreement is not, however, a complete test of the reconstructed stress field. Let $\boldsymbol\sigma$ be the symmetric three-dimensional Cauchy stress tensor, and define the interior equilibrium residual $\mathbf r$ in the absence of body forces by
 
@@ -371,7 +388,7 @@ where $\nabla\cdot$ denotes spatial divergence. Its components have units MPa/mm
 
 For this sampling and weighting, CSF-CUF has a 15.7% smaller RMS of the total interior residual. The corresponding weighted median of the residual magnitude is instead smaller for H20 (0.028999 MPa/mm, versus 0.046390 MPa/mm for CUF), showing that the two methods produce different residual distributions rather than a uniform advantage at every point.
 
-A separate comparison tests the reconstructed traction $\mathbf t=\boldsymbol\sigma\mathbf n$, where $\mathbf n$ is the outward unit normal to a physical surface. On the loaded surface, $\mathbf t$ is compared with the prescribed traction; on free surfaces it is compared with zero. Across physical web–flange interfaces, the transmitted tractions are checked for continuity. The documented RMS errors are:
+A separate comparison tests the reconstructed traction $\mathbf t=\boldsymbol\sigma\mathbf n$, where $\mathbf n$ is the outward unit normal to a physical surface. On the loaded surface, $\mathbf t$ is compared with the prescribed traction; on free surfaces it is compared with zero. Across physical web–flange interfaces, the transmitted tractions are checked for continuity. The documented RMS errors use identical physical-surface quadrature locations and common physical-area weights for each corresponding diagnostic. For material interfaces, the reported error is the jump between tractions evaluated on the two sides of the same physical interface. The supported end faces are excluded from the zero-traction check because reaction tractions are permitted. The numbers of sampled points are 1,536 on the loaded lower surface, 7,680 on free external surfaces and 1,536 on the physical material interfaces. The errors are:
 
 | Physical-surface diagnostic | H20 RMS (MPa) | CSF-CUF RMS (MPa) |
 |---|---:|---:|
@@ -379,12 +396,167 @@ A separate comparison tests the reconstructed traction $\mathbf t=\boldsymbol\si
 | Free external-surface traction | 0.940525 | 1.062006 |
 | Physical material-interface traction jump | 2.505574 | 2.516598 |
 
-H20 gives the smaller external traction errors in this test; the interface errors are nearly equal. The distinction is mechanically important: the interior divergence residual measures local differential balance, whereas the surface diagnostic measures the approximation of transmitted forces. Their different units and sampling domains mean that the two RMS measures should not be combined into a single score. The full definitions, evaluation locations and additional statistics are provided in the [equilibrium comparison](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/FEM3D-H20-CUF-equilibrium.md).
+H20 gives the smaller external traction errors in this test; the interface errors are nearly equal. A separate CUF-only check on 1,280 points along additional numerical-domain seams gives a traction-jump RMS of 1.07677606 MPa. This is not a fourth H20–CUF comparison: these seams include same-material subdivision boundaries and are reported separately. The distinction is mechanically important: the interior divergence residual measures local differential balance, whereas the surface diagnostic measures the approximation of transmitted forces. Their different units and sampling domains mean that the two RMS measures should not be combined into a single score. The one-sided CUF stress used for the interface diagnostics is evaluated a small distance inside each domain; sensitivity to that offset remains a targeted verification before publication. The full definitions, evaluation locations and additional statistics are provided in the [interior diagnostics](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/diagnostics/h20_vs_cuf_T4_v3/summary.md), the [surface diagnostics](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/diagnostics/h20_vs_cuf_T4_surfaces/summary.md) and the [equilibrium comparison](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/FEM3D-H20-CUF-equilibrium.md).
 
 ## 4.5. Reproducibility of the numerical experiment
 
 The benchmark is distributed as an executable study rather than as numerical tables alone. Its [reproducibility guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/reproducibility.md) provides installation instructions and command-line procedures for the CUF solve, H20 mesh refinement, checkpoint selection, common-point comparison, surface and interface diagnostics, and plotting. The [benchmark directory](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape_L) also contains the physical and numerical YAML descriptions and the corresponding reports.
 
-The comparison is organized around saved solution checkpoints: `T4_h20.npz` for the selected solid reference and `eq1.cuf.npz` for the CUF reference. Post-processing programs reconstruct both solutions at common physical points and write numerical tables and plots. The repository documents the exact commands, numerical settings and reference-file checksums, allowing a reader to inspect the reported quantities or recompute them without manually reproducing the plotting process.
+The comparison is organized around saved solution checkpoints: `T4_h20.npz` for the selected solid reference and `eq1.cuf.npz` for the CUF reference. Post-processing programs reconstruct both solutions at common physical points and write numerical tables and plots. The repository provides the commands, numerical settings and reference data needed to inspect the reported quantities and regenerate the diagnostics. The [surface-diagnostic report](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/diagnostics/h20_vs_cuf_T4_surfaces/summary.md) also records SHA-256 checksums for the H20 checkpoint, CUF checkpoint and CSF YAML model. The [checkpoint-stability report](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/diagnostics/cuf_eq_stability/summary.md) records the tested equilibration checkpoints and their acceptance criteria.
 
 This single benchmark therefore demonstrates the computational use of a continuously varying physical sectional field in CUF and supplies an independently constructed three-dimensional comparison. Its principal numerical finding is the close agreement in displacement alongside distinct interior and surface-equilibrium characteristics—quantities that are evaluated and reported separately rather than conflated.
+
+---
+
+## Editorial integration notes — outstanding checks before submission
+
+*Editorial notes only; not part of the scientific paper. The diagnostics supplied with this revision have been inspected directly. Confirmed results have been incorporated into Section 4 rather than left as unresolved requests.*
+
+1. **H20 mesh sequence and convergence percentages (Section 4.3).** Verify the complete mesh-level names, counts and percentage denominators against `FEM3Dmesh-convergence-criterion.md`. The paper currently uses only the direct T4–T6 difference computable from the two stated extrema; no unverified consecutive-level percentage is asserted.
+2. **CUF equilibration stability (Section 4.3): VERIFIED IN THE PROVIDED DIAGNOSTICS.** `diagnostics/cuf_eq_stability/summary.md` reports PASS for `eq1` versus `eq2`–`eq5`, and for consecutive pairs. Sampled displacement and available `solved_nodal_domain_natural_coefficients` checks are included in the text. DOF coefficient arrays are explicitly *not evaluated*; do not claim otherwise. No further stability note is required for these measured quantities.
+3. **Interior comparison (Section 4.4): VERIFIED IN THE PROVIDED DIAGNOSTICS.** `diagnostics/h20_vs_cuf_T4_v3/summary.md` confirms 24,576 common physical points, Jacobian-weighted RMS, all three displacement differences and all four divergence RMS values. Keep the distinction between sampled extrema and global extrema.
+4. **Physical-surface comparison (Section 4.4): VERIFIED IN THE PROVIDED DIAGNOSTICS.** `diagnostics/h20_vs_cuf_T4_surfaces/summary.md` confirms sample counts, surface and interface RMS values, area weighting, the CUF-only seam diagnostic and the exclusion of supported end faces from the free-traction test.
+5. **Interface-offset sensitivity (Section 4.4): STILL REQUIRED.** The surface report states that CUF one-sided stress is sampled an epsilon distance inside each domain. Check how the interface RMS changes with that offset before submission.
+6. **Physical load and support equivalence (Section 4.1): STILL REQUIRED FROM THE MODEL/DRIVERS.** Independently check the integrated inclined-face load, transverse supports and axial gauge in both implementations.
+7. **Material evaluation (Section 4.2): REPORTED BY THE DIAGNOSTICS.** The interior and surface reports explicitly distinguish H20's elementwise-constant modulus from CUF's continuous longitudinal evaluation. For a full code audit, confirm the respective evaluation paths in the source drivers.
+8. **Traceability (Section 4.5): PARTIALLY VERIFIED.** The supplied surface report includes SHA-256 identifiers for both solution files and the CSF YAML. Verify the actual checkpoint filenames and source revisions against the reproducibility guide when preparing the final archive.
+9. **Figures and final consistency.** Select one geometry/material illustration, one H20 convergence plot and one concise equilibrium/displacement comparison. Check that the case YAML agrees with the nine L9 domains, 57 transverse functions, ten longitudinal elements, quadrature orders and MITC setting. Keep the detailed diagnostic plots linked in the repository.
+
+**Evidence inspected for this revision:** the three supplied Markdown summaries in `diagnostics/cuf_eq_stability`, `diagnostics/h20_vs_cuf_T4_v3` and `diagnostics/h20_vs_cuf_T4_surfaces`. This is a review of the supplied numerical diagnostics, not a fresh run of the solvers.
+
+
+---
+---
+
+
+# 4. Numerical Verification and Reproducibility
+
+The preceding sections introduced the continuous physical description, derived its coupling to CUF and described the computational implementation. This section tests that implementation on a single three-dimensional elasticity problem. The purpose is twofold: to compare the computed response with an independently implemented solid finite-element model, and to make the comparison reproducible from publicly available inputs and saved results. All lengths are expressed in mm, forces in N, and stresses and elastic moduli in MPa.
+
+## 4.1. Physical problem: a tapered I-shaped member
+
+The member has length $L=1000$ mm along the physical $x$ axis; $y$ and $z$ are transverse coordinates, as defined in Section 1. Its cross-section consists of two flanges joined by a web. The flange width (66 mm), flange thickness (25 mm) and web thickness (25 mm) are constant. The clear web height decreases linearly from 100 mm at $x=0$ to 20 mm at $x=L$. Consequently, the total section height decreases from 150 to 70 mm. The cross-sectional area decreases from 5800 to 3800 mm$^2$.
+
+Let $h_w(x)$ denote the clear web height, and let $E_f(x)$ and $E_w(x)$ denote Young's moduli of the flanges and web, respectively. Their prescribed laws are
+
+```math
+h_w(x)=100-80\frac{x}{L}\quad\mathrm{mm},
+```
+
+```math
+E_f(x)=71700\quad\mathrm{MPa},\qquad
+E_w(x)=71700-20000\frac{x}{L}\quad\mathrm{MPa}.
+```
+
+All regions are isotropic, with Poisson ratio $\nu=0.3$. Thus the physical model combines a changing integration domain with a changing constitutive field, the two independent CSF inputs identified in Section 2.
+
+At both ends the transverse displacements are constrained, $u_y=u_z=0$, while axial translation is removed by a common gauge condition. A traction acts on the *physical lower surface* in the fixed global $z$ direction. With $\bar{\mathbf t}(x)$ denoting the prescribed traction vector, its half-wave distribution is
+
+```math
+\bar{\mathbf t}(x)=
+\begin{bmatrix}0\\0\\-\sin(\pi x/L)\end{bmatrix}
+\quad\mathrm{MPa}.
+```
+
+The traction direction is not rotated with the taper. The documented integral of this load over the inclined physical surface is approximately $-42050.505$ N in the global $z$ direction. Both numerical models represent the same geometry, constitutive laws, support conditions and physical loading. The complete static scheme and geometric definitions are provided in the [benchmark description](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/README.md).
+
+## 4.2. Independent numerical representations
+
+The reference solid model uses twenty-node hexahedral finite elements (H20). Its three-dimensional displacement interpolation is defined directly over the discretized volume, with $3\times3\times3$ Gauss integration for the stiffness. The bottom-surface traction is integrated over quadratic element faces. The reported H20 solutions use the SciPy sparse-solver backend. In this implementation the web modulus assigned to each solid element is evaluated at its longitudinal midpoint. This is a piecewise-constant elementwise approximation of the prescribed linear material law, whereas CSF-CUF evaluates the material at its sectional and longitudinal integration stations. The models share the same physical constitutive law but not an identical numerical sampling of that law.
+
+The CSF-CUF model instead obtains the physical sectional domains and constitutive values from CSF at the requested integration stations. Its transverse displacement approximation uses nine-node Lagrange functions (L9) over nine connected quadrilateral domains: three for the upper flange, three for the web and three for the lower flange. The shared displacement nodes provide continuity across numerical domain boundaries. The documented configuration has 57 transverse functions and ten longitudinal finite elements of polynomial order six; it uses longitudinal Gauss order 15, sectional Gauss order 12 and a mixed-interpolation-of-tensorial-components (MITC) correction.
+
+The two models use different geometric subdivisions of the *same physical solid*. In particular, the extra CUF domain boundaries are not additional material interfaces. The source descriptions are [the physical model used by H20](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/models/carrera_i_shaped_taper80.yaml), [the nine-domain CUF model](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/models/carrera_i_shaped_taper80_l9_web3.yaml) and [the CUF case configuration](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/cases/taper/carrera_i_shaped_taper80_lagrangeL9_v4_E10_web3.yaml).
+
+## 4.3. Selection of the numerical reference
+
+A comparison between numerical methods is meaningful only when the selected solutions have been checked for discretization sensitivity. For H20, the repository documents a mesh-refinement sequence, with reported element counts ranging from 48 to 4,608; the exact list of level labels and meshes is retained in the repository report. Let $u_z^{\mathrm{T4}}$ and $u_z^{\mathrm{T6}}$ denote the reported minimum nodal transverse displacements for the two selected H20 meshes. The direct relative difference between these two results, using T4 as denominator, is
+
+```math
+\\delta_{\mathrm{T4,T6}}=100\frac{\left|u_z^{\mathrm{T6}}-u_z^{\mathrm{T4}}\right|}{\left|u_z^{\mathrm{T4}}\right|}.
+```
+
+The comparison is summarized below. The reported values are rounded; the relative difference computed from these rounded values is approximately 0.00932%.
+
+| H20 mesh | Elements | Nodes | Minimum $u_z$ (mm) |
+|---|---:|---:|---:|
+| T4 | 3,072 | 16,081 | -1.717022 |
+| T6 | 4,608 | 24,001 | -1.717182 |
+
+The direct T4–T6 difference is below the stated 0.1% displacement criterion, supporting the selection of T4 as the H20 displacement reference. This comparison is **not** presented as a consecutive-level convergence ratio. The full refinement sequence, its exact labels and the level-to-level values should be taken from the [H20 mesh-convergence study](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/FEM3Dmesh-convergence-criterion.md). Stabilization of a displacement extremum does not alone establish convergence of reconstructed stress gradients.
+
+The CUF solution selected for comparison is the first solver-equilibration checkpoint, `eq1`. Its stability is documented by a direct comparison with the subsequent checkpoints `eq2`–`eq5`, rather than inferred from their mere existence. The [checkpoint-stability report](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/diagnostics/cuf_eq_stability/summary.md) reports **PASS** for every tested comparison, both against `eq1` and between successive checkpoints. The acceptance rule is defined for each compared response component or saved coefficient array by
+
+```math
+\max |b-a|\leq 10^{-9}+10^{-8}\max(\max|a|,\max|b|),
+```
+
+where $a$ and $b$ denote the two arrays being compared, and the maxima are taken over their respective entries. The absolute term has the native units of the compared data (mm for the displacement and physical displacement-coefficient arrays). For each comparison with `eq1`, the maximum difference among the reconstructed displacement components is at most $2.000011\times10^{-12}$ mm; the maximum difference in the available `solved_nodal_domain_natural_coefficients` arrays is at most $7.565282\times10^{-12}$ in their reported native units. The report explicitly marks the separate DOF-coefficient comparison as **not evaluated**. These results establish stability, under the stated tolerance, for the **sampled displacements and available saved coefficient arrays**. They are not a transverse-basis or longitudinal-mesh convergence study.
+
+| Comparison against `eq1` | Maximum sampled displacement difference (mm) | Maximum available saved-coefficient difference | Report result |
+|---|---:|---:|---|
+| `eq2` | $2.000011\times10^{-12}$ | $7.565282\times10^{-12}$ | PASS |
+| `eq3` | $1.869707\times10^{-12}$ | $6.947110\times10^{-12}$ | PASS |
+| `eq4` | $1.899980\times10^{-12}$ | $6.572298\times10^{-12}$ | PASS |
+| `eq5` | $1.700029\times10^{-12}$ | $6.401546\times10^{-12}$ | PASS |
+
+The numerical reference and the checkpoint comparison thus address different questions: H20 refinement checks sensitivity of a selected displacement extremum to the solid mesh, while the CUF checkpoint test checks the reported equilibration stability of a fixed numerical approximation.
+
+## 4.4. Displacement and equilibrium comparisons
+
+The two selected solutions, H20 T4 and CSF-CUF `eq1`, are reconstructed at the same 24,576 interior physical points: eight sample points in each of the 3,072 H20 elements. The diagnostic uses common Jacobian-weighted physical-volume contributions at these points; consequently, both methods are assessed with the same spatial sampling and weighting. The reported root-mean-square (RMS) displacement differences are $2.830\times10^{-5}$ mm for $u_x$, $4.742\times10^{-6}$ mm for $u_y$, and $3.6839\times10^{-4}$ mm for $u_z$. Thus the independently constructed models give closely matching displacement fields at the comparison points.
+
+Three complementary tests are used. Displacement differences assess agreement in the reconstructed kinematic response. The interior divergence residual assesses local differential equilibrium within material regions. Surface traction errors and interface traction jumps assess boundary and transmission conditions. These quantities answer different mechanical questions and must be interpreted separately.
+
+Displacement agreement is not, however, a complete test of the reconstructed stress field. Let $\boldsymbol\sigma$ be the symmetric three-dimensional Cauchy stress tensor, and define the interior equilibrium residual $\mathbf r$ in the absence of body forces by
+
+```math
+\mathbf r=\nabla\cdot\boldsymbol\sigma,
+```
+
+where $\nabla\cdot$ denotes spatial divergence. Its components have units MPa/mm. The volume-weighted RMS values computed at the same interior points are:
+
+| Interior residual | H20 RMS (MPa/mm) | CSF-CUF RMS (MPa/mm) |
+|---|---:|---:|
+| $r_x$ | 0.13127148 | 0.11150557 |
+| $r_y$ | 0.04039661 | 0.03615182 |
+| $r_z$ | 0.03909369 | 0.02734043 |
+| Magnitude $|\mathbf r|$ | 0.14280197 | 0.12036588 |
+
+For this sampling and weighting, CSF-CUF has a 15.7% smaller RMS of the total interior residual. The corresponding weighted median of the residual magnitude is instead smaller for H20 (0.028999 MPa/mm, versus 0.046390 MPa/mm for CUF), showing that the two methods produce different residual distributions rather than a uniform advantage at every point.
+
+A separate comparison tests the reconstructed traction $\mathbf t=\boldsymbol\sigma\mathbf n$, where $\mathbf n$ is the outward unit normal to a physical surface. On the loaded surface, $\mathbf t$ is compared with the prescribed traction; on free surfaces it is compared with zero. Across physical web–flange interfaces, the transmitted tractions are checked for continuity. The documented RMS errors use identical physical-surface quadrature locations and common physical-area weights for each corresponding diagnostic. For material interfaces, the reported error is the jump between tractions evaluated on the two sides of the same physical interface. The supported end faces are excluded from the zero-traction check because reaction tractions are permitted. The numbers of sampled points are 1,536 on the loaded lower surface, 7,680 on free external surfaces and 1,536 on the physical material interfaces. The errors are:
+
+| Physical-surface diagnostic | H20 RMS (MPa) | CSF-CUF RMS (MPa) |
+|---|---:|---:|
+| Loaded lower-surface traction | 0.111526 | 0.485354 |
+| Free external-surface traction | 0.940525 | 1.062006 |
+| Physical material-interface traction jump | 2.505574 | 2.516598 |
+
+H20 gives the smaller external traction errors in this test; the interface errors are nearly equal. A separate CUF-only check on 1,280 points along additional numerical-domain seams gives a traction-jump RMS of 1.07677606 MPa. This is not a fourth H20–CUF comparison: these seams include same-material subdivision boundaries and are reported separately. The distinction is mechanically important: the interior divergence residual measures local differential balance, whereas the surface diagnostic measures the approximation of transmitted forces. Their different units and sampling domains mean that the two RMS measures should not be combined into a single score. The one-sided CUF stress used for the interface diagnostics is evaluated a small distance inside each domain; sensitivity to that offset remains a targeted verification before publication. The full definitions, evaluation locations and additional statistics are provided in the [interior diagnostics](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/diagnostics/h20_vs_cuf_T4_v3/summary.md), the [surface diagnostics](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/diagnostics/h20_vs_cuf_T4_surfaces/summary.md) and the [equilibrium comparison](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/FEM3D-H20-CUF-equilibrium.md).
+
+## 4.5. Reproducibility of the numerical experiment
+
+The benchmark is distributed as an executable study rather than as numerical tables alone. Its [reproducibility guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/reproducibility.md) provides installation instructions and command-line procedures for the CUF solve, H20 mesh refinement, checkpoint selection, common-point comparison, surface and interface diagnostics, and plotting. The [benchmark directory](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape_L) also contains the physical and numerical YAML descriptions and the corresponding reports.
+
+The comparison is organized around saved solution checkpoints: `T4_h20.npz` for the selected solid reference and `eq1.cuf.npz` for the CUF reference. Post-processing programs reconstruct both solutions at common physical points and write numerical tables and plots. The repository provides the commands, numerical settings and reference data needed to inspect the reported quantities and regenerate the diagnostics. The [surface-diagnostic report](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/diagnostics/h20_vs_cuf_T4_surfaces/summary.md) also records SHA-256 checksums for the H20 checkpoint, CUF checkpoint and CSF YAML model. The [checkpoint-stability report](https://github.com/giovanniboscu/continuous-section-field/blob/main/cuf/I-Shape_L/diagnostics/cuf_eq_stability/summary.md) records the tested equilibration checkpoints and their acceptance criteria.
+
+This single benchmark therefore demonstrates the computational use of a continuously varying physical sectional field in CUF and supplies an independently constructed three-dimensional comparison. Its principal numerical finding is the close agreement in displacement alongside distinct interior and surface-equilibrium characteristics—quantities that are evaluated and reported separately rather than conflated.
+
+---
+
+## Editorial integration notes — outstanding checks before submission
+
+*Editorial notes only; not part of the scientific paper. The diagnostics supplied with this revision have been inspected directly. Confirmed results have been incorporated into Section 4 rather than left as unresolved requests.*
+
+1. **H20 mesh sequence and convergence percentages (Section 4.3).** Verify the complete mesh-level names, counts and percentage denominators against `FEM3Dmesh-convergence-criterion.md`. The paper currently uses only the direct T4–T6 difference computable from the two stated extrema; no unverified consecutive-level percentage is asserted.
+2. **CUF equilibration stability (Section 4.3): VERIFIED IN THE PROVIDED DIAGNOSTICS.** `diagnostics/cuf_eq_stability/summary.md` reports PASS for `eq1` versus `eq2`–`eq5`, and for consecutive pairs. Sampled displacement and available `solved_nodal_domain_natural_coefficients` checks are included in the text. DOF coefficient arrays are explicitly *not evaluated*; do not claim otherwise. No further stability note is required for these measured quantities.
+3. **Interior comparison (Section 4.4): VERIFIED IN THE PROVIDED DIAGNOSTICS.** `diagnostics/h20_vs_cuf_T4_v3/summary.md` confirms 24,576 common physical points, Jacobian-weighted RMS, all three displacement differences and all four divergence RMS values. Keep the distinction between sampled extrema and global extrema.
+4. **Physical-surface comparison (Section 4.4): VERIFIED IN THE PROVIDED DIAGNOSTICS.** `diagnostics/h20_vs_cuf_T4_surfaces/summary.md` confirms sample counts, surface and interface RMS values, area weighting, the CUF-only seam diagnostic and the exclusion of supported end faces from the free-traction test.
+5. **Interface-offset sensitivity (Section 4.4): STILL REQUIRED.** The surface report states that CUF one-sided stress is sampled an epsilon distance inside each domain. Check how the interface RMS changes with that offset before submission.
+6. **Physical load and support equivalence (Section 4.1): STILL REQUIRED FROM THE MODEL/DRIVERS.** Independently check the integrated inclined-face load, transverse supports and axial gauge in both implementations.
+7. **Material evaluation (Section 4.2): REPORTED BY THE DIAGNOSTICS.** The interior and surface reports explicitly distinguish H20's elementwise-constant modulus from CUF's continuous longitudinal evaluation. For a full code audit, confirm the respective evaluation paths in the source drivers.
+8. **Traceability (Section 4.5): PARTIALLY VERIFIED.** The supplied surface report includes SHA-256 identifiers for both solution files and the CSF YAML. Verify the actual checkpoint filenames and source revisions against the reproducibility guide when preparing the final archive.
+9. **Figures and final consistency.** Select one geometry/material illustration, one H20 convergence plot and one concise equilibrium/displacement comparison. Check that the case YAML agrees with the nine L9 domains, 57 transverse functions, ten longitudinal elements, quadrature orders and MITC setting. Keep the detailed diagnostic plots linked in the repository.
+
+**Evidence inspected for this revision:** the three supplied Markdown summaries in `diagnostics/cuf_eq_stability`, `diagnostics/h20_vs_cuf_T4_v3` and `diagnostics/h20_vs_cuf_T4_surfaces`. This is a review of the supplied numerical diagnostics, not a fresh run of the solvers.
