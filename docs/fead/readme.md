@@ -1,6 +1,6 @@
 # DRAFT
 
-# Continuous Section Field-Carrera Unified Formulation: Mathematical Coupling Open-Source, Configurable, Reprodicuble Computational Implementation
+# Continuous Section Field-Carrera Unified Formulation: Mathematical Coupling and a Configurable, Reproducible Open-Source Computational Implementation
 
 # **Abstract**
 
