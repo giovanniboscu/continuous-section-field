@@ -19,7 +19,9 @@ The Carrera Unified Formulation (CUF) provides a general framework for construct
 This paper presents a computational implementation of CUF organized around the **Continuous Section Field (CSF)**. The central idea is to treat the physical sectional state as a primary, independently defined function of the longitudinal position. Let $x$ denote the longitudinal coordinate of a beam of length $L$, and let $(y,z)$ denote the transverse coordinates. The sectional state is written as
 
 $$
-\mathcal{S}(x) = \bigl\{\Omega(x),\,\mathbf{C}(x,y,z)\bigr\}, \qquad 0 \leq x \leq L,
+\mathcal{S}(x) =
+\lbrace \Omega(x), \mathbf{C}(x,y,z) \rbrace,
+\qquad 0 \leq x \leq L.
 $$
 
 where $\Omega(x)$ is the physical cross-sectional domain and $\mathbf{C}(x,y,z)$ is the local constitutive matrix defined over that domain. This description accommodates both prismatic and non-prismatic members, as well as longitudinal and sectional variations of material properties. It is specified independently of the transverse displacement basis, longitudinal finite-element mesh, and numerical quadrature.
