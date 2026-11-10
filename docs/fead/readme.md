@@ -186,7 +186,15 @@ $$
 \end{aligned}
 $$
 
-Here $[h]_{x=0}^{x=L}=h(L)-h(0)$ for any quantity $h(x)$. Combining this identity with the undifferentiated virtual-amplitude terms identifies the matrix differential operator $\mathcal{K}_{\tau s}$ acting on the trial amplitude vector:
+
+Here the boundary evaluation is defined by
+
+$$
+[h]_{x=0}^{x=L}=h(L)-h(0),
+$$
+
+for any quantity $h(x)$. Combining this identity with the undifferentiated virtual-amplitude terms identifies the matrix differential operator $\mathcal{K}_{\tau s}$ acting on the trial amplitude vector:
+
 
 
 
