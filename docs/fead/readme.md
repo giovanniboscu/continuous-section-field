@@ -43,7 +43,7 @@ This section establishes the mathematical connection between a prescribed Contin
 
 ## 2.1. Continuous sectional description
 
-Let $L>0$ be the member length, $x\in[0,L]$ its longitudinal coordinate, and $(y,z)$ the physical transverse coordinates. At each station $x$, the prescribed sectional field $\mathcal S(x)$ provides $N_\Omega$ sectional subdomains and their constitutive descriptions:
+Using the longitudinal and transverse coordinates introduced in Section 1, let $N_\Omega$ denote the number of physical sectional subdomains. At each station $x$, the prescribed field $\mathcal S(x)$ provides their boundaries and constitutive descriptions:
 
 ```math
 \mathcal S(x)\longmapsto
@@ -157,7 +157,24 @@ This weak form is the basis of the numerical assembly: the longitudinal integrat
 
 ## 2.5. Longitudinal fundamental operator
 
-For a fixed test/trial expansion pair $(\tau,s)$, integration by parts of the terms containing $\delta\mathbf q_\tau'$ identifies the matrix differential operator $\mathcal K_{\tau s}$ acting on the trial amplitude vector:
+For a fixed test/trial expansion pair $(\tau,s)$, define the three-component longitudinal flux
+
+```math
+\mathbf g_{\tau s}(x)=
+\mathbf H^{10}_{\tau s}(x)\mathbf q_s(x)
++\mathbf H^{11}_{\tau s}(x)\mathbf q_s'(x).
+```
+
+The two terms containing the derivative of the virtual amplitude can then be integrated by parts:
+
+```math
+\int_0^L \delta\mathbf q_\tau'^T\mathbf g_{\tau s}\,dx
+=\left[\delta\mathbf q_\tau^T\mathbf g_{\tau s}\right]_{x=0}^{x=L}
+-\int_0^L\delta\mathbf q_\tau^T
+\frac{d\mathbf g_{\tau s}}{dx}\,dx.
+```
+
+Here $[h]_{x=0}^{x=L}=h(L)-h(0)$ for any quantity $h(x)$. Combining this identity with the undifferentiated virtual-amplitude terms identifies the matrix differential operator $\mathcal K_{\tau s}$ acting on the trial amplitude vector:
 
 ```math
 \boxed{
@@ -182,7 +199,17 @@ The integration by parts also yields the generalized end action
 \right]_{x=0}^{x=L},
 ```
 
-summed over $\tau$, where $[g]_{x=0}^{x=L}=g(L)-g(0)$. With $\mathbf f_\tau(x)$ denoting the generalized external force per unit length projected onto test function $F_\tau$, the interior equilibrium equations are
+summed over $\tau$. To specify the corresponding external action, let $\mathbf b^k(x,y,z)$ be a prescribed body-force density in subdomain $k$. Let $\Gamma_t(x)$ be the traction-loaded portion of the sectional boundary, $\bar{\mathbf t}(x,y,z)$ the prescribed surface traction, $d\Gamma$ the physical line element along that boundary, and $\mu(x,y,z)$ the factor converting $d\Gamma\,dx$ to physical surface area. The generalized force per unit longitudinal length is
+
+```math
+\mathbf f_\tau(x)=
+\sum_{k=1}^{N_\Omega}\int_{\Omega^k(x)}
+F_\tau\,\mathbf b^k\,d\Omega
++\int_{\Gamma_t(x)}
+F_\tau\,\bar{\mathbf t}\,\mu\,d\Gamma.
+```
+
+The surface term applies to lateral tractions; end-section tractions are represented by the generalized end actions. The interior equilibrium equations are
 
 ```math
 \sum_{s=1}^{M}\mathcal K_{\tau s}[\mathbf q_s]
