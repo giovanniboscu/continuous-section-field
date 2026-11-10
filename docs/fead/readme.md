@@ -137,7 +137,17 @@ For $a,b\in\{0,1\}$, define four $3\times3$ matrices for each pair $(\tau,s)$:
 \mathbf B^{(b)}(F_s)\,d\Omega.
 ```
 
-The first superscript indicates whether the test amplitude is differentiated longitudinally, and the second does the same for the trial amplitude. Each entry of $\mathbf H^{ab}_{\tau s}$ is a linear combination of the sectional coefficients $J^{mn}_{\tau,\alpha\,s,\beta}$. Substitution into the internal virtual work gives
+
+The first superscript indicates whether the test amplitude is differentiated longitudinally, and the second does the same for the trial amplitude. Each entry of $H_{\tau s}^{ab}$ is a linear combination of the sectional coefficients
+
+$$
+J_{\tau,\alpha;s,\beta}^{mn}.
+$$
+
+Substitution into the internal virtual work gives
+
+
+
 
 ```math
 \begin{aligned}
@@ -161,16 +171,24 @@ For a fixed test/trial expansion pair $(\tau,s)$, define the three-component lon
 +\mathbf H^{11}_{\tau s}(x)\mathbf q_s'(x).
 ```
 
+
+
 The two terms containing the derivative of the virtual amplitude can then be integrated by parts:
 
-```math
-\int_0^L \delta\mathbf q_\tau'^T\mathbf g_{\tau s}\,dx
-=\left[\delta\mathbf q_\tau^T\mathbf g_{\tau s}\right]_{x=0}^{x=L}
--\int_0^L\delta\mathbf q_\tau^T
-\frac{d\mathbf g_{\tau s}}{dx}\,dx.
-```
+$$
+\begin{aligned}
+\int_0^L \delta\mathbf{q}_\tau'^{T}\mathbf{g}_{\tau s}\,dx
+&=
+\left[\delta\mathbf{q}_\tau^{T}\mathbf{g}_{\tau s}\right]_{x=0}^{x=L}\\
+&\quad-
+\int_0^L\delta\mathbf{q}_\tau^{T}
+\frac{d\mathbf{g}_{\tau s}}{dx}\,dx.
+\end{aligned}
+$$
 
-Here $[h]_{x=0}^{x=L}=h(L)-h(0)$ for any quantity $h(x)$. Combining this identity with the undifferentiated virtual-amplitude terms identifies the matrix differential operator $\mathcal K_{\tau s}$ acting on the trial amplitude vector:
+Here $[h]_{x=0}^{x=L}=h(L)-h(0)$ for any quantity $h(x)$. Combining this identity with the undifferentiated virtual-amplitude terms identifies the matrix differential operator $\mathcal{K}_{\tau s}$ acting on the trial amplitude vector:
+
+
 
 ```math
 \boxed{
