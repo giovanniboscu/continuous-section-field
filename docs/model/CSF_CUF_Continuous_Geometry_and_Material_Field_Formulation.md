@@ -6,19 +6,9 @@
 
 The purpose of the formulation is to introduce a **continuous physical field of geometry and material properties as a primary mathematical object** in the Carrera Unified Formulation (CUF). The Continuous Section Field (CSF) describes the member independently of the CUF expansion, the longitudinal approximation and the solution method. The contribution is the **direct coupling of this prescribed physical field to CUF sectional integrals, variational equations and fundamental nuclear operators**.
 
-The field $\mathcal S(x)$ is not an additional structural unknown and is not merely a geometry-preprocessing convention. It supplies physical sectional domains, boundaries and constitutive properties at longitudinal station $x$. The CUF approximation independently supplies the kinematic factors. These descriptions meet in the sectional integrals, whose values enter the nuclear operators and generalized loading. The notation is introduced progressively in the sections below: first the physical field $\mathcal S$, then the sectional coefficients $J$, the assembled matrices $\mathbf H$, and finally the governing operators $\mathcal K$. Their relationship is
+The physical description supplies sectional domains, boundaries and constitutive properties at every longitudinal station. The CUF approximation independently supplies the displacement functions used to test and approximate the solution. Section 5 defines the sectional integrals in which these inputs are combined; Section 6 derives the resulting longitudinal equilibrium operator. The notation for each mathematical object is defined before its use.
 
-```math
-\underbrace{\mathcal S(x)}_{\text{physical section and material}}
-\longrightarrow
-\underbrace{J(x)}_{\text{sectional integrals}}
-\longrightarrow
-\underbrace{\mathbf H(x)}_{\text{assembled sectional matrices}}
-\longrightarrow
-\underbrace{\mathcal K}_{\text{longitudinal operator}}.
-```
-
-The geometry sets the **region of integration**, the constitutive field sets the **material weighting**, and the independently chosen CUF expansion sets the **test and trial factors**. The rule that generates the operators is unchanged when an admissible physical section or material field is replaced; the sectional coefficient functions change instead. This is a mathematical separation, not simply a software architecture.
+The geometry determines the **region of integration**, the constitutive field determines the **material weighting**, and the chosen CUF expansion determines the **test and trial factors**. Consequently, replacing an admissible physical geometry or constitutive field changes the values of the sectional integrals without requiring a different rule for constructing the governing operator.
 
 A sectional basis may also have a physical longitudinal dependence $F_\tau(x,y,z)$; in that case $F_{\tau,x}$ must enter the strain field. This is a **kinematic generalization**, distinct from the defining CSF coupling. A varying sectional geometry does not imply $F_{\tau,x}\ne0$ independently of the selected basis: when the CUF basis follows the evolving physical section, geometric evolution can induce nonzero longitudinal derivatives through its sectional mapping. A variable material field alone does not impose such a derivative.
 
@@ -50,15 +40,15 @@ Here $N_\Omega$ is the number of sectional sub-domains, $k=1,\ldots,N_\Omega$ la
 1. the sectional partition has a fixed number $N_\Omega$ of labeled sub-domains (piecewise descriptions can be treated interval by interval);
 2. the domains $\Omega^k(x)$ vary regularly with $x$ wherever the geometry is smooth;
 3. $\mathbf C^k$ may be discontinuous across the interfaces between different sub-domains;
-4. the sectional coefficients $J(x)$, the corresponding matrices $\mathbf H^{ab}(x)$ and the load projections are sufficiently integrable for the weak variational formulation; for the classical strong-form operators of Sections 6 and 9.4, the coefficient matrices $\mathbf H^{10}_{\tau s}(x)$ and $\mathbf H^{11}_{\tau s}(x)$ are additionally differentiable with respect to $x$ on each smooth longitudinal interval. Piecewise-smooth coefficients are treated interval by interval, with the corresponding interface conditions.
+4. the sectional integrals, matrix coefficients and projected loads subsequently defined in Sections 5 and 7 are sufficiently integrable for the weak formulation. For the classical strong form derived in Section 6, the two coefficient matrices multiplying derivatives of the test amplitudes must additionally be differentiable with respect to the longitudinal coordinate on each smooth interval. These matrices are identified as $\mathbf H^{10}_{\tau s}$ and $\mathbf H^{11}_{\tau s}$ in Section 5.2. Piecewise-smooth coefficients are treated interval by interval, together with their interface conditions.
 
-**Independent dependencies.** The domains $\Omega^k(x)$ describe the evolving geometry; $\mathbf C^k(x,y,z)$ describes the evolving and possibly heterogeneous material. Neither is inferred from the CUF displacement approximation, and neither implies the other. Moving domains change where each sectional integral is taken; a varying material changes how its integrand is weighted. Neither effect, by itself, changes the definition of the CUF functions. The field is thus mathematical input to the variational formulation, rather than simply a collection of equivalent beam constants.
+**Independent dependencies.** The domains $\Omega^k(x)$ describe the evolving geometry; $\mathbf C^k(x,y,z)$ describes the evolving and possibly heterogeneous material. Neither is inferred from the CUF displacement approximation, and neither implies the other. Moving domains change where each sectional integral is taken; a varying material changes how its integrand is weighted. Neither effect, by itself, changes the definition of the CUF functions.
 
 ---
 
 ## 2. CUF kinematics
 
-The displacement field is
+Let $\mathbf u(x,y,z)$ denote the three-component displacement vector, and let $M$ be the number of functions in the chosen CUF sectional expansion. Each function $F_\tau$ is a scalar function of position; the associated vector $\mathbf q_\tau(x)$ contains three unknown longitudinal displacement amplitudes. The expansion index $\tau$ takes values from $1$ to $M$. The displacement field is
 
 ```math
 \mathbf u(x,y,z)=\sum_{\tau=1}^{M}F_\tau(x,y,z)\,\mathbf q_\tau(x),
@@ -67,7 +57,7 @@ The displacement field is
 \begin{bmatrix}q_{x\tau}(x)\\ q_{y\tau}(x)\\ q_{z\tau}(x)\end{bmatrix}.
 ```
 
-The number $M$ is the number of sectional expansion functions. The indices $\tau=1,\ldots,M$ and $s=1,\ldots,M$ label the test and trial expansions, respectively. The scalar functions $F_\tau$ define the selected CUF sectional approximation; the vectors $\mathbf q_\tau(x)$ contain three unknown longitudinal amplitudes. A repeated expansion index is summed only where a sum is explicitly written.
+When constructing the variational equations, $\tau$ labels a test expansion and $s=1,\ldots,M$ labels a trial expansion. Their amplitudes use components $q_{x\tau}$, $q_{y\tau}$ and $q_{z\tau}$ (and correspondingly for $s$). An expansion index is summed only where an explicit summation sign is written.
 
 When the selected basis is defined on and follows an evolving physical section, its physical evaluation can depend on $x$, so $F_\tau=F_\tau(x,y,z)$. In that case the derivative $F_{\tau,x}$, taken at fixed physical coordinates $y,z$, must be retained. For example, a Lagrange L9 basis attached to moving sectional vertices can acquire a nonzero $F_{\tau,x}$ through the derivative of its local sectional mapping. By contrast, a basis fixed in physical transverse coordinates may satisfy $F_{\tau,x}=0$ even for a non-prismatic member. Thus geometric evolution does not determine $F_{\tau,x}$ independently of the chosen basis; material variation alone does not induce it. Local sectional coordinates and Jacobians may be used to evaluate sectional quadrature and basis derivatives; the CSF-CUF coupling does not require a prescribed **beam-wide reference-to-physical mapping** of the non-prismatic solid.
 
@@ -89,7 +79,7 @@ and the longitudinal action on an amplitude $v$ is
 
 ## 3. Small-strain field
 
-The comma notation $u_{i,j}$ means partial differentiation of displacement component $u_i$ with respect to physical coordinate $j$. The symbol $\gamma$ denotes an engineering shear strain. With the engineering strain vector $\boldsymbol\varepsilon=[\varepsilon_{xx},\varepsilon_{yy},\varepsilon_{zz},\gamma_{yz},\gamma_{xz},\gamma_{xy}]^T$ and
+For a displacement component $u_i$, the notation $u_{i,j}$ denotes its partial derivative with respect to coordinate $j$, where the component and coordinate labels $i,j$ take values in $\lbrace x,y,z\rbrace$. The symbol $\gamma$ denotes an engineering shear strain, and superscript $T$ denotes matrix or vector transposition. With the engineering strain vector $\boldsymbol\varepsilon=[\varepsilon_{xx},\varepsilon_{yy},\varepsilon_{zz},\gamma_{yz},\gamma_{xz},\gamma_{xy}]^T$ and
 
 ```math
 \varepsilon_{xx}=u_{x,x},\quad \varepsilon_{yy}=u_{y,y},\quad \varepsilon_{zz}=u_{z,z},
@@ -97,20 +87,20 @@ The comma notation $u_{i,j}$ means partial differentiation of displacement compo
 \gamma_{yz}=u_{y,z}+u_{z,y},\quad \gamma_{xz}=u_{x,z}+u_{z,x},\quad \gamma_{xy}=u_{x,y}+u_{y,x},
 ```
 
-the contribution of expansion index $s$, with $a=q_{xs}$, $b=q_{ys}$, $c=q_{zs}$, $A=F_s$, is
+the strain contribution of a single trial expansion $s$ is denoted by $\boldsymbol\varepsilon_s$. Using the longitudinal derivative operator $\mathcal D_F$ defined in Section 2, with $F=F_s$, one obtains
 
 ```math
 \boldsymbol\varepsilon_s=
 \begin{bmatrix}
-\mathcal D_A[a]\\
-A_{,y}\,b\\
-A_{,z}\,c\\
-A_{,z}\,b+A_{,y}\,c\\
-A_{,z}\,a+\mathcal D_A[c]\\
-A_{,y}\,a+\mathcal D_A[b]
+\mathcal D_{F_s}[q_{xs}]\\
+F_{s,y}\,q_{ys}\\
+F_{s,z}\,q_{zs}\\
+F_{s,z}\,q_{ys}+F_{s,y}\,q_{zs}\\
+F_{s,z}\,q_{xs}+\mathcal D_{F_s}[q_{zs}]\\
+F_{s,y}\,q_{xs}+\mathcal D_{F_s}[q_{ys}]
 \end{bmatrix},
 \qquad
-\boldsymbol\varepsilon=\sum_s\boldsymbol\varepsilon_s .
+\boldsymbol\varepsilon=\sum_{s=1}^{M}\boldsymbol\varepsilon_s .
 ```
 
 The prefix $\delta$ denotes an admissible virtual variation of an unknown amplitude. The virtual strain follows from the same linear expression with $\mathbf q_s$ and $\mathbf q_s'$ replaced by $\delta\mathbf q_s$ and $\delta\mathbf q_s'$.
@@ -149,13 +139,23 @@ one has
 
 ## 4. Constitutive law
 
-Let $\boldsymbol\sigma^k$ denote the six-component engineering-order stress vector in sub-domain $k$. In each sub-domain,
+In a physical sub-domain $k$, let $\boldsymbol\sigma^k$ denote the six-component stress vector ordered consistently with the strain components introduced in Section 3. The three shear entries are *tensorial stresses* (not engineering strains):
+
+```math
+\boldsymbol\sigma^k=
+\begin{bmatrix}
+\sigma_{xx}^k & \sigma_{yy}^k & \sigma_{zz}^k &
+\sigma_{yz}^k & \sigma_{xz}^k & \sigma_{xy}^k
+\end{bmatrix}^{T}.
+```
+
+The constitutive relation in that sub-domain is
 
 ```math
 \boldsymbol\sigma^k(x,y,z)=\mathbf C^k(x,y,z)\,\boldsymbol\varepsilon(x,y,z).
 ```
 
-Small-displacement, small-strain linear elasticity is assumed. The matrices $\mathbf H^{ab}_{\tau s}$ of Section 5 are valid for any symmetric $\mathbf C^k$. For the explicit nine-block nucleus of Section 9, the constitutive matrix has the structure
+Small-displacement, small-strain linear elasticity is assumed. The sectional matrix construction introduced in Section 5 applies to any symmetric $\mathbf C^k$. For the explicit nine-block nucleus of Section 9, the constitutive matrix has the structure
 
 ```math
 \mathbf C^k=
@@ -247,7 +247,7 @@ The defining path is therefore
 
 
 
-The prime denotes differentiation with respect to $x$, and
+The prime denotes differentiation with respect to $x$. For any scalar or vector-valued quantity $g(x)$, square brackets with limits denote its difference between the two beam ends:
 
 ```math
 [g]_{x=0}^{x=L}=g(L)-g(0).
@@ -372,11 +372,11 @@ F_{s,x}(x,y,z)\,d\Omega
 
 contains the longitudinal derivative of the trial expansion.
 
-Let $i,j\in\{x,y,z\}$ identify a test displacement component and a trial displacement component, respectively.
+Let $i,j\in\lbrace x,y,z\rbrace$ identify a test displacement component and a trial displacement component, respectively.
 
-The symbol $H_{ij}^{ab}$ denotes the entry in row $i$, column $j$ of the matrix $\mathbf H_{\tau s}^{ab}(x)$ defined in Section 5.2.
+For the fixed expansion pair $(\tau,s)$, the abbreviation $H_{ij}^{ab}(x)$ denotes the row-$i$, column-$j$ entry of $\mathbf H_{\tau s}^{ab}(x)$ defined in Section 5.2. The omitted expansion indices are not summed.
 
-The indices $a,b\in\{0,1\}$ indicate whether the corresponding longitudinal amplitude is differentiated:
+The indices $a,b\in\lbrace 0,1\rbrace$ indicate whether the corresponding longitudinal amplitude is differentiated:
 
 - $a=0$: the test amplitude is not differentiated;
 - $a=1$: the test amplitude is differentiated with respect to $x$;
@@ -388,8 +388,6 @@ Thus, $H_{ij}^{ab}$ identifies the coefficient multiplying a specific combinatio
 ### 9.2 The nine component groups of $\mathbf H^{ab}_{\tau s}$
 
 For each displacement pair $(i,j)$, the four coefficients $H^{00}_{ij}$, $H^{01}_{ij}$, $H^{10}_{ij}$ and $H^{11}_{ij}$ are given below. The superscript $00$ refers to undifferentiated test and trial amplitudes; $01$ differentiates only the trial amplitude; $10$ differentiates only the test amplitude; and $11$ differentiates both. All coefficients use the assembled $J^{mn}_{\alpha\beta}$ defined in Section 9.1.
-
-To ensure that GitHub renders every formula reliably, each displacement pair is shown as a separate display equation rather than as a mathematical expression inside a Markdown table.
 
 **Diagonal displacement pairs**
 
@@ -606,10 +604,10 @@ After the generalized amplitudes are solved, the three-dimensional fields are re
 \boldsymbol\sigma^k=\mathbf C^k\boldsymbol\varepsilon .
 ```
 
-Define the local stress-divergence vector $\mathbf r$ as the divergence of the reconstructed three-dimensional stress tensor (the differential operator $\nabla\cdot$ takes the spatial divergence). In components,
+The components $\sigma_{xx}^k$, $\sigma_{xy}^k$ and so forth refer to the tensor components already listed in the stress vector of Section 4. In particular, $\sigma_{yz}^k$, $\sigma_{xz}^k$ and $\sigma_{xy}^k$ are the physical shear-stress components in that order; they are not engineering shear strains. The symmetric three-dimensional stress tensor is reconstructed from those six entries. Denote this symmetric stress tensor by $\boldsymbol\sigma^k_{\mathrm{tensor}}$. Within a smooth sub-domain $k$, define $\mathbf r^k$ as its spatial divergence. The operator $\nabla\cdot$ denotes divergence and $\partial_x$, $\partial_y$, $\partial_z$ denote partial derivatives in physical coordinates. In components,
 
 ```math
-\mathbf r(x,y,z)=\nabla\cdot\boldsymbol\sigma=
+\mathbf r^k(x,y,z)=\nabla\cdot\boldsymbol\sigma^k_{\mathrm{tensor}}=
 \begin{bmatrix}
 \partial_x\sigma_{xx}+\partial_y\sigma_{xy}+\partial_z\sigma_{xz}\\
 \partial_x\sigma_{xy}+\partial_y\sigma_{yy}+\partial_z\sigma_{yz}\\
@@ -617,6 +615,6 @@ Define the local stress-divergence vector $\mathbf r$ as the divergence of the r
 \end{bmatrix}.
 ```
 
-It depends on the variation of $\mathbf C^k$, on the spatial derivatives of $F_\tau$ and on $\mathbf q_\tau$ and its longitudinal derivatives. Within a sub-domain the strong residual is $\mathbf r+\mathbf b$, which vanishes for exact equilibrium; across an interface the corresponding traction-jump condition is an additional requirement.
+The divergence depends on the variation of $\mathbf C^k$, on derivatives of the sectional functions and on the solved amplitudes and their longitudinal derivatives. Within a sub-domain, the strong residual is $\mathbf r^k+\mathbf b^k$, where $\mathbf b^k$ is the body-force density from Section 7. The residual vanishes for exact local equilibrium; across an interface, continuity of the appropriate traction is an additional requirement.
 
-The CUF equations of Section 8 enforce equilibrium in a projected variational sense and do not by themselves imply $\mathbf r+\mathbf b=\mathbf 0$ pointwise. The residual is therefore an independent a posteriori check, evaluated after reconstruction and not inferred from the one-dimensional equations.
+The CUF equations of Section 8 enforce equilibrium in a projected variational sense and do not by themselves imply $\mathbf r^k+\mathbf b^k=\mathbf 0$ pointwise. The residual is therefore an independent a posteriori check, evaluated after reconstruction and not inferred from the one-dimensional equations.
