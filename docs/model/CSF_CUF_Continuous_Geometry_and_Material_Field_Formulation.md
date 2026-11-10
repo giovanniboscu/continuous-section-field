@@ -245,7 +245,19 @@ The defining path is therefore
 
 ## 6. Governing longitudinal operator
 
-The prime denotes differentiation with respect to $x$, and $[g]_{x=0}^{x=L}=g(L)-g(0)$. Integrating by parts the terms containing $\delta\mathbf q_\tau'$ (the longitudinal derivative of the test amplitude) gives:
+
+
+The prime denotes differentiation with respect to $x$, and
+
+```math
+[g]_{x=0}^{x=L}=g(L)-g(0).
+```
+
+Integrating by parts the terms containing
+$\delta\mathbf{q}_\tau'$ (the longitudinal derivative of the
+test amplitude) gives:
+
+
 
 ```math
 \delta W_{\mathrm{int}}=
@@ -257,6 +269,9 @@ The prime denotes differentiation with respect to $x$, and $[g]_{x=0}^{x=L}=g(L)
 +\Big[\sum_\tau\delta\mathbf q_\tau^T\sum_s
 \big(\mathbf H^{10}_{\tau s}\mathbf q_s+\mathbf H^{11}_{\tau s}\mathbf q_s'\big)\Big]_{x=0}^{x=L}.
 ```
+
+
+
 
 Define $\mathcal K_{\tau s}$ as the $3\times3$ matrix differential operator acting on the trial vector $\mathbf q_s(x)$ for a fixed test/trial expansion pair. The generalized longitudinal operator is therefore
 
@@ -317,16 +332,58 @@ This section specializes the general derivation to the constitutive matrix of Se
 
 ### 9.1 Notation for fixed expansion indices
 
-Fix a test expansion index $\tau$ and a trial expansion index $s$. Only in this section, abbreviate the **assembled** coefficient defined in Section 5.1 as
+Fix a test expansion index $\tau$ and a trial expansion index $s$.
+
+The coefficient defined in Section 5.1 depends on both indices. In this section only, the notation is abbreviated as
 
 ```math
-J^{mn}_{\alpha\beta}(x)
-\equiv J^{mn}_{\tau,\alpha\,s,\beta}(x).
+J_{\alpha\beta}^{mn}(x)
+\equiv
+J_{\tau,\alpha\,s,\beta}^{mn}(x).
 ```
 
-Thus $J^{11}_{x0}$ means the integral of $C_{11}F_{\tau,x}F_s$ over the current physical section; $J^{11}_{0x}$ means the integral of $C_{11}F_\tau F_{s,x}$. These generally differ, so their ordering matters. Both $\tau$ and $s$ remain fixed in every expression below and are summed only when the final equilibrium system is assembled.
+Here, $\tau$ identifies the test expansion and $s$ identifies the trial expansion. Both indices remain fixed when defining an individual nuclear operator. Summation over the expansion indices is performed only when assembling the final equilibrium system.
 
-Let $i,j\in\lbrace x,y,z\rbrace$ identify a **test displacement component** and a **trial displacement component**. Write $H^{ab}_{ij}$ for the entry in row $i$, column $j$ of the already defined matrix $\mathbf H^{ab}_{\tau s}$. The numbers $a,b\in\lbrace 0,1\rbrace$ retain their meaning from Section 5.2: $0$ multiplies an undifferentiated amplitude, and $1$ multiplies its longitudinal derivative.
+For example, the coefficient
+
+```math
+J_{00}^{11}(x)
+=
+\sum_{k=1}^{N_\Omega}
+\int_{\Omega^k(x)}
+C_{11}^k(x,y,z)\,
+F_\tau(x,y,z)\,
+F_s(x,y,z)\,d\Omega
+```
+
+contains the undifferentiated test and trial functions.
+
+By contrast,
+
+```math
+J_{0x}^{11}(x)
+=
+\sum_{k=1}^{N_\Omega}
+\int_{\Omega^k(x)}
+C_{11}^k(x,y,z)\,
+F_\tau(x,y,z)\,
+F_{s,x}(x,y,z)\,d\Omega
+```
+
+contains the longitudinal derivative of the trial expansion.
+
+Let $i,j\in\{x,y,z\}$ identify a test displacement component and a trial displacement component, respectively.
+
+The symbol $H_{ij}^{ab}$ denotes the entry in row $i$, column $j$ of the matrix $\mathbf H_{\tau s}^{ab}(x)$ defined in Section 5.2.
+
+The indices $a,b\in\{0,1\}$ indicate whether the corresponding longitudinal amplitude is differentiated:
+
+- $a=0$: the test amplitude is not differentiated;
+- $a=1$: the test amplitude is differentiated with respect to $x$;
+- $b=0$: the trial amplitude is not differentiated;
+- $b=1$: the trial amplitude is differentiated with respect to $x$.
+
+Thus, $H_{ij}^{ab}$ identifies the coefficient multiplying a specific combination of test and trial longitudinal amplitudes in the internal virtual work.
 
 ### 9.2 The nine component groups of $\mathbf H^{ab}_{\tau s}$
 
