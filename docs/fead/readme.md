@@ -8,6 +8,8 @@ This paper presents a computational implementation of the Carrera Unified Formul
 
 The Carrera Unified Formulation (CUF) provides a general framework for constructing refined structural models through systematic expansions of the displacement field over the beam cross-section. The choice of transverse expansion and the longitudinal approximation determines the numerical representation of the displacement field. A distinct computational question is how to provide the solver with the physical cross-sectional geometry and material properties without embedding a particular geometric or constitutive model in its core.
 
+Unified Formulation beam models have long addressed non-prismatic geometries and spatially varying materials through sectional integrals whose coefficients depend on the longitudinal coordinate, and several works have separated geometric discretization from kinematic assumptions to improve efficiency. The contribution of the present work is not to introduce these mathematical tools, but to represent the combined geometric and constitutive description of the section as an autonomous computational object that can be queried and coupled to CUF independently of the chosen kinematics and solver.
+
 This paper presents a computational implementation of CUF organized around the **Continuous Section Field (CSF)**. The central idea is to treat the physical sectional state as a primary, independently defined function of the longitudinal position. Let $x$ denote the longitudinal coordinate of a beam of length $L$, and let $(y,z)$ denote the transverse coordinates. The sectional state is written as
 
 $$
@@ -429,3 +431,9 @@ The complete implementation, model definitions, numerical configurations, soluti
 9. **Figures and final consistency.** Select one geometry/material illustration, one H20 convergence plot and one concise equilibrium/displacement comparison. Check that the case YAML agrees with the nine L9 domains, 57 transverse functions, ten longitudinal elements, quadrature orders and MITC setting. Keep the detailed diagnostic plots linked in the repository.
 
 **Evidence inspected for this revision:** the three supplied Markdown summaries in `diagnostics/cuf_eq_stability`, `diagnostics/h20_vs_cuf_T4_v3` and `diagnostics/h20_vs_cuf_T4_surfaces`. This is a review of the supplied numerical diagnostics, not a fresh run of the solvers.
+
+---
+
+[1] M. Patni, S. Minera, P. M. Weaver, A. Pirrera, “Efficient modelling of beam-like structures with general non-prismatic, curved geometry,” Computers & Structures 240 (2020), 106339. https://doi.org/10.1016/j.compstruc.2020.106339
+[2] S. O. Ojo, P. M. Weaver, “Efficient strong Unified Formulation for stress analysis of non-prismatic beam structures,” Composite Structures 272 (2021), 114190. https://doi.org/10.1016/j.compstruct.2021.114190
+
