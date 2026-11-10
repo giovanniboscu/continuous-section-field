@@ -2,7 +2,7 @@
 
 ## 1. Scope and central premise
 
-The purpose of this formulation is to introduce **a continuous physical field of geometry and material properties as a primary mathematical object in the Carrera Unified Formulation (CUF)**. The Continuous Section Field (CSF) supplies this object independently of the choice of CUF expansion, longitudinal discretization, and solution method. The contribution is the **coupling of that physical field to the CUF variational and nuclear operators**; it is not the mere adoption of longitudinally dependent expansion functions.
+The purpose of this formulation is to introduce **a continuous physical field of geometry and material properties as a primary mathematical object in the Carrera Unified Formulation (CUF)**. The Continuous Section Field (CSF) supplies this object independently of the choice of CUF expansion, longitudinal discretization, and solution method. The contribution is the **coupling of that physical field to the CUF variational and nuclear operators**.
 
 The physical member is described by a prescribed continuous sectional state, denoted by
 
