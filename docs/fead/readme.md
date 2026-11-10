@@ -408,6 +408,20 @@ This single benchmark therefore demonstrates the computational use of a continuo
 
 ---
 
+# 5. Conclusions
+
+This paper has presented a computational implementation of the Carrera Unified Formulation (CUF) in which the Continuous Section Field (CSF) is introduced as a primary, independently defined description of the physical sectional geometry and constitutive properties along a beam.
+
+The principal contribution is the direct incorporation of this continuous physical description into the sectional integrals underlying the CUF fundamental nuclei. The resulting sectional coefficients depend on the longitudinal coordinate and enter the variational formulation without requiring a global reference-to-physical mapping of the non-prismatic beam. The longitudinal differential operator consequently accounts for the spatial variation of the sectional coefficients, while the weak-form numerical assembly retains the established CUF structure.
+
+This formulation establishes a separation between three distinct mathematical responsibilities: the CSF prescribes the physical geometry and material field; the CUF transverse expansion defines the displacement kinematics; and the longitudinal discretization approximates the unknown displacement amplitudes. Their interaction occurs through sectional integration, allowing the physical description and numerical approximation to be defined and modified independently.
+
+The computational realization has been examined through a tapered I-shaped member with longitudinally varying web stiffness, using an independently implemented three-dimensional H20 finite-element model as reference. The comparison shows close agreement in the reconstructed displacement fields and stability of the selected CUF solution across the documented solver-equilibration checkpoints. The equilibrium diagnostics reveal different characteristics: CSF–CUF produces a lower volume-weighted RMS interior equilibrium residual, whereas H20 provides smaller traction errors on the external surfaces. These complementary results characterize the numerical behavior of the two approximations.
+
+The complete implementation, model definitions, numerical configurations, solution checkpoints and diagnostic procedures are publicly available. The resulting framework provides a compact, open-source and reproducible realization of CUF in which continuously varying sectional geometry and material properties are represented independently of the structural approximation.
+
+---
+
 ## Editorial integration notes - outstanding checks before submission
 
 *Editorial notes only; not part of the scientific paper. The diagnostics supplied with this revision have been inspected directly. Confirmed results have been incorporated into Section 4 rather than left as unresolved requests.*
