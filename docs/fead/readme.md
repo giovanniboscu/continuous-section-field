@@ -413,6 +413,8 @@ This formulation establishes a separation between three distinct mathematical re
 The computational realization has been examined through a tapered I-shaped member with longitudinally varying web stiffness, using an independently implemented three-dimensional H20 finite-element model as reference. The comparison shows close agreement in the reconstructed displacement fields and stability of the selected CUF solution across the documented solver-equilibration checkpoints. The equilibrium diagnostics reveal different characteristics: CSF–CUF produces a lower volume-weighted RMS interior equilibrium residual, whereas H20 provides smaller traction errors on the external surfaces. These complementary results characterize the numerical behavior of the two approximations.
 
 The complete implementation, model definitions, numerical configurations, solution checkpoints and diagnostic procedures are publicly available. The resulting framework provides a compact, open-source and reproducible realization of CUF in which continuously varying sectional geometry and material properties are represented independently of the structural approximation.
+Beyond reproducing the reported benchmark, users can modify the prescribed geometry or material distribution—for example, by changing the web thickness or replacing its longitudinally varying Young's modulus with a constant—and rerun the documented analyses without changing the respective numerical formulations. The H20 FEM and CSF–CUF workflows can be executed independently: only the three-dimensional solution or only the CUF solution may be regenerated, according to the purpose of the study. Running both methods and their common-point diagnostics is necessary only when a new cross-method comparison is desired. Because the documented H20 and CUF cases use distinct geometric subdivisions of the same physical member, any change to the geometry must be reflected consistently in the corresponding YAML descriptions when both analyses are performed. These user-defined variants are reproducible experiments, not additional configurations validated by the benchmark reported here. The resulting framework provides a compact, open-source and reproducible realization of CUF in which continuously varying sectional geometry and material properties are represented independently of the structural approximation.
+
 
 ---
 
@@ -435,5 +437,6 @@ The complete implementation, model definitions, numerical configurations, soluti
 ---
 
 [1] M. Patni, S. Minera, P. M. Weaver, A. Pirrera, “Efficient modelling of beam-like structures with general non-prismatic, curved geometry,” Computers & Structures 240 (2020), 106339. https://doi.org/10.1016/j.compstruc.2020.106339
+
 [2] S. O. Ojo, P. M. Weaver, “Efficient strong Unified Formulation for stress analysis of non-prismatic beam structures,” Composite Structures 272 (2021), 114190. https://doi.org/10.1016/j.compstruct.2021.114190
 
