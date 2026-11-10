@@ -37,18 +37,86 @@ The contribution of the paper is therefore a computational realization of CUF in
 
 This section establishes the mathematical connection between a prescribed Continuous Section Field (CSF) and the Carrera Unified Formulation (CUF). The objective is to identify the sectional information required by the CUF variational equations and the longitudinal operators that result from its integration. The physical field is independent of the displacement approximation and of the longitudinal numerical discretization. Small-strain linear elasticity is assumed.
 
-## 2.1. Continuous sectional description
 
-Using the longitudinal and transverse coordinates introduced in Section 1, let $N_\Omega$ denote the number of physical sectional subdomains. At each station $x$, the prescribed field $\mathcal S(x)$ provides their boundaries and constitutive descriptions:
+
+## 2.1. Continuous Section Field as an autonomous physical model
+
+The Continuous Section Field (CSF) is a physical model of a beam in which the cross-sectional geometry and constitutive properties are prescribed as continuous functions of the longitudinal position. It is defined independently of any structural displacement approximation, finite-element discretization or numerical integration scheme.
+
+Consider a beam of length $L$, with longitudinal coordinate $x$ and transverse coordinates $(y,z)$, as introduced in Section 1. At each position $x$, the CSF defines the sectional state
+
+```math
+\mathcal S(x)=
+\left\{\Omega(x),\mathbf C(x,y,z)\right\},
+\qquad 0\leq x\leq L.
+```
+
+Here, $\Omega(x)$ denotes the physical cross-sectional domain, while $\mathbf C(x,y,z)$ is the local constitutive matrix defined at each material point of that domain. The sectional state therefore contains both the geometry occupied by the material and the constitutive properties assigned to it.
+
+### Physical domains and material description
+
+A cross-section may consist of several regions with distinct constitutive properties. Let $N_\Omega$ denote the number of physical sectional subdomains and let $k=1,\ldots,N_\Omega$ identify each subdomain. The CSF provides
 
 ```math
 \mathcal S(x)\longmapsto
-\bigl(\Omega^k(x),\,\partial\Omega^k(x),\,\mathbf C^k(x,y,z)\bigr)_{k=1}^{N_\Omega}.
+\left(
+\Omega^k(x),
+\partial\Omega^k(x),
+\mathbf C^k(x,y,z)
+\right)_{k=1}^{N_\Omega}.
 ```
 
-Here $k$ identifies a sectional subdomain, $\Omega^k(x)$ is its physical area, $\partial\Omega^k(x)$ its boundary, and $\mathbf C^k(x,y,z)$ its $6\times6$ constitutive matrix. The union of the subdomains is the physical section $\Omega(x)$. The field $\mathcal S(x)$ is prescribed input, not an unknown of the structural problem. Geometry and constitutive properties may vary independently with $x$; material discontinuities between subdomains are permitted. The domains and coefficients are assumed sufficiently regular for the integrations below. Piecewise-smooth descriptions are treated on their respective longitudinal intervals.
+The quantities supplied are:
 
-The detailed construction and evaluation of the CSF geometric and material model are documented separately. Here only its role as a source of physical sectional data is required.
+- $\Omega^k(x)$: the physical area occupied by subdomain $k$ at position $x$;
+- $\partial\Omega^k(x)$: the boundary of that subdomain;
+- $\mathbf C^k(x,y,z)$: its local $6\times6$ constitutive matrix.
+
+The physical section is the union of these subdomains:
+
+```math
+\Omega(x)=\bigcup_{k=1}^{N_\Omega}\Omega^k(x).
+```
+
+The interiors of distinct physical subdomains do not overlap. Adjacent subdomains may share boundaries, across which constitutive properties may be discontinuous.
+
+The geometric and constitutive descriptions are independent components of the same physical field. A change in geometry does not require a change in material properties, and a change in material properties does not require a change in geometry. Both may vary simultaneously along the beam.
+
+### Longitudinal continuity and sectional evaluation
+
+The defining property of CSF is that the sectional state can be evaluated at an arbitrary longitudinal coordinate within the prescribed beam interval.
+
+In the implemented geometric representation, the sectional boundaries are described through polygons specified at longitudinal stations. Corresponding geometric data are interpolated between stations to construct the intermediate physical sections. Constitutive properties are prescribed independently and evaluated at the requested longitudinal position and material point.
+
+The longitudinal stations define the physical description; they are not finite-element nodes and do not prescribe the longitudinal approximation of the displacement field.
+
+Consequently, the physical model can be queried at positions that do not coincide with its defining stations. The number and locations of these queries are determined by the subsequent calculation, not by the CSF itself.
+
+Continuity is understood on the intervals over which the prescribed geometric and material fields are continuous. The representation also permits distinct material regions and piecewise-smooth longitudinal descriptions.
+
+### Independence from the structural approximation
+
+The CSF does not define displacement fields, strain approximations or structural degrees of freedom. It specifies the physical body and its constitutive properties before any particular structural approximation is introduced.
+
+This distinction separates three concepts that would otherwise be coupled in a geometry-specific numerical model:
+
+1. **Physical description:** the sectional domains and constitutive properties prescribed by CSF.
+2. **Kinematic approximation:** the mathematical functions subsequently selected to represent the displacement field.
+3. **Numerical discretization:** the integration and solution procedures used to determine the unknown displacement amplitudes.
+
+In particular, the subdivision of a physical cross-section into material regions is not required to coincide with a subdivision introduced for numerical interpolation. A numerical approximation may employ additional sectional domains without introducing additional physical material interfaces.
+
+The same CSF description may therefore be used with different admissible structural approximations, while a given structural formulation may operate on different CSF descriptions.
+
+### Mathematical role of the autonomous field
+
+The CSF is prescribed input to the structural problem, rather than an unknown determined by the structural solution. Its mathematical role is to provide the physical domains and constitutive coefficients needed to evaluate sectional quantities.
+
+This establishes a distinction between the definition of the physical model and its subsequent use in a variational formulation. The CSF specifies **where material exists and how it behaves constitutively**; the structural formulation determines **how displacement, strain and equilibrium are approximated and solved**.
+
+The coupling developed in the following sections uses the sectional information supplied by CSF within the Carrera Unified Formulation. The autonomy of the physical description is retained: changing the prescribed sectional geometry or constitutive field changes the values of the resulting sectional contributions, without changing the mathematical rule by which the structural operators are constructed.
+
+
 
 ## 2.2. CUF displacement approximation and strain operators
 
