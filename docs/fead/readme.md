@@ -35,3 +35,175 @@ The implementation is accompanied by a numerical study of a tapered I-shaped mem
 The mathematical formulation is documented in the [CSF–CUF Continuous Geometry and Material Field Formulation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/CSF_CUF_Continuous_Geometry_and_Material_Field_Formulation.md). The reproducible numerical case and its supporting materials are available in the [I-Shape_L repository directory](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape_L).
 
 The contribution of the paper is therefore a computational realization of CUF in which a continuous physical sectional description is a first-class object, together with the mathematical coupling needed to use that object in the CUF formulation and a publicly reproducible numerical demonstration.
+
+
+# 2. Mathematical Formulation of the CSF-CUF Coupling
+
+This section establishes the mathematical connection between a prescribed Continuous Section Field (CSF) and the Carrera Unified Formulation (CUF). The objective is to identify the sectional information required by the CUF variational equations and the longitudinal operators that result from its integration. The physical field is independent of the displacement approximation and of the longitudinal numerical discretization. Small-strain linear elasticity is assumed.
+
+## 2.1. Continuous sectional description
+
+Let $L>0$ be the member length, $x\in[0,L]$ its longitudinal coordinate, and $(y,z)$ the physical transverse coordinates. At each station $x$, the prescribed sectional field $\mathcal S(x)$ provides $N_\Omega$ sectional subdomains and their constitutive descriptions:
+
+```math
+\mathcal S(x)\longmapsto
+\bigl(\Omega^k(x),\,\partial\Omega^k(x),\,\mathbf C^k(x,y,z)\bigr)_{k=1}^{N_\Omega}.
+```
+
+Here $k$ identifies a sectional subdomain, $\Omega^k(x)$ is its physical area, $\partial\Omega^k(x)$ its boundary, and $\mathbf C^k(x,y,z)$ its $6\times6$ constitutive matrix. The union of the subdomains is the physical section $\Omega(x)$. The field $\mathcal S(x)$ is prescribed input, not an unknown of the structural problem. Geometry and constitutive properties may vary independently with $x$; material discontinuities between subdomains are permitted. The domains and coefficients are assumed sufficiently regular for the integrations below. Piecewise-smooth descriptions are treated on their respective longitudinal intervals.
+
+The detailed construction and evaluation of the CSF geometric and material model are documented separately. Here only its role as a source of physical sectional data is required.
+
+## 2.2. CUF displacement approximation and strain operators
+
+Let $M$ be the number of scalar transverse expansion functions $F_s(x,y,z)$, with $s=1,\ldots,M$. Let $\mathbf q_s(x)=[q_{xs}(x),q_{ys}(x),q_{zs}(x)]^T$ denote the corresponding three longitudinal displacement amplitudes. The CUF approximation is
+
+```math
+\mathbf u(x,y,z)=\sum_{s=1}^{M}F_s(x,y,z)\,\mathbf q_s(x).
+```
+
+The index $s$ labels a trial function; $\tau=1,\ldots,M$ will label a test function. Summation over these indices is explicit. A comma followed by $x$, $y$, or $z$ denotes partial differentiation with respect to the indicated physical coordinate; a prime denotes ordinary differentiation with respect to $x$.
+
+The expansion functions may depend on $x$ if the selected basis follows an evolving physical section. Such dependence is a property of the chosen kinematic basis, not a necessary consequence of CSF: a basis fixed in physical transverse coordinates has $F_{s,x}=0$ even when the physical section varies.
+
+Use the engineering strain ordering $[\varepsilon_{xx},\varepsilon_{yy},\varepsilon_{zz},\gamma_{yz},\gamma_{xz},\gamma_{xy}]^T$, where $\gamma$ denotes engineering shear strain. Define the following $6\times3$ matrices for any scalar basis function $F$:
+
+```math
+\mathbf B^{(0)}(F)=
+\begin{bmatrix}
+F_{,x}&0&0\\
+0&F_{,y}&0\\
+0&0&F_{,z}\\
+0&F_{,z}&F_{,y}\\
+F_{,z}&0&F_{,x}\\
+F_{,y}&F_{,x}&0
+\end{bmatrix},
+\qquad
+\mathbf B^{(1)}(F)=
+\begin{bmatrix}
+F&0&0\\
+0&0&0\\
+0&0&0\\
+0&0&0\\
+0&0&F\\
+0&F&0
+\end{bmatrix}.
+```
+
+The superscripts $(0)$ and $(1)$ identify the factors multiplying an amplitude and its longitudinal derivative, respectively. The strain field is therefore
+
+```math
+\boldsymbol\varepsilon=
+\sum_{s=1}^{M}
+\left[\mathbf B^{(0)}(F_s)\mathbf q_s+
+\mathbf B^{(1)}(F_s)\mathbf q_s'\right].
+```
+
+The virtual strain $\delta\boldsymbol\varepsilon$ is obtained by replacing each amplitude with its admissible virtual variation $\delta\mathbf q_s$. This construction preserves any required $F_{s,x}$ terms.
+
+## 2.3. Internal virtual work
+
+Within subdomain $k$, the stress vector is $\boldsymbol\sigma^k=\mathbf C^k\boldsymbol\varepsilon$, using tensorial shear stresses paired with the engineering shear strains. The internal virtual work is
+
+```math
+\delta W_{\mathrm{int}}=
+\int_0^L\sum_{k=1}^{N_\Omega}
+\int_{\Omega^k(x)}
+\delta\boldsymbol\varepsilon^T\mathbf C^k(x,y,z)
+\boldsymbol\varepsilon\,d\Omega\,dx.
+```
+
+The CSF supplies the physical integration domains and constitutive matrices; the CUF expansion supplies the test and trial strain factors. Their coupling takes place inside these sectional integrals, without requiring a beam-wide reference-to-physical mapping of the non-prismatic solid.
+
+## 2.4. Sectional coefficients and weak-form matrices
+
+Let $m,n\in\{1,\ldots,6\}$ label entries of the constitutive matrix in the strain ordering above. Let $\alpha,\beta\in\{0,x,y,z\}$ identify a derivative of the test and trial sectional functions, respectively, where $F_{\tau,0}=F_\tau$ and $F_{s,0}=F_s$. For fixed expansion indices $\tau$ and $s$, define the sectional coefficients
+
+```math
+J^{mn}_{\tau,\alpha\,s,\beta}(x)=
+\sum_{k=1}^{N_\Omega}
+\int_{\Omega^k(x)}
+C^k_{mn}(x,y,z)\,
+F_{\tau,\alpha}(x,y,z)\,
+F_{s,\beta}(x,y,z)\,d\Omega.
+```
+
+Each coefficient combines three independent inputs: the physical sectional domain, the constitutive weighting, and the CUF test/trial functions. In particular, $J(x)$ can vary with $x$ even when all sectional basis functions satisfy $F_{s,x}=0$.
+
+For $a,b\in\{0,1\}$, define four $3\times3$ matrices for each pair $(\tau,s)$:
+
+```math
+\mathbf H^{ab}_{\tau s}(x)=
+\sum_{k=1}^{N_\Omega}
+\int_{\Omega^k(x)}
+\left[\mathbf B^{(a)}(F_\tau)\right]^T
+\mathbf C^k(x,y,z)
+\mathbf B^{(b)}(F_s)\,d\Omega.
+```
+
+The first superscript indicates whether the test amplitude is differentiated longitudinally, and the second does the same for the trial amplitude. Each entry of $\mathbf H^{ab}_{\tau s}$ is a linear combination of the sectional coefficients $J^{mn}_{\tau,\alpha\,s,\beta}$. Substitution into the internal virtual work gives
+
+```math
+\begin{aligned}
+\delta W_{\mathrm{int}}=\int_0^L\sum_{\tau=1}^{M}\sum_{s=1}^{M}
+\bigl[&\delta\mathbf q_\tau^T\mathbf H^{00}_{\tau s}\mathbf q_s
++\delta\mathbf q_\tau^T\mathbf H^{01}_{\tau s}\mathbf q_s'\\
+&+\delta\mathbf q_\tau'^T\mathbf H^{10}_{\tau s}\mathbf q_s
++\delta\mathbf q_\tau'^T\mathbf H^{11}_{\tau s}\mathbf q_s'\bigr]dx.
+\end{aligned}
+```
+
+This weak form is the basis of the numerical assembly: the longitudinal integration requires evaluations of the sectional matrices at the selected integration stations.
+
+## 2.5. Longitudinal fundamental operator
+
+For a fixed test/trial expansion pair $(\tau,s)$, integration by parts of the terms containing $\delta\mathbf q_\tau'$ identifies the matrix differential operator $\mathcal K_{\tau s}$ acting on the trial amplitude vector:
+
+```math
+\boxed{
+\mathcal K_{\tau s}[\mathbf q_s]=
+\mathbf H^{00}_{\tau s}\mathbf q_s
++\mathbf H^{01}_{\tau s}\mathbf q_s'
+-\frac{d}{dx}\left(
+\mathbf H^{10}_{\tau s}\mathbf q_s
++\mathbf H^{11}_{\tau s}\mathbf q_s'
+\right).
+}
+```
+
+The integration by parts also yields the generalized end action
+
+```math
+\left[
+\delta\mathbf q_\tau^T
+\sum_{s=1}^{M}
+\left(\mathbf H^{10}_{\tau s}\mathbf q_s+
+\mathbf H^{11}_{\tau s}\mathbf q_s'\right)
+\right]_{x=0}^{x=L},
+```
+
+summed over $\tau$, where $[g]_{x=0}^{x=L}=g(L)-g(0)$. With $\mathbf f_\tau(x)$ denoting the generalized external force per unit length projected onto test function $F_\tau$, the interior equilibrium equations are
+
+```math
+\sum_{s=1}^{M}\mathcal K_{\tau s}[\mathbf q_s]
+=\mathbf f_\tau(x),\qquad \tau=1,\ldots,M.
+```
+
+For the classical strong form, the coefficients and amplitudes must have the required differentiability on each smooth interval. The longitudinal derivative in $\mathcal K_{\tau s}$ acts on the **entire products**, including the variable sectional matrices. In contrast, weak-form finite-element assembly uses the preceding integral expression and need not explicitly differentiate $\mathbf H^{ab}_{\tau s}(x)$.
+
+The mathematical path underlying the implementation is thus
+
+```math
+\mathcal S(x)\longrightarrow
+J^{mn}_{\tau,\alpha\,s,\beta}(x)
+\longrightarrow\mathbf H^{ab}_{\tau s}(x)
+\longrightarrow\mathcal K_{\tau s}.
+```
+
+Changing an admissible physical geometry or constitutive field changes the sectional coefficients, but not the rule used to construct the CUF operator. This is the mathematical basis for a computational core that is independent of any particular geometric-material model.
+
+---
+
+**Theoretical source:** [CSF-CUF continuous geometry and material field formulation](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/CSF_CUF_Continuous_Geometry_and_Material_Field_Formulation.md).
+
+**Reproducible implementation and numerical case:** [I-Shape_L](https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape_L).
