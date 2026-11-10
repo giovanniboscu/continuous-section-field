@@ -2,7 +2,7 @@
 
 # Continuous Section Field–Carrera Unified Formulation: Mathematical Coupling and Open-Source Computational Implementation
 
-**Abstract**
+# **Abstract**
 
 This paper presents a computational implementation of the Carrera Unified Formulation for non-prismatic beams in which the sectional physical state is represented by an autonomous Continuous Section Field. At any longitudinal coordinate, this field provides the sectional domains and constitutive description independently of the CUF transverse expansion and longitudinal discretization. The beam operators are assembled from sectional integrals over this field without embedding the physical description into the solver. The formulation is detailed and implemented in an open Python package and verified on a longitudinally graded I-beam by comparison with a three-dimensional finite element model, showing close agreement for displacements and clarifying the effect of transverse approximation on stress recovery.
 
