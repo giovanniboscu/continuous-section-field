@@ -1,4 +1,4 @@
-# Longitudinal curves - H20 and CSF–CUF
+# Longitudinal curves - H20 and CSF-CUF
 
 > [Back to Chapter VI - Figures and numerical fields](../README.md)
 
