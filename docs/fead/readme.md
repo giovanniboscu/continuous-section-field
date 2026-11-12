@@ -5,6 +5,54 @@
 # **Abstract**
 
 This paper presents a computational implementation of the Carrera Unified Formulation for non-prismatic beams in which the sectional physical state is represented by an autonomous Continuous Section Field. At any longitudinal coordinate, this field provides the sectional domains and constitutive description independently of the CUF transverse expansion and longitudinal discretization. The beam operators are assembled from sectional integrals over this field without embedding the physical description into the solver. The formulation is detailed and implemented in an open Python package and verified on a longitudinally graded I-beam by comparison with a three-dimensional finite element model, showing close agreement for displacements and clarifying the effect of transverse approximation on stress recovery.
+1. Introduction
+
+The Carrera Unified Formulation (CUF) provides a general framework for constructing structural models of different orders through a systematic expansion of the displacement field over the beam cross-section. Within this framework, the transverse approximation determines the kinematic richness of the structural model, while the longitudinal approximation governs the representation of the corresponding generalized displacement amplitudes. A separate issue, particularly relevant for non-prismatic and materially non-uniform members, is how the physical geometry and constitutive properties of the beam are represented and supplied to the structural formulation.
+
+The treatment of non-prismatic geometry within Unified Formulation models has been addressed through important previous developments. Patni et al. [1] introduced an anisoparametric strategy in which the geometric description is separated from the displacement approximation, allowing general non-prismatic and curved beam-like configurations to be treated within a weak-form framework. Ojo and Weaver [2] subsequently developed an efficient strong Unified Formulation for non-prismatic beams, in which the governing operators are constructed from two-dimensional integrations over cross-sections that vary along the beam axis. These developments demonstrate that geometric representation, structural approximation, and sectional integration can be organized as distinct components of a refined beam formulation.
+
+The present work adopts a different modeling architecture for these components. Rather than defining the physical beam through a volumetric geometric discretization that is subsequently coupled to the structural approximation, the proposed approach introduces an autonomous Continuous Section Field (CSF). The CSF describes the physical cross-section directly as a function of the longitudinal coordinate and supplies both the sectional geometry and the constitutive field requested by the structural solver. The resulting CSF–CUF coupling therefore treats the physical description as an external input to the CUF approximation rather than as part of the CUF kinematic representation itself.
+
+Let (x) denote the longitudinal coordinate of a beam of length (L), and let ((y,z)) denote the transverse coordinates. The physical sectional state is written as
+
+[
+\mathcal{S}(x)
+
+\left{
+\Omega(x),
+\mathbf{C}(x,y,z)
+\right},
+\qquad
+0\leq x\leq L,
+]
+
+where (\Omega(x)) is the physical cross-sectional domain and (\mathbf{C}(x,y,z)) is the local constitutive matrix. For a section composed of several material regions, the same description is expressed through sectional subdomains (\Omega^k(x)) and their associated constitutive fields (\mathbf{C}^k(x,y,z)). Geometry and material properties may therefore vary independently or simultaneously along the member.
+
+A defining feature of this representation is that a volumetric finite-element mesh is not required to define the beam geometry. The current CSF implementation represents the section through polygonal domains whose geometry evolves continuously between prescribed longitudinal stations. These domains define the sectional topology and can be evaluated at arbitrary longitudinal positions requested by the subsequent numerical procedure. Longitudinal stations belong to the physical description and are not finite-element nodes of the structural approximation.
+
+Polygonal subdivision may nevertheless be introduced when useful. Its role must be distinguished from that of a volumetric geometric mesh. A sectional polygon may represent a physical material region, may be introduced as a numerical support for a transverse approximation, or may serve both purposes. For example, a local Lagrange L9 expansion can be associated with an individual sectional domain without requiring an additional volumetric representation of the beam. The sectional domain consequently acts as an explicit reference entity to which geometric information, constitutive properties, and selected transverse approximations can be associated while their mathematical roles remain distinct.
+
+This organization also provides an explicit relation between geometry and material description. Each physical sectional domain carries its corresponding constitutive field, so that material assignment is part of the prescribed physical model rather than an implicit association introduced later during structural assembly. At the same time, the transverse expansion is not required to carry material information. Geometry, constitutive behavior, and kinematic approximation remain separate modeling layers connected through the sectional domain.
+
+The distinction propagates directly to the CUF coupling. The geometry and constitutive field remain external to the CUF nucleus and enter the formulation through the sectional integrals required to construct the beam operators. The CUF transverse approximation supplies the kinematic functions, while the CSF supplies the integration domains and constitutive coefficients. Their interaction occurs during sectional integration. Consequently, changes in the admissible physical geometry or material distribution modify the values of the sectional coefficients without changing the rule by which the CUF operators are assembled.
+
+In the present formulation, no beam-wide volumetric reference-to-physical mapping is required to communicate the non-prismatic geometry to the CUF nucleus. Sectional mappings may still be employed locally for numerical integration or for the evaluation of a selected transverse basis, but these mappings do not constitute the physical representation of the complete three-dimensional beam. The resulting architecture therefore keeps the geometric semantics outside the CUF nucleus while preserving the established variational structure of the formulation.
+
+This separation has an immediate computational consequence. The sectional domain provides a common reference for geometry, constitutive data, and transverse approximation, reducing the number of independent geometric, material, and kinematic descriptions that must be mutually associated and maintained consistently. The physical model, the CUF approximation, and the longitudinal discretization can therefore be configured independently and combined only when the sectional contributions required by the variational formulation are evaluated. This separation is reflected directly in the implementation and in its declarative input structure.
+
+The architectural choice also defines the geometric scope of the present implementation. The current CSF geometry is based on polygonal sectional boundaries whose longitudinal evolution naturally describes a restricted class of three-dimensional geometries, including ruled-type surfaces. More general geometric mappings, such as those adopted in formulations designed for arbitrary non-prismatic and curved configurations, can represent a broader geometric class [1,2]. The present limitation belongs to the implemented CSF geometric model rather than to the CSF–CUF coupling principle itself: the coupling requires a sectional provider capable of returning the physical domains and constitutive properties, but it does not prescribe how that provider must represent the geometry internally.
+
+The distinction between CSF–CUF and existing non-prismatic Unified Formulation approaches is therefore primarily one of modeling architecture. CSF–CUF uses a continuous sectional representation as the primary physical description, associates constitutive data explicitly with sectional domains, permits transverse approximations to use the same domains as numerical supports, and communicates the resulting physical information to CUF through sectional integrals. The CUF kinematics, the physical field, and the longitudinal numerical approximation remain separately defined.
+
+The objective of this work is to formalize this coupling and to demonstrate its complete computational realization. First, the mathematical relation between the prescribed Continuous Section Field and the CUF variational operators is derived. Second, the separation of computational responsibilities between physical description, transverse approximation, and longitudinal discretization is implemented in an open-source Python framework. Third, the implementation is examined on a tapered I-shaped beam with longitudinally varying material properties and compared with an independently implemented three-dimensional finite-element model. The numerical study considers displacement agreement together with interior equilibrium residuals and surface and interface traction errors, thereby distinguishing kinematic agreement from local stress-equilibrium behavior.
+
+Reproducibility is treated as part of the implementation rather than as a separate post-processing concern. The physical model definitions, CUF configurations, numerical settings, solution checkpoints, diagnostic procedures, and execution instructions are made publicly available. The repository therefore exposes not only the governing equations but also the concrete associations between geometry, material description, approximation, integration, and solution that are required to reproduce the reported calculations.
+
+The remainder of the paper is organized as follows. Section 2 develops the mathematical formulation of the CSF–CUF coupling and derives the sectional coefficients and longitudinal operators. Section 3 describes the computational implementation and the separation of the physical, kinematic, and numerical responsibilities. Section 4 presents the numerical verification against an independent three-dimensional finite-element model and documents the reproducibility of the benchmark. Section 5 summarizes the principal conclusions and the current scope of the approach.
+
+
+
+
 
 # 1. Introduction
 
