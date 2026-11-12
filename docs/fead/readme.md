@@ -15,6 +15,9 @@ The treatment of non-prismatic beam geometries within the Unified Formulation ha
 
 These approaches achieve geometric generality through an explicit geometric parametrization that enters the structural formulation through the corresponding mappings, Jacobians and derivatives. The present work adopts a different abstraction. In CSF-CUF, geometry and constitutive properties are supplied by an external physical-field provider, so that the CUF kinematics and fundamental nucleus do not depend on a prescribed geometric representation. 
 
+CSF–CUF reduces the number of independent data structures that must be kept mutually consistent by using the sectional domain as a common reference for geometry, material, and transverse approximation.
+
+
 CSF-CUF separates the continuous sectional description of geometry and material from the CUF approximation itself, providing a geometric representation that is structurally distinct from volumetric mesh-based descriptions.
 
 The current CSF implementation deliberately adopts a simpler polygonal and longitudinally interpolated geometry; this is a limitation of the present implementation rather than of the coupling concept, since the CSF abstraction does not prescribe how the physical geometry must be represented internally. The distinction is therefore architectural: existing anisoparametric formulations embed a powerful geometric mapping within the structural formulation, whereas CSF-CUF externalizes the physical description and keeps the CUF side independent of that choice.
