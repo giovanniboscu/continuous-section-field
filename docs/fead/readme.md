@@ -21,7 +21,7 @@ $$
 \qquad 0 \le x \le L.
 $$
 
-where \(\Omega(x)\) is the physical cross-sectional domain and \(\mathbf{C}(x,y,z)\) is the local constitutive matrix. For multi-region sections, the same description is expressed through subdomains \(\Omega^k(x)\) and their associated constitutive fields \(\mathbf{C}^k(x,y,z)\). Geometry and material properties may therefore vary independently or simultaneously along the beam.
+where $\Omega(x)$ is the physical cross-sectional domain and $\mathbf{C}(x,y,z)$ is the local constitutive matrix. For multi-region sections, the same description is expressed through subdomains $\Omega^k(x)$ and their associated constitutive fields $\mathbf{C}^k(x,y,z)$. Geometry and material properties may therefore vary independently or simultaneously along the beam.
 
 
 
