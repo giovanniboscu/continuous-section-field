@@ -16,10 +16,10 @@ Previous developments have addressed this issue through increasingly general geo
 
 The present work adopts a different modeling architecture by introducing an autonomous **Continuous Section Field (CSF)** as the primary physical description of the member. Let \(x\) denote the longitudinal coordinate and \((y,z)\) the transverse coordinates. At each longitudinal position, the physical sectional state is defined as
 
-\[
-\mathcal{S}(x)=\left\{\Omega(x),\mathbf{C}(x,y,z)\right\},
-\qquad 0\leq x\leq L,
-\]
+$$
+\mathcal{S}(x)=\{\Omega(x),\mathbf{C}(x,y,z)\},
+\qquad 0 \le x \le L.
+$$
 
 where \(\Omega(x)\) is the physical cross-sectional domain and \(\mathbf{C}(x,y,z)\) is the local constitutive matrix. For multi-region sections, the same description is expressed through subdomains \(\Omega^k(x)\) and their associated constitutive fields \(\mathbf{C}^k(x,y,z)\). Geometry and material properties may therefore vary independently or simultaneously along the beam.
 
