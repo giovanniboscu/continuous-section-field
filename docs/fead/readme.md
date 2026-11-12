@@ -20,6 +20,10 @@ CSF–CUF reduces the number of independent data structures that must be kept mu
 
 CSF-CUF separates the continuous sectional description of geometry and material from the CUF approximation itself, providing a geometric representation that is structurally distinct from volumetric mesh-based descriptions.
 
+The present CSF formulation adopts a polygonal sectional description whose longitudinal evolution naturally generates ruled geometric surfaces, providing a simple and reproducible representation at the expense of a more restricted geometric class.
+
+
+
 The current CSF implementation deliberately adopts a simpler polygonal and longitudinally interpolated geometry; this is a limitation of the present implementation rather than of the coupling concept, since the CSF abstraction does not prescribe how the physical geometry must be represented internally. The distinction is therefore architectural: existing anisoparametric formulations embed a powerful geometric mapping within the structural formulation, whereas CSF-CUF externalizes the physical description and keeps the CUF side independent of that choice.
 
 
