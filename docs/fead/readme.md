@@ -24,9 +24,10 @@ The mathematical interface provided by CSF is expressed through a continuous sec
 
 
 
+
 $$
-\mathcal{S}(x)=\left\{\Omega(x),\mathbf{C}(x,y,z)\right\},
-\qquad 0\leq x\leq L.
+\mathcal{S}(x) = \lbrace \Omega(x), \mathbf{C}(x,y,z) \rbrace,
+\qquad 0 \leq x \leq L.
 $$
 
 
