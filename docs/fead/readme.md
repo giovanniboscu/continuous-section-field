@@ -12,10 +12,6 @@ $$
 \mathcal{S}(x) \longrightarrow J(x) \longrightarrow \mathbf{H}(x) \longrightarrow \mathbf{K}.
 $$
 
-$$
-\mathcal{S}(x) = \lbrace \Omega(x), \mathbf{C}(x,y,z) \rbrace,
-\qquad 0 \leq x \leq L.
-$$
 
 
 The coupling combines the geometric and constitutive information supplied by CSF with the CUF kinematic functions through sectional integration, constructing the sectional coefficients and the resulting longitudinal operators. This organization preserves the separation between physical modeling and structural approximation without modifying the CUF fundamental nucleus. Second, the coupling is realized in an open-source Python infrastructure that covers the complete path from model configuration to field reconstruction. Each stage - sectional evaluation, numerical integration, assembly, solution, and reconstruction - is documented and inspectable.
@@ -31,6 +27,13 @@ The Carrera Unified Formulation (CUF) provides a general mathematical framework 
 The present work considers a complementary problem: the construction of an autonomous physical modelling infrastructure that can supply a structural formulation with the sectional information it needs. Separating geometric and kinematic interpolation is an important step, but it does not by itself specify how sectional domains and boundaries are constructed, how material regions and constitutive properties are assigned and varied, how geometric connections are established, or how the consistency of the resulting physical model is checked. These operations belong to the physical modelling process and can be organized independently of the equations and degrees of freedom of a particular structural approximation.
 
 The Continuous Section Field (CSF) is conceived as a self-contained infrastructure for defining, constructing, connecting, managing, visualizing, and verifying the physical description of a deliberately restricted class of beam-like structures. Within this scope, CSF supports sectional geometry, multiple physical and material regions, automatic geometric connections where supported by its modelling rules, longitudinal variation of geometry and constitutive properties, sectional-property evaluation, and consistency checks. Its purpose is not to replace a general-purpose three-dimensional solid modeller. Instead, it offers a complete modelling process within an explicit sectional representation: cross-sectional domains are prescribed at longitudinal stations and evaluated continuously between them, subject to the geometric and topological conditions of that representation. The restricted geometric scope is therefore a deliberate modelling choice, not a claim that only geometric interpolation is provided.
+
+$$
+\mathcal{S}(x) = \lbrace \Omega(x), \mathbf{C}(x,y,z) \rbrace,
+\qquad 0 \leq x \leq L.
+$$
+
+
 
 The defining mathematical object supplied by this infrastructure is a continuous sectional state: at any admissible longitudinal coordinate, CSF can provide the current physical domains, their boundaries, and the associated constitutive properties. The stations used to prescribe the physical model are independent of the longitudinal discretization employed for the structural solution. Moreover, physical material regions need not coincide with the numerical subdivisions chosen to approximate displacements over a cross-section. The same physical description can consequently support different admissible transverse approximations without being redefined as part of their kinematics.
 
