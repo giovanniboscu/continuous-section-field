@@ -3,6 +3,15 @@
 
 A reproducible numerical study requires more than an image of its result. The geometry, material law, applied load, discretization, solution files and evaluation method must be specified well enough for an independent reader to repeat the calculation. This chapter provides the complete command-line sequence for the H20 and CSF-CUF models.
 
+### How to use this chapter
+
+There are **two different reproducibility tasks**. Choose the one you need before running commands:
+
+- **Reproduce the H20–CSF-CUF comparison (main path):** prepare the environment (Section 1), inspect the input files (Section 2), produce the CSF-CUF `eq1` checkpoint (Section 3), produce the selected FEM3D `T4_h20.npz` checkpoint (Section 4), then run the interior and surface comparisons (Sections 5–6). Section 7 produces the field plots. **You do not need to rerun the full H20 mesh-convergence sequence for this path.** If the supplied checkpoints are already available, the solver steps in Sections 3–4 may be skipped.
+- **Reproduce the mesh-convergence evidence (separate path):** run the complete T0–T6 sequence using [Chapter II, Section 6](FEM3Dmesh-convergence-criterion.md), then generate its convergence curves using Section 8 below. A single T4 checkpoint **cannot** generate the full convergence curves.
+
+The T4 mesh is **selected from displacement convergence**, not from convergence of stresses or local equilibrium residuals. The saved data and verification steps can be reused without solving again.
+
 ### Working vocabulary
 
 | Term | Meaning |
@@ -74,7 +83,18 @@ The solver produces five equilibration checkpoints, from `eq1` to `eq5`, using t
 
 The equilibration procedure and the meaning of the `solver.equilibration.iterations` parameter are described in [CSF-CUF Solver Equilibration Iterations](../docs/CSF_CUF_solver_equilibration_iterations.md).
 
-### 3.1 Verify the stability of the CSF-CUF solution
+### 3.1 Reference checkpoint
+
+The reference used for the subsequent FEM3D H20 versus CSF-CUF comparisons is `eq1`:
+
+```text
+output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/
+  carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz
+```
+
+This checkpoint stores the data needed to reconstruct the CUF displacement field at physical points. It can be reused for all subsequent comparisons and plots without executing the structural solver again.
+
+### 3.2 Optional: verify CSF-CUF checkpoint stability
 
 The stability of the saved solution with respect to the solver-equilibration iterations is evaluated using the [CUF checkpoint stability verification script](verify_cuf_eq_stability.py).
 
@@ -99,18 +119,6 @@ The generated reports are available in the [CSF-CUF checkpoint stability diagnos
 - [Detailed numerical results](diagnostics/cuf_eq_stability/summary.csv)
 
 These results document the variation of the numerical solution as the solver-equilibration iterations increase.
-
-### 3.2 Reference checkpoint
-
-The reference used for the subsequent FEM3D H20 versus CSF-CUF comparisons is `eq1`:
-
-```text
-output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/
-  carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz
-```
-
-This checkpoint stores the data needed to reconstruct the CUF displacement field at physical points. It can be reused for all subsequent comparisons and plots without executing the structural solver again.
-
 
 ## 4. Produce the FEM3D H20 reference solution
 
@@ -169,26 +177,7 @@ The complete convergence study produces the sequence of solved H20 checkpoints a
 
 The H20 implementation and additional solver options are described in [Appendix A — The H20 Three-Dimensional Reference Model](fem3d/README_H20.md).
 
-## 5. Draw the convergence curves
-
-The following operation uses the saved solutions and residual JSON files. It does **not** rerun the finite-element system:
-
-```bash
-python3 fem3d/plot_h20_convergence.py
-```
-
-Three PNG files are written to:
-
-```text
-fem3d/output/h20_convergence/figures/
-  min_uz_vs_mesh.png
-  relative_change_vs_mesh.png
-  interior_residual_vs_mesh.png
-```
-
-The first chart tracks minimum vertical displacement, the second shows its relative change, and the third shows the one-point-per-element interior equilibrium diagnostic.
-
-## 6. Compare interior equilibrium at identical physical points
+## 5. Compare interior equilibrium at identical physical points
 
 Once the two reference checkpoints exist, the common-point comparator evaluates H20 and CUF on the same integration points inside each H20 element. The command below reproduces the reported full T4 comparison:
 
@@ -209,7 +198,7 @@ The output includes `summary.json`, `summary.md`, `h20_cuf_common_points.csv`, `
 
 For a quick preliminary calculation one may choose a positive `--max-elements` value. That is a **subsample**, not the full-volume reference used in this book. The equations and numerical interpretation are developed in [the equilibrium chapter](FEM3D-H20-CUF-equilibrium.md), Part I.
 
-## 7. Compare external and interface tractions
+## 6. Compare external and interface tractions
 
 A second program checks the force transmitted through the lower loaded surface, the free external surfaces, and the physical web-flange interfaces:
 
@@ -237,7 +226,7 @@ python3 verify_h20_cuf_surface_outputs.py \
 
 The verifier recomputes weighted surface statistics from the generated CSV files and checks the load integral. The expected successful completion is `ALL TESTS PASS`. Surface forces and physical material interfaces are explained in [the equilibrium chapter](FEM3D-H20-CUF-equilibrium.md), Part II.
 
-## 8. Generate longitudinal, cross-sectional and perimeter plots
+## 7. Generate longitudinal, cross-sectional and perimeter plots
 
 The plotting module reconstructs displacement, strain and stress from the saved CUF checkpoint. When supplied with the H20 checkpoint, it also overlays the FEM result on longitudinal curves and polygon-perimeter curves. Cross-sectional color maps show the CUF fields.
 
@@ -259,6 +248,27 @@ The program writes PNG figures and, by default, the corresponding numerical CSV 
 Before any figure is created, the launcher checks that the FEM checkpoint contains 20-node elements and the displacement and material arrays needed for H20 reconstruction. It records the validated element and node counts in the run log.
 
 The plotting launcher requires the H20 plotting module to be installed at its stated Python import path. An unavailable plotting module is an explicit error; the script does not silently substitute another reader.
+
+## 8. Optional: draw the H20 mesh-convergence curves
+
+This is a **separate branch**, not a prerequisite for the FEM3D–CUF comparison in Sections 5–7. First execute the complete H20 refinement sequence in [Chapter II, Section 6](FEM3Dmesh-convergence-criterion.md), or use the already saved outputs for all levels. A T4 checkpoint alone is insufficient.
+
+The following operation uses the saved solutions and residual JSON files. It does **not** rerun the finite-element system:
+
+```bash
+python3 fem3d/plot_h20_convergence.py
+```
+
+Three PNG files are written to:
+
+```text
+fem3d/output/h20_convergence/figures/
+  min_uz_vs_mesh.png
+  relative_change_vs_mesh.png
+  interior_residual_vs_mesh.png
+```
+
+The first chart tracks minimum vertical displacement, the second shows its relative change, and the third shows the one-point-per-element interior equilibrium diagnostic.
 
 ## 9. Check reference-file identity
 
@@ -287,8 +297,9 @@ A fresh solve may produce different binary hashes because of software versions a
 |---|---|---|
 | Physical input | Read model, problem and case YAML | Defined geometry, materials, supports and load |
 | CUF solve | `csf-cuf ...yaml` | `eq1.cuf.npz` checkpoint |
-| H20 solve and refinement | `fem3d/run_h20_convergence.py` | `T4_h20.npz`, convergence table and JSON diagnostics |
-| Convergence figures | `fem3d/plot_h20_convergence.py` | Three PNG plots |
+| H20 T4 reference solve | `fem3d/run_bending_fem3d_h20.py` (Section 4) | `T4_h20.npz` checkpoint |
+| Optional H20 mesh-convergence sequence | `fem3d/run_h20_convergence.py` (Chapter II) | T0–T6 checkpoints, convergence table and JSON diagnostics |
+| Optional convergence figures | `fem3d/plot_h20_convergence.py` (Section 8) | Three PNG plots |
 | Common-point equilibrium | `compare_fem3d_h20_cuf_equilibrium.py` | Interior equilibrium tables and PNG plots |
 | Physical-surface equilibrium | `compare_fem3d_h20_cuf_surface_equilibrium.py` | Surface statistics, sampled data and PNG plots |
 | Independent surface verification | `verify_h20_cuf_surface_outputs.py` | Pass/fail confirmation |
