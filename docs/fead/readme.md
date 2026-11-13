@@ -28,13 +28,6 @@ The present work considers a complementary problem: the construction of an auton
 
 The Continuous Section Field (CSF) is conceived as a self-contained infrastructure for defining, constructing, connecting, managing, visualizing, and verifying the physical description of a deliberately restricted class of beam-like structures. Within this scope, CSF supports sectional geometry, multiple physical and material regions, automatic geometric connections where supported by its modelling rules, longitudinal variation of geometry and constitutive properties, sectional-property evaluation, and consistency checks. Its purpose is not to replace a general-purpose three-dimensional solid modeller. Instead, it offers a complete modelling process within an explicit sectional representation: cross-sectional domains are prescribed at longitudinal stations and evaluated continuously between them, subject to the geometric and topological conditions of that representation. The restricted geometric scope is therefore a deliberate modelling choice, not a claim that only geometric interpolation is provided.
 
-$$
-\mathcal{S}(x) = \lbrace \Omega(x), \mathbf{C}(x,y,z) \rbrace,
-\qquad 0 \leq x \leq L.
-$$
-
-
-
 The defining mathematical object supplied by this infrastructure is a continuous sectional state: at any admissible longitudinal coordinate, CSF can provide the current physical domains, their boundaries, and the associated constitutive properties. The stations used to prescribe the physical model are independent of the longitudinal discretization employed for the structural solution. Moreover, physical material regions need not coincide with the numerical subdivisions chosen to approximate displacements over a cross-section. The same physical description can consequently support different admissible transverse approximations without being redefined as part of their kinematics.
 
 In the CSF–CUF coupling developed here, this continuous representation is retained throughout the analysis. Rather than preprocessing the non-prismatic member into a geometry-specific set of CUF operators, the sectional integration layer queries CSF at the longitudinal positions requested by the numerical quadrature. CSF returns the current geometry and constitutive data; the chosen CUF transverse expansion supplies the kinematic functions and their derivatives. Sectional integration combines these inputs to form longitudinally dependent coefficients, which are then used to construct the CUF operators and assemble the structural system. The CUF fundamental nucleus does not need to interpret sectional geometry or material-region semantics, and its construction rule is not modified when an admissible physical field changes. Local mappings may still be used for sectional quadrature or for evaluating transverse basis functions; the present coupling does not require a beam-wide three-dimensional geometric mapping to communicate the evolving physical description to the nucleus.
@@ -49,7 +42,6 @@ The mathematical development and the executable verification study are documente
 
 - Mathematical formulation: https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/model/CSF_CUF_Continuous_Geometry_and_Material_Field_Formulation.md
 - Numerical study and reproducibility materials: https://github.com/giovanniboscu/continuous-section-field/tree/main/cuf/I-Shape_L
-
 
 # 2. Mathematical Formulation of the CSF-CUF Coupling
 
