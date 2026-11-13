@@ -80,6 +80,9 @@ For the complete six-level sequence, use [`run_h20_convergence.py`](run_h20_conv
 
 [`h20_strong_residual.py`](h20_strong_residual.py) reads a saved solved checkpoint and reconstructs the local stress-divergence vector. Stress is obtained from the H20 displacement derivatives, transformed from the local element coordinates to physical coordinates, and combined with the stored elastic properties.
 
+
+The standard convergence study already evaluates the FEM3D strong-form equilibrium residual. The purpose of the following command is to examine its spatial variation within individual H20 elements, using eight Gauss points per element instead of a single evaluation point. This is an optional diagnostic performed on the existing FEM3D solution, not an additional FEM3D–CUF comparison.
+
 A sample command is:
 
 ```bash
