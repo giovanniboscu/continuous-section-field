@@ -112,36 +112,28 @@ output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/
 This checkpoint stores the data needed to reconstruct the CUF displacement field at physical points. It can be reused for all subsequent comparisons and plots without executing the structural solver again.
 
 
-### 3.2 Reference checkpoint
+## 4. Produce the FEM3D H20 reference solution
 
-The reference used for the subsequent FEM3D H20 versus CSF-CUF comparisons is `eq1`:
+The FEM3D reference discretization is selected through the displacement convergence study documented in [Chapter II — H20 Mesh Convergence](FEM3Dmesh-convergence-criterion.md).
 
-```text
-output/taper/carrera_i_shaped_taper80_lagrangeL9_v4_web3/
-  carrera_i_shaped_taper80_lagrangeL9_v4_web3_eq1.cuf.npz
-```
+The study identifies **T4** as the reference mesh, based on the 0.1% convergence criterion for the minimum vertical displacement. This selection concerns displacement convergence and does not imply convergence of all reconstructed stresses or local equilibrium residuals.
 
-This checkpoint stores the data needed to reconstruct the CUF displacement field at physical points. It can be reused for all subsequent comparisons and plots without executing the structural solver again.
+### 4.1 Run the selected H20 solution
 
+The selected T4 discretization uses 3,072 H20 elements and 16,081 nodes, with the following subdivision parameters:
 
-**The reference for the comparative study is:**
+| Parameter | Value |
+|---|---:|
+| `nx` | 48 |
+| `ny-left` | 2 |
+| `ny-web` | 4 |
+| `ny-right` | 2 |
+| `nz-flange` | 2 |
+| `nz-web` | 8 |
 
-```text
-fem3d/output/h20_convergence/T4_h20.npz
-```
-
-In the supplied T4 solution, the checkpoint records **3,072 elements, 16,081 nodes**, a minimum $u_z$ of **-1.71702156 mm**, and a total nodal load of approximately **-42,050.505066 N**. The [convergence chapter](FEM3Dmesh-convergence-criterion.md) explains the mesh selection and the exact calculation of the relative change.
-
-The program reuses solved checkpoints by default. To repeat all solves explicitly, add `--force`. To inspect mesh geometry without solving, use the separate H20 driver's `--mesh-only` option.
-
-## 4. Produce the FEM3D H20 solution
-
-The FEM3D H20 solution is computed independently of CSF-CUF, using the physical three-region model.
-
-To execute the complete FEM3D mesh-convergence study, run from `cuf/I-Shape_L`:
+From `cuf/I-Shape_L`, execute:
 
 ```bash
-
 python3 fem3d/run_bending_fem3d_h20.py \
   models/carrera_i_shaped_taper80.yaml \
   fem3d/output/h20_convergence/T4_h20.npz \
@@ -153,22 +145,29 @@ python3 fem3d/run_bending_fem3d_h20.py \
   --nz-flange 2 \
   --nz-web 8 \
   --amplitude -1.0
-
-
 ```
 
-This command generates and solves the H20 mesh sequence, evaluates the convergence of the displacement response, and produces the strong-form equilibrium diagnostics.
+The command constructs the selected H20 mesh, assembles and solves the three-dimensional linear-elastic problem, and saves the resulting displacement field.
 
-The reference checkpoint used in the subsequent FEM3D–CUF comparisons is:
+The reference checkpoint is:
 
 ```text
 fem3d/output/h20_convergence/T4_h20.npz
 ```
 
-The T4 mesh contains 3,072 H20 elements and 16,081 nodes.
+In the supplied reference solution, the minimum vertical displacement is **-1.71702156 mm**, and the total nodal load in the global z direction is approximately **-42,050.505066 N**.
 
-The driver reuses existing solved checkpoints by default; `--force` explicitly repeats the calculations. For the implementation details and optional execution of an individual mesh, see [the FEM3D H20 documentation](fem3d/README_H20.md).
+This checkpoint is used in the subsequent displacement and equilibrium comparisons with the CSF-CUF `eq1` solution.
 
+### 4.2 Relationship with the mesh-convergence study
+
+The command above solves only the selected T4 reference mesh. It does not repeat the mesh-convergence study.
+
+To reproduce the complete refinement sequence, including the displacement convergence criterion and the strong-form residual diagnostics, follow the execution procedure in [Chapter II — H20 Mesh Convergence](FEM3Dmesh-convergence-criterion.md), Section 6.
+
+The complete convergence study produces the sequence of solved H20 checkpoints and associated diagnostic results. The single-mesh command above is sufficient when only the selected T4 solution is required for the subsequent FEM3D–CUF comparisons.
+
+The H20 implementation and additional solver options are described in [Appendix A — The H20 Three-Dimensional Reference Model](fem3d/README_H20.md).
 
 ## 5. Draw the convergence curves
 
