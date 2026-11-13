@@ -134,6 +134,42 @@ In the supplied T4 solution, the checkpoint records **3,072 elements, 16,081 nod
 
 The program reuses solved checkpoints by default. To repeat all solves explicitly, add `--force`. To inspect mesh geometry without solving, use the separate H20 driver's `--mesh-only` option.
 
+## 4. Produce the FEM3D H20 solution
+
+The FEM3D H20 solution is computed independently of CSF-CUF, using the physical three-region model.
+
+To execute the complete FEM3D mesh-convergence study, run from `cuf/I-Shape_L`:
+
+```bash
+
+python3 fem3d/run_bending_fem3d_h20.py \
+  models/carrera_i_shaped_taper80.yaml \
+  fem3d/output/h20_convergence/T4_h20.npz \
+  --backend scipy \
+  --nx 48 \
+  --ny-left 2 \
+  --ny-web 4 \
+  --ny-right 2 \
+  --nz-flange 2 \
+  --nz-web 8 \
+  --amplitude -1.0
+
+
+```
+
+This command generates and solves the H20 mesh sequence, evaluates the convergence of the displacement response, and produces the strong-form equilibrium diagnostics.
+
+The reference checkpoint used in the subsequent FEM3D–CUF comparisons is:
+
+```text
+fem3d/output/h20_convergence/T4_h20.npz
+```
+
+The T4 mesh contains 3,072 H20 elements and 16,081 nodes.
+
+The driver reuses existing solved checkpoints by default; `--force` explicitly repeats the calculations. For the implementation details and optional execution of an individual mesh, see [the FEM3D H20 documentation](fem3d/README_H20.md).
+
+
 ## 5. Draw the convergence curves
 
 The following operation uses the saved solutions and residual JSON files. It does **not** rerun the finite-element system:
