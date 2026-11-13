@@ -2,9 +2,9 @@
 
 # Continuous Section Field Coupling with the Carrera Unified Formulation: Mathematical Framework and Reproducible Open-Source Implementation
 
-# **Abstract**
+# Abstract
 
-This paper presents an open-source, reproducible computational framework coupling the Continuous Section Field (CSF) with the Carrera Unified Formulation (CUF) for non-prismatic beams with variable constitutive properties. Reproducibility is addressed throughout the computational process, from physical model definition to numerical solution and verification. CSF provides an autonomous modeling infrastructure for defining, managing, interpolating, and evaluating sectional geometry and material properties along the beam axis, independently of the CUF transverse expansion and longitudinal discretization.
+This paper presents an open-source, reproducible computational framework coupling the Continuous Section Field (CSF) with the Carrera Unified Formulation (CUF) for non-prismatic beams with variable constitutive properties. CSF is an autonomous, self-contained physical modelling infrastructure for a deliberately defined class of beam-like structures. Within this scope, it provides an integrated set of capabilities for defining, constructing, connecting, managing, visualizing, and verifying sectional geometries, material regions, and constitutive properties, including their longitudinal variation. The resulting physical description remains independent of the CUF transverse expansion and longitudinal discretization.
 
 The contribution is twofold. First, the mathematical coupling is formalized through an explicit sequence connecting the continuous physical sectional field to the CUF operators:
 
@@ -12,11 +12,9 @@ $$
 \mathcal{S}(x) \longrightarrow J(x) \longrightarrow \mathbf{H}(x) \longrightarrow \mathbf{K}.
 $$
 
+The continuous sectional field is queried at the longitudinal positions required by numerical integration, supplying the current physical domains and constitutive properties. These are combined with the CUF kinematic functions through sectional integration to construct the longitudinally dependent coefficients and operators, without modifying the CUF fundamental nucleus. Second, the coupling is realized in an open-source Python implementation covering the complete computational path from declarative physical-model configuration to numerical solution and field reconstruction. Reproducibility is incorporated into the architecture through documented and inspectable procedures for sectional evaluation, numerical integration, assembly, solution, verification, and reconstruction.
 
-
-The coupling combines the geometric and constitutive information supplied by CSF with the CUF kinematic functions through sectional integration, constructing the sectional coefficients and the resulting longitudinal operators. This organization preserves the separation between physical modeling and structural approximation without modifying the CUF fundamental nucleus. Second, the coupling is realized in an open-source Python infrastructure that covers the complete path from model configuration to field reconstruction. Each stage - sectional evaluation, numerical integration, assembly, solution, and reconstruction - is documented and inspectable.
-
-The implementation is examined through a tapered I-shaped beam with longitudinally varying material properties, using an independently implemented three-dimensional finite-element model as reference. The results show close agreement in displacements and characterize differences in interior equilibrium and surface traction recovery. The complete implementation, model configurations, numerical procedures, and diagnostic tools are publicly available, enabling reconstruction and verification of the computational process rather than only its reported results.
+The implementation is examined using a tapered I-shaped beam with longitudinally varying material properties and an independently implemented three-dimensional finite-element reference model. The results show close agreement in displacements and characterize differences in interior equilibrium and surface traction recovery. The complete source code, model configurations, numerical procedures, and diagnostic tools are publicly available, enabling reconstruction and verification of the computational process rather than only reproduction of its reported results.
 
 # 1. Introduction
 
