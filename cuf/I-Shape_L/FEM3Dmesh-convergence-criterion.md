@@ -67,6 +67,53 @@ The measured displacement is nearly stationary by T4, and its change to T6 remai
 
 The sequence is not strictly monotonic in its successive change: the T4 change is smaller than the T6 change. Both satisfy the stated criterion. The criterion is a check on one observable, not a mathematical proof of convergence of all reconstructed fields.
 
+
+### 3.1 Selected FEM3D reference discretization
+
+Based on the displacement convergence criterion of 0.1%, the T4 mesh is selected as the reference FEM3D H20 discretization for the subsequent comparisons with CSF-CUF.
+
+The resulting mesh parameters are:
+
+| Parameter | Value |
+|---|---:|
+| `nx` | 48 |
+| `ny-left` | 2 |
+| `ny-web` | 4 |
+| `ny-right` | 2 |
+| `nz-flange` | 2 |
+| `nz-web` | 8 |
+| Number of H20 elements | 3,072 |
+| Number of nodes | 16,081 |
+
+These parameters define the reference mesh used in the subsequent displacement and equilibrium comparisons. Their selection is based on displacement convergence and does not establish convergence of the reconstructed stress fields or local equilibrium residuals.
+
+**Running the selected FEM3D reference solution**
+
+From `cuf/I-Shape_L`, execute:
+
+```bash
+python3 fem3d/run_bending_fem3d_h20.py \
+  models/carrera_i_shaped_taper80.yaml \
+  fem3d/output/h20_convergence/T4_h20.npz \
+  --backend scipy \
+  --nx 48 \
+  --ny-left 2 \
+  --ny-web 4 \
+  --ny-right 2 \
+  --nz-flange 2 \
+  --nz-web 8 \
+  --amplitude -1.0
+```
+
+This command solves the three-dimensional elasticity problem using the selected T4 discretization and saves the resulting displacement solution to:
+
+`fem3d/output/h20_convergence/T4_h20.npz`
+
+The saved checkpoint is subsequently used for the displacement and equilibrium comparisons with the CSF-CUF reference solution.
+
+This execution is independent of the mesh-convergence driver and does not repeat the convergence study.
+
+
 ## 4. A second diagnostic: interior stress equilibrium
 
 The convergence driver also evaluates the strong-equilibrium residual inside each H20 element. For zero body force,
