@@ -37,6 +37,7 @@ source venv/bin/activate
 python3 -m pip install --upgrade pip
 python3 -m pip install -e .
 python3 -m pip install numpy scipy pyyaml matplotlib
+pip install pypardiso
 export MPLBACKEND=Agg
 cd cuf/I-Shape_L
 ```
