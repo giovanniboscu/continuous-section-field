@@ -92,7 +92,7 @@ post.py
 
 ---
 
-### [`how_to_create_transverse_expansion.md`](how_to_create_transverse_expansion.md)
+### [`GeneralizedExpansionInterface.md`](GeneralizedExpansionInterface.md)
 
 General guide for implementing a **new transverse CUF expansion**.
 
