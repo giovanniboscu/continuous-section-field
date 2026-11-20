@@ -4,6 +4,9 @@
 
 # Abstract
 
+The limited availability of open and reusable implementations of the Carrera Unified Formulation hinders reproducibility and uptake in applied settings, despite the formulation being well established. This work presents an open-source implementation of CUF integrated with a Continuous Section Field (CSF) model, keeping the physical modelling and the structural approximation strictly separated. Reproducibility is demonstrated by quantitatively reproducing the tabulated results of Carrera and Giunta (2010) for a prismatic I-beam with different approximation orders, and by applying the same infrastructure to an I-beam with a geometrically and materially varying web, discretised into nine subdomains with L9 expansions and benchmarked against an independent three-dimensional finite element model. In both cases, configurations, data and comparison procedures are provided in a fully reproducible form.
+
+
 This paper presents an open-source, reproducible computational framework coupling the Continuous Section Field (CSF) with the Carrera Unified Formulation (CUF) for non-prismatic beams with variable constitutive properties. CSF is an autonomous, self-contained physical modelling infrastructure for a deliberately defined class of beam-like structures. Within this scope, it provides an integrated set of capabilities for defining, constructing, connecting, managing, visualizing, and verifying sectional geometries, material regions, and constitutive properties, including their longitudinal variation. The resulting physical description remains independent of the CUF transverse expansion and longitudinal discretization.
 
 The contribution is twofold. First, the mathematical coupling is formalized through an explicit sequence connecting the continuous physical sectional field to the CUF operators:
