@@ -202,12 +202,16 @@ Plot a 3D ruled volume (vertex-connection lines) between end sections.
 
 **Parameters (`params:`)**
 
+
+
 | name | type | required | default | meaning |
 |---|---:|:---:|---:|---|
 | `show_end_sections` | bool | no | `true` | Draw end-section outlines at `z0` and `z1`. |
 | `line_percent` | float | no | `100.0` | Percent (0..100) of generator lines drawn (random subsample). |
 | `seed` | int | no | `0` | Random seed used when `line_percent < 100`. |
+| `equalize_z` | bool | no | `false` | When `true`, enforce the same scale on all three axes (equal aspect ratio), preserving geometric proportions. |
 | `title` | str | no | `"Ruled volume (vertex-connection lines)"` | Plot title. |
+
 
 **Example**
 
