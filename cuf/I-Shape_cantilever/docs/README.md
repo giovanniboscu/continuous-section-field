@@ -1,3 +1,4 @@
+# DRAFT
 # CSF–CUF / FEM3D: reproducibility documentation
 
 This directory contains the **current seven-stage reproducibility documentation** for the I-shaped cantilever benchmark. Run all commands from the case root (`cuf/I-Shape_cantilever2`, or an equivalent clean copy), not from `docs/`.
