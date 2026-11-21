@@ -1,0 +1,40 @@
+# Generated CSF-CUF longitudinal p-series v02 - only CUF mesh/order varies
+case:
+  name: csf_cuf_p_v02_step_008
+problem:
+  yaml: ../../problems/geometry_material_80pct_composite.yaml
+cuf:
+  basis: lagrangeL9
+  order: 2
+  basis_options:
+    domain_source: csf_polygons
+    mapping: isoparametric
+    connectivity: shared_points
+    boundary_tolerance: 1.0e-10
+longitudinal:
+  method: finite_element
+  basis: lagrange
+  order: 9
+  gauss_order: 15
+  material_polynomial_degree: 1
+  elements: 10
+section_integration:
+  method: fixed_gauss_polygon
+  gauss_order: 12
+solver:
+  correctionMITC: false
+  mitcDiagnostic: false
+  verifyMITCAssembly: false
+  equilibration:
+    iterations:
+    - 1
+sampling:
+  stations:
+  - 0.0
+  - 0.1
+  - 1.0
+  displacement_samples: 201
+  stress_grid: 41
+output:
+  adapter: csf.cuf.adapters.output.post
+  directory: ../../output/cuf_convergence/p_v02/step_008

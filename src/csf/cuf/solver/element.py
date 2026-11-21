@@ -428,10 +428,12 @@ class CUFElementMatrixBuilder:
         sectional = self.nucleus.sectional_coefficients
         longitudinal_data = self._longitudinal_product_data(element)
 
+        # Reuse the same immutable signature tuple at all Gauss positions.
+        signatures_batch = tuple(unique_signatures)
         for x, shape_products, scale in longitudinal_data:
             values = sectional.J_batch(
                 x=x,
-                signatures=tuple(unique_signatures),
+                signatures=signatures_batch,
             )
 
             coefficient_by_signature = dict(

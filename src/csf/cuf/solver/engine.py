@@ -509,7 +509,7 @@ def _longitudinal_gauss_requirement(
     #################################################################      
     #varying_axes = int(varies_y) + int(varies_z)
     
-    longitudinal_polynomial_degree = int(longitudinal_basis.polynomial_degree)
+    longitudinal_polynomial_degree = longitudinal_basis.polynomial_degree
     transverse_x_degree = (
         basis_plugin.transverse_x_polynomial_degree(basis)
     )
@@ -538,26 +538,36 @@ def _longitudinal_gauss_requirement(
         material_degree = int(configured_material_degree)
         material_degree_source = "configured"
     
-    # Product of the two longitudinal approximation functions.  The FEM does
-    # not infer this from a concrete family; the plugin declares its degree.
-    longitudinal_shape_degree = 2 * longitudinal_polynomial_degree
-    
-    polynomial_degree = (
+    # Coefficient variation is polynomial even when the selected FE shape
+    # functions are not.  Do not assign a fictitious polynomial degree to
+    # the trigonometric Navier nodal basis.
+    coefficient_degree = (
         transverse_x_degree
         + geometry_jacobian_degree
         + material_degree
-        + longitudinal_shape_degree
     )
-    
-    # n-point Gauss-Legendre is exact through polynomial degree 2n - 1.
-    minimum_gauss_order = (polynomial_degree + 2) // 2
+    if longitudinal_polynomial_degree is None:
+        polynomial_degree = None
+    else:
+        polynomial_degree = (
+            coefficient_degree + 2 * int(longitudinal_polynomial_degree)
+        )
+
+    # Let each longitudinal basis define its quadrature requirement.
+    # Lagrange keeps the same exact polynomial-degree rule; non-polynomial
+    # bases provide a conservative recommendation (not an exactness claim).
+    minimum_gauss_order = longitudinal_basis.minimum_gauss_order(
+        coefficient_polynomial_degree=int(coefficient_degree),
+    )
 
   
         
         
     
     return {
-        "polynomial_degree": int(polynomial_degree),
+        "polynomial_degree": (
+            None if polynomial_degree is None else int(polynomial_degree)
+        ),
         "minimum_gauss_order": int(minimum_gauss_order),
         "material_varies": bool(material_varies),
         "material_polynomial_degree": int(material_degree),
@@ -1087,7 +1097,7 @@ def solve_case_runs(
 
         print(
             f"[quadrature] longitudinal degree estimate = "
-            f"{longitudinal_requirement['polynomial_degree']}",
+            f"{longitudinal_requirement['polynomial_degree'] if longitudinal_requirement['polynomial_degree'] is not None else 'non-polynomial'}",
             flush=True,
         )
         print(

@@ -387,125 +387,70 @@ class LagrangeL9Basis(CUFBasis):
             for local_node in range(1, _LOCAL_L9_SIZE + 1)
         )
 
-    def value(
-        self,
-        tau: int,
-        y: float,
-        z: float,
-        *,
-        x: float | None = None,
-    ) -> float:
-        """Evaluate one assembled L9 function on the current CSF section."""
-        self._global_point(tau)
-        x = self._effective_x(x)
-
-        y = float(y)
-        z = float(z)
+    # A sectional quadrature point is queried for all global tau values and
+    # several derivative selectors.  Cache its *local* isoparametric geometry
+    # and full assembled L9 vectors once, rather than repeating domain search,
+    # Newton inversion, and tiny linear solves for each individual tau.
+    # The cache is bounded and keyed by the exact physical (x, y, z) point.
+    @lru_cache(maxsize=1024)
+    def _point_values(self, x: float, y: float, z: float):
         containing = self.locate_domains(y, z, x=x)
-
         if not containing:
-            # A global FE-like shape function is zero outside the section.
-            return 0.0
+            return (), None, None, None, np.zeros(self.size, dtype=float)
 
-        candidate_values = []
+        assembled = None
+        unique_domain = None
+        unique_natural = None
+        unique_vertices = None
 
         for domain_id in containing:
-            local_node = self._local_node_for_tau(domain_id, tau)
-            if local_node is None:
-                candidate_values.append(0.0)
-                continue
-
-            alpha, beta = self.natural_coordinates(domain_id, y, z, x=x)
-            candidate_values.append(
-                self._l9_shape(local_node, alpha, beta)
+            domain = self._domain(domain_id, x=x)
+            alpha, beta = self._inverse_isoparametric_map(
+                domain.vertices, y, z
             )
+            local = np.zeros(self.size, dtype=float)
+            for node, tau in enumerate(self._connectivity[domain_id - 1], 1):
+                local[tau - 1] = self._l9_shape(node, alpha, beta)
 
-        # On a shared interface the same assembled global function can be
-        # represented from either adjacent element. It is one piecewise global
-        # function, so never sum element-side values.
-        reference = float(candidate_values[0])
+            if assembled is None:
+                assembled = local
+            else:
+                # Keep the existing C0 interface-consistency contract: do not
+                # sum element-side values or silently choose an inconsistent one.
+                for tau_index, (reference, other) in enumerate(
+                    zip(assembled, local), 1
+                ):
+                    scale = max(1.0, abs(float(reference)), abs(float(other)))
+                    if not math.isclose(
+                        float(reference), float(other), rel_tol=0.0,
+                        abs_tol=100.0 * np.finfo(float).eps * scale,
+                    ):
+                        raise ValueError(
+                            "lagrangeL9 assembled value is inconsistent across "
+                            "a shared interface at (y,z)="
+                            f"({y},{z}) for tau={tau_index}: "
+                            f"{[float(reference), float(other)]}"
+                        )
 
-        for other in candidate_values[1:]:
-            scale = max(1.0, abs(reference), abs(float(other)))
-            if not math.isclose(
-                reference,
-                float(other),
-                rel_tol=0.0,
-                abs_tol=100.0 * np.finfo(float).eps * scale,
-            ):
-                raise ValueError(
-                    "lagrangeL9 assembled value is inconsistent across a "
-                    f"shared interface at (y,z)=({y},{z}) for tau={tau}: "
-                    f"{candidate_values}"
-                )
+            if len(containing) == 1:
+                unique_domain = domain_id
+                unique_natural = (alpha, beta)
+                unique_vertices = domain.vertices
 
-        return reference
+        return containing, unique_domain, unique_natural, unique_vertices, assembled
 
-    def derivative(
-        self,
-        tau: int,
-        direction: str,
-        y: float,
-        z: float,
-        *,
-        x: float | None = None,
-    ) -> float:
-        """Evaluate one physical transverse derivative at CSF coordinate x.
-
-        Interface derivatives are element-side quantities for a C0 L9 field.
-        """
-        self._global_point(tau)
-        x = self._effective_x(x)
-
-        if direction not in {"y", "z"}:
-            raise ValueError("direction must be 'y' or 'z'")
-
-        y = float(y)
-        z = float(z)
-        containing = self.locate_domains(y, z, x=x)
-
+    @lru_cache(maxsize=1024)
+    def _point_derivatives(self, x: float, y: float, z: float):
+        containing, domain_id, natural, vertices, _ = self._point_values(x, y, z)
         if not containing:
-            return 0.0
-
+            zero = np.zeros(self.size, dtype=float)
+            return zero, zero, zero
         if len(containing) != 1:
-            raise ValueError(
-                "lagrangeL9 derivative is element-side dependent on a shared "
-                f"CSF interface/vertex at (y,z)=({y},{z}); "
-                f"matching domains={containing}"
-            )
+            # The public derivatives check the interface before calling here.
+            raise ValueError("lagrangeL9 derivatives are element-side dependent")
 
-        domain_id = containing[0]
-        local_node = self._local_node_for_tau(domain_id, tau)
-
-        if local_node is None:
-            return 0.0
-
-        domain = self._domain(domain_id, x=x)
-        alpha, beta = self._inverse_isoparametric_map(
-            domain.vertices,
-            y,
-            z,
-        )
-
-        dN_da, dN_db = self._l9_shape_natural_derivatives(
-            local_node,
-            alpha,
-            beta,
-        )
-
-        jacobian = self._mapping_jacobian(
-            domain.vertices,
-            alpha,
-            beta,
-        )
-
-        # J maps natural coordinate increments to physical increments:
-        #
-        # [dy]   [dy/da  dy/db] [da]
-        # [dz] = [dz/da  dz/db] [db]
-        #
-        # For gradients:
-        # [dN/dy, dN/dz]^T = J^{-T} [dN/da, dN/db]^T
+        alpha, beta = natural
+        jacobian = self._mapping_jacobian(vertices, alpha, beta)
         det = float(np.linalg.det(jacobian))
         scale = max(1.0, float(np.max(np.abs(jacobian))))
         if abs(det) <= np.finfo(float).eps * scale * scale:
@@ -514,43 +459,67 @@ class LagrangeL9Basis(CUFBasis):
                 f"Jacobian at alpha={alpha}, beta={beta}"
             )
 
-        physical_gradient = np.linalg.solve(
-            jacobian.T,
-            np.asarray((dN_da, dN_db), dtype=float),
+        natural_gradients = np.asarray(
+            [self._l9_shape_natural_derivatives(node, alpha, beta)
+             for node in range(1, _LOCAL_L9_SIZE + 1)],
+            dtype=float,
         )
+        physical = np.linalg.solve(jacobian.T, natural_gradients.T)
+        gx = np.zeros(self.size, dtype=float)
+        gy = np.zeros(self.size, dtype=float)
+        gz = np.zeros(self.size, dtype=float)
+        local_to_global = np.asarray(self._connectivity[domain_id - 1]) - 1
+        gy[local_to_global] = physical[0, :]
+        gz[local_to_global] = physical[1, :]
 
-        if direction == "y":
-            return float(physical_gradient[0])
-        return float(physical_gradient[1])
+        if not self._constant_geometry:
+            corner_shapes, _, _ = self._corner_shape_data(alpha, beta)
+            velocity = corner_shapes @ self._corner_velocities[domain_id - 1]
+            natural_dx = -np.linalg.solve(jacobian, velocity)
+            gx[local_to_global] = natural_gradients @ natural_dx
+        return gx, gy, gz
+
+    def value(
+        self, tau: int, y: float, z: float, *, x: float | None = None
+    ) -> float:
+        """Evaluate the assembled L9 value, sharing point geometry across tau."""
+        self._global_point(tau)
+        x = self._effective_x(x)
+        _, _, _, _, values = self._point_values(x, float(y), float(z))
+        return float(values[tau - 1])
+
+    def derivative(
+        self, tau: int, direction: str, y: float, z: float,
+        *, x: float | None = None,
+    ) -> float:
+        """Physical transverse derivative; interface values remain undefined."""
+        self._global_point(tau)
+        x = self._effective_x(x)
+        if direction not in {"y", "z"}:
+            raise ValueError("direction must be 'y' or 'z'")
+        y, z = float(y), float(z)
+        containing, _, _, _, _ = self._point_values(x, y, z)
+        if not containing:
+            return 0.0
+        if len(containing) != 1:
+            raise ValueError(
+                "lagrangeL9 derivative is element-side dependent on a shared "
+                f"CSF interface/vertex at (y,z)=({y},{z}); "
+                f"matching domains={containing}"
+            )
+        _, gy, gz = self._point_derivatives(x, y, z)
+        return float((gy if direction == "y" else gz)[tau - 1])
 
     def longitudinal_derivative(
-        self,
-        tau: int,
-        y: float,
-        z: float,
-        *,
-        x: float | None = None,
+        self, tau: int, y: float, z: float, *, x: float | None = None
     ) -> float:
-        """Evaluate dF_tau/dx at fixed physical (y, z) on a CSF section.
-
-        For a point with natural coordinates (alpha, beta), interpolate the
-        cached per-corner velocities using the bilinear geometry functions:
-            v = sum_a Q_a(alpha, beta) * v_a.
-        With J = d(y, z)/d(alpha, beta), the isoparametric chain rule gives
-            d(alpha, beta)/dx |_(y,z) = -J**(-1) * v,
-            dF_tau/dx |_(y,z) = grad_natural(N) dot d(alpha, beta)/dx.
-
-        The geometric derivative uses no finite differences and is exact under
-        the affine-trajectory assumption, apart from floating-point error in
-        the coordinate inversion and linear solve. The result can vary with
-        the natural point and with x even though all v_a are x-independent.
-        Derivatives at shared polygon interfaces remain element-side dependent.
-        """
+        """Fixed-physical-point dF/dx using the cached L9 geometric state."""
         self._global_point(tau)
         x = self._effective_x(x)
         if self._constant_geometry:
             return 0.0
-        containing = self.locate_domains(y, z, x=x)
+        y, z = float(y), float(z)
+        containing, _, _, _, _ = self._point_values(x, y, z)
         if not containing:
             return 0.0
         if len(containing) != 1:
@@ -558,26 +527,8 @@ class LagrangeL9Basis(CUFBasis):
                 "lagrangeL9 longitudinal derivative is element-side dependent "
                 f"at shared interface (x,y,z)=({x},{y},{z})"
             )
-        domain_id = containing[0]
-        local_node = self._local_node_for_tau(domain_id, tau)
-        if local_node is None:
-            return 0.0
-        domain = self._domain(domain_id, x=x)
-        alpha, beta = self._inverse_isoparametric_map(
-            domain.vertices, float(y), float(z)
-        )
-        jacobian = self._mapping_jacobian(domain.vertices, alpha, beta)
-        shape_derivatives = np.asarray(
-            self._l9_shape_natural_derivatives(local_node, alpha, beta),
-            dtype=float,
-        )
-        # Each corner has an independent, x-invariant slope. The local
-        # geometric velocity varies over the quadrilateral and is evaluated
-        # by the same bilinear shape functions as the physical mapping.
-        corner_shapes, _, _ = self._corner_shape_data(alpha, beta)
-        velocity = corner_shapes @ self._corner_velocities[domain_id - 1]
-        natural_dx = -np.linalg.solve(jacobian, velocity)
-        return float(shape_derivatives @ natural_dx)
+        gx, _, _ = self._point_derivatives(x, y, z)
+        return float(gx[tau - 1])
 
     @property
     def piecewise_power_domains(self) -> np.ndarray:

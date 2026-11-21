@@ -1,3 +1,4 @@
+# Version: CSF-CUF local composite YAML v01 - 2026-11-20
 # Version: CSF-CUF optional MITC diagnostics v08 - 2026-10-11
 # Changelog: solver.mitcDiagnostic boolean, default false; no kinematic changes.
 # Version: CSF-CUF MITC assembly verification v06 - 2026-10-11
@@ -376,11 +377,17 @@ def load_case(path: str | Path) -> CaseDefinition:
         )
         problem_load_adapter_path = None
         problem_constraint_adapter_path = None
+    elif load_adapter is None and constraint_adapter is None:
+        # Local declarative composite: component adapters are declared in
+        # the problem YAML.  The problem type is validated by the runner.
+        problem_adapter_path = None
+        problem_load_adapter_path = None
+        problem_constraint_adapter_path = None
     else:
         if load_adapter is None or constraint_adapter is None:
             raise ValueError(
-                "problem must define either 'adapter' or both "
-                "'load_adapter' and 'constraint_adapter'"
+                "problem must define either 'adapter', both 'load_adapter' "
+                "and 'constraint_adapter', or neither for problem.type=composite"
             )
         problem_adapter_path = None
         problem_load_adapter_path = _adapter_reference(

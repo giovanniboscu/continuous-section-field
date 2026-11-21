@@ -1,4 +1,7 @@
-# Version: CSF-CUF plot_strain_stress_boundary v14.6.0 H20 extension v2 - 2026-11-07
+# Version: CSF-CUF plot_strain_stress_boundary v14.6.1 OpenSees NPZ compatibility - 2026-11-20
+# v14.6.1: Accept the CSF-driven OpenSees H8 exporter NPZ without an unused
+#          legacy amplitude field; reject mesh-only NPZ before field recovery.
+#          All existing output schemas, plots, sampling, and FEM laws unchanged.
 # v14.6.0: Per-figure CSV companions are written by default under figure_csv/.
 #          Every CSV uses the PNG basename, preserves the exact figure/panel grouping,
 #          contains the numerical samples represented by that figure, and records extrema.
@@ -601,7 +604,10 @@ class FEM3DH8:
                 "connectivity", "element_ids", "units",
             }
             legacy_i_shape_required = {
-                "nodes", "elements", "displacement", "amplitude", "x0", "x1",
+                # The former exporter wrote 'amplitude', but this visualizer
+                # never used it. The CSF-driven OpenSees H8 exporter does not
+                # write it; both producers share the fields below.
+                "nodes", "elements", "displacement", "x0", "x1",
             }
 
             if standard_required.issubset(keys):
@@ -652,6 +658,13 @@ class FEM3DH8:
                         raise ValueError("OpenSees-to-CUF stress component permutation is inconsistent")
 
             elif legacy_i_shape_required.issubset(keys):
+                # Reject an unsolved OpenSees mesh-only export. The old I-Shape
+                # files have no status key and continue to be accepted.
+                if "status" in keys and str(np.asarray(data["status"]).item()) == "mesh_only":
+                    raise ValueError(
+                        "FEM3D NPZ has status='mesh_only' (no OpenSees displacement "
+                        "solution); rerun FEM3D without --mesh-only"
+                    )
                 # Legacy I-Shape FEM3D files are raw stdBrick H8 results.
                 # Their generator writes coordinates directly as (x,y,z) in the
                 # same physical axes used by the CUF comparison and stores
@@ -664,7 +677,11 @@ class FEM3DH8:
                 conn = raw_conn.astype(np.int64)
                 self.ids = np.arange(len(conn), dtype=np.int64)
                 self.units = str(np.asarray(data["units"]).item()) if "units" in keys else "native"
-                self.source_schema = "legacy I-Shape H8 NPZ"
+                self.source_schema = (
+                    "CSF-driven OpenSees H8 NPZ"
+                    if "status" in keys and str(np.asarray(data["status"]).item()) == "solved_opensees"
+                    else "legacy I-Shape H8 NPZ"
+                )
                 material_keys = {"element_E", "element_G", "element_nu"}
                 if material_keys & keys and not material_keys.issubset(keys):
                     raise ValueError("Incomplete FEM element material metadata")
@@ -681,7 +698,8 @@ class FEM3DH8:
                 raise ValueError(
                     "Unsupported FEM3D NPZ schema. Expected either "
                     "fem3d_h8_displacement v1 or legacy I-Shape keys "
-                    "{nodes,elements,displacement,amplitude,x0,x1}. "
+                    "{nodes,elements,displacement,x0,x1} "
+                    "(the old amplitude field is optional). "
                     "Available keys: " + ", ".join(sorted(keys))
                 )
 
@@ -3552,7 +3570,7 @@ def checkpoint_output_name(path: Path) -> str:
 def main():
     args = build_parser().parse_args()
     _validate_transverse_perimeter_arguments(args)
-    print(f"[visualizer] v14.6.0 + H20 overlay: {Path(__file__).resolve()}", flush=True)
+    print(f"[visualizer] v14.6.1 + H20 overlay + OpenSees NPZ: {Path(__file__).resolve()}", flush=True)
     if args.max_vertices_per_plot < 1 or args.dpi < 1 or args.points < 2:
         raise ValueError("--points must be >=2 and --dpi / --max-vertices-per-plot >=1")
     if args.inward_offset is not None and (not math.isfinite(args.inward_offset) or args.inward_offset <= 0):

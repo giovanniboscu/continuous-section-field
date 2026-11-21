@@ -1,3 +1,4 @@
+# Version: CSF-CUF local composite context v02 - 2026-11-20
 """
 Generic problem interface for the CSF-CUF solver.
 
@@ -98,6 +99,19 @@ class CompositeCUFProblem:
     constraint_problem: Any
 
     def build_load_vector(self, **kwargs):
+        # Optional geometry handoff for independent constraint components.
+        # The solver calls build_load_vector before build_constraints. The
+        # constraint receives geometry from the *compositor*, NOT from the
+        # load component, so neither component depends on the other.
+        # Older constraint adapters do not implement this hook and therefore
+        # retain exactly their original execution path.
+        bind_geometry = getattr(self.constraint_problem, "bind_section_context", None)
+        if callable(bind_geometry):
+            bind_geometry(
+                section_provider=kwargs["section_provider"],
+                x0=kwargs["x0"],
+                x1=kwargs["x1"],
+            )
         return self.load_problem.build_load_vector(**kwargs)
 
     def build_constraints(self, **kwargs):
@@ -236,3 +250,96 @@ def load_problem_adapter(reference: str | Path):
         )
 
     return module
+
+
+def build_local_composite_problem(definition: ProblemDefinition) -> CompositeCUFProblem:
+    """Build exactly one local load and one local constraint from problem YAML.
+
+    A component declares ``adapter`` (a .py file or importable module name)
+    and component-specific options, but no ``type``. Relative .py paths are
+    resolved against the *problem YAML* directory, not the case directory.
+
+    No automatic library registry, list composition, or solver changes are
+    introduced by this first version. External factories keep the existing
+    signature ``build_problem(problem_type, options)``; the problem type is
+    the declared ``composite`` and options are local to that component.
+    """
+
+    if definition.problem_type != "composite":
+        raise ValueError(
+            "declarative problem without a case adapter requires "
+            "problem.type: composite"
+        )
+
+    # In the new declaration, silently overwriting two 'load' YAML keys
+    # would conceal a second component. PyYAML safe_load permits duplicate
+    # mapping keys, so reject them explicitly for composite problems only.
+    def reject_duplicate_keys(node, location: str):
+        if isinstance(node, yaml.MappingNode):
+            seen = set()
+            for key_node, value_node in node.value:
+                if not isinstance(key_node, yaml.ScalarNode):
+                    continue
+                key = key_node.value
+                if key in seen:
+                    raise ValueError(
+                        f"duplicate YAML key {location}.{key} in composite "
+                        "problem; duplicate entries cannot represent "
+                        "multiple components"
+                    )
+                seen.add(key)
+                reject_duplicate_keys(value_node, f"{location}.{key}")
+        elif isinstance(node, yaml.SequenceNode):
+            for index, item in enumerate(node.value):
+                reject_duplicate_keys(item, f"{location}[{index}]")
+
+    root_node = yaml.compose(definition.path.read_text(encoding="utf-8"))
+    reject_duplicate_keys(root_node, "problem_yaml")
+
+    options = definition.problem_options
+    if "loads" in options or "constraints" in options:
+        raise ValueError(
+            "problem.type=composite currently supports exactly one 'load' "
+            "and one 'constraint'; 'loads' and 'constraints' lists are not "
+            "supported (use a custom unified problem adapter for multiple loads)"
+        )
+    extra = sorted(str(key) for key in options if key not in ("load", "constraint"))
+    if extra:
+        raise ValueError(
+            "problem.type=composite contains unsupported field(s): "
+            + ", ".join(extra)
+        )
+
+    def build_component(role: str):
+        entry = options.get(role)
+        if not isinstance(entry, dict):
+            raise TypeError(
+                f"problem.{role} must be a YAML mapping with one 'adapter' "
+                "(one component only; lists are not supported)"
+            )
+        if "type" in entry:
+            raise ValueError(
+                f"problem.{role}.type is not supported in local composite v01; "
+                f"specify problem.{role}.adapter instead"
+            )
+
+        reference = entry.get("adapter")
+        if not isinstance(reference, str) or not reference.strip():
+            raise ValueError(
+                f"problem.{role}.adapter must be a nonempty Python file "
+                "path or module name (automatic type lookup is not yet enabled)"
+            )
+        reference = reference.strip()
+        if _adapter_is_path(reference):
+            path = Path(reference)
+            if not path.is_absolute():
+                path = (definition.path.parent / path).resolve()
+            reference = path
+        module = load_problem_adapter(reference)
+        local_options = {key: value for key, value in entry.items() if key != "adapter"}
+        return module.build_problem("composite", local_options)
+
+    return compose_problem(
+        build_component("load"),
+        build_component("constraint"),
+    )

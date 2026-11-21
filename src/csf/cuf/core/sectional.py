@@ -131,6 +131,8 @@ class SectionalCoefficientProvider:
         # A family is identified by (x, test derivative, trial derivative, m, n)
         # and contains every ordered CUF pair (tau, s) at once.
         self._J_matrix_family_cache = {}
+        self._fast_J_batch_signatures = None
+        self._fast_J_batch_plan = None
         self._matrix_basis_plan_cache = {}
         self._J_matrix_family_hits = 0
         self._J_matrix_family_misses = 0
@@ -695,6 +697,8 @@ class SectionalCoefficientProvider:
         # no sectional geometry or material value is cached here.
         self._batch_factor_plan_cache = {}
         self._J_matrix_family_cache.clear()
+        self._fast_J_batch_signatures = None
+        self._fast_J_batch_plan = None
         self._matrix_basis_plan_cache.clear()
         self._J_matrix_family_hits = 0
         self._J_matrix_family_misses = 0
@@ -1170,6 +1174,47 @@ class SectionalCoefficientProvider:
         for family_key, matrix in totals.items():
             self._J_matrix_family_cache[family_key] = matrix
 
+    def _try_fast_cached_J_batch(self, *, x, signatures):
+        """Read complete cached families with one x-independent request plan.
+
+        Returns None if a full family-cache hit is not possible. This keeps
+        scalar-cache precedence, fallback integration and cache-miss handling
+        in the unmodified general J_batch path.
+        """
+        if not self.cache_enabled or self._J_cache:
+            return None
+        # Identity (not equality) matters: the caller owns the immutable tuple,
+        # and we retain a reference so an old id cannot be recycled.
+        if signatures is not self._fast_J_batch_signatures:
+            compiled = []
+            for signature in signatures:
+                tau, dt, trial, ds, m, n = self._signature_fields(signature)
+                self._validate_derivative(dt)
+                self._validate_derivative(ds)
+                m, n = int(m), int(n)
+                if not (1 <= m <= 6 and 1 <= n <= 6):
+                    raise IndexError("constitutive indices m and n must be in 1..6")
+                compiled.append((int(tau), int(trial), dt, ds, m, n))
+            self._fast_J_batch_signatures = signatures
+            self._fast_J_batch_plan = tuple(compiled)
+
+        x = float(x)
+        if not np.isfinite(x):
+            raise ValueError("longitudinal coordinate x must be finite")
+        family_cache = self._J_matrix_family_cache
+        resolved = {}
+        for _, _, dt, ds, m, n in self._fast_J_batch_plan:
+            family_spec = (dt, ds, m, n)
+            if family_spec not in resolved:
+                family_key = (x, dt, ds, m, n)
+                if family_key not in family_cache:
+                    return None
+                resolved[family_spec] = family_cache[family_key]
+        return tuple(
+            self._matrix_family_value(resolved[(dt, ds, m, n)], tau, trial)
+            for tau, trial, dt, ds, m, n in self._fast_J_batch_plan
+        )
+
     def J_batch(
         self,
         *,
@@ -1193,6 +1238,14 @@ class SectionalCoefficientProvider:
             return tuple()
 
         self._J_batch_calls += 1
+
+        # Fast read for already-computed complete coefficient families.
+        # The general path below retains full validation and integration.
+        fast_values = self._try_fast_cached_J_batch(x=x, signatures=signatures)
+        if fast_values is not None:
+            self._J_hits += len(signatures)
+            self._J_matrix_family_hits += len(signatures)
+            return fast_values
 
         normalized = []
         keys = []

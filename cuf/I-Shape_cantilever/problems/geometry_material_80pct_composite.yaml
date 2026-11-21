@@ -1,0 +1,24 @@
+# CSF-CUF local composite case: one vertical surface load and one physical clamp.
+model:
+  csf_yaml: ../models/i_shaped_taper80_l9_web3.yaml
+
+problem:
+  type: composite
+
+  load:
+    adapter: ../adapters/loads/vertical_face_tractions.py
+    # Explicit CSF domain names, not a hard-coded I-shape assumption.
+    # Their LOWER external Y-parallel edges carry the vertical loading.
+    polygons:
+      - bottom_flange_left
+      - bottom_flange_center
+      - bottom_flange_right
+    upper_z_MPa: 0.0
+    lower_z_MPa: -7.17
+    axial_gauss: 8
+    edge_gauss: 5
+    # face_gauss omitted: the legacy adapter accepted it, but did not use it.
+
+  constraint:
+    adapter: ../adapters/constraints/physical_start_section_clamp.py
+    location: start

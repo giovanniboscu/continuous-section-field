@@ -1,3 +1,4 @@
+# Version: CSF-CUF local composite YAML v01 - 2026-11-20
 # Version: CSF-CUF normalized longitudinal partition v3 - 2026-09-21
 #!/usr/bin/env python3
 from __future__ import annotations
@@ -11,6 +12,7 @@ from pathlib import Path
 from csf.cuf.case import load_case
 from csf.cuf.csf_bridge import CSFCUFModelBridge
 from csf.cuf.problem.problem_api import (
+    build_local_composite_problem,
     compose_problem,
     load_problem,
     load_problem_adapter,
@@ -126,7 +128,29 @@ def run(case_path, *, progress=True):
 
     problem_definition = load_problem(case.problem_path)
 
-    if case.problem_adapter_path is not None:
+    local_composite = problem_definition.problem_type == "composite"
+    has_explicit_adapter = (
+        case.problem_adapter_path is not None
+        or case.problem_load_adapter_path is not None
+        or case.problem_constraint_adapter_path is not None
+    )
+    if local_composite and has_explicit_adapter:
+        raise ValueError(
+            "problem.type=composite requires the case to specify only "
+            "'problem.yaml' (remove case problem.adapter, load_adapter, "
+            "and constraint_adapter)"
+        )
+    if not local_composite and not has_explicit_adapter:
+        raise ValueError(
+            "case problem has no adapter: automatic loading is supported "
+            "only when the problem YAML declares problem.type: composite"
+        )
+
+    if local_composite:
+        problem_adapter = None
+        load_adapter = None
+        constraint_adapter = None
+    elif case.problem_adapter_path is not None:
         problem_adapter = load_problem_adapter(
             case.problem_adapter_path
         )
@@ -156,7 +180,9 @@ def run(case_path, *, progress=True):
         problem_definition.model_path
     )
 
-    if problem_adapter is not None:
+    if local_composite:
+        problem = build_local_composite_problem(problem_definition)
+    elif problem_adapter is not None:
         # Historical mode: build exactly one object and preserve the original
         # state-sharing semantics between load and constraint methods.
         problem = problem_adapter.build_problem(

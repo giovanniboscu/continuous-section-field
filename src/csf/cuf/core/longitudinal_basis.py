@@ -36,8 +36,8 @@ class LongitudinalBasis(ABC):
 
     @property
     @abstractmethod
-    def polynomial_degree(self) -> int:
-        """Maximum polynomial degree carried by one basis function."""
+    def polynomial_degree(self) -> int | None:
+        """Maximum polynomial degree, or None for non-polynomial bases."""
         raise NotImplementedError
 
     @abstractmethod
@@ -49,6 +49,26 @@ class LongitudinalBasis(ABC):
     def derivatives_reference(self, xi: float) -> np.ndarray:
         """Return all first derivatives with respect to ``xi``."""
         raise NotImplementedError
+
+    def minimum_gauss_order(self, *, coefficient_polynomial_degree: int) -> int:
+        """Longitudinal Gauss order required/recommended by this basis.
+
+        For polynomial functions, Gauss-Legendre is exact for the estimated
+        product degree.  For non-polynomial functions, a plugin must override
+        this method with a conservative numerical recommendation.  The value
+        is a lower bound for the solver's configured integration order and
+        does not replace a quadrature convergence check.
+        """
+        coefficient_degree = int(coefficient_polynomial_degree)
+        if coefficient_degree < 0:
+            raise ValueError("coefficient_polynomial_degree must be >= 0")
+        polynomial_degree = self.polynomial_degree
+        if polynomial_degree is None:
+            raise NotImplementedError(
+                "non-polynomial longitudinal basis must implement "
+                "minimum_gauss_order()"
+            )
+        return (coefficient_degree + 2 * int(polynomial_degree) + 2) // 2
 
     def power_coefficients(self) -> np.ndarray | None:
         """Return exact ascending-power coefficients when available.
