@@ -15,7 +15,7 @@ cuf:
   basis: scaled_lagrange
 
   # Order of the transverse expansion.
-  order: 18
+  order: 16
 
 longitudinal:
   # Approximation used along the beam axis.
