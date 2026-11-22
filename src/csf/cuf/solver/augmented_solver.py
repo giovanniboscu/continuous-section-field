@@ -337,6 +337,35 @@ class AugmentedSparseLinearSolver:
     @staticmethod
     def _available_physical_memory_bytes() -> int | None:
         """Return currently available physical memory without external packages."""
+        if os.name == "nt":
+            # GlobalMemoryStatusEx exposes usable physical RAM on Windows.
+            # Without this branch the selector reports available=unknown and
+            # incorrectly falls back to PARDISO even when dense fits.
+            try:
+                import ctypes
+
+                class MEMORYSTATUSEX(ctypes.Structure):
+                    _fields_ = [
+                        ("dwLength", ctypes.c_ulong),
+                        ("dwMemoryLoad", ctypes.c_ulong),
+                        ("ullTotalPhys", ctypes.c_ulonglong),
+                        ("ullAvailPhys", ctypes.c_ulonglong),
+                        ("ullTotalPageFile", ctypes.c_ulonglong),
+                        ("ullAvailPageFile", ctypes.c_ulonglong),
+                        ("ullTotalVirtual", ctypes.c_ulonglong),
+                        ("ullAvailVirtual", ctypes.c_ulonglong),
+                        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+                    ]
+
+                status = MEMORYSTATUSEX()
+                status.dwLength = ctypes.sizeof(status)
+                if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+                    available = int(status.ullAvailPhys)
+                    if available > 0:
+                        return available
+            except (AttributeError, OSError, ValueError):
+                pass
+
         try:
             with open("/proc/meminfo", "r", encoding="utf-8") as handle:
                 for line in handle:
