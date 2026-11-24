@@ -8,7 +8,7 @@ reported as an independent verification that the asymptotic regime has been reac
 
 **Methodological reference:** ASME V&V 10.1-2012 (R2022), *An Illustration of the Concepts of Verification and Validation in Computational Solid Mechanics*, Section **7.2, Calculation Verification**, especially Eqs. **(4), (6), (8), (10)**. The formulation below follows the **three-grid Richardson extrapolation and GCI** method illustrated there, with notation adapted to a fixed-transverse-resolution H8 finite-element model. The ASME document uses a cantilever tip displacement as its quantity of interest; here the quantity of interest is the vertical displacement at a user-specified physical point. This is an *application* of the published method, not a claim that ASME has approved this particular model or implementation.
 
-**Official standard and citation:** [ASME V&V 10.1 — 2012 (R2022)](https://www.asme.org/codes-standards/find-codes-standards/an-illustration-of-the-concepts-of-verification-and-validation-in-computational-solid-mechanics/2012/pdf). The standard was issued in 2012 and reaffirmed in 2022.
+**Official standard and citation:** [ASME V&V 10.1 - 2012 (R2022)](https://www.asme.org/codes-standards/find-codes-standards/an-illustration-of-the-concepts-of-verification-and-validation-in-computational-solid-mechanics/2012/pdf). The standard was issued in 2012 and reaffirmed in 2022.
 
 ## 1. Scope and controlled discretization
 
@@ -41,7 +41,7 @@ P=\sum_{a=1}^{8}N_a(\boldsymbol\xi_P)\,\mathbf X_a.
 
 Here \(\mathbf X_a\) and \(\mathbf d_a\) are the saved FEM nodal coordinates and displacement vectors. The second relation locates \(P\) *within the existing H8 element*; it is not an independent reconstruction of the CSF physical model. If the point cannot be found, the script stops with an error rather than changing \(P\).
 
-## 2. Three-grid Richardson model — ASME V&V 10.1, Eq. (4)
+## 2. Three-grid Richardson model - ASME V&V 10.1, Eq. (4)
 
 For a triplet ordered **fine, medium, coarse**, write
 
@@ -57,7 +57,7 @@ w(h)=w_\infty+A h^p+\text{higher-order terms},
 
 where \(w_\infty\) is the limiting solution under *longitudinal refinement with fixed transverse resolution*, \(A\) is a coefficient and \(p>0\) is the **observed** longitudinal order. The asymptotic assumption must be considered when interpreting the GCI: it is not established merely by obtaining three numerical values.
 
-## 3. Observed order — ASME V&V 10.1, Eqs. (6) and (7)
+## 3. Observed order - ASME V&V 10.1, Eqs. (6) and (7)
 
 The order \(p\) is inferred **from the three computed solutions**, not imposed as the theoretical order of the H8 element:
 
@@ -80,7 +80,7 @@ p=\frac{\ln[(w_3-w_2)/(w_2-w_1)]}{\ln r}.
 
 A zero consecutive change, an oscillatory triplet, a non-positive inferred order, or non-finite data is **reported as an invalid three-grid estimate**. The script does not substitute a fabricated order of convergence or silently select the theoretical order.
 
-## 4. Richardson estimate — ASME V&V 10.1, Eq. (8)
+## 4. Richardson estimate - ASME V&V 10.1, Eq. (8)
 
 For a valid observed order \(p\), define the extrapolated response as
 
@@ -90,7 +90,7 @@ For a valid observed order \(p\), define the extrapolated response as
 
 It estimates the longitudinally refined limit in the **fixed** transverse approximation. It is not asserted to be the exact solution of the three-dimensional continuum problem.
 
-## 5. GCI — ASME V&V 10.1, Eq. (10)
+## 5. GCI - ASME V&V 10.1, Eq. (10)
 
 With \(F_s=1.25\) for a three-grid estimate as in the ASME illustration, the fine-grid GCI is
 
