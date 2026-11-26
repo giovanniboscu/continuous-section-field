@@ -1,7 +1,5 @@
 # First technical review - v0.1
 
-**Prepared for Colin Caprani | 26 November 2026**
-
 This is a working review draft, not a released PyCBA tutorial. The primary example is case B (tapered cantilever); A provides a baseline, and C/D are optional material-variation extensions.
 
 ## Suggested review sequence
