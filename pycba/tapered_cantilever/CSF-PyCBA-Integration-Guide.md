@@ -8,6 +8,13 @@ This guide is intended for a PyCBA user who has never used CSF or written a YAML
 
 For the derivations and numerical comparisons, see [THEORY.md](THEORY.md) and [VALIDATION.md](VALIDATION.md). This guide focuses on how to use the interfaces rather than on deriving the beam formulation.
 
+>[← Back to the tapered cantilever tutorial](README.md)
+>
+>The main tutorial provides an overview of the CSF–PyCBA
+>integration, including the benchmark configurations, analytical
+>reference solutions, numerical results, convergence checks,
+>and links to the theoretical and validation documentation.
+
 ## 1. Start from the physical member
 
 The selected example is a rectangular cantilever whose depth and Young's modulus both decrease linearly from the fixed end to the free end. The width is constant.
