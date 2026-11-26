@@ -108,7 +108,7 @@ From these data, PyCBA constructs and solves the structural
 equilibrium equations and calculates the corresponding
 displacements, reactions and internal forces.
 
-For the Euler–Bernoulli beam model considered in this
+For the Euler-Bernoulli beam model considered in this
 tutorial, the relevant sectional property is the flexural
 rigidity.
 
@@ -266,7 +266,7 @@ of the internal implementation of either CSF or PyCBA.
 
 
 
-# CSF–PyCBA: continuous sectional stiffness
+# CSF-PyCBA: continuous sectional stiffness
 
 **Version 0.1 - First review draft · 26 November 2026**
 
@@ -276,7 +276,7 @@ This tutorial connects Continuous Section Field (CSF), which describes physical 
 
 ## 1. Physical problem
 
-A rectangular cantilever of length 5000 mm is clamped at x = 0 and loaded by a downward 10000 N point force at x = L. Width is 200 mm, root depth is 500 mm and root Young's modulus is 210000 MPa. The analysis is linear elastic, Euler–Bernoulli, with no shear deformation or self-weight. Material is uniform within each cross-section.
+A rectangular cantilever of length 5000 mm is clamped at x = 0 and loaded by a downward 10000 N point force at x = L. Width is 200 mm, root depth is 500 mm and root Young's modulus is 210000 MPa. The analysis is linear elastic, Euler-Bernoulli, with no shear deformation or self-weight. Material is uniform within each cross-section.
 
 | Case | YAML file | Tip depth (mm) | Tip modulus (MPa) |
 |---|---|---:|---:|
