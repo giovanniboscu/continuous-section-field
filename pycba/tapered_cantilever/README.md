@@ -1,3 +1,271 @@
+
+##  Introduction and purpose
+
+###  What is Continuous Section Field (CSF)?
+
+Continuous Section Field (CSF) is an open-source library
+developed to represent the geometry and material distribution
+of structural members whose cross-section may vary along
+their longitudinal axis.
+
+The main idea is to describe the physical member independently
+of the numerical method used for its structural analysis.
+
+A CSF model defines:
+
+- The longitudinal domain of the member.
+- The geometry of the cross-section at selected reference
+  stations.
+- The polygons that compose each cross-section.
+- The material weights associated with these polygons.
+- The laws governing the longitudinal variation of geometry
+  and material weights.
+
+These data are defined in a YAML file.
+
+The reference stations are used to construct a continuous
+representation of the member. They are not finite element
+nodes and do not define a structural discretisation.
+
+Once the model has been loaded, the CSF field can be evaluated
+at any longitudinal position within its domain.
+
+Let $x$ be the longitudinal coordinate of the member and
+$L$ its total length, with $0 \leq x \leq L$.
+
+Let $\mathcal{S}(x)$ denote the cross-sectional domain at
+position $x$.
+
+The continuous geometric representation can therefore be
+expressed as:
+
+$$
+x \longmapsto \mathcal{S}(x)
+$$
+
+This means that, for a given longitudinal coordinate,
+CSF provides the corresponding cross-sectional geometry.
+
+In addition to geometry, CSF associates a dimensionless
+weight with each polygon. In the present tutorial, this
+weight is used to represent the longitudinal variation
+of Young's modulus.
+
+Let:
+
+- $E_{\mathrm{ref}}$ be a reference Young's modulus.
+- $w(x)$ be the dimensionless material weight at position $x$.
+- $E(x)$ be the local Young's modulus.
+
+The material representation adopted in this tutorial is:
+
+$$
+E(x)=E_{\mathrm{ref}}w(x)
+$$
+
+Geometry and material weights can vary independently along
+the member.
+
+CSF also provides functions for calculating sectional
+properties directly from the cross-sectional representation,
+such as area, centroid and second moments of area.
+
+These properties can be evaluated at any longitudinal
+position without defining additional reference stations
+in the YAML model.
+
+It is important to distinguish the physical representation
+from its subsequent numerical use.
+
+CSF describes the member and provides its sectional
+properties. It does not define the structural discretisation,
+boundary conditions or equilibrium equations used by PyCBA.
+
+The same CSF model can therefore be used by different
+structural analysis methods.
+
+For more information, see the
+[CSF repository](https://github.com/giovanniboscu/continuous-section-field).
+
+
+### What is PyCBA?
+
+PyCBA is an open-source Python library for the structural
+analysis of continuous beams.
+
+While CSF provides the physical representation of the
+member, PyCBA provides the numerical formulation required
+to calculate its structural response.
+
+A beam analysis requires information about:
+
+- Member lengths.
+- Material and sectional stiffness properties.
+- Boundary conditions.
+- Applied loads.
+
+From these data, PyCBA constructs and solves the structural
+equilibrium equations and calculates the corresponding
+displacements, reactions and internal forces.
+
+For the Euler–Bernoulli beam model considered in this
+tutorial, the relevant sectional property is the flexural
+rigidity.
+
+Let:
+
+- $E(x)$ be the Young's modulus at position $x$.
+- $I(x)$ be the geometric second moment of area about the
+  relevant bending axis.
+- $EI(x)$ be the corresponding flexural rigidity.
+
+For a section with a uniform Young's modulus over its
+cross-section:
+
+$$
+EI(x)=E(x)I(x)
+$$
+
+For a non-prismatic member, the flexural rigidity may
+vary along the longitudinal axis.
+
+PyCBA provides the `SectionEI` interface to represent
+this variation within a single beam span.
+
+This capability is particularly interesting in combination
+with CSF, because the sectional properties are already
+available as functions of the longitudinal coordinate.
+
+For more information, see the
+[PyCBA documentation](https://ccaprani.github.io/pycba/).
+
+
+### Why combine CSF and PyCBA?
+
+A common approach to the analysis of a member with variable
+cross-section consists of dividing the member into a number
+of segments and assigning constant sectional properties
+to each segment.
+
+The properties of each segment can, for example, be
+evaluated at its midpoint.
+
+In this approach, the continuous physical variation is
+approximated by a sequence of constant stiffness values.
+
+Increasing the number of segments generally improves
+the representation of a smooth stiffness variation, but
+also increases the size of the structural model.
+
+An alternative approach is to retain the variation of
+the sectional stiffness within each beam element.
+
+The combination of CSF and PyCBA makes this possible
+through the existing interfaces of both libraries:
+
+1. CSF defines the continuous geometry and material weights.
+
+2. CSF evaluates the sectional properties at the requested
+   longitudinal positions.
+
+3. A simple Python interface converts these properties
+   into a flexural rigidity function.
+
+4. PyCBA receives this function through its `SectionEI`
+   interface and constructs an internal polynomial
+   representation of the variable rigidity.
+
+5. PyCBA uses this representation in the structural
+   analysis.
+
+The mathematical quantity connecting the two libraries is
+therefore the flexural rigidity function:
+
+$$
+x \longmapsto EI(x)
+$$
+
+CSF does not need to know how PyCBA constructs its
+structural stiffness matrix.
+
+Similarly, PyCBA does not need to know how CSF represents
+the geometry, evaluates material weights or integrates
+the sectional properties.
+
+The connection is established without modifications
+to either library and without introducing CSF as a
+required dependency of PyCBA.
+
+
+### Purpose of this document
+
+The purpose of this document is to explain, step by step,
+how a continuous physical representation of a structural
+member can be used in a PyCBA beam analysis.
+
+A simple cantilever with a concentrated force applied
+at its free end is selected as the reference structural
+problem.
+
+Four configurations are considered:
+
+| Case | Geometry | Material |
+|---|---|---|
+| A | Constant | Constant |
+| B | Variable | Constant |
+| C | Constant | Variable |
+| D | Variable | Variable |
+
+The four configurations make it possible to study
+separately the influence of geometric variation,
+material variation and their combined effect.
+
+For each configuration, the document develops:
+
+- The mathematical description of the physical model.
+- The calculation of the geometric sectional properties.
+- The calculation of the flexural rigidity.
+- An independent analytical solution for the tip displacement.
+- The midpoint-based representation of the sectional stiffness.
+- The variable-stiffness representation using PyCBA's SectionEI.
+- The construction of the member flexibility and stiffness
+  matrices.
+- The interpretation of the convergence and accuracy results.
+
+The objective is not only to demonstrate that CSF and
+PyCBA can be used together, but also to understand how
+the representation of the sectional stiffness influences
+the accuracy of the structural solution.
+
+Particular attention is given to the comparison between
+the number of elements required by the midpoint approach
+and the accuracy obtained using the non-prismatic
+formulation available in PyCBA.
+
+The analytical reference solutions are derived independently
+of both libraries, providing a common reference for the
+numerical validation.
+
+
+###  Reading guide
+
+The following sections introduce the physical problem
+before discussing its numerical representation.
+
+All mathematical symbols, assumptions and operators are
+introduced before their use.
+
+The derivations proceed from the physical geometry and
+material description to the sectional properties, from
+the sectional properties to the flexural rigidity, and
+finally from the flexural rigidity to the structural
+equilibrium equations.
+
+The reader is not expected to have previous knowledge
+of the internal implementation of either CSF or PyCBA.
+
+
+
 # CSF–PyCBA: continuous sectional stiffness
 
 **Version 0.1 - First review draft · 26 November 2026**
