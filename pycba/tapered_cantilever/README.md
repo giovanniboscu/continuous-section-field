@@ -1,6 +1,17 @@
 
 ##  Introduction and purpose
 
+### Practical integration guide
+
+For a step-by-step introduction to CSF–PyCBA integration, see the
+[CSF–PyCBA Integration Guide](CSF-PyCBA-Integration-Guide.md).
+
+The guide explains how to create a CSF YAML model from scratch,
+extract the continuous flexural rigidity from its geometry and
+material distribution, and integrate it with PyCBA through
+the `SectionEI` interface. No prior knowledge of CSF or YAML
+is required.
+
 ###  What is Continuous Section Field (CSF)?
 
 Continuous Section Field (CSF) is an open-source library
