@@ -360,6 +360,51 @@ plot_results(sections, convergence, output)
 
 CSF longitudinal z maps to PyCBA longitudinal x. The CSF transverse y coordinate is the bending-depth direction. CSF inertia `Ix` is weighted by the dimensionless material weight w = E/E_ref; the coupling is therefore:
 
+### Coordinate systems and displacement conventions
+
+CSF and PyCBA use different coordinate conventions.
+
+CSF uses the coordinates $(X,Y,Z)$, where $X$ and $Y$
+define the cross-sectional plane and $Z$ is the
+longitudinal coordinate.
+
+PyCBA uses a two-dimensional beam model in the $(x,y)$
+plane, where $x$ is the longitudinal coordinate and
+$y$ is the transverse bending direction.
+
+The correspondence between the two coordinate systems is:
+
+| Physical direction | CSF | PyCBA |
+|---|---|---|
+| Longitudinal | $Z$ | $x$ |
+| Transverse depth | $Y$ | $y$ |
+| Transverse width | $X$ | Out of plane |
+
+Therefore:
+
+$$
+x=Z,\qquad y=Y
+$$
+
+Bending takes place in the CSF $(Z,Y)$ plane, about
+the CSF transverse $X$-axis. This explains why the
+sectional property `Ix` returned by CSF is used to
+calculate the flexural rigidity supplied to PyCBA.
+
+The transverse displacement calculated by PyCBA
+corresponds to the CSF $Y$ direction.
+
+For a member of length $L$ with its origin at the clamp,
+the normalized longitudinal coordinate is:
+
+$$
+t=\frac{x}{L}=\frac{Z}{L}
+$$
+
+The coordinate correspondence does not require any
+reversal of the physical directions.
+
+
 ```python
 props = section_properties(field.section(x))
 EI = E_ref * props['Ix']
