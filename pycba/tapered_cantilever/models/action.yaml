@@ -1,0 +1,24 @@
+# Basic CSF visualization shared by the four cantilever models.
+# Longitudinal stations and geometric dimensions are in mm.
+CSF_ACTIONS:
+  stations:
+    section_stations: [0.0, 2500.0, 5000.0]
+  actions:
+    - plot_volume_3d:
+        params:
+          title: "CSF cantilever geometry"
+          seed: w
+    - plot_section_2d:
+        stations:
+          - section_stations
+    - plot_weight:
+        output:
+          - stdout
+        params:
+          num_points: 100
+    - plot_properties:
+        output:
+          - stdout
+        properties: [A, Ix, Iy]
+        params:
+          num_points: 100
