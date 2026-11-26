@@ -8,7 +8,7 @@ The included CSVs are preserved from the CSF author’s local runs using Python 
 
 The relative error is $e=|v-v_{ref}|/|v_{ref}|$. The existing code checks sectional errors against 1e-8 and the single-element tip error against 1e-6. These are example-specific acceptance thresholds, not general certification criteria. The reference uses independent analytical geometry and material definitions, not CSF outputs.
 
-## 2. Sectional validation — case D
+## 2. Sectional validation - case D
 
 All four cases were checked at 21 equally spaced stations, including endpoints (84 stations in total). Maximum relative errors from the included CSVs:
 
@@ -35,7 +35,7 @@ Selected rows from the supplied CSV (rounded for display):
 
 The rigidity falls to 1/16 of its root value. The sectional errors are compatible with floating-point rounding at the sampled stations. This does not establish accuracy for all possible CSF geometries or material laws.
 
-## 3. Structural validation — four cases
+## 3. Structural validation - four cases
 
 | Case | Reference (mm) | Continuous (mm) | Relative error | Result |
 |---|---:|---:|---:|---|
@@ -52,7 +52,7 @@ All four use one member and `degree=12`. Displacements are positive downward mag
 
 Both approaches use the same CSF model and point load. Only the element count and representation of EI change. The midpoint model assigns scalar rigidity at each element midpoint; the continuous model builds one polynomial SectionEI per element, with the correct global coordinate offset.
 
-### Case B — geometry variation
+### Case B - geometry variation
 
 | N | Midpoint tip (mm) | Midpoint relative error | Continuous relative error |
 |---:|---:|---:|---:|
@@ -66,7 +66,7 @@ Both approaches use the same CSF model and point load. Only the element count an
 
 ![Case B convergence](img/convergence_geometry.png)
 
-### Case D — combined variation
+### Case D - combined variation
 
 | N | Midpoint tip (mm) | Midpoint relative error | Continuous relative error |
 |---:|---:|---:|---:|
