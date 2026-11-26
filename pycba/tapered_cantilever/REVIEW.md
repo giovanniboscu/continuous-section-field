@@ -1,4 +1,4 @@
-# First technical review — v0.1
+# First technical review - v0.1
 
 **Prepared for Colin Caprani | 26 November 2026**
 
