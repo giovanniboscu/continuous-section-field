@@ -100,7 +100,61 @@ The member count remains one. The CSV is named `degree_sensitivity.csv`; its ind
 
 ![Degree sensitivity](img/degree_sensitivity.png)
 
-Degree 4 is the lowest **tested** setting giving near-machine accuracy for both cases. Degree 3 was not tested. This finding is consistent with cubic and quartic EI laws; it is not evidence that four quadrature points are sufficient or that an arbitrary callable is represented exactly. Keep the original default of 12 for reproducing the supplied runs.
+
+### Interpretation of polynomial degree sensitivity
+
+Among the polynomial degrees tested, degree 4 is the lowest value that achieves near-machine-precision accuracy for both cases B and D.
+
+This result can be explained directly from the mathematical expressions of their flexural rigidity. In case B, the linear variation of the section depth produces a third-degree polynomial rigidity. In case D, the additional linear variation of Young's modulus increases the rigidity polynomial to degree four.
+
+From a mathematical point of view, degree 3 is therefore sufficient to represent the rigidity function of case B, while degree 4 is required for case D. However, degree 3 was not included in the present numerical study.
+
+Once the polynomial degree is sufficient to represent the underlying rigidity function, further increases in degree do not necessarily improve the structural solution. The remaining errors in these benchmarks are already close to the limits of floating-point arithmetic.
+
+### Generalisation to polygon-based CSF models
+
+The polynomial rigidity functions obtained in these benchmarks are particular cases of a more general mathematical property of polygon-based CSF models.
+
+When the longitudinal variation of the polygon vertices is linear and material weights are constant, the sectional properties have a well-defined algebraic structure, regardless of the complexity of the polygonal cross-section.
+
+| Sectional property | Mathematical representation |
+|---|---|
+| Area | Polynomial of degree at most 2 |
+| First moments of area | Polynomial of degree at most 3 |
+| Centroid coordinates | Rational function |
+| Second moments of area about a fixed origin | Polynomial of degree at most 4 |
+| Centroidal second moments of area | Rational function |
+| Centroidal flexural rigidity | Rational function |
+
+A rational function is the ratio of two polynomials. Polynomial functions are therefore a particular case of rational functions.
+
+This property also extends to sections composed of multiple polygons with constant material weights, provided that the polygon topology remains unchanged and the sectional properties are well defined throughout the longitudinal domain.
+
+Higher-order polynomial laws governing the vertex coordinates increase the degree of the resulting expressions but preserve their algebraic nature. Polynomial material weight laws also preserve this property, whereas arbitrary non-polynomial geometry or material variation laws may introduce more general functional behaviour.
+
+### Implications for CSF–PyCBA interoperability
+
+This mathematical structure is particularly favourable for the integration of CSF with the polynomial stiffness representation adopted by PyCBA.
+
+When the flexural rigidity is polynomial, a representation of sufficient degree can reproduce the rigidity function exactly in mathematical terms.
+
+When the flexural rigidity is rational but not polynomial, PyCBA introduces a polynomial approximation. Provided that the rigidity function has no singularities within the member domain, it can be approximated by polynomials to increasing accuracy. The required polynomial degree depends on the specific rigidity function and the numerical fitting procedure.
+
+The effectiveness observed in the present benchmarks is therefore not merely a consequence of selecting simple rectangular cross-sections. It is consistent with the broader algebraic structure of polygon-based CSF models.
+
+### Why increasing the polynomial degree is different from mesh refinement
+
+Increasing the SectionEI polynomial degree improves the representation of the longitudinal stiffness variation without increasing the number of structural elements or global nodal degrees of freedom.
+
+This is fundamentally different from the midpoint approach, where additional structural elements are introduced to represent the same continuous stiffness variation through piecewise constant values.
+
+CSF preserves the continuous physical description of the member, while PyCBA determines how that description is represented within its numerical formulation.
+
+The present results demonstrate that, for the four benchmark configurations, a single structural element can reproduce the reference tip displacement with near-machine-precision accuracy.
+
+This does not establish a universal single-element rule, nor does it constitute a quantitative assessment of computational performance. It demonstrates that longitudinal mesh refinement is not necessarily required solely to capture the variation of sectional stiffness.
+
+Finally, the polynomial degree must not be confused with the number of quadrature points used for numerical integration. The original setting of `degree=12` is retained for reproducibility of the supplied benchmark runs, rather than because such a high degree is mathematically necessary for these particular rigidity laws.
 
 ## 6. Reproduce and review
 
