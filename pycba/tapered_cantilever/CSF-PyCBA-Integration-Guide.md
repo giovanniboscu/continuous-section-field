@@ -50,8 +50,8 @@ CSF and PyCBA use different names for the longitudinal coordinate. In this examp
 | Meaning | CSF | PyCBA |
 |---|---|---|
 | Longitudinal position | `z` | `x` |
-| Transverse width coordinate | `x` in a section vertex | — |
-| Transverse depth coordinate | `y` in a section vertex | — |
+| Transverse width coordinate | `x` in a section vertex | - |
+| Transverse depth coordinate | `y` in a section vertex | - |
 
 The flexural rigidity needed here is for bending about the CSF transverse x-axis. Therefore `Ix` is the sectional second moment of area used by the adapter. The CSF vertex coordinate `x` is **not** the longitudinal coordinate used by PyCBA.
 
@@ -495,10 +495,10 @@ The example provides four configurations with the same length, root section, ref
 
 | Case | File under `models/` | Tip depth (mm) | Tip modulus (MPa) |
 |---|---|---:|---:|
-| A — constant geometry and material | `prismatic.yaml` | 500 | 210000 |
-| B — variable geometry | `variable_geometry.yaml` | 250 | 210000 |
-| C — variable material | `variable_material.yaml` | 500 | 105000 |
-| D — combined variation | `combined_variation.yaml` | 250 | 105000 |
+| A - constant geometry and material | `prismatic.yaml` | 500 | 210000 |
+| B - variable geometry | `variable_geometry.yaml` | 250 | 210000 |
+| C - variable material | `variable_material.yaml` | 500 | 105000 |
+| D - combined variation | `combined_variation.yaml` | 250 | 105000 |
 
 The same adapter functions are used for all four configurations. To run them together:
 
@@ -548,12 +548,31 @@ CSF supplies the physical information; PyCBA decides how to represent it in its 
 
 This guide follows the existing [review branch tutorial](https://github.com/giovanniboscu/continuous-section-field/tree/feature/csf-pycba/pycba/tapered_cantilever). Relative links above assume this Markdown file is placed in the `tapered_cantilever/` directory alongside `README.md`. For a reader viewing the guide elsewhere, use the following direct links:
 
-- [Tutorial README](https://github.com/giovanniboscu/continuous-section-field/blob/feature/csf-pycba/pycba/tapered_cantilever/README.md) — physical problem and execution instructions.
-- [combined_variation.yaml](https://github.com/giovanniboscu/continuous-section-field/blob/feature/csf-pycba/pycba/tapered_cantilever/models/combined_variation.yaml) — exact model used here.
-- [csf_section.py](https://github.com/giovanniboscu/continuous-section-field/blob/feature/csf-pycba/pycba/tapered_cantilever/csf_section.py) — geometry reader, property evaluation and rigidity callable.
-- [pycba_analysis.py](https://github.com/giovanniboscu/continuous-section-field/blob/feature/csf-pycba/pycba/tapered_cantilever/pycba_analysis.py) — PyCBA integration and analysis.
-- [reference_solution.py](https://github.com/giovanniboscu/continuous-section-field/blob/feature/csf-pycba/pycba/tapered_cantilever/reference_solution.py) — constants and independent reference formulas.
-- [main.py](https://github.com/giovanniboscu/continuous-section-field/blob/feature/csf-pycba/pycba/tapered_cantilever/main.py) — full benchmark execution.
-- [PyCBA documentation](https://ccaprani.github.io/pycba/) — beam analysis library.
+- [Tutorial README](https://github.com/giovanniboscu/continuous-section-field/blob/feature/csf-pycba/pycba/tapered_cantilever/README.md) - physical problem and execution instructions.
+- [combined_variation.yaml](https://github.com/giovanniboscu/continuous-section-field/blob/feature/csf-pycba/pycba/tapered_cantilever/models/combined_variation.yaml) - exact model used here.
+- [csf_section.py](https://github.com/giovanniboscu/continuous-section-field/blob/feature/csf-pycba/pycba/tapered_cantilever/csf_section.py) - geometry reader, property evaluation and rigidity callable.
+- [pycba_analysis.py](https://github.com/giovanniboscu/continuous-section-field/blob/feature/csf-pycba/pycba/tapered_cantilever/pycba_analysis.py) - PyCBA integration and analysis.
+- [reference_solution.py](https://github.com/giovanniboscu/continuous-section-field/blob/feature/csf-pycba/pycba/tapered_cantilever/reference_solution.py) - constants and independent reference formulas.
+- [main.py](https://github.com/giovanniboscu/continuous-section-field/blob/feature/csf-pycba/pycba/tapered_cantilever/main.py) - full benchmark execution.
+- [PyCBA documentation](https://ccaprani.github.io/pycba/) - beam analysis library.
 
-*Documentation status: practical companion to the review draft. Code excerpts follow the branch files inspected when preparing this guide. The example has not been independently executed as part of preparing this document; the existing validation workflow remains the authority for numerical acceptance.*
+
+### Official PyCBA documentation
+
+The integration presented in this guide relies exclusively
+on the public PyCBA API.
+
+- [SectionEI](https://ccaprani.github.io/pycba/gen/pycba.section.SectionEI.html)
+  - Definition of variable flexural rigidity along a member.
+
+- [SectionEI.add_segment()](https://ccaprani.github.io/pycba/gen/pycba.section.SectionEI.html#pycba.section.SectionEI.add_segment)
+  - Interface used to supply the CSF-derived EI(x) callable.
+
+- [BeamAnalysis](https://ccaprani.github.io/pycba/gen/pycba.analysis.BeamAnalysis.html)
+  - Structural analysis, boundary conditions, loads and results.
+
+- [Non-prismatic Elements tutorial](https://ccaprani.github.io/pycba/notebooks/nonprismatic.html)
+  - Official PyCBA tutorial on variable-stiffness members.
+
+- [Theoretical Basis](https://ccaprani.github.io/pycba/theory.html)
+  - Mathematical foundations of the non-prismatic beam formulation.
