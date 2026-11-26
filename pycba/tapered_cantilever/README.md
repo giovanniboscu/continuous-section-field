@@ -1,6 +1,6 @@
 # CSF–PyCBA: continuous sectional stiffness
 
-**Version 0.1 — First review draft · 26 November 2026**
+**Version 0.1 - First review draft · 26 November 2026**
 
 This tutorial connects Continuous Section Field (CSF), which describes physical geometry and material variation, to PyCBA 1.0.2, which performs beam analysis. Neither solver is modified; CSF is not a mandatory PyCBA dependency. CUF is not involved.
 
@@ -126,8 +126,8 @@ Each run writes `results/<case>/` with `section_validation.csv`, `convergence.cs
 
 These are preserved outputs of the original local runs, not new solver results from this review revision. The relative acceptance thresholds in the supplied code are 1e-8 for sectional properties and 1e-6 for the single-element displacement.
 
-- [THEORY.md — mathematical derivation and interface details](THEORY.md)
-- [VALIDATION.md — numerical evidence, convergence and limitations](VALIDATION.md)
+- [THEORY.md - mathematical derivation and interface details](THEORY.md)
+- [VALIDATION.md - numerical evidence, convergence and limitations](VALIDATION.md)
 
 ## 6. Scope
 
@@ -138,7 +138,7 @@ The tutorial demonstrates independent physical modelling and beam analysis for f
 See [REVIEW.md](REVIEW.md) for the review scope, provenance and open questions.
 
 
-## Quick Start — Full reproducibility
+## Quick Start - Full reproducibility
 
 The following commands reproduce all four benchmarks from a fresh environment.
 
