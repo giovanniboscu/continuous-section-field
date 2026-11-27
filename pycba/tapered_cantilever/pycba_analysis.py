@@ -11,7 +11,6 @@ def solve_beam(lengths, rigidities, load):
     # PyCBA restraint convention:
     # -1 = fully restrained degree of freedom
     #  0 = free degree of freedom
-    # +k = elastic spring of stiffness k (not used here)
     #
     # A beam with n elements has n+1 nodes. Both degrees of freedom of the
     # first node are restrained (clamped end); all other nodes are free.
