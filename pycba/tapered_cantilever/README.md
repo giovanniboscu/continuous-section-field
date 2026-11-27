@@ -1,16 +1,16 @@
 # Analysis of Non-Prismatic Beams with Variable Geometry and Material Properties Using PyCBA and CSF
 ##  Introduction and purpose
 
-### Practical integration guide
-
-For a step-by-step introduction to CSF–PyCBA integration, see the
-[CSF–PyCBA Integration Guide](CSF-PyCBA-Integration-Guide.md).
-
-The guide explains how to create a CSF YAML model from scratch,
-extract the continuous flexural rigidity from its geometry and
-material distribution, and integrate it with PyCBA through
-the `SectionEI` interface. No prior knowledge of CSF or YAML
-is required.
+>### Short integration guide
+>
+>For a step-by-step introduction to CSF–PyCBA integration, see the
+>[CSF–PyCBA Integration Guide](CSF-PyCBA-Integration-Guide.md).
+>
+>The guide explains how to create a CSF YAML model from scratch,
+>extract the continuous flexural rigidity from its geometry and
+>material distribution, and integrate it with PyCBA through
+>the `SectionEI` interface. No prior knowledge of CSF or YAML
+>is required.
 
 ###  What is Continuous Section Field (CSF)?
 
