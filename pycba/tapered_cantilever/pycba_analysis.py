@@ -16,6 +16,9 @@ def solve_beam(lengths, rigidities, load):
     # A beam with n elements has n+1 nodes. Both degrees of freedom of the
     # first node are restrained (clamped end); all other nodes are free.
     restraints = [-1, -1] + [0, 0]*n
+    # GAv=None neglects shear deformation, consistently
+    # with the Euler-Bernoulli beam theory adopted in
+    # the analytical reference solutions.    
     beam = cba.BeamAnalysis(lengths, rigidities, R=restraints, GAv=None)
 
     # add_pl(member, load, a):
