@@ -313,6 +313,104 @@ A rectangular cantilever of length 5000 mm is clamped at x = 0 and loaded by a d
 
 Case B is the initial tapered-member tutorial; C and D extend it without changing the analysis workflow. Both depth and modulus vary linearly where applicable.
 
+
+### 1.1 Example of a CSF physical model — Case D
+
+Case D illustrates the CSF representation of a member with
+both variable geometry and variable material properties.
+
+The model is defined in
+[`models/combined_variation.yaml`](models/combined_variation.yaml).
+
+```yaml
+CSF:
+  sections:
+    S0:
+      z: 0.0
+      polygons:
+        - name: solid
+          weight: 1.0
+          vertices:
+            - [-100.0, -250.0]
+            - [100.0, -250.0]
+            - [100.0, 250.0]
+            - [-100.0, 250.0]
+    S1:
+      z: 5000.0
+      polygons:
+        - name: solid
+          weight: 0.5
+          vertices:
+            - [-100.0, -125.0]
+            - [100.0, -125.0]
+            - [100.0, 125.0]
+            - [-100.0, 125.0]
+  weight_laws:
+    - "solid,solid: w0 + (w1-w0)*(z/L)"
+```
+
+The two reference sections, `S0` and `S1`, define the
+geometry and material weights at the member endpoints.
+
+| Parameter | S0 | S1 |
+|---|---:|---:|
+| Longitudinal position (mm) | 0 | 5000 |
+| Section width (mm) | 200 | 200 |
+| Section depth (mm) | 500 | 250 |
+| Material weight | 1.0 | 0.5 |
+| Young's modulus (MPa) | 210000 | 105000 |
+
+Linear interpolation of the corresponding polygon vertices
+defines the continuous geometry:
+
+$$
+b(z)=200,\qquad
+h(z)=500\left(1-\frac{z}{2L}\right)
+$$
+
+The `weight_laws` entry defines the longitudinal variation
+of the material weight:
+
+$$
+w(z)=w_0+(w_1-w_0)\frac{z}{L}
+=1-\frac{z}{2L}
+$$
+
+With $E(z)=E_{\mathrm{ref}}w(z)$, the resulting flexural
+rigidity is:
+
+$$
+EI(z)=E_{\mathrm{ref}}\frac{bh_0^3}{12}
+\left(1-\frac{z}{2L}\right)^4
+$$
+
+No shear weight law is required for the present
+Euler–Bernoulli analysis.
+
+CSF evaluates the geometry, material weights and sectional
+properties at any longitudinal position. The resulting
+rigidity function is supplied to PyCBA through `SectionEI`.
+
+The CSF reference sections are not finite element nodes.
+The YAML describes the physical member independently of
+loads, boundary conditions and structural discretisation.
+
+#### One implementation, four physical models
+
+**The same CSF–PyCBA integration code is used for all four
+benchmark configurations. Only the input CSF YAML model changes.**
+
+No modifications are required to the sectional property
+evaluation, the construction of the rigidity function,
+the PyCBA interface or the structural analysis procedure.
+
+Only the independent analytical reference solution used
+for validation is case-specific.
+
+Geometry and material variations are properties of the
+physical input model, not additional cases to be implemented
+in the structural solver.
+
 ## 2. Run the example
 
 Extract the entire `tapered_cantilever/` directory into the CSF repository under `pycba/` (or another location of your choice). From the CSF repository root, activate your existing virtual environment and install the local package:
