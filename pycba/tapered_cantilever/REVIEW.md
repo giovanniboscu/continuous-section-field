@@ -18,9 +18,13 @@ This is a working review draft, not a released PyCBA tutorial. The primary examp
 
 ## Evidence and reproducibility
 
-The included results are from the original local executions with Python 3.11 and PyCBA 1.0.2. All 24 result files (six per case) are preserved, with the degree CSV renamed. The exact CSF commit and full dependency versions of the original runs were not supplied; record these before publication. The review revision changes naming, independent closed-form checks and documentation/figure generation, not the beam solution or CSF model code. The revised end-to-end solver run is pending local confirmation. Last-bit differences between environments are expected.
+The included results are from local executions with Python 3.11 and PyCBA 1.0.2. All 24 result files (six per case) are preserved, with the degree CSV renamed. The exact CSF commit and full dependency versions should be recorded before publication.
 
-The current tests concern polynomial rigidity laws, a rectangular section with uniform modulus within each section, and a tip-loaded Euler–Bernoulli cantilever. Direct off-sample checks of the fitted SectionEI function, non-polynomial laws and other load cases are possible future extensions, not completed tests.
+During the convergence study, a small increase in numerical error was observed when refining the continuous-stiffness model. This behaviour was reproduced through an independent Euler–Bernoulli numerical experiment, without either CSF or PyCBA. Repeating the experiment with 32 and 50 decimal digits of precision reduced the error dramatically, providing strong evidence that the observed behaviour is associated with finite-precision arithmetic and matrix conditioning rather than with the continuous representation of sectional rigidity.
+
+This observation is therefore not considered a limitation of the integration. The specific numerical mechanism within PyCBA remains open to discussion with its maintainer.
+
+The review revision changes naming, independent closed-form checks, and documentation and figure generation, without modifying the beam solution or CSF model code. Last-bit differences between computing environments are expected.
 
 ## Version notes
 
