@@ -146,6 +146,30 @@ Notice that `weight_laws` is aligned with `sections`, not nested under `S1`. It 
 
 The string `solid,solid: w0 + (w1-w0)*(z/L)` refers to the polygon named `solid` at S0 and the corresponding polygon named `solid` at S1. In this model `w0 = 1.0`, `w1 = 0.5`, `L = 5000 mm`, and the longitudinal origin is zero. At any position in this member the expression gives the linearly varying weight.
 
+
+>Note that the `weight_laws` entry is not strictly necessary
+>in this example. When no explicit weight variation law is
+>provided, CSF assumes linear interpolation between the
+>material weights defined at consecutive reference stations.
+>
+>Since Young's modulus is represented here by the material
+>weight and varies linearly along the member, the entire
+>`weight_laws` block could be omitted without changing the
+>physical model or its numerical results.
+>
+>The explicit expression is included for demonstration
+>purposes, to illustrate how CSF allows users to define
+>custom longitudinal material variation laws directly
+>in the YAML model.
+>
+>This capability is particularly useful when the material
+>variation is non-linear and cannot be represented by the
+>default linear interpolation.
+>For further details on custom material variation laws,
+>default weight interpolation and longitudinally varying
+>homogenization, see the
+>[CSF – Longitudinally Varying Homogenization User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
+
 ### 2.5 What happens between S0 and S1?
 
 The two sections are reference stations used to construct the physical geometry; they are not finite element nodes. For this model CSF interpolates corresponding vertex coordinates linearly along the longitudinal axis, independently of the specified material-weight law.
