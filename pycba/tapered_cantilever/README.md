@@ -307,10 +307,20 @@ Case B is the initial tapered-member tutorial; C and D extend it without changin
 
 Extract the entire `tapered_cantilever/` directory into the CSF repository under `pycba/` (or another location of your choice). From the CSF repository root, activate your existing virtual environment and install the local package:
 
+
+For a new local checkout of the review branch:
+
 ```bash
+git clone --branch feature/csf-pycba https://github.com/giovanniboscu/continuous-section-field.git
+cd continuous-section-field
+python3 -m venv .venv
+source .venv/bin/activate
 python3 -m pip install -e .
 cd pycba/tapered_cantilever
 python3 -m pip install -r requirements.txt
+```
+
+```bash
 python3 -c "from pycba import SectionEI; print(SectionEI)"
 python3 main.py --help
 python3 main.py --case prismatic
