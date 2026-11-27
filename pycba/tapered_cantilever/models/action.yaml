@@ -18,7 +18,6 @@ CSF_ACTIONS:
           num_points: 100
     - section_selected_analysis:
         stations: section_stations
-      - section_selected_analysis:
         properties: [A, Cx, Cy, Ix, Iy, Ixy, Ip, I1, I2, rx, ry, Wx, Wy,J_s_vroark, J_s_vroark_fidelity]
     - plot_properties:
         output:
