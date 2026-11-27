@@ -451,7 +451,22 @@ Each run writes `results/<case>/` with `section_validation.csv`, `convergence.cs
 | C | 1.103698175 | 1.103698175 | 6.035e-16 |
 | D | 1.904761905 | 1.904761905 | 1.515e-15 |
 
-These are preserved outputs of the original local runs, not new solver results from this review revision. The relative acceptance thresholds in the supplied code are 1e-8 for sectional properties and 1e-6 for the single-element displacement.
+For all four configurations, the continuous stiffness
+representation achieves near-machine-precision agreement
+with the analytical reference solutions using a single
+beam element, including the case of simultaneous geometry
+and material variation.
+
+The relative errors range from approximately 1e-16 to 1e-15,
+well below the acceptance thresholds implemented in the code:
+1e-8 for sectional properties and 1e-6 for the single-element
+tip displacement.
+
+The reported values are preserved from the original local
+runs; no new solver executions were performed for this
+documentation revision.
+
+
 
 - [THEORY.md - mathematical derivation and interface details](THEORY.md)
 - [VALIDATION.md - numerical evidence, convergence and limitations](VALIDATION.md)
