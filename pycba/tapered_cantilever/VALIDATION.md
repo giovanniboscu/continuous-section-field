@@ -86,6 +86,8 @@ The observed order $p=\log_2(e_N/e_{2N})$ tends to two for both midpoint studies
 
 The continuous results do not improve monotonically with refinement; at N=64 errors remain below 3e-10. Accumulated rounding and matrix conditioning are plausible explanations, not demonstrated causes. No condition-number or runtime measurements were provided. The data establish accuracy for these problems, not a quantified speedup or a universal one-element rule.
 
+(*) A preliminary independent Euler–Bernoulli numerical study, performed without either CSF or PyCBA, reproduces the same error growth under element refinement. The results suggest that the phenomenon is associated with the increasing ill-conditioning of the global stiffness matrix rather than with the continuous representation of sectional rigidity. Further investigation within PyCBA is needed to confirm this interpretation.
+
 ## 5. SectionEI degree sensitivity
 
 The member count remains one. The CSV is named `degree_sensitivity.csv`; its independent variable is `degree`, which controls polynomial fitting as well as integration-related metadata in the published implementation (see [Theory](THEORY.md)).
