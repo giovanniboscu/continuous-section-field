@@ -28,7 +28,9 @@ A CSF model defines:
 - The geometry of the cross-section at selected reference
   stations.
 - The polygons that compose each cross-section.
-- The material weights associated with these polygons.
+- The material weights associated with these polygons,
+  including automatic handling of nested material domains
+  based on the cross-sectional topology.
 - The laws governing the longitudinal variation of geometry
   and material weights.
 
