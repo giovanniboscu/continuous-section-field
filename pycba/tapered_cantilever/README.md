@@ -1,6 +1,8 @@
 # Analysis of Non-Prismatic Beams with Variable Geometry and Material Properties Using PyCBA and CSF
 ##  Introduction and purpose
 
+**Version 0.1 - First review draft · 27 November 2026**
+
 >### Short integration guide
 >
 >For a step-by-step introduction to CSF–PyCBA integration, see the
@@ -282,7 +284,7 @@ of the internal implementation of either CSF or PyCBA.
 
 # CSF-PyCBA: continuous sectional stiffness
 
-**Version 0.1 - First review draft · 26 November 2026**
+
 
 This tutorial connects Continuous Section Field (CSF), which describes physical geometry and material variation, to PyCBA 1.0.2, which performs beam analysis. Neither solver is modified; CSF is not a mandatory PyCBA dependency. CUF is not involved.
 
