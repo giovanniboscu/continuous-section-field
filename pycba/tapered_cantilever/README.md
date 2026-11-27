@@ -36,7 +36,7 @@ A CSF model defines:
 - The laws governing the longitudinal variation of geometry
   and material weights.
 
-These data are defined in a YAML file.
+These data are defined in a YAML file ([CSF Fundamentals](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md) and [CSF – Longitudinally Varying Homogenization: User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md))
 
 The reference stations are used to construct a continuous
 representation of the member. They are not finite element
