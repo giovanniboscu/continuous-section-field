@@ -1,302 +1,46 @@
 # Analysis of Non-Prismatic Beams with Variable Geometry and Material Properties Using PyCBA and CSF
-##  Introduction and purpose
 
 **Version 0.1 - First review draft · 27 November 2026**
 
->### Short integration guide
->
->For a step-by-step introduction to CSF–PyCBA integration, see the
->[CSF–PyCBA Integration Guide](CSF-PyCBA-Integration-Guide.md).
->
->The guide explains how to create a CSF YAML model from scratch,
->extract the continuous flexural rigidity from its geometry and
->material distribution, and integrate it with PyCBA through
->the `SectionEI` interface. No prior knowledge of CSF or YAML
->is required.
+## Introduction and purpose
 
-###  What is Continuous Section Field (CSF)?
+This tutorial combines Continuous Section Field (CSF) and PyCBA 1.0.2 to analyse beams with longitudinally varying geometry and material properties. Neither library is modified, CSF is not a mandatory PyCBA dependency, and CUF is not involved.
 
-Continuous Section Field (CSF) is an open-source library
-developed to represent the geometry and material distribution
-of structural members whose cross-section may vary along
-their longitudinal axis.
+> **Short integration guide:** The [CSF–PyCBA Integration Guide](CSF-PyCBA-Integration-Guide.md) explains how to create a CSF YAML model from scratch and connect it to PyCBA through `SectionEI`. No prior knowledge of CSF or YAML is required.
 
-The main idea is to describe the physical member independently
-of the numerical method used for its structural analysis.
+### What is Continuous Section Field (CSF)?
 
-A CSF model defines:
+[CSF](https://github.com/giovanniboscu/continuous-section-field) is an open-source library for describing the geometry and material distribution of structural members independently of the analysis method. A YAML model defines:
 
-- The longitudinal domain of the member.
-- The geometry of the cross-section at selected reference
-  stations.
-- The polygons that compose each cross-section.
-- The material weights associated with these polygons,
-  including automatic handling of nested material domains
-  based on the cross-sectional topology.
-- The laws governing the longitudinal variation of geometry
-  and material weights.
+- The longitudinal domain and reference sections.
+- The polygons forming each cross-section and their material weights, including automatic handling of nested material domains based on cross-sectional topology.
+- The laws governing longitudinal geometry and material variation.
 
-These data are defined in a YAML file ([CSF Fundamentals](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md) and [CSF – Longitudinally Varying Homogenization: User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md))
+CSF evaluates the cross-sectional domain $\mathcal{S}(x)$ and its sectional properties (area, centroid and second moments of area) at any position $x$ along the member. Reference sections are not finite element nodes.
 
-The reference stations are used to construct a continuous
-representation of the member. They are not finite element
-nodes and do not define a structural discretisation.
-
-Once the model has been loaded, the CSF field can be evaluated
-at any longitudinal position within its domain.
-
-Let $x$ be the longitudinal coordinate of the member and
-$L$ its total length, with $0 \leq x \leq L$.
-
-Let $\mathcal{S}(x)$ denote the cross-sectional domain at
-position $x$.
-
-The continuous geometric representation can therefore be
-expressed as:
-
-$$
-x \longmapsto \mathcal{S}(x)
-$$
-
-This means that, for a given longitudinal coordinate, CSF provides the corresponding cross-sectional geometry, material distribution and associated sectional properties.
-
-CSF associates a dimensionless weight with each polygon.
-Despite its name, the term `weight` does not represent
-physical weight, mass or material density.
-
-It is a dimensionless weighting coefficient used in
-the calculation of homogenized sectional properties.
-
-In the present tutorial, this coefficient represents
-the ratio between the local Young's modulus and a
-reference Young's modulus, allowing material stiffness
-to vary along the member.
-
-
->For more information on material distribution, nested material
->domains and longitudinally varying homogenization, see the
->[CSF – Longitudinally Varying Homogenization User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
-
-Let:
-
-- $E_{\mathrm{ref}}$ be a reference Young's modulus.
-- $w(x)$ be the dimensionless material weight at position $x$.
-- $E(x)$ be the local Young's modulus.
-
-The material representation adopted in this tutorial is:
+The dimensionless polygon `weight` is a homogenization coefficient, not physical weight, mass or density. In this tutorial it represents the ratio between the local Young's modulus and its reference value:
 
 $$
 E(x)=E_{\mathrm{ref}}w(x)
 $$
 
-Geometry and material weights can vary independently along
-the member.
+Geometry and material weights can vary independently.
 
-CSF also provides functions for calculating sectional
-properties directly from the cross-sectional representation,
-such as area, centroid and second moments of area.
-
-These properties can be evaluated at any longitudinal
-position without defining additional reference stations
-in the YAML model.
-
-It is important to distinguish the physical representation
-from its subsequent numerical use.
-
-CSF describes the member and provides its sectional
-properties. It does not define the structural discretisation,
-boundary conditions or equilibrium equations used by PyCBA.
-
-The same CSF model can therefore be used by different
-structural analysis methods.
-
-For more information, see the
-[CSF repository](https://github.com/giovanniboscu/continuous-section-field).
-
+See [CSF Fundamentals](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSF_Fundamentals.md) and the [CSF – Longitudinally Varying Homogenization User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
 
 ### What is PyCBA?
 
-PyCBA is an open-source Python library for the structural
-analysis of continuous beams.
+[PyCBA](https://ccaprani.github.io/pycba/) is an open-source Python library for continuous beam analysis. Given member lengths, sectional stiffnesses, loads and boundary conditions, it calculates displacements, reactions and internal forces.
 
-While CSF provides the physical representation of the
-member, PyCBA provides the numerical formulation required
-to calculate its structural response.
-
-A beam analysis requires information about:
-
-- Member lengths.
-- Material and sectional stiffness properties.
-- Boundary conditions.
-- Applied loads.
-
-From these data, PyCBA constructs and solves the structural
-equilibrium equations and calculates the corresponding
-displacements, reactions and internal forces.
-
-For the Euler-Bernoulli beam model considered in this
-tutorial, the relevant sectional property is the flexural
-rigidity.
-
-Let:
-
-- $E(x)$ be the Young's modulus at position $x$.
-- $I(x)$ be the geometric second moment of area about the
-  relevant bending axis.
-- $EI(x)$ be the corresponding flexural rigidity.
-
-For a section with a uniform Young's modulus over its
-cross-section:
-
-$$
-EI(x)=E(x)I(x)
-$$
-
-For a non-prismatic member, the flexural rigidity may
-vary along the longitudinal axis.
-
-PyCBA provides the `SectionEI` interface to represent
-this variation within a single beam span.
-
-This capability is particularly interesting in combination
-with CSF, because the sectional properties are already
-available as functions of the longitudinal coordinate.
-
-For more information, see the
-[PyCBA documentation](https://ccaprani.github.io/pycba/).
-
+For the Euler–Bernoulli model considered here, with Young's modulus uniform within each cross-section, the relevant stiffness is $EI(x)=E(x)I(x)$, where $I(x)$ is the geometric second moment of area about the bending axis. The `SectionEI` interface supports variable flexural rigidity within a beam span.
 
 ### Why combine CSF and PyCBA?
 
-A common approach to the analysis of a member with variable
-cross-section consists of dividing the member into a number
-of segments and assigning constant sectional properties
-to each segment.
+A conventional midpoint approach divides a variable-section member into elements with constant stiffness. Refinement improves this approximation but increases the size of the structural model.
 
-The properties of each segment can, for example, be
-evaluated at its midpoint.
+Alternatively, the CSF–PyCBA interface evaluates the CSF sectional properties through a Python callable, $x\mapsto EI(x)$. PyCBA constructs an internal polynomial representation of this function and uses it in the structural analysis, retaining stiffness variation within each element.
 
-In this approach, the continuous physical variation is
-approximated by a sequence of constant stiffness values.
-
-Increasing the number of segments generally improves
-the representation of a smooth stiffness variation, but
-also increases the size of the structural model.
-
-An alternative approach is to retain the variation of
-the sectional stiffness within each beam element.
-
-The combination of CSF and PyCBA makes this possible
-through the existing interfaces of both libraries:
-
-1. CSF defines the continuous geometry and material weights.
-
-2. CSF evaluates the sectional properties at the requested
-   longitudinal positions.
-
-3. A simple Python interface converts these properties
-   into a flexural rigidity function.
-
-4. PyCBA receives this function through its `SectionEI`
-   interface and constructs an internal polynomial
-   representation of the variable rigidity.
-
-5. PyCBA uses this representation in the structural
-   analysis.
-
-The mathematical quantity connecting the two libraries is
-therefore the flexural rigidity function:
-
-$$
-x \longmapsto EI(x)
-$$
-
-CSF does not need to know how PyCBA constructs its
-structural stiffness matrix.
-
-Similarly, PyCBA does not need to know how CSF represents
-the geometry, evaluates material weights or integrates
-the sectional properties.
-
-The connection is established without modifications
-to either library and without introducing CSF as a
-required dependency of PyCBA.
-
-
-### Purpose of this document
-
-The purpose of this document is to explain, step by step,
-how a continuous physical representation of a structural
-member can be used in a PyCBA beam analysis.
-
-A simple cantilever with a concentrated force applied
-at its free end is selected as the reference structural
-problem.
-
-Four configurations are considered:
-
-| Case | Geometry | Material |
-|---|---|---|
-| A | Constant | Constant |
-| B | Variable | Constant |
-| C | Constant | Variable |
-| D | Variable | Variable |
-
-The four configurations make it possible to study
-separately the influence of geometric variation,
-material variation and their combined effect.
-
-For each configuration, the document develops:
-
-- The mathematical description of the physical model.
-- The calculation of the geometric sectional properties.
-- The calculation of the flexural rigidity.
-- An independent analytical solution for the tip displacement.
-- The midpoint-based representation of the sectional stiffness.
-- The variable-stiffness representation using PyCBA's SectionEI.
-- The construction of the member flexibility and stiffness
-  matrices.
-- The interpretation of the convergence and accuracy results.
-
-The objective is not only to demonstrate that CSF and
-PyCBA can be used together, but also to understand how
-the representation of the sectional stiffness influences
-the accuracy of the structural solution.
-
-Particular attention is given to the comparison between
-the number of elements required by the midpoint approach
-and the accuracy obtained using the non-prismatic
-formulation available in PyCBA.
-
-The analytical reference solutions are derived independently
-of both libraries, providing a common reference for the
-numerical validation.
-
-
-###  Reading guide
-
-The following sections introduce the physical problem
-before discussing its numerical representation.
-
-All mathematical symbols, assumptions and operators are
-introduced before their use.
-
-The derivations proceed from the physical geometry and
-material description to the sectional properties, from
-the sectional properties to the flexural rigidity, and
-finally from the flexural rigidity to the structural
-equilibrium equations.
-
-The reader is not expected to have previous knowledge
-of the internal implementation of either CSF or PyCBA.
-
-
-
-# PyCBA-CSF: continuous sectional stiffness
-
-
-
-This tutorial connects Continuous Section Field (CSF), which describes physical geometry and material variation, to PyCBA 1.0.2, which performs beam analysis. Neither solver is modified; CSF is not a mandatory PyCBA dependency. CUF is not involved.
+The four cantilever benchmarks below isolate geometry variation, material variation and their combined effect. Both approaches are compared against independent analytical reference solutions. The [theory](THEORY.md) and [numerical validation](VALIDATION.md) documents develop the mathematical formulation, flexibility and stiffness matrices, convergence and accuracy in detail.
 
 ![Four cantilever configurations](img/models.png)
 
@@ -314,7 +58,7 @@ A rectangular cantilever of length 5000 mm is clamped at x = 0 and loaded by a d
 Case B is the initial tapered-member tutorial; C and D extend it without changing the analysis workflow. Both depth and modulus vary linearly where applicable.
 
 
-### 1.1 Example of a CSF physical model — Case D
+### 1.1 Example of a CSF physical model - Case D
 
 Case D illustrates the CSF representation of a member with
 both variable geometry and variable material properties.
@@ -387,36 +131,28 @@ $$
 No shear weight law is required for the present
 Euler–Bernoulli analysis.
 
-CSF evaluates the geometry, material weights and sectional
-properties at any longitudinal position. The resulting
-rigidity function is supplied to PyCBA through `SectionEI`.
+The integration code converts the CSF sectional properties
+into a flexural rigidity function for PyCBA’s `SectionEI` interface.
 
-The CSF reference sections are not finite element nodes.
-The YAML describes the physical member independently of
-loads, boundary conditions and structural discretisation.
+**All four benchmarks use the same CSF–PyCBA integration
+code and analysis procedure. Only the input YAML model changes.**
+The independent analytical references are case-specific and used only for validation.
 
-#### One implementation, four physical models
+> **Note:** `weight_laws` is optional in this example, as CSF
+> interpolates material weights linearly by default.
+> The explicit law is included to demonstrate how custom,
+> including non-linear, material variations can be defined
+> directly in the YAML model.
+>
+> See the [CSF – Longitudinally Varying Homogenization User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
 
-**The same CSF–PyCBA integration code is used for all four
-benchmark configurations. Only the input CSF YAML model changes.**
+## 2. Run and reproduce the example
 
-No modifications are required to the sectional property
-evaluation, the construction of the rigidity function,
-the PyCBA interface or the structural analysis procedure.
+**Requirements:** Git and Python 3.11 (the tested version). The review branch uses PyCBA 1.0.2.
 
-Only the independent analytical reference solution used
-for validation is case-specific.
+### Installation
 
-Geometry and material variations are properties of the
-physical input model, not additional cases to be implemented
-in the structural solver.
-
-## 2. Run the example
-
-Extract the entire `tapered_cantilever/` directory into the CSF repository under `pycba/` (or another location of your choice). From the CSF repository root, activate your existing virtual environment and install the local package:
-
-
-For a new local checkout of the review branch:
+For a fresh local checkout:
 
 ```bash
 git clone --branch feature/csf-pycba https://github.com/giovanniboscu/continuous-section-field.git
@@ -426,41 +162,57 @@ source .venv/bin/activate
 python3 -m pip install -e .
 cd pycba/tapered_cantilever
 python3 -m pip install -r requirements.txt
+python3 -m pip check
+python3 -c "from pycba import SectionEI; print(SectionEI)"
 ```
 
+For an existing checkout or an extracted tutorial directory, activate the existing environment and adjust the paths as necessary.
+
+### Visualize the physical models (optional)
+
+From `tapered_cantilever/`, use the shared [action file](models/action.yaml):
+
 ```bash
-python3 -c "from pycba import SectionEI; print(SectionEI)"
+csf-actions models/prismatic.yaml models/action.yaml
+csf-actions models/variable_geometry.yaml models/action.yaml
+csf-actions models/variable_material.yaml models/action.yaml
+csf-actions models/combined_variation.yaml models/action.yaml
+```
+
+The actions display the 3D geometry, sections at z = 0, 2500 and 5000 mm, material weights and weighted sectional properties A, Ix and Iy. These visualizations use CSF alone. See the [CSF action syntax](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md).
+
+### Run the benchmarks
+
+```bash
 python3 main.py --help
+python3 main.py --case all
+```
+
+Alternatively, run individual configurations:
+
+```bash
 python3 main.py --case prismatic
 python3 main.py --case variable_geometry
 python3 main.py --case variable_material
 python3 main.py --case combined_variation
-# Or run every case:
-python3 main.py --case all
 ```
 
-Adjust the directory path if the example is stored elsewhere. The reported local tests used Python 3.11 and PyCBA 1.0.2. Record the CSF Git revision and dependency versions when preparing the final shared tutorial:
+### Regenerate documentation figures
+
+```bash
+python3 generate_doc_figures.py
+```
+
+Numerical results are stored in `results/` and documentation figures in `img/`.
+
+### Record the execution environment
 
 ```bash
 git rev-parse HEAD
-python3 -m pip show pycba csfpy
+python3 --version
+python3 -m pip show csfpy pycba
 python3 -m pip freeze
 ```
-
-### Visualize the physical models with CSF (Optional)
-
-After installing the local CSF package, and before running a structural analysis, inspect any of the four physical models using the same [action file](models/action.yaml). From the `tapered_cantilever/` directory with the virtual environment active:
-
-```bash
-csf-actions models/combined_variation.yaml models/action.yaml
-
-csf-actions models/prismatic.yaml models/action.yaml
-csf-actions models/variable_geometry.yaml models/action.yaml
-csf-actions models/variable_material.yaml models/action.yaml
-
-```
-
-The actions display the 3D geometry, the sections at z = 0, 2500 and 5000 mm, the longitudinal material weight, and the sectional properties A, Ix and Iy. The weight is dimensionless, w = E/E_ref; the plotted sectional properties are weighted, not necessarily purely geometric. These visualizations use CSF alone and require no PyCBA analysis. The action file follows the [CSF action syntax](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md).
 
 ## 3. Read the code in execution order
 
@@ -494,21 +246,9 @@ plot_results(sections, convergence, output)
 
 ## 4. The coupling in a few lines
 
-CSF longitudinal z maps to PyCBA longitudinal x. The CSF transverse y coordinate is the bending-depth direction. CSF inertia `Ix` is weighted by the dimensionless material weight w = E/E_ref; the coupling is therefore:
-
 ### Coordinate systems and displacement conventions
 
-CSF and PyCBA use different coordinate conventions.
-
-CSF uses the coordinates $(X,Y,Z)$, where $X$ and $Y$
-define the cross-sectional plane and $Z$ is the
-longitudinal coordinate.
-
-PyCBA uses a two-dimensional beam model in the $(x,y)$
-plane, where $x$ is the longitudinal coordinate and
-$y$ is the transverse bending direction.
-
-The correspondence between the two coordinate systems is:
+CSF uses $(X,Y,Z)$, with $Z$ longitudinal; PyCBA uses $(x,y)$ in the bending plane.
 
 | Physical direction | CSF | PyCBA |
 |---|---|---|
@@ -516,30 +256,7 @@ The correspondence between the two coordinate systems is:
 | Transverse depth | $Y$ | $y$ |
 | Transverse width | $X$ | Out of plane |
 
-Therefore:
-
-$$
-x=Z,\qquad y=Y
-$$
-
-Bending takes place in the CSF $(Z,Y)$ plane, about
-the CSF transverse $X$-axis. This explains why the
-sectional property `Ix` returned by CSF is used to
-calculate the flexural rigidity supplied to PyCBA.
-
-The transverse displacement calculated by PyCBA
-corresponds to the CSF $Y$ direction.
-
-For a member of length $L$ with its origin at the clamp,
-the normalized longitudinal coordinate is:
-
-$$
-t=\frac{x}{L}=\frac{Z}{L}
-$$
-
-The coordinate correspondence does not require any
-reversal of the physical directions.
-
+Thus $x=Z$, $y=Y$ and $t=x/L=Z/L$. No reversal of physical directions is required. Bending occurs about the CSF $X$-axis, so the weighted centroidal inertia `Ix` is used:
 
 ```python
 props = section_properties(field.section(x))
@@ -564,7 +281,7 @@ The midpoint comparison instead assigns one scalar EI per element. Neither appro
 
 ## 5. Outputs and results
 
-Each run writes `results/<case>/` with `section_validation.csv`, `convergence.csv`, `degree_sensitivity.csv`, `summary.csv`, `rigidity.png` and `convergence.png`. The documentation figures in `img/` are separate, figures generated from the included CSVs and analytical laws. Rebuild them after running the cases with `python3 generate_doc_figures.py`.
+Each run writes `results/<case>/` with `section_validation.csv`, `convergence.csv`, `degree_sensitivity.csv`, `summary.csv`, `rigidity.png` and `convergence.png`. Documentation figures in `img/` are generated separately from the CSVs and analytical laws, as described in Section 2.
 
 | Case | Reference tip (mm) | Continuous tip (mm) | Relative error |
 |---|---:|---:|---:|
@@ -600,68 +317,3 @@ The tutorial demonstrates independent physical modelling and beam analysis for f
 ## 7. First review
 
 See [REVIEW.md](REVIEW.md) for the review scope, provenance and open questions.
-
-
-## Quick Start - Full reproducibility
-
-The following commands reproduce all four benchmarks from a fresh environment.
-
-**Requirements:** Git and Python 3.11 (the tested Python version).
-
-### 1. Clone the repository and prepare the environment
-
-```bash
-git clone https://github.com/giovanniboscu/continuous-section-field.git
-cd continuous-section-field
-
-python3 -m venv venv
-source venv/bin/activate
-
-python3 -m pip install -e .
-python3 -m pip install pycba==1.0.2
-
-cd pycba/tapered_cantilever
-python3 -m pip check
-```
-
-### 2. Visualize the physical model (optional)
-
-```bash
-csf-actions models/combined_variation.yaml models/action.yaml
-```
-
-### 3. Run all four benchmarks
-
-```bash
-python3 main.py --case all
-```
-
-Expected results:
-
-| Case | Reference displacement (mm) |
-|---|---:|
-| Prismatic | 0.952380952 |
-| Variable geometry | 1.557649841 |
-| Variable material | 1.103698175 |
-| Combined variation | 1.904761905 |
-
-All four cases should pass the numerical validation checks. Relative errors may vary slightly across computing environments.
-
-### 4. Regenerate the documentation figures
-
-```bash
-python3 generate_doc_figures.py
-```
-
-Numerical results are stored in `results/`, and documentation figures are stored in `img/`.
-
-### 5. Record the execution environment
-
-```bash
-git rev-parse HEAD
-python3 --version
-python3 -m pip show csfpy pycba
-python3 -m pip freeze
-```
-
-For the mathematical derivation and detailed numerical validation, see [THEORY.md](THEORY.md) and [VALIDATION.md](VALIDATION.md).
