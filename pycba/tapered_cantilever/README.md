@@ -59,10 +59,20 @@ x \longmapsto \mathcal{S}(x)
 $$
 
 This means that, for a given longitudinal coordinate, CSF provides the corresponding cross-sectional geometry, material distribution and associated sectional properties.
-CSF associates a dimensionless
-weight with each polygon. In the present tutorial, this
-weight is used to represent the longitudinal variation
-of Young's modulus. 
+
+CSF associates a dimensionless weight with each polygon.
+Despite its name, the term `weight` does not represent
+physical weight, mass or material density.
+
+It is a dimensionless weighting coefficient used in
+the calculation of homogenized sectional properties.
+
+In the present tutorial, this coefficient represents
+the ratio between the local Young's modulus and a
+reference Young's modulus, allowing material stiffness
+to vary along the member.
+
+
 >For more information on material distribution, nested material
 >domains and longitudinally varying homogenization, see the
 >[CSF – Longitudinally Varying Homogenization User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
