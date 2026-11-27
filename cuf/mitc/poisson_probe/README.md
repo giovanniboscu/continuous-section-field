@@ -1,4 +1,4 @@
-hi
+
 # Isolating axial–transverse Poisson coupling in B2 MITC
 
 This is a **diagnostic numerical experiment**, not a change to the CSF physical model or a proposed material law. Use the already-installed CSF–CUF solver and the archived B2 benchmark cases. Do not run the variants concurrently.
