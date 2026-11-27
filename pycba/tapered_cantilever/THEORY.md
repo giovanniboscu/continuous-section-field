@@ -487,39 +487,139 @@ python3 -c "import inspect; from pycba.beam import Beam; print(inspect.getsource
 
 ## 7. Convergence and interpretation of validation
 
-Let $\delta_{\mathrm{ref}}$ be the independent positive reference displacement and $\delta_{\mathrm{num}}$ a numerical downward displacement magnitude. Define the dimensionless relative error $\varepsilon$:
+Let $\delta_{\mathrm{ref}}$ be the independent positive reference
+displacement and $\delta_{\mathrm{num}}$ a numerical downward
+displacement magnitude. Define the dimensionless relative error
+$\varepsilon$:
 
-$$\varepsilon=\frac{|\delta_{\mathrm{num}}-\delta_{\mathrm{ref}}|}{|\delta_{\mathrm{ref}}|}.$$
+$$
+\varepsilon=\frac{|\delta_{\mathrm{num}}-\delta_{\mathrm{ref}}|}
+{|\delta_{\mathrm{ref}}|}.
+$$
 
-Absolute-value bars denote magnitude. The reference is nonzero for these benchmarks.
+Absolute-value bars denote magnitude. The reference is nonzero
+for these benchmarks.
 
-For the midpoint representation the smooth, positive rigidity and smooth moment field lead to a second-order global tip-displacement error in this example. One way to see the origin of this behaviour is to expand the reciprocal rigidity about each member midpoint. The linear variation integrates to zero when multiplied by a constant numerator over a symmetric interval; the variation of the numerator and the quadratic terms produce a local error proportional to the cube of member length. Summing over $N$ members gives a global error proportional to $N\ell^3$, hence proportional to $N^{-2}$ for fixed $L$. This argument assumes sufficiently smooth functions and a rigidity bounded away from zero.
+For the midpoint representation the smooth, positive rigidity
+and smooth moment field lead to a second-order global
+tip-displacement error in this example. One way to see the
+origin of this behaviour is to expand the reciprocal rigidity
+about each member midpoint. The linear variation integrates
+to zero when multiplied by a constant numerator over a
+symmetric interval; the variation of the numerator and the
+quadratic terms produce a local error proportional to the
+cube of member length. Summing over $N$ members gives a
+global error proportional to $N\ell^3$, hence proportional
+to $N^{-2}$ for fixed $L$. This argument assumes sufficiently
+smooth functions and a rigidity bounded away from zero.
 
-Using the big-O notation to describe the asymptotic rate, the observed behaviour is
+Using the big-O notation to describe the asymptotic rate,
+the observed behaviour is
 
-$$\varepsilon_{\mathrm{mid}}=O(N^{-2}),$$
+$$
+\varepsilon_{\mathrm{mid}}=O(N^{-2}),
+$$
 
-where $\varepsilon_{\mathrm{mid}}$ is the relative error for midpoint sampling. Doubling $N$ therefore reduces the asymptotic error by approximately four. This is not a general statement about all finite-element errors.
+where $\varepsilon_{\mathrm{mid}}$ is the relative error for
+midpoint sampling. Doubling $N$ therefore reduces the
+asymptotic error by approximately four. This is not a
+general statement about all finite-element errors.
 
 ![Geometry convergence](img/convergence_geometry.png)
 
 ![Combined convergence](img/convergence_combined.png)
 
-The continuous approach does not need member refinement merely to capture the polynomial rigidity variation in these cases. A single non-prismatic member produces a tip displacement close to floating-point precision. Very small errors may increase with refinement because of numerical conditioning and roundoff; this explanation is plausible but has not been independently established by a condition-number study.
+### Numerical conditioning and floating-point precision
 
-The validation distinguishes the physical sectional properties from the final structural displacement. A direct comparison between the fitted polynomial and CSF rigidity at independent stations would be an additional interface-level diagnostic for general non-polynomial laws.
+The continuous approach does not need member refinement
+merely to capture the polynomial rigidity variation in
+these cases. A single non-prismatic member produces a
+tip displacement close to floating-point precision.
+
+However, the convergence study reveals a small increase
+in numerical error as the number of members increases.
+
+To investigate this behaviour, an independent
+Euler–Bernoulli numerical experiment was performed
+without either CSF or PyCBA, using the analytical
+expression of the flexural rigidity directly.
+
+The experiment reproduced the increase in numerical
+error with refinement and showed a substantial increase
+in the condition number of the assembled stiffness matrix.
+
+The same structural formulation and discretisation
+were subsequently evaluated using extended-precision
+arithmetic with 32 and 50 decimal digits.
+
+For the variable-geometry configuration with 64 members,
+the following relative errors were obtained:
+
+| Arithmetic precision | Relative error |
+|---|---:|
+| Standard double precision (float64) | 2.387e-11 |
+| Extended precision (32 decimal digits) | 1.505e-28 |
+| Extended precision (50 decimal digits) | 7.985e-46 |
+
+The substantial reduction in error obtained by increasing
+arithmetic precision, without changing the structural
+formulation or discretisation, strongly supports the
+interpretation that the observed behaviour is associated
+with finite-precision arithmetic and the amplification
+of rounding errors through matrix conditioning.
+
+The independent experiment therefore provides evidence
+that the increase in numerical error is not an inherent
+limitation of the continuous representation of sectional
+rigidity.
+
+The specific numerical mechanism within PyCBA remains
+to be confirmed.
+
+### Scope of the numerical validation
+
+The validation distinguishes the physical sectional
+properties from the final structural displacement.
+
+A direct comparison between the fitted polynomial and
+CSF rigidity at independent stations would be an
+additional interface-level diagnostic for general
+non-polynomial laws.
 
 ![Sectional validation](img/section_validation.png)
 
-For the actual numerical values and convergence tables, see [VALIDATION.md](VALIDATION.md). The purpose is to demonstrate interoperability for the stated beam assumptions, not to validate every possible CSF geometry or PyCBA loading configuration.
+For the actual numerical values and convergence tables,
+see [VALIDATION.md](VALIDATION.md).
+
+The purpose is to demonstrate interoperability for the
+stated beam assumptions, not to validate every possible
+CSF geometry or PyCBA loading configuration.
 
 ## 8. Summary of the computational workflow
 
 ![Workflow](img/workflow.png)
 
-CSF defines the physical geometry and material field, evaluates sectional properties and supplies the original rigidity function. PyCBA builds a polynomial representation of that function for each member, integrates flexibility, constructs and assembles stiffness matrices, and solves the structural equilibrium equations. The independent reference derives rigidity directly from the prescribed rectangular geometry and material laws, then evaluates the virtual-work displacement without either solver.
+CSF defines the physical geometry and material field,
+evaluates sectional properties and supplies the original
+rigidity function.
 
-The three representations must remain distinct: the physical field, the solver's numerical rigidity representation, and the independent mathematical reference.
+PyCBA builds a polynomial representation of that function
+for each member, integrates flexibility, constructs and
+assembles stiffness matrices, and solves the structural
+equilibrium equations.
+
+The independent reference derives rigidity directly from
+the prescribed rectangular geometry and material laws,
+then evaluates the virtual-work displacement without
+either solver.
+
+The three representations must remain distinct:
+
+- The physical field.
+- The solver's numerical rigidity representation.
+- The independent mathematical reference.
+
+
 
 ## 9. Further reading
 
