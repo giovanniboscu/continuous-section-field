@@ -340,7 +340,7 @@ csf-actions models/variable_material.yaml models/action.yaml
 csf-actions models/combined_variation.yaml models/action.yaml
 ```
 
-The actions display the 3D geometry, the sections at z = 0, 2500 and 5000 mm, the longitudinal material weight, and the sectional properties A, Ix and Iy. The weight is dimensionless, w = E/E_ref; the plotted sectional properties are weighted, not necessarily purely geometric. These visualizations use CSF alone and require no PyCBA analysis. The action file follows the [CSF action syntax](https://github.com/giovanniboscu/continuous-section-field#csf-accepts-two-input-files-geometryyaml-cross-section-definition-and-actionsyaml-post-processing-pipeline); its execution should be checked locally before publication.
+The actions display the 3D geometry, the sections at z = 0, 2500 and 5000 mm, the longitudinal material weight, and the sectional properties A, Ix and Iy. The weight is dimensionless, w = E/E_ref; the plotted sectional properties are weighted, not necessarily purely geometric. These visualizations use CSF alone and require no PyCBA analysis. The action file follows the [CSF action syntax](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md); its execution should be checked locally before publication.
 
 ## 3. Read the code in execution order
 
