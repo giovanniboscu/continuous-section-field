@@ -282,7 +282,7 @@ of the internal implementation of either CSF or PyCBA.
 
 
 
-# CSF-PyCBA: continuous sectional stiffness
+# PyCBA-CSF: continuous sectional stiffness
 
 
 
