@@ -26,6 +26,4 @@ This observation is therefore not considered a limitation of the integration. Th
 
 The review revision changes naming, independent closed-form checks, and documentation and figure generation, without modifying the beam solution or CSF model code. Last-bit differences between computing environments are expected.
 
-## Version notes
-
-- v0.1: cleaned distribution; four exact reference formulas checked in code; degree-study terminology corrected; all sectional CSVs summarized; documentation figures rebuilt from the recorded data. No change to either library or to solver assembly.
+rence formulas checked in code; degree-study terminology corrected; all sectional CSVs summarized; documentation figures rebuilt from the recorded data. No change to either library or to solver assembly.
