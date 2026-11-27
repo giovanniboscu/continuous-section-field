@@ -60,7 +60,10 @@ This means that, for a given longitudinal coordinate, CSF provides the correspon
 CSF associates a dimensionless
 weight with each polygon. In the present tutorial, this
 weight is used to represent the longitudinal variation
-of Young's modulus.
+of Young's modulus. 
+>For more information on material distribution, nested material
+>domains and longitudinally varying homogenization, see the
+>[CSF – Longitudinally Varying Homogenization User Guide](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/CSFLongitudinally-varying-homogenization-user-guide.md).
 
 Let:
 
