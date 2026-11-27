@@ -1,4 +1,4 @@
-
+# Analysis of Non-Prismatic Beams with Variable Geometry and Material Properties Using PyCBA and CSF
 ##  Introduction and purpose
 
 ### Practical integration guide
