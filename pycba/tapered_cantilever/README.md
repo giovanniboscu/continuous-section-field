@@ -339,15 +339,17 @@ python3 -m pip show pycba csfpy
 python3 -m pip freeze
 ```
 
-### Visualize the physical models with CSF
+### Visualize the physical models with CSF (Optional)
 
 After installing the local CSF package, and before running a structural analysis, inspect any of the four physical models using the same [action file](models/action.yaml). From the `tapered_cantilever/` directory with the virtual environment active:
 
 ```bash
+csf-actions models/combined_variation.yaml models/action.yaml
+
 csf-actions models/prismatic.yaml models/action.yaml
 csf-actions models/variable_geometry.yaml models/action.yaml
 csf-actions models/variable_material.yaml models/action.yaml
-csf-actions models/combined_variation.yaml models/action.yaml
+
 ```
 
 The actions display the 3D geometry, the sections at z = 0, 2500 and 5000 mm, the longitudinal material weight, and the sectional properties A, Ix and Iy. The weight is dimensionless, w = E/E_ref; the plotted sectional properties are weighted, not necessarily purely geometric. These visualizations use CSF alone and require no PyCBA analysis. The action file follows the [CSF action syntax](https://github.com/giovanniboscu/continuous-section-field/blob/main/docs/csftutorial.md).
