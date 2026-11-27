@@ -56,10 +56,8 @@ $$
 x \longmapsto \mathcal{S}(x)
 $$
 
-This means that, for a given longitudinal coordinate,
-CSF provides the corresponding cross-sectional geometry.
-
-In addition to geometry, CSF associates a dimensionless
+This means that, for a given longitudinal coordinate, CSF provides the corresponding cross-sectional geometry, material distribution and associated sectional properties.
+CSF associates a dimensionless
 weight with each polygon. In the present tutorial, this
 weight is used to represent the longitudinal variation
 of Young's modulus.
