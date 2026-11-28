@@ -148,8 +148,6 @@ The independent analytical references are case-specific and used only for valida
 
 ## 2. Run and reproduce the example
 
-**Requirements:** Git and Python 3.11 (the tested version). The review branch uses PyCBA 1.0.2.
-
 ### Installation
 
 For a fresh local checkout:
